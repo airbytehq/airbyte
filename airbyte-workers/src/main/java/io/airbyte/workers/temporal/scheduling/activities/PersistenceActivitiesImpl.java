@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers.temporal.scheduling.activities;
 
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -31,4 +35,5 @@ public class PersistenceActivitiesImpl implements PersistenceActivities {
       e.printStackTrace();
     }
   }
+
 }

@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobResetConnectionConfig;
@@ -48,7 +49,11 @@ class TemporalWorkerRunFactoryTest {
     final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_worker_run_test");
     jobRoot = workspaceRoot.resolve(String.valueOf(JOB_ID)).resolve(String.valueOf(ATTEMPT_ID));
     temporalClient = mock(TemporalClient.class);
-    workerRunFactory = new TemporalWorkerRunFactory(temporalClient, workspaceRoot, "unknown airbyte version");
+    workerRunFactory = new TemporalWorkerRunFactory(
+        temporalClient,
+        workspaceRoot,
+        "unknown airbyte version",
+        mock(FeatureFlags.class));
     job = mock(Job.class, RETURNS_DEEP_STUBS);
     when(job.getId()).thenReturn(JOB_ID);
     when(job.getAttemptsCount()).thenReturn(ATTEMPT_ID);

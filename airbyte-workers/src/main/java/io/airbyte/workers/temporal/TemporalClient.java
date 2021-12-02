@@ -26,6 +26,7 @@ import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterInput;
 import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterWorkflow;
 import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
+import io.temporal.client.BatchRequest;
 import io.temporal.client.WorkflowClient;
 import java.nio.file.Path;
 import java.util.UUID;
@@ -122,31 +123,28 @@ public class TemporalClient {
   }
 
   public void submitConnectionUpdaterAsync(final long jobId, final int attemptId, final UUID connectionId, final JobConfig jobConfig) {
-    final ConnectionUpdaterWorkflow connectionUpdaterWorkflow = getWorkflowStubWithName(ConnectionUpdaterWorkflow.class,
+    final ConnectionUpdaterWorkflow connectionUpdaterWorkflow = getWorkflowOptionsWithWorkflowId(ConnectionUpdaterWorkflow.class,
         TemporalJobType.CONNECTION_UPDATER, "connection_updater_" + connectionId);
+    final BatchRequest signalRequest = client.newSignalWithStartRequest();
+    final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, jobId, jobConfig, attemptId);
+    signalRequest.add(connectionUpdaterWorkflow::run, input);
+    // TODO: Only if not manual
+    signalRequest.add(connectionUpdaterWorkflow::skipWaitForScheduling);
     final ExecutorService threadpool = Executors.newCachedThreadPool();
     final Future<Void> futureTask = threadpool.submit(() -> {
       final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attemptId);
-      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, jobId, jobConfig, attemptId);
-      execute(jobRunConfig, () -> connectionUpdaterWorkflow.run(input));
+      execute(jobRunConfig, () -> client.signalWithStart(signalRequest));
 
       return null;
     });
-
-    try {
-      Thread.sleep(10000);
-      connectionUpdaterWorkflow.skipWaitForScheduling();
-    } catch (final InterruptedException e) {
-      e.printStackTrace();
-    }
   }
 
   private <T> T getWorkflowStub(final Class<T> workflowClass, final TemporalJobType jobType) {
     return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptions(jobType));
   }
 
-  private <T> T getWorkflowStubWithName(final Class<T> workflowClass, final TemporalJobType jobType, final String name) {
-    return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptionsWithName(jobType, name));
+  private <T> T getWorkflowOptionsWithWorkflowId(final Class<T> workflowClass, final TemporalJobType jobType, final String name) {
+    return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptionsWithWorkflowId(jobType, name));
   }
 
   @VisibleForTesting

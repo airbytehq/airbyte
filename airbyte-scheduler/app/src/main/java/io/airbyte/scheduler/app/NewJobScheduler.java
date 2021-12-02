@@ -6,6 +6,7 @@ package io.airbyte.scheduler.app;
 
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.concurrency.LifecycledCallable;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
@@ -94,7 +95,11 @@ public class NewJobScheduler implements Runnable {
     log.debug("Total active connections: {}", activeConnections.size());
     log.debug("Time to retrieve all connections: {} ms", queryEnd - start);
 
-    final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(temporalClient, workspaceRoot, airbyteVersionOrWarnings);
+    final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(
+        temporalClient,
+        workspaceRoot,
+        airbyteVersionOrWarnings,
+        new EnvVariableFeatureFlags());
 
     for (final StandardSync connection : activeConnections) {
       final Optional<Job> previousJobOptional = jobPersistence.getLastReplicationJob(connection.getConnectionId());
