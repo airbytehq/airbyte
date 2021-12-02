@@ -39,37 +39,21 @@ public class RunnerApp {
     }
 
     final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
-
     final ProcessFactory processFactory = getProcessBuilderFactory(configs, workerConfigs);
 
-    LOGGER.info("Attempting to retrieve files...");
+    LOGGER.info("Attempting to retrieve config files...");
 
-    // retrieve files
-    // todo: don't use magic strings
     final JobRunConfig jobRunConfig =
         Jsons.deserialize(Files.readString(Path.of(ReplicationActivityImpl.INIT_FILE_JOB_RUN_CONFIG)), JobRunConfig.class);
-
-    LOGGER.info("jobRunConfig = " + jobRunConfig);
 
     final IntegrationLauncherConfig sourceLauncherConfig =
         Jsons.deserialize(Files.readString(Path.of(ReplicationActivityImpl.INIT_FILE_SOURCE_LAUNCHER_CONFIG)), IntegrationLauncherConfig.class);
 
-    LOGGER.info("sourceLauncherConfig = " + sourceLauncherConfig);
-
     final IntegrationLauncherConfig destinationLauncherConfig =
         Jsons.deserialize(Files.readString(Path.of(ReplicationActivityImpl.INIT_FILE_DESTINATION_LAUNCHER_CONFIG)), IntegrationLauncherConfig.class);
 
-    LOGGER.info("destinationLauncherConfig = " + destinationLauncherConfig);
-
     final StandardSyncInput syncInput =
         Jsons.deserialize(Files.readString(Path.of(ReplicationActivityImpl.INIT_FILE_SYNC_INPUT)), StandardSyncInput.class);
-
-    LOGGER.info("syncInput = " + syncInput);
-
-    final UUID connectionId = Jsons.deserialize(Files.readString(Path.of(ReplicationActivityImpl.INIT_FILE_CONNECTION_ID)), UUID.class); // todo: does
-                                                                                                                                         // this work?
-
-    LOGGER.info("connectionId = " + connectionId);
 
     LOGGER.info("Setting up source launcher...");
     final IntegrationLauncher sourceLauncher = new AirbyteIntegrationLauncher(
@@ -87,9 +71,8 @@ public class RunnerApp {
         processFactory,
         syncInput.getResourceRequirements());
 
-    // reset jobs use an empty source to induce resetting all data in destination.
-
     LOGGER.info("Setting up source...");
+    // reset jobs use an empty source to induce resetting all data in destination.
     final AirbyteSource airbyteSource =
         sourceLauncherConfig.getDockerImage().equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB) ? new EmptyAirbyteSource()
             : new DefaultAirbyteSource(workerConfigs, sourceLauncher);
@@ -104,22 +87,19 @@ public class RunnerApp {
         new AirbyteMessageTracker(),
         new AirbyteMessageTracker());
 
-    final Path jobRoot = WorkerUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
-
     LOGGER.info("Running replication worker...");
+    final Path jobRoot = WorkerUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
     final ReplicationOutput replicationOutput = replicationWorker.run(syncInput, jobRoot);
 
     LOGGER.info("Sending output...");
-
-    // this uses std out because it shouldn't have the logging related prefix
+    // this uses stdout directly because it shouldn't have the logging related prefix
     System.out.println(Jsons.serialize(replicationOutput));
 
     LOGGER.info("Replication runner complete!");
   }
 
   public static void main(String[] args) throws Exception {
-
-    final WorkerHeartbeatServer heartbeatServer = new WorkerHeartbeatServer(WorkerApp.KUBE_HEARTBEAT_PORT);
+    WorkerHeartbeatServer heartbeatServer = null;
 
     try {
       final String application = Files.readString(Path.of(ReplicationActivityImpl.INIT_FILE_APPLICATION));
@@ -128,14 +108,9 @@ public class RunnerApp {
           (Map<String, String>) Jsons.deserialize(Files.readString(Path.of(ReplicationActivityImpl.INIT_FILE_ENV_MAP)), Map.class);
       final Configs configs = new EnvConfigs(envMap::get);
 
-      if (System.getenv().containsKey("LOG_LEVEL")) {
-        System.setProperty("LOG_LEVEL", System.getenv("LOG_LEVEL"));
-      }
-
-      if (System.getenv().containsKey("S3_PATH_STYLE_ACCESS")) {
-        System.setProperty("S3_PATH_STYLE_ACCESS", System.getenv("S3_PATH_STYLE_ACCESS"));
-      }
-
+      // set logging-related vars as properties so (at runtime) we can read these when processing log4j2.xml
+      setPropertyFromEnvVar(EnvConfigs.LOG_LEVEL);
+      setPropertyFromEnvVar(EnvConfigs.S3_PATH_STYLE_ACCESS);
       System.setProperty(LogClientSingleton.S3_LOG_BUCKET, configs.getLogConfigs().getS3LogBucket());
       System.setProperty(LogClientSingleton.S3_LOG_BUCKET_REGION, configs.getLogConfigs().getS3LogBucketRegion());
       System.setProperty(LogClientSingleton.AWS_ACCESS_KEY_ID, configs.getLogConfigs().getAwsAccessKey());
@@ -147,22 +122,31 @@ public class RunnerApp {
       final var logPath = LogClientSingleton.getInstance().getSchedulerLogsRoot(configs.getWorkspaceRoot());
       LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(), logPath);
 
+      heartbeatServer = new WorkerHeartbeatServer(WorkerApp.KUBE_HEARTBEAT_PORT);
       heartbeatServer.startBackground();
 
-      if (application.equals("replication")) {
+      if (application.equals(ReplicationActivityImpl.REPLICATION)) {
         replicationRunner(configs);
       } else {
         LOGGER.error("Runner failed", new IllegalStateException("Unexpected value: " + application));
         System.exit(1);
       }
     } finally {
-      LOGGER.info("Shutting down heartbeat server...");
-      heartbeatServer.stop();
+      if(heartbeatServer != null) {
+        LOGGER.info("Shutting down heartbeat server...");
+        heartbeatServer.stop();
+      }
     }
 
     // required to kill s3 logger
     LOGGER.info("Runner closing...");
     System.exit(0);
+  }
+
+  private static void setPropertyFromEnvVar(final String envVar) {
+    if (System.getenv().containsKey(envVar)) {
+      System.setProperty(envVar, System.getenv(envVar));
+    }
   }
 
   private static ProcessFactory getProcessBuilderFactory(final Configs configs, final WorkerConfigs workerConfigs) throws IOException {

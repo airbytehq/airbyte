@@ -33,12 +33,12 @@ import org.slf4j.LoggerFactory;
 
 public class ReplicationActivityImpl implements ReplicationActivity {
 
+  public static final String REPLICATION = "replication";
   public static final String INIT_FILE_APPLICATION = "application.txt";
   public static final String INIT_FILE_JOB_RUN_CONFIG = "jobRunConfig.json";
   public static final String INIT_FILE_SOURCE_LAUNCHER_CONFIG = "sourceLauncherConfig.json";
   public static final String INIT_FILE_DESTINATION_LAUNCHER_CONFIG = "destinationLauncherConfig.json";
   public static final String INIT_FILE_SYNC_INPUT = "syncInput.json";
-  public static final String INIT_FILE_CONNECTION_ID = "connectionId.json";
   public static final String INIT_FILE_ENV_MAP = "envMap.json";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ReplicationActivityImpl.class);
@@ -123,7 +123,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
         workerEnvironment,
         logConfigs,
         jobRunConfig,
-        getWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput, connectionId),
+        getWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput),
         inputSupplier,
         new CancellationHandler.TemporalCancellationHandler(),
         databaseUser,
@@ -162,8 +162,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                                                                                     final IntegrationLauncherConfig sourceLauncherConfig,
                                                                                                     final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                     final JobRunConfig jobRunConfig,
-                                                                                                    final StandardSyncInput syncInput,
-                                                                                                    final UUID connectionId) {
+                                                                                                    final StandardSyncInput syncInput) {
     return () -> new Worker<>() {
 
       final AtomicBoolean cancelled = new AtomicBoolean(false);
@@ -172,21 +171,15 @@ public class ReplicationActivityImpl implements ReplicationActivity {
       @Override
       public ReplicationOutput run(StandardSyncInput standardSyncInput, Path jobRoot) throws WorkerException {
         try {
-          // todo: do we need to wrapp all of this in a worker with anew TemporalAttemptExecution<>()
-
           final Path jobPath = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
 
-          // todo: don't use magic strings
           final Map<String, String> fileMap = Map.of(
-              INIT_FILE_APPLICATION, "replication",
+              INIT_FILE_APPLICATION, REPLICATION,
               INIT_FILE_JOB_RUN_CONFIG, Jsons.serialize(jobRunConfig),
               INIT_FILE_SOURCE_LAUNCHER_CONFIG, Jsons.serialize(sourceLauncherConfig),
               INIT_FILE_DESTINATION_LAUNCHER_CONFIG, Jsons.serialize(destinationLauncherConfig),
               INIT_FILE_SYNC_INPUT, Jsons.serialize(syncInput),
-              INIT_FILE_CONNECTION_ID, Jsons.serialize(connectionId),
               INIT_FILE_ENV_MAP, Jsons.serialize(System.getenv()));
-
-          // todo: logs for this process should also make it to kubernetes logging!
 
           // for now keep same failure behavior where this is heartbeating and depends on the parent worker to
           // exist
@@ -198,7 +191,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
               false,
               fileMap,
               null,
-              null, // todo: allow resource requirements for this pod to be configurable
+              workerConfigs.getResourceRequirements(),
               Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_RUNNER),
               Map.of(WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT));
 
@@ -222,7 +215,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           WorkerUtils.wait(process);
 
           if (process.exitValue() != 0) {
-            throw new WorkerException("Non-zero exit code!"); // todo: handle better
+            throw new WorkerException("Non-zero exit code!");
           }
 
           if (output.get() != null) {
