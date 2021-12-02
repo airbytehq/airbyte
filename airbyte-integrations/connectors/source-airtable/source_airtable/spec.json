@@ -9,21 +9,21 @@
     "properties": {
       "api_key": {
         "type": "string",
-        "description": "The API Key for the Airtable account. See the <a href=\"https://support.airtable.com/hc/en-us/articles/219046777-How-do-I-get-my-API-key- \">Support Guide</a> for more information on how to obtain this key.",
-		"title": "API Key",
+        "description": "The API Key for the Airtable account. See the <a href=\"https://support.airtable.com/hc/en-us/articles/219046777-How-do-I-get-my-API-key-\">Support Guide</a> for more information on how to obtain this key.",
+        "title": "API Key",
         "airbyte_secret": true,
         "examples": ["key1234567890"]
       },
       "base_id": {
         "type": "string",
         "description": "The Base ID to integrate the data from",
-		"title": "Base ID",
+        "title": "Base ID",
         "examples": ["app1234567890"]
       },
       "tables": {
         "type": "array",
         "description": "The list of the Tables to integrate",
-		"title": "Tables",
+        "title": "Tables",
         "examples": ["table 1", "table 2"]
       }
     }
