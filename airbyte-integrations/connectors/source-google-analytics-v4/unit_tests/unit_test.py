@@ -42,12 +42,16 @@ def mock_auth_call(requests_mock):
 
 @pytest.fixture
 def mock_auth_check_connection(requests_mock):
-    yield requests_mock.post("https://analyticsreporting.googleapis.com/v4/reports:batchGet", json={"data": {"test": "value"}})\
+    yield requests_mock.post("https://analyticsreporting.googleapis.com/v4/reports:batchGet", json={"data": {"test": "value"}})
 
 
 @pytest.fixture
 def mock_unknown_metrics_or_dimensions_error(requests_mock):
-    yield requests_mock.post(f"https://analyticsreporting.googleapis.com/v4/reports:batchGet", status_code=400, json={"error":{"message": "Unknown metrics or dimensions"}})
+    yield requests_mock.post(
+        "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
+        status_code=400,
+        json={"error": {"message": "Unknown metrics or dimensions"}},
+    )
 
 
 def mock_api_returns_no_records(requests_mock):
