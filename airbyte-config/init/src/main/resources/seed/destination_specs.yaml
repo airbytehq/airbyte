@@ -2740,7 +2740,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-s3:0.1.14"
+- dockerImage: "airbyte/destination-s3:0.1.15"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/s3"
     connectionSpecification:
