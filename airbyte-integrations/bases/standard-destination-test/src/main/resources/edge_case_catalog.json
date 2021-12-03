@@ -139,21 +139,6 @@
           }
         }
       }
-    },
-    {
-      "name": "stream_with_dates",
-      "json_schema": {
-        "properties": {
-          "date": {
-            "type": "string",
-            "format": "date"
-          },
-          "datetime": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      }
     }
   ]
 }
