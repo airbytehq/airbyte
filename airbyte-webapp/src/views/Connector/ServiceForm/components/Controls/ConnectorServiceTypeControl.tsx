@@ -97,9 +97,9 @@ const ConnectorServiceTypeControl: React.FC<{
   const sortedDropDownData = useMemo(
     () =>
       availableServices
-        .filter((item) => {
-          return !disallowedOauthConnectors.includes(Connector.id(item));
-        })
+        .filter(
+          (item) => !disallowedOauthConnectors.includes(Connector.id(item))
+        )
         .map((item) => ({
           label: item.name,
           value: Connector.id(item),

@@ -5,7 +5,7 @@ import NotificationsResource, {
   Notifications,
 } from "core/resources/Notifications";
 import { useGetService } from "core/servicesProvider";
-import { useAnalyticsService } from "./Analytics/useAnalyticsService";
+import { useAnalyticsService } from "./Analytics";
 import { Source } from "core/resources/Source";
 import { Destination } from "core/resources/Destination";
 
