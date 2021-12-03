@@ -38,8 +38,8 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedDestination.class);
 
+  public static final String NESTED_ARRAY_FIELD = "value";
   protected static final String PROPERTIES_FIELD = "properties";
-  protected static final String NESTED_ARRAY_FIELD = "value";
   private static final String TYPE_FIELD = "type";
   private static final String FORMAT_FIELD = "format";
   private static final String REF_DEFINITION_KEY = "$ref";
