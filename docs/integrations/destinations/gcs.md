@@ -222,9 +222,9 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.5 | 2021-12-02 | [\#8386](https://github.com/airbytehq/airbyte/pull/8386) | Add new GCP regions |
-| 0.1.4 | 2021-12-01 | [\#7732](https://github.com/airbytehq/airbyte/pull/7732) | Support timestamp in Avro and Parquet |
-| 0.1.3 | 2021-11-03 | [\#7288](https://github.com/airbytehq/airbyte/issues/7288) | Support Json `additionalProperties`. |
+| 0.1.15 | 2021-12-03 | [\#8386](https://github.com/airbytehq/airbyte/pull/8386) | Add new GCP regions |
+| 0.1.14 | 2021-12-01 | [\#7732](https://github.com/airbytehq/airbyte/pull/7732) | Support timestamp in Avro and Parquet |
+| 0.1.13 | 2021-11-03 | [\#7288](https://github.com/airbytehq/airbyte/issues/7288) | Support Json `additionalProperties`. |
 | 0.1.2 | 2021-09-12 | [\#5720](https://github.com/airbytehq/airbyte/issues/5720) | Added configurable block size for stream. Each stream is limited to 10,000 by GCS |
 | 0.1.1 | 2021-08-26 | [\#5296](https://github.com/airbytehq/airbyte/issues/5296) | Added storing gcsCsvFileLocation property for CSV format. This is used by destination-bigquery \(GCS Staging upload type\) |
 | 0.1.0 | 2021-07-16 | [\#4329](https://github.com/airbytehq/airbyte/pull/4784) | Initial release. |
