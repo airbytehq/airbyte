@@ -69,7 +69,6 @@ dependencies {
     implementation project(':airbyte-config:specs')
     implementation project(':airbyte-db:lib')
     implementation project(":airbyte-json-validation")
-    implementation project(':airbyte-migration')
     implementation project(':airbyte-notification')
     implementation project(':airbyte-oauth')
     implementation project(':airbyte-protocol:models')

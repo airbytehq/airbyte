@@ -43,13 +43,6 @@ services:
       context: airbyte-webapp
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
-  migration:
-    image: airbyte/migration:${VERSION}
-    build:
-      dockerfile: Dockerfile
-      context: airbyte-migration
-      labels:
-        io.airbyte.git-revision: ${GIT_REVISION}
   temporal:
     image: airbyte/temporal:${VERSION}
     build:
