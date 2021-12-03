@@ -48,7 +48,7 @@ The Iterable connector should not run into Iterable API limitations under normal
 ### Requirements
 
 * Iterable Account
-* Iterable API Key
+* Iterable API Key with `standard` permissions. See [API Keys docs](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-) for more details.
 
 ### Setup guide
 <!-- markdown-link-check-disable-next-line -->

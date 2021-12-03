@@ -29,13 +29,12 @@
       "type": ["null", "string"]
     },
     "value": {
-      "type": ["null", "integer", "object", "string"],
-      "properties": {}
+      "type": ["null", "number", "string", "integer", "boolean"]
     },
     "updated_at": {
       "type": ["null", "string"],
       "format": "date-time"
     }
   },
-  "type": "object"
+  "type": ["null", "object"]
 }

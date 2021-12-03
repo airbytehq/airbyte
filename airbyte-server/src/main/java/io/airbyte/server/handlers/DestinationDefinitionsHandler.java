@@ -4,6 +4,8 @@
 
 package io.airbyte.server.handlers;
 
+import static io.airbyte.server.ServerConstants.DEV_IMAGE_TAG;
+
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
@@ -16,8 +18,8 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SynchronousResponse;
+import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
@@ -38,18 +40,18 @@ public class DestinationDefinitionsHandler {
 
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
-  private final CachingSynchronousSchedulerClient schedulerSynchronousClient;
+  private final SynchronousSchedulerClient schedulerSynchronousClient;
   private final AirbyteGithubStore githubStore;
 
   public DestinationDefinitionsHandler(final ConfigRepository configRepository,
-                                       final CachingSynchronousSchedulerClient schedulerSynchronousClient) {
+                                       final SynchronousSchedulerClient schedulerSynchronousClient) {
     this(configRepository, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production());
   }
 
   @VisibleForTesting
   public DestinationDefinitionsHandler(final ConfigRepository configRepository,
                                        final Supplier<UUID> uuidSupplier,
-                                       final CachingSynchronousSchedulerClient schedulerSynchronousClient,
+                                       final SynchronousSchedulerClient schedulerSynchronousClient,
                                        final AirbyteGithubStore githubStore) {
     this.configRepository = configRepository;
     this.uuidSupplier = uuidSupplier;
@@ -127,10 +129,11 @@ public class DestinationDefinitionsHandler {
     final StandardDestinationDefinition currentDestination = configRepository
         .getStandardDestinationDefinition(destinationDefinitionUpdate.getDestinationDefinitionId());
 
-    final boolean imageTagHasChanged = !currentDestination.getDockerImageTag().equals(destinationDefinitionUpdate.getDockerImageTag());
-    // TODO (lmossman): remove null spec condition when the spec field becomes required on the
-    // definition struct
-    final ConnectorSpecification spec = (imageTagHasChanged || currentDestination.getSpec() == null)
+    // specs are re-fetched from the container if the image tag has changed, or if the tag is "dev",
+    // to allow for easier iteration of dev images
+    final boolean specNeedsUpdate = !currentDestination.getDockerImageTag().equals(destinationDefinitionUpdate.getDockerImageTag())
+        || destinationDefinitionUpdate.getDockerImageTag().equals(DEV_IMAGE_TAG);
+    final ConnectorSpecification spec = specNeedsUpdate
         ? getSpecForImage(currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag())
         : currentDestination.getSpec();
 
@@ -144,8 +147,6 @@ public class DestinationDefinitionsHandler {
         .withSpec(spec);
 
     configRepository.writeStandardDestinationDefinition(newDestination);
-    // we want to re-fetch the spec for updated definitions.
-    schedulerSynchronousClient.resetCache();
     return buildDestinationDefinitionRead(newDestination);
   }
 

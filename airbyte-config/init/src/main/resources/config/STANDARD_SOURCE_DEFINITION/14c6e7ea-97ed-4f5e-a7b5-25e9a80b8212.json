@@ -3,5 +3,6 @@
   "name": "Airtable",
   "dockerRepository": "airbyte/source-airtable",
   "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/airtable"
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/airtable",
+  "icon": "airtable.svg"
 }

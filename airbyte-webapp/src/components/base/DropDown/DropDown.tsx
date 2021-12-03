@@ -19,7 +19,7 @@ type DropdownProps = Props<OptionType> & {
   error?: boolean;
 };
 
-const DropDown: React.FC<DropdownProps> = (props) => {
+const DropDown: React.FC<DropdownProps> = React.forwardRef((props, ref) => {
   const propsComponents = props.components;
 
   const components = React.useMemo<SelectComponentsConfig<OptionType, boolean>>(
@@ -44,8 +44,17 @@ const DropDown: React.FC<DropdownProps> = (props) => {
       )
     : props.options?.find((op) => equal(op.value, props.value));
 
+  const styles = {
+    ...(props.styles ?? {}),
+    menuPortal: (base: CSSObject, menuPortalProps: any) => ({
+      ...(props.styles?.menuPortal?.(base, menuPortalProps) ?? { ...base }),
+      zIndex: 9999,
+    }),
+  };
+
   return (
     <CustomSelect
+      ref={ref}
       data-testid={props.name}
       $error={props.error}
       className="react-select-container"
@@ -55,18 +64,13 @@ const DropDown: React.FC<DropdownProps> = (props) => {
       isSearchable={false}
       closeMenuOnSelect={!props.isMulti}
       hideSelectedOptions={false}
-      styles={{
-        menuPortal: (base: CSSObject) => ({
-          ...base,
-          zIndex: 9999,
-        }),
-      }}
       {...props}
+      styles={styles}
       value={currentValue ?? null}
       components={components}
     />
   );
-};
+});
 
 const defaultDataItemSort = naturalComparatorBy<IDataItem>(
   (dataItem) => dataItem.label || ""
