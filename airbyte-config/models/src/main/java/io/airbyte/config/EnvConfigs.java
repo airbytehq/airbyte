@@ -72,7 +72,7 @@ public class EnvConfigs implements Configs {
   private static final String SUBMITTER_NUM_THREADS = "SUBMITTER_NUM_THREADS";
   private static final String JOB_POD_MAIN_CONTAINER_CPU_REQUEST = "JOB_POD_MAIN_CONTAINER_CPU_REQUEST";
   private static final String JOB_POD_MAIN_CONTAINER_CPU_LIMIT = "JOB_POD_MAIN_CONTAINER_CPU_LIMIT";
-  private static final String RESOURCE_MEMORY_REQUEST = "RESOURCE_MEMORY_REQUEST";
+  private static final String JOB_POD_MAIN_CONTAINER_MEMORY_REQUEST = "JOB_POD_MAIN_CONTAINER_MEMORY_REQUEST";
   private static final String RESOURCE_MEMORY_LIMIT = "RESOURCE_MEMORY_LIMIT";
   private static final String SECRET_PERSISTENCE = "SECRET_PERSISTENCE";
   private static final String JOB_POD_MAIN_CONTAINER_IMAGE_PULL_SECRET = "JOB_POD_MAIN_CONTAINER_IMAGE_PULL_SECRET";
@@ -82,7 +82,7 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
   private static final String DEFAULT_JOB_POD_KUBE_NAMESPACE = "default";
   private static final String DEFAULT_JOB_POD_CPU_REQUIREMENT = null;
-  private static final String DEFAULT_RESOURCE_REQUIREMENT_MEMORY = null;
+  private static final String DEFAULT_JOB_POD_MEMORY_REQUIREMENT = null;
   private static final String DEFAULT_JOB_POD_MAIN_CONTAINER_IMAGE_PULL_POLICY = "IfNotPresent";
   private static final String SECRET_STORE_GCP_PROJECT_ID = "SECRET_STORE_GCP_PROJECT_ID";
   private static final String SECRET_STORE_GCP_CREDENTIALS = "SECRET_STORE_GCP_CREDENTIALS";
@@ -393,13 +393,13 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public String getMemoryRequest() {
-    return getEnvOrDefault(RESOURCE_MEMORY_REQUEST, DEFAULT_RESOURCE_REQUIREMENT_MEMORY);
+  public String getJobPodMainContainerMemoryRequest() {
+    return getEnvOrDefault(JOB_POD_MAIN_CONTAINER_MEMORY_REQUEST, DEFAULT_JOB_POD_MEMORY_REQUIREMENT);
   }
 
   @Override
   public String getMemoryLimit() {
-    return getEnvOrDefault(RESOURCE_MEMORY_LIMIT, DEFAULT_RESOURCE_REQUIREMENT_MEMORY);
+    return getEnvOrDefault(RESOURCE_MEMORY_LIMIT, DEFAULT_JOB_POD_MEMORY_REQUIREMENT);
   }
 
   // Logging/Monitoring/Tracking

@@ -132,11 +132,11 @@ spec:
             configMapKeyRef:
               name: airbyte-env
               key: JOB_POD_MAIN_CONTAINER_CPU_LIMIT
-        - name: RESOURCE_MEMORY_REQUEST
+        - name: JOB_POD_MAIN_CONTAINER_MEMORY_REQUEST
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
-              key: RESOURCE_MEMORY_REQUEST
+              key: JOB_POD_MAIN_CONTAINER_MEMORY_REQUEST
         - name: RESOURCE_MEMORY_LIMIT
           valueFrom:
             configMapKeyRef:

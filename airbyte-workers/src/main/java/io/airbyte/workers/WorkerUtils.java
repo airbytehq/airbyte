@@ -208,7 +208,7 @@ public class WorkerUtils {
     return new ResourceRequirements()
         .withCpuRequest(CONFIGS.getJobPodMainContainerCpuRequest())
         .withCpuLimit(CONFIGS.getJobPodMainContainerCpuLimit())
-        .withMemoryRequest(CONFIGS.getMemoryRequest())
+        .withMemoryRequest(CONFIGS.getJobPodMainContainerMemoryRequest())
         .withMemoryLimit(CONFIGS.getMemoryLimit());
   }
 

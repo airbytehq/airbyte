@@ -96,8 +96,7 @@ public interface Configs {
 
   String getJobPodMainContainerCpuLimit();
 
-  // getJobPodMainContainerMemoryRequest
-  String getMemoryRequest();
+  String getJobPodMainContainerMemoryRequest();
 
   // getJobPodMainContainerMemoryLimit
   String getMemoryLimit();
