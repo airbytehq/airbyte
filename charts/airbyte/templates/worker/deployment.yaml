@@ -113,7 +113,7 @@ spec:
               key: TEMPORAL_WORKER_PORTS
         - name: LOG_LEVEL
           value: "{{ .Values.worker.log.level }}"
-        - name: KUBE_NAMESPACE
+        - name: JOB_POD_KUBE_NAMESPACE
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace

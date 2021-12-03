@@ -93,7 +93,7 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: LOG_LEVEL
-            - name: KUBE_NAMESPACE
+            - name: JOB_POD_KUBE_NAMESPACE
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace

@@ -68,7 +68,7 @@ public class EnvConfigs implements Configs {
   public static final String MAX_SYNC_WORKERS = "MAX_SYNC_WORKERS";
   private static final String TEMPORAL_HOST = "TEMPORAL_HOST";
   private static final String TEMPORAL_WORKER_PORTS = "TEMPORAL_WORKER_PORTS";
-  private static final String KUBE_NAMESPACE = "KUBE_NAMESPACE";
+  private static final String JOB_POD_KUBE_NAMESPACE = "JOB_POD_KUBE_NAMESPACE";
   private static final String SUBMITTER_NUM_THREADS = "SUBMITTER_NUM_THREADS";
   private static final String RESOURCE_CPU_REQUEST = "RESOURCE_CPU_REQUEST";
   private static final String RESOURCE_CPU_LIMIT = "RESOURCE_CPU_LIMIT";
@@ -80,7 +80,7 @@ public class EnvConfigs implements Configs {
 
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
-  private static final String DEFAULT_KUBE_NAMESPACE = "default";
+  private static final String DEFAULT_JOB_POD_KUBE_NAMESPACE = "default";
   private static final String DEFAULT_RESOURCE_REQUIREMENT_CPU = null;
   private static final String DEFAULT_RESOURCE_REQUIREMENT_MEMORY = null;
   private static final String DEFAULT_JOB_POD_MAIN_CONTAINER_IMAGE_PULL_POLICY = "IfNotPresent";
@@ -378,8 +378,8 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public String getKubeNamespace() {
-    return getEnvOrDefault(KUBE_NAMESPACE, DEFAULT_KUBE_NAMESPACE);
+  public String getJobPodKubeNamespace() {
+    return getEnvOrDefault(JOB_POD_KUBE_NAMESPACE, DEFAULT_JOB_POD_KUBE_NAMESPACE);
   }
 
   @Override

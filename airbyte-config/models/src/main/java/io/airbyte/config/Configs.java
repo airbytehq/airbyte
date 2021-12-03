@@ -90,8 +90,7 @@ public interface Configs {
 
   String getJobPodCurlImage();
 
-  // getJobPodKubeNamespace
-  String getKubeNamespace();
+  String getJobPodKubeNamespace();
 
   // getJobPodMainContainerCpuRequest
   String getCpuRequest();
