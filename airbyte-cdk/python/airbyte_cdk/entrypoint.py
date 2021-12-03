@@ -9,15 +9,15 @@ import logging
 import os.path
 import sys
 import tempfile
+from functools import partial
 from typing import Iterable, List
 
+from airbyte_cdk.log_filter import init_filtered_logger, init_unhandled_exception_output_filtering
 from airbyte_cdk.logger import init_logger
 from airbyte_cdk.models import AirbyteMessage, Status, Type
-from airbyte_cdk.log_filter import init_filtered_logger, init_unhandled_exception_output_filtering
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets
-from functools import partial
 
 logger = init_logger("airbyte")
 
@@ -37,28 +37,23 @@ class AirbyteEntrypoint(object):
         subparsers.add_parser("spec", help="outputs the json configuration specification", parents=[parent_parser])
 
         # check
-        check_parser = subparsers.add_parser("check", help="checks the config can be used to connect",
-                                             parents=[parent_parser])
+        check_parser = subparsers.add_parser("check", help="checks the config can be used to connect", parents=[parent_parser])
         required_check_parser = check_parser.add_argument_group("required named arguments")
-        required_check_parser.add_argument("--config", type=str, required=True,
-                                           help="path to the json configuration file")
+        required_check_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
 
         # discover
         discover_parser = subparsers.add_parser(
             "discover", help="outputs a catalog describing the source's schema", parents=[parent_parser]
         )
         required_discover_parser = discover_parser.add_argument_group("required named arguments")
-        required_discover_parser.add_argument("--config", type=str, required=True,
-                                              help="path to the json configuration file")
+        required_discover_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
 
         # read
-        read_parser = subparsers.add_parser("read", help="reads the source and outputs messages to STDOUT",
-                                            parents=[parent_parser])
+        read_parser = subparsers.add_parser("read", help="reads the source and outputs messages to STDOUT", parents=[parent_parser])
 
         read_parser.add_argument("--state", type=str, required=False, help="path to the json-encoded state file")
         required_read_parser = read_parser.add_argument_group("required named arguments")
-        required_read_parser.add_argument("--config", type=str, required=True,
-                                          help="path to the json configuration file")
+        required_read_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
         required_read_parser.add_argument(
             "--catalog", type=str, required=True, help="path to the catalog used to determine which data to read"
         )
@@ -88,7 +83,6 @@ class AirbyteEntrypoint(object):
                 self.logger = init_filtered_logger("airbyte", config_secrets)
                 init_unhandled_exception_output_filtering(self.logger)
 
-
                 # Remove internal flags from config before validating so
                 # jsonschema's additionalProperties flag wont fail the validation
                 config, internal_config = split_config(config)
@@ -104,8 +98,7 @@ class AirbyteEntrypoint(object):
                     else:
                         self.logger.error("Check failed")
 
-                    output_message = AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=check_result).json(
-                        exclude_unset=True)
+                    output_message = AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=check_result).json(exclude_unset=True)
                     yield output_message
                 elif cmd == "discover":
                     catalog = self.source.discover(self.logger, config)
@@ -124,7 +117,7 @@ def launch(source: Source, args: List[str]):
     source_entrypoint = AirbyteEntrypoint(source)
     parsed_args = source_entrypoint.parse_args(args)
     for message in source_entrypoint.run(parsed_args):
-        sys.stdout.write(message + '\n')
+        sys.stdout.write(message + "\n")
 
 
 def main():

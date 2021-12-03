@@ -1,5 +1,9 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 from functools import reduce
-from typing import Mapping, List, Any, Optional
+from typing import Any, List, Mapping, Optional
 
 
 def all_key_pairs_dot_notation(dict_obj: Mapping) -> Mapping[str, Any]:
@@ -34,5 +38,4 @@ def get_value_by_dot_notation(dict_obj: Mapping, key: str, default: Optional[Any
         get_value_by_dot_notation(dict_obj, "nested.key") == "value" -> True
     """
 
-    return reduce(lambda d, key_name: d[key_name] if default is ... else d.get(key_name, default), key.split("."),
-                  dict_obj)
+    return reduce(lambda d, key_name: d[key_name] if default is ... else d.get(key_name, default), key.split("."), dict_obj)

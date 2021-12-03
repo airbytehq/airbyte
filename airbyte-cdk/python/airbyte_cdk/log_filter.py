@@ -5,8 +5,8 @@
 import logging
 import logging.config
 import sys
-from functools import reduce, partial
-from typing import Optional, List, Any
+from functools import partial, reduce
+from typing import Any, List, Optional
 
 from .logger import LOGGING_CONFIG, TRACE_LEVEL_NUM, AirbyteNativeLogger
 
@@ -25,7 +25,6 @@ def init_filtered_logger(name: str = None, secrets: List[Any] = []) -> logging.L
 
 
 def init_unhandled_exception_output_filtering(logger: logging.Logger) -> None:
-
     def hook_fn(_logger, exception_type, exception_value, traceback):
         # For developer ergonomics, we want to see the stack trace in the logs when we do a ctrl-c
         if issubclass(exception_type, KeyboardInterrupt):
