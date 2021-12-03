@@ -37,7 +37,7 @@ public class WorkerUtils {
   public static final Map<String, String> DEFAULT_JOB_POD_NODE_SELECTORS = CONFIGS.getJobPodNodeSelectors();
   public static final String DEFAULT_JOB_POD_MAIN_CONTAINER_IMAGE_PULL_SECRET = CONFIGS.getJobPodMainContainerImagePullSecret();
   public static final String DEFAULT_JOB_POD_MAIN_CONTAINER_IMAGE_PULL_POLICY = CONFIGS.getJobPodMainContainerImagePullPolicy();
-  public static final String JOB_SOCAT_IMAGE = CONFIGS.getJobSocatImage();
+  public static final String JOB_POD_SOCAT_IMAGE = CONFIGS.getJobPodSocatImage();
   public static final String JOB_BUSYBOX_IMAGE = CONFIGS.getJobBusyboxImage();
   public static final String JOB_CURL_IMAGE = CONFIGS.getJobCurlImage();
 

@@ -54,7 +54,7 @@ public class EnvConfigs implements Configs {
   public static final String JOB_POD_MAIN_CONTAINER_IMAGE_PULL_POLICY = "JOB_POD_MAIN_CONTAINER_IMAGE_PULL_POLICY";
   public static final String JOB_POD_TOLERATIONS = "JOB_POD_TOLERATIONS";
   public static final String JOB_POD_NODE_SELECTORS = "JOB_POD_NODE_SELECTORS";
-  public static final String JOB_SOCAT_IMAGE = "JOB_SOCAT_IMAGE";
+  public static final String JOB_POD_SOCAT_IMAGE = "JOB_POD_SOCAT_IMAGE";
   public static final String JOB_BUSYBOX_IMAGE = "JOB_BUSYBOX_IMAGE";
   public static final String JOB_CURL_IMAGE = "JOB_CURL_IMAGE";
   public static final String SYNC_JOB_MAX_ATTEMPTS = "SYNC_JOB_MAX_ATTEMPTS";
@@ -86,7 +86,7 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_JOB_POD_MAIN_CONTAINER_IMAGE_PULL_POLICY = "IfNotPresent";
   private static final String SECRET_STORE_GCP_PROJECT_ID = "SECRET_STORE_GCP_PROJECT_ID";
   private static final String SECRET_STORE_GCP_CREDENTIALS = "SECRET_STORE_GCP_CREDENTIALS";
-  private static final String DEFAULT_JOB_SOCAT_IMAGE = "alpine/socat:1.7.4.1-r1";
+  private static final String DEFAULT_JOB_POD_SOCAT_IMAGE = "alpine/socat:1.7.4.1-r1";
   private static final String DEFAULT_JOB_BUSYBOX_IMAGE = "busybox:1.28";
   private static final String DEFAULT_JOB_CURL_IMAGE = "curlimages/curl:7.77.0";
   private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
@@ -363,8 +363,8 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public String getJobSocatImage() {
-    return getEnvOrDefault(JOB_SOCAT_IMAGE, DEFAULT_JOB_SOCAT_IMAGE);
+  public String getJobPodSocatImage() {
+    return getEnvOrDefault(JOB_POD_SOCAT_IMAGE, DEFAULT_JOB_POD_SOCAT_IMAGE);
   }
 
   @Override

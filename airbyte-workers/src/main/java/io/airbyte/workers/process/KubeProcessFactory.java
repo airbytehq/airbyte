@@ -134,7 +134,7 @@ public class KubeProcessFactory implements ProcessFactory {
           WorkerUtils.DEFAULT_JOB_POD_TOLERATIONS,
           WorkerUtils.DEFAULT_JOB_POD_NODE_SELECTORS,
           allLabels,
-          WorkerUtils.JOB_SOCAT_IMAGE,
+          WorkerUtils.JOB_POD_SOCAT_IMAGE,
           WorkerUtils.JOB_BUSYBOX_IMAGE,
           WorkerUtils.JOB_CURL_IMAGE,
           args);

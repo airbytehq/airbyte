@@ -82,11 +82,10 @@ public interface Configs {
 
   String getJobPodMainContainerImagePullPolicy();
 
-  // getJobPodMainContainerImagePullSecret
   String getJobPodMainContainerImagePullSecret();
 
   // getJobPodSocatImage
-  String getJobSocatImage();
+  String getJobPodSocatImage();
 
   // getJobPodBusyboxImage
   String getJobBusyboxImage();
