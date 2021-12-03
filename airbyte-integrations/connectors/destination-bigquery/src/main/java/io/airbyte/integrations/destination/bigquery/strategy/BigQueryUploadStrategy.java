@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery.strategy;
 
 import io.airbyte.integrations.destination.bigquery.BigQueryWriteConfig;
@@ -10,4 +14,5 @@ public interface BigQueryUploadStrategy {
   void upload(BigQueryWriteConfig writer, AirbyteMessage airbyteMessage, ConfiguredAirbyteCatalog catalog);
 
   void close(List<BigQueryWriteConfig> writeConfigList, boolean hasFailed, AirbyteMessage lastStateMessage);
+
 }
