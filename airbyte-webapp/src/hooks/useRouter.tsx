@@ -26,21 +26,26 @@ function useRouter<T = any, L = any>(): {
   const location = useLocation<L>();
   const history = useHistory();
   const match = useRouteMatch();
+  const query = useMemo<T>(
+    () =>
+      ({
+        ...queryString.parse(location.search), // Convert string to object
+        ...params,
+      } as T),
+    [params, location.search]
+  );
 
   return useMemo(() => {
     return {
       push: history.push,
       replace: history.replace,
       pathname: location.pathname,
-      query: {
-        ...queryString.parse(location.search), // Convert string to object
-        ...params,
-      } as T,
+      query,
       match,
       location,
       history,
     };
-  }, [params, match, location, history]);
+  }, [match, location, history, query]);
 }
 
 export default useRouter;

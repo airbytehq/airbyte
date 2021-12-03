@@ -4,11 +4,12 @@
   create  table "postgres".test_normalization."pos_dedup_cdcx_scd"
   as (
     
+-- depends_on: ref('pos_dedup_cdcx_stg')
 with
 
 input_data as (
     select *
-    from "postgres"._airbyte_test_normalization."pos_dedup_cdcx_ab3"
+    from "postgres"._airbyte_test_normalization."pos_dedup_cdcx_stg"
     -- pos_dedup_cdcx from "postgres".test_normalization._airbyte_raw_pos_dedup_cdcx
 ),
 
@@ -58,7 +59,7 @@ dedup_data as (
 ), cast(_ab_cdc_log_pos as 
     varchar
 )
-            order by _airbyte_ab_id
+            order by _airbyte_active_row desc, _airbyte_ab_id
         ) as _airbyte_row_num,
         md5(cast(coalesce(cast(_airbyte_unique_key as 
     varchar

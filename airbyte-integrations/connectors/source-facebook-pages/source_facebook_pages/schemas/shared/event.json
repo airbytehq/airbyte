@@ -1,0 +1,100 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "attending_count": {
+      "type": ["integer", "null"]
+    },
+    "can_guests_invite": {
+      "type": ["boolean", "null"]
+    },
+    "category": {
+      "type": ["string", "null"]
+    },
+    "created_time": {
+      "type": ["string", "null"],
+      "format": "datetime"
+    },
+    "declined_count": {
+      "type": ["integer", "null"]
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "discount_code_enabled": {
+      "type": ["boolean", "null"]
+    },
+    "end_time": {
+      "type": ["string", "null"]
+    },
+    "guest_list_enabled": {
+      "type": ["boolean", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "interested_count": {
+      "type": ["integer", "null"]
+    },
+    "is_canceled": {
+      "type": ["boolean", "null"]
+    },
+    "is_draft": {
+      "type": ["boolean", "null"]
+    },
+    "is_online": {
+      "type": ["boolean", "null"]
+    },
+    "is_page_owned": {
+      "type": ["boolean", "null"]
+    },
+    "maybe_count": {
+      "type": ["integer", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "noreply_count": {
+      "type": ["integer", "null"]
+    },
+    "online_event_format": {
+      "type": ["string", "null"]
+    },
+    "online_event_third_party_url": {
+      "type": ["string", "null"]
+    },
+    "owner": {
+      "type": ["string", "null"]
+    },
+    "scheduled_publish_time": {
+      "type": ["string", "null"]
+    },
+    "start_time": {
+      "type": ["string", "null"]
+    },
+    "ticket_setting": {
+      "type": ["string", "null"]
+    },
+    "ticket_uri": {
+      "type": ["string", "null"]
+    },
+    "ticket_uri_start_sales_time": {
+      "type": ["string", "null"]
+    },
+    "ticketing_privacy_uri": {
+      "type": ["string", "null"]
+    },
+    "ticketing_terms_uri": {
+      "type": ["string", "null"]
+    },
+    "timezone": {
+      "type": ["string", "null"]
+    },
+    "type": {
+      "type": ["string", "null"]
+    },
+    "updated_time": {
+      "type": ["string", "null"],
+      "format": "datetime"
+    }
+  }
+}

@@ -10,6 +10,7 @@
       "authorization": {
         "type": "object",
         "title": "Authentication Type",
+        "description": "Choose one of the possible authorization method",
         "oneOf": [
           {
             "title": "Sign in via Pipedrive (OAuth)",
@@ -38,12 +39,6 @@
                 "title": "Client Secret",
                 "type": "string",
                 "description": "The client secret of your developer application",
-                "airbyte_secret": true
-              },
-              "access_token": {
-                "title": "Access Token",
-                "type": "string",
-                "description": "An access token generated using the above client ID and secret",
                 "airbyte_secret": true
               },
               "refresh_token": {
@@ -86,5 +81,12 @@
     }
   },
   "supportsIncremental": true,
-  "supported_destination_sync_modes": ["append"]
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": ["authorization", 0],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["refresh_token"]]
+    }
+  }
 }

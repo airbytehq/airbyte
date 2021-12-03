@@ -1,0 +1,199 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "account_overview",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": null,
+        "default_cursor_field": null,
+        "source_defined_primary_key": [["current_timestamp"]],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "addresses",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": null,
+        "default_cursor_field": null,
+        "source_defined_primary_key": [["id"]],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "agents_activity",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": null,
+        "default_cursor_field": null,
+        "source_defined_primary_key": [["agent_id"]],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "agents_overview",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": null,
+        "default_cursor_field": null,
+        "source_defined_primary_key": [["current_timestamp"]],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "calls",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "call_legs",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "current_queue_activity",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": null,
+        "default_cursor_field": null,
+        "source_defined_primary_key": [["current_timestamp"]],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "greetings",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": null,
+        "default_cursor_field": null,
+        "source_defined_primary_key": [["id"]],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "greeting_categories",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": null,
+        "default_cursor_field": null,
+        "source_defined_primary_key": [["id"]],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "ivr_menus",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": null,
+        "default_cursor_field": null,
+        "source_defined_primary_key": [["id"]],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "ivr_routes",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": null,
+        "default_cursor_field": null,
+        "source_defined_primary_key": [["id"]],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "ivrs",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": null,
+        "default_cursor_field": null,
+        "source_defined_primary_key": [["id"]],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "phone_numbers",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": null,
+        "default_cursor_field": null,
+        "source_defined_primary_key": [["id"]],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    }
+  ]
+}

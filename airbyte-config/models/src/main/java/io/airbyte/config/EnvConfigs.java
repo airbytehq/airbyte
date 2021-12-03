@@ -54,6 +54,9 @@ public class EnvConfigs implements Configs {
   public static final String JOB_IMAGE_PULL_POLICY = "JOB_IMAGE_PULL_POLICY";
   public static final String WORKER_POD_TOLERATIONS = "WORKER_POD_TOLERATIONS";
   public static final String WORKER_POD_NODE_SELECTORS = "WORKER_POD_NODE_SELECTORS";
+  public static final String JOB_SOCAT_IMAGE = "JOB_SOCAT_IMAGE";
+  public static final String JOB_BUSYBOX_IMAGE = "JOB_BUSYBOX_IMAGE";
+  public static final String JOB_CURL_IMAGE = "JOB_CURL_IMAGE";
   public static final String MAX_SYNC_JOB_ATTEMPTS = "MAX_SYNC_JOB_ATTEMPTS";
   public static final String MAX_SYNC_TIMEOUT_DAYS = "MAX_SYNC_TIMEOUT_DAYS";
   private static final String MINIMUM_WORKSPACE_RETENTION_DAYS = "MINIMUM_WORKSPACE_RETENTION_DAYS";
@@ -83,6 +86,9 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_JOB_IMAGE_PULL_POLICY = "IfNotPresent";
   private static final String SECRET_STORE_GCP_PROJECT_ID = "SECRET_STORE_GCP_PROJECT_ID";
   private static final String SECRET_STORE_GCP_CREDENTIALS = "SECRET_STORE_GCP_CREDENTIALS";
+  private static final String DEFAULT_JOB_SOCAT_IMAGE = "alpine/socat:1.7.4.1-r1";
+  private static final String DEFAULT_JOB_BUSYBOX_IMAGE = "busybox:1.28";
+  private static final String DEFAULT_JOB_CURL_IMAGE = "curlimages/curl:7.77.0";
   private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB = 5000;
@@ -95,7 +101,7 @@ public class EnvConfigs implements Configs {
   public static final String DEFAULT_NETWORK = "host";
 
   private final Function<String, String> getEnv;
-  private LogConfiguration logConfiguration;
+  private final LogConfiguration logConfiguration;
 
   public EnvConfigs() {
     this(System::getenv);
@@ -113,19 +119,11 @@ public class EnvConfigs implements Configs {
         getEnvOrDefault(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, ""));
   }
 
+  // CORE
+  // General
   @Override
   public String getAirbyteRole() {
     return getEnv(AIRBYTE_ROLE);
-  }
-
-  @Override
-  public String getAirbyteApiHost() {
-    return getEnsureEnv(INTERNAL_API_HOST).split(":")[0];
-  }
-
-  @Override
-  public int getAirbyteApiPort() {
-    return Integer.parseInt(getEnsureEnv(INTERNAL_API_HOST).split(":")[1]);
   }
 
   @Override
@@ -139,6 +137,28 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public String getSpecCacheBucket() {
+    return getEnvOrDefault(SPEC_CACHE_BUCKET, DEFAULT_SPEC_CACHE_BUCKET);
+  }
+
+  @Override
+  public DeploymentMode getDeploymentMode() {
+    return getEnvOrDefault(DEPLOYMENT_MODE, DeploymentMode.OSS, s -> {
+      try {
+        return DeploymentMode.valueOf(s);
+      } catch (final IllegalArgumentException e) {
+        LOGGER.info(s + " not recognized, defaulting to " + DeploymentMode.OSS);
+        return DeploymentMode.OSS;
+      }
+    });
+  }
+
+  @Override
+  public WorkerEnvironment getWorkerEnvironment() {
+    return getEnvOrDefault(WORKER_ENVIRONMENT, WorkerEnvironment.DOCKER, s -> WorkerEnvironment.valueOf(s.toUpperCase()));
+  }
+
+  @Override
   public Path getConfigRoot() {
     return getPath(CONFIG_ROOT);
   }
@@ -148,11 +168,45 @@ public class EnvConfigs implements Configs {
     return getPath(WORKSPACE_ROOT);
   }
 
+  // Docker Only
+  @Override
+  public String getWorkspaceDockerMount() {
+    return getEnvOrDefault(WORKSPACE_DOCKER_MOUNT, getWorkspaceRoot().toString());
+  }
+
+  @Override
+  public String getLocalDockerMount() {
+    return getEnvOrDefault(LOCAL_DOCKER_MOUNT, getLocalRoot().toString());
+  }
+
+  @Override
+  public String getDockerNetwork() {
+    return getEnvOrDefault(DOCKER_NETWORK, DEFAULT_NETWORK);
+  }
+
   @Override
   public Path getLocalRoot() {
     return getPath(LOCAL_ROOT);
   }
 
+  // Secrets
+  @Override
+  public String getSecretStoreGcpCredentials() {
+    return getEnv(SECRET_STORE_GCP_CREDENTIALS);
+  }
+
+  @Override
+  public String getSecretStoreGcpProjectId() {
+    return getEnv(SECRET_STORE_GCP_PROJECT_ID);
+  }
+
+  @Override
+  public SecretPersistenceType getSecretPersistenceType() {
+    final var secretPersistenceStr = getEnvOrDefault(SECRET_PERSISTENCE, SecretPersistenceType.NONE.name());
+    return SecretPersistenceType.valueOf(secretPersistenceStr);
+  }
+
+  // Database
   @Override
   public String getDatabaseUser() {
     return getEnsureEnv(DATABASE_USER);
@@ -166,16 +220,6 @@ public class EnvConfigs implements Configs {
   @Override
   public String getDatabaseUrl() {
     return getEnsureEnv(DATABASE_URL);
-  }
-
-  @Override
-  public int getMaxSyncJobAttempts() {
-    return Integer.parseInt(getEnvOrDefault(MAX_SYNC_JOB_ATTEMPTS, "3"));
-  }
-
-  @Override
-  public int getMaxSyncTimeoutDays() {
-    return Integer.parseInt(getEnvOrDefault(MAX_SYNC_TIMEOUT_DAYS, "3"));
   }
 
   @Override
@@ -197,18 +241,24 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public String getSecretStoreGcpCredentials() {
-    return getEnv(SECRET_STORE_GCP_CREDENTIALS);
-  }
-
-  @Override
-  public String getSecretStoreGcpProjectId() {
-    return getEnv(SECRET_STORE_GCP_PROJECT_ID);
-  }
-
-  @Override
   public boolean runDatabaseMigrationOnStartup() {
     return getEnvOrDefault(RUN_DATABASE_MIGRATION_ON_STARTUP, true);
+  }
+
+  // Airbyte Services
+  @Override
+  public String getTemporalHost() {
+    return getEnvOrDefault(TEMPORAL_HOST, "airbyte-temporal:7233");
+  }
+
+  @Override
+  public String getAirbyteApiHost() {
+    return getEnsureEnv(INTERNAL_API_HOST).split(":")[0];
+  }
+
+  @Override
+  public int getAirbyteApiPort() {
+    return Integer.parseInt(getEnsureEnv(INTERNAL_API_HOST).split(":")[1]);
   }
 
   @Override
@@ -216,85 +266,15 @@ public class EnvConfigs implements Configs {
     return getEnsureEnv(WEBAPP_URL);
   }
 
+  // Jobs
   @Override
-  public String getWorkspaceDockerMount() {
-    return getEnvOrDefault(WORKSPACE_DOCKER_MOUNT, getWorkspaceRoot().toString());
+  public int getMaxSyncJobAttempts() {
+    return Integer.parseInt(getEnvOrDefault(MAX_SYNC_JOB_ATTEMPTS, "3"));
   }
 
   @Override
-  public String getLocalDockerMount() {
-    return getEnvOrDefault(LOCAL_DOCKER_MOUNT, getLocalRoot().toString());
-  }
-
-  @Override
-  public String getDockerNetwork() {
-    return getEnvOrDefault(DOCKER_NETWORK, DEFAULT_NETWORK);
-  }
-
-  @Override
-  public TrackingStrategy getTrackingStrategy() {
-    return getEnvOrDefault(TRACKING_STRATEGY, TrackingStrategy.LOGGING, s -> {
-      try {
-        return TrackingStrategy.valueOf(s.toUpperCase());
-      } catch (final IllegalArgumentException e) {
-        LOGGER.info(s + " not recognized, defaulting to " + TrackingStrategy.LOGGING);
-        return TrackingStrategy.LOGGING;
-      }
-    });
-  }
-
-  @Override
-  public DeploymentMode getDeploymentMode() {
-    return getEnvOrDefault(DEPLOYMENT_MODE, DeploymentMode.OSS, s -> {
-      try {
-        return DeploymentMode.valueOf(s);
-      } catch (final IllegalArgumentException e) {
-        LOGGER.info(s + " not recognized, defaulting to " + DeploymentMode.OSS);
-        return DeploymentMode.OSS;
-      }
-    });
-  }
-
-  @Override
-  public WorkerEnvironment getWorkerEnvironment() {
-    return getEnvOrDefault(WORKER_ENVIRONMENT, WorkerEnvironment.DOCKER, s -> WorkerEnvironment.valueOf(s.toUpperCase()));
-  }
-
-  @Override
-  public String getSpecCacheBucket() {
-    return getEnvOrDefault(SPEC_CACHE_BUCKET, DEFAULT_SPEC_CACHE_BUCKET);
-  }
-
-  @Override
-  public WorkspaceRetentionConfig getWorkspaceRetentionConfig() {
-    final long minDays = getEnvOrDefault(MINIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS);
-    final long maxDays = getEnvOrDefault(MAXIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS);
-    final long maxSizeMb = getEnvOrDefault(MAXIMUM_WORKSPACE_SIZE_MB, DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB);
-
-    return new WorkspaceRetentionConfig(minDays, maxDays, maxSizeMb);
-  }
-
-  private WorkerPodToleration workerPodToleration(final String tolerationStr) {
-    final Map<String, String> tolerationMap = Splitter.on(",")
-        .splitToStream(tolerationStr)
-        .map(s -> s.split("="))
-        .collect(Collectors.toMap(s -> s[0], s -> s[1]));
-
-    if (tolerationMap.containsKey("key") && tolerationMap.containsKey("effect") && tolerationMap.containsKey("operator")) {
-      return new WorkerPodToleration(tolerationMap.get("key"),
-          tolerationMap.get("effect"),
-          tolerationMap.get("value"),
-          tolerationMap.get("operator"));
-    } else {
-      LOGGER.warn("Ignoring toleration {}, missing one of key,effect or operator",
-          tolerationStr);
-      return null;
-    }
-  }
-
-  @Override
-  public String getJobImagePullPolicy() {
-    return getEnvOrDefault(JOB_IMAGE_PULL_POLICY, DEFAULT_JOB_IMAGE_PULL_POLICY);
+  public int getMaxSyncTimeoutDays() {
+    return Integer.parseInt(getEnvOrDefault(MAX_SYNC_TIMEOUT_DAYS, "3"));
   }
 
   /**
@@ -328,6 +308,26 @@ public class EnvConfigs implements Configs {
         .collect(Collectors.toList());
   }
 
+  private WorkerPodToleration workerPodToleration(final String tolerationStr) {
+    final Map<String, String> tolerationMap = Splitter.on(",")
+        .splitToStream(tolerationStr)
+        .map(s -> s.split("="))
+        .collect(Collectors.toMap(s -> s[0], s -> s[1]));
+
+    if (tolerationMap.containsKey("key") && tolerationMap.containsKey("effect") && tolerationMap.containsKey("operator")) {
+      return new WorkerPodToleration(
+          tolerationMap.get("key"),
+          tolerationMap.get("effect"),
+          tolerationMap.get("value"),
+          tolerationMap.get("operator"));
+    } else {
+      LOGGER.warn(
+          "Ignoring toleration {}, missing one of key,effect or operator",
+          tolerationStr);
+      return null;
+    }
+  }
+
   /**
    * Returns a map of node selectors from its own environment variable. The value of the env is a
    * string that represents one or more node selector labels. Each kv-pair is separated by a `,`
@@ -348,36 +348,38 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public MaxWorkersConfig getMaxWorkers() {
-    return new MaxWorkersConfig(
-        Math.toIntExact(getEnvOrDefault(MAX_SPEC_WORKERS, DEFAULT_MAX_SPEC_WORKERS)),
-        Math.toIntExact(getEnvOrDefault(MAX_CHECK_WORKERS, DEFAULT_MAX_CHECK_WORKERS)),
-        Math.toIntExact(getEnvOrDefault(MAX_DISCOVER_WORKERS, DEFAULT_MAX_DISCOVER_WORKERS)),
-        Math.toIntExact(getEnvOrDefault(MAX_SYNC_WORKERS, DEFAULT_MAX_SYNC_WORKERS)));
+  public String getJobImagePullPolicy() {
+    return getEnvOrDefault(JOB_IMAGE_PULL_POLICY, DEFAULT_JOB_IMAGE_PULL_POLICY);
+  }
+
+  /**
+   * Returns the name of the secret to be used when pulling down docker images for jobs. Automatically
+   * injected in the KubePodProcess class and used in the job pod templates. The empty string is a
+   * no-op value.
+   */
+  @Override
+  public String getJobsImagePullSecret() {
+    return getEnvOrDefault(JOBS_IMAGE_PULL_SECRET, "");
   }
 
   @Override
-  public String getTemporalHost() {
-    return getEnvOrDefault(TEMPORAL_HOST, "airbyte-temporal:7233");
+  public String getJobSocatImage() {
+    return getEnvOrDefault(JOB_SOCAT_IMAGE, DEFAULT_JOB_SOCAT_IMAGE);
   }
 
   @Override
-  public Set<Integer> getTemporalWorkerPorts() {
-    final var ports = getEnvOrDefault(TEMPORAL_WORKER_PORTS, "");
-    if (ports.isEmpty()) {
-      return new HashSet<>();
-    }
-    return Arrays.stream(ports.split(",")).map(Integer::valueOf).collect(Collectors.toSet());
+  public String getJobBusyboxImage() {
+    return getEnvOrDefault(JOB_BUSYBOX_IMAGE, DEFAULT_JOB_BUSYBOX_IMAGE);
+  }
+
+  @Override
+  public String getJobCurlImage() {
+    return getEnvOrDefault(JOB_CURL_IMAGE, DEFAULT_JOB_CURL_IMAGE);
   }
 
   @Override
   public String getKubeNamespace() {
     return getEnvOrDefault(KUBE_NAMESPACE, DEFAULT_KUBE_NAMESPACE);
-  }
-
-  @Override
-  public String getSubmitterNumThreads() {
-    return getEnvOrDefault(SUBMITTER_NUM_THREADS, "5");
   }
 
   @Override
@@ -400,51 +402,7 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(RESOURCE_MEMORY_LIMIT, DEFAULT_RESOURCE_REQUIREMENT_MEMORY);
   }
 
-  /**
-   * Returns the name of the secret to be used when pulling down docker images for jobs. Automatically
-   * injected in the KubePodProcess class and used in the job pod templates. The empty string is a
-   * no-op value.
-   */
-  @Override
-  public String getJobsImagePullSecret() {
-    return getEnvOrDefault(JOBS_IMAGE_PULL_SECRET, "");
-  }
-
-  @Override
-  public String getS3LogBucket() {
-    return logConfiguration.getS3LogBucket();
-  }
-
-  @Override
-  public String getS3LogBucketRegion() {
-    return logConfiguration.getS3LogBucketRegion();
-  }
-
-  @Override
-  public String getAwsAccessKey() {
-    return logConfiguration.getAwsAccessKey();
-  }
-
-  @Override
-  public String getAwsSecretAccessKey() {
-    return logConfiguration.getAwsSecretAccessKey();
-  }
-
-  @Override
-  public String getS3MinioEndpoint() {
-    return logConfiguration.getS3MinioEndpoint();
-  }
-
-  @Override
-  public String getGcpStorageBucket() {
-    return logConfiguration.getGcpStorageBucket();
-  }
-
-  @Override
-  public String getGoogleApplicationCredentials() {
-    return logConfiguration.getGoogleApplicationCredentials();
-  }
-
+  // Logging/Monitoring/Tracking
   public LogConfigs getLogConfigs() {
     return logConfiguration;
   }
@@ -455,32 +413,74 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public SecretPersistenceType getSecretPersistenceType() {
-    final var secretPersistenceStr = getEnvOrDefault(SECRET_PERSISTENCE, SecretPersistenceType.NONE.name());
-    return SecretPersistenceType.valueOf(secretPersistenceStr);
+  public TrackingStrategy getTrackingStrategy() {
+    return getEnvOrDefault(TRACKING_STRATEGY, TrackingStrategy.LOGGING, s -> {
+      try {
+        return TrackingStrategy.valueOf(s.toUpperCase());
+      } catch (final IllegalArgumentException e) {
+        LOGGER.info(s + " not recognized, defaulting to " + TrackingStrategy.LOGGING);
+        return TrackingStrategy.LOGGING;
+      }
+    });
   }
 
-  protected String getEnvOrDefault(final String key, final String defaultValue) {
+  // APPLICATIONS
+  // Worker
+  @Override
+  public MaxWorkersConfig getMaxWorkers() {
+    return new MaxWorkersConfig(
+        Math.toIntExact(getEnvOrDefault(MAX_SPEC_WORKERS, DEFAULT_MAX_SPEC_WORKERS)),
+        Math.toIntExact(getEnvOrDefault(MAX_CHECK_WORKERS, DEFAULT_MAX_CHECK_WORKERS)),
+        Math.toIntExact(getEnvOrDefault(MAX_DISCOVER_WORKERS, DEFAULT_MAX_DISCOVER_WORKERS)),
+        Math.toIntExact(getEnvOrDefault(MAX_SYNC_WORKERS, DEFAULT_MAX_SYNC_WORKERS)));
+  }
+
+  @Override
+  public Set<Integer> getTemporalWorkerPorts() {
+    final var ports = getEnvOrDefault(TEMPORAL_WORKER_PORTS, "");
+    if (ports.isEmpty()) {
+      return new HashSet<>();
+    }
+    return Arrays.stream(ports.split(",")).map(Integer::valueOf).collect(Collectors.toSet());
+  }
+
+  // Scheduler
+  @Override
+  public WorkspaceRetentionConfig getWorkspaceRetentionConfig() {
+    final long minDays = getEnvOrDefault(MINIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS);
+    final long maxDays = getEnvOrDefault(MAXIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS);
+    final long maxSizeMb = getEnvOrDefault(MAXIMUM_WORKSPACE_SIZE_MB, DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB);
+
+    return new WorkspaceRetentionConfig(minDays, maxDays, maxSizeMb);
+  }
+
+  @Override
+  public String getSubmitterNumThreads() {
+    return getEnvOrDefault(SUBMITTER_NUM_THREADS, "5");
+  }
+
+  // Helpers
+  public String getEnvOrDefault(final String key, final String defaultValue) {
     return getEnvOrDefault(key, defaultValue, Function.identity(), false);
   }
 
-  private String getEnvOrDefault(final String key, final String defaultValue, final boolean isSecret) {
+  public String getEnvOrDefault(final String key, final String defaultValue, final boolean isSecret) {
     return getEnvOrDefault(key, defaultValue, Function.identity(), isSecret);
   }
 
-  private long getEnvOrDefault(final String key, final long defaultValue) {
+  public long getEnvOrDefault(final String key, final long defaultValue) {
     return getEnvOrDefault(key, defaultValue, Long::parseLong, false);
   }
 
-  private boolean getEnvOrDefault(final String key, final boolean defaultValue) {
+  public boolean getEnvOrDefault(final String key, final boolean defaultValue) {
     return getEnvOrDefault(key, defaultValue, Boolean::parseBoolean);
   }
 
-  private <T> T getEnvOrDefault(final String key, final T defaultValue, final Function<String, T> parser) {
+  public <T> T getEnvOrDefault(final String key, final T defaultValue, final Function<String, T> parser) {
     return getEnvOrDefault(key, defaultValue, parser, false);
   }
 
-  private <T> T getEnvOrDefault(final String key, final T defaultValue, final Function<String, T> parser, final boolean isSecret) {
+  public <T> T getEnvOrDefault(final String key, final T defaultValue, final Function<String, T> parser, final boolean isSecret) {
     final String value = getEnv.apply(key);
     if (value != null && !value.isEmpty()) {
       return parser.apply(value);
@@ -490,11 +490,11 @@ public class EnvConfigs implements Configs {
     }
   }
 
-  private String getEnv(final String name) {
+  public String getEnv(final String name) {
     return getEnv.apply(name);
   }
 
-  private String getEnsureEnv(final String name) {
+  public String getEnsureEnv(final String name) {
     final String value = getEnv(name);
     Preconditions.checkArgument(value != null, "'%s' environment variable cannot be null", name);
 

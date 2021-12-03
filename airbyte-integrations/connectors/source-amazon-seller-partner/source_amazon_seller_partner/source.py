@@ -5,6 +5,7 @@
 from typing import Any, List, Mapping, Tuple
 
 import boto3
+import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification, SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -22,6 +23,7 @@ from source_amazon_seller_partner.streams import (
     FulfilledShipmentsReports,
     MerchantListingsReports,
     Orders,
+    SellerFeedbackReports,
     VendorDirectFulfillmentShipping,
     VendorInventoryHealthReports,
 )
@@ -35,6 +37,11 @@ class ConnectorConfig(BaseModel):
         description="UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         examples=["2017-01-25T00:00:00Z"],
+    )
+    period_in_days: int = Field(
+        30,
+        description="Will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.",
+        examples=["30", "365"],
     )
     refresh_token: str = Field(
         description="The refresh token used obtained via authorization (can be passed to the client instead)", airbyte_secret=True
@@ -77,6 +84,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             "aws_signature": aws_signature,
             "replication_start_date": config.replication_start_date,
             "marketplace_ids": [marketplace_id],
+            "period_in_days": config.period_in_days,
         }
         return stream_kwargs
 
@@ -92,8 +100,9 @@ class SourceAmazonSellerPartner(AbstractSource):
             orders_stream = Orders(**stream_kwargs)
             next(orders_stream.read_records(sync_mode=SyncMode.full_refresh))
             return True, None
-        except Exception as e:
-            return False, e
+        except StopIteration or requests.exceptions.RequestException as e:
+            if isinstance(e, StopIteration):
+                e = "Could not check connection without data for Orders stream. " "Please change value for replication start date field."
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
@@ -113,6 +122,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             VendorDirectFulfillmentShipping(**stream_kwargs),
             VendorInventoryHealthReports(**stream_kwargs),
             Orders(**stream_kwargs),
+            SellerFeedbackReports(**stream_kwargs),
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
