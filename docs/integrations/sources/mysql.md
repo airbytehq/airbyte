@@ -180,6 +180,7 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.4.12| 2021-12-03 | [8335](https://github.com/airbytehq/airbyte/pull/8335) | Source-MySql: do not check cdc required param binlog_row_image for standard replication |
 | 0.4.11| 2021-11-19 | [8047](https://github.com/airbytehq/airbyte/pull/8047) | Source MySQL: transform binary data base64 format |
 | 0.4.10| 2021-11-15 | [7820](https://github.com/airbytehq/airbyte/pull/7820) | Added basic performance test |
 | 0.4.9 | 2021-11-02 | [7559](https://github.com/airbytehq/airbyte/pull/7559) | Correctly process large unsigned short integer values which may fall outside java's `Short` data type capability |
