@@ -110,6 +110,11 @@ class SourceJira(AbstractSource):
                 render_fields=render_fields
             )
         issue_fields_stream = IssueFields(**args)
+        experimental_streams = []
+        if config.get("enable_experimental_streams", False):
+            experimental_streams.append(
+                PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args)
+            )
         return [
             ApplicationRoles(**args),
             Avatars(**args),
@@ -150,7 +155,6 @@ class SourceJira(AbstractSource):
             ProjectPermissionSchemes(**args),
             ProjectTypes(**args),
             ProjectVersions(**args),
-            PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args),
             Screens(**args),
             ScreenTabs(**args),
             ScreenTabFields(**args),
@@ -163,4 +167,4 @@ class SourceJira(AbstractSource):
             WorkflowSchemes(**args),
             WorkflowStatuses(**args),
             WorkflowStatusCategories(**args),
-        ]
+        ] + experimental_streams

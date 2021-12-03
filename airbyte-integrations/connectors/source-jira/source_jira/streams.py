@@ -865,12 +865,16 @@ class ProjectVersions(JiraStream):
 
 class PullRequests(IncrementalJiraStream):
     """
-    Undocumented internal API used by Jira webapp
+    This stream uses an undocumented internal API endpoint used by the Jira
+    webapp. Jira does not publish any specifications about this endpoint, so the
+    only way to get details about it is to use a web browser, view a Jira issue
+    that has a linked pull request, and inspect the network requests using the
+    browser's developer console.
     """
 
     cursor_field = "updated"
     parse_response_root = "detail"
-    # raise_on_http_errors = False
+    raise_on_http_errors = False
 
     pr_regex = r"(?P<prDetails>PullRequestOverallDetails{openCount=(?P<open>[0-9]+), mergedCount=(?P<merged>[0-9]+), declinedCount=(?P<declined>[0-9]+)})|(?P<pr>pullrequest={dataType=pullrequest, state=(?P<state>[a-zA-Z]+), stateCount=(?P<count>[0-9]+)})"
 
@@ -886,6 +890,8 @@ class PullRequests(IncrementalJiraStream):
     def path(self, **kwargs) -> str:
         return f"issue/detail"
 
+    # Currently, only GitHub pull requests are supported by this stream. The
+    # requirements for supporting other systems are unclear.
     def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_slice=stream_slice, **kwargs)
         params["issueId"] = stream_slice["id"]
