@@ -19,7 +19,7 @@
         <Property name="s3-minio-endpoint">$${env:S3_MINIO_ENDPOINT}</Property>
         <Property name="s3-path-style-access">$${env:S3_PATH_STYLE_ACCESS}</Property>
 
-        <Property name="gcp-storage-bucket">$${env:GCP_STORAGE_BUCKET}</Property>
+        <Property name="gcs-log-bucket">$${env:GCS_LOG_BUCKET}</Property>
     </Properties>
 
     <Appenders>
@@ -60,7 +60,7 @@
                       s3Bucket="${s3-bucket}" s3Path="job-logging${ctx:cloud_job_log_path}" s3Region="${s3-region}"
                       s3AwsKey="${s3-aws-key}" s3AwsSecret="${s3-aws-secret}"
                       s3ServiceEndpoint="${s3-minio-endpoint}" s3PathStyleAccess="${s3-path-style-access}"
-                      gcpStorageBucket="${gcp-storage-bucket}" gcpStorageBlobNamePrefix="job-logging${ctx:cloud_job_log_path}">
+                      gcpStorageBucket="${gcs-log-bucket}" gcpStorageBlobNamePrefix="job-logging${ctx:cloud_job_log_path}">
                         <PatternLayout pattern="${cloud-worker-file-pattern}"/>
                     </Log4j2Appender>
                 </Route>
