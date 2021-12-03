@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.scheduler.app;
+package io.airbyte.server.handlers;
 
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.concurrency.LifecycledCallable;
@@ -14,6 +14,7 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.scheduler.app.SchedulerApp;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.app.worker_run.WorkerRun;
 import io.airbyte.scheduler.models.Job;
@@ -35,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @AllArgsConstructor
-public class NewJobScheduler implements Runnable {
+public class TemporalWorkflowHandler {
 
   private final ExecutorService threadPool;
   private final JobPersistence jobPersistence;
@@ -46,18 +47,16 @@ public class NewJobScheduler implements Runnable {
   private final String airbyteVersionOrWarnings;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
-  private final JobPersistence persistence;
 
-  public NewJobScheduler(final ExecutorService threadPool,
-                         final JobPersistence jobPersistence,
-                         final ConfigRepository configRepository,
-                         final TrackingClient trackingClient,
-                         final TemporalClient temporalClient,
-                         final Path workspaceRoot,
-                         final String airbyteVersionOrWarnings,
-                         final WorkerEnvironment workerEnvironment,
-                         final LogConfigs logConfigs,
-                         final JobPersistence persistence) {
+  public TemporalWorkflowHandler(final ExecutorService threadPool,
+                                 final JobPersistence jobPersistence,
+                                 final ConfigRepository configRepository,
+                                 final TrackingClient trackingClient,
+                                 final TemporalClient temporalClient,
+                                 final Path workspaceRoot,
+                                 final String airbyteVersionOrWarnings,
+                                 final WorkerEnvironment workerEnvironment,
+                                 final LogConfigs logConfigs) {
     this(
         threadPool,
         jobPersistence,
@@ -70,12 +69,10 @@ public class NewJobScheduler implements Runnable {
         workspaceRoot,
         airbyteVersionOrWarnings,
         workerEnvironment,
-        logConfigs,
-        persistence);
+        logConfigs);
   }
 
-  @Override
-  public void run() {
+  public void startNewWorkflow() {
     try {
       log.debug("Running new job-scheduler...");
 
@@ -117,7 +114,7 @@ public class NewJobScheduler implements Runnable {
           threadPool.submit(new LifecycledCallable.Builder<>(workerRun)
               .setOnStart(() -> {
                 final Path logFilePath = workerRun.getJobRoot().resolve(LogClientSingleton.LOG_FILENAME);
-                final long persistedAttemptId = persistence.createAttempt(jobId, logFilePath);
+                final long persistedAttemptId = jobPersistence.createAttempt(jobId, logFilePath);
                 // assertSameIds(attemptNumber, persistedAttemptId);
                 LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs, workerRun.getJobRoot());
               })

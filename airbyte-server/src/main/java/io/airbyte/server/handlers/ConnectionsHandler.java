@@ -24,8 +24,10 @@ import io.airbyte.api.model.ResourceRequirements;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.commons.concurrency.LifecycledCallable;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
@@ -33,11 +35,19 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.scheduler.app.SchedulerApp;
+import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
+import io.airbyte.scheduler.app.worker_run.WorkerRun;
+import io.airbyte.scheduler.models.Job;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.server.converters.CatalogConverter;
 import io.airbyte.server.handlers.helpers.ConnectionMatcher;
 import io.airbyte.server.handlers.helpers.DestinationMatcher;
@@ -45,11 +55,13 @@ import io.airbyte.server.handlers.helpers.SourceMatcher;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
@@ -63,20 +75,56 @@ public class ConnectionsHandler {
   private final Supplier<UUID> uuidGenerator;
   private final WorkspaceHelper workspaceHelper;
   private final TrackingClient trackingClient;
+  private final SyncJobFactory jobFactory;
+  private final JobPersistence jobPersistence;
+  private final TemporalWorkerRunFactory temporalWorkerRunFactory;
+  private final WorkerEnvironment workerEnvironment;
+  private final LogConfigs logConfigs;
+  private final ExecutorService threadPool;
 
-  @VisibleForTesting
-  ConnectionsHandler(final ConfigRepository configRepository,
-                     final Supplier<UUID> uuidGenerator,
-                     final WorkspaceHelper workspaceHelper,
-                     final TrackingClient trackingClient) {
+  @VisibleForTesting ConnectionsHandler(final ConfigRepository configRepository,
+                                        final Supplier<UUID> uuidGenerator,
+                                        final WorkspaceHelper workspaceHelper,
+                                        final TrackingClient trackingClient,
+                                        final SyncJobFactory jobFactory,
+                                        final JobPersistence jobPersistence,
+                                        final TemporalWorkerRunFactory temporalWorkerRunFactory,
+                                        final WorkerEnvironment workerEnvironment,
+                                        final LogConfigs logConfigs,
+                                        final ExecutorService threadPool) {
     this.configRepository = configRepository;
     this.uuidGenerator = uuidGenerator;
     this.workspaceHelper = workspaceHelper;
     this.trackingClient = trackingClient;
+    this.jobFactory = jobFactory;
+    this.jobPersistence = jobPersistence;
+    this.temporalWorkerRunFactory = temporalWorkerRunFactory;
+    this.workerEnvironment = workerEnvironment;
+    this.logConfigs = logConfigs;
+    this.threadPool = threadPool;
   }
 
-  public ConnectionsHandler(final ConfigRepository configRepository, final WorkspaceHelper workspaceHelper, final TrackingClient trackingClient) {
-    this(configRepository, UUID::randomUUID, workspaceHelper, trackingClient);
+  public ConnectionsHandler(
+      final ConfigRepository configRepository,
+      final WorkspaceHelper workspaceHelper,
+      final TrackingClient trackingClient,
+      final SyncJobFactory jobFactory,
+      final JobPersistence jobPersistence,
+      final TemporalWorkerRunFactory temporalWorkerRunFactory,
+      final WorkerEnvironment workerEnvironment,
+      final LogConfigs logConfigs,
+      final ExecutorService threadPool) {
+    this(
+        configRepository,
+        UUID::randomUUID,
+        workspaceHelper,
+        trackingClient,
+        jobFactory,
+        jobPersistence,
+        temporalWorkerRunFactory,
+        workerEnvironment,
+        logConfigs,
+        threadPool);
   }
 
   private void validateWorkspace(final UUID sourceId, final UUID destinationId, final Set<UUID> operationIds) {
@@ -155,6 +203,25 @@ public class ConnectionsHandler {
     configRepository.writeStandardSync(standardSync);
 
     trackNewConnection(standardSync);
+
+    final long jobId = jobFactory.create(connectionId);
+    SchedulerApp.PENDING_JOBS.getAndIncrement();
+    final Job createdJob = jobPersistence.getJob(jobId);
+    LOGGER.error("Running: " + createdJob);
+    try {
+      final WorkerRun workerRun = temporalWorkerRunFactory.create(createdJob);
+
+      threadPool.submit(new LifecycledCallable.Builder<>(workerRun)
+          .setOnStart(() -> {
+            final Path logFilePath = workerRun.getJobRoot().resolve(LogClientSingleton.LOG_FILENAME);
+            final long persistedAttemptId = jobPersistence.createAttempt(jobId, logFilePath);
+            // assertSameIds(attemptNumber, persistedAttemptId);
+            LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs, workerRun.getJobRoot());
+          })
+          .build());
+    } catch (final Exception e) {
+      e.printStackTrace();
+    }
 
     return buildConnectionRead(connectionId);
   }

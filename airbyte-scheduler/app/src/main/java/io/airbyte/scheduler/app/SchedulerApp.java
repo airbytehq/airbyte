@@ -133,17 +133,6 @@ public class SchedulerApp {
         temporalWorkerRunFactory,
         new JobTracker(configRepository, jobPersistence, trackingClient),
         jobNotifier, workerEnvironment, logConfigs, configRepository);
-    final NewJobScheduler newJobScheduler = new NewJobScheduler(
-        workerThreadPool,
-        jobPersistence,
-        configRepository,
-        trackingClient,
-        temporalClient,
-        workspaceRoot,
-        airbyteVersionOrWarnings,
-        workerEnvironment,
-        logConfigs,
-        jobPersistence);
 
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
@@ -151,18 +140,7 @@ public class SchedulerApp {
     // anymore.
     cleanupZombies(jobPersistence, jobNotifier);
 
-    if (featureFlags.usesNewScheduler()) {
-      // TODO: new jobs check
-      LOGGER.error("Start running the new schedule ___________________");
-      newScheduleJobsPool.scheduleWithFixedDelay(
-          () -> {
-            MDC.setContextMap(mdc);
-            newJobScheduler.run();
-          },
-          0L,
-          SCHEDULING_DELAY.toSeconds(),
-          TimeUnit.SECONDS);
-    } else {
+    if (!featureFlags.usesNewScheduler()) {
       LOGGER.error("Start running the old schedule ___________________");
       scheduleJobsPool.scheduleWithFixedDelay(
           () -> {

@@ -46,6 +46,7 @@ import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
 import io.airbyte.server.errors.KnownExceptionMapper;
 import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
+import io.airbyte.server.handlers.TemporalWorkflowHandler;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalUtils;
@@ -56,6 +57,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Executors;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -260,6 +262,17 @@ public class ServerApp implements ServerRunnable {
         configs);
     LOGGER.info("Migrated all definitions to contain specs...");
 
+    final TemporalWorkflowHandler temporalWorkflowHandler = new TemporalWorkflowHandler(
+        Executors.newCachedThreadPool(),
+        jobPersistence,
+        configRepository,
+        trackingClient,
+        temporalClient,
+        configs.getWorkspaceRoot(),
+        configs.getAirbyteVersionOrWarning(),
+        configs.getWorkerEnvironment(),
+        configs.getLogConfigs());
+
     return apiFactory.create(
         schedulerJobClient,
         cachingSchedulerClient,
@@ -275,7 +288,8 @@ public class ServerApp implements ServerRunnable {
         configs.getWebappUrl(),
         configs.getAirbyteVersion(),
         configs.getWorkspaceRoot(),
-        httpClient);
+        httpClient,
+        temporalWorkflowHandler);
   }
 
   @VisibleForTesting

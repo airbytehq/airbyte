@@ -16,6 +16,7 @@ import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
+import io.airbyte.server.handlers.TemporalWorkflowHandler;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
@@ -39,7 +40,8 @@ public interface ServerFactory {
                         String webappUrl,
                         AirbyteVersion airbyteVersion,
                         Path workspaceRoot,
-                        HttpClient httpClient);
+                        HttpClient httpClient,
+                        TemporalWorkflowHandler temporalWorkflowHandler);
 
   class Api implements ServerFactory {
 
@@ -58,7 +60,8 @@ public interface ServerFactory {
                                  final String webappUrl,
                                  final AirbyteVersion airbyteVersion,
                                  final Path workspaceRoot,
-                                 final HttpClient httpClient) {
+                                 final HttpClient httpClient,
+                                 final TemporalWorkflowHandler temporalWorkflowHandler) {
       // set static values for factory
       ConfigurationApiFactory.setValues(
           temporalService,
@@ -77,7 +80,8 @@ public interface ServerFactory {
           webappUrl,
           airbyteVersion,
           workspaceRoot,
-          httpClient);
+          httpClient,
+          temporalWorkflowHandler);
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class);
