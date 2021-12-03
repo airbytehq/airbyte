@@ -2,7 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from source_facebook_marketing.streams import remove_params_from_url
+from source_facebook_marketing.streams.streams import remove_params_from_url
 
 
 class TestUrlParsing:

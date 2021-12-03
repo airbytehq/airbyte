@@ -6,8 +6,8 @@ import time
 
 import pytest
 from source_facebook_marketing.api import API
-from source_facebook_marketing.async_job import AsyncJob, Status
-from source_facebook_marketing.common import JobException
+from source_facebook_marketing.streams.async_job import AsyncJob, Status
+from source_facebook_marketing.streams.common import JobException
 
 
 @pytest.fixture(name="adreport")

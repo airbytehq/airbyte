@@ -7,20 +7,20 @@ from unittest.mock import MagicMock, PropertyMock, patch
 
 import pendulum
 import pytest
-from source_facebook_marketing.async_job_manager import InsightsAsyncJobManager
+from source_facebook_marketing.streams.async_job_manager import InsightsAsyncJobManager
 
 
 @pytest.fixture(autouse=False)
 def logger_mock():
     with patch(
-        "source_facebook_marketing.async_job_manager.InsightsAsyncJobManager.logger",
+        "source_facebook_marketing.streams.async_job_manager.InsightsAsyncJobManager.logger",
     ) as log_mock:
         yield log_mock
 
 
 @pytest.fixture(scope="function")
 def job_mock():
-    with patch("source_facebook_marketing.async_job_manager.AsyncJob", PropertyMock()) as async_job_mock:
+    with patch("source_facebook_marketing.streams.async_job_manager.AsyncJob", PropertyMock()) as async_job_mock:
         async_job_mock.return_value = async_job_mock
         async_job_mock.failed = False
         yield async_job_mock
@@ -44,10 +44,10 @@ def test_async_job_manager(job_mock, from_date, to, days_per_job):
     job_manager = InsightsAsyncJobManager(
         api=api_mock,
         job_params={"breakdowns": []},
-        start_days_per_job=days_per_job,
         from_date=from_date,
         to_date=to,
     )
+    job_manager.DAYS_PER_JOB = days_per_job
     job_manager.add_async_jobs()
     assert not job_manager.done()
     jobs = []
@@ -66,7 +66,6 @@ def test_async_job_manager_to_date_greater_from(job_mock):
     job_manager = InsightsAsyncJobManager(
         api=api_mock,
         job_params={"breakdowns": []},
-        start_days_per_job=5,
         from_date=from_date,
         to_date=to,
     )
@@ -81,7 +80,6 @@ def test_job_failed(job_mock):
     job_manager = InsightsAsyncJobManager(
         api=api_mock,
         job_params={"breakdowns": []},
-        start_days_per_job=5,
         from_date=from_date,
         to_date=to,
     )
@@ -100,7 +98,6 @@ def test_job_failed_two_times(job_mock):
     job_manager = InsightsAsyncJobManager(
         api=api_mock,
         job_params={"breakdowns": []},
-        start_days_per_job=5,
         from_date=from_date,
         to_date=to,
     )
@@ -120,7 +117,6 @@ def test_job_wait_unitll_completed(job_mock, time_sleep_mock):
     job_manager = InsightsAsyncJobManager(
         api=api_mock,
         job_params={"breakdowns": []},
-        start_days_per_job=5,
         from_date=from_date,
         to_date=to,
     )

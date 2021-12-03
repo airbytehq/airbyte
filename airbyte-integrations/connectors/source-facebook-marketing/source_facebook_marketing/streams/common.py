@@ -19,16 +19,8 @@ DEFAULT_SLEEP_INTERVAL = pendulum.duration(minutes=1)
 logger = logging.getLogger("airbyte")
 
 
-class FacebookAPIException(Exception):
-    """General class for all API errors"""
-
-
 class JobException(Exception):
     """Scheduled job failed"""
-
-
-class JobTimeoutException(JobException):
-    """Scheduled job timed out"""
 
 
 def batch(iterable: Sequence, size: int = 1) -> Iterable:
