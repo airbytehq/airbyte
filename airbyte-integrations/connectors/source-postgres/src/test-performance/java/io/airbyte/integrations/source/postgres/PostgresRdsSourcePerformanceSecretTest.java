@@ -177,7 +177,7 @@ public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerfor
 
   @Test
   public void testRegular25tables50000recordsDb() throws Exception {
-    numberOfDummyRecords = 50003;
+    numberOfDummyRecords = 50011;
     numberOfStreams = 25;
 
     setupDatabase("newregular25tables50000records");
