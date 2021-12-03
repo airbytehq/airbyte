@@ -23,7 +23,7 @@ data:
   IS_DEMO: {{ ternary "true" "false" .Values.webapp.isDemo | quote }}
   LOCAL_ROOT: /tmp/airbyte_local
   RESOURCE_CPU_LIMIT: ""
-  RESOURCE_CPU_REQUEST: ""
+  JOB_POD_MAIN_CONTAINER_CPU_REQUEST: ""
   RESOURCE_MEMORY_LIMIT: ""
   RESOURCE_MEMORY_REQUEST: ""
   RUN_DATABASE_MIGRATION_ON_STARTUP: "true"

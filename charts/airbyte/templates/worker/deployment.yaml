@@ -122,11 +122,11 @@ spec:
             configMapKeyRef:
               name: airbyte-env
               key: SUBMITTER_NUM_THREADS
-        - name: RESOURCE_CPU_REQUEST
+        - name: JOB_POD_MAIN_CONTAINER_CPU_REQUEST
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
-              key: RESOURCE_CPU_REQUEST
+              key: JOB_POD_MAIN_CONTAINER_CPU_REQUEST
         - name: RESOURCE_CPU_LIMIT
           valueFrom:
             configMapKeyRef:

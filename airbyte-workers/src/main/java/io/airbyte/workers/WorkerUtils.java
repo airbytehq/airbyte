@@ -206,7 +206,7 @@ public class WorkerUtils {
 
   private static ResourceRequirements initResourceRequirements() {
     return new ResourceRequirements()
-        .withCpuRequest(CONFIGS.getCpuRequest())
+        .withCpuRequest(CONFIGS.getJobPodMainContainerCpuRequest())
         .withCpuLimit(CONFIGS.getCpuLimit())
         .withMemoryRequest(CONFIGS.getMemoryRequest())
         .withMemoryLimit(CONFIGS.getMemoryLimit());

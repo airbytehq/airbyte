@@ -70,7 +70,7 @@ public class EnvConfigs implements Configs {
   private static final String TEMPORAL_WORKER_PORTS = "TEMPORAL_WORKER_PORTS";
   private static final String JOB_POD_KUBE_NAMESPACE = "JOB_POD_KUBE_NAMESPACE";
   private static final String SUBMITTER_NUM_THREADS = "SUBMITTER_NUM_THREADS";
-  private static final String RESOURCE_CPU_REQUEST = "RESOURCE_CPU_REQUEST";
+  private static final String JOB_POD_MAIN_CONTAINER_CPU_REQUEST = "JOB_POD_MAIN_CONTAINER_CPU_REQUEST";
   private static final String RESOURCE_CPU_LIMIT = "RESOURCE_CPU_LIMIT";
   private static final String RESOURCE_MEMORY_REQUEST = "RESOURCE_MEMORY_REQUEST";
   private static final String RESOURCE_MEMORY_LIMIT = "RESOURCE_MEMORY_LIMIT";
@@ -81,7 +81,7 @@ public class EnvConfigs implements Configs {
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
   private static final String DEFAULT_JOB_POD_KUBE_NAMESPACE = "default";
-  private static final String DEFAULT_RESOURCE_REQUIREMENT_CPU = null;
+  private static final String DEFAULT_JOB_POD_CPU_REQUIREMENT = null;
   private static final String DEFAULT_RESOURCE_REQUIREMENT_MEMORY = null;
   private static final String DEFAULT_JOB_POD_MAIN_CONTAINER_IMAGE_PULL_POLICY = "IfNotPresent";
   private static final String SECRET_STORE_GCP_PROJECT_ID = "SECRET_STORE_GCP_PROJECT_ID";
@@ -383,13 +383,13 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public String getCpuRequest() {
-    return getEnvOrDefault(RESOURCE_CPU_REQUEST, DEFAULT_RESOURCE_REQUIREMENT_CPU);
+  public String getJobPodMainContainerCpuRequest() {
+    return getEnvOrDefault(JOB_POD_MAIN_CONTAINER_CPU_REQUEST, DEFAULT_JOB_POD_CPU_REQUIREMENT);
   }
 
   @Override
   public String getCpuLimit() {
-    return getEnvOrDefault(RESOURCE_CPU_LIMIT, DEFAULT_RESOURCE_REQUIREMENT_CPU);
+    return getEnvOrDefault(RESOURCE_CPU_LIMIT, DEFAULT_JOB_POD_CPU_REQUIREMENT);
   }
 
   @Override
