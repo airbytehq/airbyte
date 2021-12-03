@@ -555,7 +555,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
 
     def select_cursor_field_value(self, data: Mapping[str, Any] = None) -> str:
         value = super().select_cursor_field_value(data)
-        return self.__format_state_value(value)
+        return self.__format_state_value(value.dict() if isinstance(value, JsonUpdatedState) else value)
 
 
 class AdsReports(BasicReports):
