@@ -18,21 +18,20 @@
 #             └── AdGroupsReports
 
 import json
-from abc import ABC, abstractmethod
-from datetime import datetime
-from enum import Enum
-from functools import total_ordering
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, TypeVar, Union
-
 import pendulum
 import pydantic
 import requests
+from abc import ABC, abstractmethod
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from datetime import datetime
+from enum import Enum
+from functools import total_ordering
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, TypeVar, Union
 
 # TikTok Initial release date is September 2016
 DEFAULT_START_DATE = "2016-09-01"
@@ -187,7 +186,7 @@ class ListAdvertiserIdsStream(TiktokStream):
         return self._advertiser_id > 0
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+            self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
 
         return {
@@ -249,11 +248,11 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
             yield {"advertiser_id": advertiser_id}
 
     def request_params(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        **kwargs,
+            self,
+            stream_state: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+            stream_slice: Mapping[str, Any] = None,
+            **kwargs,
     ) -> MutableMapping[str, Any]:
         params = {"page_size": self.page_size}
         if self.fields:
@@ -302,7 +301,8 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
             result = result.get(key)
         return result
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[
+        Mapping]:
         """Additional data filtering"""
         state = self.select_cursor_field_value(stream_state) or self._start_time
 
@@ -317,7 +317,8 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
                     self._max_cursor_date = updated
                 yield record
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
+    Mapping[str, Any]:
         # needs to save a last state if all advertisers are used before only
         current_stream_state_value = (self.select_cursor_field_value(current_stream_state)) or ""
 
@@ -401,7 +402,8 @@ class BasicReports(IncrementalTiktokStream, ABC):
         return []
 
     @staticmethod
-    def _get_time_interval(start_date: Union[datetime, str], granularity: ReportGranularity) -> Iterable[Tuple[datetime, datetime]]:
+    def _get_time_interval(start_date: Union[datetime, str], granularity: ReportGranularity) -> Iterable[
+        Tuple[datetime, datetime]]:
         """Due to time range restrictions based on the level of granularity of reports, we have to chunk API calls in order
         to get the desired time range.
         Docs: https://ads.tiktok.com/marketing_api/docs?id=1714590313280513
@@ -515,7 +517,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
         return "reports/integrated/get/"
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
 
@@ -537,8 +539,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
         """All reports have same schema"""
         return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("basic_reports")
 
-    @classmethod
-    def __format_state_value(cls, value):
+    def __format_state_value(self, value):
         if not value:
             return value
         dt = pendulum.parse(value)
