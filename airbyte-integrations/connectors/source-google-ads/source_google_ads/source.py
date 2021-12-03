@@ -23,10 +23,10 @@ from .streams import (
     ClickView,
     DisplayKeywordPerformanceReport,
     DisplayTopicsPerformanceReport,
-    ShoppingPerformanceReport,
-    UserLocationReport,
     GeographicReport,
     KeywordReport,
+    ShoppingPerformanceReport,
+    UserLocationReport,
 )
 
 
@@ -67,17 +67,17 @@ class SourceGoogleAds(AbstractSource):
             for single_query_config in config.get("custom_queries", [])
         ]
         return [
-                   UserLocationReport(**incremental_stream_config),
-                   AccountPerformanceReport(**incremental_stream_config),
-                   DisplayTopicsPerformanceReport(**incremental_stream_config),
-                   DisplayKeywordPerformanceReport(**incremental_stream_config),
-                   ShoppingPerformanceReport(**incremental_stream_config),
-                   AdGroupAdReport(**incremental_stream_config),
-                   AdGroupAds(api=google_api),
-                   AdGroups(api=google_api),
-                   Accounts(api=google_api),
-                   Campaigns(api=google_api),
-                   ClickView(**incremental_stream_config),
-                   GeographicReport(**incremental_stream_config),
-                   KeywordReport(**incremental_stream_config),
-               ] + custom_query_streams
+            UserLocationReport(**incremental_stream_config),
+            AccountPerformanceReport(**incremental_stream_config),
+            DisplayTopicsPerformanceReport(**incremental_stream_config),
+            DisplayKeywordPerformanceReport(**incremental_stream_config),
+            ShoppingPerformanceReport(**incremental_stream_config),
+            AdGroupAdReport(**incremental_stream_config),
+            AdGroupAds(api=google_api),
+            AdGroups(api=google_api),
+            Accounts(api=google_api),
+            Campaigns(api=google_api),
+            ClickView(**incremental_stream_config),
+            GeographicReport(**incremental_stream_config),
+            KeywordReport(**incremental_stream_config),
+        ] + custom_query_streams
