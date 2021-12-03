@@ -39,14 +39,7 @@ class ListUsers(IterableStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         list_id = self._get_list_id(response.url)
         for user in response.iter_lines():
-            user_email = user.decode()
-            if self._check_email_is_valid(user_email):
-                yield {"email": user_email, "listId": list_id}
-
-    @staticmethod
-    def _check_email_is_valid(email):
-        email_regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
-        return re.fullmatch(email_regex, email)
+            yield {"email": user.decode(), "listId": list_id}
 
     @staticmethod
     def _get_list_id(url: str) -> int:
@@ -198,6 +191,11 @@ class Events(IterableStream):
     data_field = "events"
     page_size = EVENT_ROWS_LIMIT
 
+    @staticmethod
+    def _check_email_is_valid(email):
+        email_regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
+        return re.fullmatch(email_regex, email)
+
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"events/{stream_slice['email']}"
 
@@ -213,7 +211,8 @@ class Events(IterableStream):
 
         for stream_slice in stream_slices:
             for list_record in lists.read_records(sync_mode=kwargs.get("sync_mode", SyncMode.full_refresh), stream_slice=stream_slice):
-                yield {"email": list_record["email"]}
+                if self._check_email_is_valid(list_record["email"]):
+                    yield {"email": list_record["email"]}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         for record in super().parse_response(response, **kwargs):
