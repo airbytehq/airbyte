@@ -392,6 +392,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
     def __init__(self, report_granularity: ReportGranularity, **kwargs):
         super().__init__(**kwargs)
         self.report_granularity = report_granularity
+        self._requested_end_datetime = None
 
     @property
     def cursor_field(self):
@@ -506,6 +507,8 @@ class BasicReports(IncrementalTiktokStream, ABC):
 
         for slice in super().stream_slices(**kwargs):
             for start_date, end_date in self._get_time_interval(stream_start, self.report_granularity):
+                self._requested_end_datetime = end_date
+
                 slice["start_date"] = start_date.strftime("%Y-%m-%d")
                 slice["end_date"] = end_date.strftime("%Y-%m-%d")
                 self.logger.debug(
@@ -544,14 +547,14 @@ class BasicReports(IncrementalTiktokStream, ABC):
             return value
         dt = pendulum.parse(value)
         if self.report_granularity == ReportGranularity.DAY:
-            dt = dt.end_of("day")
+            dt = min(dt.end_of("day"), self._requested_end_datetime)
         elif self.report_granularity == ReportGranularity.HOUR:
-            dt = dt.end_of("hour")
+            dt = min(dt.end_of("hour"), self._requested_end_datetime)
         return dt.strftime("%Y-%m-%d %H:%M:%S")
 
     @property
     def max_cursor_date(self):
-        return self.__format_state_value(self._max_cursor_data)
+        return self.__format_state_value(self._max_cursor_date)
 
     def select_cursor_field_value(self, data: Mapping[str, Any] = None) -> str:
         value = super().select_cursor_field_value(data)
