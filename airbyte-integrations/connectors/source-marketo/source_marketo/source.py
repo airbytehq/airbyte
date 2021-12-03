@@ -61,9 +61,9 @@ class MarketoStream(HttpStream, ABC):
         for record in data:
             yield record
 
-    def normalize_datetime(self, dt: str):
+    def normalize_datetime(self, dt: str, format="%Y-%m-%dT%H:%M:%SZ%z"):
         try:
-            res = datetime.datetime.strptime(dt, "%Y-%m-%dT%H:%M:%SZ%z")
+            res = datetime.datetime.strptime(dt, format)
         except ValueError:
             self.logger.warning("date-time field in unexpected format: '%s'", dt)
             return dt
