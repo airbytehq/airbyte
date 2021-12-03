@@ -11,6 +11,7 @@ tests:
       status: "failed"
   discovery:
     - config_path: "secrets/config.json"
+    - config_path: "secrets/config_for_manager_account.json"
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog_without_empty_streams.json"
@@ -18,6 +19,8 @@ tests:
       configured_catalog_path: "integration_tests/configured_catalog_protobuf_msg.json"
       expect_records:
         path: "integration_tests/expected_records_msg.txt"
+    - config_path: "secrets/config_for_manager_account.json"
+      configured_catalog_path: "integration_tests/configured_catalog_for_manager_account.json"
   # TODO incremental test is disabled because records output from the report streams can be up to 14 days older than the input state
   #  incremental:
   #    - config_path: "secrets/config.json"

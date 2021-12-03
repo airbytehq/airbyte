@@ -10,6 +10,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.errors import GoogleAdsException
+from pendulum import timezone
 from pendulum.tz.timezone import Timezone
 
 from .custom_query_stream import CustomQuery
@@ -30,7 +31,8 @@ from .streams import (
 
 
 class SourceGoogleAds(AbstractSource):
-    def get_credentials(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
+    @staticmethod
+    def get_credentials(config: Mapping[str, Any]) -> Mapping[str, Any]:
         credentials = config["credentials"]
 
         # https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid
@@ -39,7 +41,7 @@ class SourceGoogleAds(AbstractSource):
         return credentials
 
     @staticmethod
-    def get_time_zone(google_api):
+    def get_time_zone(google_api) -> [timezone, str]:
         account = next(Accounts(api=google_api).read_records(sync_mode=None), {})
         time_zone_name = account.get("customer.time_zone")
         if time_zone_name:
@@ -73,20 +75,29 @@ class SourceGoogleAds(AbstractSource):
             time_zone=time_zone
         )
 
-        custom_query_streams = [
-            CustomQuery(custom_query_config=single_query_config, **incremental_stream_config)
-            for single_query_config in config.get("custom_queries", [])
-        ]
-        return [
-            UserLocationReport(**incremental_stream_config),
-            AccountPerformanceReport(**incremental_stream_config),
-            DisplayTopicsPerformanceReport(**incremental_stream_config),
-            DisplayKeywordPerformanceReport(**incremental_stream_config),
-            ShoppingPerformanceReport(**incremental_stream_config),
-            AdGroupAdReport(**incremental_stream_config),
+        streams = [
             AdGroupAds(api=google_api),
             AdGroups(api=google_api),
             Accounts(api=google_api),
             Campaigns(api=google_api),
             ClickView(**incremental_stream_config),
-        ] + custom_query_streams
+        ]
+
+        custom_query_streams = [
+            CustomQuery(custom_query_config=single_query_config, **incremental_stream_config)
+            for single_query_config in config.get("custom_queries", [])
+        ]
+        streams.extend(custom_query_streams)
+
+        is_manager_account = "login_customer_id" in config and config["login_customer_id"].strip()
+        # Metrics streams cannot be requested for a manager account.
+        if not is_manager_account:
+            streams.extend([
+                UserLocationReport(**incremental_stream_config),
+                AccountPerformanceReport(**incremental_stream_config),
+                DisplayTopicsPerformanceReport(**incremental_stream_config),
+                DisplayKeywordPerformanceReport(**incremental_stream_config),
+                ShoppingPerformanceReport(**incremental_stream_config),
+                AdGroupAdReport(**incremental_stream_config)
+            ])
+        return streams
