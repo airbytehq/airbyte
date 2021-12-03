@@ -126,12 +126,12 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     }),
     [
       formType,
-      toggleOpenRequestModal,
-      props.allowChangeConnector,
-      props.availableServices,
-      props.selectedConnector,
-      props.isEditMode,
+      selectedConnector?.documentationUrl,
       props.onServiceSelect,
+      props.availableServices,
+      props.allowChangeConnector,
+      props.isEditMode,
+      toggleOpenRequestModal,
     ]
   );
 
@@ -142,8 +142,8 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   );
 
   const validationSchema = useConstructValidationSchema(
-    uiWidgetsInfo,
-    jsonSchema
+    jsonSchema,
+    uiWidgetsInfo
   );
 
   const onFormSubmit = useCallback(

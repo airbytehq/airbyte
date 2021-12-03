@@ -135,14 +135,4 @@ const ServiceFormContextProvider: React.FC<{
   );
 };
 
-const ServiceFormInfo = ({
-  children,
-}: {
-  children: (widgetInfo: Context) => React.ReactElement;
-}): React.ReactElement => {
-  const widgetInfo = useServiceForm();
-
-  return children(widgetInfo);
-};
-
-export { useServiceForm, ServiceFormContextProvider, ServiceFormInfo };
+export { useServiceForm, ServiceFormContextProvider };

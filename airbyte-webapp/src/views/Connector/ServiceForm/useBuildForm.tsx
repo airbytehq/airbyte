@@ -136,8 +136,8 @@ const useBuildUiWidgetsContext = (
 
 // As validation schema depends on what path of oneOf is currently selected in jsonschema
 const useConstructValidationSchema = (
-  uiWidgetsInfo: WidgetConfigMap,
-  jsonSchema: JSONSchema7
+  jsonSchema: JSONSchema7,
+  uiWidgetsInfo: WidgetConfigMap
 ): AnySchema =>
   useMemo(() => buildYupFormForJsonSchema(jsonSchema, uiWidgetsInfo), [
     uiWidgetsInfo,

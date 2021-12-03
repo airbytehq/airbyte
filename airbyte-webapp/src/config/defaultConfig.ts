@@ -1,8 +1,9 @@
 import { Config } from "./types";
 import { uiConfig } from "./uiConfig";
-import { Feature, FeatureItem } from "hooks/services/Feature";
+import { Feature } from "hooks/services/Feature";
+import { FeatureItem } from "hooks/services/Feature/types";
 
-const Features: Feature[] = [
+const features: Feature[] = [
   {
     id: FeatureItem.AllowUploadCustomImage,
   },
@@ -23,7 +24,7 @@ const defaultConfig: Config = {
   integrationUrl: "/docs",
   oauthRedirectUrl: `${window.location.protocol}//${window.location.host}`,
   isDemo: false,
-  features: Features,
+  features,
 };
 
 export { defaultConfig };

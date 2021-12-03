@@ -1,6 +1,7 @@
 import get from "lodash.get";
 import { buildYupFormForJsonSchema } from "core/jsonSchema/schemaToYup";
 import { FormBlock, WidgetConfigMap } from "./types";
+import { isDefined } from "utils/common";
 
 export const buildPathInitialState = (
   formBlock: FormBlock[],
@@ -16,9 +17,13 @@ export const buildPathInitialState = (
           widgetStateBuilder
         );
       case "formItem": {
-        widgetStateBuilder[formItem.path] = {
-          const: formItem.const,
-        };
+        const resultObject: Record<string, unknown> = {};
+
+        if (isDefined(formItem.const)) {
+          resultObject.const = formItem.const;
+        }
+
+        widgetStateBuilder[formItem.path] = resultObject;
         return widgetStateBuilder;
       }
       case "formCondition": {

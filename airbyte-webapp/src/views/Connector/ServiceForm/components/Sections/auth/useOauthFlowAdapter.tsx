@@ -2,13 +2,13 @@ import { setIn, useFormikContext } from "formik";
 import merge from "lodash.merge";
 import pick from "lodash.pick";
 
-import { ServiceFormValues } from "../types";
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { useRunOauthFlow } from "hooks/services/useConnectorAuth";
 import {
   makeConnectionConfigurationPath,
   serverProvidedOauthPaths,
-} from "../utils";
+} from "../../../utils";
+import { ServiceFormValues } from "../../../types";
 
 function useFormikOauthAdapter(
   connector: ConnectorDefinitionSpecification

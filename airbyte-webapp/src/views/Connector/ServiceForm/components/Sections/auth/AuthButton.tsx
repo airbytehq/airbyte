@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button } from "components";
-import { useServiceForm } from "../serviceFormContext";
+import { useServiceForm } from "../../../serviceFormContext";
 import { useFormikOauthAdapter } from "./useOauthFlowAdapter";
 import { ConnectorSpecification } from "core/domain/connector";
 import GoogleAuthButton from "./GoogleAuthButton";
@@ -41,7 +41,7 @@ function getButtonComponent(connectorDefinitionId: string) {
   }
 }
 
-function getAuthenticateMessageId(connectorDefinitionId: string) {
+function getAuthenticateMessageId(connectorDefinitionId: string): string {
   if (isGoogleConnector(connectorDefinitionId)) {
     return "connectorForm.signInWithGoogle";
   } else {

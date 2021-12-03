@@ -1,14 +1,14 @@
 import React, { useMemo } from "react";
 
 import { FormBlock } from "core/form/types";
-import { PropertySection } from "./PropertySection";
 import { useServiceForm } from "../../serviceFormContext";
-import { OrderComparator } from "../utils";
+import { SectionContainer } from "./common";
+
+import { PropertySection } from "./PropertySection";
 import { ConditionSection } from "./ConditionSection";
 import { ArraySection } from "./ArraySection";
-import { SectionContainer } from "./common";
-import { LegacyAuthSection } from "./LegacyAuthSection";
-import { makeConnectionConfigurationPath } from "../../utils";
+import { AuthSection } from "./auth/AuthSection";
+import { makeConnectionConfigurationPath, OrderComparator } from "../../utils";
 
 const FormNode: React.FC<{
   sectionPath: string;
@@ -61,7 +61,7 @@ const FormSection: React.FC<{
 
   return (
     <>
-      {hasOauth && <LegacyAuthSection key="authSection" />}
+      {hasOauth && <AuthSection key="authSection" />}
       {sections
         .filter(
           (formField) =>
@@ -88,7 +88,7 @@ const FormSection: React.FC<{
 
           return (
             <>
-              {isAuthSection && <LegacyAuthSection />}
+              {isAuthSection && <AuthSection />}
               <FormNode
                 key={sectionPath}
                 formField={formField}
