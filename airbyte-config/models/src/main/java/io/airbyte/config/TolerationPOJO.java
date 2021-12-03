@@ -9,14 +9,14 @@ import java.util.Objects;
 /**
  * Represents a minimal io.fabric8.kubernetes.api.model.Toleration
  */
-public class WorkerPodToleration {
+public class TolerationPOJO {
 
   private final String key;
   private final String effect;
   private final String value;
   private final String operator;
 
-  public WorkerPodToleration(final String key, final String effect, final String value, final String operator) {
+  public TolerationPOJO(final String key, final String effect, final String value, final String operator) {
     this.key = key;
     this.effect = effect;
     this.value = value;
@@ -47,7 +47,7 @@ public class WorkerPodToleration {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    final WorkerPodToleration that = (WorkerPodToleration) o;
+    final TolerationPOJO that = (TolerationPOJO) o;
     return Objects.equals(key, that.key) && Objects.equals(effect, that.effect)
         && Objects.equals(value, that.value) && Objects.equals(operator,
             that.operator);

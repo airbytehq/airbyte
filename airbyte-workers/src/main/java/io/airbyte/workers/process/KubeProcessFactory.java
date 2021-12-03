@@ -122,7 +122,7 @@ public class KubeProcessFactory implements ProcessFactory {
           podName,
           namespace,
           imageName,
-          WorkerUtils.DEFAULT_JOB_IMAGE_PULL_POLICY,
+          WorkerUtils.DEFAULT_JOB_POD_MAIN_CONTAINER_IMAGE_PULL_POLICY,
           stdoutLocalPort,
           stderrLocalPort,
           kubeHeartbeatUrl,
@@ -130,13 +130,13 @@ public class KubeProcessFactory implements ProcessFactory {
           files,
           entrypoint,
           resourceRequirements,
-          WorkerUtils.DEFAULT_JOBS_IMAGE_PULL_SECRET,
-          WorkerUtils.DEFAULT_WORKER_POD_TOLERATIONS,
-          WorkerUtils.DEFAULT_WORKER_POD_NODE_SELECTORS,
+          WorkerUtils.DEFAULT_JOB_POD_MAIN_CONTAINER_IMAGE_PULL_SECRET,
+          WorkerUtils.DEFAULT_JOB_POD_TOLERATIONS,
+          WorkerUtils.DEFAULT_JOB_POD_NODE_SELECTORS,
           allLabels,
-          WorkerUtils.JOB_SOCAT_IMAGE,
-          WorkerUtils.JOB_BUSYBOX_IMAGE,
-          WorkerUtils.JOB_CURL_IMAGE,
+          WorkerUtils.JOB_POD_SOCAT_IMAGE,
+          WorkerUtils.JOB_POD_BUSYBOX_IMAGE,
+          WorkerUtils.JOB_POD_CURL_IMAGE,
           args);
     } catch (final Exception e) {
       throw new WorkerException(e.getMessage(), e);
@@ -164,21 +164,20 @@ public class KubeProcessFactory implements ProcessFactory {
     var imageName = nameParts[nameParts.length - 1];
 
     final var randSuffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
-    final String suffix = "worker-" + jobId + "-" + attempt + "-" + randSuffix;
+    final String suffix = "sync" + "-" + jobId + "-" + attempt + "-" + randSuffix;
 
     var podName = imageName + "-" + suffix;
-
     final var podNameLenLimit = 63;
     if (podName.length() > podNameLenLimit) {
       final var extra = podName.length() - podNameLenLimit;
       imageName = imageName.substring(extra);
       podName = imageName + "-" + suffix;
     }
-
+    System.out.println(podName);
     final Matcher m = ALPHABETIC.matcher(podName);
-    // Since we add worker-UUID as a suffix a couple of lines up, there will always be a substring
+    // Since we add sync-UUID as a suffix a couple of lines up, there will always be a substring
     // starting with an alphabetic character.
-    // If the image name is a no-op, this function should always return `worker-UUID` at the minimum.
+    // If the image name is a no-op, this function should always return `sync-UUID` at the minimum.
     m.find();
     return podName.substring(m.start());
   }

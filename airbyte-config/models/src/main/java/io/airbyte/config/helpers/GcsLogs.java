@@ -39,7 +39,7 @@ public class GcsLogs implements CloudLogs {
 
     LOGGER.debug("Start GCS list request.");
     final Page<Blob> blobs = GCS.list(
-        configs.getGcpStorageBucket(),
+        configs.getGcsLogBucket(),
         Storage.BlobListOption.prefix(logPath),
         Storage.BlobListOption.pageSize(pageSize));
 
@@ -63,7 +63,7 @@ public class GcsLogs implements CloudLogs {
 
     LOGGER.debug("Start GCS list request.");
     final Page<Blob> blobs = GCS.list(
-        configs.getGcpStorageBucket(),
+        configs.getGcsLogBucket(),
         Storage.BlobListOption.prefix(logPath));
 
     final var ascendingTimestampBlobs = new ArrayList<Blob>();
@@ -102,7 +102,7 @@ public class GcsLogs implements CloudLogs {
     createGcsClientIfNotExists(configs);
 
     LOGGER.debug("Start GCS list and delete request.");
-    final Page<Blob> blobs = GCS.list(configs.getGcpStorageBucket(), Storage.BlobListOption.prefix(logPath));
+    final Page<Blob> blobs = GCS.list(configs.getGcsLogBucket(), Storage.BlobListOption.prefix(logPath));
     for (final Blob blob : blobs.iterateAll()) {
       blob.delete(BlobSourceOption.generationMatch());
     }
@@ -111,7 +111,7 @@ public class GcsLogs implements CloudLogs {
 
   private static void createGcsClientIfNotExists(final LogConfigs configs) {
     if (GCS == null) {
-      Preconditions.checkNotNull(configs.getGcpStorageBucket());
+      Preconditions.checkNotNull(configs.getGcsLogBucket());
       Preconditions.checkNotNull(configs.getGoogleApplicationCredentials());
 
       GCS = StorageOptions.getDefaultInstance().getService();

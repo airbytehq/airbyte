@@ -21,7 +21,7 @@ public interface LogConfigs {
 
   String getS3MinioEndpoint();
 
-  String getGcpStorageBucket();
+  String getGcsLogBucket();
 
   String getGoogleApplicationCredentials();
 

@@ -51,7 +51,7 @@ public class CloudLogsClientTest {
       Mockito.when(configs.getS3LogBucketRegion()).thenReturn("");
 
       // Missing bucket.
-      Mockito.when(configs.getGcpStorageBucket()).thenReturn("");
+      Mockito.when(configs.getGcsLogBucket()).thenReturn("");
       Mockito.when(configs.getGoogleApplicationCredentials()).thenReturn("path/to/google/secret");
 
       assertThrows(RuntimeException.class, () -> CloudLogs.createCloudLogClient(configs));
@@ -91,7 +91,7 @@ public class CloudLogsClientTest {
     Mockito.when(configs.getS3LogBucket()).thenReturn("");
     Mockito.when(configs.getS3LogBucketRegion()).thenReturn("");
 
-    Mockito.when(configs.getGcpStorageBucket()).thenReturn("storage-bucket");
+    Mockito.when(configs.getGcsLogBucket()).thenReturn("storage-bucket");
     Mockito.when(configs.getGoogleApplicationCredentials()).thenReturn("path/to/google/secret");
 
     assertEquals(GcsLogs.class, CloudLogs.createCloudLogClient(configs).getClass());

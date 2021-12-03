@@ -89,7 +89,7 @@ public interface CloudLogs {
   }
 
   private static boolean hasGcpConfiguration(final LogConfigs configs) {
-    return !configs.getGcpStorageBucket().isBlank() &&
+    return !configs.getGcsLogBucket().isBlank() &&
         !configs.getGoogleApplicationCredentials().isBlank();
   }
 

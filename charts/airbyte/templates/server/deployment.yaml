@@ -93,26 +93,26 @@ spec:
               key: TEMPORAL_HOST
         - name: LOG_LEVEL
           value: "{{ .Values.scheduler.log.level }}"
-        - name: RESOURCE_CPU_REQUEST
+        - name: JOB_POD_MAIN_CONTAINER_CPU_REQUEST
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
-              key: RESOURCE_CPU_REQUEST
-        - name: RESOURCE_CPU_LIMIT
+              key: JOB_POD_MAIN_CONTAINER_CPU_REQUEST
+        - name: JOB_POD_MAIN_CONTAINER_CPU_LIMIT
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
-              key: RESOURCE_CPU_LIMIT
-        - name: RESOURCE_MEMORY_REQUEST
+              key: JOB_POD_MAIN_CONTAINER_CPU_LIMIT
+        - name: JOB_POD_MAIN_CONTAINER_MEMORY_REQUEST
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
-              key: RESOURCE_MEMORY_REQUEST
-        - name: RESOURCE_MEMORY_LIMIT
+              key: JOB_POD_MAIN_CONTAINER_MEMORY_REQUEST
+        - name: JOB_POD_MAIN_CONTAINER_MEMORY_LIMIT
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
-              key: RESOURCE_MEMORY_LIMIT
+              key: JOB_POD_MAIN_CONTAINER_MEMORY_LIMIT
         - name: S3_LOG_BUCKET
           valueFrom:
             configMapKeyRef:
@@ -148,11 +148,11 @@ spec:
             configMapKeyRef:
               name: airbyte-env
               key: GOOGLE_APPLICATION_CREDENTIALS
-        - name: GCP_STORAGE_BUCKET
+        - name: GCS_LOG_BUCKET
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
-              key: GCP_STORAGE_BUCKET
+              key: GCS_LOG_BUCKET
         {{- if .Values.server.extraEnv }}
         {{ .Values.server.extraEnv | toYaml | nindent 8 }}
         {{- end }}
