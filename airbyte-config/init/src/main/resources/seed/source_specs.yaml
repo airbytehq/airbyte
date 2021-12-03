@@ -1417,7 +1417,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-facebook-pages:0.1.4"
+- dockerImage: "airbyte/source-facebook-pages:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-pages"
     connectionSpecification:
