@@ -636,88 +636,6 @@ class Issues(IncrementalGithubStream):
     }
 
 
-class PullRequestSubStream(SemiIncrementalGithubStream, ABC):
-    def __init__(self, parent: PullRequests, **kwargs):
-        self._parent_stream = parent
-        super().__init__(**kwargs)
-
-    use_cache = False
-
-    @property
-    def state_checkpoint_interval(self) -> Optional[int]:
-        return self.page_size
-
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        for stream_slice in super().stream_slices(**kwargs):
-            pull_requests = list(self._parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, stream_state=stream_state))
-            if self._parent_stream.is_sorted_descending:
-                pull_requests.reverse()
-            for pull_request in pull_requests:
-                yield {"pull_request_number": pull_request["number"], "repository": stream_slice["repository"]}
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        yield from super(SemiIncrementalGithubStream, self).read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-        )
-
-
-class PullRequestStats(PullRequestSubStream):
-    """
-    API docs: https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
-    """
-
-    @property
-    def record_keys(self) -> List[str]:
-        return list(self.get_json_schema()["properties"].keys())
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}"
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        yield self.transform(response.json(), stream_slice=stream_slice)
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record = {key: value for key, value in super().transform(record=record, repository=stream_slice["repository"]).items() if key in self.record_keys}
-        return record
-
-
-class Reviews(PullRequestSubStream):
-    """
-    API docs: https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request
-    """
-
-    cursor_field = "submitted_at"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}/reviews"
-
-    # Set the parent stream state's cursor field before fetching its records
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent_state = deepcopy(stream_state) or {}
-        for repository in self.repositories:
-            if repository in parent_state and self.cursor_field in parent_state[repository]:
-                parent_state[repository][self._parent_stream.cursor_field] = parent_state[repository][self.cursor_field]
-        yield from super().stream_slices(stream_state=parent_state, **kwargs)
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        for record in response.json():  # GitHub puts records in an array.
-            yield self.transform(record=record, stream_slice=stream_slice)
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record = super().transform(record=record, repository=stream_slice["repository"])
-        return record
-
-
 class ReviewComments(IncrementalGithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/pulls#list-review-comments-in-a-repository
@@ -732,8 +650,8 @@ class ReviewComments(IncrementalGithubStream):
 # Pull request substreams
 
 
-class PullRequestSubstream(HttpSubStream, GithubStream, ABC):
-    top_level_stream = False
+class PullRequestSubstream(HttpSubStream, SemiIncrementalGithubStream, ABC):
+    use_cache = False
 
     def __init__(self, parent: PullRequests, **kwargs):
         super().__init__(parent=parent, **kwargs)
@@ -741,13 +659,28 @@ class PullRequestSubstream(HttpSubStream, GithubStream, ABC):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent_stream_slices = super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+        parent_stream_slices = list(super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state))
+        if self.parent.is_sorted_descending:
+            parent_stream_slices.reverse()
 
         for parent_stream_slice in parent_stream_slices:
             yield {
                 "pull_request_number": parent_stream_slice["parent"]["number"],
                 "repository": parent_stream_slice["parent"]["repository"],
             }
+
+    # We've already determined the list of pull requests to run the stream against.
+    # Skip the start_point_map and cursor_field logic in SemiIncrementalGithubStream.read_records.
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        yield from super(SemiIncrementalGithubStream, self).read_records(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+        )
 
 
 class PullRequestStats(PullRequestSubstream):
@@ -777,10 +710,20 @@ class Reviews(PullRequestSubstream):
     API docs: https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request
     """
 
+    cursor_field = "submitted_at"
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}/reviews"
+
+    # Set the parent stream state's cursor field before fetching its records
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_state = deepcopy(stream_state) or {}
+        for repository in self.repositories:
+            if repository in parent_state and self.cursor_field in parent_state[repository]:
+                parent_state[repository][self.parent.cursor_field] = parent_state[repository][self.cursor_field]
+        yield from super().stream_slices(stream_state=parent_state, **kwargs)
 
 
 # Reactions streams
