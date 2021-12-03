@@ -69,6 +69,7 @@ public class TemporalWorkerRunFactory {
 
           return toOutputAndStatusConnector();
         }
+        LOGGER.error("old way to run ________");
         final TemporalResponse<StandardSyncOutput> output = temporalClient.submitSync(job.getId(),
             attemptId, job.getConfig().getSync(), connectionId);
         return toOutputAndStatus(output);

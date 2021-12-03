@@ -81,9 +81,13 @@ import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceReadList;
 import io.airbyte.api.model.WorkspaceUpdate;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -114,7 +118,6 @@ import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
-import io.airbyte.server.handlers.TemporalWorkflowHandler;
 import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -126,6 +129,8 @@ import java.io.IOException;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @javax.ws.rs.Path("/v1")
 public class ConfigurationApi implements io.airbyte.api.V1Api {
@@ -166,8 +171,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final String webappUrl,
                           final AirbyteVersion airbyteVersion,
                           final Path workspaceRoot,
-                          final HttpClient httpClient,
-                          final TemporalWorkflowHandler temporalWorkflowHandler) {
+                          final HttpClient httpClient) {
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
     this.workspaceRoot = workspaceRoot;
@@ -188,20 +192,27 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         new OAuthConfigSupplier(configRepository, trackingClient), workerEnvironment, logConfigs);
     final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, synchronousSchedulerClient);
+    final Configs configs = new EnvConfigs();
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
     final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(
-        new TemporalClient.production(confi.getTemporalHost();,workspaceRoot)
-    );
+        TemporalClient.production(configs.getTemporalHost(), workspaceRoot),
+        workspaceRoot,
+        configs.getAirbyteVersionOrWarning(),
+        featureFlags);
+    final ExecutorService threadPool = Executors.newFixedThreadPool(configs.getMaxWorkers().getMaxSyncWorkers());
     connectionsHandler = new ConnectionsHandler(
         configRepository,
         workspaceHelper,
         trackingClient,
-        temporalWorkflowHandler,
         new DefaultSyncJobFactory(
             new DefaultJobCreator(jobPersistence, configRepository),
             configRepository,
             new OAuthConfigSupplier(configRepository, trackingClient)),
         jobPersistence,
-        temporal);
+        temporalWorkerRunFactory,
+        workerEnvironment,
+        logConfigs,
+        threadPool);
     operationsHandler = new OperationsHandler(configRepository);
     destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, synchronousSchedulerClient);
     destinationHandler = new DestinationHandler(configRepository, schemaValidator, connectionsHandler);

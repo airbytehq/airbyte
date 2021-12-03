@@ -32,6 +32,7 @@ import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DataType;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobSyncConfig;
@@ -41,10 +42,14 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerUtils;
@@ -52,6 +57,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
@@ -79,7 +85,7 @@ class ConnectionsHandlerTest {
   private StandardSyncOperation standardSyncOperation;
   private WorkspaceHelper workspaceHelper;
   private TrackingClient trackingClient;
-  private TemporalWorkflowHandler temporalWorkflowHandler;
+  private TemporalWorkerRunFactory temporalWorkflowHandler;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -135,8 +141,18 @@ class ConnectionsHandlerTest {
     uuidGenerator = mock(Supplier.class);
     workspaceHelper = mock(WorkspaceHelper.class);
     trackingClient = mock(TrackingClient.class);
-    temporalWorkflowHandler = mock(TemporalWorkflowHandler.class);
-    connectionsHandler = new ConnectionsHandler(configRepository, uuidGenerator, workspaceHelper, trackingClient, temporalWorkflowHandler);
+    temporalWorkflowHandler = mock(TemporalWorkerRunFactory.class);
+    connectionsHandler = new ConnectionsHandler(
+        configRepository,
+        uuidGenerator,
+        workspaceHelper,
+        trackingClient,
+        mock(SyncJobFactory.class),
+        mock(JobPersistence.class),
+        temporalWorkflowHandler,
+        mock(WorkerEnvironment.class),
+        mock(LogConfigs.class),
+        mock(ExecutorService.class));
 
     when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(deletedSourceId)).thenReturn(workspaceId);

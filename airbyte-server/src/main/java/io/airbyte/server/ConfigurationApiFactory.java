@@ -16,7 +16,6 @@ import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
-import io.airbyte.server.handlers.TemporalWorkflowHandler;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
@@ -43,7 +42,6 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static String webappUrl;
   private static AirbyteVersion airbyteVersion;
   private static HttpClient httpClient;
-  private static TemporalWorkflowHandler temporalWorkflowHandler;
 
   public static void setValues(
                                final WorkflowServiceStubs temporalService,
@@ -62,8 +60,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
                                final String webappUrl,
                                final AirbyteVersion airbyteVersion,
                                final Path workspaceRoot,
-                               final HttpClient httpClient,
-                               final TemporalWorkflowHandler temporalWorkflowHandler) {
+                               final HttpClient httpClient) {
     ConfigurationApiFactory.configRepository = configRepository;
     ConfigurationApiFactory.jobPersistence = jobPersistence;
     ConfigurationApiFactory.seed = seed;
@@ -103,8 +100,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.webappUrl,
         ConfigurationApiFactory.airbyteVersion,
         ConfigurationApiFactory.workspaceRoot,
-        ConfigurationApiFactory.httpClient,
-        ConfigurationApiFactory.temporalWorkflowHandler);
+        ConfigurationApiFactory.httpClient);
   }
 
   @Override
