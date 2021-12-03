@@ -3,6 +3,7 @@
     tags = [ "nested" ]
 ) }}
 -- Final base SQL model
+-- depends_on: {{ ref('nested_stream_with_co__ion_double_array_data_ab3') }}
 select
     _airbyte_partition_hashid,
     id,

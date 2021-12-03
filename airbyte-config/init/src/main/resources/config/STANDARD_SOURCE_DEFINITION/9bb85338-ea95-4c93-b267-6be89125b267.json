@@ -3,5 +3,6 @@
   "name": "Freshservice",
   "dockerRepository": "airbyte/source-freshservice",
   "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/freshservice"
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/freshservice",
+  "icon": "freshservice.svg"
 }

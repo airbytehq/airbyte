@@ -26,16 +26,16 @@ class SourceZendeskChat(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(config["access_token"])
         return [
-            Agents(authenticator=authenticator),
-            AgentTimelines(authenticator=authenticator, start_date=config["start_date"]),
             Accounts(authenticator=authenticator),
-            Chats(authenticator=authenticator),
-            Shortcuts(authenticator=authenticator),
-            Triggers(authenticator=authenticator),
+            AgentTimelines(authenticator=authenticator, start_date=config["start_date"]),
+            Agents(authenticator=authenticator),
             Bans(authenticator=authenticator),
+            Chats(authenticator=authenticator, start_date=config["start_date"]),
             Departments(authenticator=authenticator),
             Goals(authenticator=authenticator),
-            Skills(authenticator=authenticator),
             Roles(authenticator=authenticator),
             RoutingSettings(authenticator=authenticator),
+            Shortcuts(authenticator=authenticator),
+            Skills(authenticator=authenticator),
+            Triggers(authenticator=authenticator),
         ]
