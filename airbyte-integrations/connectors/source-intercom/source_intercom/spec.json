@@ -6,7 +6,7 @@
     "type": "object",
     "required": ["start_date", "access_token"],
     "additionalProperties": true,
-    "properties": {
+    "properties": 
       "start_date": {
         "type": "string",
         "title": "Start Date",
@@ -17,7 +17,7 @@
       "access_token": {
         "title": "Access Token",
         "type": "string",
-        "description": "Access Token for making authenticated requests."<a href=\"https://docs.airbyte.io/integrations/sources/intercom\">docs</a> for more information on how to obtain this key manually.",
+        "description": "Access Token for making authenticated requests. See the <a href=\"https://docs.airbyte.io/integrations/sources/intercom\">docs</a> for more information on how to obtain this key manually.",
         "airbyte_secret": true
       }
     }
