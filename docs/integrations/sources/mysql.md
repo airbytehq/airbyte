@@ -179,34 +179,35 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.4.11| 2021-11-19 | [8047](https://github.com/airbytehq/airbyte/pull/8047) | Source MySQL: transform binary data base64 format |
-| 0.4.10| 2021-11-15 | [7820](https://github.com/airbytehq/airbyte/pull/7820) | Added basic performance test |
-| 0.4.9 | 2021-11-02 | [7559](https://github.com/airbytehq/airbyte/pull/7559) | Correctly process large unsigned short integer values which may fall outside java's `Short` data type capability |
-| 0.4.8 | 2021-09-16 | [6093](https://github.com/airbytehq/airbyte/pull/6093) | Improve reliability of processing various data types like decimals, dates, datetime, binary, and text |
-| 0.4.7 | 2021-09-30 | [6585](https://github.com/airbytehq/airbyte/pull/6585) | Improved SSH Tunnel key generation steps |
-| 0.4.6 | 2021-09-29 | [6510](https://github.com/airbytehq/airbyte/pull/6510) | Support SSL connection |
-| 0.4.5 | 2021-09-17 | [6146](https://github.com/airbytehq/airbyte/pull/6146) | Added option to connect to DB via SSH |
-| 0.4.1 | 2021-07-23 | [4956](https://github.com/airbytehq/airbyte/pull/4956) | Fix log link |
-| 0.3.7 | 2021-06-09 | [3179](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE\_ENTRYPOINT for Kubernetes support |
-| 0.3.6 | 2021-06-09 | [3966](https://github.com/airbytehq/airbyte/pull/3966) | Fix excessive logging for CDC method |
-| 0.3.5 | 2021-06-07 | [3890](https://github.com/airbytehq/airbyte/pull/3890) | Fix CDC handle tinyint\(1\) and boolean types |
-| 0.3.4 | 2021-06-04 | [3846](https://github.com/airbytehq/airbyte/pull/3846) | Fix max integer value failure |
-| 0.3.3 | 2021-06-02 | [3789](https://github.com/airbytehq/airbyte/pull/3789) | MySQL CDC poll wait 5 minutes when not received a single record |
-| 0.3.2 | 2021-06-01 | [3757](https://github.com/airbytehq/airbyte/pull/3757) | MySQL CDC poll 5s to 5 min |
-| 0.3.1 | 2021-06-01 | [3505](https://github.com/airbytehq/airbyte/pull/3505) | Implemented MySQL CDC |
-| 0.3.0 | 2021-04-21 | [2990](https://github.com/airbytehq/airbyte/pull/2990) | Support namespaces |
-| 0.2.5 | 2021-04-15 | [2899](https://github.com/airbytehq/airbyte/pull/2899) | Fix bug in tests |
-| 0.2.4 | 2021-03-28 | [2600](https://github.com/airbytehq/airbyte/pull/2600) | Add NCHAR and NVCHAR support to DB and cursor type casting |
-| 0.2.3 | 2021-03-26 | [2611](https://github.com/airbytehq/airbyte/pull/2611) | Add an optional `jdbc_url_params` in parameters |
-| 0.2.2 | 2021-03-26 | [2460](https://github.com/airbytehq/airbyte/pull/2460) | Destination supports destination sync mode |
-| 0.2.1 | 2021-03-18 | [2488](https://github.com/airbytehq/airbyte/pull/2488) | Sources support primary keys |
-| 0.2.0 | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238) | Protocol allows future/unknown properties |
-| 0.1.10 | 2021-02-02 | [1887](https://github.com/airbytehq/airbyte/pull/1887) | Migrate AbstractJdbcSource to use iterators |
-| 0.1.9 | 2021-01-25 | [1746](https://github.com/airbytehq/airbyte/pull/1746) | Fix NPE in State Decorator |
-| 0.1.8 | 2021-01-19 | [1724](https://github.com/airbytehq/airbyte/pull/1724) | Fix JdbcSource handling of tables with same names in different schemas |
-| 0.1.7 | 2021-01-14 | [1655](https://github.com/airbytehq/airbyte/pull/1655) | Fix JdbcSource OOM |
-| 0.1.6 | 2021-01-08 | [1307](https://github.com/airbytehq/airbyte/pull/1307) | Migrate Postgres and MySQL to use new JdbcSource |
-| 0.1.5 | 2020-12-11 | [1267](https://github.com/airbytehq/airbyte/pull/1267) | Support incremental sync |
-| 0.1.4 | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file |
+|:--------| :--- | :--- | :--- |
+| 0.3.12  | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key |
+| 0.4.11  | 2021-11-19 | [8047](https://github.com/airbytehq/airbyte/pull/8047) | Source MySQL: transform binary data base64 format |
+| 0.4.10  | 2021-11-15 | [7820](https://github.com/airbytehq/airbyte/pull/7820) | Added basic performance test |
+| 0.4.9   | 2021-11-02 | [7559](https://github.com/airbytehq/airbyte/pull/7559) | Correctly process large unsigned short integer values which may fall outside java's `Short` data type capability |
+| 0.4.8   | 2021-09-16 | [6093](https://github.com/airbytehq/airbyte/pull/6093) | Improve reliability of processing various data types like decimals, dates, datetime, binary, and text |
+| 0.4.7   | 2021-09-30 | [6585](https://github.com/airbytehq/airbyte/pull/6585) | Improved SSH Tunnel key generation steps |
+| 0.4.6   | 2021-09-29 | [6510](https://github.com/airbytehq/airbyte/pull/6510) | Support SSL connection |
+| 0.4.5   | 2021-09-17 | [6146](https://github.com/airbytehq/airbyte/pull/6146) | Added option to connect to DB via SSH |
+| 0.4.1   | 2021-07-23 | [4956](https://github.com/airbytehq/airbyte/pull/4956) | Fix log link |
+| 0.3.7   | 2021-06-09 | [3179](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE\_ENTRYPOINT for Kubernetes support |
+| 0.3.6   | 2021-06-09 | [3966](https://github.com/airbytehq/airbyte/pull/3966) | Fix excessive logging for CDC method |
+| 0.3.5   | 2021-06-07 | [3890](https://github.com/airbytehq/airbyte/pull/3890) | Fix CDC handle tinyint\(1\) and boolean types |
+| 0.3.4   | 2021-06-04 | [3846](https://github.com/airbytehq/airbyte/pull/3846) | Fix max integer value failure |
+| 0.3.3   | 2021-06-02 | [3789](https://github.com/airbytehq/airbyte/pull/3789) | MySQL CDC poll wait 5 minutes when not received a single record |
+| 0.3.2   | 2021-06-01 | [3757](https://github.com/airbytehq/airbyte/pull/3757) | MySQL CDC poll 5s to 5 min |
+| 0.3.1   | 2021-06-01 | [3505](https://github.com/airbytehq/airbyte/pull/3505) | Implemented MySQL CDC |
+| 0.3.0   | 2021-04-21 | [2990](https://github.com/airbytehq/airbyte/pull/2990) | Support namespaces |
+| 0.2.5   | 2021-04-15 | [2899](https://github.com/airbytehq/airbyte/pull/2899) | Fix bug in tests |
+| 0.2.4   | 2021-03-28 | [2600](https://github.com/airbytehq/airbyte/pull/2600) | Add NCHAR and NVCHAR support to DB and cursor type casting |
+| 0.2.3   | 2021-03-26 | [2611](https://github.com/airbytehq/airbyte/pull/2611) | Add an optional `jdbc_url_params` in parameters |
+| 0.2.2   | 2021-03-26 | [2460](https://github.com/airbytehq/airbyte/pull/2460) | Destination supports destination sync mode |
+| 0.2.1   | 2021-03-18 | [2488](https://github.com/airbytehq/airbyte/pull/2488) | Sources support primary keys |
+| 0.2.0   | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238) | Protocol allows future/unknown properties |
+| 0.1.10  | 2021-02-02 | [1887](https://github.com/airbytehq/airbyte/pull/1887) | Migrate AbstractJdbcSource to use iterators |
+| 0.1.9   | 2021-01-25 | [1746](https://github.com/airbytehq/airbyte/pull/1746) | Fix NPE in State Decorator |
+| 0.1.8   | 2021-01-19 | [1724](https://github.com/airbytehq/airbyte/pull/1724) | Fix JdbcSource handling of tables with same names in different schemas |
+| 0.1.7   | 2021-01-14 | [1655](https://github.com/airbytehq/airbyte/pull/1655) | Fix JdbcSource OOM |
+| 0.1.6   | 2021-01-08 | [1307](https://github.com/airbytehq/airbyte/pull/1307) | Migrate Postgres and MySQL to use new JdbcSource |
+| 0.1.5   | 2020-12-11 | [1267](https://github.com/airbytehq/airbyte/pull/1267) | Support incremental sync |
+| 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file |
 
