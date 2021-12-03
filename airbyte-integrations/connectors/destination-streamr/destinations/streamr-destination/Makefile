@@ -4,10 +4,10 @@ build:
 	cd -
 
 check:
-	node bin/main check --config ./airbyte_secret/config.json
+	node bin/main check --config ./secrets/config.json
 
 spec:
 	node bin/main spec
 
 write:
-	cat sample_files/records.jsonl | node bin/main write --config airbyte_secret/config.json --catalog sample_files/configured_catalog.json
+	cat sample_files/records.jsonl | node bin/main write --config secrets/config.json --catalog sample_files/configured_catalog.json
