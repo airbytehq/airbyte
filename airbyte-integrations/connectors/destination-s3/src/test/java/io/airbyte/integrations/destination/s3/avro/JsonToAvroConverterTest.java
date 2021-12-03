@@ -29,9 +29,7 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 
 class JsonToAvroConverterTest {
 
-  private static final ObjectMapper MAPPER = MoreMappers.initMapper();
-  private static final ObjectWriter WRITER = MAPPER.writer();
-  private static final ObjectReader READER = MAPPER.reader();
+  private static final ObjectWriter WRITER = MoreMappers.initMapper().writer();
   private static final JsonToAvroSchemaConverter SCHEMA_CONVERTER = new JsonToAvroSchemaConverter();
 
   @Test
@@ -128,11 +126,6 @@ class JsonToAvroConverterTest {
         avroObject,
         Jsons.deserialize(actualAvroObject.toString()),
         String.format("Object conversion for %s failed", schemaName));
-
-    final JsonNode actualJsonObject = READER.readTree(AvroConstants.JSON_CONVERTER.convertToJson(actualAvroObject));
-    assertEquals(
-        jsonObject,
-        actualJsonObject);
   }
 
 }
