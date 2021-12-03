@@ -55,16 +55,8 @@ class ChildStreamMixin:
     parent_stream_class: Optional[TrelloStream] = None
 
     def stream_slices(self, sync_mode, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        board_ids = self.config.get("board_ids", [])
-        if len(board_ids) > 0:
-            for id in board_ids:
-                yield {"id": id}
-            # early exit because we don't need to fetch all boards we specifically told us not to
-            return
         for item in self.parent_stream_class(config=self.config).read_records(sync_mode=sync_mode):
             yield {"id": item["id"]}
-
-        yield from []
 
 
 class IncrementalTrelloStream(TrelloStream, ABC):
@@ -97,6 +89,12 @@ class Boards(TrelloStream):
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "members/me/boards"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        board_ids = self.config.get("board_ids", [])
+        for record in super().parse_response(response, **kwargs):
+            if not board_ids or record["id"] in board_ids:
+                yield record
 
 
 class Cards(ChildStreamMixin, TrelloStream):
@@ -206,12 +204,12 @@ class SourceTrello(AbstractSource):
 
             authenticator = self._get_authenticator(config)
 
-            session = requests.get(url, headers=authenticator.get_auth_header())
-            session.raise_for_status()
-            available_boards = {row.get("id") for row in session.json()}
+            response = requests.get(url, headers=authenticator.get_auth_header())
+            response.raise_for_status()
+            available_boards = {row.get("id") for row in response.json()}
             for board_id in config.get("board_ids", []):
                 if board_id not in available_boards:
-                    raise Exception(f"board_id {board_id} not found")
+                    return False, f"board_id {board_id} not found"
 
             return True, None
         except requests.exceptions.RequestException as e:

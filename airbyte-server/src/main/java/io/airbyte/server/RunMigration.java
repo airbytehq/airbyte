@@ -10,7 +10,6 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.migrate.MigrateConfig;
 import io.airbyte.migrate.MigrationRunner;
 import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
@@ -34,12 +33,11 @@ public class RunMigration implements Runnable, AutoCloseable {
   public RunMigration(final JobPersistence jobPersistence,
                       final ConfigRepository configRepository,
                       final AirbyteVersion targetVersion,
-                      final ConfigPersistence seedPersistence,
-                      final SpecFetcher specFetcher) {
+                      final ConfigPersistence seedPersistence) {
     this.targetVersion = targetVersion;
     this.seedPersistence = seedPersistence;
     this.configDumpExporter = new ConfigDumpExporter(configRepository, jobPersistence, null);
-    this.configDumpImporter = new ConfigDumpImporter(configRepository, jobPersistence, null, specFetcher, false);
+    this.configDumpImporter = new ConfigDumpImporter(configRepository, jobPersistence, null, false);
   }
 
   @Override
