@@ -594,7 +594,7 @@
     - "overwrite"
     - "append"
     supportsNamespaces: true
-- dockerImage: "airbyte/destination-gcs:0.1.14"
+- dockerImage: "airbyte/destination-gcs:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/gcs"
     connectionSpecification:
@@ -629,6 +629,7 @@
           - ""
           - "-- North America --"
           - "northamerica-northeast1"
+          - "northamerica-northeast2"
           - "us-central1"
           - "us-east1"
           - "us-east4"
@@ -638,6 +639,7 @@
           - "us-west4"
           - "-- South America --"
           - "southamerica-east1"
+          - "southamerica-west1"
           - "-- Europe --"
           - "europe-central2"
           - "europe-north1"
