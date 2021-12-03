@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Text.Json;
 using Airbyte.Cdk.Sources.Utils;
 using FluentAssertions;
 using Flurl.Http;
@@ -61,8 +62,6 @@ namespace Airbyte.Cdk.Tests.Sources.Utils
             Mock<IFlurlResponse> response = new Mock<IFlurlResponse>();
             response.Setup(x => x.GetStringAsync().Result).Returns(input_json);
 
-            var expectedsresult = "{\"type\":\"iPhone\",\"number\":\"0123-4567-8888\"}";
-
             var result = func.Create("x").ParseResponse(response.Object, "".AsJsonElement());
 
             result.Should().BeEmpty();
@@ -75,8 +74,6 @@ namespace Airbyte.Cdk.Tests.Sources.Utils
             var func = client.ParseResponseObject("$.phoneNumbers");
             Mock<IFlurlResponse> response = new Mock<IFlurlResponse>();
             response.Setup(x => x.GetStringAsync().Result).Returns(input_json);
-
-            var expectedsresult = "[{\"type\":\"iPhone\",\"number\":\"0123-4567-8888\"},{\"type\":\"home\",\"number\":\"0123-4567-8910\"}]";
 
             var result = func.Create("x").ParseResponse(response.Object, "".AsJsonElement());
 
@@ -91,14 +88,13 @@ namespace Airbyte.Cdk.Tests.Sources.Utils
             var func = client.ParseResponseArray("$.phoneNumbers");
             Mock<IFlurlResponse> response = new Mock<IFlurlResponse>();
             response.Setup(x => x.GetStringAsync().Result).Returns(input_json);
-
-            var expectedsresult = "[{\"type\":\"iPhone\",\"number\":\"0123-4567-8888\"},{\"type\":\"home\",\"number\":\"0123-4567-8910\"}]";
-
+            
             var result = func.Create("x").ParseResponse(response.Object, "".AsJsonElement());
 
-            result.Count().Should().Be(2);
-            result.First().GetProperty("type").GetString().Should().Be("iPhone");
-            result.ToArray()[1].GetProperty("type").GetString().Should().Be("home");
+            var jsonElements = result as JsonElement[] ?? result.ToArray();
+            jsonElements.Count().Should().Be(2);
+            jsonElements.First().GetProperty("type").GetString().Should().Be("iPhone");
+            jsonElements.ToArray()[1].GetProperty("type").GetString().Should().Be("home");
         }
 
 
@@ -113,9 +109,10 @@ namespace Airbyte.Cdk.Tests.Sources.Utils
             
             var result = func.Create("x").ParseResponse(response.Object, "".AsJsonElement());
 
-            result.Count().Should().Be(2);
-            result.First().GetProperty("type").GetString().Should().Be("iPhone");
-            result.ToArray()[1].GetProperty("type").GetString().Should().Be("home");
+            var jsonElements = result as JsonElement[] ?? result.ToArray();
+            jsonElements.Count().Should().Be(2);
+            jsonElements.First().GetProperty("type").GetString().Should().Be("iPhone");
+            jsonElements.ToArray()[1].GetProperty("type").GetString().Should().Be("home");
         }
     }
 }

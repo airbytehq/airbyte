@@ -14,8 +14,6 @@ namespace Airbyte.Cdk.Tests.Sources.Streams.Http.Auth
         private string _clientId = "client_id";
         private string _clientSecret = "client_secret";
         private string _refreshToken = "refresh_token";
-        private string _refreshAccessTokenHeaders = "{\"Header_1\": \"value 1\", \"Header_2\": \"value 2\"}";
-
 
         [Fact]
         public void TestGetAuthHeaderFresh()
