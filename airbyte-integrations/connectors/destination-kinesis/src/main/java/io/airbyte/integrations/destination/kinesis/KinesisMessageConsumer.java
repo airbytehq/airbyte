@@ -36,13 +36,11 @@ public class KinesisMessageConsumer extends FailureTrackingAirbyteMessageConsume
                                 Consumer<AirbyteMessage> outputRecordCollector) {
     this.outputRecordCollector = outputRecordCollector;
     this.kinesisStream = new KinesisStream(kinesisConfig);
-    var nameTransformer = new KinesisNameTransformer();
     this.kinesisStreams = configuredCatalog.getStreams().stream()
         .collect(Collectors.toUnmodifiableMap(
             AirbyteStreamNameNamespacePair::fromConfiguredAirbyteSteam,
             k -> new KinesisStreamConfig(
-                nameTransformer.streamName(k.getStream().getNamespace(), k.getStream().getName()),
-                k.getDestinationSyncMode())));
+                k.getStream().getName(), k.getStream().getNamespace(), k.getDestinationSyncMode())));
   }
 
   /**
@@ -76,7 +74,8 @@ public class KinesisMessageConsumer extends FailureTrackingAirbyteMessageConsume
       var data = Jsons.jsonNode(Map.of(
           KinesisRecord.COLUMN_NAME_AB_ID, partitionKey,
           KinesisRecord.COLUMN_NAME_DATA, Jsons.serialize(messageRecord.getData()),
-          KinesisRecord.COLUMN_NAME_EMITTED_AT, Instant.now()));
+          KinesisRecord.COLUMN_NAME_EMITTED_AT, Instant.now(),
+          KinesisRecord.DATA_SOURCE_IDENTIFIER, streamConfig.getNamespace()));
 
       var streamName = streamConfig.getStreamName();
       kinesisStream.putRecord(streamName, partitionKey, Jsons.serialize(data), e -> {

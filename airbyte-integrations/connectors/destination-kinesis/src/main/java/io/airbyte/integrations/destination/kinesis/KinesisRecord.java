@@ -16,6 +16,7 @@ public class KinesisRecord {
   public static final String COLUMN_NAME_AB_ID = "_airbyte_ab_id";
   public static final String COLUMN_NAME_DATA = "_airbyte_data";
   public static final String COLUMN_NAME_EMITTED_AT = "_airbyte_emitted_at";
+  public static final String DATA_SOURCE_IDENTIFIER = "_candu_customer_identifier";
 
   @JsonProperty(COLUMN_NAME_AB_ID)
   private UUID id;
