@@ -56,7 +56,7 @@ public class EnvConfigs implements Configs {
   public static final String JOB_POD_NODE_SELECTORS = "JOB_POD_NODE_SELECTORS";
   public static final String JOB_POD_SOCAT_IMAGE = "JOB_POD_SOCAT_IMAGE";
   public static final String JOB_POD_BUSYBOX_IMAGE = "JOB_POD_BUSYBOX_IMAGE";
-  public static final String JOB_CURL_IMAGE = "JOB_CURL_IMAGE";
+  public static final String JOB_POD_CURL_IMAGE = "JOB_POD_CURL_IMAGE";
   public static final String SYNC_JOB_MAX_ATTEMPTS = "SYNC_JOB_MAX_ATTEMPTS";
   public static final String SYNC_JOB_MAX_TIMEOUT_DAYS = "SYNC_JOB_MAX_TIMEOUT_DAYS";
   private static final String MINIMUM_WORKSPACE_RETENTION_DAYS = "MINIMUM_WORKSPACE_RETENTION_DAYS";
@@ -88,7 +88,7 @@ public class EnvConfigs implements Configs {
   private static final String SECRET_STORE_GCP_CREDENTIALS = "SECRET_STORE_GCP_CREDENTIALS";
   private static final String DEFAULT_JOB_POD_SOCAT_IMAGE = "alpine/socat:1.7.4.1-r1";
   private static final String DEFAULT_JOB_POD_BUSYBOX_IMAGE = "busybox:1.28";
-  private static final String DEFAULT_JOB_CURL_IMAGE = "curlimages/curl:7.77.0";
+  private static final String DEFAULT_JOB_POD_CURL_IMAGE = "curlimages/curl:7.77.0";
   private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB = 5000;
@@ -373,8 +373,8 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public String getJobCurlImage() {
-    return getEnvOrDefault(JOB_CURL_IMAGE, DEFAULT_JOB_CURL_IMAGE);
+  public String getJobPodCurlImage() {
+    return getEnvOrDefault(JOB_POD_CURL_IMAGE, DEFAULT_JOB_POD_CURL_IMAGE);
   }
 
   @Override

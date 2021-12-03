@@ -86,11 +86,9 @@ public interface Configs {
 
   String getJobPodSocatImage();
 
-  // getJobPodBusyboxImage
   String getJobPodBusyboxImage();
 
-  // getJobPodCurlImage
-  String getJobCurlImage();
+  String getJobPodCurlImage();
 
   // getJobPodKubeNamespace
   String getKubeNamespace();
