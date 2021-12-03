@@ -50,7 +50,7 @@ public interface Configs {
   // Database
   String getJobsDatabaseUser();
 
-  String getDatabasePassword();
+  String getJobsDatabasePassword();
 
   String getDatabaseUrl();
 

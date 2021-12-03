@@ -89,11 +89,11 @@ class EnvConfigsTest {
 
   @Test
   void testGetDatabasePassword() {
-    when(function.apply(EnvConfigs.DATABASE_PASSWORD)).thenReturn(null);
-    Assertions.assertThrows(IllegalArgumentException.class, () -> config.getDatabasePassword());
+    when(function.apply(EnvConfigs.JOBS_DATABASE_PASSWORD)).thenReturn(null);
+    Assertions.assertThrows(IllegalArgumentException.class, () -> config.getJobsDatabasePassword());
 
-    when(function.apply(EnvConfigs.DATABASE_PASSWORD)).thenReturn("password");
-    Assertions.assertEquals("password", config.getDatabasePassword());
+    when(function.apply(EnvConfigs.JOBS_DATABASE_PASSWORD)).thenReturn("password");
+    Assertions.assertEquals("password", config.getJobsDatabasePassword());
   }
 
   @Test

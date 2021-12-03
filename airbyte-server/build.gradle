@@ -109,7 +109,7 @@ rootProject.file('.env.dev').withInputStream { env.load(it) }
 run {
     // default for running on local machine.
     environment "JOBS_DATABASE_USER", env.JOBS_DATABASE_USER
-    environment "DATABASE_PASSWORD", env.DATABASE_PASSWORD
+    environment "JOBS_DATABASE_PASSWORD", env.JOBS_DATABASE_PASSWORD
 
     environment "CONFIG_DATABASE_USER", env.CONFIG_DATABASE_USER
     environment "CONFIG_DATABASE_PASSWORD", env.CONFIG_DATABASE_PASSWORD

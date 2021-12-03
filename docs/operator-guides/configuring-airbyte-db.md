@@ -29,7 +29,7 @@ In order to configure Airbyte services with this new database, we need to edit t
 
 ```bash
 JOBS_DATABASE_USER=postgres
-DATABASE_PASSWORD=password
+JOBS_DATABASE_PASSWORD=password
 DATABASE_HOST=host.docker.internal # refers to localhost of host
 DATABASE_PORT=3000
 DATABASE_DB=postgres
@@ -75,7 +75,7 @@ As we've seen previously, the credentials for the database are specified in the 
 
 ```text
 JOBS_DATABASE_USER=docker
-DATABASE_PASSWORD=docker
+JOBS_DATABASE_PASSWORD=docker
 DATABASE_DB=airbyte
 ```
 

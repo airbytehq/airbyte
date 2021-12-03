@@ -39,7 +39,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
-              key: DATABASE_PASSWORD
+              key: JOBS_DATABASE_PASSWORD
         {{- else }}
         - name: POSTGRES_PWD
           valueFrom:

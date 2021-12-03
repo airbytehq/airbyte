@@ -56,7 +56,7 @@ class TemporalAttemptExecutionTest {
     configs = mock(Configs.class);
     when(configs.getDatabaseUrl()).thenReturn(container.getJdbcUrl());
     when(configs.getJobsDatabaseUser()).thenReturn(SOURCE_USERNAME);
-    when(configs.getDatabasePassword()).thenReturn(SOURCE_PASSWORD);
+    when(configs.getJobsDatabasePassword()).thenReturn(SOURCE_PASSWORD);
   }
 
   @SuppressWarnings("unchecked")

@@ -52,13 +52,13 @@ spec:
               name: airbyte-env
               key: DATABASE_PORT
         {{- if .Values.postgresql.enabled }}
-        - name: DATABASE_PASSWORD
+        - name: JOBS_DATABASE_PASSWORD
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
-              key: DATABASE_PASSWORD
+              key: JOBS_DATABASE_PASSWORD
         {{- else }}
-        - name: DATABASE_PASSWORD
+        - name: JOBS_DATABASE_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ include "airbyte.postgresql.secretName" . }}

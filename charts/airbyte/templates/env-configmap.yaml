@@ -11,7 +11,7 @@ data:
   DATA_DOCKER_MOUNT: airbyte_data
   DATABASE_DB: {{ include "airbyte.database.name" . }}
   DATABASE_HOST: {{ include "airbyte.database.host" . }}
-  DATABASE_PASSWORD: {{ .Values.postgresql.postgresqlPassword }}
+  JOBS_DATABASE_PASSWORD: {{ .Values.postgresql.postgresqlPassword }}
   DATABASE_PORT: {{ include "airbyte.database.port" . | quote }}
   DATABASE_URL: {{ include "airbyte.database.url" . | quote }}
   JOBS_DATABASE_USER: {{ include "airbyte.database.user" . }}

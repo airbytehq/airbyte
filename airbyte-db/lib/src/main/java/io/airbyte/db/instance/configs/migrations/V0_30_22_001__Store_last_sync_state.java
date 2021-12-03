@@ -59,7 +59,7 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
     // local scope.
     final EnvConfigs configs = new EnvConfigs();
     this.databaseUser = configs.getJobsDatabaseUser();
-    this.databasePassword = configs.getDatabasePassword();
+    this.databasePassword = configs.getJobsDatabasePassword();
     this.databaseUrl = configs.getDatabaseUrl();
   }
 

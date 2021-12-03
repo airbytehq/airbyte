@@ -38,11 +38,11 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: DATABASE_PORT
-            - name: DATABASE_PASSWORD
+            - name: JOBS_DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: airbyte-secrets
-                  key: DATABASE_PASSWORD
+                  key: JOBS_DATABASE_PASSWORD
             - name: DATABASE_URL
               valueFrom:
                 configMapKeyRef:

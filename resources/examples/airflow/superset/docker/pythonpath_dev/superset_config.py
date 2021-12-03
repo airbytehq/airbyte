@@ -25,7 +25,7 @@ def get_env_variable(var_name, default=None):
 
 DATABASE_DIALECT = get_env_variable("DATABASE_DIALECT")
 JOBS_DATABASE_USER = get_env_variable("JOBS_DATABASE_USER")
-DATABASE_PASSWORD = get_env_variable("DATABASE_PASSWORD")
+JOBS_DATABASE_PASSWORD = get_env_variable("JOBS_DATABASE_PASSWORD")
 DATABASE_HOST = get_env_variable("DATABASE_HOST")
 DATABASE_PORT = get_env_variable("DATABASE_PORT")
 DATABASE_DB = get_env_variable("DATABASE_DB")
@@ -34,7 +34,7 @@ DATABASE_DB = get_env_variable("DATABASE_DB")
 SQLALCHEMY_DATABASE_URI = "%s://%s:%s@%s:%s/%s" % (
     DATABASE_DIALECT,
     JOBS_DATABASE_USER,
-    DATABASE_PASSWORD,
+    JOBS_DATABASE_PASSWORD,
     DATABASE_HOST,
     DATABASE_PORT,
     DATABASE_DB,

@@ -209,7 +209,7 @@ public class SchedulerApp {
     LOGGER.info("Creating Job DB connection pool...");
     final Database jobDatabase = new JobsDatabaseInstance(
         configs.getJobsDatabaseUser(),
-        configs.getDatabasePassword(),
+        configs.getJobsDatabasePassword(),
         configs.getDatabaseUrl())
             .getInitialized();
 

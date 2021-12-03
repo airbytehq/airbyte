@@ -179,7 +179,7 @@ public class ServerApp implements ServerRunnable {
     LOGGER.info("Creating Scheduler persistence...");
     final Database jobDatabase = new JobsDatabaseInstance(
         configs.getJobsDatabaseUser(),
-        configs.getDatabasePassword(),
+        configs.getJobsDatabasePassword(),
         configs.getDatabaseUrl())
             .getAndInitialize();
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
