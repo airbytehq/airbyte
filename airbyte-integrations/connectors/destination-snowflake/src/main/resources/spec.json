@@ -75,15 +75,15 @@
         "order": 7,
         "oneOf": [
           {
-            "title": "Standard Inserts",
+            "title": "[Recommended] Internal Staging",
             "additionalProperties": false,
-            "description": "Uses <pre>INSERT</pre> statements to send batches of records to Snowflake. Easiest (no setup) but not recommended for large production workloads due to slow speed.",
+            "description": "Writes large batches of records to a file, uploads the file to Snowflake, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
             "required": ["method"],
             "properties": {
               "method": {
                 "type": "string",
-                "enum": ["Standard"],
-                "default": "Standard"
+                "enum": ["Internal Staging"],
+                "default": "Internal Staging"
               }
             }
           },
