@@ -14,7 +14,7 @@ import LoadingPage from "components/LoadingPage";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 import NotificationServiceProvider from "hooks/services/Notification";
 import { AnalyticsProvider } from "views/common/AnalyticsProvider";
-import { Feature, FeatureItem, FeatureService } from "hooks/services/Feature";
+import { FeatureService } from "hooks/services/Feature";
 import { AuthenticationProvider } from "packages/cloud/services/auth/AuthService";
 import { AppServicesProvider } from "./services/AppServicesProvider";
 import { IntercomProvider } from "./services/thirdParty/intercom/IntercomProvider";
@@ -43,12 +43,6 @@ const StoreProvider: React.FC = ({ children }) => (
   </CacheProvider>
 );
 
-const Features: Feature[] = [
-  {
-    id: FeatureItem.AllowOAuthConnector,
-  },
-];
-
 const App: React.FC = () => {
   return (
     <React.StrictMode>
@@ -60,7 +54,7 @@ const App: React.FC = () => {
                 <AnalyticsProvider>
                   <ApiErrorBoundary>
                     <NotificationServiceProvider>
-                      <FeatureService features={Features}>
+                      <FeatureService>
                         <AppServicesProvider>
                           <AuthenticationProvider>
                             <IntercomProvider>
