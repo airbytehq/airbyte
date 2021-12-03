@@ -9,13 +9,13 @@
     "properties": {
       "host": {
         "title": "Host",
-        "description": "Hostname of the database.",
+        "description": "The host name of the CockroachDB database.",
         "type": "string",
         "order": 0
       },
       "port": {
         "title": "Port",
-        "description": "Port of the database.",
+        "description": "The port number of the SQL interface of the CockroachDB database.",
         "type": "integer",
         "minimum": 0,
         "maximum": 65536,
@@ -25,26 +25,26 @@
       },
       "database": {
         "title": "DB Name",
-        "description": "Name of the database.",
+        "description": "The name of the database.",
         "type": "string",
         "order": 2
       },
       "username": {
-        "title": "User",
-        "description": "Username to use to access the database.",
+        "title": "Username",
+        "description": "The username which is used to access the database.",
         "type": "string",
         "order": 3
       },
       "password": {
         "title": "Password",
-        "description": "Password associated with the username.",
+        "description": "The password associated with this username.",
         "type": "string",
         "airbyte_secret": true,
         "order": 4
       },
       "ssl": {
-        "title": "Connect using SSL",
-        "description": "Encrypt client/server communications for increased security.",
+        "title": "SSL Connection",
+        "description": "Encrypt data using SSL.",
         "type": "boolean",
         "default": false,
         "order": 5

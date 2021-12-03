@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docsurl.com",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/delighted",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Delighted Spec",
@@ -9,12 +9,14 @@
     "properties": {
       "since": {
         "type": "integer",
-        "description": "An Unix timestamp to retrieve records created on or after this time.",
-        "examples": [1625328167]
+	"title": "Since",
+        "description": "An optional Unix timestamp to restrict responses to those created on or after this time.",
+        "example (for 1 hour ago)": [1638540972]
       },
       "api_key": {
         "type": "string",
-        "description": "A Delighted API key.",
+	"title": "API Key",
+        "description": "Delighted API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/delighted\">docs</a> for more information on how to obtain this key.",
         "airbyte_secret": true
       }
     }

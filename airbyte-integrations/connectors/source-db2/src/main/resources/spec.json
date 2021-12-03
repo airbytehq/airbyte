@@ -8,12 +8,14 @@
     "additionalProperties": false,
     "properties": {
       "host": {
-        "description": "Host of the Db2.",
+        "description": "The host name of the database.",
+	"title": "Host",
         "type": "string",
         "order": 0
       },
       "port": {
-        "description": "Port of the database.",
+        "description": "The port of the database.",
+	"title": "Port",
         "type": "integer",
         "minimum": 0,
         "maximum": 65536,
@@ -22,18 +24,21 @@
         "order": 1
       },
       "db": {
-        "description": "Name of the database.",
+        "description": "The name of the database.",
+	"title": "Database",
         "type": "string",
         "examples": ["default"],
         "order": 2
       },
       "username": {
-        "description": "Username to use to access the database.",
+        "description": "The username which is used to access the database.",
+	"title": "Username",
         "type": "string",
         "order": 3
       },
       "password": {
-        "description": "Password associated with the username.",
+        "description": "The password associated with this username.",
+	"title": "Password",
         "type": "string",
         "airbyte_secret": true,
         "order": 4
@@ -41,7 +46,7 @@
       "encryption": {
         "title": "Encryption",
         "type": "object",
-        "description": "Encryption method to use when communicating with the database",
+        "description": "The encryption method to use when communicating with the database.",
         "order": 5,
         "oneOf": [
           {
@@ -59,9 +64,9 @@
             }
           },
           {
-            "title": "TLS Encrypted (verify certificate)",
+            "title": "TLS Encrypted",
             "additionalProperties": false,
-            "description": "Verify and use the cert provided by the server.",
+            "description": "Verify and use the certificate provided by the server.",
             "required": ["encryption_method", "ssl_certificate"],
             "properties": {
               "encryption_method": {
@@ -71,15 +76,15 @@
                 "default": "encrypted_verify_certificate"
               },
               "ssl_certificate": {
-                "title": "SSL PEM file",
-                "description": "Privacy Enhanced Mail (PEM) files are concatenated certificate containers frequently used in certificate installations",
+                "title": "SSL PEM File",
+                "description": "Privacy Enhanced Mail (PEM) files are concatenated certificate containers frequently used in certificate installations.",
                 "type": "string",
                 "airbyte_secret": true,
                 "multiline": true
               },
               "key_store_password": {
-                "title": "Key Store Password. This field is optional. If you do not fill in this field, the password will be randomly generated.",
-                "description": "Key Store Password",
+                "title": "Key Store Password",
+                "description": "Key Store Password. This field is optional. If you do not fill in this field, the password will be randomly generated.",
                 "type": "string",
                 "airbyte_secret": true
               }
