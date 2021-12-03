@@ -37,6 +37,7 @@ public class OAuthConfigSupplierTest {
 
   public static final String API_CLIENT = "api_client";
   public static final String CREDENTIALS = "credentials";
+  public static final String PROPERTIES = "properties";
 
   private ConfigRepository configRepository;
   private TrackingClient trackingClient;
@@ -211,10 +212,10 @@ public class OAuthConfigSupplierTest {
     return new AdvancedAuth()
         .withAuthFlowType(AuthFlowType.OAUTH_2_0)
         .withOauthConfigSpecification(new OAuthConfigSpecification()
-            .withCompleteOauthServerOutputSpecification(Jsons.jsonNode(Map.of(
-                API_CLIENT, Map.of(
+            .withCompleteOauthServerOutputSpecification(Jsons.jsonNode(Map.of(PROPERTIES,
+                Map.of(API_CLIENT, Map.of(
                     "type", "string",
-                    OAuthConfigSupplier.PATH_IN_CONNECTOR_CONFIG, List.of(CREDENTIALS, API_CLIENT))))));
+                    OAuthConfigSupplier.PATH_IN_CONNECTOR_CONFIG, List.of(CREDENTIALS, API_CLIENT)))))));
   }
 
   private void setupStandardDefinitionMock(final AdvancedAuth advancedAuth) throws JsonValidationException, ConfigNotFoundException, IOException {

@@ -3,5 +3,9 @@
   "name": "Hubspot",
   "dockerRepository": "airbyte/source-hubspot-singer",
   "dockerImageTag": "0.2.0",
-  "documentationUrl": "https://https://docs.airbyte.io/integrations/sources/hubspot"
+  "documentationUrl": "https://https://docs.airbyte.io/integrations/sources/hubspot",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.io/integrations/sources/hubspot",
+    "connectionSpecification": {}
+  }
 }
