@@ -90,15 +90,14 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
-import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
+import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_factory.DefaultSyncJobFactory;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
-import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.BadObjectSchemaKnownException;
 import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.handlers.ArchiveHandler;
@@ -156,7 +155,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final JobPersistence jobPersistence,
                           final ConfigPersistence seed,
                           final SchedulerJobClient schedulerJobClient,
-                          final CachingSynchronousSchedulerClient synchronousSchedulerClient,
+                          final SynchronousSchedulerClient synchronousSchedulerClient,
                           final FileTtlManager archiveTtlManager,
                           final WorkflowServiceStubs temporalService,
                           final Database configsDatabase,
@@ -173,7 +172,6 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     this.logConfigs = logConfigs;
     this.workspaceRoot = workspaceRoot;
 
-    final SpecFetcher specFetcher = new SpecFetcher(synchronousSchedulerClient);
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
     final JobNotifier jobNotifier = new JobNotifier(
         webappUrl,
@@ -206,11 +204,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         temporal);
     operationsHandler = new OperationsHandler(configRepository);
     destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, synchronousSchedulerClient);
-    destinationHandler = new DestinationHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
-    sourceHandler = new SourceHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
+    destinationHandler = new DestinationHandler(configRepository, schemaValidator, connectionsHandler);
+    sourceHandler = new SourceHandler(configRepository, schemaValidator, connectionsHandler);
     workspacesHandler = new WorkspacesHandler(configRepository, connectionsHandler, destinationHandler, sourceHandler);
     jobHistoryHandler = new JobHistoryHandler(jobPersistence, workerEnvironment, logConfigs);
-    oAuthHandler = new OAuthHandler(configRepository, httpClient, trackingClient, specFetcher);
+    oAuthHandler = new OAuthHandler(configRepository, httpClient, trackingClient);
     webBackendConnectionsHandler = new WebBackendConnectionsHandler(
         connectionsHandler,
         sourceHandler,
@@ -226,7 +224,6 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         seed,
         workspaceHelper,
         archiveTtlManager,
-        specFetcher,
         true);
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
