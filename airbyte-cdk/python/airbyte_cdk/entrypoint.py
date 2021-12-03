@@ -117,7 +117,7 @@ def launch(source: Source, args: List[str]):
     source_entrypoint = AirbyteEntrypoint(source)
     parsed_args = source_entrypoint.parse_args(args)
     for message in source_entrypoint.run(parsed_args):
-        sys.stdout.write(message + "\n")
+        print(message + "\n")
 
 
 def main():
