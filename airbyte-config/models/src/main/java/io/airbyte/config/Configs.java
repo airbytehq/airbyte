@@ -72,33 +72,33 @@ public interface Configs {
   String getWebappUrl();
 
   // Jobs
-  int getMaxSyncJobAttempts();
+  int getSyncJobMaxAttempts();
 
-  int getMaxSyncTimeoutDays();
+  int getSyncJobMaxTimeoutDays();
 
-  List<WorkerPodToleration> getWorkerPodTolerations();
+  List<TolerationPOJO> getJobPodTolerations();
 
-  Map<String, String> getWorkerNodeSelectors();
+  Map<String, String> getJobPodNodeSelectors();
 
-  String getJobImagePullPolicy();
+  String getJobPodMainContainerImagePullPolicy();
 
-  String getJobsImagePullSecret();
+  String getJobPodMainContainerImagePullSecret();
 
-  String getJobSocatImage();
+  String getJobPodSocatImage();
 
-  String getJobBusyboxImage();
+  String getJobPodBusyboxImage();
 
-  String getJobCurlImage();
+  String getJobPodCurlImage();
 
-  String getKubeNamespace();
+  String getJobPodKubeNamespace();
 
-  String getCpuRequest();
+  String getJobPodMainContainerCpuRequest();
 
-  String getCpuLimit();
+  String getJobPodMainContainerCpuLimit();
 
-  String getMemoryRequest();
+  String getJobPodMainContainerMemoryRequest();
 
-  String getMemoryLimit();
+  String getJobPodMainContainerMemoryLimit();
 
   // Logging/Monitoring/Tracking
   LogConfigs getLogConfigs();

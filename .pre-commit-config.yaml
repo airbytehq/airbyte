@@ -25,7 +25,6 @@ repos:
         exclude: |
           (?x)^.*(
               .github/|
-              charts/|
               source_specs.yaml
           ).?$
 
