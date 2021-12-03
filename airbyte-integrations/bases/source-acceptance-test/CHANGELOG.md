@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.31
+Take ConfiguredAirbyteCatalog from discover command by default
+
 ## 0.1.30
 Validate if each field in a stream has appeared at least once in some record.
 

@@ -4,6 +4,8 @@
 
 package io.airbyte.server.handlers;
 
+import static io.airbyte.server.ServerConstants.DEV_IMAGE_TAG;
+
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
@@ -121,8 +123,11 @@ public class SourceDefinitionsHandler {
     final StandardSourceDefinition currentSourceDefinition =
         configRepository.getStandardSourceDefinition(sourceDefinitionUpdate.getSourceDefinitionId());
 
-    final boolean imageTagHasChanged = !currentSourceDefinition.getDockerImageTag().equals(sourceDefinitionUpdate.getDockerImageTag());
-    final ConnectorSpecification spec = imageTagHasChanged
+    // specs are re-fetched from the container if the image tag has changed, or if the tag is "dev",
+    // to allow for easier iteration of dev images
+    final boolean specNeedsUpdate = !currentSourceDefinition.getDockerImageTag().equals(sourceDefinitionUpdate.getDockerImageTag())
+        || sourceDefinitionUpdate.getDockerImageTag().equals(DEV_IMAGE_TAG);
+    final ConnectorSpecification spec = specNeedsUpdate
         ? getSpecForImage(currentSourceDefinition.getDockerRepository(), sourceDefinitionUpdate.getDockerImageTag())
         : currentSourceDefinition.getSpec();
 
