@@ -44,4 +44,5 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
     fieldsWithRefDefinition.clear();
     super.close(hasFailed);
   }
+
 }

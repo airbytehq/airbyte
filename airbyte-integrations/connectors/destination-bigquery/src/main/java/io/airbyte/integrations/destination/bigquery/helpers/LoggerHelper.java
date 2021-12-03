@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery.helpers;
 
 import java.lang.management.ManagementFactory;
@@ -9,8 +13,7 @@ public class LoggerHelper {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LoggerHelper.class);
 
-  private LoggerHelper() {
-  }
+  private LoggerHelper() {}
 
   public static void printHeapMemoryConsumption() {
     final int mb = 1024 * 1024;
@@ -20,4 +23,5 @@ public class LoggerHelper {
     LOGGER.info("Initial Memory (xms) mb = {}", xms);
     LOGGER.info("Max Memory (xmx) : mb =  {}", xmx);
   }
+
 }

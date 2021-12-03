@@ -8,8 +8,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.cloud.bigquery.BigQuery;
-import io.airbyte.commons.bytes.ByteUtils;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
@@ -24,7 +22,6 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -48,15 +45,14 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
   private AirbyteMessage lastStateMessage = null;
 
-
   protected final Map<UploadingMethod, BigQueryUploadStrategy> bigQueryUploadStrategyMap = new ConcurrentHashMap<>();
 
   public BigQueryRecordConsumer(final BigQuery bigquery,
-      final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
-      final ConfiguredAirbyteCatalog catalog,
-      final Consumer<AirbyteMessage> outputRecordCollector,
-      final boolean isGcsUploadingMode,
-      final boolean isKeepFilesInGcs) {
+                                final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
+                                final ConfiguredAirbyteCatalog catalog,
+                                final Consumer<AirbyteMessage> outputRecordCollector,
+                                final boolean isGcsUploadingMode,
+                                final boolean isKeepFilesInGcs) {
     this.bigquery = bigquery;
     this.writeConfigs = writeConfigs;
     this.catalog = catalog;
@@ -92,7 +88,6 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       bigQueryUploadStrategyMap.get(UploadingMethod.STANDARD).upload(writer, message, catalog);
     }
   }
-
 
   @Override
   public void close(final boolean hasFailed) {
@@ -139,4 +134,5 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       s3Client.shutdown();
     });
   }
+
 }
