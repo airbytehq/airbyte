@@ -60,7 +60,7 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
     final EnvConfigs configs = new EnvConfigs();
     this.databaseUser = configs.getJobsDatabaseUser();
     this.databasePassword = configs.getJobsDatabasePassword();
-    this.databaseUrl = configs.getDatabaseUrl();
+    this.databaseUrl = configs.getJobDatabaseUrl();
   }
 
   @VisibleForTesting

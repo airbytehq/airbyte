@@ -56,11 +56,11 @@ spec:
               name: {{ include "airbyte.postgresql.secretName" . }}
               key: {{ include "airbyte.database.existingsecret.key" . }}
         {{- end }}
-        - name: DATABASE_URL
+        - name: JOB_DATABASE_URL
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
-              key: DATABASE_URL
+              key: JOB_DATABASE_URL
         - name: JOBS_DATABASE_USER
           valueFrom:
             configMapKeyRef:

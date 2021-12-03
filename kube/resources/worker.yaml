@@ -43,11 +43,11 @@ spec:
                 secretKeyRef:
                   name: airbyte-secrets
                   key: JOBS_DATABASE_PASSWORD
-            - name: DATABASE_URL
+            - name: JOB_DATABASE_URL
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
-                  key: DATABASE_URL
+                  key: JOB_DATABASE_URL
             - name: JOBS_DATABASE_USER
               valueFrom:
                 secretKeyRef:

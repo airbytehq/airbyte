@@ -45,7 +45,7 @@ public class EnvConfigs implements Configs {
   public static final String DEPLOYMENT_MODE = "DEPLOYMENT_MODE";
   public static final String JOBS_DATABASE_USER = "JOBS_DATABASE_USER";
   public static final String JOBS_DATABASE_PASSWORD = "JOBS_DATABASE_PASSWORD";
-  public static final String DATABASE_URL = "DATABASE_URL";
+  public static final String JOB_DATABASE_URL = "JOB_DATABASE_URL";
   public static final String CONFIG_DATABASE_USER = "CONFIG_DATABASE_USER";
   public static final String CONFIG_DATABASE_PASSWORD = "CONFIG_DATABASE_PASSWORD";
   public static final String CONFIG_DATABASE_URL = "CONFIG_DATABASE_URL";
@@ -218,8 +218,8 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public String getDatabaseUrl() {
-    return getEnsureEnv(DATABASE_URL);
+  public String getJobDatabaseUrl() {
+    return getEnsureEnv(JOB_DATABASE_URL);
   }
 
   @Override
@@ -237,7 +237,7 @@ public class EnvConfigs implements Configs {
   @Override
   public String getConfigDatabaseUrl() {
     // Default to reuse the job database
-    return getEnvOrDefault(CONFIG_DATABASE_URL, getDatabaseUrl());
+    return getEnvOrDefault(CONFIG_DATABASE_URL, getJobDatabaseUrl());
   }
 
   @Override

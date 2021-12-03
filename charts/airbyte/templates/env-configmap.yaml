@@ -13,7 +13,7 @@ data:
   DATABASE_HOST: {{ include "airbyte.database.host" . }}
   JOBS_DATABASE_PASSWORD: {{ .Values.postgresql.postgresqlPassword }}
   DATABASE_PORT: {{ include "airbyte.database.port" . | quote }}
-  DATABASE_URL: {{ include "airbyte.database.url" . | quote }}
+  JOB_DATABASE_URL: {{ include "airbyte.database.url" . | quote }}
   JOBS_DATABASE_USER: {{ include "airbyte.database.user" . }}
   DB_DOCKER_MOUNT: airbyte_db
   FULLSTORY: {{ ternary "enabled" "disabled" .Values.webapp.fullstory.enabled }}

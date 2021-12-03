@@ -98,11 +98,11 @@ class EnvConfigsTest {
 
   @Test
   void testGetDatabaseUrl() {
-    when(function.apply(EnvConfigs.DATABASE_URL)).thenReturn(null);
-    Assertions.assertThrows(IllegalArgumentException.class, () -> config.getDatabaseUrl());
+    when(function.apply(EnvConfigs.JOB_DATABASE_URL)).thenReturn(null);
+    Assertions.assertThrows(IllegalArgumentException.class, () -> config.getJobDatabaseUrl());
 
-    when(function.apply(EnvConfigs.DATABASE_URL)).thenReturn("url");
-    Assertions.assertEquals("url", config.getDatabaseUrl());
+    when(function.apply(EnvConfigs.JOB_DATABASE_URL)).thenReturn("url");
+    Assertions.assertEquals("url", config.getJobDatabaseUrl());
   }
 
   @Test

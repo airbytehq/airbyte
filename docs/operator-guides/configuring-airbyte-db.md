@@ -42,10 +42,10 @@ CONFIG_DATABASE_USER=airbyte_config_db_user
 CONFIG_DATABASE_PASSWORD=password
 ```
 
-Additionally, you must redefine the JDBC URL constructed in the environment variable `DATABASE_URL` to include the correct host, port, and database. If you need to provide extra arguments to the JDBC driver \(for example, to handle SSL\) you should add it here as well:
+Additionally, you must redefine the JDBC URL constructed in the environment variable `JOB_DATABASE_URL` to include the correct host, port, and database. If you need to provide extra arguments to the JDBC driver \(for example, to handle SSL\) you should add it here as well:
 
 ```bash
-DATABASE_URL=jdbc:postgresql://host.docker.internal:3000/postgres?ssl=true&sslmode=require
+JOB_DATABASE_URL=jdbc:postgresql://host.docker.internal:3000/postgres?ssl=true&sslmode=require
 ```
 
 Same for the config database if it is separate from the job database:

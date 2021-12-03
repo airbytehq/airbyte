@@ -69,7 +69,7 @@ public class TestDatabaseProviders {
       return new JobsDatabaseTestProvider(
           c.getJobsDatabaseUser(),
           c.getJobsDatabasePassword(),
-          c.getDatabaseUrl())
+          c.getJobDatabaseUrl())
               .create(runMigration);
     } else {
       final PostgreSQLContainer<?> c = container.get();

@@ -210,7 +210,7 @@ public class SchedulerApp {
     final Database jobDatabase = new JobsDatabaseInstance(
         configs.getJobsDatabaseUser(),
         configs.getJobsDatabasePassword(),
-        configs.getDatabaseUrl())
+        configs.getJobDatabaseUrl())
             .getInitialized();
 
     final Database configDatabase = new ConfigsDatabaseInstance(

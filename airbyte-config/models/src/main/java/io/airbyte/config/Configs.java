@@ -52,7 +52,7 @@ public interface Configs {
 
   String getJobsDatabasePassword();
 
-  String getDatabaseUrl();
+  String getJobDatabaseUrl();
 
   String getConfigDatabaseUser();
 

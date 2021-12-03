@@ -209,7 +209,7 @@ public class WorkerApp {
         configs.getLogConfigs(),
         configs.getJobsDatabaseUser(),
         configs.getJobsDatabasePassword(),
-        configs.getDatabaseUrl(),
+        configs.getJobDatabaseUrl(),
         configs.getAirbyteVersionOrWarning()).start();
   }
 

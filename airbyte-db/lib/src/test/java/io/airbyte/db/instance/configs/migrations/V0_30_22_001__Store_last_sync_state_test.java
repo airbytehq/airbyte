@@ -106,10 +106,10 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
     final Configs configs = mock(Configs.class);
     when(configs.getJobsDatabaseUser()).thenReturn(container.getUsername());
     when(configs.getJobsDatabasePassword()).thenReturn(container.getPassword());
-    when(configs.getDatabaseUrl()).thenReturn(container.getJdbcUrl());
+    when(configs.getJobDatabaseUrl()).thenReturn(container.getJdbcUrl());
 
     assertTrue(V0_30_22_001__Store_last_sync_state
-        .getJobsDatabase(configs.getJobsDatabaseUser(), configs.getJobsDatabasePassword(), configs.getDatabaseUrl()).isPresent());
+        .getJobsDatabase(configs.getJobsDatabaseUser(), configs.getJobsDatabasePassword(), configs.getJobDatabaseUrl()).isPresent());
   }
 
   @Test
