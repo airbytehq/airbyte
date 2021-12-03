@@ -202,17 +202,26 @@ class SourceTypeform(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             form_ids = config.get("form_ids", []).copy()
-            auth = TokenAuthenticator(token=config["token"])
             # verify if form inputted by user is valid
-            for form in form_ids:
-                try:
-                    url = f"{TypeformStream.url_base}/forms/{form}/response"
-                    auth_headers = {"Authorization": f"Bearer {config['token']}"}
-                    session = requests.get(url, headers=auth_headers)
-                    session.raise_status()
-                except:
-                    return False, f"Cannot find forms with ID: {form}. Please make sure they are valid form IDs and try again."
-            return True, None
+            try:    
+                url = f"{TypeformStream.url_base}/me"
+                auth_headers = {"Authorization": f"Bearer {config['token']}"}
+                session = requests.get(url, headers=auth_headers)
+                session.raise_for_status()
+            except requests.exceptions.BaseHTTPError as e:
+                f"Cannot authenticate, please verify token."
+            if len(form_ids) != 0:
+                for form in form_ids:
+                    try:
+                        url = f"{TypeformStream.url_base}/forms/{form}"
+                        auth_headers = {"Authorization": f"Bearer {config['token']}"}
+                        response = requests.get(url, headers=auth_headers)
+                        response.raise_for_status()
+                    except requests.exceptions.BaseHTTPError as e:
+                        return False, f"Cannot find forms with ID: {form}. Please make sure they are valid form IDs and try again."
+                return True, None
+            else:
+                return True, None
 
         except requests.exceptions.RequestException as e:
             return False, e
