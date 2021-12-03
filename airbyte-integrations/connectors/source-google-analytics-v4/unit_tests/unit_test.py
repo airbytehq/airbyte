@@ -54,6 +54,7 @@ def mock_unknown_metrics_or_dimensions_error(requests_mock):
     )
 
 
+@pytest.fixture
 def mock_api_returns_no_records(requests_mock):
     """API returns empty data for given date based slice"""
     yield requests_mock.post(
