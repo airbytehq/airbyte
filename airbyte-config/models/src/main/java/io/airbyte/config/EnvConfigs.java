@@ -52,7 +52,7 @@ public class EnvConfigs implements Configs {
   public static final String RUN_DATABASE_MIGRATION_ON_STARTUP = "RUN_DATABASE_MIGRATION_ON_STARTUP";
   public static final String WEBAPP_URL = "WEBAPP_URL";
   public static final String JOB_IMAGE_PULL_POLICY = "JOB_IMAGE_PULL_POLICY";
-  public static final String WORKER_POD_TOLERATIONS = "WORKER_POD_TOLERATIONS";
+  public static final String JOB_POD_TOLERATIONS = "JOB_POD_TOLERATIONS";
   public static final String WORKER_POD_NODE_SELECTORS = "WORKER_POD_NODE_SELECTORS";
   public static final String JOB_SOCAT_IMAGE = "JOB_SOCAT_IMAGE";
   public static final String JOB_BUSYBOX_IMAGE = "JOB_BUSYBOX_IMAGE";
@@ -294,8 +294,8 @@ public class EnvConfigs implements Configs {
    * @return list of WorkerPodToleration parsed from env
    */
   @Override
-  public List<WorkerPodToleration> getWorkerPodTolerations() {
-    final String tolerationsStr = getEnvOrDefault(WORKER_POD_TOLERATIONS, "");
+  public List<TolerationPOJO> getJobPodTolerations() {
+    final String tolerationsStr = getEnvOrDefault(JOB_POD_TOLERATIONS, "");
 
     final Stream<String> tolerations = Strings.isNullOrEmpty(tolerationsStr) ? Stream.of()
         : Splitter.on(";")
@@ -303,19 +303,19 @@ public class EnvConfigs implements Configs {
             .filter(tolerationStr -> !Strings.isNullOrEmpty(tolerationStr));
 
     return tolerations
-        .map(this::workerPodToleration)
+        .map(this::parseToleration)
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
   }
 
-  private WorkerPodToleration workerPodToleration(final String tolerationStr) {
+  private TolerationPOJO parseToleration(final String tolerationStr) {
     final Map<String, String> tolerationMap = Splitter.on(",")
         .splitToStream(tolerationStr)
         .map(s -> s.split("="))
         .collect(Collectors.toMap(s -> s[0], s -> s[1]));
 
     if (tolerationMap.containsKey("key") && tolerationMap.containsKey("effect") && tolerationMap.containsKey("operator")) {
-      return new WorkerPodToleration(
+      return new TolerationPOJO(
           tolerationMap.get("key"),
           tolerationMap.get("effect"),
           tolerationMap.get("value"),

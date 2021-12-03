@@ -77,7 +77,7 @@ public interface Configs {
   int getSyncJobMaxTimeoutDays();
 
   // getJobPodTolerations
-  List<WorkerPodToleration> getWorkerPodTolerations();
+  List<TolerationPOJO> getJobPodTolerations();
 
   // getJobPodNodeSelectors
   Map<String, String> getWorkerNodeSelectors();

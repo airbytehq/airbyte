@@ -11,7 +11,7 @@ import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.WorkerDestinationConfig;
-import io.airbyte.config.WorkerPodToleration;
+import io.airbyte.config.TolerationPOJO;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.scheduler.models.JobRunConfig;
@@ -33,7 +33,7 @@ public class WorkerUtils {
   private static final Configs CONFIGS = new EnvConfigs();
 
   public static final ResourceRequirements DEFAULT_RESOURCE_REQUIREMENTS = initResourceRequirements();
-  public static final List<WorkerPodToleration> DEFAULT_WORKER_POD_TOLERATIONS = CONFIGS.getWorkerPodTolerations();
+  public static final List<TolerationPOJO> DEFAULT_JOB_POD_TOLERATIONS = CONFIGS.getJobPodTolerations();
   public static final Map<String, String> DEFAULT_WORKER_POD_NODE_SELECTORS = CONFIGS.getWorkerNodeSelectors();
   public static final String DEFAULT_JOBS_IMAGE_PULL_SECRET = CONFIGS.getJobsImagePullSecret();
   public static final String DEFAULT_JOB_IMAGE_PULL_POLICY = CONFIGS.getJobImagePullPolicy();

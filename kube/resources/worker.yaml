@@ -169,11 +169,11 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: INTERNAL_API_HOST
-            - name: WORKER_POD_TOLERATIONS
+            - name: JOB_POD_TOLERATIONS
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
-                  key: WORKER_POD_TOLERATIONS
+                  key: JOB_POD_TOLERATIONS
             - name: WORKER_POD_NODE_SELECTORS
               valueFrom:
                 configMapKeyRef:
