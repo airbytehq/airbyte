@@ -130,7 +130,7 @@ public class KubeProcessFactory implements ProcessFactory {
           files,
           entrypoint,
           resourceRequirements,
-          WorkerUtils.DEFAULT_JOBS_IMAGE_PULL_SECRET,
+          WorkerUtils.DEFAULT_JOB_POD_MAIN_CONTAINER_IMAGE_PULL_SECRET,
           WorkerUtils.DEFAULT_JOB_POD_TOLERATIONS,
           WorkerUtils.DEFAULT_JOB_POD_NODE_SELECTORS,
           allLabels,

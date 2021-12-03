@@ -75,7 +75,7 @@ public class EnvConfigs implements Configs {
   private static final String RESOURCE_MEMORY_REQUEST = "RESOURCE_MEMORY_REQUEST";
   private static final String RESOURCE_MEMORY_LIMIT = "RESOURCE_MEMORY_LIMIT";
   private static final String SECRET_PERSISTENCE = "SECRET_PERSISTENCE";
-  private static final String JOBS_IMAGE_PULL_SECRET = "JOBS_IMAGE_PULL_SECRET";
+  private static final String JOB_POD_MAIN_CONTAINER_IMAGE_PULL_SECRET = "JOB_POD_MAIN_CONTAINER_IMAGE_PULL_SECRET";
   private static final String PUBLISH_METRICS = "PUBLISH_METRICS";
 
   // defaults
@@ -358,8 +358,8 @@ public class EnvConfigs implements Configs {
    * no-op value.
    */
   @Override
-  public String getJobsImagePullSecret() {
-    return getEnvOrDefault(JOBS_IMAGE_PULL_SECRET, "");
+  public String getJobPodMainContainerImagePullSecret() {
+    return getEnvOrDefault(JOB_POD_MAIN_CONTAINER_IMAGE_PULL_SECRET, "");
   }
 
   @Override

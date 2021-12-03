@@ -80,11 +80,10 @@ public interface Configs {
 
   Map<String, String> getJobPodNodeSelectors();
 
-  // getJobPodMainContainerImagePullPolicy
   String getJobPodMainContainerImagePullPolicy();
 
   // getJobPodMainContainerImagePullSecret
-  String getJobsImagePullSecret();
+  String getJobPodMainContainerImagePullSecret();
 
   // getJobPodSocatImage
   String getJobSocatImage();
