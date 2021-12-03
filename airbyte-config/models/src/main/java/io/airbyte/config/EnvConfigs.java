@@ -71,7 +71,7 @@ public class EnvConfigs implements Configs {
   private static final String JOB_POD_KUBE_NAMESPACE = "JOB_POD_KUBE_NAMESPACE";
   private static final String SUBMITTER_NUM_THREADS = "SUBMITTER_NUM_THREADS";
   private static final String JOB_POD_MAIN_CONTAINER_CPU_REQUEST = "JOB_POD_MAIN_CONTAINER_CPU_REQUEST";
-  private static final String RESOURCE_CPU_LIMIT = "RESOURCE_CPU_LIMIT";
+  private static final String JOB_POD_MAIN_CONTAINER_CPU_LIMIT = "JOB_POD_MAIN_CONTAINER_CPU_LIMIT";
   private static final String RESOURCE_MEMORY_REQUEST = "RESOURCE_MEMORY_REQUEST";
   private static final String RESOURCE_MEMORY_LIMIT = "RESOURCE_MEMORY_LIMIT";
   private static final String SECRET_PERSISTENCE = "SECRET_PERSISTENCE";
@@ -388,8 +388,8 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public String getCpuLimit() {
-    return getEnvOrDefault(RESOURCE_CPU_LIMIT, DEFAULT_JOB_POD_CPU_REQUIREMENT);
+  public String getJobPodMainContainerCpuLimit() {
+    return getEnvOrDefault(JOB_POD_MAIN_CONTAINER_CPU_LIMIT, DEFAULT_JOB_POD_CPU_REQUIREMENT);
   }
 
   @Override

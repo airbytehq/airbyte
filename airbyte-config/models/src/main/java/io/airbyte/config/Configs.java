@@ -92,11 +92,9 @@ public interface Configs {
 
   String getJobPodKubeNamespace();
 
-  // getJobPodMainContainerCpuRequest
   String getJobPodMainContainerCpuRequest();
 
-  // getJobPodMainContainerCpuLimit
-  String getCpuLimit();
+  String getJobPodMainContainerCpuLimit();
 
   // getJobPodMainContainerMemoryRequest
   String getMemoryRequest();

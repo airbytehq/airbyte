@@ -22,7 +22,7 @@ data:
   INTERNAL_API_HOST: {{ include "common.names.fullname" . }}-server:{{ .Values.server.service.port }}
   IS_DEMO: {{ ternary "true" "false" .Values.webapp.isDemo | quote }}
   LOCAL_ROOT: /tmp/airbyte_local
-  RESOURCE_CPU_LIMIT: ""
+  JOB_POD_MAIN_CONTAINER_CPU_LIMIT: ""
   JOB_POD_MAIN_CONTAINER_CPU_REQUEST: ""
   RESOURCE_MEMORY_LIMIT: ""
   RESOURCE_MEMORY_REQUEST: ""
