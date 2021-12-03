@@ -48,7 +48,7 @@ public interface Configs {
   SecretPersistenceType getSecretPersistenceType();
 
   // Database
-  String getDatabaseUser();
+  String getJobsDatabaseUser();
 
   String getDatabasePassword();
 

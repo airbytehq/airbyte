@@ -104,12 +104,12 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
 
     // when there is database environment variable, return the database
     final Configs configs = mock(Configs.class);
-    when(configs.getDatabaseUser()).thenReturn(container.getUsername());
+    when(configs.getJobsDatabaseUser()).thenReturn(container.getUsername());
     when(configs.getDatabasePassword()).thenReturn(container.getPassword());
     when(configs.getDatabaseUrl()).thenReturn(container.getJdbcUrl());
 
     assertTrue(V0_30_22_001__Store_last_sync_state
-        .getJobsDatabase(configs.getDatabaseUser(), configs.getDatabasePassword(), configs.getDatabaseUrl()).isPresent());
+        .getJobsDatabase(configs.getJobsDatabaseUser(), configs.getDatabasePassword(), configs.getDatabaseUrl()).isPresent());
   }
 
   @Test

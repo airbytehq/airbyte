@@ -67,7 +67,7 @@ public class TestDatabaseProviders {
     if (configs.isPresent()) {
       final Configs c = configs.get();
       return new JobsDatabaseTestProvider(
-          c.getDatabaseUser(),
+          c.getJobsDatabaseUser(),
           c.getDatabasePassword(),
           c.getDatabaseUrl())
               .create(runMigration);

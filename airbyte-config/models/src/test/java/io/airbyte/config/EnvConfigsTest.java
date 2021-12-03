@@ -80,11 +80,11 @@ class EnvConfigsTest {
 
   @Test
   void testGetDatabaseUser() {
-    when(function.apply(EnvConfigs.DATABASE_USER)).thenReturn(null);
-    Assertions.assertThrows(IllegalArgumentException.class, () -> config.getDatabaseUser());
+    when(function.apply(EnvConfigs.JOBS_DATABASE_USER)).thenReturn(null);
+    Assertions.assertThrows(IllegalArgumentException.class, () -> config.getJobsDatabaseUser());
 
-    when(function.apply(EnvConfigs.DATABASE_USER)).thenReturn("user");
-    Assertions.assertEquals("user", config.getDatabaseUser());
+    when(function.apply(EnvConfigs.JOBS_DATABASE_USER)).thenReturn("user");
+    Assertions.assertEquals("user", config.getJobsDatabaseUser());
   }
 
   @Test

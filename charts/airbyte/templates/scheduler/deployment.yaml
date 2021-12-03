@@ -67,11 +67,11 @@ spec:
             configMapKeyRef:
               name: airbyte-env
               key: DATABASE_URL
-        - name: DATABASE_USER
+        - name: JOBS_DATABASE_USER
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
-              key: DATABASE_USER
+              key: JOBS_DATABASE_USER
         - name: TRACKING_STRATEGY
           valueFrom:
             configMapKeyRef:

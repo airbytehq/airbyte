@@ -55,7 +55,7 @@ class TemporalAttemptExecutionTest {
     container.start();
     configs = mock(Configs.class);
     when(configs.getDatabaseUrl()).thenReturn(container.getJdbcUrl());
-    when(configs.getDatabaseUser()).thenReturn(SOURCE_USERNAME);
+    when(configs.getJobsDatabaseUser()).thenReturn(SOURCE_USERNAME);
     when(configs.getDatabasePassword()).thenReturn(SOURCE_PASSWORD);
   }
 

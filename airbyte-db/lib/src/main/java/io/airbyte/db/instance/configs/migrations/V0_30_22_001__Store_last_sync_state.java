@@ -58,7 +58,7 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
     // EnvConfigs left in place for migration purposes as FlyWay prevents injection, but isolated to
     // local scope.
     final EnvConfigs configs = new EnvConfigs();
-    this.databaseUser = configs.getDatabaseUser();
+    this.databaseUser = configs.getJobsDatabaseUser();
     this.databasePassword = configs.getDatabasePassword();
     this.databaseUrl = configs.getDatabaseUrl();
   }

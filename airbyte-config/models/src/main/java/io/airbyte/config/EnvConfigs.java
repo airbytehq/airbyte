@@ -43,7 +43,7 @@ public class EnvConfigs implements Configs {
   public static final String DOCKER_NETWORK = "DOCKER_NETWORK";
   public static final String TRACKING_STRATEGY = "TRACKING_STRATEGY";
   public static final String DEPLOYMENT_MODE = "DEPLOYMENT_MODE";
-  public static final String DATABASE_USER = "DATABASE_USER";
+  public static final String JOBS_DATABASE_USER = "JOBS_DATABASE_USER";
   public static final String DATABASE_PASSWORD = "DATABASE_PASSWORD";
   public static final String DATABASE_URL = "DATABASE_URL";
   public static final String CONFIG_DATABASE_USER = "CONFIG_DATABASE_USER";
@@ -208,8 +208,8 @@ public class EnvConfigs implements Configs {
 
   // Database
   @Override
-  public String getDatabaseUser() {
-    return getEnsureEnv(DATABASE_USER);
+  public String getJobsDatabaseUser() {
+    return getEnsureEnv(JOBS_DATABASE_USER);
   }
 
   @Override
@@ -225,7 +225,7 @@ public class EnvConfigs implements Configs {
   @Override
   public String getConfigDatabaseUser() {
     // Default to reuse the job database
-    return getEnvOrDefault(CONFIG_DATABASE_USER, getDatabaseUser());
+    return getEnvOrDefault(CONFIG_DATABASE_USER, getJobsDatabaseUser());
   }
 
   @Override

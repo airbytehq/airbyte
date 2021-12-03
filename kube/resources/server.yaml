@@ -48,11 +48,11 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: DATABASE_URL
-            - name: DATABASE_USER
+            - name: JOBS_DATABASE_USER
               valueFrom:
                 secretKeyRef:
                   name: airbyte-secrets
-                  key: DATABASE_USER
+                  key: JOBS_DATABASE_USER
             - name: TRACKING_STRATEGY
               valueFrom:
                 configMapKeyRef:

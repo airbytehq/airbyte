@@ -28,7 +28,7 @@ docker run --rm --name airbyte-postgres -e POSTGRES_PASSWORD=password -p 3000:54
 In order to configure Airbyte services with this new database, we need to edit the following environment variables declared in the `.env` file \(used by the docker-compose command afterward\):
 
 ```bash
-DATABASE_USER=postgres
+JOBS_DATABASE_USER=postgres
 DATABASE_PASSWORD=password
 DATABASE_HOST=host.docker.internal # refers to localhost of host
 DATABASE_PORT=3000
@@ -74,7 +74,7 @@ In extraordinary circumstances while using the default `airbyte-db` Postgres dat
 As we've seen previously, the credentials for the database are specified in the `.env` file that is used to run Airbyte. By default, the values are:
 
 ```text
-DATABASE_USER=docker
+JOBS_DATABASE_USER=docker
 DATABASE_PASSWORD=docker
 DATABASE_DB=airbyte
 ```

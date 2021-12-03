@@ -207,7 +207,7 @@ public class WorkerApp {
         configRepository,
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
-        configs.getDatabaseUser(),
+        configs.getJobsDatabaseUser(),
         configs.getDatabasePassword(),
         configs.getDatabaseUrl(),
         configs.getAirbyteVersionOrWarning()).start();

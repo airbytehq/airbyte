@@ -24,9 +24,9 @@ services:
     container_name: airbyte-db
     restart: unless-stopped
     environment:
-      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_USER=${JOBS_DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
-      - DATABASE_USER=${DATABASE_USER}
+      - JOBS_DATABASE_USER=${JOBS_DATABASE_USER}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
       - DATABASE_URL=${DATABASE_URL}
       - CONFIG_DATABASE_USER=${CONFIG_DATABASE_USER:-}
@@ -41,7 +41,7 @@ services:
     restart: unless-stopped
     environment:
       - WEBAPP_URL=${WEBAPP_URL}
-      - DATABASE_USER=${DATABASE_USER}
+      - JOBS_DATABASE_USER=${JOBS_DATABASE_USER}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
       - DATABASE_URL=${DATABASE_URL}
       - CONFIG_DATABASE_USER=${CONFIG_DATABASE_USER:-}
@@ -84,7 +84,7 @@ services:
     restart: unless-stopped
     environment:
       - WEBAPP_URL=${WEBAPP_URL}
-      - DATABASE_USER=${DATABASE_USER}
+      - JOBS_DATABASE_USER=${JOBS_DATABASE_USER}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
       - DATABASE_URL=${DATABASE_URL}
       - CONFIG_DATABASE_USER=${CONFIG_DATABASE_USER:-}
@@ -127,7 +127,7 @@ services:
     restart: unless-stopped
     environment:
       - WEBAPP_URL=${WEBAPP_URL}
-      - DATABASE_USER=${DATABASE_USER}
+      - JOBS_DATABASE_USER=${JOBS_DATABASE_USER}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
       - DATABASE_URL=${DATABASE_URL}
       - CONFIG_DATABASE_USER=${CONFIG_DATABASE_USER:-}
@@ -185,7 +185,7 @@ services:
     environment:
       - DB=postgresql
       - DB_PORT=${DATABASE_PORT}
-      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_USER=${JOBS_DATABASE_USER}
       - POSTGRES_PWD=${DATABASE_PASSWORD}
       - POSTGRES_SEEDS=${DATABASE_HOST}
       - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml

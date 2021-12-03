@@ -81,7 +81,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: airbyte-secrets
-                  key: DATABASE_USER
+                  key: JOBS_DATABASE_USER
             - name: POSTGRES_PWD
               valueFrom:
                 secretKeyRef:
