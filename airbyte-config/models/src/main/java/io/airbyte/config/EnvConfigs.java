@@ -73,7 +73,7 @@ public class EnvConfigs implements Configs {
   private static final String JOB_POD_MAIN_CONTAINER_CPU_REQUEST = "JOB_POD_MAIN_CONTAINER_CPU_REQUEST";
   private static final String JOB_POD_MAIN_CONTAINER_CPU_LIMIT = "JOB_POD_MAIN_CONTAINER_CPU_LIMIT";
   private static final String JOB_POD_MAIN_CONTAINER_MEMORY_REQUEST = "JOB_POD_MAIN_CONTAINER_MEMORY_REQUEST";
-  private static final String RESOURCE_MEMORY_LIMIT = "RESOURCE_MEMORY_LIMIT";
+  private static final String JOB_POD_MAIN_CONTAINER_MEMORY_LIMIT = "JOB_POD_MAIN_CONTAINER_MEMORY_LIMIT";
   private static final String SECRET_PERSISTENCE = "SECRET_PERSISTENCE";
   private static final String JOB_POD_MAIN_CONTAINER_IMAGE_PULL_SECRET = "JOB_POD_MAIN_CONTAINER_IMAGE_PULL_SECRET";
   private static final String PUBLISH_METRICS = "PUBLISH_METRICS";
@@ -398,8 +398,8 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public String getMemoryLimit() {
-    return getEnvOrDefault(RESOURCE_MEMORY_LIMIT, DEFAULT_JOB_POD_MEMORY_REQUIREMENT);
+  public String getJobPodMainContainerMemoryLimit() {
+    return getEnvOrDefault(JOB_POD_MAIN_CONTAINER_MEMORY_LIMIT, DEFAULT_JOB_POD_MEMORY_REQUIREMENT);
   }
 
   // Logging/Monitoring/Tracking

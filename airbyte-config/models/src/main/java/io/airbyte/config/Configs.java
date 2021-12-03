@@ -98,8 +98,7 @@ public interface Configs {
 
   String getJobPodMainContainerMemoryRequest();
 
-  // getJobPodMainContainerMemoryLimit
-  String getMemoryLimit();
+  String getJobPodMainContainerMemoryLimit();
 
   // Logging/Monitoring/Tracking
   LogConfigs getLogConfigs();

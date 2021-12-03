@@ -117,11 +117,11 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: JOB_POD_MAIN_CONTAINER_MEMORY_REQUEST
-            - name: RESOURCE_MEMORY_LIMIT
+            - name: JOB_POD_MAIN_CONTAINER_MEMORY_LIMIT
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
-                  key: RESOURCE_MEMORY_LIMIT
+                  key: JOB_POD_MAIN_CONTAINER_MEMORY_LIMIT
             - name: S3_LOG_BUCKET
               valueFrom:
                 configMapKeyRef:

@@ -209,7 +209,7 @@ public class WorkerUtils {
         .withCpuRequest(CONFIGS.getJobPodMainContainerCpuRequest())
         .withCpuLimit(CONFIGS.getJobPodMainContainerCpuLimit())
         .withMemoryRequest(CONFIGS.getJobPodMainContainerMemoryRequest())
-        .withMemoryLimit(CONFIGS.getMemoryLimit());
+        .withMemoryLimit(CONFIGS.getJobPodMainContainerMemoryLimit());
   }
 
 }
