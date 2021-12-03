@@ -164,21 +164,20 @@ public class KubeProcessFactory implements ProcessFactory {
     var imageName = nameParts[nameParts.length - 1];
 
     final var randSuffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
-    final String suffix = jobId + "-" + attempt + "-" + randSuffix;
+    final String suffix = "sync" + "-" + jobId + "-" + attempt + "-" + randSuffix;
 
     var podName = imageName + "-" + suffix;
-
     final var podNameLenLimit = 63;
     if (podName.length() > podNameLenLimit) {
       final var extra = podName.length() - podNameLenLimit;
       imageName = imageName.substring(extra);
       podName = imageName + "-" + suffix;
     }
-
+    System.out.println(podName);
     final Matcher m = ALPHABETIC.matcher(podName);
-    // Since we add worker-UUID as a suffix a couple of lines up, there will always be a substring
+    // Since we add sync-UUID as a suffix a couple of lines up, there will always be a substring
     // starting with an alphabetic character.
-    // If the image name is a no-op, this function should always return `worker-UUID` at the minimum.
+    // If the image name is a no-op, this function should always return `sync-UUID` at the minimum.
     m.find();
     return podName.substring(m.start());
   }
