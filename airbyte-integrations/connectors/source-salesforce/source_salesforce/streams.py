@@ -144,7 +144,10 @@ class BulkSalesforceStream(SalesforceStream):
         except exceptions.HTTPError as error:
             if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
                 error_data = error.response.json()[0]
-                if error_data.get("message", "") == "Selecting compound data not supported in Bulk Query":
+                if (error_data.get("message", "") == "Selecting compound data not supported in Bulk Query") or (
+                    error_data.get("errorCode", "") == "INVALIDENTITY"
+                    and "is not supported by the Bulk API" in error_data.get("message", "")
+                ):
                     self.logger.error(
                         f"Cannot receive data for stream '{self.name}' using BULK API, error message: '{error_data.get('message')}'"
                     )
@@ -184,7 +187,7 @@ class BulkSalesforceStream(SalesforceStream):
         self.logger.warning(f"Not wait the {self.name} data for {self._wait_timeout} minutes, data: {job_info}!!")
         return job_status
 
-    def execute_job(self, query: Mapping[str, Any], url: str) -> str:
+    def execute_job(self, query: str, url: str) -> str:
         job_status = "Failed"
         for i in range(0, self.MAX_RETRY_NUMBER):
             job_id = self.create_stream_job(query=query, url=url)
@@ -260,10 +263,16 @@ class BulkSalesforceStream(SalesforceStream):
 class IncrementalSalesforceStream(SalesforceStream, ABC):
     state_checkpoint_interval = 500
 
-    def __init__(self, replication_key: str, start_date: str, **kwargs):
+    def __init__(self, replication_key: str, start_date: Optional[str], **kwargs):
         super().__init__(**kwargs)
         self.replication_key = replication_key
-        self.start_date = start_date
+        self.start_date = self.format_start_date(start_date)
+
+    @staticmethod
+    def format_start_date(start_date: Optional[str]) -> Optional[str]:
+        """Transform the format `2021-07-25` into the format `2021-07-25T00:00:00Z`"""
+        if start_date:
+            return pendulum.parse(start_date).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     def next_page_token(self, response: requests.Response) -> str:
         response_data = response.json()
@@ -286,7 +295,9 @@ class IncrementalSalesforceStream(SalesforceStream, ABC):
         stream_date = stream_state.get(self.cursor_field)
         start_date = next_page_token or stream_date or self.start_date
 
-        query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} WHERE {self.cursor_field} >= {start_date} "
+        query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
+        if start_date:
+            query += f"WHERE {self.cursor_field} >= {start_date} "
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
             query += f"ORDER BY {self.cursor_field} ASC LIMIT {self.page_size}"
         return {"q": query}

@@ -25,5 +25,8 @@
   },
   "GET_VENDOR_INVENTORY_HEALTH_REPORT": {
     "createdTime": "2021-07-01T00:00:00Z"
+  },
+  "GET_SELLER_FEEDBACK_DATA": {
+    "createdTime": "2021-07-01T00:00:00Z"
   }
 }

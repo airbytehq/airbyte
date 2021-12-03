@@ -44,6 +44,9 @@
   "locations": {
     "updated_at": "2024-07-08T05:40:38-07:00"
   },
+  "inventory_items": {
+    "updated_at": "2024-07-08T05:40:38-07:00"
+  },
   "inventory_levels": {
     "updated_at": "2024-07-08T05:40:38-07:00"
   },
