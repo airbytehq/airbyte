@@ -164,7 +164,7 @@ public class KubeProcessFactory implements ProcessFactory {
     var imageName = nameParts[nameParts.length - 1];
 
     final var randSuffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
-    final String suffix = "worker-" + jobId + "-" + attempt + "-" + randSuffix;
+    final String suffix = jobId + "-" + attempt + "-" + randSuffix;
 
     var podName = imageName + "-" + suffix;
 
