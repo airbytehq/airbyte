@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
-import com.google.common.collect.Iterables;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
@@ -29,12 +28,12 @@ public class SnowflakeStagingSqlOperations extends JdbcSqlOperations implements 
     if (records.isEmpty()) {
       return;
     }
-      try {
-        loadDataIntoStage(database, stage, records);
-      } catch (Exception e) {
-        LOGGER.error("Failed to upload records into stage {}", stage, e);
-        throw new RuntimeException(e);
-      }
+    try {
+      loadDataIntoStage(database, stage, records);
+    } catch (Exception e) {
+      LOGGER.error("Failed to upload records into stage {}", stage, e);
+      throw new RuntimeException(e);
+    }
   }
 
   private void loadDataIntoStage(JdbcDatabase database, String stage, List<AirbyteRecordMessage> partition) throws Exception {
