@@ -28,6 +28,19 @@ def stream_bulk_config():
 
 
 @pytest.fixture(scope="module")
+def stream_bulk_config_without_start_date():
+    """Generates streams settings for BULK logic without start_date"""
+    return {
+        "client_id": "fake_client_id",
+        "client_secret": "fake_client_secret",
+        "refresh_token": "fake_refresh_token",
+        "is_sandbox": False,
+        "wait_timeout": 15,
+        "api_type": "BULK",
+    }
+
+
+@pytest.fixture(scope="module")
 def stream_rest_config():
     """Generates streams settings for BULK logic"""
     return {
@@ -35,6 +48,33 @@ def stream_rest_config():
         "client_secret": "fake_client_secret",
         "refresh_token": "fake_refresh_token",
         "start_date": "2010-01-18T21:18:20Z",
+        "is_sandbox": False,
+        "wait_timeout": 15,
+        "api_type": "REST",
+    }
+
+
+@pytest.fixture(scope="module")
+def stream_rest_config_date_format():
+    """Generates streams settings with `start_date` in format YYYY-MM-DD"""
+    return {
+        "client_id": "fake_client_id",
+        "client_secret": "fake_client_secret",
+        "refresh_token": "fake_refresh_token",
+        "start_date": "2010-01-18",
+        "is_sandbox": False,
+        "wait_timeout": 15,
+        "api_type": "REST",
+    }
+
+
+@pytest.fixture(scope="module")
+def stream_rest_config_without_start_date():
+    """Generates streams settings for REST logic without start_date"""
+    return {
+        "client_id": "fake_client_id",
+        "client_secret": "fake_client_secret",
+        "refresh_token": "fake_refresh_token",
         "is_sandbox": False,
         "wait_timeout": 15,
         "api_type": "REST",
@@ -199,3 +239,48 @@ def test_bulk_sync_failed_retry(stream_bulk_config, stream_bulk_api):
         with pytest.raises(Exception) as err:
             next(stream.read_records(sync_mode=SyncMode.full_refresh))
         assert "stream using BULK API was failed" in str(err.value)
+
+
+@pytest.mark.parametrize(
+    "api_type,start_date_provided,stream_name,expected_start_date",
+    [
+        ("BULK", True, "Account", "2010-01-18T21:18:20Z"),
+        ("BULK", False, "Account", None),
+        ("REST", True, "ActiveFeatureLicenseMetric", "2010-01-18T21:18:20Z"),
+        ("REST", False, "ActiveFeatureLicenseMetric", None),
+    ],
+)
+def test_stream_start_date(
+    api_type,
+    start_date_provided,
+    stream_name,
+    expected_start_date,
+    stream_bulk_config,
+    stream_bulk_api,
+    stream_rest_config,
+    stream_rest_api,
+    stream_rest_config_without_start_date,
+    stream_bulk_config_without_start_date,
+):
+    if start_date_provided:
+        stream_config, stream_api = (stream_rest_config, stream_rest_api) if api_type == "REST" else (stream_bulk_config, stream_bulk_api)
+        stream = _generate_stream(stream_name, stream_config, stream_api)
+    else:
+        stream_config, stream_api = (
+            (stream_rest_config_without_start_date, stream_rest_api)
+            if api_type == "REST"
+            else (stream_bulk_config_without_start_date, stream_bulk_api)
+        )
+        stream = _generate_stream(stream_name, stream_config, stream_api)
+
+    assert stream.start_date == expected_start_date
+
+
+def test_stream_start_date_should_be_converted_to_datetime_format(stream_rest_config_date_format, stream_rest_api):
+    stream: IncrementalSalesforceStream = _generate_stream("ActiveFeatureLicenseMetric", stream_rest_config_date_format, stream_rest_api)
+    assert stream.start_date == "2010-01-18T00:00:00Z"
+
+
+def test_stream_start_datetime_format_should_not_changed(stream_rest_config, stream_rest_api):
+    stream: IncrementalSalesforceStream = _generate_stream("ActiveFeatureLicenseMetric", stream_rest_config, stream_rest_api)
+    assert stream.start_date == "2010-01-18T21:18:20Z"
