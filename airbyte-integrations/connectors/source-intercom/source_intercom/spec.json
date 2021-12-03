@@ -6,7 +6,7 @@
     "type": "object",
     "required": ["start_date", "access_token"],
     "additionalProperties": true,
-    "properties": 
+    "properties": {
       "start_date": {
         "type": "string",
         "title": "Start Date",
