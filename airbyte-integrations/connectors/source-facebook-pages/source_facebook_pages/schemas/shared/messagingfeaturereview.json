@@ -1,0 +1,11 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "feature": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": ["string", "null"]
+    }
+  }
+}

@@ -12,7 +12,7 @@ import java.time.Duration;
 
 public class ActivityConfiguration {
 
-  private static final int MAX_SYNC_TIMEOUT_DAYS = new EnvConfigs().getMaxSyncTimeoutDays();
+  private static final int MAX_SYNC_TIMEOUT_DAYS = new EnvConfigs().getSyncJobMaxTimeoutDays();
 
   public static final ActivityOptions OPTIONS = ActivityOptions.newBuilder()
       .setScheduleToCloseTimeout(Duration.ofDays(MAX_SYNC_TIMEOUT_DAYS))

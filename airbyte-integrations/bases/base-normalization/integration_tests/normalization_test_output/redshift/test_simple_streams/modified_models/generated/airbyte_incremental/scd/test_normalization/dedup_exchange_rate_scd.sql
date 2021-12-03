@@ -96,7 +96,7 @@ dedup_data as (
         -- additionally, we generate a unique key for the scd table
         row_number() over (
             partition by _airbyte_unique_key, _airbyte_start_at, _airbyte_emitted_at
-            order by _airbyte_ab_id
+            order by _airbyte_active_row desc, _airbyte_ab_id
         ) as _airbyte_row_num,
         {{ dbt_utils.surrogate_key([
           '_airbyte_unique_key',

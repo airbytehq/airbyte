@@ -263,7 +263,7 @@ public class SchedulerApp {
         jobNotifier,
         temporalClient,
         Integer.parseInt(configs.getSubmitterNumThreads()),
-        configs.getMaxSyncJobAttempts(),
+        configs.getSyncJobMaxAttempts(),
         configs.getAirbyteVersionOrWarning(), configs.getWorkerEnvironment(), configs.getLogConfigs())
             .start();
   }
