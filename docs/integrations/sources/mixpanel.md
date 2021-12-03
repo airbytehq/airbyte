@@ -59,6 +59,7 @@ Select the correct region \(EU or US\) for your Mixpanel project. See detail [he
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| `0.1.7` | 2021-12-01 | [8381](https://github.com/airbytehq/airbyte/pull/8381) | Increased performance for `discovery` stage during connector setup |
 | `0.1.6` | 2021-11-25 | [8256](https://github.com/airbytehq/airbyte/issues/8256) | Deleted `date_window_size` and fix schemas date type issue |
 | `0.1.5` | 2021-11-10 | [7451](https://github.com/airbytehq/airbyte/issues/7451) | Support `start_date` older than 1 year |
 | `0.1.4` | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies |

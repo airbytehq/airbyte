@@ -84,9 +84,7 @@ class FileStream(Stream, ABC):
             error_msg = f"Failed to parse schema {repr(err)}\n{schema}\n{format_exc()}"
             raise ConfigurationError(error_msg) from err
         # enforce all keys and values are of type string as required (i.e. no nesting)
-        if not all(
-            isinstance(k, str) and isinstance(v, str) for k, v in py_schema.items()
-        ):
+        if not all(isinstance(k, str) and isinstance(v, str) for k, v in py_schema.items()):
             raise ConfigurationError("Invalid schema provided, all column names and datatypes must be in string format")
         # enforce all values (datatypes) are valid JsonSchema datatypes
         if any(datatype not in JSON_TYPES for datatype in py_schema.values()):
@@ -193,9 +191,7 @@ class FileStream(Stream, ABC):
         # note: making every non-airbyte column nullable for compatibility
         # TODO: ensure this behaviour still makes sense as we add new file formats
         properties = {
-            column: {"type": ["null", typ]}
-            if column not in self.airbyte_columns
-            else {"type": typ}
+            column: {"type": ["null", typ]} if column not in self.airbyte_columns else {"type": typ}
             for column, typ in self._get_schema_map().items()
         }
 

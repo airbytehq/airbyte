@@ -23,6 +23,7 @@ from source_amazon_seller_partner.streams import (
     FulfilledShipmentsReports,
     MerchantListingsReports,
     Orders,
+    SellerFeedbackReports,
     VendorDirectFulfillmentShipping,
     VendorInventoryHealthReports,
     BrandAnalyticsSearchTermsReports,
@@ -37,6 +38,11 @@ class ConnectorConfig(BaseModel):
         description="UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         examples=["2017-01-25T00:00:00Z"],
+    )
+    period_in_days: int = Field(
+        30,
+        description="Will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.",
+        examples=["30", "365"],
     )
     report_options: str = Field(
         None,
@@ -84,6 +90,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             "aws_signature": aws_signature,
             "replication_start_date": config.replication_start_date,
             "marketplace_ids": [marketplace_id],
+            "period_in_days": config.period_in_days,
             "report_options": config.report_options,
         }
         return stream_kwargs
@@ -122,6 +129,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             VendorDirectFulfillmentShipping(**stream_kwargs),
             VendorInventoryHealthReports(**stream_kwargs),
             Orders(**stream_kwargs),
+            SellerFeedbackReports(**stream_kwargs),
             BrandAnalyticsSearchTermsReports(**stream_kwargs),
         ]
 

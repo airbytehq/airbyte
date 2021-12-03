@@ -16,7 +16,6 @@ import io.airbyte.api.model.DestinationSearch;
 import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -150,13 +149,6 @@ public class DestinationHandler {
 
   public DestinationRead getDestination(final DestinationIdRequestBody destinationIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    final UUID destinationId = destinationIdRequestBody.getDestinationId();
-    final DestinationConnection dci = configRepository.getDestinationConnection(destinationId);
-
-    if (dci.getTombstone()) {
-      throw new ConfigNotFoundException(ConfigSchema.DESTINATION_CONNECTION, destinationId.toString());
-    }
-
     return buildDestinationRead(destinationIdRequestBody.getDestinationId());
   }
 
