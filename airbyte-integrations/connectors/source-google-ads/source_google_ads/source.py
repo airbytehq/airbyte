@@ -24,10 +24,10 @@ from .streams import (
     ClickView,
     DisplayKeywordPerformanceReport,
     DisplayTopicsPerformanceReport,
-    ShoppingPerformanceReport,
-    UserLocationReport,
     GeographicReport,
     KeywordReport,
+    ShoppingPerformanceReport,
+    UserLocationReport,
 )
 
 
