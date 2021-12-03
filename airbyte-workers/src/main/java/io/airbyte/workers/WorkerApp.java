@@ -28,10 +28,10 @@ import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflowImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogActivityImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflowImpl;
 import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterWorkflowImpl;
+import io.airbyte.workers.temporal.scheduling.activities.GetSyncInputActivityImpl;
 import io.airbyte.workers.temporal.spec.SpecActivityImpl;
 import io.airbyte.workers.temporal.spec.SpecWorkflowImpl;
 import io.airbyte.workers.temporal.sync.DbtTransformationActivityImpl;
-import io.airbyte.workers.temporal.sync.EmptySyncWorkflow;
 import io.airbyte.workers.temporal.sync.NormalizationActivityImpl;
 import io.airbyte.workers.temporal.sync.PersistStateActivityImpl;
 import io.airbyte.workers.temporal.sync.ReplicationActivityImpl;
@@ -149,7 +149,9 @@ public class WorkerApp {
     final Worker connectionUpdaterWorker =
         factory.newWorker(TemporalJobType.CONNECTION_UPDATER.toString(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     connectionUpdaterWorker.registerWorkflowImplementationTypes(ConnectionUpdaterWorkflowImpl.class);
-    connectionUpdaterWorker.registerWorkflowImplementationTypes(EmptySyncWorkflow.class);
+    connectionUpdaterWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
+    connectionUpdaterWorker.registerActivitiesImplementations(
+        new GetSyncInputActivityImpl());
 
     factory.start();
   }

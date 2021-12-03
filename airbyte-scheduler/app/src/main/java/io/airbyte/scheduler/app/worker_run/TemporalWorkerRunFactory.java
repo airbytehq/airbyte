@@ -48,7 +48,7 @@ public class TemporalWorkerRunFactory {
       case SYNC -> () -> {
 
         if (featureFlags.usesNewScheduler()) {
-          temporalClient.submitConnectionUpdaterAsync(job.getId(), attemptId, connectionId);
+          temporalClient.submitConnectionUpdaterAsync(job.getId(), attemptId, connectionId, job.getConfig());
 
           return toOutputAndStatusConnector();
         }

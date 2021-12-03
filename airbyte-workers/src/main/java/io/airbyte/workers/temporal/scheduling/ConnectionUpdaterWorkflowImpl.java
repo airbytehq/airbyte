@@ -4,9 +4,9 @@
 
 package io.airbyte.workers.temporal.scheduling;
 
-import io.airbyte.config.StandardSyncInput;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
-import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.workers.temporal.TemporalJobType;
+import io.airbyte.workers.temporal.scheduling.activities.GetSyncInputActivity;
+import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.temporal.api.enums.v1.ParentClosePolicy;
 import io.temporal.workflow.CancellationScope;
@@ -22,6 +22,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
   private boolean isRunning = false;
   private boolean isDeleted = false;
   private boolean skipScheduling = false;
+  private final GetSyncInputActivity getSyncInputActivity = Workflow.newActivityStub(GetSyncInputActivity.class, ActivityConfiguration.OPTIONS);
   private CancellationScope syncWorkflowCancellationScope = CancellationScope.current();
 
   public ConnectionUpdaterWorkflowImpl() {}
@@ -36,27 +37,37 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
     // TODO: Fetch config (maybe store it in GCS)
     log.info("Starting child WF");
 
+    final GetSyncInputActivity.Input getSyncInputActivityInput = new GetSyncInputActivity.Input(
+        connectionUpdaterInput.getAttemptId(),
+        connectionUpdaterInput.getJobId(),
+        connectionUpdaterInput.getJobConfig());
+
+    final GetSyncInputActivity.Output syncWorkflowInputs = getSyncInputActivity.getSyncWorkflowInput(getSyncInputActivityInput);
+
     final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
         ChildWorkflowOptions.newBuilder()
             .setWorkflowId("sync_" + connectionUpdaterInput.getJobId())
+            .setTaskQueue(TemporalJobType.SYNC.name())
             // This will cancel the child workflow when the parent is terminated
             .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_TERMINATE)
             .build());
 
-    final JobRunConfig jobRunConfig = new JobRunConfig();
-    final IntegrationLauncherConfig sourceLauncherConfig = new IntegrationLauncherConfig();
-    final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig();
-    final StandardSyncInput syncInput = new StandardSyncInput();
     final UUID connectionId = connectionUpdaterInput.getConnectionId();
 
     log.error("Running for: " + connectionId);
-    childSync.run(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput, connectionId);
+    childSync.run(
+        syncWorkflowInputs.getJobRunConfig(),
+        syncWorkflowInputs.getSourceLauncherConfig(),
+        syncWorkflowInputs.getDestinationLauncherConfig(),
+        syncWorkflowInputs.getSyncInput(),
+        connectionId);
 
     syncWorkflowCancellationScope = Workflow.newCancellationScope(() -> childSync.run(null, null, null, null, null));
 
     if (isDeleted) {
       return new SyncResult(true);
     } else {
+      // TODO: Create a new job here
       Workflow.continueAsNew(connectionUpdaterInput);
     }
     // This should not be reachable

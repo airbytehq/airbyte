@@ -6,6 +6,7 @@ package io.airbyte.workers.temporal;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.JobCheckConnectionConfig;
+import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobSyncConfig;
@@ -121,11 +122,11 @@ public class TemporalClient {
             connectionId));
   }
 
-  public void submitConnectionUpdaterAsync(final long jobId, final int attemptId, final UUID connectionId) {
-    final ConnectionUpdaterWorkflow connectionUpdaterWorkflow = getWorkflowStubWithName(ConnectionUpdaterWorkflow.class,
+  public void submitConnectionUpdaterAsync(final long jobId, final int attemptId, final UUID connectionId, final JobConfig jobConfig) {
+    final ConnectionUpdaterWorkflow connectionUpdaterWorkflow = getWorkflowOptionsWithWorkflowId(ConnectionUpdaterWorkflow.class,
         TemporalJobType.CONNECTION_UPDATER, "connection_updater_" + connectionId);
     final BatchRequest signalRequest = client.newSignalWithStartRequest();
-    final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, jobId);
+    final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, jobId, jobConfig, attemptId);
     signalRequest.add(connectionUpdaterWorkflow::run, input);
     // TODO: Only if not manual
     signalRequest.add(connectionUpdaterWorkflow::skipWaitForScheduling);
@@ -142,7 +143,7 @@ public class TemporalClient {
     return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptions(jobType));
   }
 
-  private <T> T getWorkflowStubWithName(final Class<T> workflowClass, final TemporalJobType jobType, final String name) {
+  private <T> T getWorkflowOptionsWithWorkflowId(final Class<T> workflowClass, final TemporalJobType jobType, final String name) {
     return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptionsWithWorkflowId(jobType, name));
   }
 
