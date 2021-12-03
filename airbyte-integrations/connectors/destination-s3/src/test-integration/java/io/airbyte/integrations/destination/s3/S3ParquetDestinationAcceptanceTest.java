@@ -4,12 +4,15 @@
 
 package io.airbyte.integrations.destination.s3;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.avro.AvroConstants;
+import io.airbyte.integrations.destination.s3.avro.AvroTestHelper;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetWriter;
 import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
@@ -69,6 +72,15 @@ public class S3ParquetDestinationAcceptanceTest extends S3DestinationAcceptanceT
     }
 
     return jsonRecords;
+  }
+
+  @Override
+  protected void assertSameValue(final String key, final JsonNode expectedValue, final JsonNode actualValue) {
+    if (key.equals("date")) {
+      AvroTestHelper.assertDate(expectedValue, actualValue);
+    } else {
+      assertEquals(expectedValue, actualValue);
+    }
   }
 
 }

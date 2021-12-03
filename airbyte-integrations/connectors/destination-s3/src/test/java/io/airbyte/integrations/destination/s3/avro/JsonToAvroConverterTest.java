@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.jackson.MoreMappers;
@@ -27,7 +29,9 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 
 class JsonToAvroConverterTest {
 
-  private static final ObjectWriter WRITER = MoreMappers.initMapper().writer();
+  private static final ObjectMapper MAPPER = MoreMappers.initMapper();
+  private static final ObjectWriter WRITER = MAPPER.writer();
+  private static final ObjectReader READER = MAPPER.reader();
   private static final JsonToAvroSchemaConverter SCHEMA_CONVERTER = new JsonToAvroSchemaConverter();
 
   @Test
@@ -124,6 +128,11 @@ class JsonToAvroConverterTest {
         avroObject,
         Jsons.deserialize(actualAvroObject.toString()),
         String.format("Object conversion for %s failed", schemaName));
+
+    final JsonNode actualJsonObject = READER.readTree(AvroConstants.JSON_CONVERTER.convertToJson(actualAvroObject));
+    assertEquals(
+        jsonObject,
+        actualJsonObject);
   }
 
 }

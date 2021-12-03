@@ -1069,7 +1069,7 @@ public abstract class DestinationAcceptanceTest {
         }
         LOGGER.info("For {} Expected {} vs Actual {}", key, expectedValue, actualValue);
         assertTrue(actualData.has(key));
-        assertSameValue(expectedValue, actualValue);
+        assertSameValue(key, expectedValue, actualValue);
       }
     }
   }
@@ -1079,8 +1079,8 @@ public abstract class DestinationAcceptanceTest {
    *
    * @param data - data node from AirbyteMessage
    */
-  private void sortDataFields(JsonNode data) {
-    var sortedFields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(),
+  private void sortDataFields(final JsonNode data) {
+    final var sortedFields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(),
         Spliterator.ORDERED), false)
         .sorted(Entry.comparingByKey(Comparator.comparing(String::toLowerCase)))
         .collect(Collectors.toList());
@@ -1090,7 +1090,7 @@ public abstract class DestinationAcceptanceTest {
   }
 
   // Allows subclasses to implement custom comparison asserts
-  protected void assertSameValue(final JsonNode expectedValue, final JsonNode actualValue) {
+  protected void assertSameValue(final String key, final JsonNode expectedValue, final JsonNode actualValue) {
     assertEquals(expectedValue, actualValue);
   }
 

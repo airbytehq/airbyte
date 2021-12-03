@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.gcs;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -11,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.AvroConstants;
+import io.airbyte.integrations.destination.s3.avro.AvroTestHelper;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
 import java.util.LinkedList;
@@ -45,13 +48,13 @@ public class GcsAvroDestinationAcceptanceTest extends GcsDestinationAcceptanceTe
 
     final List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
     final List<JsonNode> jsonRecords = new LinkedList<>();
+    final ObjectReader jsonReader = MAPPER.reader();
 
     for (final S3ObjectSummary objectSummary : objectSummaries) {
       final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
       try (final DataFileReader<Record> dataFileReader = new DataFileReader<>(
           new SeekableByteArrayInput(object.getObjectContent().readAllBytes()),
           new GenericDatumReader<>())) {
-        final ObjectReader jsonReader = MAPPER.reader();
         while (dataFileReader.hasNext()) {
           final GenericData.Record record = dataFileReader.next();
           final byte[] jsonBytes = AvroConstants.JSON_CONVERTER.convertToJson(record);
@@ -63,6 +66,15 @@ public class GcsAvroDestinationAcceptanceTest extends GcsDestinationAcceptanceTe
     }
 
     return jsonRecords;
+  }
+
+  @Override
+  protected void assertSameValue(final String key, final JsonNode expectedValue, final JsonNode actualValue) {
+    if (key.equals("date")) {
+      AvroTestHelper.assertDate(expectedValue, actualValue);
+    } else {
+      assertEquals(expectedValue, actualValue);
+    }
   }
 
 }

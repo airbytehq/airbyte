@@ -4,14 +4,19 @@
 
 package io.airbyte.integrations.destination.s3;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.avro.AvroConstants;
+import io.airbyte.integrations.destination.s3.avro.AvroTestHelper;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.avro.file.DataFileReader;
@@ -19,6 +24,7 @@ import org.apache.avro.file.SeekableByteArrayInput;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericData.Record;
 import org.apache.avro.generic.GenericDatumReader;
+import tech.allegro.schema.json2avro.converter.util.DateTimeUtils;
 
 public class S3AvroDestinationAcceptanceTest extends S3DestinationAcceptanceTest {
 
@@ -62,6 +68,15 @@ public class S3AvroDestinationAcceptanceTest extends S3DestinationAcceptanceTest
     }
 
     return jsonRecords;
+  }
+
+  @Override
+  protected void assertSameValue(final String key, final JsonNode expectedValue, final JsonNode actualValue) {
+    if (key.equals("date")) {
+      AvroTestHelper.assertDate(expectedValue, actualValue);
+    } else {
+      assertEquals(expectedValue, actualValue);
+    }
   }
 
 }

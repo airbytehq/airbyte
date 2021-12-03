@@ -158,7 +158,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
         });
   }
 
-  protected void assertSameValue(final JsonNode expectedValue, final JsonNode actualValue) {
+  protected void assertSameValue(final String key, final JsonNode expectedValue, final JsonNode actualValue) {
     if (expectedValue.isBoolean()) {
       // Boolean in MySQL are stored as TINYINT (0 or 1) so we force them to boolean values here
       assertEquals(expectedValue.asBoolean(), actualValue.asBoolean());
