@@ -74,7 +74,7 @@ services:
       - INTERNAL_API_HOST=${INTERNAL_API_HOST}
       - SECRET_PERSISTENCE=${SECRET_PERSISTENCE}
       # TODO: Remove before merge
-      - NEW_SCHEDULER=valuedoesntmatter
+      # - NEW_SCHEDULER=valuedoesntmatter
     volumes:
       - workspace:${WORKSPACE_ROOT}
       - ${LOCAL_ROOT}:${LOCAL_ROOT}
