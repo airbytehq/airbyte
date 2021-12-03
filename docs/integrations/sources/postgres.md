@@ -209,21 +209,21 @@ Postgres data types are mapped to the following data types when synchronizing da
 | :--- | :--- | :--- |
 | `bigint` | number |  |
 | `bigserial` | number |  |
-| `bit` | boolean |  |
+| `bit` | boolean | bit is mapped to boolean type and `read` is failed for n-bit values  |
 | `blob` | boolean |  |
 | `boolean` | boolean |  |
 | `box` | string |  |
-| `bytea` | object |  |
+| `bytea` | object | parsed value is encoded by Base64 [#7905](https://github.com/airbytehq/airbyte/issues/7905)|
 | `character` | string |  |
 | `character varying` | string |  |
 | `cidr` | string |  |
 | `circle` | string |  |
 | `citext` | string |  |
 | `date` | string |  |
-| `double precision` | string |  |
+| `double precision` | string | Values `-Infinity`, `Infinity`, `Nan` will not be parsed correctly. Parsed values for all of them are null [#7871](https://github.com/airbytehq/airbyte/issues/7871) |
 | `enum` | number |  |
-| `float` | number |  |
-| `float8` | number |  |
+| `float` | number | Values `-Infinity`, `Infinity`, `Nan` will not be parsed correctly. Parsed values for all of them are null [#7871](https://github.com/airbytehq/airbyte/issues/7871) |
+| `float8` | number | Values `-Infinity`, `Infinity`, `Nan` will not be parsed correctly. Parsed values for all of them are null [#7871](https://github.com/airbytehq/airbyte/issues/7871) |
 | `hstore` | object | may be de-nested depending on the destination you are syncing into |
 | `inet` | string |  |
 | `int` | number |  |
@@ -235,13 +235,13 @@ Postgres data types are mapped to the following data types when synchronizing da
 | `lseg` | string |  |
 | `macaddr` | string |  |
 | `macaddr8` | string |  |
-| `money` | string | When running logical replication (CDC), `money` values larger than 999999999999999 (15 nines) or smaller than -999999999999999 (15 nines)  are transmitted as null; |
+| `money` | string | When running logical replication (CDC), `money` values larger than 999999999999999 (15 nines) or smaller than -999999999999999 (15 nines)  are transmitted as null; When running default mode `money` value fail when amount is > 1000 [#7870](https://github.com/airbytehq/airbyte/issues/7870) |
 | `mood` | string |  |
 | `numeric` | number |  |
 | `path` | string |  |
 | `point` | number |  |
 | `polygon` | number |  |
-| `real` | number |  |
+| `real` | number | Values `-Infinity`, `Infinity`, `Nan` will not be parsed correctly. Parsed values for all of them are null [#7871](https://github.com/airbytehq/airbyte/issues/7871) |
 | `serial` | number |  |
 | `smallint` | number |  |
 | `smallserial` | number |  |
@@ -255,6 +255,7 @@ Postgres data types are mapped to the following data types when synchronizing da
 | `timestamp without timezone` | string | may be written as a native date type depending on the destination |
 | `tsrange` | string |  |
 | `tsvector` | string |  |
+| `tsquery` | string | is not supported with CDC node. Parsed value is null [#7911](https://github.com/airbytehq/airbyte/issues/7911) |
 | `uuid` | string |  |
 | `varchar` | string |  |
 | `xml` | string |  |
