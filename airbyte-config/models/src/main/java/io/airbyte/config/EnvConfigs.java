@@ -53,7 +53,7 @@ public class EnvConfigs implements Configs {
   public static final String WEBAPP_URL = "WEBAPP_URL";
   public static final String JOB_IMAGE_PULL_POLICY = "JOB_IMAGE_PULL_POLICY";
   public static final String JOB_POD_TOLERATIONS = "JOB_POD_TOLERATIONS";
-  public static final String WORKER_POD_NODE_SELECTORS = "WORKER_POD_NODE_SELECTORS";
+  public static final String JOB_POD_NODE_SELECTORS = "JOB_POD_NODE_SELECTORS";
   public static final String JOB_SOCAT_IMAGE = "JOB_SOCAT_IMAGE";
   public static final String JOB_BUSYBOX_IMAGE = "JOB_BUSYBOX_IMAGE";
   public static final String JOB_CURL_IMAGE = "JOB_CURL_IMAGE";
@@ -339,9 +339,9 @@ public class EnvConfigs implements Configs {
    * @return map containing kv pairs of node selectors
    */
   @Override
-  public Map<String, String> getWorkerNodeSelectors() {
+  public Map<String, String> getJobPodNodeSelectors() {
     return Splitter.on(",")
-        .splitToStream(getEnvOrDefault(WORKER_POD_NODE_SELECTORS, ""))
+        .splitToStream(getEnvOrDefault(JOB_POD_NODE_SELECTORS, ""))
         .filter(s -> !Strings.isNullOrEmpty(s) && s.contains("="))
         .map(s -> s.split("="))
         .collect(Collectors.toMap(s -> s[0], s -> s[1]));

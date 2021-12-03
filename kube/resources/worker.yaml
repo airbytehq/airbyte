@@ -174,11 +174,11 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: JOB_POD_TOLERATIONS
-            - name: WORKER_POD_NODE_SELECTORS
+            - name: JOB_POD_NODE_SELECTORS
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
-                  key: WORKER_POD_NODE_SELECTORS
+                  key: JOB_POD_NODE_SELECTORS
             - name: JOB_IMAGE_PULL_POLICY
               valueFrom:
                 configMapKeyRef:

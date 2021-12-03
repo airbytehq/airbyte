@@ -34,7 +34,7 @@ public class WorkerUtils {
 
   public static final ResourceRequirements DEFAULT_RESOURCE_REQUIREMENTS = initResourceRequirements();
   public static final List<TolerationPOJO> DEFAULT_JOB_POD_TOLERATIONS = CONFIGS.getJobPodTolerations();
-  public static final Map<String, String> DEFAULT_WORKER_POD_NODE_SELECTORS = CONFIGS.getWorkerNodeSelectors();
+  public static final Map<String, String> DEFAULT_JOB_POD_NODE_SELECTORS = CONFIGS.getJobPodNodeSelectors();
   public static final String DEFAULT_JOBS_IMAGE_PULL_SECRET = CONFIGS.getJobsImagePullSecret();
   public static final String DEFAULT_JOB_IMAGE_PULL_POLICY = CONFIGS.getJobImagePullPolicy();
   public static final String JOB_SOCAT_IMAGE = CONFIGS.getJobSocatImage();

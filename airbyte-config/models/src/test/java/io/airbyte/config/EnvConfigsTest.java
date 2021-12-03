@@ -188,20 +188,20 @@ class EnvConfigsTest {
 
   @Test
   void testWorkerPodNodeSelectors() {
-    when(function.apply(EnvConfigs.WORKER_POD_NODE_SELECTORS)).thenReturn(null);
-    Assertions.assertEquals(config.getWorkerNodeSelectors(), Map.of());
+    when(function.apply(EnvConfigs.JOB_POD_NODE_SELECTORS)).thenReturn(null);
+    Assertions.assertEquals(config.getJobPodNodeSelectors(), Map.of());
 
-    when(function.apply(EnvConfigs.WORKER_POD_NODE_SELECTORS)).thenReturn(",,,");
-    Assertions.assertEquals(config.getWorkerNodeSelectors(), Map.of());
+    when(function.apply(EnvConfigs.JOB_POD_NODE_SELECTORS)).thenReturn(",,,");
+    Assertions.assertEquals(config.getJobPodNodeSelectors(), Map.of());
 
-    when(function.apply(EnvConfigs.WORKER_POD_NODE_SELECTORS)).thenReturn("key=k,,;$%&^#");
-    Assertions.assertEquals(config.getWorkerNodeSelectors(), Map.of("key", "k"));
+    when(function.apply(EnvConfigs.JOB_POD_NODE_SELECTORS)).thenReturn("key=k,,;$%&^#");
+    Assertions.assertEquals(config.getJobPodNodeSelectors(), Map.of("key", "k"));
 
-    when(function.apply(EnvConfigs.WORKER_POD_NODE_SELECTORS)).thenReturn("one=two");
-    Assertions.assertEquals(config.getWorkerNodeSelectors(), Map.of("one", "two"));
+    when(function.apply(EnvConfigs.JOB_POD_NODE_SELECTORS)).thenReturn("one=two");
+    Assertions.assertEquals(config.getJobPodNodeSelectors(), Map.of("one", "two"));
 
-    when(function.apply(EnvConfigs.WORKER_POD_NODE_SELECTORS)).thenReturn("airbyte=server,something=nothing");
-    Assertions.assertEquals(config.getWorkerNodeSelectors(), Map.of("airbyte", "server", "something", "nothing"));
+    when(function.apply(EnvConfigs.JOB_POD_NODE_SELECTORS)).thenReturn("airbyte=server,something=nothing");
+    Assertions.assertEquals(config.getJobPodNodeSelectors(), Map.of("airbyte", "server", "something", "nothing"));
   }
 
 }

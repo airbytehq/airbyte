@@ -80,7 +80,7 @@ public interface Configs {
   List<TolerationPOJO> getJobPodTolerations();
 
   // getJobPodNodeSelectors
-  Map<String, String> getWorkerNodeSelectors();
+  Map<String, String> getJobPodNodeSelectors();
 
   // getJobPodMainContainerImagePullPolicy
   String getJobImagePullPolicy();
