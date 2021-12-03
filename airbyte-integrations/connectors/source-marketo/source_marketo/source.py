@@ -154,9 +154,12 @@ class MarketoExportBase(IncrementalMarketoStream):
         return next(MarketoExportCreate(self.config, stream_name=self.stream_name, param=param).read_records(sync_mode=None), {})
 
     def start_export(self, stream_slice):
-        return next(
-            MarketoExportStart(self.config, stream_name=self.stream_name, export_id=stream_slice["id"]).read_records(sync_mode=None)
-        )
+        try:
+            return next(
+                MarketoExportStart(self.config, stream_name=self.stream_name, export_id=stream_slice["id"]).read_records(sync_mode=None)
+            )
+        except StopIteration:
+            pass
 
     def get_export_status(self, stream_slice):
         return next(
@@ -220,6 +223,8 @@ class MarketoExportBase(IncrementalMarketoStream):
         schema = self.get_json_schema()["properties"]
 
         for values in list_response[1:]:
+            for j, header in enumerate(headers):
+                self.logger.info(f"{header}: {values.split(',')[j]}")
             record = {
                 headers[i]: format_value(value, schema[headers[i]], headers[i])
                 for i, value in enumerate(next(csv.reader([values], skipinitialspace=True)))

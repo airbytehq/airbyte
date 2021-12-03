@@ -61,14 +61,12 @@
     },
     "annualRevenue": {
       "type": [
-        "string",
         "number",
         "null"
       ]
     },
     "numberOfEmployees": {
       "type": [
-        "string",
         "integer",
         "null"
       ]
@@ -99,7 +97,6 @@
     },
     "id": {
       "type": [
-        "string",
         "integer",
         "null"
       ]
@@ -291,7 +288,6 @@
     },
     "emailInvalid": {
       "type": [
-        "string",
         "boolean",
         "null"
       ]
@@ -304,7 +300,6 @@
     },
     "unsubscribed": {
       "type": [
-        "string",
         "boolean",
         "null"
       ]
@@ -317,7 +312,6 @@
     },
     "doNotCall": {
       "type": [
-        "string",
         "boolean",
         "null"
       ]
@@ -336,7 +330,6 @@
     },
     "marketingSuspended": {
       "type": [
-        "string",
         "boolean",
         "null"
       ]
@@ -349,7 +342,6 @@
     },
     "blackListed": {
       "type": [
-        "string",
         "boolean",
         "null"
       ]
@@ -416,7 +408,6 @@
     },
     "emailSuspended": {
       "type": [
-        "string",
         "boolean",
         "null"
       ]
@@ -492,35 +483,30 @@
     },
     "leadScore": {
       "type": [
-        "string",
         "integer",
         "null"
       ]
     },
     "urgency": {
       "type": [
-        "string",
         "number",
         "null"
       ]
     },
     "priority": {
       "type": [
-        "string",
         "integer",
         "null"
       ]
     },
     "relativeScore": {
       "type": [
-        "string",
         "integer",
         "null"
       ]
     },
     "relativeUrgency": {
       "type": [
-        "string",
         "integer",
         "null"
       ]
