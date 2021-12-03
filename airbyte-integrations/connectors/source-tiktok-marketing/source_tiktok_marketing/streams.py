@@ -222,8 +222,13 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
         self._advertiser_storage = ListAdvertiserIdsStream(
             advertiser_id=advertiser_id, app_id=app_id, secret=secret, access_token=self.authenticator.token
         )
-        self.max_cursor_date = None
+        self._max_cursor_date = None
         self._advertiser_ids = self._advertiser_storage.advertiser_ids
+
+    @property
+    def max_cursor_date(self):
+        """ "Override it if needed to format a state value"""
+        return self._max_cursor_date
 
     @property
     def is_sandbox(self):
@@ -261,10 +266,6 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
 class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
     cursor_field = "modify_time"
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.max_cursor_date = None
-
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """All responses have the following pagination data:
         {
@@ -294,8 +295,8 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
     def select_cursor_field_value(self, data: Mapping[str, Any] = None) -> str:
         if not data or not self.cursor_field:
             return None
-        cursor_field_path = self.cursor_field if isinstance(self.cursor_field, list) else [self.cursor_field]
 
+        cursor_field_path = self.cursor_field if isinstance(self.cursor_field, list) else [self.cursor_field]
         result = data
         for key in cursor_field_path:
             result = result.get(key)
@@ -312,8 +313,8 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
             elif updated <= state:
                 continue
             else:
-                if not self.max_cursor_date or self.max_cursor_date < updated:
-                    self.max_cursor_date = updated
+                if not self._max_cursor_date or self._max_cursor_date < updated:
+                    self._max_cursor_date = updated
                 yield record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -535,6 +536,25 @@ class BasicReports(IncrementalTiktokStream, ABC):
     def get_json_schema(self) -> Mapping[str, Any]:
         """All reports have same schema"""
         return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("basic_reports")
+
+    @classmethod
+    def __format_state_value(cls, value):
+        if not value:
+            return value
+        dt = pendulum.parse(value)
+        if self.report_granularity == ReportGranularity.DAY:
+            dt = dt.end_of("day")
+        elif self.report_granularity == ReportGranularity.HOUR:
+            dt = dt.end_of("hour")
+        return dt.strftime("%Y-%m-%d %H:%M:%S")
+
+    @property
+    def max_cursor_date(self):
+        return self.__format_state_value(self._max_cursor_data)
+
+    def select_cursor_field_value(self, data: Mapping[str, Any] = None) -> str:
+        value = super().select_cursor_field_value(data)
+        return self.__format_state_value(value)
 
 
 class AdsReports(BasicReports):
