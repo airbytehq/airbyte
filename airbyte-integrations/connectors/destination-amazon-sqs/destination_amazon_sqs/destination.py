@@ -49,7 +49,7 @@ class DestinationAmazonSqs(Destination):
     # MessageGroupID and MessageDeduplicationID are required properties for FIFO queues
     # https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_SendMessage.html
     def set_message_fifo_properties(self, message, message_group_id, use_content_dedupe=False):
-	# https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagegroupid-property.html
+        # https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagegroupid-property.html
         if not message_group_id:
             raise Exception("Failed to build message - Message Group ID is required for FIFO queues")
         else:
