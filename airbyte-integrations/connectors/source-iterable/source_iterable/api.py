@@ -3,7 +3,7 @@
 #
 
 import csv
-import re
+import json
 import urllib.parse as urlparse
 from io import StringIO
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
@@ -184,24 +184,18 @@ class EmailUnsubscribe(IterableExportStreamAdjustableRange):
 
 class Events(IterableStream):
     """
-    https://api.iterable.com/api/docs#events_User_events
+    https://api.iterable.com/api/docs#export_exportUserEvents
     """
 
     primary_key = None
     data_field = "events"
-    page_size = EVENT_ROWS_LIMIT
 
-    @staticmethod
-    def _check_email_is_valid(email):
-        email_regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
-        return re.fullmatch(email_regex, email)
+    def path(self, **kwargs) -> str:
+        return "export/userEvents"
 
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        return f"events/{stream_slice['email']}"
-
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, stream_slice: Optional[Mapping[str, Any]], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
-        params["limit"] = self.page_size
+        params.update({"email": stream_slice["email"], "includeCustomEvents": "true"})
 
         return params
 
@@ -211,12 +205,12 @@ class Events(IterableStream):
 
         for stream_slice in stream_slices:
             for list_record in lists.read_records(sync_mode=kwargs.get("sync_mode", SyncMode.full_refresh), stream_slice=stream_slice):
-                if self._check_email_is_valid(list_record["email"]):
-                    yield {"email": list_record["email"]}
+                yield {"email": list_record["email"]}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        for record in super().parse_response(response, **kwargs):
-            yield {"data": record}
+        jsonl_records = StringIO(response.text)
+        for record in jsonl_records:
+            yield json.loads(record)
 
 
 class MessageTypes(IterableStream):

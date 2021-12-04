@@ -1,40 +1,151 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+import json
+
+import pytest
+import requests
 import responses
-from airbyte_cdk.models import SyncMode
-from source_iterable.api import Events, ListUsers
+from source_iterable.api import Events
 
 
 @responses.activate
-def test_events_slices_response(mocker):
-    emails_sample = [
-        {"email": "te.st1@mail.com", "list_id": 12345},
-        {"email": "test2@mail.com", "list_id": 12345},
-        {"email": "11/test3@mail.com", "list_id": 12345},
-        {"email": "test4mail.com", "list_id": 12345},
-        {"email": "test-5@mail.com", "list_id": 12345},
-        {"email": "test:6@mail.com", "list_id": 12346},
-        {"email": "test.7@mail.com", "list_id": 12346},
-        {"email": "test,8@mail.com", "list_id": 12346},
-        {"email": "te.st9@mail.com1", "list_id": 12346},
-        {"email": "test10@mailcom", "list_id": 12346},
-    ]
-    test_url = "https://api.iterable.com/api/lists/getUsers?listId={list_id}&api_key=key"
-    responses.add(
-        responses.GET, test_url.format(list_id=12345), body="\n".join([s["email"] for s in emails_sample if s["list_id"] == 12345])
-    )
-    responses.add(
-        responses.GET, test_url.format(list_id=12346), body="\n".join([s["email"] for s in emails_sample if s["list_id"] == 12346])
-    )
-    mocker.patch.object(ListUsers, "stream_slices", return_value=[{"list_id": 12345}, {"list_id": 12346}])
-
+@pytest.mark.parametrize(
+    "response_objects,jsonl_body",
+    [
+        (
+            [
+                {
+                    "createdAt": "2021",
+                    "signupSource": "str",
+                    "emailListIds": [1],
+                    "itblInternal": {"documentUpdatedAt": "2021", "documentCreatedAt": "202"},
+                    "_type": "str",
+                    "messageTypeIds": [],
+                    "channelIds": [],
+                    "email": "test@mail.com",
+                    "profileUpdatedAt": "2021",
+                },
+                {
+                    "productRecommendationCount": 1,
+                    "campaignId": 1,
+                    "itblInternal": {"documentUpdatedAt": "2021", "documentCreatedAt": "2021"},
+                    "contentId": 1,
+                    "_type": "1",
+                    "messageId": "1",
+                    "messageBusId": "1",
+                    "templateId": 1,
+                    "createdAt": "2021",
+                    "messageTypeId": 1,
+                    "catalogCollectionCount": 1,
+                    "catalogLookupCount": 0,
+                    "email": "test@mail.com",
+                    "channelId": 1,
+                },
+                {
+                    "createdAt": "2021",
+                    "campaignId": 1,
+                    "itblInternal": {"documentUpdatedAt": "2021", "documentCreatedAt": "2021"},
+                    "_type": "str",
+                    "messageId": "1",
+                    "templateId": 1,
+                    "recipientState": "str",
+                    "email": "test@mail.com",
+                },
+                {
+                    "unsubSource": "str",
+                    "createdAt": "2021",
+                    "emailListIds": [],
+                    "itblInternal": {"documentUpdatedAt": "2021", "documentCreatedAt": "2021"},
+                    "_type": "str",
+                    "messageId": "1",
+                    "messageTypeIds": [],
+                    "channelIds": [1],
+                    "templateId": 1,
+                    "recipientState": "str",
+                    "email": "test@mail.com",
+                },
+            ],
+            False,
+        ),
+        (
+            [
+                {
+                    "createdAt": "2021",
+                    "signupSource": "str",
+                    "emailListIds": [1],
+                    "itblInternal": {"documentUpdatedAt": "2021", "documentCreatedAt": "202"},
+                    "_type": "str",
+                    "messageTypeIds": [],
+                    "channelIds": [],
+                    "email": "test@mail.com",
+                    "profileUpdatedAt": "2021",
+                }
+            ],
+            False,
+        ),
+        (
+            [
+                {
+                    "createdAt": "2021",
+                    "signupSource": "str",
+                    "emailListIds": [1],
+                    "itblInternal": {"documentUpdatedAt": "2021", "documentCreatedAt": "202"},
+                    "_type": "str",
+                    "messageTypeIds": [],
+                    "channelIds": [],
+                    "email": "test@mail.com",
+                    "profileUpdatedAt": "2021",
+                },
+                {
+                    "productRecommendationCount": 1,
+                    "campaignId": 1,
+                    "itblInternal": {"documentUpdatedAt": "2021", "documentCreatedAt": "2021"},
+                    "contentId": 1,
+                    "_type": "1",
+                    "messageId": "1",
+                    "messageBusId": "1",
+                    "templateId": 1,
+                    "createdAt": "2021",
+                    "messageTypeId": 1,
+                    "catalogCollectionCount": 1,
+                    "catalogLookupCount": 0,
+                    "email": "test@mail.com",
+                    "channelId": 1,
+                },
+            ],
+            True,
+        ),
+        (
+            [
+                {
+                    "createdAt": "2021",
+                    "signupSource": "str",
+                    "emailListIds": [1],
+                    "itblInternal": {"documentUpdatedAt": "2021", "documentCreatedAt": "202"},
+                    "_type": "str",
+                    "messageTypeIds": [],
+                    "channelIds": [],
+                    "email": "test@mail.com",
+                    "profileUpdatedAt": "2021",
+                }
+            ],
+            True,
+        ),
+    ],
+)
+def test_events_parse_response(response_objects, jsonl_body):
+    if jsonl_body:
+        response_body = "\n".join([json.dumps(obj) for obj in response_objects])
+    else:
+        response_body = json.dumps(response_objects)
+    responses.add(responses.GET, "https://example.com", body=response_body)
+    response = requests.get("https://example.com")
     stream = Events(api_key="key")
-    events_slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh, corsor_field=None))
 
-    assert events_slices == [
-        {"email": "te.st1@mail.com"},
-        {"email": "test2@mail.com"},
-        {"email": "test-5@mail.com"},
-        {"email": "test.7@mail.com"},
-    ]
+    records = [record for record in stream.parse_response(response)]
+
+    if jsonl_body:
+        assert records == response_objects
+    else:
+        assert records != response_objects

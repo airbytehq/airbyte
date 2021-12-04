@@ -1,7 +1,97 @@
 {
   "properties": {
-    "data": {
-      "type": ["null", "object"]
+    "lastName": {
+      "type": ["null", "string"]
+    },
+    "itblInternal": {
+      "type": ["null", "object"],
+      "properties": {
+        "documentCreatedAt": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "documentUpdatedAt": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        }
+      }
+    },
+    "_type": {
+      "type": ["null", "string"]
+    },
+    "someDate": {
+      "type": ["null", "string"]
+    },
+    "messageTypeIds": {
+      "type": ["null", "array"]
+    },
+    "userId": {
+      "type": ["null", "string"]
+    },
+    "firstName": {
+      "type": ["null", "string"]
+    },
+    "createdAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "signupSource": {
+      "type": ["null", "string"]
+    },
+    "emailListIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "channelIds": {
+      "type": ["null", "array"]
+    },
+    "isFoobar": {
+      "type": ["null", "boolean"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "profileUpdatedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "productRecommendationCount": {
+      "type": ["null", "integer"]
+    },
+    "campaignId": {
+      "type": ["null", "integer"]
+    },
+    "contentId": {
+      "type": ["null", "integer"]
+    },
+    "messageId": {
+      "type": ["null", "string"]
+    },
+    "messageBusId": {
+      "type": ["null", "string"]
+    },
+    "templateId": {
+      "type": ["null", "integer"]
+    },
+    "messageTypeId": {
+      "type": ["null", "integer"]
+    },
+    "catalogCollectionCount": {
+      "type": ["null", "integer"]
+    },
+    "catalogLookupCount": {
+      "type": ["null", "integer"]
+    },
+    "channelId": {
+      "type": ["null", "integer"]
+    },
+    "recipientState": {
+      "type": ["null", "string"]
+    },
+    "unsubSource": {
+      "type": ["null", "string"]
     }
   },
   "type": ["null", "object"]

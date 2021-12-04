@@ -6,6 +6,9 @@ The Iterable supports full refresh and incremental sync.
 
 This source can sync data for the [Iterable API](https://api.iterable.com/api/docs).
 
+**Note**: there are some redundant endpoints (e.g. [`export/userEvents`](https://api.iterable.com/api/docs#export_exportUserEvents) and [`events/{email}`](https://api.iterable.com/api/docs#events_User_events)). 
+In this case it's better to use the one which takes params as a query param rather than as part of the url param. 
+
 ### Output schema
 
 Several output streams are available from this source:
@@ -58,6 +61,7 @@ Please read [How to find your API key](https://support.iterable.com/hc/en-us/art
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| `0.1.14` | 2021-12-01 | [8380](https://github.com/airbytehq/airbyte/pull/8380) | Update `Events` stream to use `export/userEvents` endpoint |
 | `0.1.14` | 2021-12-01 | [8380](https://github.com/airbytehq/airbyte/pull/8380) | Add email validation on `Events.stream_slices()` method execution |
 | `0.1.13` | 2021-11-22 | [8091](https://github.com/airbytehq/airbyte/pull/8091) | Adjust slice ranges for email streams |
 | `0.1.12` | 2021-11-09 | [7780](https://github.com/airbytehq/airbyte/pull/7780) | Split EmailSend stream into slices to fix premature connection close error |
