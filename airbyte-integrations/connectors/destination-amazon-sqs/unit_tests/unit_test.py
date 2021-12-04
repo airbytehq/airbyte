@@ -129,12 +129,12 @@ def test_write():
     # Standard Queue Test
     print("## Starting standard queue test ##")
     # Create Queue
-    queue_name = "amazon-sqs-mock-queue"    
+    queue_name = "amazon-sqs-mock-queue"
     client = boto3.client(
         "sqs", aws_access_key_id=user["AccessKeyId"], aws_secret_access_key=user["SecretAccessKey"], region_name=queue_region
     )
     queue_url = client.create_queue(QueueName=queue_name)["QueueUrl"]
-    # Create config    
+    # Create config
     config = create_config(queue_url, queue_region, user["AccessKeyId"], user["SecretAccessKey"], message_delay)
     # Create ConfiguredAirbyteCatalog
     catalog = ConfiguredAirbyteCatalog(streams=get_catalog()["streams"])
