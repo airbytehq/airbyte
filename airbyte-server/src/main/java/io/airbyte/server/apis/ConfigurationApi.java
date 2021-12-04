@@ -212,7 +212,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         temporalWorkerRunFactory,
         workerEnvironment,
         logConfigs,
-        threadPool);
+        featureFlags);
     operationsHandler = new OperationsHandler(configRepository);
     destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, synchronousSchedulerClient);
     destinationHandler = new DestinationHandler(configRepository, schemaValidator, connectionsHandler);

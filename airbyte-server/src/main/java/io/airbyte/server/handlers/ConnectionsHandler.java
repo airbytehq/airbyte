@@ -24,8 +24,8 @@ import io.airbyte.api.model.ResourceRequirements;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
-import io.airbyte.commons.concurrency.LifecycledCallable;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DestinationConnection;
@@ -61,7 +61,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
@@ -80,19 +79,18 @@ public class ConnectionsHandler {
   private final TemporalWorkerRunFactory temporalWorkerRunFactory;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
-  private final ExecutorService threadPool;
+  private final FeatureFlags featureFlags;
 
-  @VisibleForTesting
-  ConnectionsHandler(final ConfigRepository configRepository,
-                     final Supplier<UUID> uuidGenerator,
-                     final WorkspaceHelper workspaceHelper,
-                     final TrackingClient trackingClient,
-                     final SyncJobFactory jobFactory,
-                     final JobPersistence jobPersistence,
-                     final TemporalWorkerRunFactory temporalWorkerRunFactory,
-                     final WorkerEnvironment workerEnvironment,
-                     final LogConfigs logConfigs,
-                     final ExecutorService threadPool) {
+  @VisibleForTesting ConnectionsHandler(final ConfigRepository configRepository,
+                                        final Supplier<UUID> uuidGenerator,
+                                        final WorkspaceHelper workspaceHelper,
+                                        final TrackingClient trackingClient,
+                                        final SyncJobFactory jobFactory,
+                                        final JobPersistence jobPersistence,
+                                        final TemporalWorkerRunFactory temporalWorkerRunFactory,
+                                        final WorkerEnvironment workerEnvironment,
+                                        final LogConfigs logConfigs,
+                                        final FeatureFlags featureFlags) {
     this.configRepository = configRepository;
     this.uuidGenerator = uuidGenerator;
     this.workspaceHelper = workspaceHelper;
@@ -102,19 +100,19 @@ public class ConnectionsHandler {
     this.temporalWorkerRunFactory = temporalWorkerRunFactory;
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
-    this.threadPool = threadPool;
+    this.featureFlags = featureFlags;
   }
 
   public ConnectionsHandler(
-                            final ConfigRepository configRepository,
-                            final WorkspaceHelper workspaceHelper,
-                            final TrackingClient trackingClient,
-                            final SyncJobFactory jobFactory,
-                            final JobPersistence jobPersistence,
-                            final TemporalWorkerRunFactory temporalWorkerRunFactory,
-                            final WorkerEnvironment workerEnvironment,
-                            final LogConfigs logConfigs,
-                            final ExecutorService threadPool) {
+      final ConfigRepository configRepository,
+      final WorkspaceHelper workspaceHelper,
+      final TrackingClient trackingClient,
+      final SyncJobFactory jobFactory,
+      final JobPersistence jobPersistence,
+      final TemporalWorkerRunFactory temporalWorkerRunFactory,
+      final WorkerEnvironment workerEnvironment,
+      final LogConfigs logConfigs,
+      final FeatureFlags featureFlags) {
     this(
         configRepository,
         UUID::randomUUID,
@@ -125,7 +123,7 @@ public class ConnectionsHandler {
         temporalWorkerRunFactory,
         workerEnvironment,
         logConfigs,
-        threadPool);
+        featureFlags);
   }
 
   private void validateWorkspace(final UUID sourceId, final UUID destinationId, final Set<UUID> operationIds) {
@@ -205,6 +203,9 @@ public class ConnectionsHandler {
 
     trackNewConnection(standardSync);
 
+    if (true) {
+
+    }
     final long jobId = jobFactory.create(connectionId);
     SchedulerApp.PENDING_JOBS.getAndIncrement();
     final Job createdJob = jobPersistence.getJob(jobId);
@@ -212,14 +213,14 @@ public class ConnectionsHandler {
     try {
       final WorkerRun workerRun = temporalWorkerRunFactory.create(createdJob);
 
-      threadPool.submit(new LifecycledCallable.Builder<>(workerRun)
-          .setOnStart(() -> {
-            final Path logFilePath = workerRun.getJobRoot().resolve(LogClientSingleton.LOG_FILENAME);
-            final long persistedAttemptId = jobPersistence.createAttempt(jobId, logFilePath);
-            // assertSameIds(attemptNumber, persistedAttemptId);
-            LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs, workerRun.getJobRoot());
-          })
-          .build());
+      LOGGER.error("Starting the worker run _____");
+      final Path logFilePath = workerRun.getJobRoot().resolve(LogClientSingleton.LOG_FILENAME);
+      final long persistedAttemptId = jobPersistence.createAttempt(jobId, logFilePath);
+      // assertSameIds(attemptNumber, persistedAttemptId);
+      LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs, workerRun.getJobRoot());
+      workerRun.call();
+      LOGGER.error("Finished the worker run ______");
+
     } catch (final Exception e) {
       e.printStackTrace();
     }
