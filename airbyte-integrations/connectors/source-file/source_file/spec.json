@@ -39,7 +39,8 @@
               "storage": {
                 "type": "string",
                 "enum": ["HTTPS"],
-                "default": "HTTPS"
+                "default": "HTTPS",
+                "const": "HTTPS"
               }
             }
           },
@@ -50,7 +51,8 @@
               "storage": {
                 "type": "string",
                 "enum": ["GCS"],
-                "default": "GCS"
+                "default": "GCS",
+                "const": "GCS"
               },
               "service_account_json": {
                 "type": "string",
@@ -65,7 +67,8 @@
               "storage": {
                 "type": "string",
                 "enum": ["S3"],
-                "default": "S3"
+                "default": "S3",
+                "const": "S3"
               },
               "aws_access_key_id": {
                 "type": "string",
@@ -85,7 +88,8 @@
               "storage": {
                 "type": "string",
                 "enum": ["AzBlob"],
-                "default": "AzBlob"
+                "default": "AzBlob",
+                "const": "AzBlob"
               },
               "storage_account": {
                 "type": "string",
@@ -110,7 +114,8 @@
               "storage": {
                 "type": "string",
                 "enum": ["SSH"],
-                "default": "SSH"
+                "default": "SSH",
+                "const": "SSH"
               },
               "user": {
                 "type": "string"
@@ -135,7 +140,8 @@
               "storage": {
                 "type": "string",
                 "enum": ["SCP"],
-                "default": "SCP"
+                "default": "SCP",
+                "const": "SCP"
               },
               "user": {
                 "type": "string"
@@ -160,7 +166,8 @@
               "storage": {
                 "type": "string",
                 "enum": ["SFTP"],
-                "default": "SFTP"
+                "default": "SFTP",
+                "const": "SFTP"
               },
               "user": {
                 "type": "string"
@@ -186,7 +193,8 @@
                 "type": "string",
                 "description": "WARNING: Note that local storage URL available for read must start with the local mount \"/local/\" at the moment until we implement more advanced docker mounting options...",
                 "enum": ["local"],
-                "default": "local"
+                "default": "local",
+                "const": "local"
               }
             }
           }

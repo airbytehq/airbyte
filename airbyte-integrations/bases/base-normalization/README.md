@@ -118,7 +118,7 @@ or directly with pytest:
     NORMALIZATION_TEST_TARGET=postgres  pytest airbyte-integrations/bases/base-normalization/integration_tests
 
 Note that these tests are connecting and processing data on top of real data warehouse destinations.
-Therefore, valid credentials files are expected to be injected in the `secrets/` folder in order to run 
+Therefore, valid credentials files are expected to be injected in the `secrets/` folder in order to run
 (not included in git repository).
 
 This is usually automatically done by the CI thanks to the `tools/bin/ci_credentials.sh` script or you can 
@@ -216,6 +216,9 @@ So, for each target destination, the steps run by the tests are:
 6. Deploy the `schema_tests` and `data_tests` files into the test workspace folder.
 7. Execute dbt cli command: `dbt tests` from the test workspace folder to run verifications and checks with dbt.
 8. Optional checks (nothing for the moment)
+
+Note that the tests are using the normalization code from the python files directly, so it is not necessary to rebuild the docker images
+in between when iterating on the code base. However, dbt cli and destination connectors are invoked thanks to the dev docker images.
 
 ### Integration Test Checks:
 

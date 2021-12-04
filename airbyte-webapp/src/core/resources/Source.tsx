@@ -45,6 +45,7 @@ export class SourceResource extends BaseResource implements Source {
 
   // TODO: fix detailShape here as it is actually createShape
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  // TODO: remove?
   static recreateShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),
@@ -73,11 +74,7 @@ export class SourceResource extends BaseResource implements Source {
         _: Readonly<Record<string, string>>,
         body: Readonly<Record<string, unknown>>
       ): Promise<Source> =>
-        await this.fetch(
-          "post",
-          `${super.rootUrl()}web_backend/sources/create`,
-          body
-        ),
+        await this.fetch("post", `${super.rootUrl()}sources/create`, body),
     };
   }
 }

@@ -121,7 +121,7 @@ class DefaultAirbyteStreamFactoryTest {
   private Stream<AirbyteMessage> stringToMessageStream(final String inputString) {
     final InputStream inputStream = new ByteArrayInputStream(inputString.getBytes());
     final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-    return new DefaultAirbyteStreamFactory(protocolPredicate, logger, new Builder().build()).create(bufferedReader);
+    return new DefaultAirbyteStreamFactory(protocolPredicate, logger, new Builder()).create(bufferedReader);
   }
 
 }

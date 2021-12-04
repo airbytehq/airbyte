@@ -75,36 +75,29 @@ class ResourceSchemaLoader:
         package = importlib.import_module(self.package_name)
         base = os.path.dirname(package.__file__) + "/"
 
-        def create_definitions(obj: dict, definitions: dict) -> Dict[str, Any]:
+        def resolve_ref_links(obj: Any) -> Dict[str, Any]:
             """
-            Scan resolved schema and compose definitions section, also convert
-            jsonref.JsonRef object to JSON serializable dict.
+            Scan resolved schema and convert jsonref.JsonRef object to JSON
+            serializable dict.
 
             :param obj - jsonschema object with ref field resovled.
-            :definitions - object for storing generated definitions.
             :return JSON serializable object with references without external dependencies.
             """
             if isinstance(obj, jsonref.JsonRef):
-                def_key = obj.__reference__["$ref"]
-                def_key = def_key.replace("#/definitions/", "").replace(".json", "_")
-                definition = create_definitions(obj.__subject__, definitions)
+                obj = resolve_ref_links(obj.__subject__)
                 # Omit existance definitions for extenal resource since
                 # we dont need it anymore.
-                definition.pop("definitions", None)
-                definitions[def_key] = definition
-                return {"$ref": "#/definitions/" + def_key}
+                obj.pop("definitions", None)
+                return obj
             elif isinstance(obj, dict):
-                return {k: create_definitions(v, definitions) for k, v in obj.items()}
+                return {k: resolve_ref_links(v) for k, v in obj.items()}
             elif isinstance(obj, list):
-                return [create_definitions(item, definitions) for item in obj]
+                return [resolve_ref_links(item) for item in obj]
             else:
                 return obj
 
         resolved = jsonref.JsonRef.replace_refs(raw_schema, loader=JsonFileLoader(base, "schemas/shared"), base_uri=base)
-        definitions = {}
-        resolved = create_definitions(resolved, definitions)
-        if definitions:
-            resolved["definitions"] = definitions
+        resolved = resolve_ref_links(resolved)
         return resolved
 
 

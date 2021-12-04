@@ -29,7 +29,7 @@ export type AuthConfirmPasswordReset = (
 export type AuthLogin = (values: {
   email: string;
   password: string;
-}) => Promise<User | null>;
+}) => Promise<void>;
 
 export type AuthSignUp = (form: {
   email: string;
@@ -77,7 +77,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
   const authService = useMemo(() => new GoogleAuthService(() => auth), [auth]);
 
   useEffect(() => {
-    auth.onAuthStateChanged(async (currentUser) => {
+    return auth.onAuthStateChanged(async (currentUser) => {
       if (state.currentUser === null && currentUser) {
         // token = await currentUser.getIdToken();
 
@@ -115,13 +115,8 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       inited: state.inited,
       isLoading: state.loading,
       emailVerified: state.emailVerified,
-      async login(values: {
-        email: string;
-        password: string;
-      }): Promise<User | null> {
+      async login(values: { email: string; password: string }): Promise<void> {
         await authService.login(values.email, values.password);
-
-        return null;
       },
       async logout(): Promise<void> {
         await authService.signOut();

@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import { ThemeProvider } from "styled-components";
 import { IntlProvider } from "react-intl";
 import { CacheProvider } from "rest-hooks";
+import { QueryClient, QueryClientProvider } from "react-query";
 
 import en from "./locales/en.json";
 import GlobalStyle from "./global-styles";
@@ -11,40 +12,20 @@ import { Routing } from "./pages/routes";
 import LoadingPage from "./components/LoadingPage";
 import ApiErrorBoundary from "./components/ApiErrorBoundary";
 import NotificationService from "hooks/services/Notification";
-import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
-import {
-  useCurrentWorkspace,
-  usePickFirstWorkspace,
-} from "hooks/services/useWorkspace";
-import { Feature, FeatureItem, FeatureService } from "hooks/services/Feature";
+import { AnalyticsProvider } from "views/common/AnalyticsProvider";
+import { usePickFirstWorkspace } from "hooks/services/useWorkspace";
+import { FeatureService } from "hooks/services/Feature";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { ServicesProvider } from "core/servicesProvider";
 import { useApiServices } from "core/defaultServices";
-import { envConfigProvider, windowConfigProvider } from "./config";
 import {
   Config,
   ConfigServiceProvider,
   defaultConfig,
+  envConfigProvider,
   ValueProvider,
+  windowConfigProvider,
 } from "./config";
-
-function useCustomerIdProvider() {
-  const workspace = useCurrentWorkspace();
-
-  return workspace.customerId;
-}
-
-const Features: Feature[] = [
-  {
-    id: FeatureItem.AllowUploadCustomImage,
-  },
-  {
-    id: FeatureItem.AllowCustomDBT,
-  },
-  {
-    id: FeatureItem.AllowUpdateConnectors,
-  },
-];
 
 const StyleProvider: React.FC = ({ children }) => (
   <ThemeProvider theme={theme}>
@@ -59,8 +40,12 @@ const I18NProvider: React.FC = ({ children }) => (
   </IntlProvider>
 );
 
+const queryClient = new QueryClient();
+
 const StoreProvider: React.FC = ({ children }) => (
-  <CacheProvider>{children}</CacheProvider>
+  <CacheProvider>
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  </CacheProvider>
 );
 
 const configProviders: ValueProvider<Config> = [
@@ -70,17 +55,11 @@ const configProviders: ValueProvider<Config> = [
 
 const services = {
   currentWorkspaceProvider: usePickFirstWorkspace,
-  useCustomerIdProvider: useCustomerIdProvider,
 };
 
 const AppServices: React.FC = ({ children }) => (
   <ServicesProvider inject={services}>
-    <ConfigServiceProvider
-      defaultConfig={defaultConfig}
-      providers={configProviders}
-    >
-      <ServiceOverrides>{children}</ServiceOverrides>
-    </ConfigServiceProvider>
+    <ServiceOverrides>{children}</ServiceOverrides>
   </ServicesProvider>
 );
 
@@ -96,19 +75,24 @@ const App: React.FC = () => {
         <I18NProvider>
           <StoreProvider>
             <Suspense fallback={<LoadingPage />}>
-              <ApiErrorBoundary>
-                <FeatureService features={Features}>
-                  <NotificationService>
-                    <AppServices>
-                      <AnalyticsInitializer>
-                        <OnboardingServiceProvider>
-                          <Routing />
-                        </OnboardingServiceProvider>
-                      </AnalyticsInitializer>
-                    </AppServices>
-                  </NotificationService>
-                </FeatureService>
-              </ApiErrorBoundary>
+              <ConfigServiceProvider
+                defaultConfig={defaultConfig}
+                providers={configProviders}
+              >
+                <AnalyticsProvider>
+                  <ApiErrorBoundary>
+                    <FeatureService>
+                      <NotificationService>
+                        <AppServices>
+                          <OnboardingServiceProvider>
+                            <Routing />
+                          </OnboardingServiceProvider>
+                        </AppServices>
+                      </NotificationService>
+                    </FeatureService>
+                  </ApiErrorBoundary>
+                </AnalyticsProvider>
+              </ConfigServiceProvider>
             </Suspense>
           </StoreProvider>
         </I18NProvider>

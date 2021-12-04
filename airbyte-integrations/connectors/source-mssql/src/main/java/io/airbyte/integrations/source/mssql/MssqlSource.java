@@ -15,8 +15,6 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcSourceOperations;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
@@ -55,15 +53,12 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
 
-  private final JdbcSourceOperations sourceOperations;
-
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new MssqlSource(), HOST_KEY, PORT_KEY);
   }
 
   MssqlSource() {
-    super(DRIVER_CLASS, new MssqlJdbcStreamingQueryConfiguration());
-    this.sourceOperations = JdbcUtils.getDefaultSourceOperations();
+    super(DRIVER_CLASS, new MssqlJdbcStreamingQueryConfiguration(), new MssqlSourceOperations());
   }
 
   @Override

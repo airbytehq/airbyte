@@ -22,9 +22,11 @@ import io.airbyte.api.model.JobWithAttemptsRead;
 import io.airbyte.api.model.LogRead;
 import io.airbyte.api.model.Pagination;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
+import io.airbyte.config.helpers.LogConfiguration;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.Job;
@@ -101,7 +103,7 @@ public class JobHistoryHandlerTest {
         CREATED_AT);
 
     jobPersistence = mock(JobPersistence.class);
-    jobHistoryHandler = new JobHistoryHandler(jobPersistence);
+    jobHistoryHandler = new JobHistoryHandler(jobPersistence, WorkerEnvironment.DOCKER, LogConfiguration.EMPTY);
   }
 
   @Nested

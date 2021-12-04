@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.1.31
+Take ConfiguredAirbyteCatalog from discover command by default
+
+## 0.1.30
+Validate if each field in a stream has appeared at least once in some record.
+
+## 0.1.29
+Add assert that output catalog does not have any `$ref` in it
+
+## 0.1.28
+Print stream name when incremental sync tests fail
+
+## 0.1.27
+Add ignored fields for full refresh test (unit tests)
+
+## 0.1.26
+Add ignored fields for full refresh test
+
+## 0.1.25
+Fix incorrect nested strucutres compare.
+
 ## 0.1.24
 Improve message about errors in the stream's schema: https://github.com/airbytehq/airbyte/pull/6934
 
