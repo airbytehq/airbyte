@@ -44,7 +44,7 @@ def clean_string(string: str) -> str:
     }
 
     string = fix.get(string, string)
-    abbreviations = ("URL", "GUID", "IP", "ID", "API", "SFDC", "CRM", "SLA")
+    abbreviations = ("URL", "GUID", "IP", "ID", "IDs", "API", "SFDC", "CRM", "SLA")
     if any(map(lambda w: w in string.split(), abbreviations)):
         return string.lower().replace(" ", "_")
     return "".join("_" + c.lower() if c.isupper() else c for c in string if c != " ").strip("_")
