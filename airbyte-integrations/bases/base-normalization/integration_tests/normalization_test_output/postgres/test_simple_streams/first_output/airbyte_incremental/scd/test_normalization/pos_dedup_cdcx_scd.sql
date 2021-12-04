@@ -59,7 +59,7 @@ dedup_data as (
 ), cast(_ab_cdc_log_pos as 
     varchar
 )
-            order by _airbyte_ab_id
+            order by _airbyte_active_row desc, _airbyte_ab_id
         ) as _airbyte_row_num,
         md5(cast(coalesce(cast(_airbyte_unique_key as 
     varchar

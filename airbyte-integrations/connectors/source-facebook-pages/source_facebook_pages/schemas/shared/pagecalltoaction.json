@@ -1,0 +1,55 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "android_deeplink": {
+      "type": ["string", "null"]
+    },
+    "android_destination_type": {
+      "type": ["string", "null"]
+    },
+    "android_package_name": {
+      "type": ["string", "null"]
+    },
+    "android_url": {
+      "type": ["string", "null"]
+    },
+    "created_time": {
+      "type": ["string", "null"],
+      "format": "datetime"
+    },
+    "email_address": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "intl_number_with_plus": {
+      "type": ["string", "null"]
+    },
+    "iphone_deeplink": {
+      "type": ["string", "null"]
+    },
+    "iphone_destination_type": {
+      "type": ["string", "null"]
+    },
+    "iphone_url": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": ["string", "null"]
+    },
+    "type": {
+      "type": ["string", "null"]
+    },
+    "updated_time": {
+      "type": ["string", "null"],
+      "format": "datetime"
+    },
+    "web_destination_type": {
+      "type": ["string", "null"]
+    },
+    "web_url": {
+      "type": ["string", "null"]
+    }
+  }
+}
