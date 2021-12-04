@@ -46,11 +46,15 @@ class DestinationAmazonSqs(Destination):
         message["DelaySeconds"] = message_delay
         return message
 
+    # MessageGroupID and MessageDeduplicationID are required properties for FIFO queues
+    # https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_SendMessage.html
     def set_message_fifo_properties(self, message, message_group_id, use_content_dedupe=False):
+	# https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagegroupid-property.html
         if not message_group_id:
             raise Exception("Failed to build message - Message Group ID is required for FIFO queues")
         else:
             message["MessageGroupId"] = message_group_id
+        # https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagededuplicationid-property.html
         if not use_content_dedupe:
             message["MessageDeduplicationId"] = str(uuid4())
         # TODO: Support getting MessageDeduplicationId from a key in the record
@@ -72,6 +76,7 @@ class DestinationAmazonSqs(Destination):
     #         for status in response['Failed']:
     #             print("Message sent: " + status['MessageId'])
 
+    # https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_SendMessage.html
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
