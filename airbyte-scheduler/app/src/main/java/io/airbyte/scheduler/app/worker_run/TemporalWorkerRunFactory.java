@@ -41,21 +41,6 @@ public class TemporalWorkerRunFactory {
     return WorkerRun.create(workspaceRoot, job.getId(), attemptId, createSupplier(job, attemptId), airbyteVersionOrWarnings);
   }
 
-  /*
-   * public void createAsync(final Job job) { final UUID connectionId =
-   * UUID.fromString(job.getScope()); final int attemptId = job.getAttemptsCount();
-   *
-   * LOGGER.info("Executing worker wrapper. Airbyte version: {}", airbyteVersionOrWarnings); try {
-   * Files.createDirectories(workspaceRoot); } catch (final IOException e) { // TODO: error management
-   * e.printStackTrace(); }
-   *
-   * LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs,
-   * workspaceRoot.getJobRoot());
-   *
-   * temporalClient.submitConnectionUpdaterAsync(job.getId(), attemptId, connectionId,
-   * job.getConfig()); }
-   */
-
   public CheckedSupplier<OutputAndStatus<JobOutput>, Exception> createSupplier(final Job job, final int attemptId) {
     final TemporalJobType temporalJobType = toTemporalJobType(job.getConfigType());
     final UUID connectionId = UUID.fromString(job.getScope());

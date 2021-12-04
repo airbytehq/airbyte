@@ -81,16 +81,17 @@ public class ConnectionsHandler {
   private final LogConfigs logConfigs;
   private final FeatureFlags featureFlags;
 
-  @VisibleForTesting ConnectionsHandler(final ConfigRepository configRepository,
-                                        final Supplier<UUID> uuidGenerator,
-                                        final WorkspaceHelper workspaceHelper,
-                                        final TrackingClient trackingClient,
-                                        final SyncJobFactory jobFactory,
-                                        final JobPersistence jobPersistence,
-                                        final TemporalWorkerRunFactory temporalWorkerRunFactory,
-                                        final WorkerEnvironment workerEnvironment,
-                                        final LogConfigs logConfigs,
-                                        final FeatureFlags featureFlags) {
+  @VisibleForTesting
+  ConnectionsHandler(final ConfigRepository configRepository,
+                     final Supplier<UUID> uuidGenerator,
+                     final WorkspaceHelper workspaceHelper,
+                     final TrackingClient trackingClient,
+                     final SyncJobFactory jobFactory,
+                     final JobPersistence jobPersistence,
+                     final TemporalWorkerRunFactory temporalWorkerRunFactory,
+                     final WorkerEnvironment workerEnvironment,
+                     final LogConfigs logConfigs,
+                     final FeatureFlags featureFlags) {
     this.configRepository = configRepository;
     this.uuidGenerator = uuidGenerator;
     this.workspaceHelper = workspaceHelper;
@@ -104,15 +105,15 @@ public class ConnectionsHandler {
   }
 
   public ConnectionsHandler(
-      final ConfigRepository configRepository,
-      final WorkspaceHelper workspaceHelper,
-      final TrackingClient trackingClient,
-      final SyncJobFactory jobFactory,
-      final JobPersistence jobPersistence,
-      final TemporalWorkerRunFactory temporalWorkerRunFactory,
-      final WorkerEnvironment workerEnvironment,
-      final LogConfigs logConfigs,
-      final FeatureFlags featureFlags) {
+                            final ConfigRepository configRepository,
+                            final WorkspaceHelper workspaceHelper,
+                            final TrackingClient trackingClient,
+                            final SyncJobFactory jobFactory,
+                            final JobPersistence jobPersistence,
+                            final TemporalWorkerRunFactory temporalWorkerRunFactory,
+                            final WorkerEnvironment workerEnvironment,
+                            final LogConfigs logConfigs,
+                            final FeatureFlags featureFlags) {
     this(
         configRepository,
         UUID::randomUUID,

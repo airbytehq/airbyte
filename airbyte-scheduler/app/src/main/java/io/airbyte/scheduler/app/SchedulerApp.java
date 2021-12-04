@@ -117,7 +117,6 @@ public class SchedulerApp {
     final ScheduledExecutorService scheduleJobsPool = Executors.newSingleThreadScheduledExecutor();
     final ScheduledExecutorService executeJobsPool = Executors.newSingleThreadScheduledExecutor();
     final ScheduledExecutorService cleanupJobsPool = Executors.newSingleThreadScheduledExecutor();
-    final ScheduledExecutorService newScheduleJobsPool = Executors.newSingleThreadScheduledExecutor();
     final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(
         temporalClient,
         workspaceRoot,
@@ -173,7 +172,7 @@ public class SchedulerApp {
     }
 
     Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofSeconds(GRACEFUL_SHUTDOWN_SECONDS), workerThreadPool,
-        scheduleJobsPool, executeJobsPool, cleanupJobsPool, newScheduleJobsPool));
+        scheduleJobsPool, executeJobsPool, cleanupJobsPool));
   }
 
   private void cleanupZombies(final JobPersistence jobPersistence, final JobNotifier jobNotifier) throws IOException {
