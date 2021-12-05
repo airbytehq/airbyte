@@ -10,6 +10,9 @@ import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 
 public abstract class SourceBasePerformanceTest extends AbstractSourceConnectorTest {
 
+  private static final String TEST_COLUMN_NAME = "test_column";
+  private static final String TEST_STREAM_NAME_TEMPLATE  = "test_%S";
+
   /**
    * Setup the test database. All tables and data described in the registered tests will be put there.
    *
@@ -25,7 +28,7 @@ public abstract class SourceBasePerformanceTest extends AbstractSourceConnectorT
    * @return Test column name
    */
   protected String getTestColumnName() {
-    return "test_column";
+    return TEST_COLUMN_NAME;
   }
 
   /**
@@ -35,7 +38,7 @@ public abstract class SourceBasePerformanceTest extends AbstractSourceConnectorT
    * @return Test steam name template
    */
   protected String getTestStreamNameTemplate() {
-    return "test_%S";
+    return TEST_STREAM_NAME_TEMPLATE;
   }
 
   @Override

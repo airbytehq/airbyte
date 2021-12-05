@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractSourcePerformanceTest extends SourceBasePerformanceTest {
 
   protected static final Logger c = LoggerFactory.getLogger(AbstractSourcePerformanceTest.class);
+  private static final String ID_COLUMN_NAME = "id";
 
   /**
    * The column name will be used for a PK column in the test tables. Override it if default name is
@@ -40,7 +41,7 @@ public abstract class AbstractSourcePerformanceTest extends SourceBasePerformanc
    * @return Id column name
    */
   protected String getIdColumnName() {
-    return "id";
+    return ID_COLUMN_NAME;
   }
 
   protected void validateNumberOfReceivedMsgs(final Map<String, Integer> checkStatusMap) {
