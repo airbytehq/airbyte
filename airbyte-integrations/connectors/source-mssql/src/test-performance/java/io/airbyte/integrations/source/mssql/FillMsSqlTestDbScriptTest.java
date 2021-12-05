@@ -94,7 +94,7 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
     int numberOfStreams = 1;
     int numberOfBatches = 1;
 
-    String dbname = "testScriptsZ";
+    String dbname = "your_db_name";
     String defaultSchemaName = "dbo";
 
     final Database database = setupDatabase(dbname); // "dbo" is a default schema name in DB
