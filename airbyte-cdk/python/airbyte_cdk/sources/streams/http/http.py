@@ -6,6 +6,7 @@
 import os
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from urllib.parse import urljoin
 
 import requests
 import vcr
@@ -239,7 +240,7 @@ class HttpStream(Stream, ABC):
     def _create_prepared_request(
         self, path: str, headers: Mapping = None, params: Mapping = None, json: Any = None, data: Any = None
     ) -> requests.PreparedRequest:
-        args = {"method": self.http_method, "url": self.url_base + path, "headers": headers, "params": params}
+        args = {"method": self.http_method, "url": urljoin(self.url_base, path), "headers": headers, "params": params}
         if self.http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:
                 raise RequestBodyException(
