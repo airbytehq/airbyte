@@ -1639,11 +1639,11 @@
           "order_adjustments": {
             "type": ["null", "array"],
             "items": {
-              "type": ["null","object"],
+              "type": ["null", "object"],
               "properties": {
                 "amount": {
                   "type": ["null", "string"]
-                },  
+                },
                 "amount_set": {
                   "type": ["null", "object"],
                   "properties": {
@@ -1669,7 +1669,7 @@
                         }
                       }
                     }
-                  } 
+                  }
                 },
                 "id": {
                   "type": ["null", "integer"]
@@ -1714,10 +1714,10 @@
                         }
                       }
                     }
+                  }
                 }
               }
             }
-          }
           },
           "transactions": {
             "type": ["null", "array"],
@@ -1827,7 +1827,7 @@
                         "currency_code": {
                           "type": ["null", "string"]
                         }
-                      } 
+                      }
                     },
                     "presentment_money": {
                       "type": ["null", "object"],
@@ -1857,7 +1857,7 @@
                         "currency_code": {
                           "type": ["null", "string"]
                         }
-                      } 
+                      }
                     },
                     "presentment_money": {
                       "type": ["null", "object"],
@@ -1914,7 +1914,7 @@
                             "currency_code": {
                               "type": ["null", "string"]
                             }
-                          } 
+                          }
                         },
                         "presentment_money": {
                           "type": ["null", "object"],
@@ -1971,7 +1971,7 @@
                             "currency_code": {
                               "type": ["null", "string"]
                             }
-                          } 
+                          }
                         },
                         "presentment_money": {
                           "type": ["null", "object"],
@@ -2002,7 +2002,7 @@
                       "type": ["null", "array"],
                       "items": {
                         "type": ["null", "object"],
-                        "properties":  {
+                        "properties": {
                           "price": {
                             "type": ["null", "string"]
                           },
@@ -2018,7 +2018,7 @@
                                   "currency_code": {
                                     "type": ["null", "string"]
                                   }
-                                } 
+                                }
                               },
                               "presentment_money": {
                                 "type": ["null", "object"],
@@ -2062,7 +2062,7 @@
                                   "currency_code": {
                                     "type": ["null", "string"]
                                   }
-                                } 
+                                }
                               },
                               "presentment_money": {
                                 "type": ["null", "object"],
