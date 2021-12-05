@@ -4,7 +4,8 @@
     tags = [ "nested-intermediate" ]
 ) }}
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
-{{ unnest_cte('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION', 'PARTITION', 'DATA') }}
+-- depends_on: {{ ref('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION') }}
+{{ unnest_cte(ref('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION'), 'PARTITION', 'DATA') }}
 select
     _AIRBYTE_PARTITION_HASHID,
     {{ json_extract_scalar(unnested_column_value('DATA'), ['currency'], ['currency']) }} as CURRENCY,

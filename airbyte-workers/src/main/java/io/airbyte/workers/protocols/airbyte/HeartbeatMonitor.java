@@ -10,6 +10,12 @@ import java.time.Instant;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
+/**
+ * Tracks heartbeats and, when asked, says if it has been too long since the last heartbeat. He's
+ * dead Jim!
+ *
+ * It is ThreadSafe.
+ */
 public class HeartbeatMonitor {
 
   private final Duration heartBeatFreshDuration;
@@ -27,10 +33,18 @@ public class HeartbeatMonitor {
     this.lastBeat = new AtomicReference<>(null);
   }
 
+  /**
+   * Register a heartbeat
+   */
   public void beat() {
     lastBeat.set(nowSupplier.get());
   }
 
+  /**
+   *
+   * @return true if the last heartbeat is still "fresh". i.e. time since last heartbeat is less than
+   *         heartBeatFreshDuration. otherwise, false.
+   */
   public boolean isBeating() {
     final Instant instantFetched = lastBeat.get();
     final Instant now = nowSupplier.get();

@@ -10,7 +10,7 @@ DAG stands for **Directed Acyclic Graph**. It's a term originally coined by math
 
 &#x20;
 
-![](../.gitbook/assets/glossary\_dag\_example.png)
+![](../.gitbook/assets/glossary_dag_example.png)
 
 ### ETL/ELT
 

@@ -179,6 +179,7 @@ class Salesforce:
         is_sandbox: bool = None,
         start_date: str = None,
         api_type: str = None,
+        **kwargs,
     ):
         self.api_type = api_type.upper() if api_type else None
         self.refresh_token = refresh_token
@@ -252,16 +253,16 @@ class Salesforce:
     def describe(self, sobject: str = None) -> Mapping[str, Any]:
         """Describes all objects or a specific object"""
         headers = self._get_standard_headers()
+
         endpoint = "sobjects" if not sobject else f"sobjects/{sobject}/describe"
 
         url = f"{self.instance_url}/services/data/{self.version}/{endpoint}"
         resp = self._make_request("GET", url, headers=headers)
-
         return resp.json()
 
-    def generate_schema(self, stream_name: str) -> Mapping[str, Any]:
-        schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True, "properties": {}}
+    def generate_schema(self, stream_name: str = None) -> Mapping[str, Any]:
         response = self.describe(stream_name)
+        schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True, "properties": {}}
         for field in response["fields"]:
             schema["properties"][field["name"]] = self.field_to_property_schema(field)
         return schema
