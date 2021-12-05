@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.base.JavaBaseConstants;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,6 +47,7 @@ public class JsonToAvroSchemaConverter {
       .addToSchema(Schema.create(Schema.Type.LONG));
 
   private final Map<String, String> standardizedNames = new HashMap<>();
+  private final List<String> recordFieldNames = new ArrayList<>();
 
   static List<JsonSchemaType> getNonNullTypes(final String fieldName, final JsonNode fieldDefinition) {
     return getTypes(fieldName, fieldDefinition).stream()
@@ -150,6 +152,7 @@ public class JsonToAvroSchemaConverter {
             AvroConstants.DOC_KEY_VALUE_DELIMITER,
             fieldName));
       }
+
       assembler = fieldBuilder.type(getNullableFieldTypes(fieldName, fieldDefinition))
           .withDefault(null);
     }
@@ -207,11 +210,19 @@ public class JsonToAvroSchemaConverter {
               String.format("Array field %s has invalid items property: %s", fieldName, items));
         }
       }
-      case OBJECT -> fieldSchema = getAvroSchema(fieldDefinition, fieldName, null, false);
+      case OBJECT -> {
+        final String stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(fieldName);
+        recordFieldNames.add(stdName);
+        fieldSchema = getAvroSchema(fieldDefinition, fieldName, resovleNamespace(stdName), false);
+      }
       default -> throw new IllegalStateException(
           String.format("Unexpected type for field %s: %s", fieldName, fieldType));
     }
     return fieldSchema;
+  }
+
+  private String resovleNamespace(String fieldName) {
+      return fieldName.concat("_").concat(String.valueOf(Collections.frequency(recordFieldNames, fieldName)));
   }
 
   List<Schema> getSchemasFromTypes(final String fieldName, final ArrayNode types) {
