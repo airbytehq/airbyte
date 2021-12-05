@@ -10,8 +10,8 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.standardtest.source.AbstractSourcePerformanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourcePerformanceTest;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
 import java.util.Map;
@@ -21,9 +21,6 @@ import org.junit.jupiter.api.Test;
 public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerformanceTest {
 
   private JsonNode config;
-  private static final String CREATE_DB_TABLE_TEMPLATE = "CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, %s)";
-  private static final String INSERT_INTO_DB_TABLE_QUERY_TEMPLATE = "INSERT INTO %s.%s (%s) VALUES %s";
-  private static final String TEST_DB_FIELD_TYPE = "varchar(8)";
   private static final String PERFORMANCE_SECRET_CREDS = "secrets/performance-config.json";
 
   @Override
@@ -40,8 +37,7 @@ public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerfor
   }
 
   @Override
-  protected Database setupDatabase(String dbName) throws Exception {
-    super.databaseName = dbName;
+  protected Database setupDatabase(String dbName) {
     JsonNode plainConfig = Jsons.deserialize(IOs.readFile(Path.of(PERFORMANCE_SECRET_CREDS)));
 
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
@@ -71,37 +67,16 @@ public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerfor
     return database;
   }
 
-  @Override
-  protected String getCreateTableTemplate() {
-    return CREATE_DB_TABLE_TEMPLATE;
-  }
-
-  @Override
-  protected String getInsertQueryTemplate() {
-    return INSERT_INTO_DB_TABLE_QUERY_TEMPLATE;
-  }
-
-  @Override
-  protected String getTestFieldType() {
-    return TEST_DB_FIELD_TYPE;
-  }
-
-  @Override
-  protected String getNameSpace() {
-    return databaseName;
-  }
-
   @Test
   public void test100tables100recordsDb() throws Exception {
-    numberOfColumns = 240; // 240 is near the max value for varchar(8) type
-    // 200 is near the max value for 1 batch call,if need more - implement multiple batching for single
-    // stream
-    numberOfDummyRecords = 100; // 200 is near the max value for one shot in batching;
-    numberOfStreams = 100;
+    int numberOfDummyRecords = 100; // 200 is near the max value for one shot in batching;
+    int numberOfStreams = 100;
+    String dbName = "test100tables100recordsDb";
 
-    setupDatabase("test100tables100recordsDb");
+    setupDatabase(dbName);
 
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
+    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(dbName, numberOfStreams,
+        numberOfDummyRecords);
     final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
         numberOfStreams, numberOfDummyRecords);
     final Map<String, Integer> checkStatusMap =
@@ -111,15 +86,14 @@ public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerfor
 
   @Test
   public void test1000tables240columns200recordsDb() throws Exception {
-    numberOfColumns = 240; // 240 is near the max value for varchar(8) type
-    // 200 is near the max value for 1 batch call,if need more - implement multiple batching for single
-    // stream
-    numberOfDummyRecords = 200;
-    numberOfStreams = 1000;
+    int numberOfDummyRecords = 200;
+    int numberOfStreams = 1000;
+    String dbName = "test1000tables240columns200recordsDb";
 
-    setupDatabase("test1000tables240columns200recordsDb");
+    setupDatabase(dbName);
 
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
+    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(dbName, numberOfStreams,
+        numberOfDummyRecords);
     final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
         numberOfStreams, numberOfDummyRecords);
     final Map<String, Integer> checkStatusMap =
@@ -129,15 +103,14 @@ public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerfor
 
   @Test
   public void test5000tables240columns200recordsDb() throws Exception {
-    numberOfColumns = 240; // 240 is near the max value for varchar(8) type
-    // 200 is near the max value for 1 batch call,if need more - implement multiple batching for single
-    // stream
-    numberOfDummyRecords = 200;
-    numberOfStreams = 5000;
+    int numberOfDummyRecords = 200;
+    int numberOfStreams = 5000;
+    String dbName = "test5000tables240columns200recordsDb";
 
-    setupDatabase("test5000tables240columns200recordsDb");
+    setupDatabase(dbName);
 
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
+    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(dbName, numberOfStreams,
+        numberOfDummyRecords);
     final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
         numberOfStreams, numberOfDummyRecords);
     final Map<String, Integer> checkStatusMap =
@@ -147,12 +120,13 @@ public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerfor
 
   @Test
   public void testSmall1000tableswith10000recordsDb() throws Exception {
-    numberOfDummyRecords = 10001;
-    numberOfStreams = 1000;
+    int numberOfDummyRecords = 10001;
+    int numberOfStreams = 1000;
+    String dbName = "newsmall1000tableswith10000rows";
+    setupDatabase(dbName);
 
-    setupDatabase("newsmall1000tableswith10000rows");
-
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
+    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(dbName, numberOfStreams,
+        numberOfDummyRecords);
     final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
         numberOfStreams, numberOfDummyRecords);
     final Map<String, Integer> checkStatusMap =
@@ -162,12 +136,13 @@ public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerfor
 
   @Test
   public void testInterim15tableswith50000recordsDb() throws Exception {
-    numberOfDummyRecords = 50010;
-    numberOfStreams = 15;
+    int numberOfDummyRecords = 50010;
+    int numberOfStreams = 15;
+    String dbName = "newinterim15tableswith50000records";
+    setupDatabase(dbName);
 
-    setupDatabase("newinterim15tableswith50000records");
-
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
+    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(dbName, numberOfStreams,
+        numberOfDummyRecords);
     final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
         numberOfStreams, numberOfDummyRecords);
     final Map<String, Integer> checkStatusMap =
@@ -177,12 +152,13 @@ public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerfor
 
   @Test
   public void testRegular25tables50000recordsDb() throws Exception {
-    numberOfDummyRecords = 50011;
-    numberOfStreams = 25;
+    int numberOfDummyRecords = 50011;
+    int numberOfStreams = 25;
+    String dbName = "newregular25tables50000records";
+    setupDatabase(dbName);
 
-    setupDatabase("newregular25tables50000records");
-
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
+    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(dbName, numberOfStreams,
+        numberOfDummyRecords);
     final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
         numberOfStreams, numberOfDummyRecords);
     final Map<String, Integer> checkStatusMap =

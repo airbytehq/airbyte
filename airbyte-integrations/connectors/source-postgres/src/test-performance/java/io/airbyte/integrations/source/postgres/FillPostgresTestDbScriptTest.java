@@ -9,19 +9,22 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.standardtest.source.AbstractSourcePerformanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourceFillDbWithTestData;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class FillPostgresTestDbScriptTest extends AbstractSourcePerformanceTest {
+public class FillPostgresTestDbScriptTest extends AbstractSourceFillDbWithTestData {
+
+  protected static final Logger c = LoggerFactory.getLogger(FillPostgresTestDbScriptTest.class);
 
   private JsonNode config;
   private static final String CREATE_DB_TABLE_TEMPLATE = "CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, %s)";
   private static final String INSERT_INTO_DB_TABLE_QUERY_TEMPLATE = "INSERT INTO %s.%s (%s) VALUES %s";
   private static final String TEST_DB_FIELD_TYPE = "varchar(10)";
-  private static final String DATABASE_NAME = "\"your_schema_name\"";
 
   @Override
   protected JsonNode getConfig() {
@@ -61,8 +64,6 @@ public class FillPostgresTestDbScriptTest extends AbstractSourcePerformanceTest 
         "org.postgresql.Driver",
         SQLDialect.POSTGRES);
 
-    super.databaseName = DATABASE_NAME;
-
     return database;
   }
 
@@ -81,11 +82,6 @@ public class FillPostgresTestDbScriptTest extends AbstractSourcePerformanceTest 
     return TEST_DB_FIELD_TYPE;
   }
 
-  @Override
-  protected String getNameSpace() {
-    return DATABASE_NAME;
-  }
-
   /**
    * The test added test data to a new DB. 1. Set DB creds in static variables above 2. Set desired
    * number for streams, coolumns and records 3. Run the test
@@ -93,12 +89,13 @@ public class FillPostgresTestDbScriptTest extends AbstractSourcePerformanceTest 
   @Test
   @Disabled
   public void addTestDataToDbAndCheckTheResult() throws Exception {
-    numberOfColumns = 240; // 400 is near the max value for varchar(8) type
+    int numberOfColumns = 240; // 400 is near the max value for varchar(8) type
     // 200 is near the max value for 1 batch call,if need more - implement multiple batching for single
     // stream
-    numberOfDummyRecords = 100; // 200;
-    numberOfStreams = 5000;
-    int numberOfBatches = 2;
+    int numberOfDummyRecords = 100; // 200;
+    int numberOfStreams = 1;
+    int numberOfBatches = 1;
+    String dbSchemaName = "\"your_schema_name\""; // not the same as Db/user name
 
     final Database database = setupDatabase(null);
 
@@ -107,9 +104,10 @@ public class FillPostgresTestDbScriptTest extends AbstractSourcePerformanceTest 
 
         String currentTableName = String.format(getTestStreamNameTemplate(), currentSteamNumber);
 
-        ctx.fetch(prepareCreateTableQuery(numberOfColumns, currentTableName));
+        ctx.fetch(prepareCreateTableQuery(dbSchemaName, numberOfColumns, currentTableName));
         for (int i = 0; i < numberOfBatches; i++) {
-          String insertQueryTemplate = prepareInsertQueryTemplatePostgres(i, numberOfColumns,
+          String insertQueryTemplate = prepareInsertQueryTemplatePostgres(dbSchemaName, i,
+              numberOfColumns,
               numberOfDummyRecords);
           ctx.fetch(String.format(insertQueryTemplate, currentTableName));
         }

@@ -9,18 +9,22 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.standardtest.source.AbstractSourcePerformanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourceFillDbWithTestData;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class FillMsSqlTestDbScriptTest extends AbstractSourcePerformanceTest {
+public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData {
 
-  private JsonNode config;
+  protected static final Logger c = LoggerFactory.getLogger(FillMsSqlTestDbScriptTest.class);
+
   private static final String CREATE_DB_TABLE_TEMPLATE = "CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, %s)";
   private static final String INSERT_INTO_DB_TABLE_QUERY_TEMPLATE = "INSERT INTO %s.%s (%s) VALUES %s";
   private static final String TEST_DB_FIELD_TYPE = "varchar(10)";
-  private static final String DATABASE_NAME = "test5000tables240columns200recordsDb";
+
+  private JsonNode config;
 
   @Override
   protected JsonNode getConfig() {
@@ -36,7 +40,7 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourcePerformanceTest {
   }
 
   @Override
-  protected Database setupDatabase(String dbName) throws Exception {
+  protected Database setupDatabase(String dbName) {
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "Standard")
         .build());
@@ -44,9 +48,9 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourcePerformanceTest {
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", "your_host")
         .put("port", 1433)
-        .put("database", DATABASE_NAME) // set your db name
-        .put("username", "username")
-        .put("password", "pass")
+        .put("database", dbName) // set your db name
+        .put("username", "your_username")
+        .put("password", "your_pass")
         .put("replication_method", replicationMethod)
         .build());
 
@@ -56,11 +60,9 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourcePerformanceTest {
         String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
             config.get("host").asText(),
             config.get("port").asInt(),
-            DATABASE_NAME),
+            dbName),
         "com.microsoft.sqlserver.jdbc.SQLServerDriver",
         null);
-
-    super.databaseName = dbName;
 
     return database;
   }
@@ -80,11 +82,6 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourcePerformanceTest {
     return TEST_DB_FIELD_TYPE;
   }
 
-  @Override
-  protected String getNameSpace() {
-    return DATABASE_NAME;
-  }
-
   /**
    * The test added test data to a new DB. 1. Set DB creds in static variables above 2. Set desired
    * number for streams, coolumns and records 3. Run the test
@@ -92,21 +89,25 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourcePerformanceTest {
   @Test
   @Disabled
   public void addTestDataToDbAndCheckTheResult() throws Exception {
-    numberOfColumns = 240;
-    numberOfDummyRecords = 200;
-    numberOfStreams = 5000;
+    int numberOfColumns = 240;
+    int numberOfDummyRecords = 200;
+    int numberOfStreams = 1;
     int numberOfBatches = 1;
 
-    final Database database = setupDatabase("dbo"); // "dbo" is a default schema name in DB
+    String dbname = "testScriptsZ";
+    String defaultSchemaName = "dbo";
+
+    final Database database = setupDatabase(dbname); // "dbo" is a default schema name in DB
 
     database.query(ctx -> {
       for (int currentSteamNumber = 0; currentSteamNumber < numberOfStreams; currentSteamNumber++) {
 
         String currentTableName = String.format(getTestStreamNameTemplate(), currentSteamNumber);
 
-        ctx.fetch(prepareCreateTableQuery(numberOfColumns, currentTableName));
+        ctx.fetch(prepareCreateTableQuery(defaultSchemaName, numberOfColumns, currentTableName));
         for (int i = 0; i < numberOfBatches; i++) {
-          String insertQueryTemplate = prepareInsertQueryTemplatePostgres(i, numberOfColumns,
+          String insertQueryTemplate = prepareInsertQueryTemplatePostgres(defaultSchemaName, i,
+              numberOfColumns,
               numberOfDummyRecords);
           ctx.fetch(String.format(insertQueryTemplate, currentTableName));
         }
