@@ -4,12 +4,21 @@
 
 package io.airbyte.integrations.standardtest.source.performancetest;
 
+import io.airbyte.db.Database;
 import java.util.StringJoiner;
 
 public abstract class AbstractSourceFillDbWithTestData extends SourceBasePerformanceTest {
 
   private static final String TEST_VALUE_TEMPLATE = "\"Some test value %s\"";
   private static final String TEST_VALUE_TEMPLATE_POSTGRES = "\'Value id_placeholder\'";
+
+  /**
+   * Setup the test database. All tables and data described in the registered tests will be put there.
+   *
+   * @return configured test database
+   * @throws Exception - might throw any exception during initialization.
+   */
+  protected abstract Database setupDatabase(String dbName) throws Exception;
 
   /**
    * Get a create table template for a DB

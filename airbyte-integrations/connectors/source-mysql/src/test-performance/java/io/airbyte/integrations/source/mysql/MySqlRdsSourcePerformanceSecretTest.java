@@ -37,7 +37,7 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
   }
 
   @Override
-  protected Database setupDatabase(String dbName) throws Exception {
+  protected void setupDatabase(String dbName) throws Exception {
     JsonNode plainConfig = Jsons.deserialize(IOs.readFile(Path.of(PERFORMANCE_SECRET_CREDS)));
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -63,8 +63,7 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
     // It disable strict mode in the DB and allows to insert specific values.
     // For example, it's possible to insert date with zero values "2021-00-00"
     database.query(ctx -> ctx.execute("SET @@sql_mode=''"));
-
-    return database;
+    database.close();
   }
 
   @Test

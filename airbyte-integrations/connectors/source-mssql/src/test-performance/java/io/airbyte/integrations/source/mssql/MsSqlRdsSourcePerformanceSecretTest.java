@@ -8,8 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourcePerformanceTest;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -36,7 +34,7 @@ public class MsSqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
   }
 
   @Override
-  protected Database setupDatabase(String dbName) {
+  protected void setupDatabase(String dbName) {
     JsonNode plainConfig = Jsons.deserialize(IOs.readFile(Path.of(PERFORMANCE_SECRET_CREDS)));
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -46,18 +44,6 @@ public class MsSqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
         .put("username", plainConfig.get("username"))
         .put("password", plainConfig.get("password"))
         .build());
-
-    final Database database = Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
-            config.get("host").asText(),
-            config.get("port").asInt(),
-            dbName),
-        "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-        null);
-
-    return database;
   }
 
   @Test

@@ -35,6 +35,13 @@ public abstract class AbstractSourcePerformanceTest extends SourceBasePerformanc
   private static final String ID_COLUMN_NAME = "id";
 
   /**
+   * Setup the test database. All tables and data described in the registered tests will be put there.
+   *
+   * @throws Exception - might throw any exception during initialization.
+   */
+  protected abstract void setupDatabase(String dbName) throws Exception;
+
+  /**
    * The column name will be used for a PK column in the test tables. Override it if default name is
    * not valid for your source.
    *

@@ -4,22 +4,13 @@
 
 package io.airbyte.integrations.standardtest.source.performancetest;
 
-import io.airbyte.db.Database;
 import io.airbyte.integrations.standardtest.source.AbstractSourceConnectorTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 
 public abstract class SourceBasePerformanceTest extends AbstractSourceConnectorTest {
 
   private static final String TEST_COLUMN_NAME = "test_column";
-  private static final String TEST_STREAM_NAME_TEMPLATE  = "test_%S";
-
-  /**
-   * Setup the test database. All tables and data described in the registered tests will be put there.
-   *
-   * @return configured test database
-   * @throws Exception - might throw any exception during initialization.
-   */
-  protected abstract Database setupDatabase(String dbName) throws Exception;
+  private static final String TEST_STREAM_NAME_TEMPLATE = "test_%S";
 
   /**
    * The column name will be used for a test column in the test tables. Override it if default name is

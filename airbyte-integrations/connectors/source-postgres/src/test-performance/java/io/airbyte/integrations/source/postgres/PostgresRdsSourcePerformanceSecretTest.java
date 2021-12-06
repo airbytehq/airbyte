@@ -8,14 +8,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourcePerformanceTest;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
 import java.util.Map;
-import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Test;
 
 public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerformanceTest {
@@ -37,7 +34,7 @@ public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerfor
   }
 
   @Override
-  protected Database setupDatabase(String dbName) {
+  protected void setupDatabase(String dbName) {
     JsonNode plainConfig = Jsons.deserialize(IOs.readFile(Path.of(PERFORMANCE_SECRET_CREDS)));
 
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
@@ -53,18 +50,6 @@ public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerfor
         .put("ssl", true)
         .put("replication_method", replicationMethod)
         .build());
-
-    final Database database = Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "org.postgresql.Driver",
-        SQLDialect.POSTGRES);
-
-    return database;
   }
 
   @Test
