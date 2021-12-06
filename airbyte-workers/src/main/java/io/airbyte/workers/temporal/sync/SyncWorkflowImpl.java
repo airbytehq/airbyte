@@ -13,7 +13,6 @@ import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.activity.ActivityCancellationType;
 import io.temporal.activity.ActivityOptions;
@@ -44,6 +43,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
           .build())
       .build();
 
+  private final ReplicationActivity replicationActivity = Workflow.newActivityStub(ReplicationActivityImpl.class, options);
   private final NormalizationActivity normalizationActivity = Workflow.newActivityStub(NormalizationActivity.class, options);
   private final DbtTransformationActivity dbtTransformationActivity = Workflow.newActivityStub(DbtTransformationActivity.class, options);
   private final PersistStateActivity persistActivity = Workflow.newActivityStub(PersistStateActivity.class, persistOptions);
@@ -55,12 +55,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                                 final StandardSyncInput syncInput,
                                 final UUID connectionId) {
 
-    final ReplicatorWorkflow replicationOrchestrator = Workflow.newChildWorkflowStub(
-        ReplicatorWorkflow.class,
-        TemporalUtils.getChildWorkflowOptions(TemporalJobType.REPLICATOR));
-
-    final StandardSyncOutput run =
-        replicationOrchestrator.run(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput, connectionId);
+    final StandardSyncOutput run = replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
 
     final int version = Workflow.getVersion(VERSION_LABEL, Workflow.DEFAULT_VERSION, CURRENT_VERSION);
 

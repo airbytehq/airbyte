@@ -39,6 +39,8 @@ public class ConnectionHelpers {
   private static final String BASIC_SCHEDULE_TIME_UNIT = "days";
   private static final long BASIC_SCHEDULE_UNITS = 1L;
 
+  // only intended for unit tests, so intentionally set very high to ensure they aren't being used
+  // elsewhere
   public static final io.airbyte.config.ResourceRequirements TESTING_RESOURCE_REQUIREMENTS = new io.airbyte.config.ResourceRequirements()
       .withCpuLimit("100g")
       .withCpuRequest("100g")

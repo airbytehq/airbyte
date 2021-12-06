@@ -32,6 +32,7 @@ import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -67,7 +68,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
 
   private static final MdcScope.Builder LOG_MDC_BUILDER = new MdcScope.Builder()
       .setLogPrefix("replication-runner")
-      .setPrefixColor(LoggingHelper.Color.BLACK);
+      .setPrefixColor(LoggingHelper.Color.ORANGE);
 
   public ReplicationActivityImpl(final WorkerConfigs workerConfigs,
                                  final ProcessFactory processFactory,
@@ -206,7 +207,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           final AtomicReference<ReplicationOutput> output = new AtomicReference<>();
 
           LineGobbler.gobble(process.getInputStream(), line -> {
-            final var maybeOutput = Jsons.tryDeserialize(line, ReplicationOutput.class);
+            final Optional<ReplicationOutput> maybeOutput = Jsons.tryDeserialize(line, ReplicationOutput.class);
 
             if (maybeOutput.isPresent()) {
               LOGGER.info("Found output!");

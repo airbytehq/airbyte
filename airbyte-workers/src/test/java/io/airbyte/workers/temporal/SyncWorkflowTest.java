@@ -30,7 +30,6 @@ import io.airbyte.workers.temporal.sync.PersistStateActivity;
 import io.airbyte.workers.temporal.sync.PersistStateActivityImpl;
 import io.airbyte.workers.temporal.sync.ReplicationActivity;
 import io.airbyte.workers.temporal.sync.ReplicationActivityImpl;
-import io.airbyte.workers.temporal.sync.ReplicatorWorkflowImpl;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflowImpl;
 import io.temporal.api.common.v1.WorkflowExecution;
@@ -90,8 +89,8 @@ class SyncWorkflowTest {
     syncWorker = testEnv.newWorker(TemporalJobType.SYNC.name());
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
 
-    replicationOrchestratorWorker = testEnv.newWorker(TemporalJobType.REPLICATOR.name());
-    replicationOrchestratorWorker.registerWorkflowImplementationTypes(ReplicatorWorkflowImpl.class);
+    replicationOrchestratorWorker = testEnv.newWorker(TemporalJobType.REPLICATE.name());
+    replicationOrchestratorWorker.registerWorkflowImplementationTypes(ReplicationWorkflowImpl.class);
 
     client = testEnv.getWorkflowClient();
 

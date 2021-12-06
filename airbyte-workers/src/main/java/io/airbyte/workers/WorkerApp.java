@@ -17,7 +17,11 @@ import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
-import io.airbyte.workers.process.*;
+import io.airbyte.workers.process.DockerProcessFactory;
+import io.airbyte.workers.process.KubePortManagerSingleton;
+import io.airbyte.workers.process.KubeProcessFactory;
+import io.airbyte.workers.process.ProcessFactory;
+import io.airbyte.workers.process.WorkerHeartbeatServer;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivityImpl;
@@ -138,20 +142,15 @@ public class WorkerApp {
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
     syncWorker.registerActivitiesImplementations(
+        new ReplicationActivityImpl(workerConfigs, orchestratorProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs,
+            databaseUser,
+            databasePassword, databaseUrl, airbyteVersion),
         new NormalizationActivityImpl(workerConfigs, jobProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser,
             databasePassword, databaseUrl, airbyteVersion),
         new DbtTransformationActivityImpl(workerConfigs, jobProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs,
             databaseUser,
             databasePassword, databaseUrl, airbyteVersion),
         new PersistStateActivityImpl(workspaceRoot, configRepository));
-
-    final Worker replicatorWorker =
-        factory.newWorker(TemporalJobType.REPLICATOR.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
-    replicatorWorker.registerWorkflowImplementationTypes(ReplicatorWorkflowImpl.class);
-    replicatorWorker.registerActivitiesImplementations(
-        new ReplicationActivityImpl(workerConfigs, orchestratorProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs,
-            databaseUser,
-            databasePassword, databaseUrl, airbyteVersion));
 
     factory.start();
   }

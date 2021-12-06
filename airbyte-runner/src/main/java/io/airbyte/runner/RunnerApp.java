@@ -112,6 +112,7 @@ public class RunnerApp {
 
     LOGGER.info("Sending output...");
     // this uses stdout directly because it shouldn't have the logging related prefix
+    // the replication output is read from the container that launched the runner
     System.out.println(Jsons.serialize(replicationOutput));
 
     LOGGER.info("Replication runner complete!");
