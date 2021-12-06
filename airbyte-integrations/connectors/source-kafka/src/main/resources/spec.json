@@ -23,7 +23,7 @@
         "description": "You can choose to manually assign a list of partitions, or subscribe to all topics matching specified pattern to get dynamically assigned partitions.",
         "oneOf": [
           {
-            "title": "Manually assign a list of partitions.",
+            "title": "Manually assign a list of partitions",
             "required": ["subscription_type", "topic_partitions"],
             "properties": {
               "subscription_type": {
@@ -41,7 +41,7 @@
             }
           },
           {
-            "title": "Subscribe to all topics matching specified pattern.",
+            "title": "Subscribe to all topics matching specified pattern",
             "required": ["subscription_type", "topic_pattern"],
             "properties": {
               "subscription_type": {
