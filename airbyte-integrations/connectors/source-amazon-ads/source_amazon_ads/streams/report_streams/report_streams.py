@@ -75,6 +75,10 @@ class ReportStatusFailure(RetryableException):
     pass
 
 
+class ReportInitFailure(RetryableException):
+    pass
+
+
 class TooManyRequests(Exception):
     """
     Custom exception occured when response with 429 status code received
@@ -292,6 +296,11 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         Override to return dict representing body of POST request for initiating report creation.
         """
 
+    @backoff.on_exception(
+        backoff.expo,
+        ReportInitFailure,
+        max_tries=5,
+    )
     def _init_reports(self, report_date: str) -> List[ReportInfo]:
         """
         Send report generation requests for all profiles and for all record types for specific day.
@@ -319,8 +328,8 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                     report_init_body,
                 )
                 if response.status_code != HTTPStatus.ACCEPTED:
-                    raise Exception(
-                        f"Unexpected error when registering {record_type}, {self.__class__.__name__} for {profile.profileId} profile: {response.text}"
+                    raise ReportInitFailure(
+                        f"Unexpected HTTP status code {response.status_code} when registering {record_type}, {type(self).__name__} for {profile.profileId} profile: {response.text}"
                     )
 
                 response = ReportInitResponse.parse_raw(response.text)
