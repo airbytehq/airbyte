@@ -1,0 +1,28 @@
+{
+    "subsidiary": { "id": "1" },
+    "trandate": "2021-10-27T17:00:00Z",
+    "currency": { "id": "1" },
+    "custbody_auto_apply": false,
+    "custbody_process_type" : 4,
+    "memo": "Client Refund Example",
+    "line": {
+        "items": [
+            {
+                "account": { "id": "111" },
+                "memo": "Refund Debit",                
+                "debit": 48.57,
+                "class": 1,
+                "entity" : 12,
+                "custcol_purchase_id" : "6348088323686742703055"
+            },
+            {
+                "account": { "id": "1" },
+                "memo": "Refund Credit",
+                "credit": 48.57,
+                "class": 1,
+                "entity" : 11,
+                "custcol_purchase_id" : "6348088323686742703055"
+            }
+        ]
+    }
+}

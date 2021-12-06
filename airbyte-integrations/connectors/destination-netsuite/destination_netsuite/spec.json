@@ -1,0 +1,71 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/NA",
+  "supported_destination_sync_modes": [
+    "append"
+  ],
+  "supportsIncremental": false,
+  "supportsDBT": false,
+  "supportsNormalization": false,
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Destination Netsuite",
+    "type": "object",
+    "required": [
+      "base_url",
+      "consumer_key", "consumer_secret", "token_id", "token_secret",
+      "record_type", "operation"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "base_url": {
+        "title": "Netsuite hostname",
+        "type": "string",
+        "description": "https://<netsuite_account_id>.suitetalk.api.netsuite.com",
+        "airbyte_secret": false,
+        "order": 1
+      },
+      "consumer_key": {
+        "title": "Netsuite client key",
+        "type": "string",
+        "description": "Netsuite client key",
+        "airbyte_secret": true,
+        "order": 2
+      },
+      "consumer_secret": {
+        "title": "Netsuite client secret",
+        "type": "string",
+        "description": "Netsuite client secret",
+        "airbyte_secret": true,
+        "order": 3
+      },
+      "token_id": {
+        "title": "Netsuite token id",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 4
+      },
+      "token_secret": {
+        "title": "Netsuite token secret",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 5
+      },
+      "record_type": {
+        "title": "Netsuite record type",
+        "type": "string",
+        "description": "https://www.netsuite.com/help/helpcenter/en_US/srbrowser/Browser2016_2/schema/enum/recordtype.html?mode=package",
+        "enum": ["JournalEntry"],
+        "airbyte_secret": false,
+        "order": 6
+      },
+      "operation": {
+        "title": "Netsuite record type operation",
+        "type": "string",
+        "description": "e.g. 'add', 'get', 'delete'",
+        "enum": ["add", "get"],
+        "airbyte_secret": false,
+        "order": 7
+      }       
+    }
+  }
+}
