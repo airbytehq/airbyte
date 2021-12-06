@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery.strategy;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -36,11 +40,11 @@ public class BigQueryDenormalizedUploadStandardStrategy extends BigQueryUploadSt
   private final Set<String> fieldsWithRefDefinition;
 
   public BigQueryDenormalizedUploadStandardStrategy(BigQuery bigquery,
-      ConfiguredAirbyteCatalog catalog,
-      Consumer<AirbyteMessage> outputRecordCollector,
-      StandardNameTransformer namingResolver,
-      Set<String> invalidKeys,
-      Set<String> fieldsWithRefDefinition) {
+                                                    ConfiguredAirbyteCatalog catalog,
+                                                    Consumer<AirbyteMessage> outputRecordCollector,
+                                                    StandardNameTransformer namingResolver,
+                                                    Set<String> invalidKeys,
+                                                    Set<String> fieldsWithRefDefinition) {
     super(bigquery, catalog, outputRecordCollector);
     this.namingResolver = namingResolver;
     this.invalidKeys = invalidKeys;
@@ -121,4 +125,5 @@ public class BigQueryDenormalizedUploadStandardStrategy extends BigQueryUploadSt
         .collect(Collectors.toMap(namingResolver::getIdentifier,
             key -> formatData(fields.get(namingResolver.getIdentifier(key)).getSubFields(), root.get(key)))));
   }
+
 }

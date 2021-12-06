@@ -12,7 +12,7 @@
       "type": "string"
     },
     "parent_account_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "bill_to": {
       "type": "string"
@@ -48,7 +48,7 @@
       "type": "boolean"
     },
     "exemption_certificate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "address": {
       "type": "object"
@@ -87,7 +87,7 @@
       "type": "string"
     },
     "deleted_at": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }
