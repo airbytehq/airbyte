@@ -1,0 +1,17 @@
+plugins {
+    id 'application'
+}
+
+dependencies {
+    implementation 'io.temporal:temporal-sdk:1.0.4'
+
+    implementation project(':airbyte-analytics')
+
+    testImplementation "org.testcontainers:postgresql:1.15.3"
+}
+
+application {
+    applicationName = "airbyte-bootloader"
+//    mainClass = 'io.airbyte.scheduler.app.SchedulerApp'
+    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
+}

@@ -155,6 +155,8 @@ public class ServerApp implements ServerRunnable {
     ConfigDumpImporter.initStagedResourceFolder();
 
     LOGGER.info("Creating config repository...");
+    // all these should be converted to get initialise calls
+    // insert the migration version check here
     final Database configDatabase = new ConfigsDatabaseInstance(
         configs.getConfigDatabaseUser(),
         configs.getConfigDatabasePassword(),
@@ -177,6 +179,7 @@ public class ServerApp implements ServerRunnable {
             .getAndInitialize();
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
 
+    // this should be moved to the controller
     createDeploymentIfNoneExists(jobPersistence);
 
     // must happen after deployment id is set
