@@ -161,7 +161,7 @@ public class MongoUtils {
       case DOUBLE -> o.put(fieldName, reader.readDouble());
       case DECIMAL128 -> o.put(fieldName, toDouble(reader.readDecimal128()));
       case TIMESTAMP -> o.put(fieldName, DataTypeUtils.toISO8601StringWithMilliseconds(reader.readTimestamp().getValue()));
-      case DATE_TIME -> o.put(fieldName, DataTypeUtils.toISO8601String(reader.readDateTime()));
+      case DATE_TIME -> o.put(fieldName, DataTypeUtils.toISO8601StringWithMilliseconds(reader.readDateTime()));
       case BINARY -> o.put(fieldName, toByteArray(reader.readBinaryData()));
       case SYMBOL -> o.put(fieldName, reader.readSymbol());
       case STRING -> o.put(fieldName, reader.readString());

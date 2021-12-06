@@ -12,7 +12,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
-BASE_URL = "https://www.googleapis.com/webmasters/v3"
+BASE_URL = "https://www.googleapis.com/webmasters/v3/"
 ROW_LIMIT = 25000
 
 
@@ -67,7 +67,7 @@ class Sites(GoogleSearchConsole):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> str:
-        return f"/sites/{stream_slice.get('site_url')}"
+        return f"sites/{stream_slice.get('site_url')}"
 
 
 class Sitemaps(GoogleSearchConsole):
@@ -83,7 +83,7 @@ class Sitemaps(GoogleSearchConsole):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> str:
-        return f"/sites/{stream_slice.get('site_url')}/sitemaps"
+        return f"sites/{stream_slice.get('site_url')}/sitemaps"
 
 
 class SearchAnalytics(GoogleSearchConsole, ABC):
@@ -102,7 +102,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> str:
-        return f"/sites/{stream_slice.get('site_url')}/searchAnalytics/query"
+        return f"sites/{stream_slice.get('site_url')}/searchAnalytics/query"
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
