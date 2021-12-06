@@ -1,5 +1,10 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.bootloader;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
@@ -24,18 +29,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BootloaderApp {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(BootloaderApp.class);
-  
   private static final AirbyteVersion VERSION_BREAK = new AirbyteVersion("0.32.0-alpha");
 
-  public static void main(String[] args) throws Exception {
-    final Configs configs = new EnvConfigs();
+  private final Configs configs;
 
+  @VisibleForTesting
+  public BootloaderApp(Configs configs) {
+    this.configs = configs;
+  }
+
+  public BootloaderApp() {
+    configs = new EnvConfigs();
+  }
+
+  public void load() throws Exception {
     final Database configDatabase = new ConfigsDatabaseInstance(
         configs.getConfigDatabaseUser(),
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
-        .getAndInitialize();
+            .getAndInitialize();
     final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
     final ConfigRepository configRepository =
         new ConfigRepository(configPersistence.withValidation(), null, Optional.empty(), Optional.empty());
@@ -46,7 +60,7 @@ public class BootloaderApp {
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
         configs.getDatabaseUrl())
-        .getAndInitialize();
+            .getAndInitialize();
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
     createDeploymentIfNoneExists(jobPersistence);
     LOGGER.info("Set up job database and default deployment..");
@@ -64,6 +78,11 @@ public class BootloaderApp {
     LOGGER.info("Loaded seed data...");
 
     LOGGER.info("Finished bootstrapping Airbyte environment..");
+  }
+
+  public static void main(String[] args) throws Exception {
+    final var bootloader = new BootloaderApp();
+    bootloader.load();
   }
 
   private static void createDeploymentIfNoneExists(final JobPersistence jobPersistence) throws IOException {
@@ -140,4 +159,5 @@ public class BootloaderApp {
       LOGGER.info("Auto database migration is skipped");
     }
   }
+
 }

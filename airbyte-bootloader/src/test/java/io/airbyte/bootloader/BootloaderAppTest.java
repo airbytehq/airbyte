@@ -1,12 +1,45 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.bootloader;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.config.Configs;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 public class BootloaderAppTest {
+
+  @Test
+  void testBootloaderApp() throws Exception {
+    // start a container
+    final var container = new PostgreSQLContainer<>("postgres:13-alpine")
+        .withUsername("docker")
+        .withPassword("docker");
+    container.start();
+
+    final var mockedConfigs = mock(Configs.class);
+    when(mockedConfigs.getConfigDatabaseUrl()).thenReturn(container.getJdbcUrl());
+    when(mockedConfigs.getConfigDatabaseUser()).thenReturn(container.getUsername());
+    when(mockedConfigs.getConfigDatabasePassword()).thenReturn(container.getPassword());
+    when(mockedConfigs.getDatabaseUrl()).thenReturn(container.getJdbcUrl());
+    when(mockedConfigs.getDatabaseUser()).thenReturn(container.getUsername());
+    when(mockedConfigs.getDatabasePassword()).thenReturn(container.getPassword());
+    when(mockedConfigs.getAirbyteVersion()).thenReturn(new AirbyteVersion("0.33.0-alpha"));
+
+    final var bootloader = new BootloaderApp(mockedConfigs);
+    bootloader.load();
+
+    // after everything is run, this should have the latest fly migration version
+    // it should also have the latest
+
+  }
 
   @Test
   void testIsLegalUpgradePredicate() {
