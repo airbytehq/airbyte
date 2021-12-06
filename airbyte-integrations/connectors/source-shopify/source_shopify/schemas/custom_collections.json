@@ -54,5 +54,5 @@
       "type": ["null", "string"]
     }
   },
-  "type": "object"
+  "type": ["null", "object"]
 }

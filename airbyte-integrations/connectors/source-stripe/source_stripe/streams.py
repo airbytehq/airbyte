@@ -377,7 +377,7 @@ class CheckoutSessionsLineItems(StripeStream):
 
     def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_slice=stream_slice, **kwargs)
-        params["expand[]"] = "data.discounts"
+        params["expand[]"] = ["data.discounts", "data.taxes"]
         return params
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:

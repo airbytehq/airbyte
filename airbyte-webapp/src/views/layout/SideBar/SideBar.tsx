@@ -2,7 +2,6 @@ import React from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRocket } from "@fortawesome/free-solid-svg-icons";
-import { faSlack } from "@fortawesome/free-brands-svg-icons";
 import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
 
@@ -19,6 +18,7 @@ import DocsIcon from "./components/DocsIcon";
 import OnboardingIcon from "./components/OnboardingIcon";
 import SettingsIcon from "./components/SettingsIcon";
 import SourceIcon from "./components/SourceIcon";
+import ResourcesPopup from "./components/ResourcesPopup";
 import { NotificationIndicator } from "./NotificationIndicator";
 
 const Bar = styled.nav`
@@ -140,23 +140,6 @@ const SideBar: React.FC = () => {
               </Text>
             </MenuItem>
           </li>
-          <li>
-            <MenuItem
-              to={`${Routes.Settings}${Routes.Account}`}
-              activeClassName="active"
-              isActive={(_, location) =>
-                location.pathname.startsWith(Routes.Settings)
-              }
-            >
-              <React.Suspense fallback={null}>
-                <NotificationIndicator />
-              </React.Suspense>
-              <SettingsIcon />
-              <Text>
-                <FormattedMessage id="sidebar.settings" />
-              </Text>
-            </MenuItem>
-          </li>
         </Menu>
       </div>
       <Menu>
@@ -169,21 +152,41 @@ const SideBar: React.FC = () => {
           </MenuLinkItem>
         </li>
         <li>
-          <MenuLinkItem href={config.ui.slackLink} target="_blank">
-            {/*@ts-ignore slack icon fails here*/}
-            <HelpIcon icon={faSlack} />
-            <Text>
-              <FormattedMessage id="sidebar.slack" />
-            </Text>
-          </MenuLinkItem>
+          <ResourcesPopup
+            options={[
+              { value: "docs" },
+              { value: "slack" },
+              { value: "status" },
+              { value: "recipes" },
+            ]}
+          >
+            {({ onOpen }) => (
+              <MenuItem onClick={onOpen} as="div">
+                <DocsIcon />
+                <Text>
+                  <FormattedMessage id="sidebar.resources" />
+                </Text>
+              </MenuItem>
+            )}
+          </ResourcesPopup>
         </li>
+
         <li>
-          <MenuLinkItem href={config.ui.docsLink} target="_blank">
-            <DocsIcon />
+          <MenuItem
+            to={`${Routes.Settings}${Routes.Account}`}
+            activeClassName="active"
+            isActive={(_, location) =>
+              location.pathname.startsWith(Routes.Settings)
+            }
+          >
+            <React.Suspense fallback={null}>
+              <NotificationIndicator />
+            </React.Suspense>
+            <SettingsIcon />
             <Text>
-              <FormattedMessage id="sidebar.docs" />
+              <FormattedMessage id="sidebar.settings" />
             </Text>
-          </MenuLinkItem>
+          </MenuItem>
         </li>
         {config.version ? (
           <li>

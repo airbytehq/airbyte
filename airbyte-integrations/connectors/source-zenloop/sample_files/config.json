@@ -1,0 +1,6 @@
+{
+  "api_token": "<secret>",
+  "date_from": "2021-01-01",
+  "survey_id": "<secret>",
+  "survey_group_id": "<secret>"
+}
