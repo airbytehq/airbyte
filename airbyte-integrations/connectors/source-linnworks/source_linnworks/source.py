@@ -14,7 +14,6 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenti
 from .streams import ProcessedOrderDetails, ProcessedOrders, StockItems, StockLocationDetails, StockLocations
 
 
-
 class LinnworksAuthenticator(Oauth2Authenticator):
     def __init__(
         self,
