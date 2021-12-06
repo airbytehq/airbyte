@@ -64,25 +64,23 @@ class IntercomStream(HttpStream, ABC):
                 self.logger.error(f"Stream {self.name}: {e.response.status_code} " f"{e.response.reason} - {error_message}")
             raise e
 
-    def get_data(self, response: requests.Response) -> List:
+    # def get_data(self, response: requests.Response) -> List:
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+
         data = response.json()
 
         for data_field in self.data_fields:
-            if data and isinstance(data, dict):
-                data = data.get(data_field, [])
+            if data_field not in data:
+                continue
+            data = data[data_field]
+            if data and isinstance(data, list):
+                break
 
-        if isinstance(data, list):
-            data = data
-        elif isinstance(data, dict):
-            data = [data]
-
-        return data
-
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        data = self.get_data(response)
-
-        for record in data:
-            yield record
+        if isinstance(data, dict):
+            yield data
+        else:
+            yield from data
 
         # This is probably overkill because the request itself likely took more
         # than the rate limit, but keep it just to be safe.
@@ -133,8 +131,6 @@ class ChildStreamMixin:
         ):
             yield {"id": item["id"]}
 
-        yield from []
-
 
 class Admins(IntercomStream):
     """Return list of all admins.
@@ -158,13 +154,39 @@ class Companies(IncrementalIntercomStream):
         """For reset scroll needs to iterate pages untill the last.
         Another way need wait 1 min for the scroll to expire to get a new list for companies segments."""
 
-        data = response.json().get("data")
+        data = response.json()
+        scroll_param = data.get("scroll_param")
 
-        if data:
-            return {"scroll_param": response.json().get("scroll_param")}
+        # this stream always has only one data field
+        data_field = self.data_fields[0]
+        if scroll_param and data.get(data_field):
+            return {"scroll_param": scroll_param}
 
     def path(self, **kwargs) -> str:
         return "companies/scroll"
+
+    @classmethod
+    def check_exists_scroll(cls, response: requests.Response) -> bool:
+        if response.status_code == 400:
+            # example response:
+            # {..., "errors": [{'code': 'scroll_exists', 'message': 'scroll already exists for this workspace'}]}
+            err_body = response.json()["errors"][0]
+            if err_body["code"] == "scroll_exists":
+                return True
+
+        return False
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if self.check_exists_scroll(response):
+            return True
+        return super().should_retry(response)
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        if self.check_exists_scroll(response):
+            self.logger.warning("A previous scroll request is exists. " "It must be deleted within an minute automatically")
+            # try to check 3 times
+            return 20.5
+        return super().backoff_time(response)
 
 
 class CompanySegments(ChildStreamMixin, IncrementalIntercomStream):
@@ -292,13 +314,28 @@ class Teams(IntercomStream):
         return "teams"
 
 
+class VersionApiAuthenticator(TokenAuthenticator):
+    """Intercom API support its dynamic versions' switching.
+    But this connector should support only one for any resource account and
+    it is realised by the additional request header 'Intercom-Version'
+    Docs: https://developers.intercom.com/building-apps/docs/update-your-api-version#section-selecting-the-version-via-the-developer-hub
+    """
+
+    relevant_supported_version = "2.2"
+
+    def get_auth_header(self) -> Mapping[str, Any]:
+        headers = super().get_auth_header()
+        headers["Intercom-Version"] = self.relevant_supported_version
+        return headers
+
+
 class SourceIntercom(AbstractSource):
     """
     Source Intercom fetch data from messaging platform.
     """
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        authenticator = TokenAuthenticator(token=config["access_token"])
+        authenticator = VersionApiAuthenticator(token=config["access_token"])
         try:
             url = f"{IntercomStream.url_base}/tags"
             auth_headers = {"Accept": "application/json", **authenticator.get_auth_header()}
@@ -312,7 +349,7 @@ class SourceIntercom(AbstractSource):
         config["start_date"] = datetime.strptime(config["start_date"], "%Y-%m-%dT%H:%M:%SZ").timestamp()
         AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}")
 
-        auth = TokenAuthenticator(token=config["access_token"])
+        auth = VersionApiAuthenticator(token=config["access_token"])
         return [
             Admins(authenticator=auth, **config),
             Companies(authenticator=auth, **config),

@@ -11,7 +11,6 @@ import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
-import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
@@ -67,12 +66,6 @@ public class ServerApp implements ServerRunnable {
   private static final int PORT = 8001;
   private static final AirbyteVersion VERSION_BREAK = new AirbyteVersion("0.32.0-alpha");
 
-  /**
-   * We can't support automatic migration for kube before this version because we had a bug in kube
-   * which would cause airbyte db to erase state upon termination, as a result the automatic migration
-   * wouldn't run
-   */
-  private static final AirbyteVersion KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION = new AirbyteVersion("0.26.5-alpha");
   private final AirbyteVersion airbyteVersion;
   private final Set<Class<?>> customComponentClasses;
   private final Set<Object> customComponents;
@@ -281,68 +274,8 @@ public class ServerApp implements ServerRunnable {
     return airbyteDatabaseVersion.lessThan(VERSION_BREAK) && airbyteVersion.greaterThan(VERSION_BREAK);
   }
 
-  @Deprecated
-  @SuppressWarnings({"DeprecatedIsStillUsed"})
-  private static AirbyteVersion runFileMigration(final AirbyteVersion airbyteVersion,
-                                                 final AirbyteVersion initialAirbyteDatabaseVersion,
-                                                 final ConfigRepository configRepository,
-                                                 final ConfigPersistence seed,
-                                                 final JobPersistence jobPersistence,
-                                                 final Configs configs)
-      throws IOException {
-    // version in the database after migration is run.
-    AirbyteVersion airbyteDatabaseVersion = null;
-    if (initialAirbyteDatabaseVersion != null && isDatabaseVersionBehindAppVersion(airbyteVersion, initialAirbyteDatabaseVersion)) {
-      final boolean isKubernetes = configs.getWorkerEnvironment() == WorkerEnvironment.KUBERNETES;
-      final boolean versionSupportsAutoMigrate = initialAirbyteDatabaseVersion.greaterThanOrEqualTo(KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION);
-      if (!isKubernetes || versionSupportsAutoMigrate) {
-        runAutomaticMigration(configRepository, jobPersistence, seed, airbyteVersion, initialAirbyteDatabaseVersion);
-        // After migration, upgrade the DB version
-        airbyteDatabaseVersion = jobPersistence.getVersion().map(AirbyteVersion::new).orElseThrow();
-      } else {
-        LOGGER.info("Can not run automatic migration for Airbyte on KUBERNETES before version " + KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION.serialize());
-      }
-    }
-
-    return airbyteDatabaseVersion != null ? airbyteDatabaseVersion : initialAirbyteDatabaseVersion;
-  }
-
   public static void main(final String[] args) throws Exception {
     getServer(new ServerFactory.Api(), YamlSeedConfigPersistence.getDefault()).start();
-  }
-
-  /**
-   * Ideally when automatic migration runs, we should make sure that we acquire a lock on database and
-   * no other operation is allowed
-   */
-  private static void runAutomaticMigration(final ConfigRepository configRepository,
-                                            final JobPersistence jobPersistence,
-                                            final ConfigPersistence seed,
-                                            final AirbyteVersion airbyteVersion,
-                                            final AirbyteVersion airbyteDatabaseVersion) {
-    LOGGER.info("Running Automatic Migration from version : " + airbyteDatabaseVersion.serialize() + " to version : " + airbyteVersion.serialize());
-    try (final RunMigration runMigration = new RunMigration(
-        jobPersistence,
-        configRepository,
-        airbyteVersion,
-        seed)) {
-      runMigration.run();
-    } catch (final Exception e) {
-      LOGGER.error("Automatic Migration failed ", e);
-    }
-  }
-
-  public static boolean isDatabaseVersionBehindAppVersion(final AirbyteVersion serverVersion, final AirbyteVersion databaseVersion) {
-    final boolean bothVersionsCompatible = AirbyteVersion.isCompatible(serverVersion, databaseVersion);
-    if (bothVersionsCompatible) {
-      return false;
-    }
-
-    if (databaseVersion.getMajorVersion().compareTo(serverVersion.getMajorVersion()) < 0) {
-      return true;
-    }
-
-    return databaseVersion.getMinorVersion().compareTo(serverVersion.getMinorVersion()) < 0;
   }
 
   private static void runFlywayMigration(final Configs configs, final Database configDatabase, final Database jobDatabase) {

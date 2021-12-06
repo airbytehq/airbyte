@@ -19,19 +19,18 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
 from airbyte_cdk import AirbyteLogger
-
 from source_s3.source_files_abstract.formats.parquet_parser import PARQUET_TYPES, ParquetParser
 
 from .abstract_test_parser import AbstractTestParser
 
 SAMPLE_DIRECTORY = Path(__file__).resolve().parent.joinpath("sample_files/")
 
-logger=AirbyteLogger()
-filetype="parquet"
+logger = AirbyteLogger()
+filetype = "parquet"
+
 
 def tmp_folder():
     return os.path.join(tempfile.mkdtemp())
-
 
 
 def _save_parquet_file(filename: str, columns: List[str], rows: List[List[Any]]) -> str:
@@ -48,9 +47,8 @@ def _save_parquet_file(filename: str, columns: List[str], rows: List[List[Any]])
     pq.write_table(table, filename)
     return filename
 
-def generate_parquet_file(
-    name: str, columns: Mapping[str, str], num_rows: int, custom_rows: Mapping[int, Mapping[str, Any]] = None
-) -> str:
+
+def generate_parquet_file(name: str, columns: Mapping[str, str], num_rows: int, custom_rows: Mapping[int, Mapping[str, Any]] = None) -> str:
     """Generates  a random data and save it to a tmp file"""
     filename = os.path.join(tmp_folder(), name + "." + filetype)
     if os.path.exists(filename):
@@ -62,6 +60,7 @@ def generate_parquet_file(
         rows[n] = custom_row
     return _save_parquet_file(filename, list(columns.keys()) if num_rows else [], rows)
 
+
 def _generate_row(types: List[str]) -> List[Any]:
     """Generates random values with request types"""
     row = []
@@ -71,6 +70,7 @@ def _generate_row(types: List[str]) -> List[Any]:
                 row.append(_generate_value(needed_type))
                 break
     return row
+
 
 # should just use faker instead of this
 def _generate_value(typ: str) -> Any:
@@ -114,6 +114,7 @@ def compress(archive_name: str, filename: str) -> str:
                 shutil.copyfileobj(f_in, f_out)
     return compress_filename
 
+
 @pytest.fixture(autouse=True)
 def prepare_tmp_folder():
     # create tmp folder and remove it after a tests
@@ -122,6 +123,7 @@ def prepare_tmp_folder():
     yield
     logger.info(f"remove the tmp folder: {tmp_folder()}")
     shutil.rmtree(tmp_folder(), ignore_errors=True)
+
 
 def create_test_files() -> List[Mapping[str, Any]]:
     schema = {
@@ -202,15 +204,15 @@ def create_test_files() -> List[Mapping[str, Any]]:
     num_records = 20
     test_record = {
         "id": 7,
-        "name":  _generate_value("string"),
+        "name": _generate_value("string"),
         "valid": False,
         "code": 10,
         "degrees": -9.2,
-        "birthday":  _generate_value("string"),
-        "last_seen":  _generate_value("string"),
-        "created_at":  _generate_value("timestamp"),
-        "created_date_at":  _generate_value("date"),
-        "created_time_at":  _generate_value("time"),
+        "birthday": _generate_value("string"),
+        "last_seen": _generate_value("string"),
+        "created_at": _generate_value("timestamp"),
+        "created_date_at": _generate_value("date"),
+        "created_time_at": _generate_value("time"),
     }
 
     expected_record = copy.deepcopy(test_record)
@@ -221,9 +223,7 @@ def create_test_files() -> List[Mapping[str, Any]]:
     suite.append(
         {
             "test_alias": "check one record",
-            "filepath": generate_parquet_file(
-                "check_one_record", schema, num_records, custom_rows={7: list(test_record.values())}
-            ),
+            "filepath": generate_parquet_file("check_one_record", schema, num_records, custom_rows={7: list(test_record.values())}),
             "num_records": num_records,
             "AbstractFileParser": ParquetParser(
                 format=params,
@@ -305,8 +305,7 @@ def create_test_files() -> List[Mapping[str, Any]]:
                 "test_alias": f"compression: {archive_type}",
                 "filepath": compress(
                     archive_type,
-                    generate_parquet_file("compression_test", schema, num_records,
-                                               custom_rows={7: list(test_record.values())}),
+                    generate_parquet_file("compression_test", schema, num_records, custom_rows={7: list(test_record.values())}),
                 ),
                 "num_records": num_records,
                 "AbstractFileParser": ParquetParser(
@@ -320,15 +319,14 @@ def create_test_files() -> List[Mapping[str, Any]]:
         )
     return suite
 
+
 test_files = create_test_files()
 
-@pytest.mark.parametrize("test_file",
-                         argvalues=test_files,
-                         ids=[file["test_alias"] for file in test_files])
+
+@pytest.mark.parametrize("test_file", argvalues=test_files, ids=[file["test_alias"] for file in test_files])
 class TestParquetParser(AbstractTestParser):
     filetype = "parquet"
 
     @property
     def test_files(self) -> List[Mapping[str, Any]]:
         return []
-
