@@ -12,7 +12,7 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=[
-        "airbyte-cdk~=0.1",
+        "airbyte-cdk~=0.1.35",
         "mailchimp3==3.0.14",
         "pytest~=6.1",
     ],
