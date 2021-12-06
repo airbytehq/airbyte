@@ -4,6 +4,7 @@
 
 package io.airbyte.bootloader;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -11,20 +12,24 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
+import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
+import lombok.val;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 public class BootloaderAppTest {
 
   @Test
-  void testBootloaderApp() throws Exception {
+  void testBootloaderAppBlankDb() throws Exception {
     // start a container
-    final var container = new PostgreSQLContainer<>("postgres:13-alpine")
+    val container = new PostgreSQLContainer<>("postgres:13-alpine")
+        .withDatabaseName("public")
         .withUsername("docker")
         .withPassword("docker");
     container.start();
 
-    final var mockedConfigs = mock(Configs.class);
+    val mockedConfigs = mock(Configs.class);
     when(mockedConfigs.getConfigDatabaseUrl()).thenReturn(container.getJdbcUrl());
     when(mockedConfigs.getConfigDatabaseUser()).thenReturn(container.getUsername());
     when(mockedConfigs.getConfigDatabasePassword()).thenReturn(container.getPassword());
@@ -32,13 +37,18 @@ public class BootloaderAppTest {
     when(mockedConfigs.getDatabaseUser()).thenReturn(container.getUsername());
     when(mockedConfigs.getDatabasePassword()).thenReturn(container.getPassword());
     when(mockedConfigs.getAirbyteVersion()).thenReturn(new AirbyteVersion("0.33.0-alpha"));
+    when(mockedConfigs.runDatabaseMigrationOnStartup()).thenReturn(true);
 
-    final var bootloader = new BootloaderApp(mockedConfigs);
+    val bootloader = new BootloaderApp(mockedConfigs);
     bootloader.load();
 
-    // after everything is run, this should have the latest fly migration version
-    // it should also have the latest
-
+    val jobDatabase = new JobsDatabaseInstance(
+        container.getUsername(),
+        container.getPassword(),
+        container.getJdbcUrl()).getInitialized();
+    val jobsMigrator = new JobsDatabaseMigrator(jobDatabase, this.getClass().getName());
+    val latestJobsMigrationVersion = jobsMigrator.getLatestMigration().getVersion().getVersion();
+    assertEquals("0.29.15.001", latestJobsMigrationVersion);
   }
 
   @Test

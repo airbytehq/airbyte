@@ -10,7 +10,6 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.db.Database;
@@ -72,9 +71,9 @@ public class BootloaderApp {
     LOGGER.info("Ran Flyway migrations...");
 
     jobPersistence.setVersion(currAirbyteVersion.serialize());
-    LOGGER.info("Set version to ");
+    LOGGER.info("Set version to {}", currAirbyteVersion);
 
-    configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
+    // configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
     LOGGER.info("Loaded seed data...");
 
     LOGGER.info("Finished bootstrapping Airbyte environment..");
