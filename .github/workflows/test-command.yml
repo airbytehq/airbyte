@@ -66,7 +66,7 @@ jobs:
         run: python3 -m pip install virtualenv==16.7.9 && virtualenv venv && python3 -m pip install tox==3.24.4
       - name: Test and install CI scripts
         # all CI python packages have the prefix "ci_"
-        run: tox -r -c ./tools/ci_tox.ini && pip install -e ./tools/ci_*
+        run: tox -r -c ./tools/tox_ci.ini && pip install -e ./tools/ci_*
       - name: Write Integration Test Credentials for ${{ github.event.inputs.connector }}
         run: ci_credentials ${{ github.event.inputs.connector }}
         env:
