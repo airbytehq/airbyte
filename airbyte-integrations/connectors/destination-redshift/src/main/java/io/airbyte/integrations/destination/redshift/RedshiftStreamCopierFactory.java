@@ -9,8 +9,8 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopierFactory;
+import io.airbyte.integrations.destination.s3.S3Config;
 import io.airbyte.protocol.models.DestinationSyncMode;
 
 public class RedshiftStreamCopierFactory extends S3StreamCopierFactory {

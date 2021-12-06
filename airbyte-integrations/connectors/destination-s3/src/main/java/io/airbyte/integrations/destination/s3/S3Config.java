@@ -2,11 +2,16 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.jdbc.copy.s3;
+package io.airbyte.integrations.destination.s3;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class S3Config {
+
+  // The smallest part size is 5MB. An S3 upload can be maximally formed of 10,000 parts. This gives
+  // us an upper limit of 10,000 * 10 / 1000 = 100 GB per table with a 10MB part size limit.
+  // WARNING: Too large a part size can cause potential OOM errors.
+  public static final int DEFAULT_PART_SIZE_MB = 10;
 
   private final String endpoint;
   private final String bucketName;
@@ -16,12 +21,12 @@ public class S3Config {
   private final Integer partSize;
 
   public S3Config(
-                  final String endpoint,
-                  final String bucketName,
-                  final String accessKeyId,
-                  final String secretAccessKey,
-                  final String region,
-                  final Integer partSize) {
+      final String endpoint,
+      final String bucketName,
+      final String accessKeyId,
+      final String secretAccessKey,
+      final String region,
+      final Integer partSize) {
     this.endpoint = endpoint;
     this.bucketName = bucketName;
     this.accessKeyId = accessKeyId;
@@ -55,7 +60,7 @@ public class S3Config {
   }
 
   public static S3Config getS3Config(final JsonNode config) {
-    var partSize = S3StreamCopier.DEFAULT_PART_SIZE_MB;
+    var partSize = DEFAULT_PART_SIZE_MB;
     if (config.get("part_size") != null) {
       partSize = config.get("part_size").asInt();
     }

@@ -10,6 +10,8 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
+import io.airbyte.integrations.destination.s3.S3Config;
+import io.airbyte.integrations.destination.s3.S3Destination;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -31,7 +33,7 @@ public abstract class S3StreamCopierFactory implements StreamCopierFactory<S3Con
       final AirbyteStream stream = configuredStream.getStream();
       final DestinationSyncMode syncMode = configuredStream.getDestinationSyncMode();
       final String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
-      final AmazonS3 s3Client = S3StreamCopier.getAmazonS3(s3Config);
+      final AmazonS3 s3Client = S3Destination.getAmazonS3(s3Config);
 
       return create(stagingFolder, syncMode, schema, stream.getName(), s3Client, db, s3Config, nameTransformer, sqlOperations);
     } catch (final Exception e) {

@@ -12,12 +12,9 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
 
 /**
- * This class is similar to {@link io.airbyte.integrations.destination.jdbc.copy.s3.S3Config}. It
- * has an extra {@code bucketPath} parameter, which is necessary for more delicate data syncing to
- * S3.
+ * This class is similar to {@link S3Config}. It has an extra {@code bucketPath} parameter, which is necessary for more delicate data syncing to S3.
  */
 public class S3DestinationConfig {
 
