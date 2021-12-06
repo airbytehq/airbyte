@@ -24,6 +24,10 @@ class MyFormatter(logging.Formatter):
 
 
 class Logger:
+    """Simple logger with a pretty log header
+       the method error returns the value 1
+       the method critical terminates a script work
+    """
 
     def __init__(self):
         formatter = MyFormatter(

@@ -5,9 +5,9 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["requests", "ci_common_utils", ]
+MAIN_REQUIREMENTS = ["requests", "ci_common_utils", "pytest"]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "requests-mock"]
+TEST_REQUIREMENTS = ["requests-mock"]
 
 setup(
     version="0.0.0",
@@ -17,8 +17,10 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
+    python_requires='>=3.7',
+    test_suite='tests',
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
+
 )

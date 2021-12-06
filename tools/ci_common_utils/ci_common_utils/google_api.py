@@ -18,13 +18,46 @@ class GoogleApi:
     scopes: List[str]
     _access_token: str = None
 
-    def get(self, url: str) -> Tuple[Mapping[str, Any], Optional[str]]:
-        token = self.get_access_token()
-        return None, "sss"
+    def get(self, url: str, params: Mapping = None) -> Tuple[Mapping[str, Any], Optional[str]]:
+        """Sends a GET request"""
+        token, err = self.get_access_token()
+        if err:
+            return None, err
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+            "X-Goog-User-Project": self.project_id
+        }
+        # Making a get request
+        response = requests.get(url, headers=headers, params=params)
+        response.raise_for_status()
+        return response.json(), None
+
+    def post(self, url: str, json: Mapping = None, params: Mapping = None) -> Tuple[Mapping[str, Any], Optional[str]]:
+        """Sends a POST request"""
+        token, err = self.get_access_token()
+        if err:
+            return None, err
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "X-Goog-User-Project": self.project_id
+        }
+        # Making a get request
+        response = requests.post(url, headers=headers, json=json, params=params)
+        try:
+            response.raise_for_status()
+        except Exception:
+            self.logger.error(f"error body: {response.text}")
+            raise
+        return response.json(), None
 
     @property
     def token_uri(self):
         return self.config["token_uri"]
+
+    @property
+    def project_id(self):
+        return self.config["project_id"]
 
     def __generate_jwt(self) -> str:
         """Generate JWT token by a service account json file and scopes"""
