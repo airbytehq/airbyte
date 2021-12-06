@@ -105,7 +105,13 @@ class Cards(ChildStreamMixin, TrelloStream):
 
     parent_stream_class = Boards
     limit = 20000
-    extra_params = {"customFieldItems": "true"}
+    extra_params = {
+        "customFieldItems": "true",
+        "pluginData": "true",
+        "actions_display": "true",
+        "members": "true",
+        "list": "true",
+    }
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"boards/{stream_slice['id']}/cards/all"
@@ -204,7 +210,8 @@ class SourceTrello(AbstractSource):
 
             authenticator = self._get_authenticator(config)
 
-            response = requests.get(url, headers=authenticator.get_auth_header())
+            response = requests.get(
+                url, headers=authenticator.get_auth_header())
             response.raise_for_status()
             available_boards = {row.get("id") for row in response.json()}
             for board_id in config.get("board_ids", []):
