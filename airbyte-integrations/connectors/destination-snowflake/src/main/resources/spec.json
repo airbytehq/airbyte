@@ -88,6 +88,19 @@
             }
           },
           {
+            "title": "Standard Inserts",
+            "additionalProperties": false,
+            "description": "Uses <pre>INSERT</pre> statements to send batches of records to Snowflake. Easiest (no setup) but not recommended for large production workloads due to slow speed.",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": ["Standard"],
+                "default": "Standard"
+              }
+            }
+          },
+          {
             "title": "AWS S3 Staging",
             "additionalProperties": false,
             "description": "Writes large batches of records to a file, uploads the file to S3, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
