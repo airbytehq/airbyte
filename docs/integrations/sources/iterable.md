@@ -6,9 +6,6 @@ The Iterable supports full refresh and incremental sync.
 
 This source can sync data for the [Iterable API](https://api.iterable.com/api/docs).
 
-**Note**: there are some redundant endpoints (e.g. [`export/userEvents`](https://api.iterable.com/api/docs#export_exportUserEvents) and [`events/{email}`](https://api.iterable.com/api/docs#events_User_events)). 
-In this case it's better to use the one which takes params as a query param rather than as part of the url param. 
-
 ### Output schema
 
 Several output streams are available from this source:
