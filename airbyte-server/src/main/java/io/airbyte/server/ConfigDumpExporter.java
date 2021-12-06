@@ -18,6 +18,7 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
@@ -94,8 +95,10 @@ public class ConfigDumpExporter {
         .collect(Collectors.toMap(e -> e.getKey().name(), Entry::getValue));
     Files.createDirectories(parentFolder.resolve(DB_FOLDER_NAME));
     for (final Map.Entry<String, Stream<JsonNode>> table : tables.entrySet()) {
-      final Path tablePath = buildTablePath(parentFolder, table.getKey());
-      writeTableToArchive(tablePath, table.getValue());
+      if (!table.getKey().equals(JobsDatabaseSchema.JOBS.getTableName())) {
+        final Path tablePath = buildTablePath(parentFolder, table.getKey());
+        writeTableToArchive(tablePath, table.getValue());
+      }
     }
   }
 
