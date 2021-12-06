@@ -156,6 +156,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Pulsar](destinations/pulsar.md) | Alpha |
 | [Redshift](destinations/redshift.md) | Certified |
 | [S3](destinations/s3.md) | Certified |
+| [SFTP JSON](./destinations/sftp-json.md)| Alpha |
 | [SQL Server \(MSSQL\)](destinations/mssql.md) | Alpha |
 | [Snowflake](destinations/snowflake.md) | Certified |
 | [Cassandra](destinations/cassandra.md) | Alpha |

@@ -3,5 +3,6 @@
   "name": "Oracle (Alpha)",
   "dockerRepository": "airbyte/destination-oracle",
   "dockerImageTag": "0.1.11",
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/oracle"
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/oracle",
+  "icon": "oracle.svg"
 }

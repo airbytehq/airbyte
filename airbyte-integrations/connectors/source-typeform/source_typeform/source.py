@@ -20,7 +20,7 @@ from pendulum.datetime import DateTime
 
 
 class TypeformStream(HttpStream, ABC):
-    url_base = "https://api.typeform.com"
+    url_base = "https://api.typeform.com/"
     # maximum number of entities in API response per single page
     limit: int = 200
     date_format: str = "YYYY-MM-DDTHH:mm:ss[Z]"
@@ -55,7 +55,7 @@ class TrimForms(TypeformStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Optional[Any] = None,
     ) -> str:
-        return "/forms"
+        return "forms"
 
     def next_page_token(self, response: requests.Response) -> Optional[Any]:
         page = self.get_current_page_token(response.url)
@@ -108,7 +108,7 @@ class Forms(TrimFormsMixin, TypeformStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Optional[Any] = None,
     ) -> str:
-        return f"/forms/{stream_slice['form_id']}"
+        return f"forms/{stream_slice['form_id']}"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield response.json()
@@ -149,7 +149,7 @@ class Responses(TrimFormsMixin, IncrementalTypeformStream):
     limit: int = 1000
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        return f"/forms/{stream_slice['form_id']}/responses"
+        return f"forms/{stream_slice['form_id']}/responses"
 
     def get_form_id(self, record: Mapping[str, Any]) -> Optional[str]:
         """

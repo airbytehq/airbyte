@@ -1,7 +1,7 @@
 USE [test_normalization];
     execute('create view _airbyte_test_normalization."dedup_exchange_rate_stg__dbt_tmp" as
     
-with __dbt__CTE__dedup_exchange_rate_ab1 as (
+with __dbt__cte__dedup_exchange_rate_ab1 as (
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
 -- depends_on: "test_normalization".test_normalization._airbyte_raw_dedup_exchange_rate
@@ -21,10 +21,10 @@ from "test_normalization".test_normalization._airbyte_raw_dedup_exchange_rate as
 -- dedup_exchange_rate
 where 1 = 1
 
-),  __dbt__CTE__dedup_exchange_rate_ab2 as (
+),  __dbt__cte__dedup_exchange_rate_ab2 as (
 
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
--- depends_on: __dbt__CTE__dedup_exchange_rate_ab1
+-- depends_on: __dbt__cte__dedup_exchange_rate_ab1
 select
     cast(id as 
     bigint
@@ -47,12 +47,12 @@ select
     _airbyte_ab_id,
     _airbyte_emitted_at,
     SYSDATETIME() as _airbyte_normalized_at
-from __dbt__CTE__dedup_exchange_rate_ab1
+from __dbt__cte__dedup_exchange_rate_ab1
 -- dedup_exchange_rate
 where 1 = 1
 
 )-- SQL model to build a hash column based on the values of this record
--- depends_on: __dbt__CTE__dedup_exchange_rate_ab2
+-- depends_on: __dbt__cte__dedup_exchange_rate_ab2
 select
     convert(varchar(32), HashBytes(''md5'',  coalesce(cast(
     
@@ -69,7 +69,7 @@ select
     VARCHAR(max)), ''''),''''), '''') as 
     VARCHAR(max)), '''')), 2) as _airbyte_dedup_exchange_rate_hashid,
     tmp.*
-from __dbt__CTE__dedup_exchange_rate_ab2 tmp
+from __dbt__cte__dedup_exchange_rate_ab2 tmp
 -- dedup_exchange_rate
 where 1 = 1
 

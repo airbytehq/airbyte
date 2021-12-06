@@ -14,8 +14,8 @@ from typing import Dict, List, Optional, Tuple, Union
 import backoff
 import msal
 import requests
-from airbyte_protocol import AirbyteStream
-from base_python import AirbyteLogger
+from airbyte_cdk.models.airbyte_protocol import AirbyteStream
+from airbyte_cdk.logger import AirbyteLogger
 from msal.exceptions import MsalServiceError
 
 LOGGER = AirbyteLogger()
@@ -129,7 +129,7 @@ class Client:
         streams = []
         for schema, method in self.ENTITY_MAP.items():
             raw_schema = json.loads(pkgutil.get_data(self.__class__.__module__.split(".")[0], f"schemas/{schema}.json"))
-            streams.append(AirbyteStream(name=schema, json_schema=raw_schema))
+            streams.append(AirbyteStream(name=schema, json_schema=raw_schema, supported_sync_modes=["full_refresh"]))
         return streams
 
     def get_users(self):

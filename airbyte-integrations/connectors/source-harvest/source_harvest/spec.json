@@ -95,7 +95,7 @@
       "oauthFlowOutputParameters": [["refresh_token"]]
     }
   },
-  "advancedAuth": {
+  "advanced_auth": {
     "auth_flow_type": "oauth2.0",
     "predicate_key": ["credentials", "auth_type"],
     "predicate_value": "Client",
