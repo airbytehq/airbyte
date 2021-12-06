@@ -37,10 +37,8 @@ class Config:
     @classmethod
     def update_timestamp(cls, timestamp: float):
         test_data = cls.get_test_data()
-        test_data.update({
-            "last_update_timestamp": timestamp
-        })
-        with open(cls.test_data_file_path, 'w') as tdf:
+        test_data.update({"last_update_timestamp": timestamp})
+        with open(cls.test_data_file_path, "w") as tdf:
             json.dump(test_data, tdf)
 
 
@@ -53,9 +51,7 @@ def connector_setup():
     now = datetime.datetime.now().timestamp()
     if config.get_test_data()["last_update_timestamp"] + config.min_update_interval <= now:
         data_filler: DataFiller = DataFiller(
-            from_emails=config.senders,
-            to=config.recipients,
-            number_of_messages=config.messages_per_sender
+            from_emails=config.senders, to=config.recipients, number_of_messages=config.messages_per_sender
         )
         data_filler.fill()
         config.update_timestamp(now)

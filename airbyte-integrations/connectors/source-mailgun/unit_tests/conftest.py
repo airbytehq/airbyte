@@ -1,9 +1,15 @@
 from base64 import b64encode
-from typing import Dict, Any
 from unittest.mock import MagicMock
 
 import pytest
 import responses
+
+from . import TEST_CONFIG
+
+
+@pytest.fixture
+def test_config():
+    return TEST_CONFIG.copy()
 
 
 @pytest.fixture
@@ -15,9 +21,7 @@ def mocked_responses():
 @pytest.fixture
 def auth_header(test_config):
     encoded_auth = b64encode(f"api:{test_config['private_key']}".encode()).decode()
-    return {
-        "Authorization": f"Basic {encoded_auth}"
-    }
+    return f"Basic {encoded_auth}"
 
 
 @pytest.fixture
@@ -41,7 +45,7 @@ def normal_response(next_page_url, test_records):
             "items": test_records,
             "paging": {
                 "next": next_page_url,
-            }
+            },
         }
     )
 

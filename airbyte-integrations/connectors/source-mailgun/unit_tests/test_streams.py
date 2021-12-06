@@ -10,39 +10,33 @@ from source_mailgun.source import Domains, Events, MailgunStream
 
 from . import TEST_CONFIG
 
-
-DATES_RANGE = {
-    "start_timestamp": 10,
-    "end_timestamp": 20
-}
+DATES_RANGE = {"start_timestamp": 10, "end_timestamp": 20}
 
 
 @pytest.mark.parametrize(
-    "stream,stream_slice,stream_state,next_page_token,expected",
+    "stream,next_page_token,expected",
     [
-        (MailgunStream(), None, None, None, ""),
-        (MailgunStream(), None, None, {"url": "next-page-token"}, "next-page-token"),
-
-        (Domains(), None, None, None, "domains"),
-        (Domains(), None, None, {"url": "https://some-url/path/token"}, "domains/token"),
-
-        (Events(TEST_CONFIG), None, None, None, "events"),
-        (Events(TEST_CONFIG), None, None, {"url": "https://some-url/path/token"}, "events/token"),
-    ]
+        (MailgunStream(TEST_CONFIG), None, ""),
+        (MailgunStream(TEST_CONFIG), {"url": "next-page-token"}, "next-page-token"),
+        (Domains(TEST_CONFIG), None, "domains"),
+        (Domains(TEST_CONFIG), {"url": "https://some-url/path/token"}, "https://some-url/path/token"),
+        (Events(TEST_CONFIG), None, "events"),
+        (Events(TEST_CONFIG), {"url": "https://some-url/path/token"}, "https://some-url/path/token"),
+    ],
 )
-def test_path(stream, stream_slice, stream_state, next_page_token, expected):
-    inputs = {"stream_slice": stream_slice, "stream_state": stream_state, "next_page_token": next_page_token}
+def test_path(stream, next_page_token, expected):
+    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": next_page_token}
     assert stream.path(**inputs) == expected
 
 
 @pytest.mark.parametrize(
     "stream,stream_slice,stream_state,next_page_token,expected",
     [
-        (Domains(), {}, None, None, {}),
+        (Domains(TEST_CONFIG), {}, None, None, {}),
         (Events(TEST_CONFIG), {}, {"timestamp": 1609452000.0}, None, {"ascending": "yes", "begin": 1609452000.0}),
         (Events(TEST_CONFIG), {"begin": 10, "end": 20}, {"timestamp": 15}, None, {"begin": 15, "end": 20}),
         (Events(dict(**TEST_CONFIG, **DATES_RANGE)), {"begin": 10, "end": 20}, {}, None, {"begin": 10, "end": 20}),
-    ]
+    ],
 )
 def test_request_params(stream, stream_slice, stream_state, next_page_token, expected):
     inputs = {"stream_slice": stream_slice, "stream_state": stream_state, "next_page_token": next_page_token}
@@ -52,23 +46,19 @@ def test_request_params(stream, stream_slice, stream_state, next_page_token, exp
 @pytest.mark.parametrize(
     "stream",
     [
-        MailgunStream(), Domains(), Events(TEST_CONFIG),
-    ]
+        MailgunStream(TEST_CONFIG),
+        Domains(TEST_CONFIG),
+        Events(TEST_CONFIG),
+    ],
 )
 class TestStreams:
-
     def test_next_page_token(self, stream, normal_response, next_page_url):
         inputs = {"response": normal_response}
         assert stream.next_page_token(**inputs) == {"url": next_page_url}
 
     def test_next_page_token_last_page(self, stream):
         response = MagicMock()
-        response.json = MagicMock(return_value={
-            "items": [],
-            "paging": {
-                "next": "some-url"
-            }
-        })
+        response.json = MagicMock(return_value={"items": [], "paging": {"next": "some-url"}})
         inputs = {"response": response}
         assert stream.next_page_token(**inputs) is None
 
@@ -104,3 +94,21 @@ class TestStreams:
         response_mock = MagicMock()
         response_mock.status_code = http_status
         assert stream.should_retry(response_mock) == should_retry
+
+
+@pytest.mark.parametrize(
+    "stream_class",
+    [
+        MailgunStream,
+        Domains,
+        Events,
+    ],
+)
+def test_domain_region(stream_class, test_config):
+    assert stream_class(config=test_config).url_base == "https://api.mailgun.net/v3/"
+
+    test_config["domain_region"] = "EU"
+    assert stream_class(config=test_config).url_base == "https://api.eu.mailgun.net/v3/"
+
+    test_config["domain_region"] = "US"
+    assert stream_class(config=test_config).url_base == "https://api.mailgun.net/v3/"

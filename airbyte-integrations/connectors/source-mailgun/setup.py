@@ -12,6 +12,7 @@ MAIN_REQUIREMENTS = [
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
     "pytest-mock~=3.6.1",
+    "responses~=0.16.0",
     "source-acceptance-test",
 ]
 

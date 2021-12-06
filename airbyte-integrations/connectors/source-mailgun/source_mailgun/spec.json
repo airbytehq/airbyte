@@ -9,16 +9,21 @@
     "properties": {
       "private_key": {
         "type": "string",
-        "description": "Private API key for authenticate with every request",
-        "airbyte_secret": true
+        "airbyte_secret": true,
+        "description": "Primary account API key to access your Mailgun data.",
+        "title": "Private API Key"
       },
-      "start_timestamp": {
-        "type": "number",
-        "description": "Initial timestamp to gather data from. If omitted, default timeshift (3 days before now ) will be used."
+      "domain_region": {
+        "type": "string",
+        "description": "Domain region code. 'EU' or 'US' are possible values. The default is 'US'.",
+        "title": "Domain Region Code"
       },
-      "end_timestamp": {
-        "type": "number",
-        "description": "End timestamp. If omitted, current timestamp will be used."
+      "start_date": {
+        "title": "Replication Start Date",
+        "description": "UTC date and time in the format 2020-10-01 00:00:00. Any data before this date will not be replicated. If omitted, defaults to 3 days ago.",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$",
+        "examples": ["2020-10-01 00:00:00"],
+        "type": "string"
       }
     }
   }
