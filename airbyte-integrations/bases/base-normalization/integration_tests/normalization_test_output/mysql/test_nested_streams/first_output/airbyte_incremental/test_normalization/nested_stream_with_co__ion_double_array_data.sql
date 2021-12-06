@@ -50,7 +50,7 @@ with numbers as (
         from test_normalization.`nested_stream_with_co___long_names_partition`
         cross join numbers
         -- only generate the number of records in the cross join that corresponds
-        -- to the number of items in nested_stream_with_co___long_names_partition.double_array_data
+        -- to the number of items in test_normalization.`nested_stream_with_co___long_names_partition`.double_array_data
         where numbers.generated_number <= json_length(double_array_data)
     )
 select

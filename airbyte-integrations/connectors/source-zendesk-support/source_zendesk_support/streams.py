@@ -77,7 +77,7 @@ class SourceZendeskSupportStream(HttpStream, ABC):
     @staticmethod
     def str2datetime(str_dt: str) -> datetime:
         """convert string to datetime object
-        Input example: '2021-07-22T06:55:55Z' FROMAT : "%Y-%m-%dT%H:%M:%SZ"
+        Input example: '2021-07-22T06:55:55Z' FORMAT : "%Y-%m-%dT%H:%M:%SZ"
         """
         if not str_dt:
             return None
@@ -86,7 +86,7 @@ class SourceZendeskSupportStream(HttpStream, ABC):
     @staticmethod
     def datetime2str(dt: datetime) -> str:
         """convert datetime object to string
-        Output example: '2021-07-22T06:55:55Z' FROMAT : "%Y-%m-%dT%H:%M:%SZ"
+        Output example: '2021-07-22T06:55:55Z' FORMAT : "%Y-%m-%dT%H:%M:%SZ"
         """
         return datetime.strftime(dt.replace(tzinfo=pytz.UTC), DATETIME_FORMAT)
 
@@ -126,7 +126,7 @@ class IncrementalEntityStream(SourceZendeskSupportStream, ABC):
 
     def __init__(self, start_date: str, **kwargs):
         super().__init__(**kwargs)
-        # add the custom value for skiping of not relevant records
+        # add the custom value for skipping of not relevant records
         self._start_date = self.str2datetime(start_date) if isinstance(start_date, str) else start_date
         # Flag for marking of completed process
         self._finished = False
@@ -183,7 +183,7 @@ class IncrementalExportStream(IncrementalEntityStream, ABC):
     page_size = 1000
 
     # try to save a stage after every 100 records
-    # this endpoint provides responces in ascending order.
+    # this endpoint provides responses in ascending order.
     state_checkpoint_interval = 100
 
     def __init__(self, **kwargs):
@@ -209,14 +209,14 @@ class IncrementalExportStream(IncrementalEntityStream, ABC):
         if not next_page_token:
             current_state = stream_state.get(LAST_END_TIME_KEY)
             if not current_state:
-                # try to search all reconds with generated_timestamp > start_time
+                # try to search all records with generated_timestamp > start_time
                 current_state = stream_state.get(self.cursor_field)
                 if current_state and isinstance(current_state, str) and not current_state.isdigit():
                     current_state = self.str2unixtime(current_state)
             elif not self.last_end_time:
                 self.last_end_time = current_state
             start_time = int(current_state or time.mktime(self._start_date.timetuple()))
-            # +1 because the API returns all records where  generated_timestamp >= start_time
+            # +1 because the API returns all records where generated_timestamp >= start_time
 
             now = calendar.timegm(datetime.now().utctimetuple())
             if start_time > now - 60:
@@ -265,8 +265,8 @@ class IncrementalExportStream(IncrementalEntityStream, ABC):
 class IncrementalUnsortedStream(IncrementalEntityStream, ABC):
     """Stream for loading without sorting
 
-    Some endpoints don't provide approachs for data filtration
-    We can load all reconds fully and select updated data only
+    Some endpoints don't provide approaches for data filtration
+    We can load all records fully and select updated data only
     """
 
     def __init__(self, **kwargs):
@@ -459,9 +459,9 @@ class TicketComments(IncrementalSortedPageStream):
             response.raise_for_status()
 
 
-# NOTE: all Zendesk endpoints can be splitted into several templates of data loading.
+# NOTE: all Zendesk endpoints can be split into several templates of data loading.
 # 1) with API built-in incremental approach
-# 2)  pagination and sorting mechanism
+# 2) pagination and sorting mechanism
 # 3) cursor pagination and sorting mechanism
 # 4) without sorting but with pagination
 # 5) without created_at/updated_at fields
@@ -550,7 +550,10 @@ class TicketMetrics(IncrementalUnsortedPageStream):
     """TicketMetric stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metrics/"""
 
 
-# endpoints provide a pagination and sorting mechanism
+class TicketMetricEvents(IncrementalExportStream):
+    """TicketMetricEvents stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/"""
+
+    cursor_field = "time"
 
 
 class Macros(IncrementalSortedPageStream):
@@ -572,7 +575,7 @@ class TicketAudits(IncrementalSortedCursorStream):
     response_list_name = "audits"
 
 
-# endpoints dont provide the updated_at/created_at fields
+# endpoints don't provide the updated_at/created_at fields
 # thus we can't implement an incremental logic for them
 
 
