@@ -10,9 +10,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourcePerformanceTest;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
-import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerformanceTest {
@@ -60,13 +58,7 @@ public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerfor
 
     setupDatabase(dbName);
 
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(dbName, numberOfStreams,
-        numberOfDummyRecords);
-    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> checkStatusMap =
-        runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
-    validateNumberOfReceivedMsgs(checkStatusMap);
+    performTest(dbName, numberOfStreams, numberOfDummyRecords);
   }
 
   @Test
@@ -77,13 +69,7 @@ public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerfor
 
     setupDatabase(dbName);
 
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(dbName, numberOfStreams,
-        numberOfDummyRecords);
-    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> checkStatusMap =
-        runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
-    validateNumberOfReceivedMsgs(checkStatusMap);
+    performTest(dbName, numberOfStreams, numberOfDummyRecords);
   }
 
   @Test
@@ -94,13 +80,7 @@ public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerfor
 
     setupDatabase(dbName);
 
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(dbName, numberOfStreams,
-        numberOfDummyRecords);
-    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> checkStatusMap =
-        runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
-    validateNumberOfReceivedMsgs(checkStatusMap);
+    performTest(dbName, numberOfStreams, numberOfDummyRecords);
   }
 
   @Test
@@ -110,13 +90,7 @@ public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerfor
     String dbName = "newsmall1000tableswith10000rows";
     setupDatabase(dbName);
 
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(dbName, numberOfStreams,
-        numberOfDummyRecords);
-    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> checkStatusMap =
-        runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
-    validateNumberOfReceivedMsgs(checkStatusMap);
+    performTest(dbName, numberOfStreams, numberOfDummyRecords);
   }
 
   @Test
@@ -126,13 +100,7 @@ public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerfor
     String dbName = "newinterim15tableswith50000records";
     setupDatabase(dbName);
 
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(dbName, numberOfStreams,
-        numberOfDummyRecords);
-    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> checkStatusMap =
-        runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
-    validateNumberOfReceivedMsgs(checkStatusMap);
+    performTest(dbName, numberOfStreams, numberOfDummyRecords);
   }
 
   @Test
@@ -142,13 +110,7 @@ public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerfor
     String dbName = "newregular25tables50000records";
     setupDatabase(dbName);
 
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(dbName, numberOfStreams,
-        numberOfDummyRecords);
-    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> checkStatusMap =
-        runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
-    validateNumberOfReceivedMsgs(checkStatusMap);
+    performTest(dbName, numberOfStreams, numberOfDummyRecords);
   }
 
 }

@@ -10,9 +10,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourcePerformanceTest;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
-import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 public class MsSqlRdsSourcePerformanceSecretTest extends AbstractSourcePerformanceTest {
@@ -54,13 +52,7 @@ public class MsSqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
 
     setupDatabase("test100tables100recordsDb");
 
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(defaultDbSchemaName,
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> checkStatusMap =
-        runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
-    validateNumberOfReceivedMsgs(checkStatusMap);
+    performTest(defaultDbSchemaName, numberOfStreams, numberOfDummyRecords);
   }
 
   @Test
@@ -71,13 +63,7 @@ public class MsSqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
 
     setupDatabase("test1000tables240columns200recordsDb");
 
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(defaultDbSchemaName,
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> checkStatusMap =
-        runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
-    validateNumberOfReceivedMsgs(checkStatusMap);
+    performTest(defaultDbSchemaName, numberOfStreams, numberOfDummyRecords);
   }
 
   @Test
@@ -88,13 +74,7 @@ public class MsSqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
 
     setupDatabase("test5000tables240columns200recordsDb");
 
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(defaultDbSchemaName,
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> checkStatusMap =
-        runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
-    validateNumberOfReceivedMsgs(checkStatusMap);
+    performTest(defaultDbSchemaName, numberOfStreams, numberOfDummyRecords);
   }
 
   @Test
@@ -105,13 +85,7 @@ public class MsSqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
 
     setupDatabase("newsmall1000tableswith10000rows");
 
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(defaultDbSchemaName,
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> checkStatusMap =
-        runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
-    validateNumberOfReceivedMsgs(checkStatusMap);
+    performTest(defaultDbSchemaName, numberOfStreams, numberOfDummyRecords);
   }
 
   @Test
@@ -122,13 +96,7 @@ public class MsSqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
 
     setupDatabase("newinterim15tableswith50000records");
 
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(defaultDbSchemaName,
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> checkStatusMap =
-        runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
-    validateNumberOfReceivedMsgs(checkStatusMap);
+    performTest(defaultDbSchemaName, numberOfStreams, numberOfDummyRecords);
   }
 
   @Test
@@ -139,13 +107,7 @@ public class MsSqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
 
     setupDatabase("newregular25tables50000records");
 
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(defaultDbSchemaName,
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> checkStatusMap =
-        runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
-    validateNumberOfReceivedMsgs(checkStatusMap);
+    performTest(defaultDbSchemaName, numberOfStreams, numberOfDummyRecords);
   }
 
 }

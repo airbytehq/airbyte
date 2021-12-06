@@ -33,6 +33,9 @@ public abstract class AbstractSourcePerformanceTest extends SourceBasePerformanc
 
   protected static final Logger c = LoggerFactory.getLogger(AbstractSourcePerformanceTest.class);
   private static final String ID_COLUMN_NAME = "id";
+  private ConfiguredAirbyteCatalog catalog;
+  private Map<String, Integer> mapOfExpectedRecordsCount;
+  private Map<String, Integer> checkStatusMap;
 
   /**
    * Setup the test database. All tables and data described in the registered tests will be put there.
@@ -114,6 +117,17 @@ public abstract class AbstractSourcePerformanceTest extends SourceBasePerformanc
     }
 
     return new ConfiguredAirbyteCatalog().withStreams(streams);
+  }
+
+  protected void performTest(final String dbName,
+                             final int numberOfStreams,
+                             final int numberOfDummyRecords)
+      throws Exception {
+    catalog = getConfiguredCatalog(dbName, numberOfStreams, numberOfDummyRecords);
+    mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
+        numberOfStreams, numberOfDummyRecords);
+    checkStatusMap = runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
+    validateNumberOfReceivedMsgs(checkStatusMap);
   }
 
 }

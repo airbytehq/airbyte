@@ -12,9 +12,7 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourcePerformanceTest;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
-import java.util.Map;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Test;
 
@@ -74,13 +72,7 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
 
     setupDatabase(schemaName);
 
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(schemaName, numberOfStreams,
-        numberOfDummyRecords);
-    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> checkStatusMap =
-        runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
-    validateNumberOfReceivedMsgs(checkStatusMap);
+    performTest(schemaName, numberOfStreams, numberOfDummyRecords);
   }
 
   @Test
@@ -91,13 +83,7 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
 
     setupDatabase(schemaName);
 
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(schemaName, numberOfStreams,
-        numberOfDummyRecords);
-    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> checkStatusMap =
-        runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
-    validateNumberOfReceivedMsgs(checkStatusMap);
+    performTest(schemaName, numberOfStreams, numberOfDummyRecords);
   }
 
   @Test
@@ -108,13 +94,7 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
 
     setupDatabase(schemaName);
 
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(schemaName, numberOfStreams,
-        numberOfDummyRecords);
-    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> checkStatusMap =
-        runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
-    validateNumberOfReceivedMsgs(checkStatusMap);
+    performTest(schemaName, numberOfStreams, numberOfDummyRecords);
   }
 
   @Test
@@ -125,13 +105,7 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
 
     setupDatabase(schemaName);
 
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(schemaName, numberOfStreams,
-        numberOfDummyRecords);
-    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> checkStatusMap =
-        runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
-    validateNumberOfReceivedMsgs(checkStatusMap);
+    performTest(schemaName, numberOfStreams, numberOfDummyRecords);
   }
 
   @Test
@@ -142,13 +116,7 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
 
     setupDatabase(schemaName);
 
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(schemaName, numberOfStreams,
-        numberOfDummyRecords);
-    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> checkStatusMap =
-        runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
-    validateNumberOfReceivedMsgs(checkStatusMap);
+    performTest(schemaName, numberOfStreams, numberOfDummyRecords);
   }
 
   @Test
@@ -159,13 +127,7 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
 
     setupDatabase(schemaName);
 
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(schemaName, numberOfStreams,
-        numberOfDummyRecords);
-    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> checkStatusMap =
-        runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
-    validateNumberOfReceivedMsgs(checkStatusMap);
+    performTest(schemaName, numberOfStreams, numberOfDummyRecords);
   }
 
 }
