@@ -12,6 +12,13 @@
         "examples": ["2017-01-25T00:00:00Z"],
         "type": "string"
       },
+      "period_in_days": {
+        "title": "Period In Days",
+        "description": "Will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.",
+        "examples": ["30", "365"],
+        "type": "integer",
+        "default": 30
+      },
       "refresh_token": {
         "title": "Refresh Token",
         "description": "The refresh token used obtained via authorization (can be passed to the client instead)",

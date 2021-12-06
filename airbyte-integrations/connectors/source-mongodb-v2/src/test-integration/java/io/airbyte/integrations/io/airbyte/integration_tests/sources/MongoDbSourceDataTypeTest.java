@@ -175,7 +175,7 @@ public class MongoDbSourceDataTypeTest {
                     .put("double", 1.7976931348623157E308)
                     .put("decimal", NaN)
                     .put("tms", DataTypeUtils.toISO8601StringWithMilliseconds(MILLI))
-                    .put("dateTime", DataTypeUtils.toISO8601String(MILLI))
+                    .put("dateTime", DataTypeUtils.toISO8601StringWithMilliseconds(MILLI))
                     .put("binary", new BsonBinary(new UUID(10, 15)).getData())
                     .put("symbol", "s")
                     .put("string", "test mongo db")
