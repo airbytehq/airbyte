@@ -6,6 +6,7 @@ import pytest
 from source_google_ads.custom_query_stream import CustomQuery
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.streams import AdGroupAdReport, chunk_date_range
+from source_google_ads.source import SourceGoogleAds
 
 
 def test_chunk_date_range():
@@ -15,6 +16,21 @@ def test_chunk_date_range():
     field = "date"
     response = chunk_date_range(start_date, conversion_window, field, end_date)
     assert [{"date": "2021-02-18"}, {"date": "2021-03-18"}, {"date": "2021-04-18"}] == response
+
+
+def test_streams_count(config):
+    source = SourceGoogleAds()
+    streams = source.streams(config)
+    expected_streams_number = 14
+    assert len(streams) == expected_streams_number
+
+
+def test_streams_count_for_manager(config):
+    source = SourceGoogleAds()
+    config["login_customer_id"] = config["customer_id"]
+    streams = source.streams(config)
+    expected_streams_number = 8
+    assert len(streams) == expected_streams_number
 
 
 # this requires the config because instantiating a stream creates a google client. TODO refactor so client can be mocked.
@@ -43,7 +59,7 @@ def get_instance_from_config(config, query):
         conversion_window_days=conversion_window_days,
         start_date=start_date,
         custom_query_config={"query": query, "table_name": "whatever_table"},
-        time_zone = "local"
+        time_zone="local"
     )
     return instance
 
