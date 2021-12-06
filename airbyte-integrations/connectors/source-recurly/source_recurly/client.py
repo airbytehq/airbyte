@@ -9,7 +9,7 @@ from base64 import b64encode
 from typing import List, Tuple
 
 import requests
-from airbyte_protocol import AirbyteStream
+from airbyte_cdk.models.airbyte_protocol import AirbyteStream
 from recurly import USER_AGENT
 from recurly import Client as RecurlyClient
 from recurly.base_errors import ApiError
@@ -42,7 +42,7 @@ class Client:
         streams = []
         for schema in self.ENTITIES:
             raw_schema = json.loads(pkgutil.get_data(self.__class__.__module__.split(".")[0], f"schemas/{schema}.json"))
-            streams.append(AirbyteStream(name=schema, json_schema=raw_schema))
+            streams.append(AirbyteStream(name=schema, json_schema=raw_schema, supported_sync_modes=["full_refresh"]))
         return streams
 
     def get_entities(self, entity_name) -> List[dict]:
