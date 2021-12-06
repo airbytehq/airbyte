@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.38
+Improve URL-creation in CDK. Changed to using `urllib.parse.urljoin()`.
+
 ## 0.1.37
 Fix `emitted_at` from `seconds * 1000` to correct milliseconds.
 
