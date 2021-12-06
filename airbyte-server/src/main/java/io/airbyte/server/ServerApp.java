@@ -194,12 +194,6 @@ public class ServerApp implements ServerRunnable {
     // if no workspace exists, we create one so the user starts out with a place to add configuration.
     createWorkspaceIfNoneExists(configRepository);
 
-    final AirbyteVersion airbyteVersion = configs.getAirbyteVersion();
-    if (jobPersistence.getVersion().isEmpty()) {
-      LOGGER.info(String.format("Setting Database version to %s...", airbyteVersion));
-      jobPersistence.setVersion(airbyteVersion.serialize());
-    }
-
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(configs.getTemporalHost());
     final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot());
@@ -212,6 +206,7 @@ public class ServerApp implements ServerRunnable {
 
     // version in the database when the server main method is called. may be empty if this is the first
     // time the server is started.
+    final AirbyteVersion airbyteVersion = configs.getAirbyteVersion();
     final Optional<AirbyteVersion> initialAirbyteDatabaseVersion = jobPersistence.getVersion().map(AirbyteVersion::new);
     if (!isLegalUpgrade(initialAirbyteDatabaseVersion.orElse(null), airbyteVersion)) {
       final String attentionBanner = MoreResources.readResource("banner/attention-banner.txt");

@@ -3,15 +3,20 @@ plugins {
 }
 
 dependencies {
-    implementation 'io.temporal:temporal-sdk:1.0.4'
+    implementation project(':airbyte-config:init')
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-config:persistence')
+    implementation project(':airbyte-db:lib')
+    implementation project(":airbyte-json-validation")
+    implementation project(':airbyte-scheduler:persistence')
 
-    implementation project(':airbyte-analytics')
+    implementation "org.flywaydb:flyway-core:7.14.0"
 
     testImplementation "org.testcontainers:postgresql:1.15.3"
 }
 
 application {
     applicationName = "airbyte-bootloader"
-//    mainClass = 'io.airbyte.scheduler.app.SchedulerApp'
+    mainClass = 'io.airbyte.bootloader.BootloaderApp'
     applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
 }
