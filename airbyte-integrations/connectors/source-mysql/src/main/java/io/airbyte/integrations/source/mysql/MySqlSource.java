@@ -97,58 +97,10 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
     final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(super.getCheckOperations(config));
     if (isCdc(config)) {
-      checkOperations.add(database -> {
-        final List<String> log = database.resultSetQuery(connection -> {
-          final String sql = "show variables where Variable_name = 'log_bin'";
-
-          return connection.createStatement().executeQuery(sql);
-        }, resultSet -> resultSet.getString("Value")).collect(toList());
-
-        if (log.size() != 1) {
-          throw new RuntimeException("Could not query the variable log_bin");
-        }
-
-        final String logBin = log.get(0);
-        if (!logBin.equalsIgnoreCase("ON")) {
-          throw new RuntimeException("The variable log_bin should be set to ON, but it is : " + logBin);
-        }
-      });
-
-      checkOperations.add(database -> {
-        final List<String> format = database.resultSetQuery(connection -> {
-          final String sql = "show variables where Variable_name = 'binlog_format'";
-
-          return connection.createStatement().executeQuery(sql);
-        }, resultSet -> resultSet.getString("Value")).collect(toList());
-
-        if (format.size() != 1) {
-          throw new RuntimeException("Could not query the variable binlog_format");
-        }
-
-        final String binlogFormat = format.get(0);
-        if (!binlogFormat.equalsIgnoreCase("ROW")) {
-          throw new RuntimeException("The variable binlog_format should be set to ROW, but it is : " + binlogFormat);
-        }
-      });
+      checkOperations.addAll(List.of(getCheckOperation("log_bin", "ON"),
+          getCheckOperation("binlog_format", "ROW"),
+          getCheckOperation("binlog_row_image", "FULL")));
     }
-
-    checkOperations.add(database -> {
-      final List<String> image = database.resultSetQuery(connection -> {
-        final String sql = "show variables where Variable_name = 'binlog_row_image'";
-
-        return connection.createStatement().executeQuery(sql);
-      }, resultSet -> resultSet.getString("Value")).collect(toList());
-
-      if (image.size() != 1) {
-        throw new RuntimeException("Could not query the variable binlog_row_image");
-      }
-
-      final String binlogRowImage = image.get(0);
-      if (!binlogRowImage.equalsIgnoreCase("FULL")) {
-        throw new RuntimeException("The variable binlog_row_image should be set to FULL, but it is : " + binlogRowImage);
-      }
-    });
-
     return checkOperations;
   }
 
@@ -251,6 +203,25 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   public enum ReplicationMethod {
     STANDARD,
     CDC
+  }
+
+  private CheckedConsumer<JdbcDatabase, Exception> getCheckOperation(String name, String value) {
+    return database -> {
+      final List<String> result = database.resultSetQuery(connection -> {
+        final String sql = String.format("show variables where Variable_name = '%s'", name);
+
+        return connection.createStatement().executeQuery(sql);
+      }, resultSet -> resultSet.getString("Value")).collect(toList());
+
+      if (result.size() != 1) {
+        throw new RuntimeException(String.format("Could not query the variable %s", name));
+      }
+
+      final String resultValue = result.get(0);
+      if (!resultValue.equalsIgnoreCase(value)) {
+        throw new RuntimeException(String.format("The variable %s should be set to %s, but it is : %s", name, value, resultValue));
+      }
+    };
   }
 
 }
