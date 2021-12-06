@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery.strategy;
 
 import static com.amazonaws.util.StringUtils.UTF8;
@@ -137,4 +141,5 @@ public class BigQueryUploadGCSStrategy implements BigQueryUploadStrategy {
       throw new RuntimeException("Column not added during load append \n" + e.toString());
     }
   }
+
 }
