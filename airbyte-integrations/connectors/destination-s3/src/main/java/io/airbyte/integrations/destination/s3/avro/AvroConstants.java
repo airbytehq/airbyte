@@ -14,6 +14,7 @@ public class AvroConstants {
   public static final String DOC_KEY_ORIGINAL_NAME = "_airbyte_original_name";
 
   public static final String AVRO_EXTRA_PROPS_FIELD = "_airbyte_additional_properties";
+  public static final String AVRO_RECORD_NAMESPACE = "_airbyte_avro_namespace";
   // This set must include _ab_additional_col in source_s3/source_files_abstract/stream.py
   public static final Set<String> JSON_EXTRA_PROPS_FIELDS = Set.of("_ab_additional_properties", AVRO_EXTRA_PROPS_FIELD);
   public static final AvroNameTransformer NAME_TRANSFORMER = new AvroNameTransformer();
