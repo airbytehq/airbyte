@@ -230,6 +230,23 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
+  public void testWebBackendListAllConnectionsForWorkspace() throws ConfigNotFoundException, IOException, JsonValidationException {
+    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
+    workspaceIdRequestBody.setWorkspaceId(sourceRead.getWorkspaceId());
+
+    final ConnectionReadList connectionReadList = new ConnectionReadList();
+    connectionReadList.setConnections(Collections.singletonList(connectionRead));
+    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
+    connectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
+    when(connectionsHandler.listAllConnectionsForWorkspace(workspaceIdRequestBody)).thenReturn(connectionReadList);
+    when(operationsHandler.listOperationsForConnection(connectionIdRequestBody)).thenReturn(operationReadList);
+
+    final WebBackendConnectionReadList WebBackendConnectionReadList = wbHandler.webBackendListAllConnectionsForWorkspace(workspaceIdRequestBody);
+    assertEquals(1, WebBackendConnectionReadList.getConnections().size());
+    assertEquals(expected, WebBackendConnectionReadList.getConnections().get(0));
+  }
+
+  @Test
   public void testWebBackendSearchConnections() throws ConfigNotFoundException, IOException, JsonValidationException {
     final ConnectionReadList connectionReadList = new ConnectionReadList();
     connectionReadList.setConnections(Collections.singletonList(connectionRead));

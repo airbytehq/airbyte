@@ -5,7 +5,6 @@
 package io.airbyte.oauth.flows.facebook;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -35,7 +34,6 @@ public abstract class FacebookOAuthFlow extends BaseOAuth2Flow {
     super(configRepository, httpClient);
   }
 
-  @VisibleForTesting
   FacebookOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier);
   }
@@ -43,7 +41,11 @@ public abstract class FacebookOAuthFlow extends BaseOAuth2Flow {
   protected abstract String getScopes();
 
   @Override
-  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId,
+                                    final String clientId,
+                                    final String redirectUrl,
+                                    final JsonNode inputOAuthConfiguration)
+      throws IOException {
     try {
       return new URIBuilder(AUTH_CODE_TOKEN_URL)
           .addParameter("client_id", clientId)
@@ -122,7 +124,7 @@ public abstract class FacebookOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected List<String> getDefaultOAuthOutputPath() {
+  public List<String> getDefaultOAuthOutputPath() {
     return List.of();
   }
 

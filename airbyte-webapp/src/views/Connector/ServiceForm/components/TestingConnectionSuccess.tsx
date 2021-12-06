@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import StatusIcon from "components/StatusIcon";
+import { StatusIcon } from "components";
 
 const LoadingContainer = styled.div`
   font-weight: 600;

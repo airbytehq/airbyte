@@ -58,11 +58,11 @@ class ZuoraStream(HttpStream, ABC):
             raise QueryWindowError(value)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """ Abstractmethod HTTPStream CDK dependency """
+        """Abstractmethod HTTPStream CDK dependency"""
         return None
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        """ Abstractmethod HTTPStream CDK dependency """
+        """Abstractmethod HTTPStream CDK dependency"""
         return {}
 
     def base_query_params(self) -> MutableMapping[str, Any]:
@@ -82,7 +82,7 @@ class ZuoraBase(ZuoraStream):
     """
 
     def path(self, **kwargs) -> str:
-        """ Abstractmethod HTTPStream CDK dependency """
+        """Abstractmethod HTTPStream CDK dependency"""
         return ""
 
     def request_kwargs(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Mapping[str, Any]:
@@ -483,11 +483,11 @@ class ZuoraGetJobResult(HttpStream):
         return self.url
 
     def path(self, **kwargs) -> str:
-        """ Abstractmethod HTTPStream CDK dependency """
+        """Abstractmethod HTTPStream CDK dependency"""
         return ""
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """ Abstractmethod HTTPStream CDK dependency """
+        """Abstractmethod HTTPStream CDK dependency"""
         return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> str:

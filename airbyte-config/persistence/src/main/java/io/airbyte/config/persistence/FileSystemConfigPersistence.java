@@ -92,6 +92,15 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
     }
   }
 
+  @Override
+  public <T> void writeConfigs(final AirbyteConfig configType, final Map<String, T> configs) throws IOException {
+    synchronized (lock) {
+      for (final Map.Entry<String, T> config : configs.entrySet()) {
+        writeConfigInternal(configType, config.getKey(), config.getValue());
+      }
+    }
+  }
+
   private <T> void writeConfigs(final AirbyteConfig configType, final Stream<T> configs, final Path rootOverride) {
     configs.forEach(config -> {
       final String configId = configType.getId(config);

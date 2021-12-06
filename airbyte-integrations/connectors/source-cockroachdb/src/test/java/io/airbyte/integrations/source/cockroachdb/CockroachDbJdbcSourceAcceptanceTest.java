@@ -63,7 +63,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @BeforeAll
   static void init() {
-    PSQL_DB = new CockroachContainer("cockroachdb/cockroach");
+    PSQL_DB = new CockroachContainer("cockroachdb/cockroach:v20.2.18");
     PSQL_DB.start();
   }
 
