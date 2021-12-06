@@ -594,7 +594,7 @@
     - "overwrite"
     - "append"
     supportsNamespaces: true
-- dockerImage: "airbyte/destination-gcs:0.1.3"
+- dockerImage: "airbyte/destination-gcs:0.1.15"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/gcs"
     connectionSpecification:
@@ -629,6 +629,7 @@
           - ""
           - "-- North America --"
           - "northamerica-northeast1"
+          - "northamerica-northeast2"
           - "us-central1"
           - "us-east1"
           - "us-east4"
@@ -638,6 +639,7 @@
           - "us-west4"
           - "-- South America --"
           - "southamerica-east1"
+          - "southamerica-west1"
           - "-- Europe --"
           - "europe-central2"
           - "europe-north1"
@@ -2738,7 +2740,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-s3:0.1.13"
+- dockerImage: "airbyte/destination-s3:0.1.15"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/s3"
     connectionSpecification:
@@ -3109,7 +3111,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.3.17"
+- dockerImage: "airbyte/destination-snowflake:0.3.18"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:
@@ -3182,19 +3184,19 @@
           description: "Loading method used to send data to Snowflake."
           order: 7
           oneOf:
-          - title: "Standard Inserts"
+          - title: "[Recommended] Internal Staging"
             additionalProperties: false
-            description: "Uses <pre>INSERT</pre> statements to send batches of records\
-              \ to Snowflake. Easiest (no setup) but not recommended for large production\
-              \ workloads due to slow speed."
+            description: "Writes large batches of records to a file, uploads the file\
+              \ to Snowflake, then uses <pre>COPY INTO table</pre> to upload the file.\
+              \ Recommended for large production workloads for better speed and scalability."
             required:
             - "method"
             properties:
               method:
                 type: "string"
                 enum:
-                - "Standard"
-                default: "Standard"
+                - "Internal Staging"
+                default: "Internal Staging"
           - title: "AWS S3 Staging"
             additionalProperties: false
             description: "Writes large batches of records to a file, uploads the file\

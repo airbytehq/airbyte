@@ -56,7 +56,6 @@ include ':airbyte-scheduler:persistence' // used by airbyte-workers.
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
     include ':airbyte-cli'
     include ':airbyte-e2e-testing'
-    include ':airbyte-migration'
     include ':airbyte-oauth'
     include ':airbyte-scheduler:app'
     include ':airbyte-scheduler:client'
