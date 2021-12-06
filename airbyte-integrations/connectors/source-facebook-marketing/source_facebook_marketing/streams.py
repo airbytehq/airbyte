@@ -178,6 +178,20 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         params = deep_merge(params, self._state_filter(stream_state=stream_state or {}))
         return params
 
+    def _single_account_state_filter(self, single_stream_state: Mapping[str, Any]):
+        """Extracts a valid state_filter for a single account"""
+        state_value = single_stream_state.get(self.cursor_field)
+        filter_value = self._start_date if not state_value else pendulum.parse(state_value)
+
+        if potentially_new_records_in_the_past:
+            filter_value = self._start_date
+
+        return {
+            "field": f"{self.entity_prefix}.{self.cursor_field}",
+            "operator": "GREATER_THAN",
+            "value": filter_value.int_timestamp,
+        }
+
     def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Additional filters associated with state if any set"""
 
@@ -185,22 +199,9 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         if potentially_new_records_in_the_past:
             self.logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
 
-        def _single_state_filter(single_stream_state: Mapping[str, Any]):
-            state_value = single_stream_state.get(self.cursor_field)
-            filter_value = self._start_date if not state_value else pendulum.parse(state_value)
-
-            if potentially_new_records_in_the_past:
-                filter_value = self._start_date
-
-            return {
-                "field": f"{self.entity_prefix}.{self.cursor_field}",
-                "operator": "GREATER_THAN",
-                "value": filter_value.int_timestamp,
-            }
-
         result_filtering_custom = {}
-        for account_stream_state in stream_state.keys():
-            result_filtering_custom[account_stream_state] = _single_state_filter(stream_state[account_stream_state])
+        for account_id in stream_state.keys():
+            result_filtering_custom[account_id] = self._single_account_state_filter(stream_state[account_id])
 
         return {
             f"filtering_by_{self.partition_field}": result_filtering_custom,
@@ -500,6 +501,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             yield {
                 "time_range": {"since": since.to_date_string(), "until": until.to_date_string()},
             }
+
 
 class AdsInsightsAgeAndGender(AdsInsights):
     breakdowns = ["age", "gender"]
