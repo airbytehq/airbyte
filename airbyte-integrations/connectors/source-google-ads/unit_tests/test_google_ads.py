@@ -5,11 +5,9 @@
 from datetime import date
 
 import pendulum
+from pendulum.tz.timezone import Timezone
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.streams import IncrementalGoogleAdsStream, chunk_date_range
-from pendulum.tz.timezone import Timezone
-from airbyte_cdk.models import SyncMode
-
 
 SAMPLE_SCHEMA = {
     "properties": {
