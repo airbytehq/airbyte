@@ -1,5 +1,5 @@
 ARG JDK_VERSION=14.0.2
-FROM openjdk:${JDK_VERSION}-slim AS server
+FROM openjdk:${JDK_VERSION}-slim
 
 ENV APPLICATION airbyte-bootloader
 
@@ -7,5 +7,4 @@ WORKDIR /app
 
 ADD bin/${APPLICATION}-0.33.3-alpha.tar /app
 
-# wait for upstream dependencies to become available before starting server
 ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-0.33.3-alpha/bin/${APPLICATION}"]

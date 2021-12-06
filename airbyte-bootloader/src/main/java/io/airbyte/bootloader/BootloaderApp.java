@@ -28,6 +28,18 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Just like how the Linux bootloader paves the way for the OS to start, this class is responsible
+ * for setting up the Airbyte environment so the rest of the Airbyte applications can safely start.
+ * <p>
+ * This includes:
+ * <p>
+ * - creating databases, if needed.
+ * <p>
+ * - ensuring all required database migrations are run.
+ * <p>
+ * - setting all required Airbyte metadata information.
+ */
 public class BootloaderApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BootloaderApp.class);
