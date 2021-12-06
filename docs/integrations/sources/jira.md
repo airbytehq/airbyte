@@ -67,6 +67,16 @@ This source is capable of syncing the following tables and their data:
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
+## Experimental Tables
+
+The following tables depend on undocumented internal Jira API endpoints and are
+therefore subject to stop working if those endpoints undergo major changes.
+While they will not cause a sync to fail, they may not be able to pull any data.
+Use the "Enable Experimental Streams" option when setting up the source to allow
+or disallow these tables to be selected when configuring a connection.
+
+* Pull Requests (currently only GitHub PRs are supported)
+
 ## Getting Started \(Airbyte Open-Source / Airbyte Cloud\)
 
 ### Requirements
