@@ -2,10 +2,10 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from typing import MutableMapping, List, Dict, Any, Optional
+from typing import Any, Dict, List, MutableMapping, Optional
 
-from pydantic import BaseModel
 from jsonschema import RefResolver
+from pydantic import BaseModel
 
 
 class BaseConfig(BaseModel):
@@ -13,7 +13,7 @@ class BaseConfig(BaseModel):
 
     @classmethod
     def _rename_key(cls, schema: Any, old_key: str, new_key: str) -> None:
-        """ Iterate over nested dictionary and replace one key with another. Used to replace anyOf with oneOf."
+        """Iterate over nested dictionary and replace one key with another. Used to replace anyOf with oneOf."
 
         :param schema: schema that will be patched
         :param old_key: name of the key to replace
@@ -29,7 +29,7 @@ class BaseConfig(BaseModel):
 
     @classmethod
     def _expand_refs(cls, schema: Any, ref_resolver: Optional[RefResolver] = None) -> None:
-        """ Iterate over schema and replace all occurrences of $ref with their definitions
+        """Iterate over schema and replace all occurrences of $ref with their definitions
 
         :param schema:
         :param ref_resolver:
@@ -51,8 +51,7 @@ class BaseConfig(BaseModel):
 
     @classmethod
     def schema(cls, **kwargs) -> Dict[str, Any]:
-        """We're overriding the schema classmethod to enable some post-processing
-        """
+        """We're overriding the schema classmethod to enable some post-processing"""
         schema = super().schema(**kwargs)
         cls._rename_key(schema, old_key="anyOf", new_key="oneOf")  # UI supports only oneOf
         cls._expand_refs(schema)  # UI and destination doesn't support $ref's
