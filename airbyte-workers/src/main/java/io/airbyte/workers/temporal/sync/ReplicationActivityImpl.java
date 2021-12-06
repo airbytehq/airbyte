@@ -67,8 +67,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   private final String airbyteVersion;
 
   private static final MdcScope.Builder LOG_MDC_BUILDER = new MdcScope.Builder()
-      .setLogPrefix("replication-runner")
-      .setPrefixColor(LoggingHelper.Color.ORANGE);
+      .setLogPrefix("container-orchestrator")
+      .setPrefixColor(LoggingHelper.Color.CYAN_BACKGROUND);
 
   public ReplicationActivityImpl(final WorkerConfigs workerConfigs,
                                  final ProcessFactory processFactory,

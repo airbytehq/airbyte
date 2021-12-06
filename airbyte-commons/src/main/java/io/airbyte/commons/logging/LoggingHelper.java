@@ -14,11 +14,15 @@ public class LoggingHelper {
     RED("\u001b[31m"),
     GREEN("\u001b[32m"),
     YELLOW("\u001b[33m"),
-    ORANGE("\033[38;5;202m"), // todo: fix
     BLUE("\u001b[34m"),
     MAGENTA("\u001b[35m"),
     CYAN("\u001b[36m"),
-    WHITE("\u001b[37m");
+    WHITE("\u001b[37m"),
+    BLUE_BACKGROUND("\u001b[44m"), // source
+    YELLOW_BACKGROUND("\u001b[43m"), // destination
+    GREEN_BACKGROUND("\u001b[42m"), // normalization
+    CYAN_BACKGROUND("\u001b[46m"), // container runner
+    PURPLE_BACKGROUND("\u001b[45m"); // dbt
 
     private final String ansi;
 

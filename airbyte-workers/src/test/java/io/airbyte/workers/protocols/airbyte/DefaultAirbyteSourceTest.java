@@ -191,7 +191,7 @@ class DefaultAirbyteSourceTest {
         .filter(line -> !line.contains("EnvConfigs(getEnvOrDefault)"))
         .forEach(line -> {
           org.assertj.core.api.Assertions.assertThat(line)
-              .startsWith(Color.BLUE.getCode() + "source" + RESET);
+              .startsWith(Color.BLUE_BACKGROUND.getCode() + "source" + RESET);
         });
   }
 

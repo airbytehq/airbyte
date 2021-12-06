@@ -127,7 +127,7 @@ class DefaultNormalizationRunnerTest {
         .filter(line -> !line.contains("EnvConfigs(getEnvOrDefault)"))
         .forEach(line -> {
           org.assertj.core.api.Assertions.assertThat(line)
-              .startsWith(Color.GREEN.getCode() + "normalization" + RESET);
+              .startsWith(Color.GREEN_BACKGROUND.getCode() + "normalization" + RESET);
         });
   }
 

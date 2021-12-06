@@ -178,7 +178,7 @@ class DefaultAirbyteDestinationTest {
 
     logs.forEach(line -> {
       org.assertj.core.api.Assertions.assertThat(line)
-          .startsWith(Color.MAGENTA.getCode() + "destination" + RESET);
+          .startsWith(Color.YELLOW_BACKGROUND.getCode() + "destination" + RESET);
     });
   }
 

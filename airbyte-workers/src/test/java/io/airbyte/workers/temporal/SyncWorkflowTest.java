@@ -52,7 +52,6 @@ class SyncWorkflowTest {
 
   private TestWorkflowEnvironment testEnv;
   private Worker syncWorker;
-  private Worker replicationOrchestratorWorker;
   private WorkflowClient client;
   private ReplicationActivityImpl replicationActivity;
   private NormalizationActivityImpl normalizationActivity;
@@ -89,9 +88,6 @@ class SyncWorkflowTest {
     syncWorker = testEnv.newWorker(TemporalJobType.SYNC.name());
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
 
-    replicationOrchestratorWorker = testEnv.newWorker(TemporalJobType.REPLICATE.name());
-    replicationOrchestratorWorker.registerWorkflowImplementationTypes(ReplicationWorkflowImpl.class);
-
     client = testEnv.getWorkflowClient();
 
     final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig();
@@ -115,8 +111,7 @@ class SyncWorkflowTest {
 
   // bundle up all the temporal worker setup / execution into one method.
   private StandardSyncOutput execute() {
-    syncWorker.registerActivitiesImplementations(normalizationActivity, dbtTransformationActivity, persistStateActivity);
-    replicationOrchestratorWorker.registerActivitiesImplementations(replicationActivity);
+    syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
     testEnv.start();
     final SyncWorkflow workflow =
         client.newWorkflowStub(SyncWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(TemporalJobType.SYNC.name()).build());
