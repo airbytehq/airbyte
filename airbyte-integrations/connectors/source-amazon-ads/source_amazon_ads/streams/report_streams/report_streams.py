@@ -71,6 +71,10 @@ class ReportGenerationInProgress(RetryableException):
     pass
 
 
+class ReportStatusFailure(RetryableException):
+    pass
+
+
 class TooManyRequests(Exception):
     """
     Custom exception occured when response with 429 status code received
@@ -209,7 +213,12 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         """
         check_endpoint = f"/v2/reports/{report_info.report_id}"
         resp = self._send_http_request(urljoin(self._url, check_endpoint), report_info.profile_id)
-        resp = ReportStatus.parse_raw(resp.text)
+
+        try:
+            resp = ReportStatus.parse_raw(resp.text)
+        except ValueError as error:
+            raise ReportStatusFailure(error)
+
         return resp.status, resp.location
 
     @backoff.on_exception(
