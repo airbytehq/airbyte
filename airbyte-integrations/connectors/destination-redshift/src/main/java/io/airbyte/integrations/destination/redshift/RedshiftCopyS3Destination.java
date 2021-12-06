@@ -14,7 +14,7 @@ import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.CopyConsumerFactory;
 import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
-import io.airbyte.integrations.destination.s3.S3Config;
+import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
@@ -42,7 +42,7 @@ public class RedshiftCopyS3Destination extends CopyDestination {
         getDatabase(config),
         getSqlOperations(),
         getNameTransformer(),
-        getS3Config(config),
+        getS3DestinationConfig(config),
         catalog,
         new RedshiftStreamCopierFactory(),
         getConfiguredSchema(config));
@@ -50,7 +50,7 @@ public class RedshiftCopyS3Destination extends CopyDestination {
 
   @Override
   public void checkPersistence(final JsonNode config) throws Exception {
-    S3StreamCopier.attemptS3WriteAndDelete(getS3Config(config));
+    S3StreamCopier.attemptS3WriteAndDelete(getS3DestinationConfig(config));
   }
 
   @Override
@@ -72,8 +72,8 @@ public class RedshiftCopyS3Destination extends CopyDestination {
     return config.get("schema").asText();
   }
 
-  private S3Config getS3Config(final JsonNode config) {
-    return S3Config.getS3Config(config);
+  private S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
+    return S3DestinationConfig.getS3DestinationConfig(config);
   }
 
 }

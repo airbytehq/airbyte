@@ -37,7 +37,7 @@ public class S3Destination extends BaseConnector implements Destination {
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     try {
-      attemptS3WriteAndDelete(S3Config.getS3Config(config), config.get("s3_bucket_path").asText());
+      attemptS3WriteAndDelete(S3DestinationConfig.getS3DestinationConfig(config), config.get("s3_bucket_path").asText());
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception attempting to access the S3 bucket: ", e);
@@ -56,13 +56,13 @@ public class S3Destination extends BaseConnector implements Destination {
     return new S3Consumer(S3DestinationConfig.getS3DestinationConfig(config), configuredCatalog, formatterFactory, outputRecordCollector);
   }
 
-  public static void attemptS3WriteAndDelete(final S3Config s3Config, final String bucketPath) {
+  public static void attemptS3WriteAndDelete(final S3DestinationConfig s3Config, final String bucketPath) {
     final var prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
     final String outputTableName = prefix + "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
     attemptWriteAndDeleteS3Object(s3Config, outputTableName);
   }
 
-  private static void attemptWriteAndDeleteS3Object(final S3Config s3Config, final String outputTableName) {
+  private static void attemptWriteAndDeleteS3Object(final S3DestinationConfig s3Config, final String outputTableName) {
     final var s3 = getAmazonS3(s3Config);
     final var s3Bucket = s3Config.getBucketName();
 
@@ -70,9 +70,9 @@ public class S3Destination extends BaseConnector implements Destination {
     s3.deleteObject(s3Bucket, outputTableName);
   }
 
-  public static AmazonS3 getAmazonS3(final S3Config s3Config) {
+  public static AmazonS3 getAmazonS3(final S3DestinationConfig s3Config) {
     final var endpoint = s3Config.getEndpoint();
-    final var region = s3Config.getRegion();
+    final var region = s3Config.getBucketRegion();
     final var accessKeyId = s3Config.getAccessKeyId();
     final var secretAccessKey = s3Config.getSecretAccessKey();
 
@@ -81,7 +81,7 @@ public class S3Destination extends BaseConnector implements Destination {
     if (endpoint.isEmpty()) {
       return AmazonS3ClientBuilder.standard()
           .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-          .withRegion(s3Config.getRegion())
+          .withRegion(s3Config.getBucketRegion())
           .build();
 
     } else {

@@ -14,8 +14,8 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
-import io.airbyte.integrations.destination.s3.S3Config;
 import io.airbyte.integrations.destination.s3.S3Destination;
+import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
@@ -50,7 +50,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   public static final int MAX_PARTS_PER_FILE = 1000;
 
   protected final AmazonS3 s3Client;
-  protected final S3Config s3Config;
+  protected final S3DestinationConfig s3Config;
   protected final String tmpTableName;
   private final DestinationSyncMode destSyncMode;
   protected final String schemaName;
@@ -67,15 +67,15 @@ public abstract class S3StreamCopier implements StreamCopier {
   private final StagingFilenameGenerator filenameGenerator;
 
   public S3StreamCopier(final String stagingFolder,
-                        final DestinationSyncMode destSyncMode,
-                        final String schema,
-                        final String streamName,
-                        final String s3FileName,
-                        final AmazonS3 client,
-                        final JdbcDatabase db,
-                        final S3Config s3Config,
-                        final ExtendedNameTransformer nameTransformer,
-                        final SqlOperations sqlOperations) {
+      final DestinationSyncMode destSyncMode,
+      final String schema,
+      final String streamName,
+      final String s3FileName,
+      final AmazonS3 client,
+      final JdbcDatabase db,
+      final S3DestinationConfig s3Config,
+      final ExtendedNameTransformer nameTransformer,
+      final SqlOperations sqlOperations) {
     this.destSyncMode = destSyncMode;
     this.schemaName = schema;
     this.streamName = streamName;
@@ -224,15 +224,15 @@ public abstract class S3StreamCopier implements StreamCopier {
     LOGGER.info("All data for {} stream uploaded.", streamName);
   }
 
-  public static void attemptS3WriteAndDelete(final S3Config s3Config) {
+  public static void attemptS3WriteAndDelete(final S3DestinationConfig s3Config) {
     S3Destination.attemptS3WriteAndDelete(s3Config, "");
   }
 
   public abstract void copyS3CsvFileIntoTable(JdbcDatabase database,
-                                              String s3FileLocation,
-                                              String schema,
-                                              String tableName,
-                                              S3Config s3Config)
+      String s3FileLocation,
+      String schema,
+      String tableName,
+      S3DestinationConfig s3Config)
       throws SQLException;
 
 }

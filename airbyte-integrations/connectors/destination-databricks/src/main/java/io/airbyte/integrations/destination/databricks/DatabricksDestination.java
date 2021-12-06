@@ -47,7 +47,7 @@ public class DatabricksDestination extends CopyDestination {
   @Override
   public void checkPersistence(final JsonNode config) {
     final DatabricksDestinationConfig databricksConfig = DatabricksDestinationConfig.get(config);
-    S3StreamCopier.attemptS3WriteAndDelete(databricksConfig.getS3DestinationConfig().getS3Config());
+    S3StreamCopier.attemptS3WriteAndDelete(databricksConfig.getS3DestinationConfig());
   }
 
   @Override
