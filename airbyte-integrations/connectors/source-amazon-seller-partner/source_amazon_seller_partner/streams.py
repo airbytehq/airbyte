@@ -10,6 +10,7 @@ import zlib
 from abc import ABC, abstractmethod
 from io import StringIO
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
+from urllib.parse import urljoin
 
 import pendulum
 import requests
@@ -50,7 +51,7 @@ class AmazonSPStream(HttpStream, ABC):
     ):
         super().__init__(*args, **kwargs)
 
-        self._url_base = url_base
+        self._url_base = url_base.rstrip("/") + "/"
         self._replication_start_date = replication_start_date
         self.marketplace_ids = marketplace_ids
         self._session.auth = aws_signature
@@ -139,7 +140,7 @@ class ReportsAmazonSPStream(Stream, ABC):
     """
 
     primary_key = None
-    path_prefix = f"/reports/{REPORTS_API_VERSION}"
+    path_prefix = f"reports/{REPORTS_API_VERSION}"
     sleep_seconds = 30
     data_field = "payload"
 
@@ -154,7 +155,7 @@ class ReportsAmazonSPStream(Stream, ABC):
     ):
         self._authenticator = authenticator
         self._session = requests.Session()
-        self._url_base = url_base
+        self._url_base = url_base.rstrip("/") + "/"
         self._session.auth = aws_signature
         self._replication_start_date = replication_start_date
         self.marketplace_ids = marketplace_ids
@@ -195,7 +196,11 @@ class ReportsAmazonSPStream(Stream, ABC):
         """
         Override to make http_method configurable per method call
         """
-        args = {"method": http_method, "url": self.url_base + path, "headers": headers, "params": params}
+        args = {
+            "method": http_method,
+            "url": urljoin(self.url_base, path),
+            "headers": headers, "params": params
+        }
         if http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:
                 raise RequestBodyException(
@@ -470,7 +475,7 @@ class Orders(IncrementalAmazonSPStream):
     page_size_field = "MaxResultsPerPage"
 
     def path(self, **kwargs) -> str:
-        return f"/orders/{ORDERS_API_VERSION}/orders"
+        return f"orders/{ORDERS_API_VERSION}/orders"
 
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
@@ -508,7 +513,7 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
         ).strftime(self.time_format)
 
     def path(self, **kwargs) -> str:
-        return f"/vendor/directFulfillment/shipping/{VENDORS_API_VERSION}/shippingLabels"
+        return f"vendor/directFulfillment/shipping/{VENDORS_API_VERSION}/shippingLabels"
 
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
