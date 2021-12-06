@@ -189,6 +189,7 @@ class Events(IterableStream):
 
     primary_key = None
     data_field = "events"
+    common_fields = ("itblInternal", "_type", "createdAt", "email")
 
     def path(self, **kwargs) -> str:
         return "export/userEvents"
@@ -208,9 +209,20 @@ class Events(IterableStream):
                 yield {"email": list_record["email"]}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        Parse jsonl response body.
+        Put common event fields at the top level.
+        Put the rest of the fields in the `data` subobject.
+        """
+
         jsonl_records = StringIO(response.text)
         for record in jsonl_records:
-            yield json.loads(record)
+            record_dict = json.loads(record)
+            record_dict_common_fields = {}
+            for field in self.common_fields:
+                record_dict_common_fields[field] = record_dict.pop(field, None)
+
+            yield {**record_dict_common_fields, "data": record_dict}
 
 
 class MessageTypes(IterableStream):

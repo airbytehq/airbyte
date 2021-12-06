@@ -11,7 +11,7 @@ from source_iterable.api import Events
 
 @responses.activate
 @pytest.mark.parametrize(
-    "response_objects,jsonl_body",
+    "response_objects,expected_objects,jsonl_body",
     [
         (
             [
@@ -66,6 +66,7 @@ from source_iterable.api import Events
                     "email": "test@mail.com",
                 },
             ],
+            [],
             False,
         ),
         (
@@ -82,6 +83,7 @@ from source_iterable.api import Events
                     "profileUpdatedAt": "2021",
                 }
             ],
+            [],
             False,
         ),
         (
@@ -114,6 +116,39 @@ from source_iterable.api import Events
                     "channelId": 1,
                 },
             ],
+            [
+                {
+                    "itblInternal": {"documentUpdatedAt": "2021", "documentCreatedAt": "202"},
+                    "_type": "str",
+                    "createdAt": "2021",
+                    "email": "test@mail.com",
+                    "data": {
+                        "signupSource": "str",
+                        "emailListIds": [1],
+                        "messageTypeIds": [],
+                        "channelIds": [],
+                        "profileUpdatedAt": "2021",
+                    },
+                },
+                {
+                    "itblInternal": {"documentUpdatedAt": "2021", "documentCreatedAt": "2021"},
+                    "_type": "1",
+                    "createdAt": "2021",
+                    "email": "test@mail.com",
+                    "data": {
+                        "productRecommendationCount": 1,
+                        "campaignId": 1,
+                        "contentId": 1,
+                        "messageId": "1",
+                        "messageBusId": "1",
+                        "templateId": 1,
+                        "messageTypeId": 1,
+                        "catalogCollectionCount": 1,
+                        "catalogLookupCount": 0,
+                        "channelId": 1,
+                    },
+                },
+            ],
             True,
         ),
         (
@@ -130,11 +165,26 @@ from source_iterable.api import Events
                     "profileUpdatedAt": "2021",
                 }
             ],
+            [
+                {
+                    "itblInternal": {"documentUpdatedAt": "2021", "documentCreatedAt": "202"},
+                    "_type": "str",
+                    "createdAt": "2021",
+                    "email": "test@mail.com",
+                    "data": {
+                        "signupSource": "str",
+                        "emailListIds": [1],
+                        "messageTypeIds": [],
+                        "channelIds": [],
+                        "profileUpdatedAt": "2021",
+                    },
+                }
+            ],
             True,
         ),
     ],
 )
-def test_events_parse_response(response_objects, jsonl_body):
+def test_events_parse_response(response_objects, expected_objects, jsonl_body):
     if jsonl_body:
         response_body = "\n".join([json.dumps(obj) for obj in response_objects])
     else:
@@ -143,9 +193,9 @@ def test_events_parse_response(response_objects, jsonl_body):
     response = requests.get("https://example.com")
     stream = Events(api_key="key")
 
-    records = [record for record in stream.parse_response(response)]
-
     if jsonl_body:
-        assert records == response_objects
+        records = [record for record in stream.parse_response(response)]
+        assert records == expected_objects
     else:
-        assert records != response_objects
+        with pytest.raises(TypeError):
+            [record for record in stream.parse_response(response)]
