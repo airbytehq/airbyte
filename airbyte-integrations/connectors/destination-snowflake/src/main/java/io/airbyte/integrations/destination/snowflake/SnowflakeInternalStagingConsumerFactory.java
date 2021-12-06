@@ -35,8 +35,8 @@ import org.slf4j.LoggerFactory;
  * Snowflake Internal Staging consists of 4 main parts
  *
  * CREATE STAGE @TEMP_STAGE_NAME -- Creates a new named internal stage to use for loading data from
- * files into Snowflake tables and unloading data from tables into files
- * PUT file://local/<file-patterns> @TEMP_STAGE_NAME. --JDBC Driver will upload the files into stage
+ * files into Snowflake tables and unloading data from tables into files PUT
+ * file://local/<file-patterns> @TEMP_STAGE_NAME. --JDBC Driver will upload the files into stage
  * COPY FROM @TEMP_STAGE_NAME -- Loads data from staged files to an existing table.
  * DROP @TEMP_STAGE_NAME -- Drop temporary stage after sync
  */
