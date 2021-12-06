@@ -13,8 +13,6 @@ dependencies {
     implementation project(':airbyte-json-validation')
 
     implementation 'org.apache.commons:commons-lang3:3.11'
-    implementation 'org.projectlombok:lombok:1.18.20'
-    annotationProcessor('org.projectlombok:lombok:1.18.20')
 
     testImplementation project(':airbyte-test-utils')
 
