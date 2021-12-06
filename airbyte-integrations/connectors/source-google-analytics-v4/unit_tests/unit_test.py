@@ -41,6 +41,20 @@ def mock_auth_call(requests_mock):
 
 
 @pytest.fixture
+def mock_auth_check_connection(requests_mock):
+    yield requests_mock.post("https://analyticsreporting.googleapis.com/v4/reports:batchGet", json={"data": {"test": "value"}})
+
+
+@pytest.fixture
+def mock_unknown_metrics_or_dimensions_error(requests_mock):
+    yield requests_mock.post(
+        "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
+        status_code=400,
+        json={"error": {"message": "Unknown metrics or dimensions"}},
+    )
+
+
+@pytest.fixture
 def mock_api_returns_no_records(requests_mock):
     """API returns empty data for given date based slice"""
     yield requests_mock.post(
@@ -198,6 +212,11 @@ def test_check_connection_success_oauth(
     assert "refresh_token_val" in unquote(mock_auth_call.last_request.body)
     assert mock_auth_call.called
     assert mock_api_returns_valid_records.called
+
+
+def test_unknown_metrics_or_dimensions_error_validation(mock_metrics_dimensions_type_list_link, mock_unknown_metrics_or_dimensions_error):
+    records = GoogleAnalyticsV4Stream(MagicMock()).read_records(sync_mode=None)
+    assert records
 
 
 @freeze_time("2021-11-30")

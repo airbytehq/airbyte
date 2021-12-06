@@ -131,7 +131,6 @@ class CsvParser(AbstractFileParser):
     # TODO Rename this here and in `_get_schema_dict`
     def _get_schema_dict_without_inference(self, file):
         self.logger.debug("infer_datatypes is False, skipping infer_schema")
-        encoding = self.format.encoding
         delimiter = self.format.delimiter
         quote_char = self.format.quote_char
         reader = csv.reader([six.ensure_text(file.readline())], delimiter=delimiter, quotechar=quote_char)
