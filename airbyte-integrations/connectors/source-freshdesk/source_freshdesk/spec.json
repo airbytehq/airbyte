@@ -23,7 +23,7 @@
       "requests_per_minute": {
         "title": "Requests per minute",
         "type": "integer",
-        "description": "The number of the requests per minute that this source allowed to use."
+        "description": "The number of requests per minute that this source allowed to use."
       },
       "start_date": {
         "title": "Start Date",
