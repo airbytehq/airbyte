@@ -138,10 +138,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             # take any action and just return.
             return
         report_date = stream_slice[self.cursor_field]
-        report_infos = self._init_reports(report_date)
-        logger.info(f"Waiting for {len(report_infos)} report(s) to be generated")
-
-        self._try_read_records(report_infos)
+        report_infos = self._init_and_try_read_records(report_date)
 
         for report_info in report_infos:
             for metric_object in report_info.metric_objects:
@@ -151,6 +148,19 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                     reportDate=report_date,
                     metric=metric_object,
                 ).dict()
+
+
+    @backoff.on_exception(
+        backoff.expo,
+        ReportGenerationFailure,
+        max_tries=5,
+    )
+    def _init_and_try_read_records(self, report_date):
+        report_infos = self._init_reports(report_date)
+        logger.info(f"Waiting for {len(report_infos)} report(s) to be generated")
+        self._try_read_records(report_infos)
+        return report_infos
+
 
     @backoff.on_exception(
         backoff.constant,
