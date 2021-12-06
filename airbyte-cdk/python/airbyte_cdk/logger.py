@@ -6,8 +6,8 @@ import logging
 import logging.config
 import sys
 import traceback
-from functools import reduce, partial
-from typing import List, Optional
+from functools import partial
+from typing import List
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage
 
@@ -43,6 +43,7 @@ def init_unhandled_exception_output_filtering(logger: logging.Logger) -> None:
 
     sys.excepthook = partial(hook_fn, logger)
 
+
 def init_logger(name: str = None):
     """Initial set up of logger"""
     logging.setLoggerClass(AirbyteNativeLogger)
@@ -57,12 +58,12 @@ def init_logger(name: str = None):
 class AirbyteLogFormatter(logging.Formatter):
     """Output log records using AirbyteMessage"""
 
-    __secrets = []
+    _secrets = []
 
     @classmethod
     def update_secrets(cls, secrets: List[str]):
         """Update the list of secrets to be replaced in the log message"""
-        cls.__secrets = secrets
+        cls._secrets = secrets
 
     # Transforming Python log levels to Airbyte protocol log levels
     level_mapping = {
@@ -78,11 +79,8 @@ class AirbyteLogFormatter(logging.Formatter):
         """Return a JSON representation of the log message"""
         message = super().format(record)
         airbyte_level = self.level_mapping.get(record.levelno, "INFO")
-        message = reduce(
-            lambda log_msg, secret: message.replace(str(secret), "****"),
-            self.__secrets,
-            record.msg,
-        )
+        for secret in AirbyteLogFormatter._secrets:
+            message = message.replace(secret, "****")
         log_message = AirbyteMessage(type="LOG", log=AirbyteLogMessage(level=airbyte_level, message=message))
         return log_message.json(exclude_unset=True)
 

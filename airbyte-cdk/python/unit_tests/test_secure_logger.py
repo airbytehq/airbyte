@@ -224,7 +224,7 @@ def test_non_airbyte_secrets_are_not_masked_on_uncaught_exceptions(mocker, capsy
 
     try:
         list(entrypoint.run(parsed_args))
-    except Exception as e:
+    except Exception:
         sys.excepthook(*sys.exc_info())
         log_result = capsys.readouterr().out + capsys.readouterr().err
         assert NOT_A_SECRET_VALUE in log_result, "Should not have filtered non-secret value from exception"

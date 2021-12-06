@@ -5,13 +5,12 @@
 
 import argparse
 import importlib
-import logging
 import os.path
 import sys
 import tempfile
-from functools import partial
 from typing import Iterable, List
-from airbyte_cdk.logger import init_logger, AirbyteLogFormatter
+
+from airbyte_cdk.logger import AirbyteLogFormatter, init_logger
 from airbyte_cdk.models import AirbyteMessage, Status, Type
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
@@ -25,7 +24,8 @@ class AirbyteEntrypoint(object):
         self.source = source
         self.logger = init_logger(f"airbyte.{getattr(source, 'name', '')}")
 
-    def parse_args(self, args: List[str]) -> argparse.Namespace:
+    @staticmethod
+    def parse_args(args: List[str]) -> argparse.Namespace:
         # set up parent parsers
         parent_parser = argparse.ArgumentParser(add_help=False)
         main_parser = argparse.ArgumentParser()
@@ -76,7 +76,7 @@ class AirbyteEntrypoint(object):
 
                 # Now that we have the config, we can use it to get a list of ai airbyte_secrets
                 # that we should filter in logging to avoid leaking secrets
-                config_secrets = get_secrets(self.source, config)
+                config_secrets = get_secrets(self.source, config, self.logger)
                 AirbyteLogFormatter.update_secrets(config_secrets)
 
                 # Remove internal flags from config before validating so
