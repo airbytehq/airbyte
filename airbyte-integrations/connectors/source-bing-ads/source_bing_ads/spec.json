@@ -71,7 +71,7 @@
       },
       "client_secret": {
         "type": "string",
-        "title": "Client Secret"
+        "title": "Client Secret",
         "description": "The Client Secret of your Microsoft Advertising developer application.",
         "airbyte_secret": true
       },
@@ -94,12 +94,12 @@
       },
       "user_id": {
         "type": "string",
-        "title": "User ID"
+        "title": "User ID",
         "description": "Unique user identifier."
       },
       "reports_start_date": {
         "type": "string",
-        "title": "Reports Start Date"
+        "title": "Reports Start Date",
         "format": "date",
         "default": "2020-01-01",
         "description": "UTC date in YYYY-MM-DD format. Any reports before this date will not be replicated."
