@@ -63,7 +63,10 @@ jobs:
           repository: ${{ github.event.inputs.repo }}
       # Beside PyEnv, this does not set any runtimes up because it uses an AMI image that has everything pre-installed. See https://github.com/airbytehq/airbyte/issues/4559/
       - name: Install Pyenv and Tox
-        run: python3 -m pip install virtualenv==16.7.9 && virtualenv venv && python3 -m pip install tox==3.24.4
+        run: python3 -m pip install virtualenv==16.7.9 --user && \
+             python3 -m virtualenv .venv && \
+             source .venv/bin/activate && \
+             pip install tox==3.24.4
       - name: Test and install CI scripts
         # all CI python packages have the prefix "ci_"
         run: tox -r -c ./tools/tox_ci.ini && pip install -e ./tools/ci_*
