@@ -13,7 +13,7 @@ class BaseConfig(BaseModel):
 
     @classmethod
     def _rename_key(cls, schema: Any, old_key: str, new_key: str) -> None:
-        """Iterate over nested dictionary and replace one key with another. Used to replace anyOf with oneOf."
+        """Iterate over nested dictionary and replace one key with another. Used to replace anyOf with oneOf. Recursive."
 
         :param schema: schema that will be patched
         :param old_key: name of the key to replace
@@ -29,10 +29,10 @@ class BaseConfig(BaseModel):
 
     @classmethod
     def _expand_refs(cls, schema: Any, ref_resolver: Optional[RefResolver] = None) -> None:
-        """Iterate over schema and replace all occurrences of $ref with their definitions
+        """Iterate over schema and replace all occurrences of $ref with their definitions. Recursive.
 
-        :param schema:
-        :param ref_resolver:
+        :param schema: schema that will be patched
+        :param ref_resolver: resolver to get definition from $ref, if None pass it will be instantiated
         """
         ref_resolver = ref_resolver or RefResolver.from_schema(schema)
 
