@@ -210,7 +210,7 @@ class SourceTypeform(AbstractSource):
                 session.raise_for_status()
             except requests.exceptions.BaseHTTPError as e:
                 return False, "Cannot authenticate, please verify token."
-            if len(form_ids) != 0:
+            if form_ids:
                 for form in form_ids:
                     try:
                         url = f"{TypeformStream.url_base}/forms/{form}"
