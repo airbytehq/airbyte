@@ -1,7 +1,6 @@
 import base64
 import json
 import re
-import sys
 from dataclasses import dataclass
 from json.decoder import JSONDecodeError
 from pathlib import Path
@@ -10,7 +9,6 @@ from typing import Mapping, Any, Tuple, ClassVar
 from ci_common_utils import GoogleApi
 from ci_common_utils import Logger
 
-GITHUB_REGISTERS_FILE = "bin/ci_credentials.sh"
 DEFAULT_SECRET_FILE = "config"
 DEFAULT_SECRET_FILE_WITH_EXT = DEFAULT_SECRET_FILE + ".json"
 
@@ -22,6 +20,7 @@ class SecretsLoader:
     """
     """
     logger: ClassVar[Logger] = Logger()
+    base_folder: ClassVar[Path] = Path("/Users/pixel/Projects/Airbyte/repo/")
 
     gsm_credentials: Mapping[str, Any]
     github_secrets: Mapping[str, str]
@@ -29,21 +28,21 @@ class SecretsLoader:
     connector_name: str = None
     _api: GoogleApi = None
 
+    @classmethod
+    def get_github_registers_filepath(cls) -> Path:
+        return cls.base_folder / "tools/bin/ci_credentials.sh"
+
     def __read_github_registers_file(self) -> Mapping[Tuple[str, str], str]:
         """
             This function is used as workaround  for migration script.
             And it should be remove after final migration
         """
+        registers_filepath = self.get_github_registers_filepath()
+        if not registers_filepath.exists():
+            return self.logger.critical(f"not found {registers_filepath} with GitHub registers")
 
-        path = Path(sys.argv[0])
-        while str(path) != "/" and not str(path.absolute()).endswith("tools"):
-            path = path.parent
-        path /= GITHUB_REGISTERS_FILE
-        if not path.exists():
-            self.logger.warning(f"not found {path} with GitHub registers")
-            return {}
         result = {}
-        with open(path, "r") as file:
+        with open(registers_filepath, "r") as file:
             for line in file:
                 line = re.sub(r"\s+", " ", line).strip()
                 if not line.startswith("read_secrets"):
@@ -96,6 +95,7 @@ class SecretsLoader:
             data, err = self.api.get(url, params=params)
             if err:
                 return self.logger.critical(f"Google list error: {err}")
+
             for secret_info in data.get("secrets") or []:
                 secret_name = secret_info["name"]
                 connector_name = secret_info.get("labels", {}).get("connector")
@@ -116,6 +116,7 @@ class SecretsLoader:
                 log_name = f'{secret_name.split("/")[-1]}({connector_name})'
                 self.logger.info(f"found GSM secret: {log_name} = > {filename}")
                 secret_url = f"https://secretmanager.googleapis.com/v1/{secret_name}/versions/latest:access"
+
                 data, err = self.api.get(secret_url)
                 if err:
                     return self.logger.critical(f"Google secret's error {secret_url} => {err}")
@@ -219,4 +220,18 @@ class SecretsLoader:
         return {k: v[1] for k, v in secrets.items()}
 
     def write(self, secrets: Mapping[Tuple[str, str], str]) -> int:
-        return 1
+        if not secrets:
+            return 1
+        for (connector_name, filename), secret_value in secrets.items():
+            if connector_name == "base-normalization":
+                secrets_dir = f"airbyte-integrations/bases/{connector_name}/secrets"
+            else:
+                secrets_dir = f"airbyte-integrations/connectors/{connector_name}/secrets"
+
+            secrets_dir = self.base_folder / secrets_dir
+            secrets_dir.mkdir(parents=True, exist_ok=True)
+            filepath = secrets_dir / filename
+            with open(filepath, "w") as file:
+                file.write(secret_value)
+            self.logger.info(f"The file {filepath} was saved")
+        return 0

@@ -18,9 +18,12 @@ setup(
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     python_requires='>=3.7',
-    test_suite='tests',
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
-
+    entry_points={
+        'console_scripts': [
+            'ci_credentials = ci_credentials.main:main',
+        ],
+    },
 )
