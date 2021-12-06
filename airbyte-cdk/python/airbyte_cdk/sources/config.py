@@ -9,8 +9,7 @@ from jsonschema import RefResolver
 
 
 class BaseConfig(BaseModel):
-    """ Base class for connector spec
-    """
+    """Base class for connector spec"""
 
     @classmethod
     def _rename_key(cls, schema: Any, old_key: str, new_key: str) -> None:
@@ -57,5 +56,6 @@ class BaseConfig(BaseModel):
         schema = super().schema(**kwargs)
         cls._rename_key(schema, old_key="anyOf", new_key="oneOf")  # UI supports only oneOf
         cls._expand_refs(schema)  # UI and destination doesn't support $ref's
-        schema.pop("definitions", None)
+        schema.pop("definitions", None)  # remove definitions created by $ref
+        schema.pop("description", None)  # description added from the docstring
         return schema
