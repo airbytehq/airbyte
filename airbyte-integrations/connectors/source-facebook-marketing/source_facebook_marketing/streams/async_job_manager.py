@@ -45,7 +45,7 @@ class InsightsAsyncJobManager:
     _jobs_queue: Deque[AsyncJob] = field(default_factory=deque)
 
     # When current insights throttle hit this value no new jobs added.
-    THROTTLE_LIMIT = 0.7
+    THROTTLE_LIMIT = 70
     FAILED_JOBS_RESTART_COUNT = 5
     # Time to wait before checking job status update again.
     JOB_STATUS_UPDATE_SLEEP_SECONDS = 30
@@ -66,6 +66,7 @@ class InsightsAsyncJobManager:
         if self._no_more_ranges():
             return
         self._update_api_throttle_limit()
+        self._wait_throttle_limit_down()
         prev_jobs_count = len(self._jobs_queue)
         while self._current_throttle() < self.THROTTLE_LIMIT and not self._no_more_ranges():
             next_range = self._get_next_range()
@@ -101,6 +102,12 @@ class InsightsAsyncJobManager:
         else:
             # TODO: Break range into smaller parts if job failing constantly
             raise Exception(f"Job {job} failed")
+
+    def _wait_throttle_limit_down(self):
+        while self._current_throttle() > self.THROTTLE_LIMIT:
+            self.logger.info(f"Current throttle is {self._current_throttle()}, wait {self.JOB_STATUS_UPDATE_SLEEP_SECONDS} seconds")
+            time.sleep(self.JOB_STATUS_UPDATE_SLEEP_SECONDS)
+            self._update_api_throttle_limit()
 
     def _current_throttle(self):
         return self.api.api.ads_insights_throttle
