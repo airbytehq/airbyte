@@ -14,7 +14,7 @@
         "oneOf": [
           {
             "type": "object",
-            "title": "Authenticate via GitHub (Oauth)",
+            "title": "Authenticate via GitHub (OAuth)",
             "required": ["access_token"],
             "properties": {
               "option_title": {
