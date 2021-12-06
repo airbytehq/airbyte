@@ -6,8 +6,15 @@
 import unittest
 from unittest.mock import Mock, patch
 
-from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models.airbyte_protocol import (
+    AirbyteRecordMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    SyncMode,
+)
 from google_sheets_source.client import GoogleSheetsClient
 from google_sheets_source.helpers import Helpers
 from google_sheets_source.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet
