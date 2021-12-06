@@ -201,7 +201,7 @@
   "onboarding.createFirstDestination.text": "Sources are tools where the data will be replicated from. ",
   "onboarding.createConnection": "Set up <name>the connection</name>",
   "onboarding.createConnection.text": "Sources are tools where the data will be replicated from. ",
-  "onboarding.synchronisationProgress": "<sr>Source</sr><ds>Destination</ds> = <sync>Synchronisation</sync> in progress",
+  "onboarding.synchronizationProgress": "<sr>Source</sr><ds>Destination</ds> = <sync>Synchronization</sync> in progress",
   "onboarding.useCases": "Enable <name>popular use cases</name>",
   "onboarding.replicateMySQL": "Replicate your MySQL database to Postgres with log-based CDC",
   "onboarding.consolidateMarketing": "Consolidate your marketing data to compute the CAC for your paid customers",
