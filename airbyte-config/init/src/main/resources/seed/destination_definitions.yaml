@@ -85,7 +85,7 @@
 - name: MS SQL Server
   destinationDefinitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
   dockerRepository: airbyte/destination-mssql
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.12
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mssql
   icon: mssql.svg
 - name: MeiliSearch
@@ -103,7 +103,7 @@
 - name: MySQL
   destinationDefinitionId: ca81ee7c-3163-4246-af40-094cc31e5e42
   dockerRepository: airbyte/destination-mysql
-  dockerImageTag: 0.1.14
+  dockerImageTag: 0.1.15
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mysql
   icon: mysql.svg
 - name: Oracle
@@ -115,7 +115,7 @@
 - name: Postgres
   destinationDefinitionId: 25c5221d-dce2-4163-ade9-739ef790f503
   dockerRepository: airbyte/destination-postgres
-  dockerImageTag: 0.3.12
+  dockerImageTag: 0.3.13
   documentationUrl: https://docs.airbyte.io/integrations/destinations/postgres
   icon: postgresql.svg
 - name: Pulsar
@@ -157,6 +157,6 @@
 - name: MariaDB ColumnStore
   destinationDefinitionId: 294a4790-429b-40ae-9516-49826b9702e1
   dockerRepository: airbyte/destination-mariadb-columnstore
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mariadb-columnstore
   icon: mariadb.svg
