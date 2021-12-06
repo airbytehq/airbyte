@@ -11,10 +11,7 @@ from urllib.parse import parse_qsl, urlparse
 import pendulum
 import requests
 import vcr
-<<<<<<< HEAD
-from airbyte_cdk.models.airbyte_protocol import SyncMode
-=======
->>>>>>> master
+
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from requests.auth import AuthBase

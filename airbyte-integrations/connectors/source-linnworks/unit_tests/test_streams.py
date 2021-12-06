@@ -7,9 +7,7 @@ from unittest.mock import MagicMock
 import pytest
 import requests
 from airbyte_cdk.models.airbyte_protocol import SyncMode
-<<<<<<< HEAD
-from source_linnworks.streams import LinnworksStream, Location, ProcessedOrderDetails, ProcessedOrders, StockItems, StockLocations
-=======
+
 from source_linnworks.streams import (
     LinnworksStream,
     ProcessedOrderDetails,
@@ -18,7 +16,7 @@ from source_linnworks.streams import (
     StockLocationDetails,
     StockLocations,
 )
->>>>>>> master
+
 
 
 @pytest.fixture
