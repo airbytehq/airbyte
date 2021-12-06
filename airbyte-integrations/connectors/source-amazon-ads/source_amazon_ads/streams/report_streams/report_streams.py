@@ -59,12 +59,15 @@ class ReportInfo:
     status: Status
     metric_objects: List[dict]
 
-
-class ReportGenerationFailure(Exception):
+class RetryableException(Exception):
     pass
 
 
-class ReportGenerationInProgress(Exception):
+class ReportGenerationFailure(RetryableException):
+    pass
+
+
+class ReportGenerationInProgress(RetryableException):
     pass
 
 
@@ -143,7 +146,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     @backoff.on_exception(
         backoff.constant,
-        (ReportGenerationFailure, ReportGenerationInProgress),
+        RetryableException,
         max_time=REPORT_WAIT_TIMEOUT,
     )
     def _try_read_records(self, report_infos):
