@@ -13,7 +13,7 @@ import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
-import io.airbyte.config.helpers.LogConfiguration;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.Database;

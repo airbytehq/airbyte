@@ -4,25 +4,19 @@
 
 package io.airbyte.config.helpers;
 
+import io.airbyte.config.storage.CloudStorageConfigs;
+
 /**
- * Configuration required to retrieve logs. This is a subset of the methods defined in
- * {@link io.airbyte.config.Configs} so actual look up can be delegated in {@link LogConfiguration}.
- * This prevents conflicting configuration existing at once.
+ * Describes logging configuration. For now it just contains configuration around storage medium, but in the future will have other configuration options (e.g. json logging, etc).
  */
-public interface LogConfigs {
+public class LogConfigs {
+  private final CloudStorageConfigs storageConfigs;
 
-  String getS3LogBucket();
+  public LogConfigs(final CloudStorageConfigs storageConfigs) {
+    this.storageConfigs = storageConfigs;
+  }
 
-  String getS3LogBucketRegion();
-
-  String getAwsAccessKey();
-
-  String getAwsSecretAccessKey();
-
-  String getS3MinioEndpoint();
-
-  String getGcsLogBucket();
-
-  String getGoogleApplicationCredentials();
-
+  public CloudStorageConfigs getStorageConfigs() {
+    return storageConfigs;
+  }
 }
