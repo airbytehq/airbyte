@@ -14,7 +14,6 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.streams.http.auth.oauth import Oauth2Authenticator
 
-
 _TOKEN_REFRESH_ENDPOINT = "https://api.outreach.io/oauth/token"
 _URL_BASE = "https://api.outreach.io/api/v2/"
 

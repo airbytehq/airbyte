@@ -2,6 +2,7 @@
   "destinationDefinitionId": "ca81ee7c-3163-4246-af40-094cc31e5e42",
   "name": "MySQL",
   "dockerRepository": "airbyte/destination-mysql",
-  "dockerImageTag": "0.1.13",
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mysql"
+  "dockerImageTag": "0.1.15",
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mysql",
+  "icon": "mysql.svg"
 }
