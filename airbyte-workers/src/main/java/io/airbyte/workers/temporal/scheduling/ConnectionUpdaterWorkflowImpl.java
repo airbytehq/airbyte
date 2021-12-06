@@ -24,9 +24,10 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
   private boolean skipScheduling = false;
   private final GetSyncInputActivity getSyncInputActivity = Workflow.newActivityStub(GetSyncInputActivity.class, ActivityConfiguration.OPTIONS);
 
-  private CancellationScope syncWorkflowCancellationScope = CancellationScope.current();
+  private final CancellationScope syncWorkflowCancellationScope = CancellationScope.current();
 
-  public ConnectionUpdaterWorkflowImpl() {}
+  public ConnectionUpdaterWorkflowImpl() {
+  }
 
   @Override
   public SyncResult run(final ConnectionUpdaterInput connectionUpdaterInput) {
@@ -62,8 +63,6 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
         syncWorkflowInputs.getDestinationLauncherConfig(),
         syncWorkflowInputs.getSyncInput(),
         connectionId);
-
-    syncWorkflowCancellationScope = Workflow.newCancellationScope(() -> childSync.run(null, null, null, null, null));
 
     if (isDeleted) {
       return new SyncResult(true);

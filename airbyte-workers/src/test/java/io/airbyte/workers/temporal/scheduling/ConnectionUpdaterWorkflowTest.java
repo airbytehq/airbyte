@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers.temporal.scheduling;
 
 import io.airbyte.config.JobConfig;
@@ -7,32 +11,31 @@ import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.temporal.scheduling.activities.GetSyncInputActivity;
 import io.airbyte.workers.temporal.scheduling.activities.GetSyncInputActivityImpl;
 import io.airbyte.workers.temporal.sync.EmptySyncWorkflow;
+import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
+import java.time.Duration;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
 public class ConnectionUpdaterWorkflowTest {
 
   private static final String TASK_QUEUE = "queue";
 
   private TestWorkflowEnvironment testEnv;
   private Worker worker;
+  private WorkflowClient client;
 
   private ConnectionUpdaterWorkflow connectionUpdaterWorkflow;
 
-  // @Mock
   private GetSyncInputActivityImpl getSyncInputActivity;
 
   @BeforeEach
-  public void init() {
+  public void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
 
     worker = testEnv.newWorker(TASK_QUEUE);
@@ -41,13 +44,21 @@ public class ConnectionUpdaterWorkflowTest {
 
     getSyncInputActivity = Mockito.mock(GetSyncInputActivityImpl.class);
 
+    client = testEnv.getWorkflowClient();
+
+  }
+
+  private void execute(final ConnectionUpdaterInput input) {
     worker.registerActivitiesImplementations(getSyncInputActivity);
     testEnv.start();
 
-    connectionUpdaterWorkflow = testEnv.getWorkflowClient().newWorkflowStub(
+    connectionUpdaterWorkflow = client.newWorkflowStub(
         ConnectionUpdaterWorkflow.class,
-        WorkflowOptions.newBuilder().setTaskQueue(TASK_QUEUE).build()
-    );
+        WorkflowOptions.newBuilder().setTaskQueue(TASK_QUEUE).build());
+
+    WorkflowClient.start(connectionUpdaterWorkflow::run, input);
+
+    testEnv.sleep(Duration.ofDays(1));
   }
 
   @AfterEach
@@ -61,8 +72,7 @@ public class ConnectionUpdaterWorkflowTest {
         UUID.randomUUID(),
         1,
         new JobConfig(),
-        1
-    );
+        1);
 
     Mockito.when(getSyncInputActivity.getSyncWorkflowInput(Mockito.any(GetSyncInputActivity.Input.class)))
         .thenReturn(
@@ -70,10 +80,9 @@ public class ConnectionUpdaterWorkflowTest {
                 new JobRunConfig(),
                 new IntegrationLauncherConfig(),
                 new IntegrationLauncherConfig(),
-                new StandardSyncInput()
-            )
-        );
+                new StandardSyncInput()));
 
-    connectionUpdaterWorkflow.run(input);
+    execute(input);
   }
+
 }
