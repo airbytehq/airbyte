@@ -45,16 +45,28 @@ class ConnectorConfig(BaseModel):
         examples=["30", "365"],
     )
     refresh_token: str = Field(
-        description="The Refresh Token obtained via authorization (can be passed to the client instead).", title="Refresh Token", airbyte_secret=True
+        description="The Refresh Token obtained via authorization (can be passed to the client instead).",
+        title="Refresh Token",
+        airbyte_secret=True,
     )
     lwa_app_id: str = Field(description="Your Login with Amazon App ID", title="LwA App Id", airbyte_secret=True)
     lwa_client_secret: str = Field(description="Your Login with Amazon Client Secret.", title="LwA Client Secret", airbyte_secret=True)
-    aws_access_key: str = Field(description="Specifies the AWS access key used as part of the credentials to authenticate the user.", title="AWS Access Key", airbyte_secret=True)
-    aws_secret_key: str = Field(description="Specifies the AWS secret key used as part of the credentials to authenticate the user.", title="AWS Secret Access Key", airbyte_secret=True)
-    role_arn: str = Field(description="Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. (Needs permission to 'Assume Role' STS).", title="Role ARN", airbyte_secret=True)
-    aws_environment: AWSEnvironment = Field(
-        description="Select the AWS Environment.", title="AWS Environment"
+    aws_access_key: str = Field(
+        description="Specifies the AWS access key used as part of the credentials to authenticate the user.",
+        title="AWS Access Key",
+        airbyte_secret=True,
     )
+    aws_secret_key: str = Field(
+        description="Specifies the AWS secret key used as part of the credentials to authenticate the user.",
+        title="AWS Secret Access Key",
+        airbyte_secret=True,
+    )
+    role_arn: str = Field(
+        description="Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. (Needs permission to 'Assume Role' STS).",
+        title="Role ARN",
+        airbyte_secret=True,
+    )
+    aws_environment: AWSEnvironment = Field(description="Select the AWS Environment.", title="AWS Environment")
     region: AWSRegion = Field(description="Select the AWS Region.", title="AWS Region")
 
 
