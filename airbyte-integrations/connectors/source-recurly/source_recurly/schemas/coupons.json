@@ -18,25 +18,25 @@
       "type": "string"
     },
     "max_redemptions": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "max_redemptions_per_account": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "unique_coupon_codes_count": {
       "type": "number"
     },
     "unique_code_template": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "duration": {
       "type": "string"
     },
     "temporal_amount": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "temporal_unit": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "free_trial_unit": {
       "type": "string"
@@ -57,10 +57,10 @@
       "type": "array"
     },
     "plans": {
-      "type": "array"
+      "type": ["null", "array"]
     },
     "items": {
-      "type": "array"
+      "type": ["null", "array"]
     },
     "redemption_resource": {
       "type": "string"
@@ -94,13 +94,13 @@
       "type": "string"
     },
     "hosted_page_description": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "invoice_description": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "redeem_by": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "bulk_coupon_id": {
       "type": "string"
@@ -118,7 +118,7 @@
       "type": "string"
     },
     "expired_at": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

@@ -14,8 +14,8 @@ from typing import Dict, List, Optional, Tuple, Union
 import backoff
 import msal
 import requests
-from airbyte_cdk.models.airbyte_protocol import AirbyteStream
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models.airbyte_protocol import AirbyteStream
 from msal.exceptions import MsalServiceError
 
 LOGGER = AirbyteLogger()
