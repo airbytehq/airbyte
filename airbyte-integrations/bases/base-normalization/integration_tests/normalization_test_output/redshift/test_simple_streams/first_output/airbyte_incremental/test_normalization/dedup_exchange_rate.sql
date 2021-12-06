@@ -9,6 +9,7 @@
   as (
     
 -- Final base SQL model
+-- depends_on: "integrationtests".test_normalization."dedup_exchange_rate_scd"
 select
     _airbyte_unique_key,
     id,

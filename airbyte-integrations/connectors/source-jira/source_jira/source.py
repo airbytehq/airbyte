@@ -101,20 +101,22 @@ class SourceJira(AbstractSource):
         authenticator = self.get_authenticator(config)
         args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
         incremental_args = {**args, "start_date": config.get("start_date", "")}
+        render_fields = config.get("render_fields", False)
         return [
             ApplicationRoles(**args),
             Avatars(**args),
             Boards(**args),
             BoardIssues(**incremental_args),
             Dashboards(**args),
-            Epics(**incremental_args),
+            Epics(render_fields=render_fields, **incremental_args),
             Filters(**args),
             FilterSharing(**args),
             Groups(**args),
             Issues(
                 **incremental_args,
                 additional_fields=config.get("additional_fields", []),
-                expand_changelog=config.get("expand_issue_changelog", False)
+                expand_changelog=config.get("expand_issue_changelog", False),
+                render_fields=render_fields
             ),
             IssueComments(**incremental_args),
             IssueFields(**args),

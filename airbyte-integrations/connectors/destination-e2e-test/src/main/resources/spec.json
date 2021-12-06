@@ -48,6 +48,22 @@
             "type": "integer"
           }
         }
+      },
+      {
+        "title": "Failing",
+        "required": ["type", "num_messages"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "FAILING",
+            "default": "FAILING"
+          },
+          "num_messages": {
+            "description": "Number of messages after which to fail.",
+            "type": "integer"
+          }
+        }
       }
     ]
   }

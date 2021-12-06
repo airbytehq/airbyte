@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.BinaryNode;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -50,6 +51,11 @@ class JsonsTest {
         Jsons.serialize(Jsons.jsonNode(ImmutableMap.of(
             "test", "abc",
             "test2", "def"))));
+    // issue: 5878 add test for binary node serialization, binary data are serialized into base64
+    assertEquals(
+        "{\"test\":\"dGVzdA==\"}",
+        Jsons.serialize(Jsons.jsonNode(ImmutableMap.of(
+            "test", new BinaryNode("test".getBytes())))));
   }
 
   @Test
@@ -68,6 +74,10 @@ class JsonsTest {
     assertEquals(
         "[{\"str\":\"abc\"},{\"str\":\"abc\"}]",
         Jsons.deserialize("[{\"str\":\"abc\"},{\"str\":\"abc\"}]").toString());
+    // issue: 5878 add test for binary node deserialization, for now should be base64 string
+    assertEquals(
+        "{\"test\":\"dGVzdA==\"}",
+        Jsons.deserialize("{\"test\":\"dGVzdA==\"}").toString());
   }
 
   @Test

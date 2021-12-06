@@ -11,7 +11,11 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 
+<<<<<<< HEAD
 from .streams import ProcessedOrderDetails, ProcessedOrders, StockItems, StockLocations
+=======
+from .streams import ProcessedOrderDetails, ProcessedOrders, StockItems, StockLocationDetails, StockLocations
+>>>>>>> master
 
 
 class LinnworksAuthenticator(Oauth2Authenticator):
@@ -106,6 +110,7 @@ class SourceLinnworks(AbstractSource):
         auth = self._auth(config)
         return [
             StockLocations(authenticator=auth),
+            StockLocationDetails(authenticator=auth),
             StockItems(authenticator=auth),
             ProcessedOrders(authenticator=auth, start_date=config["start_date"]),
             ProcessedOrderDetails(authenticator=auth, start_date=config["start_date"]),

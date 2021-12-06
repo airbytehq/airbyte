@@ -10,6 +10,8 @@ Go to OCI Console &gt; Compute &gt; Instances &gt; Create Instance
 
 ![](../.gitbook/assets/OCIScreen2.png)
 
+Ensure you select shape as 'Intel' 
+
 ## Whitelist Port 8000 for a CIDR range in Security List of OCI VM Subnet
 
 Go to OCI Console &gt; Networking &gt; Virtual Cloud Network
@@ -48,7 +50,7 @@ sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-comp
 
 sudo chmod +x /usr/local/bin/docker-compose
 
-docker-compose --version
+sudo /usr/local/bin/docker-compose up -d
 ```
 
 

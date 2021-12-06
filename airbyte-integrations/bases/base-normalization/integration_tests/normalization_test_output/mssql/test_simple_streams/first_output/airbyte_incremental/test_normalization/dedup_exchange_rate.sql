@@ -21,6 +21,7 @@
    EXEC('create view test_normalization."dedup_exchange_rate_temp_view" as
     
 -- Final base SQL model
+-- depends_on: "test_normalization".test_normalization."dedup_exchange_rate_scd"
 select
     _airbyte_unique_key,
     id,

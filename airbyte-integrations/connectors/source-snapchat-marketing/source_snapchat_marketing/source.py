@@ -184,13 +184,8 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
     last_slice = None
     current_slice = None
     first_run = True
-    initial_state = None
-    max_state = None
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        stream_state = kwargs.get("stream_state")
-        self.initial_state = stream_state.get(self.cursor_field) if stream_state else self.start_date
-        self.max_state = self.initial_state
         depends_on_stream_config = {"authenticator": self.authenticator, "start_date": self.start_date}
         stream_slices = get_depend_on_ids(self.depends_on_stream, depends_on_stream_config, self.slice_key_name)
 
@@ -228,13 +223,9 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
         Thus all the slices data are compared to the initial state, but only on the last one we write it to the stream state.
         This approach gives us the maximum state value of all the records and we exclude the state updates between slice processing
         """
-
-        if self.first_run:
-            self.first_run = False
-            return {self.cursor_field: self.initial_state}
-        else:
-            self.max_state = max(self.max_state, latest_record[self.cursor_field])
-            return {self.cursor_field: self.max_state if self.current_slice == self.last_slice else self.initial_state}
+        if not current_stream_state:
+            current_stream_state = {self.cursor_field: self.start_date}
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
     def read_records(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
