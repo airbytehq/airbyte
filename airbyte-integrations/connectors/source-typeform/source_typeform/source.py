@@ -209,7 +209,7 @@ class SourceTypeform(AbstractSource):
                 session = requests.get(url, headers=auth_headers)
                 session.raise_for_status()
             except requests.exceptions.BaseHTTPError as e:
-                f"Cannot authenticate, please verify token."
+                return False, "Cannot authenticate, please verify token."
             if len(form_ids) != 0:
                 for form in form_ids:
                     try:
