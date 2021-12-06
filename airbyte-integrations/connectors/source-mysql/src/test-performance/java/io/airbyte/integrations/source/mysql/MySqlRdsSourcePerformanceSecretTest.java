@@ -97,7 +97,6 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
     performTest(schemaName, numberOfStreams, numberOfDummyRecords);
   }
 
-  @Test
   public void testSmall1000tableswith10000recordsDb() throws Exception {
     int numberOfDummyRecords = 10001;
     int numberOfStreams = 1000;

@@ -77,7 +77,6 @@ public class MsSqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
     performTest(defaultDbSchemaName, numberOfStreams, numberOfDummyRecords);
   }
 
-  @Test
   public void testSmall1000tableswith10000recordsDb() throws Exception {
     int numberOfDummyRecords = 10011;
     int numberOfStreams = 1000;

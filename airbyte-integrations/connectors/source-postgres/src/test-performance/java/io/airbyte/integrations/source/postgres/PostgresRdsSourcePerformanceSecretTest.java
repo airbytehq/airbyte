@@ -50,7 +50,7 @@ public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerfor
         .build());
   }
 
-  //@Test
+  @Test
   public void test100tables100recordsDb() throws Exception {
     int numberOfDummyRecords = 100; // 200 is near the max value for one shot in batching;
     int numberOfStreams = 100;
@@ -61,7 +61,7 @@ public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerfor
     performTest(dbName, numberOfStreams, numberOfDummyRecords);
   }
 
-  //@Test
+  @Test
   public void test1000tables240columns200recordsDb() throws Exception {
     int numberOfDummyRecords = 200;
     int numberOfStreams = 1000;
@@ -72,7 +72,7 @@ public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerfor
     performTest(dbName, numberOfStreams, numberOfDummyRecords);
   }
 
-  //@Test
+  @Test
   public void test5000tables240columns200recordsDb() throws Exception {
     int numberOfDummyRecords = 200;
     int numberOfStreams = 5000;
@@ -83,7 +83,6 @@ public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerfor
     performTest(dbName, numberOfStreams, numberOfDummyRecords);
   }
 
-  @Test
   public void testSmall1000tableswith10000recordsDb() throws Exception {
     int numberOfDummyRecords = 10001;
     int numberOfStreams = 1000;
@@ -93,7 +92,7 @@ public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerfor
     performTest(dbName, numberOfStreams, numberOfDummyRecords);
   }
 
-  //@Test
+  @Test
   public void testInterim15tableswith50000recordsDb() throws Exception {
     int numberOfDummyRecords = 50010;
     int numberOfStreams = 15;
@@ -103,7 +102,7 @@ public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerfor
     performTest(dbName, numberOfStreams, numberOfDummyRecords);
   }
 
-  //@Test
+  @Test
   public void testRegular25tables50000recordsDb() throws Exception {
     int numberOfDummyRecords = 50011;
     int numberOfStreams = 25;
