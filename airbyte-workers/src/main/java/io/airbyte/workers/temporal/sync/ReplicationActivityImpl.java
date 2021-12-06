@@ -196,7 +196,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
               "runner-" + UUID.randomUUID().toString().substring(0, 10),
               0,
               jobPath,
-              "airbyte/runner:" + airbyteVersion,
+              "airbyte/container-orchestrator:" + airbyteVersion,
               false,
               fileMap,
               null,

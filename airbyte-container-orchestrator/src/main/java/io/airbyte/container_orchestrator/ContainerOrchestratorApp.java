@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.runner;
+package io.airbyte.container_orchestrator;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.Configs;
@@ -45,9 +45,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RunnerApp {
+public class ContainerOrchestratorApp {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(RunnerApp.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ContainerOrchestratorApp.class);
 
   private static void replicationRunner(final Configs configs) throws IOException, WorkerException {
 

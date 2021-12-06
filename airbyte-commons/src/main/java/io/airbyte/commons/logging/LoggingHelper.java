@@ -14,7 +14,7 @@ public class LoggingHelper {
     RED("\u001b[31m"),
     GREEN("\u001b[32m"),
     YELLOW("\u001b[33m"),
-    ORANGE("\033[38;5;202mhi"),
+    ORANGE("\033[38;5;202m"), // todo: fix
     BLUE("\u001b[34m"),
     MAGENTA("\u001b[35m"),
     CYAN("\u001b[36m"),

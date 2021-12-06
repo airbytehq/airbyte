@@ -33,7 +33,7 @@ dependencies {
 }
 
 
-mainClassName = 'io.airbyte.runner.RunnerApp'
+mainClassName = 'io.airbyte.container_orchestrator.ContainerOrchestratorApp'
 
 application {
     mainClass = mainClassName
@@ -45,11 +45,11 @@ task copyGeneratedTar(type: Copy) {
     dependsOn distTar
 
     from('build/distributions') {
-        include 'airbyte-runner-*.tar'
+        include 'airbyte-container-orchestrator-*.tar'
     }
     into 'build/docker/bin'
 }
 
-Task dockerBuildTask = getDockerBuildTask("runner",  "$project.projectDir")
+Task dockerBuildTask = getDockerBuildTask("container-orchestrator",  "$project.projectDir")
 dockerBuildTask.dependsOn(copyGeneratedTar)
 assemble.dependsOn(dockerBuildTask)
