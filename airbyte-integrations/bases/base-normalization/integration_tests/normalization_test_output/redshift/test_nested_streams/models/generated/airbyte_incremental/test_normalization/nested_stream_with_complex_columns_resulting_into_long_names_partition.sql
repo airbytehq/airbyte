@@ -1,6 +1,5 @@
 {{ config(
     sort = "_airbyte_emitted_at",
-    unique_key = '_airbyte_ab_id',
     schema = "test_normalization",
     tags = [ "nested" ]
 ) }}
