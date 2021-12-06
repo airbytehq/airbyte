@@ -23,6 +23,7 @@ public class WorkerUtils {
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerUtils.class);
 
   public static void gentleClose(final WorkerConfigs workerConfigs, final Process process, final long timeout, final TimeUnit timeUnit) {
+
     if (process == null) {
       return;
     }

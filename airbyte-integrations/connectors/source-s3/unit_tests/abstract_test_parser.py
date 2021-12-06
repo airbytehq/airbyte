@@ -2,8 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from abc import ABC, abstractmethod
-from typing import Any, List, Mapping
+from abc import ABC
 
 import pytest
 from airbyte_cdk import AirbyteLogger

@@ -1,0 +1,36 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "created": {
+      "type": ["string", "null"],
+      "format": "datetime"
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "image_url": {
+      "type": ["string", "null"]
+    },
+    "link": {
+      "type": ["string", "null"]
+    },
+    "message": {
+      "type": ["string", "null"]
+    },
+    "owner_id": {
+      "type": ["string", "null"]
+    },
+    "place_id": {
+      "type": ["string", "null"]
+    },
+    "product_id": {
+      "type": ["string", "null"]
+    },
+    "title": {
+      "type": ["string", "null"]
+    }
+  }
+}

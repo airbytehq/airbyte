@@ -137,7 +137,7 @@ public class RunnerApp {
       System.setProperty(LogClientSingleton.AWS_ACCESS_KEY_ID, configs.getLogConfigs().getAwsAccessKey());
       System.setProperty(LogClientSingleton.AWS_SECRET_ACCESS_KEY, configs.getLogConfigs().getAwsSecretAccessKey());
       System.setProperty(LogClientSingleton.S3_MINIO_ENDPOINT, configs.getLogConfigs().getS3MinioEndpoint());
-      System.setProperty(LogClientSingleton.GCP_STORAGE_BUCKET, configs.getLogConfigs().getGcpStorageBucket());
+      System.setProperty(LogClientSingleton.GCS_LOG_BUCKET, configs.getLogConfigs().getGcsLogBucket());
       System.setProperty(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, configs.getLogConfigs().getGoogleApplicationCredentials());
 
       final var logPath = LogClientSingleton.getInstance().getSchedulerLogsRoot(configs.getWorkspaceRoot());
@@ -176,8 +176,8 @@ public class RunnerApp {
       final KubernetesClient fabricClient = new DefaultKubernetesClient();
       final String localIp = InetAddress.getLocalHost().getHostAddress();
       final String kubeHeartbeatUrl = localIp + ":" + WorkerApp.KUBE_HEARTBEAT_PORT;
-      LOGGER.info("Using Kubernetes namespace: {}", configs.getKubeNamespace());
-      return new KubeProcessFactory(workerConfigs, configs.getKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl);
+      LOGGER.info("Using Kubernetes namespace: {}", configs.getJobPodKubeNamespace());
+      return new KubeProcessFactory(workerConfigs, configs.getJobPodKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl);
     } else {
       return new DockerProcessFactory(
           workerConfigs,

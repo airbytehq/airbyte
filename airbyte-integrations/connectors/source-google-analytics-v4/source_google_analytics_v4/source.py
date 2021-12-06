@@ -119,6 +119,20 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         if next_page:
             return {"pageToken": next_page}
 
+    def should_retry(self, response: requests.Response) -> bool:
+        """When the connector gets a custom report which has unknown metric(s) or dimension(s)
+        and API returns an error with 400 code, the connector ignores an error with 400 code
+        to finish successfully sync and inform the user about an error in logs with an error message."""
+
+        if response.status_code == 400:
+            self.logger.info(f"{response.json()['error']['message']}")
+            self.raise_on_http_errors = False
+
+        return super().should_retry(response)
+
+    def raise_on_http_errors(self) -> bool:
+        return True
+
     def request_body_json(
         self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> Optional[Mapping]:
@@ -203,6 +217,8 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         date_slices = []
         while start_date <= end_date:
             end_date_slice = start_date.add(days=self.window_in_days)
+            # limit the slice range with end_date
+            end_date_slice = min(end_date_slice, end_date)
             date_slices.append({"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date_slice)})
             # add 1 day for start next slice from next day and not duplicate data from previous slice end date.
             start_date = end_date_slice.add(days=1)
@@ -519,6 +535,9 @@ class SourceGoogleAnalyticsV4(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         streams: List[GoogleAnalyticsV4Stream] = []
+
+        if "window_in_days" not in config:
+            config["window_in_days"] = 90
 
         authenticator = self.get_authenticator(config)
 
