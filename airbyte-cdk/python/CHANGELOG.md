@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.39
+Add `__init__.py` to mark the directory `airbyte_cdk/utils` as a package.
+
 ## 0.1.38
 Improve URL-creation in CDK. Changed to using `urllib.parse.urljoin()`.
 
