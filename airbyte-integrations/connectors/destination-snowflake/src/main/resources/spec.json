@@ -91,6 +91,7 @@
             "title": "Standard Inserts",
             "additionalProperties": false,
             "description": "Uses <pre>INSERT</pre> statements to send batches of records to Snowflake. Easiest (no setup) but not recommended for large production workloads due to slow speed.",
+            "hidden": true,
             "required": ["method"],
             "properties": {
               "method": {
