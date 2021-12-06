@@ -4,7 +4,10 @@
 
 import logging
 import logging.config
+import sys
 import traceback
+from functools import reduce, partial
+from typing import List, Optional
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage
 
@@ -29,6 +32,17 @@ LOGGING_CONFIG = {
 }
 
 
+def init_unhandled_exception_output_filtering(logger: logging.Logger) -> None:
+    def hook_fn(_logger, exception_type, exception_value, traceback_):
+        # For developer ergonomics, we want to see the stack trace in the logs when we do a ctrl-c
+        if issubclass(exception_type, KeyboardInterrupt):
+            sys.__excepthook__(exception_type, exception_value, traceback_)
+            return
+
+        logger.critical(str(exception_value))
+
+    sys.excepthook = partial(hook_fn, logger)
+
 def init_logger(name: str = None):
     """Initial set up of logger"""
     logging.setLoggerClass(AirbyteNativeLogger)
@@ -36,11 +50,19 @@ def init_logger(name: str = None):
     logger = logging.getLogger(name)
     logger.setLevel(TRACE_LEVEL_NUM)
     logging.config.dictConfig(LOGGING_CONFIG)
+    init_unhandled_exception_output_filtering(logger)
     return logger
 
 
 class AirbyteLogFormatter(logging.Formatter):
     """Output log records using AirbyteMessage"""
+
+    __secrets = []
+
+    @classmethod
+    def update_secrets(cls, secrets: List[str]):
+        """Update the list of secrets to be replaced in the log message"""
+        cls.__secrets = secrets
 
     # Transforming Python log levels to Airbyte protocol log levels
     level_mapping = {
@@ -56,6 +78,11 @@ class AirbyteLogFormatter(logging.Formatter):
         """Return a JSON representation of the log message"""
         message = super().format(record)
         airbyte_level = self.level_mapping.get(record.levelno, "INFO")
+        message = reduce(
+            lambda log_msg, secret: message.replace(str(secret), "****"),
+            self.__secrets,
+            record.msg,
+        )
         log_message = AirbyteMessage(type="LOG", log=AirbyteLogMessage(level=airbyte_level, message=message))
         return log_message.json(exclude_unset=True)
 
