@@ -210,8 +210,7 @@ class SourceTrello(AbstractSource):
 
             authenticator = self._get_authenticator(config)
 
-            response = requests.get(
-                url, headers=authenticator.get_auth_header())
+            response = requests.get(url, headers=authenticator.get_auth_header())
             response.raise_for_status()
             available_boards = {row.get("id") for row in response.json()}
             for board_id in config.get("board_ids", []):
