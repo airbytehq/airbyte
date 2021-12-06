@@ -139,7 +139,7 @@ public class BootloaderApp {
       return true;
     }
 
-    final var isUpgradingThroughVersionBreak = !airbyteDatabaseVersion.lessThan(VERSION_BREAK) && airbyteVersion.greaterThan(VERSION_BREAK);
+    final var isUpgradingThroughVersionBreak = airbyteDatabaseVersion.lessThan(VERSION_BREAK) && airbyteVersion.greaterThan(VERSION_BREAK);
     return !isUpgradingThroughVersionBreak;
   }
 
