@@ -1,4 +1,7 @@
-from typing import Type, Dict, Any, Optional
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+from typing import Any, Dict, Optional, Type
 
 from pydantic import BaseModel, Extra
 from pydantic.main import ModelMetaclass
@@ -48,7 +51,7 @@ class BaseSchemaModel(BaseModel):
 
         @classmethod
         def schema_extra(cls, schema: Dict[str, Any], model: Type[BaseModel]) -> None:
-            """ Modify generated jsonschema, remove "title", "description" and "required" fields.
+            """Modify generated jsonschema, remove "title", "description" and "required" fields.
 
             Pydantic doesn't treat Union[None, Any] type correctly when generate jsonschema,
             so we can't set field as nullable (i.e. field that can have either null and non-null values),

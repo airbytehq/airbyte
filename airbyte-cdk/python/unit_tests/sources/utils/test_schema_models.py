@@ -4,7 +4,7 @@
 
 from typing import List, Optional
 
-from airbyte_cdk.sources.utils.schema_models import BaseSchemaModel, AllOptional
+from airbyte_cdk.sources.utils.schema_models import AllOptional, BaseSchemaModel
 
 
 class InnerClass(BaseSchemaModel):
@@ -25,14 +25,15 @@ class SchemaWithAllOptional(BaseSchemaModel, metaclass=AllOptional):
 
 class TestSchemaWithFewNullables:
     EXPECTED_SCHEMA = {
-        'type': 'object', 'properties': {
-            'name': {'type': ['null', 'string']},
-            'optional_item': {'oneOf': [{'type': 'null'}, {'$ref': '#/definitions/InnerClass'}]},
-            'items': {'type': 'array', 'items': {'$ref': '#/definitions/InnerClass'}}
+        "type": "object",
+        "properties": {
+            "name": {"type": ["null", "string"]},
+            "optional_item": {"oneOf": [{"type": "null"}, {"$ref": "#/definitions/InnerClass"}]},
+            "items": {"type": "array", "items": {"$ref": "#/definitions/InnerClass"}},
         },
-        'definitions': {
-            'InnerClass': {'type': 'object', 'properties': {'field1': {'type': ['null', 'string']}, 'field2': {'type': 'integer'}}}
-        }
+        "definitions": {
+            "InnerClass": {"type": "object", "properties": {"field1": {"type": ["null", "string"]}, "field2": {"type": "integer"}}}
+        },
     }
 
     def test_schema_postprocessing(self):
@@ -42,11 +43,14 @@ class TestSchemaWithFewNullables:
 
 class TestSchemaWithAllOptional:
     EXPECTED_SCHEMA = {
-        'type': 'object', 'properties': {
-            'object_id': {'type': ['null', 'integer']},
-            'item': {'oneOf': [{'type': 'null'}, {'$ref': '#/definitions/InnerClass'}]}},
-        'definitions': {'InnerClass': {'type': 'object', 'properties': {'field1': {'type': ['null', 'string']},
-                                                                        'field2': {'type': 'integer'}}}}
+        "type": "object",
+        "properties": {
+            "object_id": {"type": ["null", "integer"]},
+            "item": {"oneOf": [{"type": "null"}, {"$ref": "#/definitions/InnerClass"}]},
+        },
+        "definitions": {
+            "InnerClass": {"type": "object", "properties": {"field1": {"type": ["null", "string"]}, "field2": {"type": "integer"}}}
+        },
     }
 
     def test_schema_postprocessing(self):
