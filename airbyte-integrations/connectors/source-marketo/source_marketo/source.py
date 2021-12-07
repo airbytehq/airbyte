@@ -30,8 +30,8 @@ class MarketoStream(HttpStream, ABC):
         super().__init__(authenticator=config["authenticator"])
         self.config = config
         self.start_date = config["start_date"]
-        self.window_in_days = config["window_in_days"]
-        self._url_base = config["domain_url"]
+        self.window_in_days = config.get("window_in_days", 30)
+        self._url_base = config["domain_url"].rstrip("/") + "/"
         self.stream_name = stream_name
         self.param = param
         self.export_id = export_id
@@ -41,7 +41,7 @@ class MarketoStream(HttpStream, ABC):
         return self._url_base
 
     def path(self, **kwargs) -> str:
-        return f"/rest/v1/{self.name}.json"
+        return f"rest/v1/{self.name}.json"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = response.json().get("nextPageToken")
@@ -167,7 +167,7 @@ class MarketoExportBase(IncrementalMarketoStream):
         )
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"/bulk/v1/{self.stream_name}/export/{stream_slice['id']}/file.json"
+        return f"bulk/v1/{self.stream_name}/export/{stream_slice['id']}/file.json"
 
     def stream_slices(self, sync_mode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         date_slices = super().stream_slices(sync_mode, stream_state, **kwargs)
@@ -259,7 +259,7 @@ class MarketoExportCreate(MarketoStream):
     http_method = "POST"
 
     def path(self, **kwargs) -> str:
-        return f"/bulk/v1/{self.stream_name}/export/create.json"
+        return f"bulk/v1/{self.stream_name}/export/create.json"
 
     def request_body_json(self, **kwargs) -> Optional[Mapping]:
         params = {"format": "CSV"}
@@ -287,7 +287,7 @@ class MarketoExportStart(MarketoStream):
     http_method = "POST"
 
     def path(self, **kwargs) -> str:
-        return f"/bulk/v1/{self.stream_name}/export/{self.export_id}/enqueue.json"
+        return f"bulk/v1/{self.stream_name}/export/{self.export_id}/enqueue.json"
 
 
 class MarketoExportStatus(MarketoStream):
@@ -297,7 +297,7 @@ class MarketoExportStatus(MarketoStream):
     """
 
     def path(self, **kwargs) -> str:
-        return f"/bulk/v1/{self.stream_name}/export/{self.export_id}/status.json"
+        return f"bulk/v1/{self.stream_name}/export/{self.export_id}/status.json"
 
     def parse_response(self, response: requests.Response, **kwargs) -> List[str]:
         return [response.json()[self.data_field][0]["status"]]
@@ -391,7 +391,7 @@ class ActivityTypes(MarketoStream):
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return "/rest/v1/activities/types.json"
+        return "rest/v1/activities/types.json"
 
 
 class Programs(IncrementalMarketoStream):
@@ -408,7 +408,7 @@ class Programs(IncrementalMarketoStream):
         self.offset = 0
 
     def path(self, **kwargs) -> str:
-        return f"/rest/asset/v1/{self.name}.json"
+        return f"rest/asset/v1/{self.name}.json"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         data = response.json().get(self.data_field)
