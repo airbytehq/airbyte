@@ -519,24 +519,32 @@ externalDatabase:
   database: db-airbyte
   port: 5432
 
-## @section Minio parameters
 
-## Minio chart configuration
-## ref: https://github.com/bitnami/charts/blob/master/bitnami/minio/values.yaml
-## @param minio.enabled Switch to enable or disable the Minio helm chart
-## @param minio.accessKey.password Minio Access Key
-## @param minio.secretKey.password Minio Secret Key
-minio:
-  enabled: true
+## @section Logs parameters
+logs:
+  ## @param logs.accessKey.password Logs Access Key
+  ## @param logs.secretKey.password Logs Secret Key
   accessKey:
     password: minio
   secretKey:
     password: minio123
 
-## External Minio configuration
-## All of these values are only used when minio.enabled is set to false
-## @param externalMinio.host Minio Host
-## @param externalMinio.port Minio Port
-externalMinio:
-  host: localhost
-  port: 9000
+  ## @param logs.minio.enabled Switch to enable or disable the Minio helm chart
+  minio:
+    enabled: true
+
+  ## @param logs.externalMinio.enabled Switch to enable or disable an external Minio instance
+  ## @param logs.externalMinio.host Minio Host
+  ## @param logs.externalMinio.port Minio Port
+  externalMinio:
+    enabled: false
+    host: localhost
+    port: 9000
+
+  ## @param logs.s3.enabled Switch to enable or disable custom S3 Log location
+  ## @param logs.s3.bucket Bucket name where logs should be stored
+  ## @param logs.s3.bucketRegion Region of the bucket (must be empty if using minio)
+  s3:
+    enabled: false
+    bucket: airbyte-dev-logs
+    bucketRegion: ""
