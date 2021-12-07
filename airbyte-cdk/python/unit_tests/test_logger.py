@@ -13,7 +13,7 @@ from airbyte_cdk.logger import AirbyteLogFormatter
 
 @pytest.fixture(scope="session")
 def logger():
-    logger = logging.getLogger("Test logger")
+    logger = logging.getLogger("airbyte.Testlogger")
     return logger
 
 
