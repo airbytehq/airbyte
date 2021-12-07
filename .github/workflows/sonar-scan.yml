@@ -16,14 +16,14 @@ jobs:
       - uses: sonarsource/sonarqube-scan-action@master
         with:
           projectBaseDir: airbyte-integrations/connectors
-          # -Dsonar.language=py
-          # -Dsonar.sourceEncoding=UTF-8
+          # -Dsonar.tests=.
+          # -Dsonar.test.inclusions=**/unit_tests/**
           args: >
             -Dsonar.projectKey=airbite-python-connectors
             -Dsonar.exclusions=**/*.java
             -Dsonar.verbose=true
-            -Dsonar.tests=.
-            -Dsonar.test.inclusions=**/unit_tests/**
+            -Dsonar.language=py
+            -Dsonar.sourceEncoding=UTF-8
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
