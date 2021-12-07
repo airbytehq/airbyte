@@ -6,7 +6,7 @@ on:
       - master # or the name of your main branch
 jobs:
   sonar-scan:
-    name: Sonar Scan
+    name: Sonar Scan Connectors
     runs-on: ubuntu-latest
     environment: more-secrets
     steps:
@@ -15,7 +15,7 @@ jobs:
           fetch-depth: 0
       - uses: sonarsource/sonarqube-scan-action@master
         with:
-          projectBaseDir: app/src
+          projectBaseDir: airbyte-integrations/connectors
           args: >
             -Dsonar.projectKey=airbytehq_airbyte
             -Dsonar.exclusions=**/*.java
