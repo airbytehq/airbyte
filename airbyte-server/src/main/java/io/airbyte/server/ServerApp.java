@@ -112,7 +112,6 @@ public class ServerApp implements ServerRunnable {
     LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(),
         LogClientSingleton.getInstance().getServerLogsRoot(configs.getWorkspaceRoot()));
 
-    // insert the migration version check here
     LOGGER.info("Checking for minimum flyway migration versions..");
 
     LOGGER.info("Creating Staged Resource folder...");
