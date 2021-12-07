@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.1.40
-Add base model for connector config.
+Add base pydantic model for connector config and schemas.
 
 ## 0.1.39
 Add `__init__.py` to mark the directory `airbyte_cdk/utils` as a package.
