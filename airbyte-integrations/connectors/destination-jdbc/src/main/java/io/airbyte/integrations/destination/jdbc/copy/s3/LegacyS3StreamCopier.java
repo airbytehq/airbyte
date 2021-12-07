@@ -63,7 +63,6 @@ public abstract class LegacyS3StreamCopier implements StreamCopier {
   private final Map<String, StreamTransferManager> multipartUploadManagers = new HashMap<>();
   private final Map<String, MultiPartOutputStream> outputStreams = new HashMap<>();
   private final Map<String, CSVPrinter> csvPrinters = new HashMap<>();
-  private final String s3FileName;
   protected final String stagingFolder;
   private final StagingFilenameGenerator filenameGenerator;
 
@@ -71,7 +70,6 @@ public abstract class LegacyS3StreamCopier implements StreamCopier {
                               final DestinationSyncMode destSyncMode,
                               final String schema,
                               final String streamName,
-                              final String s3FileName,
                               final AmazonS3 client,
                               final JdbcDatabase db,
                               final S3DestinationConfig s3Config,
@@ -80,7 +78,6 @@ public abstract class LegacyS3StreamCopier implements StreamCopier {
     this.destSyncMode = destSyncMode;
     this.schemaName = schema;
     this.streamName = streamName;
-    this.s3FileName = s3FileName;
     this.stagingFolder = stagingFolder;
     this.db = db;
     this.nameTransformer = nameTransformer;
