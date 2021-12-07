@@ -90,7 +90,6 @@ webapp:
   ## ref: http://kubernetes.io/docs/user-guide/ingress/
   ## @param webapp.ingress.enabled Set to true to enable ingress record generation
   ## @param webapp.ingress.className Specifies ingressClassName for clusters >= 1.18+
-  ## @param webapp.ingress.hosts Ingress Hosts configuration
   ## @param webapp.ingress.annotations [object] Ingress annotations done as key:value pairs
   ## @param webapp.ingress.hosts The list of hostnames to be covered with this ingress record.
   ## @param webapp.ingress.tls [array] Custom ingress TLS configuration
@@ -98,13 +97,14 @@ webapp:
     enabled: false
     className: ""
     annotations: {}
-      # kubernetes.io/ingress.class: nginx
-      # kubernetes.io/tls-acme: "true"
-    hosts:
-    - host: chart-example.local
-      paths:
-      - path: /
-        pathType: ImplementationSpecific
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+    hosts: []
+    # - host: chart-example.local
+    #   paths:
+    #   - path: /
+    #     pathType: ImplementationSpecific
+
     tls: []
     # - secretName: chart-example-tls
     #   hosts:
