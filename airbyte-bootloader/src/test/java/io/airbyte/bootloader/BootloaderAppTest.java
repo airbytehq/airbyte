@@ -13,6 +13,8 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
+import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
@@ -65,16 +67,15 @@ public class BootloaderAppTest {
         container.getPassword(),
         container.getJdbcUrl()).getInitialized();
     val jobsMigrator = new JobsDatabaseMigrator(jobDatabase, this.getClass().getName());
-    val latestJobsMigrationVersion = jobsMigrator.getLatestMigration().getVersion().getVersion();
-    assertEquals("0.29.15.001", latestJobsMigrationVersion);
+    assertEquals("0.29.15.001", jobsMigrator.getLatestMigration().getVersion().getVersion());
 
-    // val configDatabase = new ConfigsDatabaseInstance(
-    // mockedConfigs.getConfigDatabaseUser(),
-    // mockedConfigs.getConfigDatabasePassword(),
-    // mockedConfigs.getConfigDatabaseUrl())
-    // .getAndInitialize();
-    // val configPersistence = new ConfigRepository(new DatabaseConfigPersistence(configDatabase), null,
-    // null, null);
+    val configDatabase = new ConfigsDatabaseInstance(
+        mockedConfigs.getConfigDatabaseUser(),
+        mockedConfigs.getConfigDatabasePassword(),
+        mockedConfigs.getConfigDatabaseUrl())
+            .getAndInitialize();
+    val configsMigrator = new ConfigsDatabaseMigrator(configDatabase, this.getClass().getName());
+    assertEquals("0.30.22.001", configsMigrator.getLatestMigration().getVersion().getVersion());
 
     val jobsPersistence = new DefaultJobPersistence(jobDatabase);
     assertEquals(version, jobsPersistence.getVersion().get());
