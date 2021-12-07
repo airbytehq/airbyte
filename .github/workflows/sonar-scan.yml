@@ -8,6 +8,7 @@ jobs:
   sonar-scan:
     name: Sonar Scan
     runs-on: ubuntu-latest
+    environment: more-secrets
     steps:
       - uses: actions/checkout@v2
         with:
