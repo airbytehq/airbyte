@@ -46,3 +46,9 @@ Generate a API key using the [Recurly documentation](https://docs.recurly.com/do
 
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
 
+## CHANGELOG
+
+| Version | Date       | Pull Request | Subject |
+|:--------|:-----------| :--- | :--- |
+| 0.2.6   | 2021-12-06 | [8468](https://github.com/airbytehq/airbyte/pull/8468) | Migrate to the CDK |
+
