@@ -15,7 +15,7 @@
       },
       "start_date": {
         "title": "Start Date",
-		"description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated",
+        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated",
         "type": "string",
         "examples": ["2019-01-01T00:00:00Z"]
       },
