@@ -62,6 +62,10 @@ public interface Configs {
 
   boolean runDatabaseMigrationOnStartup();
 
+  String getConfigsDatabaseMinimumFlywayMigrationVersion();
+
+  String getJobsDatabaseMinimumFlywayMigrationVersion();
+
   // Airbyte Services
   String getTemporalHost();
 

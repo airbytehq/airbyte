@@ -147,13 +147,13 @@ public class ServerApp implements ServerRunnable {
     LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(),
         LogClientSingleton.getInstance().getServerLogsRoot(configs.getWorkspaceRoot()));
 
+    // insert the migration version check here
+    LOGGER.info("Waiting for migrations to be run..");
+
     LOGGER.info("Creating Staged Resource folder...");
     ConfigDumpImporter.initStagedResourceFolder();
 
     LOGGER.info("Creating config repository...");
-
-    // insert the migration version check here
-
     final Database configDatabase =
         new ConfigsDatabaseInstance(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(), configs.getConfigDatabaseUrl())
             .getInitialized();
@@ -166,7 +166,7 @@ public class ServerApp implements ServerRunnable {
     final ConfigRepository configRepository =
         new ConfigRepository(configPersistence.withValidation(), secretsHydrator, secretPersistence, ephemeralSecretPersistence);
 
-    LOGGER.info("Creating Scheduler persistence...");
+    LOGGER.info("Creating jobs persistence...");
     final Database jobDatabase = new JobsDatabaseInstance(configs.getDatabaseUser(), configs.getDatabasePassword(), configs.getDatabaseUrl())
         .getInitialized();
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
