@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 from typing import Any, Dict, Optional, Type
 
 from pydantic import BaseModel, Extra
