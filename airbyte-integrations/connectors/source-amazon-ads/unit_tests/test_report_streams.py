@@ -239,7 +239,7 @@ def test_display_report_stream_init_too_many_requests(mocker, test_config):
         ),
         (
             [
-                (lambda x: x > 5, None, "2021-01-02 03:24:05"),
+                (lambda x: x > 5, None, "2021-01-02 03:34:05"),
             ],
             ReportGenerationInProgress,
         ),
@@ -254,7 +254,11 @@ def test_display_report_stream_init_too_many_requests(mocker, test_config):
         (
             [
                 (lambda x: True, "FAILURE", None),
-                (lambda x: x >= 10, None, "2021-01-02 03:24:05"),
+                (lambda x: x >= 10, None, "2021-01-02 03:34:05"),
+                (lambda x: x >= 15, None, "2021-01-02 04:04:05"),
+                (lambda x: x >= 20, None, "2021-01-02 04:34:05"),
+                (lambda x: x >= 25, None, "2021-01-02 05:04:05"),
+                (lambda x: x >= 30, None, "2021-01-02 05:34:05"),
             ],
             ReportGenerationFailure,
         ),
