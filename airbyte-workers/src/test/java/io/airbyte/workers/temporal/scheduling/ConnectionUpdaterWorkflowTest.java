@@ -8,8 +8,9 @@ import io.airbyte.config.JobConfig;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.temporal.scheduling.activities.GetSyncInputActivity;
-import io.airbyte.workers.temporal.scheduling.activities.GetSyncInputActivityImpl;
+import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.SyncInput;
+import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.SyncOutput;
+import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivityImpl;
 import io.airbyte.workers.temporal.sync.EmptySyncWorkflow;
 import io.temporal.client.WorkflowClient;
 import io.temporal.testing.TestWorkflowEnvironment;
@@ -23,7 +24,7 @@ import org.mockito.Mockito;
 
 public class ConnectionUpdaterWorkflowTest {
 
-  private static final GetSyncInputActivityImpl getSyncInputActivity = Mockito.mock(GetSyncInputActivityImpl.class);
+  private static final GenerateInputActivityImpl getSyncInputActivity = Mockito.mock(GenerateInputActivityImpl.class);
 
   @BeforeEach
   public void setUp() {
@@ -45,9 +46,9 @@ public class ConnectionUpdaterWorkflowTest {
         new JobConfig(),
         1);
 
-    Mockito.when(getSyncInputActivity.getSyncWorkflowInput(Mockito.any(GetSyncInputActivity.Input.class)))
+    Mockito.when(getSyncInputActivity.getSyncWorkflowInput(Mockito.any(SyncInput.class)))
         .thenReturn(
-            new GetSyncInputActivity.Output(
+            new SyncOutput(
                 new JobRunConfig(),
                 new IntegrationLauncherConfig(),
                 new IntegrationLauncherConfig(),

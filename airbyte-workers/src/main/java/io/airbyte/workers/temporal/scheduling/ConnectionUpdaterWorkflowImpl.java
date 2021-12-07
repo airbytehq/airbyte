@@ -5,7 +5,9 @@
 package io.airbyte.workers.temporal.scheduling;
 
 import io.airbyte.workers.temporal.TemporalJobType;
-import io.airbyte.workers.temporal.scheduling.activities.GetSyncInputActivity;
+import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity;
+import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.SyncInput;
+import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.SyncOutput;
 import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.temporal.api.enums.v1.ParentClosePolicy;
@@ -22,7 +24,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
   private boolean isRunning = false;
   private boolean isDeleted = false;
   private boolean skipScheduling = false;
-  private final GetSyncInputActivity getSyncInputActivity = Workflow.newActivityStub(GetSyncInputActivity.class, ActivityConfiguration.OPTIONS);
+  private final GenerateInputActivity getSyncInputActivity = Workflow.newActivityStub(GenerateInputActivity.class, ActivityConfiguration.OPTIONS);
 
   private final CancellationScope syncWorkflowCancellationScope = CancellationScope.current();
 
@@ -38,12 +40,12 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
     // TODO: Fetch config (maybe store it in GCS)
     log.info("Starting child WF");
 
-    final GetSyncInputActivity.Input getSyncInputActivityInput = new GetSyncInputActivity.Input(
+    final SyncInput getSyncInputActivitySyncInput = new SyncInput(
         connectionUpdaterInput.getAttemptId(),
         connectionUpdaterInput.getJobId(),
         connectionUpdaterInput.getJobConfig());
 
-    final GetSyncInputActivity.Output syncWorkflowInputs = getSyncInputActivity.getSyncWorkflowInput(getSyncInputActivityInput);
+    final SyncOutput syncWorkflowInputs = getSyncInputActivity.getSyncWorkflowInput(getSyncInputActivitySyncInput);
 
     final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
         ChildWorkflowOptions.newBuilder()
@@ -67,6 +69,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
       return new SyncResult(true);
     } else {
       // TODO: Create a new job here
+
       Workflow.continueAsNew(connectionUpdaterInput);
     }
     // This should not be reachable

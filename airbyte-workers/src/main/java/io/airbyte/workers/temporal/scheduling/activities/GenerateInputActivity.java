@@ -15,12 +15,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @ActivityInterface
-public interface GetSyncInputActivity {
+public interface GenerateInputActivity {
 
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
-  class Input {
+  class SyncInput {
 
     private int attemptId;
     private long jobId;
@@ -31,7 +31,7 @@ public interface GetSyncInputActivity {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
-  class Output {
+  class SyncOutput {
 
     private JobRunConfig jobRunConfig;
     private IntegrationLauncherConfig sourceLauncherConfig;
@@ -40,7 +40,10 @@ public interface GetSyncInputActivity {
 
   }
 
+  /**
+   * This generate the input needed by the child sync workflow
+   */
   @ActivityMethod
-  Output getSyncWorkflowInput(Input input);
+  SyncOutput getSyncWorkflowInput(SyncInput input);
 
 }

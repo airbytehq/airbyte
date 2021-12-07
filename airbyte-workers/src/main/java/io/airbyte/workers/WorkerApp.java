@@ -28,7 +28,7 @@ import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflowImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogActivityImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflowImpl;
 import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterWorkflowImpl;
-import io.airbyte.workers.temporal.scheduling.activities.GetSyncInputActivityImpl;
+import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivityImpl;
 import io.airbyte.workers.temporal.spec.SpecActivityImpl;
 import io.airbyte.workers.temporal.spec.SpecWorkflowImpl;
 import io.airbyte.workers.temporal.sync.DbtTransformationActivityImpl;
@@ -151,7 +151,7 @@ public class WorkerApp {
     connectionUpdaterWorker.registerWorkflowImplementationTypes(ConnectionUpdaterWorkflowImpl.class);
     connectionUpdaterWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
     connectionUpdaterWorker.registerActivitiesImplementations(
-        new GetSyncInputActivityImpl());
+        new GenerateInputActivityImpl());
 
     factory.start();
   }

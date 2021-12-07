@@ -204,26 +204,25 @@ public class ConnectionsHandler {
 
     trackNewConnection(standardSync);
 
-    if (true) {
+    if (featureFlags.usesNewScheduler()) {
+      final long jobId = jobFactory.create(connectionId);
+      SchedulerApp.PENDING_JOBS.getAndIncrement();
+      final Job createdJob = jobPersistence.getJob(jobId);
+      LOGGER.error("Running: " + createdJob);
+      try {
+        final WorkerRun workerRun = temporalWorkerRunFactory.create(createdJob);
 
-    }
-    final long jobId = jobFactory.create(connectionId);
-    SchedulerApp.PENDING_JOBS.getAndIncrement();
-    final Job createdJob = jobPersistence.getJob(jobId);
-    LOGGER.error("Running: " + createdJob);
-    try {
-      final WorkerRun workerRun = temporalWorkerRunFactory.create(createdJob);
+        LOGGER.error("Starting the worker run _____");
+        final Path logFilePath = workerRun.getJobRoot().resolve(LogClientSingleton.LOG_FILENAME);
+        final long persistedAttemptId = jobPersistence.createAttempt(jobId, logFilePath);
+        // assertSameIds(attemptNumber, persistedAttemptId);
+        LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs, workerRun.getJobRoot());
+        workerRun.call();
+        LOGGER.error("Finished the worker run ______");
 
-      LOGGER.error("Starting the worker run _____");
-      final Path logFilePath = workerRun.getJobRoot().resolve(LogClientSingleton.LOG_FILENAME);
-      final long persistedAttemptId = jobPersistence.createAttempt(jobId, logFilePath);
-      // assertSameIds(attemptNumber, persistedAttemptId);
-      LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs, workerRun.getJobRoot());
-      workerRun.call();
-      LOGGER.error("Finished the worker run ______");
-
-    } catch (final Exception e) {
-      e.printStackTrace();
+      } catch (final Exception e) {
+        e.printStackTrace();
+      }
     }
 
     return buildConnectionRead(connectionId);
