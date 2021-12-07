@@ -164,7 +164,7 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
      * retrievable on Postgres or on my local machine (2021-12-07T19:56:28.967213Z). Truncating the
      * value to match.
      */
-    final OffsetDateTime timestamp = timestampWithFullPrecision.withNano(Math.toIntExact(1000L * timestampWithFullPrecision.getNano() / 1000L));
+    final OffsetDateTime timestamp = timestampWithFullPrecision.withNano(1000 * (timestampWithFullPrecision.getNano() / 1000));
 
     database.query(ctx -> {
       V0_30_22_001__Store_last_sync_state.copyData(ctx, STD_CONNECTION_STATES, timestamp);
