@@ -51,14 +51,14 @@ public class EnvConfigs implements Configs {
   public static final String CONFIG_DATABASE_URL = "CONFIG_DATABASE_URL";
   public static final String RUN_DATABASE_MIGRATION_ON_STARTUP = "RUN_DATABASE_MIGRATION_ON_STARTUP";
   public static final String WEBAPP_URL = "WEBAPP_URL";
-  public static final String JOB_IMAGE_PULL_POLICY = "JOB_IMAGE_PULL_POLICY";
-  public static final String WORKER_POD_TOLERATIONS = "WORKER_POD_TOLERATIONS";
-  public static final String WORKER_POD_NODE_SELECTORS = "WORKER_POD_NODE_SELECTORS";
-  public static final String JOB_SOCAT_IMAGE = "JOB_SOCAT_IMAGE";
-  public static final String JOB_BUSYBOX_IMAGE = "JOB_BUSYBOX_IMAGE";
-  public static final String JOB_CURL_IMAGE = "JOB_CURL_IMAGE";
-  public static final String MAX_SYNC_JOB_ATTEMPTS = "MAX_SYNC_JOB_ATTEMPTS";
-  public static final String MAX_SYNC_TIMEOUT_DAYS = "MAX_SYNC_TIMEOUT_DAYS";
+  public static final String JOB_POD_MAIN_CONTAINER_IMAGE_PULL_POLICY = "JOB_POD_MAIN_CONTAINER_IMAGE_PULL_POLICY";
+  public static final String JOB_POD_TOLERATIONS = "JOB_POD_TOLERATIONS";
+  public static final String JOB_POD_NODE_SELECTORS = "JOB_POD_NODE_SELECTORS";
+  public static final String JOB_POD_SOCAT_IMAGE = "JOB_POD_SOCAT_IMAGE";
+  public static final String JOB_POD_BUSYBOX_IMAGE = "JOB_POD_BUSYBOX_IMAGE";
+  public static final String JOB_POD_CURL_IMAGE = "JOB_POD_CURL_IMAGE";
+  public static final String SYNC_JOB_MAX_ATTEMPTS = "SYNC_JOB_MAX_ATTEMPTS";
+  public static final String SYNC_JOB_MAX_TIMEOUT_DAYS = "SYNC_JOB_MAX_TIMEOUT_DAYS";
   private static final String MINIMUM_WORKSPACE_RETENTION_DAYS = "MINIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_RETENTION_DAYS = "MAXIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_SIZE_MB = "MAXIMUM_WORKSPACE_SIZE_MB";
@@ -68,27 +68,27 @@ public class EnvConfigs implements Configs {
   public static final String MAX_SYNC_WORKERS = "MAX_SYNC_WORKERS";
   private static final String TEMPORAL_HOST = "TEMPORAL_HOST";
   private static final String TEMPORAL_WORKER_PORTS = "TEMPORAL_WORKER_PORTS";
-  private static final String KUBE_NAMESPACE = "KUBE_NAMESPACE";
+  private static final String JOB_POD_KUBE_NAMESPACE = "JOB_POD_KUBE_NAMESPACE";
   private static final String SUBMITTER_NUM_THREADS = "SUBMITTER_NUM_THREADS";
-  private static final String RESOURCE_CPU_REQUEST = "RESOURCE_CPU_REQUEST";
-  private static final String RESOURCE_CPU_LIMIT = "RESOURCE_CPU_LIMIT";
-  private static final String RESOURCE_MEMORY_REQUEST = "RESOURCE_MEMORY_REQUEST";
-  private static final String RESOURCE_MEMORY_LIMIT = "RESOURCE_MEMORY_LIMIT";
+  private static final String JOB_POD_MAIN_CONTAINER_CPU_REQUEST = "JOB_POD_MAIN_CONTAINER_CPU_REQUEST";
+  private static final String JOB_POD_MAIN_CONTAINER_CPU_LIMIT = "JOB_POD_MAIN_CONTAINER_CPU_LIMIT";
+  private static final String JOB_POD_MAIN_CONTAINER_MEMORY_REQUEST = "JOB_POD_MAIN_CONTAINER_MEMORY_REQUEST";
+  private static final String JOB_POD_MAIN_CONTAINER_MEMORY_LIMIT = "JOB_POD_MAIN_CONTAINER_MEMORY_LIMIT";
   private static final String SECRET_PERSISTENCE = "SECRET_PERSISTENCE";
-  private static final String JOBS_IMAGE_PULL_SECRET = "JOBS_IMAGE_PULL_SECRET";
+  private static final String JOB_POD_MAIN_CONTAINER_IMAGE_PULL_SECRET = "JOB_POD_MAIN_CONTAINER_IMAGE_PULL_SECRET";
   private static final String PUBLISH_METRICS = "PUBLISH_METRICS";
 
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
-  private static final String DEFAULT_KUBE_NAMESPACE = "default";
-  private static final String DEFAULT_RESOURCE_REQUIREMENT_CPU = null;
-  private static final String DEFAULT_RESOURCE_REQUIREMENT_MEMORY = null;
-  private static final String DEFAULT_JOB_IMAGE_PULL_POLICY = "IfNotPresent";
+  private static final String DEFAULT_JOB_POD_KUBE_NAMESPACE = "default";
+  private static final String DEFAULT_JOB_POD_CPU_REQUIREMENT = null;
+  private static final String DEFAULT_JOB_POD_MEMORY_REQUIREMENT = null;
+  private static final String DEFAULT_JOB_POD_MAIN_CONTAINER_IMAGE_PULL_POLICY = "IfNotPresent";
   private static final String SECRET_STORE_GCP_PROJECT_ID = "SECRET_STORE_GCP_PROJECT_ID";
   private static final String SECRET_STORE_GCP_CREDENTIALS = "SECRET_STORE_GCP_CREDENTIALS";
-  private static final String DEFAULT_JOB_SOCAT_IMAGE = "alpine/socat:1.7.4.1-r1";
-  private static final String DEFAULT_JOB_BUSYBOX_IMAGE = "busybox:1.28";
-  private static final String DEFAULT_JOB_CURL_IMAGE = "curlimages/curl:7.77.0";
+  private static final String DEFAULT_JOB_POD_SOCAT_IMAGE = "alpine/socat:1.7.4.1-r1";
+  private static final String DEFAULT_JOB_POD_BUSYBOX_IMAGE = "busybox:1.28";
+  private static final String DEFAULT_JOB_POD_CURL_IMAGE = "curlimages/curl:7.77.0";
   private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB = 5000;
@@ -115,7 +115,7 @@ public class EnvConfigs implements Configs {
         getEnvOrDefault(LogClientSingleton.AWS_ACCESS_KEY_ID, ""),
         getEnvOrDefault(LogClientSingleton.AWS_SECRET_ACCESS_KEY, ""),
         getEnvOrDefault(LogClientSingleton.S3_MINIO_ENDPOINT, ""),
-        getEnvOrDefault(LogClientSingleton.GCP_STORAGE_BUCKET, ""),
+        getEnvOrDefault(LogClientSingleton.GCS_LOG_BUCKET, ""),
         getEnvOrDefault(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, ""));
   }
 
@@ -268,13 +268,13 @@ public class EnvConfigs implements Configs {
 
   // Jobs
   @Override
-  public int getMaxSyncJobAttempts() {
-    return Integer.parseInt(getEnvOrDefault(MAX_SYNC_JOB_ATTEMPTS, "3"));
+  public int getSyncJobMaxAttempts() {
+    return Integer.parseInt(getEnvOrDefault(SYNC_JOB_MAX_ATTEMPTS, "3"));
   }
 
   @Override
-  public int getMaxSyncTimeoutDays() {
-    return Integer.parseInt(getEnvOrDefault(MAX_SYNC_TIMEOUT_DAYS, "3"));
+  public int getSyncJobMaxTimeoutDays() {
+    return Integer.parseInt(getEnvOrDefault(SYNC_JOB_MAX_TIMEOUT_DAYS, "3"));
   }
 
   /**
@@ -294,8 +294,8 @@ public class EnvConfigs implements Configs {
    * @return list of WorkerPodToleration parsed from env
    */
   @Override
-  public List<WorkerPodToleration> getWorkerPodTolerations() {
-    final String tolerationsStr = getEnvOrDefault(WORKER_POD_TOLERATIONS, "");
+  public List<TolerationPOJO> getJobPodTolerations() {
+    final String tolerationsStr = getEnvOrDefault(JOB_POD_TOLERATIONS, "");
 
     final Stream<String> tolerations = Strings.isNullOrEmpty(tolerationsStr) ? Stream.of()
         : Splitter.on(";")
@@ -303,19 +303,19 @@ public class EnvConfigs implements Configs {
             .filter(tolerationStr -> !Strings.isNullOrEmpty(tolerationStr));
 
     return tolerations
-        .map(this::workerPodToleration)
+        .map(this::parseToleration)
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
   }
 
-  private WorkerPodToleration workerPodToleration(final String tolerationStr) {
+  private TolerationPOJO parseToleration(final String tolerationStr) {
     final Map<String, String> tolerationMap = Splitter.on(",")
         .splitToStream(tolerationStr)
         .map(s -> s.split("="))
         .collect(Collectors.toMap(s -> s[0], s -> s[1]));
 
     if (tolerationMap.containsKey("key") && tolerationMap.containsKey("effect") && tolerationMap.containsKey("operator")) {
-      return new WorkerPodToleration(
+      return new TolerationPOJO(
           tolerationMap.get("key"),
           tolerationMap.get("effect"),
           tolerationMap.get("value"),
@@ -339,17 +339,17 @@ public class EnvConfigs implements Configs {
    * @return map containing kv pairs of node selectors
    */
   @Override
-  public Map<String, String> getWorkerNodeSelectors() {
+  public Map<String, String> getJobPodNodeSelectors() {
     return Splitter.on(",")
-        .splitToStream(getEnvOrDefault(WORKER_POD_NODE_SELECTORS, ""))
+        .splitToStream(getEnvOrDefault(JOB_POD_NODE_SELECTORS, ""))
         .filter(s -> !Strings.isNullOrEmpty(s) && s.contains("="))
         .map(s -> s.split("="))
         .collect(Collectors.toMap(s -> s[0], s -> s[1]));
   }
 
   @Override
-  public String getJobImagePullPolicy() {
-    return getEnvOrDefault(JOB_IMAGE_PULL_POLICY, DEFAULT_JOB_IMAGE_PULL_POLICY);
+  public String getJobPodMainContainerImagePullPolicy() {
+    return getEnvOrDefault(JOB_POD_MAIN_CONTAINER_IMAGE_PULL_POLICY, DEFAULT_JOB_POD_MAIN_CONTAINER_IMAGE_PULL_POLICY);
   }
 
   /**
@@ -358,48 +358,48 @@ public class EnvConfigs implements Configs {
    * no-op value.
    */
   @Override
-  public String getJobsImagePullSecret() {
-    return getEnvOrDefault(JOBS_IMAGE_PULL_SECRET, "");
+  public String getJobPodMainContainerImagePullSecret() {
+    return getEnvOrDefault(JOB_POD_MAIN_CONTAINER_IMAGE_PULL_SECRET, "");
   }
 
   @Override
-  public String getJobSocatImage() {
-    return getEnvOrDefault(JOB_SOCAT_IMAGE, DEFAULT_JOB_SOCAT_IMAGE);
+  public String getJobPodSocatImage() {
+    return getEnvOrDefault(JOB_POD_SOCAT_IMAGE, DEFAULT_JOB_POD_SOCAT_IMAGE);
   }
 
   @Override
-  public String getJobBusyboxImage() {
-    return getEnvOrDefault(JOB_BUSYBOX_IMAGE, DEFAULT_JOB_BUSYBOX_IMAGE);
+  public String getJobPodBusyboxImage() {
+    return getEnvOrDefault(JOB_POD_BUSYBOX_IMAGE, DEFAULT_JOB_POD_BUSYBOX_IMAGE);
   }
 
   @Override
-  public String getJobCurlImage() {
-    return getEnvOrDefault(JOB_CURL_IMAGE, DEFAULT_JOB_CURL_IMAGE);
+  public String getJobPodCurlImage() {
+    return getEnvOrDefault(JOB_POD_CURL_IMAGE, DEFAULT_JOB_POD_CURL_IMAGE);
   }
 
   @Override
-  public String getKubeNamespace() {
-    return getEnvOrDefault(KUBE_NAMESPACE, DEFAULT_KUBE_NAMESPACE);
+  public String getJobPodKubeNamespace() {
+    return getEnvOrDefault(JOB_POD_KUBE_NAMESPACE, DEFAULT_JOB_POD_KUBE_NAMESPACE);
   }
 
   @Override
-  public String getCpuRequest() {
-    return getEnvOrDefault(RESOURCE_CPU_REQUEST, DEFAULT_RESOURCE_REQUIREMENT_CPU);
+  public String getJobPodMainContainerCpuRequest() {
+    return getEnvOrDefault(JOB_POD_MAIN_CONTAINER_CPU_REQUEST, DEFAULT_JOB_POD_CPU_REQUIREMENT);
   }
 
   @Override
-  public String getCpuLimit() {
-    return getEnvOrDefault(RESOURCE_CPU_LIMIT, DEFAULT_RESOURCE_REQUIREMENT_CPU);
+  public String getJobPodMainContainerCpuLimit() {
+    return getEnvOrDefault(JOB_POD_MAIN_CONTAINER_CPU_LIMIT, DEFAULT_JOB_POD_CPU_REQUIREMENT);
   }
 
   @Override
-  public String getMemoryRequest() {
-    return getEnvOrDefault(RESOURCE_MEMORY_REQUEST, DEFAULT_RESOURCE_REQUIREMENT_MEMORY);
+  public String getJobPodMainContainerMemoryRequest() {
+    return getEnvOrDefault(JOB_POD_MAIN_CONTAINER_MEMORY_REQUEST, DEFAULT_JOB_POD_MEMORY_REQUIREMENT);
   }
 
   @Override
-  public String getMemoryLimit() {
-    return getEnvOrDefault(RESOURCE_MEMORY_LIMIT, DEFAULT_RESOURCE_REQUIREMENT_MEMORY);
+  public String getJobPodMainContainerMemoryLimit() {
+    return getEnvOrDefault(JOB_POD_MAIN_CONTAINER_MEMORY_LIMIT, DEFAULT_JOB_POD_MEMORY_REQUIREMENT);
   }
 
   // Logging/Monitoring/Tracking
