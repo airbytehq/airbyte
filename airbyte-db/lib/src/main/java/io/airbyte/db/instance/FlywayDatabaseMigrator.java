@@ -85,6 +85,11 @@ public class FlywayDatabaseMigrator implements DatabaseMigrator {
   }
 
   @Override
+  public MigrationInfo getLatestMigration() {
+    return flyway.info().current();
+  }
+
+  @Override
   public BaselineResult createBaseline() {
     final BaselineResult result = flyway.baseline();
     result.warnings.forEach(LOGGER::warn);
