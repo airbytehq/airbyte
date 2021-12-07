@@ -237,7 +237,7 @@ jobs:
 
       - name: Build
         run: |
-            SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
+            SUB_BUILD=PLATFORM ./gradlew build javadoc --scan --debug
 
       - name: Integration test
         run: SUB_BUILD=PLATFORM ./gradlew newIntegrationTest
