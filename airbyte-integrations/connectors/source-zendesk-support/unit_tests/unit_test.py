@@ -77,6 +77,7 @@ def test_backoff_cases(prepare_stream_args, header_name, header_value, expected)
 def test_comments_not_found_ticket(prepare_stream_args, status_code, expected_comment_count, expected_exception):
     """Checks the case when some ticket is removed while sync of comments"""
     fake_id = 12345
+    fake_timestamp = 12345
     stream = TicketComments(**prepare_stream_args)
     with requests_mock.Mocker() as comment_mock:
         path = f"tickets/{fake_id}/comments.json"
@@ -98,6 +99,7 @@ def test_comments_not_found_ticket(prepare_stream_args, status_code, expected_co
             sync_mode=None,
             stream_slice={
                 "id": fake_id,
+                "generated_timestamp": fake_timestamp
             },
         )
         if expected_exception:
