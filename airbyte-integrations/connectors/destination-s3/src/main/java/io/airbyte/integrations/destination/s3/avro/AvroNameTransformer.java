@@ -4,12 +4,11 @@
 
 package io.airbyte.integrations.destination.s3.avro;
 
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import static io.airbyte.integrations.destination.s3.avro.AvroConstants.AVRO_RECORD_NAMESPACE;
 
+import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import java.util.Collections;
 import java.util.List;
-
-import static io.airbyte.integrations.destination.s3.avro.AvroConstants.AVRO_RECORD_NAMESPACE;
 
 public class AvroNameTransformer extends ExtendedNameTransformer {
 
@@ -33,10 +32,10 @@ public class AvroNameTransformer extends ExtendedNameTransformer {
 
   public String resovleNamespace(String fieldName, List<String> recordFieldNames) {
     return AVRO_RECORD_NAMESPACE
-            .concat(".")
-            .concat(fieldName)
-            .concat("_")
-            .concat(String.valueOf(Collections.frequency(recordFieldNames, fieldName)));
+        .concat(".")
+        .concat(fieldName)
+        .concat("_")
+        .concat(String.valueOf(Collections.frequency(recordFieldNames, fieldName)));
   }
 
 }

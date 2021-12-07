@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.base.JavaBaseConstants;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,8 +25,6 @@ import org.apache.avro.SchemaBuilder.RecordBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.allegro.schema.json2avro.converter.AdditionalPropertyField;
-
-import static io.airbyte.integrations.destination.s3.avro.AvroConstants.AVRO_RECORD_NAMESPACE;
 
 /**
  * The main function of this class is to convert a JsonSchema to Avro schema. It can also
@@ -216,21 +213,13 @@ public class JsonToAvroSchemaConverter {
         final String stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(fieldName);
         recordFieldNames.add(stdName);
         fieldSchema = getAvroSchema(fieldDefinition, fieldName,
-                AvroConstants.NAME_TRANSFORMER.resovleNamespace(stdName, recordFieldNames), false);
+            AvroConstants.NAME_TRANSFORMER.resovleNamespace(stdName, recordFieldNames), false);
       }
       default -> throw new IllegalStateException(
           String.format("Unexpected type for field %s: %s", fieldName, fieldType));
     }
     return fieldSchema;
   }
-
-//  private String resovleNamespace(String fieldName) {
-//      return AVRO_RECORD_NAMESPACE
-//              .concat(".")
-//              .concat(fieldName)
-//              .concat("_")
-//              .concat(String.valueOf(Collections.frequency(recordFieldNames, fieldName)));
-//  }
 
   List<Schema> getSchemasFromTypes(final String fieldName, final ArrayNode types) {
     return MoreIterators.toList(types.elements())
