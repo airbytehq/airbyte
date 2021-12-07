@@ -4,7 +4,6 @@
 
 package io.airbyte.server;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
@@ -21,11 +20,8 @@ import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
-import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
-import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
-import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
 import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
@@ -155,14 +151,13 @@ public class ServerApp implements ServerRunnable {
     ConfigDumpImporter.initStagedResourceFolder();
 
     LOGGER.info("Creating config repository...");
-    // all these should be converted to get initialise calls
+
     // insert the migration version check here
-    final Database configDatabase = new ConfigsDatabaseInstance(
-        configs.getConfigDatabaseUser(),
-        configs.getConfigDatabasePassword(),
-        configs.getConfigDatabaseUrl())
-            .getAndInitialize();
-    final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).migrateFileConfigs(configs);
+
+    final Database configDatabase =
+        new ConfigsDatabaseInstance(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(), configs.getConfigDatabaseUrl())
+            .getInitialized();
+    final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
 
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
@@ -172,29 +167,20 @@ public class ServerApp implements ServerRunnable {
         new ConfigRepository(configPersistence.withValidation(), secretsHydrator, secretPersistence, ephemeralSecretPersistence);
 
     LOGGER.info("Creating Scheduler persistence...");
-    final Database jobDatabase = new JobsDatabaseInstance(
-        configs.getDatabaseUser(),
-        configs.getDatabasePassword(),
-        configs.getDatabaseUrl())
-            .getAndInitialize();
+    final Database jobDatabase = new JobsDatabaseInstance(configs.getDatabaseUser(), configs.getDatabasePassword(), configs.getDatabaseUrl())
+        .getInitialized();
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
 
-    // this should be moved to the controller
-    createDeploymentIfNoneExists(jobPersistence);
-
-    // must happen after deployment id is set
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
         new Deployment(configs.getDeploymentMode(), jobPersistence.getDeployment().orElseThrow(), configs.getWorkerEnvironment()),
         configs.getAirbyteRole(),
         configs.getAirbyteVersion(),
         configRepository);
-    final TrackingClient trackingClient = TrackingClientSingleton.get();
-    // must happen after the tracking client is initialized.
-    // if no workspace exists, we create one so the user starts out with a place to add configuration.
-    createWorkspaceIfNoneExists(configRepository);
 
+    final TrackingClient trackingClient = TrackingClientSingleton.get();
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
+
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(configs.getTemporalHost());
     final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot());
     final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
@@ -204,33 +190,7 @@ public class ServerApp implements ServerRunnable {
         new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
 
-    // version in the database when the server main method is called. may be empty if this is the first
-    // time the server is started.
-    final AirbyteVersion airbyteVersion = configs.getAirbyteVersion();
-    final Optional<AirbyteVersion> initialAirbyteDatabaseVersion = jobPersistence.getVersion().map(AirbyteVersion::new);
-    if (!isLegalUpgrade(initialAirbyteDatabaseVersion.orElse(null), airbyteVersion)) {
-      final String attentionBanner = MoreResources.readResource("banner/attention-banner.txt");
-      LOGGER.error(attentionBanner);
-      final String message = String.format(
-          "Cannot upgrade from version %s to version %s directly. First you must upgrade to version %s. After that upgrade is complete, you may upgrade to version %s",
-          initialAirbyteDatabaseVersion.get().serialize(),
-          airbyteVersion.serialize(),
-          VERSION_BREAK.serialize(),
-          airbyteVersion.serialize());
-
-      LOGGER.error(message);
-      throw new RuntimeException(message);
-    }
-
     LOGGER.info("Starting server...");
-
-    runFlywayMigration(configs, configDatabase, jobDatabase);
-    LOGGER.info("Ran Flyway migrations...");
-
-    jobPersistence.setVersion(airbyteVersion.serialize());
-
-    configPersistence.loadData(seed);
-    LOGGER.info("Loaded seed data...");
 
     return apiFactory.create(
         schedulerJobClient,
@@ -250,47 +210,8 @@ public class ServerApp implements ServerRunnable {
         httpClient);
   }
 
-  @VisibleForTesting
-  static boolean isLegalUpgrade(final AirbyteVersion airbyteDatabaseVersion, final AirbyteVersion airbyteVersion) {
-    // means there was no previous version so upgrade even needs to happen. always legal.
-    if (airbyteDatabaseVersion == null) {
-      return true;
-    }
-
-    return !isUpgradingThroughVersionBreak(airbyteDatabaseVersion, airbyteVersion);
-  }
-
-  /**
-   * Check to see if given the current version of the app and the version we are trying to upgrade if
-   * it passes through a version break (i.e. a major version bump).
-   *
-   * @param airbyteDatabaseVersion - current version of the app
-   * @param airbyteVersion - version we are trying to upgrade to
-   * @return true if upgrading through a major version, otherwise false.
-   */
-  private static boolean isUpgradingThroughVersionBreak(final AirbyteVersion airbyteDatabaseVersion, final AirbyteVersion airbyteVersion) {
-    return airbyteDatabaseVersion.lessThan(VERSION_BREAK) && airbyteVersion.greaterThan(VERSION_BREAK);
-  }
-
   public static void main(final String[] args) throws Exception {
     getServer(new ServerFactory.Api(), YamlSeedConfigPersistence.getDefault()).start();
-  }
-
-  private static void runFlywayMigration(final Configs configs, final Database configDatabase, final Database jobDatabase) {
-    final DatabaseMigrator configDbMigrator = new ConfigsDatabaseMigrator(configDatabase, ServerApp.class.getSimpleName());
-    final DatabaseMigrator jobDbMigrator = new JobsDatabaseMigrator(jobDatabase, ServerApp.class.getSimpleName());
-
-    configDbMigrator.createBaseline();
-    jobDbMigrator.createBaseline();
-
-    if (configs.runDatabaseMigrationOnStartup()) {
-      LOGGER.info("Migrating configs database");
-      configDbMigrator.migrate();
-      LOGGER.info("Migrating jobs database");
-      jobDbMigrator.migrate();
-    } else {
-      LOGGER.info("Auto database migration is skipped");
-    }
   }
 
 }
