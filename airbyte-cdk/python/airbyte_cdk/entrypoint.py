@@ -11,10 +11,11 @@ import sys
 import tempfile
 from typing import Iterable, List
 
-from airbyte_cdk.logger import init_logger
+from airbyte_cdk.logger import AirbyteLogFormatter, init_logger
 from airbyte_cdk.models import AirbyteMessage, Status, Type
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
+from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets
 
 logger = init_logger("airbyte")
 
@@ -24,7 +25,8 @@ class AirbyteEntrypoint(object):
         self.source = source
         self.logger = logging.getLogger(f"airbyte.{getattr(source, 'name', '')}")
 
-    def parse_args(self, args: List[str]) -> argparse.Namespace:
+    @staticmethod
+    def parse_args(args: List[str]) -> argparse.Namespace:
         # set up parent parsers
         parent_parser = argparse.ArgumentParser(add_help=False)
         main_parser = argparse.ArgumentParser()
@@ -72,6 +74,12 @@ class AirbyteEntrypoint(object):
             else:
                 raw_config = self.source.read_config(parsed_args.config)
                 config = self.source.configure(raw_config, temp_dir)
+
+                # Now that we have the config, we can use it to get a list of ai airbyte_secrets
+                # that we should filter in logging to avoid leaking secrets
+                config_secrets = get_secrets(self.source, config, self.logger)
+                AirbyteLogFormatter.update_secrets(config_secrets)
+
                 # Remove internal flags from config before validating so
                 # jsonschema's additionalProperties flag wont fail the validation
                 config, internal_config = split_config(config)
