@@ -2,6 +2,7 @@ name: Sonar Scan
 on:
   push:
     branches:
+      - h-chlor-patch-1 # test local branch
       - master # or the name of your main branch
 jobs:
   sonar-scan:
