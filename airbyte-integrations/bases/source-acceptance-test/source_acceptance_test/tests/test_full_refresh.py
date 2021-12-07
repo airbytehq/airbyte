@@ -37,7 +37,7 @@ class TestFullRefresh(BaseTest):
         for record in records_2:
             records_by_stream_2[record.stream].append(record.data)
 
-        for stream in records_by_stream_1.keys():
+        for stream in records_by_stream_1:
             serializer = partial(make_hashable, exclude_fields=ignored_fields.get(stream))
             stream_records_1 = records_by_stream_1.get(stream)
             stream_records_2 = records_by_stream_2.get(stream)

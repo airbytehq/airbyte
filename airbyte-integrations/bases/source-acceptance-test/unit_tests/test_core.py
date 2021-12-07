@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
+import logging
 from unittest.mock import MagicMock
 
 import pytest
