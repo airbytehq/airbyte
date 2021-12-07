@@ -18,8 +18,8 @@ jobs:
           projectBaseDir: airbyte-integrations/connectors
           args: >
             -Dsonar.projectKey=airbite-python-connectors
-            -Dsonar.language=py
-            -Dsonar.sourceEncoding=UTF-8
+#            -Dsonar.language=py
+#            -Dsonar.sourceEncoding=UTF-8
             -Dsonar.exclusions=**/*.java
             -Dsonar.verbose=true
             -Dsonar.tests=.
