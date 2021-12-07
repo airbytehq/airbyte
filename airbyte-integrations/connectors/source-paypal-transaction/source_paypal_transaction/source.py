@@ -2,10 +2,9 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import json
 import logging
 import time
-import json
-from json.decoder import JSONDecodeError
 from abc import ABC
 from datetime import datetime, timedelta
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -31,7 +30,7 @@ class PaypalHttpException(Exception):
             content = self.error.response.content.decode()
             try:
                 details = json.loads(content)
-            except json.decoder.JSONDecodeError as e:
+            except json.decoder.JSONDecodeError:
                 details = content
 
             message = f"{message} Details: {details}"
@@ -387,13 +386,13 @@ class SourcePaypalTransaction(AbstractSource):
             Transactions(authenticator=authenticator, **config).validate_input_dates()
 
             # validate if Paypal is able to extract data for given start_data
-            start_date = isoparse(config['start_date'])
+            start_date = isoparse(config["start_date"])
             end_date = start_date + timedelta(days=1)
             stream_slice = {
                 "start_date": start_date.isoformat(),
-                "end_date": end_date.isoformat()
+                "end_date": end_date.isoformat(),
             }
-            records = Transactions(authenticator=authenticator, **config).read_records(sync_mode='full', stream_slice=stream_slice)
+            records = Transactions(authenticator=authenticator, **config).read_records(sync_mode="full", stream_slice=stream_slice)
             list(records)
 
         except Exception as e:
