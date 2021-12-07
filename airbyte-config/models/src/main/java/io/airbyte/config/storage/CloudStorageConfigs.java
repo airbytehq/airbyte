@@ -1,8 +1,19 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.config.storage;
 
 import com.google.common.base.Preconditions;
 
+/**
+ * Immutable configuration for configuring Cloud storage clients. We usually allow configuring one
+ * of 3 type of cloud storage clients in our env variables. We then want to opaquely pass that to
+ * wherever that cloud storage is used and then, based on the configuration, spin up the correct
+ * client. This configuration object allows us to do that.
+ */
 public class CloudStorageConfigs {
+
   public enum WorkerStorageType {
     S3,
     MINIO,
@@ -27,9 +38,9 @@ public class CloudStorageConfigs {
   }
 
   private CloudStorageConfigs(final WorkerStorageType type,
-      final S3Config s3Config,
-      final MinioConfig minioConfig,
-      final GcsConfig gcsConfig) {
+                              final S3Config s3Config,
+                              final MinioConfig minioConfig,
+                              final GcsConfig gcsConfig) {
     validate(type, s3Config, minioConfig, gcsConfig);
 
     this.type = type;
@@ -39,9 +50,9 @@ public class CloudStorageConfigs {
   }
 
   private void validate(final WorkerStorageType type,
-      final S3Config s3Config,
-      final MinioConfig minioConfig,
-      final GcsConfig gcsConfig) {
+                        final S3Config s3Config,
+                        final MinioConfig minioConfig,
+                        final GcsConfig gcsConfig) {
     switch (type) {
       case S3 -> {
         Preconditions.checkNotNull(s3Config);
@@ -78,6 +89,7 @@ public class CloudStorageConfigs {
   }
 
   public static abstract class S3LikeWorkerStorageConfig {
+
     private final String bucketName;
     private final String awsAccessKey;
     private final String awsSecretAccessKey;
@@ -99,9 +111,11 @@ public class CloudStorageConfigs {
     public String getAwsSecretAccessKey() {
       return awsSecretAccessKey;
     }
+
   }
 
   public static class S3Config extends S3LikeWorkerStorageConfig {
+
     private final String region;
 
     public S3Config(final String bucketName, final String awsAccessKey, final String awsSecretAccessKey, final String region) {
@@ -112,9 +126,11 @@ public class CloudStorageConfigs {
     public String getRegion() {
       return region;
     }
+
   }
 
   public static class MinioConfig extends S3LikeWorkerStorageConfig {
+
     private final String minioEndpoint;
 
     public MinioConfig(final String bucketName, final String awsAccessKey, final String awsSecretAccessKey, final String minioEndpoint) {
@@ -125,9 +141,11 @@ public class CloudStorageConfigs {
     public String getMinioEndpoint() {
       return minioEndpoint;
     }
+
   }
 
   public static class GcsConfig {
+
     private final String bucketName;
     private final String googleApplicationCredentials;
 
@@ -143,5 +161,7 @@ public class CloudStorageConfigs {
     public String getGoogleApplicationCredentials() {
       return googleApplicationCredentials;
     }
+
   }
+
 }

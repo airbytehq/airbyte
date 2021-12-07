@@ -1,15 +1,22 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.config.storage;
 
 import com.google.common.base.Preconditions;
 import io.airbyte.config.storage.CloudStorageConfigs.MinioConfig;
-import io.airbyte.config.storage.CloudStorageConfigs.S3Config;
-import io.airbyte.config.storage.CloudStorageConfigs.S3LikeWorkerStorageConfig;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.function.Supplier;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
+/**
+ * When using minio, we can still leverage the S3Client, we just slightly change what information we
+ * pass to it. Takes in the constructor our standard format for minio configuration and provides a
+ * factory that uses that configuration to create an S3Client.
+ */
 public class MinioS3ClientFactory implements Supplier<S3Client> {
 
   private final MinioConfig minioConfig;
@@ -22,7 +29,7 @@ public class MinioS3ClientFactory implements Supplier<S3Client> {
   private static void validate(final MinioConfig config) {
     Preconditions.checkNotNull(config);
     DefaultS3ClientFactory.validateBase(config);
-    Preconditions.checkNotNull(config.getMinioEndpoint());
+    Preconditions.checkArgument(!config.getMinioEndpoint().isBlank());
   }
 
   @Override
@@ -41,4 +48,5 @@ public class MinioS3ClientFactory implements Supplier<S3Client> {
 
     return builder.build();
   }
+
 }

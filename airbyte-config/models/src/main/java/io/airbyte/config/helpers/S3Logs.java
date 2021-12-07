@@ -48,9 +48,9 @@ public class S3Logs implements CloudLogs {
 
   private static String getBucketName(final CloudStorageConfigs configs) {
     final S3LikeWorkerStorageConfig config;
-    if(configs.getType() == WorkerStorageType.S3) {
+    if (configs.getType() == WorkerStorageType.S3) {
       config = configs.getS3Config();
-    } else  if(configs.getType() == WorkerStorageType.MINIO) {
+    } else if (configs.getType() == WorkerStorageType.MINIO) {
       config = configs.getMinioConfig();
     } else {
       throw new IllegalArgumentException("config must be of type S3 or MINIO");

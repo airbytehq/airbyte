@@ -53,4 +53,5 @@ public interface CloudLogs {
 
     throw new RuntimeException("Error no cloud credentials configured..");
   }
+
 }

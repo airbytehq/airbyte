@@ -116,25 +116,22 @@ public class EnvConfigs implements Configs {
   }
 
   private Optional<CloudStorageConfigs> getLogConfiguration() {
-    if(getEnv(LogClientSingleton.GCS_LOG_BUCKET) != null) {
+    if (getEnv(LogClientSingleton.GCS_LOG_BUCKET) != null) {
       return Optional.of(CloudStorageConfigs.gcs(new GcsConfig(
           getEnvOrDefault(LogClientSingleton.GCS_LOG_BUCKET, ""),
-          getEnvOrDefault(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, "")
-      )));
-    } else if(getEnv(LogClientSingleton.S3_MINIO_ENDPOINT) != null) {
+          getEnvOrDefault(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, ""))));
+    } else if (getEnv(LogClientSingleton.S3_MINIO_ENDPOINT) != null) {
       return Optional.of(CloudStorageConfigs.minio(new MinioConfig(
           getEnvOrDefault(LogClientSingleton.S3_LOG_BUCKET, ""),
           getEnvOrDefault(LogClientSingleton.AWS_ACCESS_KEY_ID, ""),
           getEnvOrDefault(LogClientSingleton.AWS_SECRET_ACCESS_KEY, ""),
-          getEnvOrDefault(LogClientSingleton.S3_MINIO_ENDPOINT, "")
-      )));
-    } else if(getEnv(LogClientSingleton.S3_LOG_BUCKET_REGION) != null) {
+          getEnvOrDefault(LogClientSingleton.S3_MINIO_ENDPOINT, ""))));
+    } else if (getEnv(LogClientSingleton.S3_LOG_BUCKET_REGION) != null) {
       return Optional.of(CloudStorageConfigs.s3(new S3Config(
           getEnvOrDefault(LogClientSingleton.S3_LOG_BUCKET, ""),
           getEnvOrDefault(LogClientSingleton.AWS_ACCESS_KEY_ID, ""),
           getEnvOrDefault(LogClientSingleton.AWS_SECRET_ACCESS_KEY, ""),
-          getEnvOrDefault(LogClientSingleton.S3_LOG_BUCKET_REGION, "")
-      )));
+          getEnvOrDefault(LogClientSingleton.S3_LOG_BUCKET_REGION, ""))));
     } else {
       return Optional.empty();
     }

@@ -7,9 +7,13 @@ package io.airbyte.config.helpers;
 import io.airbyte.config.storage.CloudStorageConfigs;
 
 /**
- * Describes logging configuration. For now it just contains configuration around storage medium, but in the future will have other configuration options (e.g. json logging, etc).
+ * Describes logging configuration. For now it just contains configuration around storage medium,
+ * but in the future will have other configuration options (e.g. json logging, etc).
  */
 public class LogConfigs {
+
+  public static LogConfigs EMPTY = new LogConfigs(null);
+
   private final CloudStorageConfigs storageConfigs;
 
   public LogConfigs(final CloudStorageConfigs storageConfigs) {
@@ -19,4 +23,5 @@ public class LogConfigs {
   public CloudStorageConfigs getStorageConfigs() {
     return storageConfigs;
   }
+
 }

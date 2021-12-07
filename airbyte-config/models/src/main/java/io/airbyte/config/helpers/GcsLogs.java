@@ -124,4 +124,5 @@ public class GcsLogs implements CloudLogs {
     }
     return GCS;
   }
+
 }
