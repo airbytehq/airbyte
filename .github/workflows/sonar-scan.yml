@@ -6,7 +6,7 @@ on:
       - master # or the name of your main branch
 jobs:
   sonar-scan:
-    name: Sonar Scan Connectors
+    name: Sonar Scan Python Connectors
     runs-on: ubuntu-latest
     environment: more-secrets
     steps:
@@ -17,9 +17,12 @@ jobs:
         with:
           projectBaseDir: airbyte-integrations/connectors
           args: >
-            -Dsonar.projectKey=airbytehq_airbyte
+            -Dsonar.projectKey=airbite-python-connectors
+            -Dsonar.language=py
+            -Dsonar.sourceEncoding=UTF-8
             -Dsonar.exclusions=**/*.java
             -Dsonar.verbose=true
+            -Dsonar.tests=**/unit_tests/
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
