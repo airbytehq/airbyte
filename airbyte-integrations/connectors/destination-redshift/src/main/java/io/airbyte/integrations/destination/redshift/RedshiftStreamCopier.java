@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.redshift;
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.lang.Exceptions;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
@@ -39,8 +38,7 @@ public class RedshiftStreamCopier extends LegacyS3StreamCopier {
                               final S3DestinationConfig s3Config,
                               final ExtendedNameTransformer nameTransformer,
                               final SqlOperations sqlOperations) {
-    super(stagingFolder, destSyncMode, schema, streamName, Strings.addRandomSuffix("", "", FILE_PREFIX_LENGTH) + "_" + streamName,
-        client, db, s3Config, nameTransformer, sqlOperations);
+    super(stagingFolder, destSyncMode, schema, streamName, client, db, s3Config, nameTransformer, sqlOperations);
     objectMapper = new ObjectMapper();
   }
 
@@ -55,8 +53,7 @@ public class RedshiftStreamCopier extends LegacyS3StreamCopier {
   }
 
   @Override
-  public void copyS3CsvFileIntoTable(
-                                     final JdbcDatabase database,
+  public void copyS3CsvFileIntoTable(final JdbcDatabase database,
                                      final String s3FileLocation,
                                      final String schema,
                                      final String tableName,
@@ -77,8 +74,8 @@ public class RedshiftStreamCopier extends LegacyS3StreamCopier {
   }
 
   /**
-   * Creates the contents of a manifest file given the `s3StagingFiles`. There must be at least one
-   * entry in a manifest file otherwise it is not considered valid for the COPY command.
+   * Creates the contents of a manifest file given the `s3StagingFiles`. There must be at least one entry in a manifest file otherwise it is not
+   * considered valid for the COPY command.
    *
    * @return null if no stagingFiles exist otherwise the manifest body String
    */
