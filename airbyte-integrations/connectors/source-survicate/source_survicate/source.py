@@ -94,22 +94,19 @@ class SurvicateStream(HttpStream, ABC):
 
         return current_stream_state
 
-    """
-    NOTE
-    ----
-    Inferring the schema seems somewhat unreliable.
-    Besides the initial setup of the connector, schema update needs to be triggered manually.
-    It also only checks a subset of records for the new schema; in this case just the first available record.
-    ----
+
     def get_json_schema(self) -> Dict:
+        """Get the JSON schema by appending any fields in the latest record to our existing schema def."""
         schema = super().get_json_schema()
-        r = next(self.read_records(SyncMode.full_refresh))
-        for k in r.keys():
+        # This is sooo ugly
+        # We have to get all records and read the last one in order to  get the most up-to-date schema representation
+        *_, last = self.read_records(SyncMode.incremental)
+        for k in last.keys():
             kk = k.strip()
             if kk not in schema:
                 schema[kk] = {"type": "date" if kk.endswith("date") else "string"}
         return schema
-    """
+
 
 class Responses(SurvicateStream):
     """Survey responses stream."""
@@ -127,16 +124,19 @@ class Responses(SurvicateStream):
         survey_responses_parsed = []
         survey_responses_raw = response.json()
         for sr_raw in survey_responses_raw:
-            ### TODO - Is there custom processing of fields required?
             sr_parsed = {k.strip(): v for k, v in sr_raw.items()}
-            ### TODO -- How do we handle all different question types
+            # Process different question/answer values
+            # TODO: Are there question types we should handle specially?
             for qa in sr_raw['answers']:
                 if 'content' not in qa:
                     # Question has no answer content
                     continue
                 sr_parsed[qa['question'].strip()] = qa['content']
             del sr_parsed['answers']
-            del sr_parsed['custom_attributes']  ### TODO - what to do with this?
+            # Process custom attributes
+            for k,v in sr_raw['custom_attributes'].items():
+                sr_parsed[k.strip()] = v
+            del sr_parsed['custom_attributes']
             survey_responses_parsed.append(sr_parsed)
         return survey_responses_parsed
 
