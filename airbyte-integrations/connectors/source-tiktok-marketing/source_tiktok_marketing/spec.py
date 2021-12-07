@@ -49,7 +49,7 @@ class SourceTiktokMarketingSpec(BaseModel):
     access_token: str = Field(description="The Long-term Authorized Access Token.", airbyte_secret=True)
 
     start_date: str = Field(
-        description="The Start Date in format: YYYY-MM-DD. Any data before this date will not be replicated.",
+        description="The Start Date in format: YYYY-MM-DD. Any data before this date will not be replicated. If this parameter is not set, all data will be replicated.",
         default=DEFAULT_START_DATE,
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
     )
