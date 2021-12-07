@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
 import logging
 import sys
 from argparse import Namespace
@@ -148,7 +147,6 @@ def test_airbyte_secret_is_masked_on_logger_output(source_spec, mocker, config, 
 def test_airbyte_secrets_are_masked_on_uncaught_exceptions(mocker, caplog):
     caplog.set_level(logging.DEBUG, logger="airbyte.test")
     caplog.handler.setFormatter(AirbyteLogFormatter())
-
     class BrokenSource(MockSource):
         def read(
             self,
@@ -194,7 +192,6 @@ def test_airbyte_secrets_are_masked_on_uncaught_exceptions(mocker, caplog):
 def test_non_airbyte_secrets_are_not_masked_on_uncaught_exceptions(mocker, caplog):
     caplog.set_level(logging.DEBUG, logger="airbyte.test")
     caplog.handler.setFormatter(AirbyteLogFormatter())
-
     class BrokenSource(MockSource):
         def read(
             self,
