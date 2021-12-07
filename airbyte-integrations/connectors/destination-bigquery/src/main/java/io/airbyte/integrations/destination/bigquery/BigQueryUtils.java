@@ -43,13 +43,13 @@ public class BigQueryUtils {
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUtils.class);
   private static final String BIG_QUERY_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss.SSSSSS";
 
-  static ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
+  public static ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
     final JobId jobId = JobId.of(UUID.randomUUID().toString());
     final Job queryJob = bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build());
     return executeQuery(queryJob);
   }
 
-  static ImmutablePair<Job, String> executeQuery(final Job queryJob) {
+  public static ImmutablePair<Job, String> executeQuery(final Job queryJob) {
     final Job completedJob = waitForQuery(queryJob);
     if (completedJob == null) {
       LOGGER.error("Job no longer exists:" + queryJob);
