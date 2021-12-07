@@ -100,8 +100,10 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     final Field<JSONB> notifications = DSL.field("notifications", SQLDataType.JSONB.nullable(true));
     final Field<Boolean> firstCompletedSync = DSL.field("first_completed_sync", SQLDataType.BOOLEAN.nullable(true));
     final Field<Boolean> feedbackDone = DSL.field("feedback_done", SQLDataType.BOOLEAN.nullable(true));
-    final Field<OffsetDateTime> createdAt = DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
-    final Field<OffsetDateTime> updatedAt = DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
+    final Field<OffsetDateTime> createdAt =
+        DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
+    final Field<OffsetDateTime> updatedAt =
+        DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
 
     ctx.createTableIfNotExists("workspace")
         .columns(id,
@@ -161,8 +163,10 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     final Field<String> icon = DSL.field("icon", SQLDataType.VARCHAR(256).nullable(true));
     final Field<ActorType> actorType = DSL.field("actor_type", SQLDataType.VARCHAR.asEnumDataType(ActorType.class).nullable(false));
     final Field<SourceType> sourceType = DSL.field("source_type", SQLDataType.VARCHAR.asEnumDataType(SourceType.class).nullable(true));
-    final Field<OffsetDateTime> createdAt = DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
-    final Field<OffsetDateTime> updatedAt = DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
+    final Field<OffsetDateTime> createdAt =
+        DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
+    final Field<OffsetDateTime> updatedAt =
+        DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
 
     ctx.createTableIfNotExists("actor_definition")
         .columns(id,
@@ -235,8 +239,10 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     final Field<JSONB> configuration = DSL.field("configuration", SQLDataType.JSONB.nullable(false));
     final Field<ActorType> actorType = DSL.field("actor_type", SQLDataType.VARCHAR.asEnumDataType(ActorType.class).nullable(false));
     final Field<Boolean> tombstone = DSL.field("tombstone", SQLDataType.BOOLEAN.nullable(false).defaultValue(false));
-    final Field<OffsetDateTime> createdAt = DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
-    final Field<OffsetDateTime> updatedAt = DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
+    final Field<OffsetDateTime> createdAt =
+        DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
+    final Field<OffsetDateTime> updatedAt =
+        DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
 
     ctx.createTableIfNotExists("actor")
         .columns(id,
@@ -305,8 +311,10 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     final Field<JSONB> configuration = DSL.field("configuration", SQLDataType.JSONB.nullable(false));
     final Field<UUID> workspaceId = DSL.field("workspace_id", SQLDataType.UUID.nullable(true));
     final Field<ActorType> actorType = DSL.field("actor_type", SQLDataType.VARCHAR.asEnumDataType(ActorType.class).nullable(false));
-    final Field<OffsetDateTime> createdAt = DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
-    final Field<OffsetDateTime> updatedAt = DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
+    final Field<OffsetDateTime> createdAt =
+        DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
+    final Field<OffsetDateTime> updatedAt =
+        DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
 
     ctx.createTableIfNotExists("actor_oauth_parameter")
         .columns(id,
@@ -372,8 +380,10 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     final Field<JSONB> operatorNormalization = DSL.field("operator_normalization", SQLDataType.JSONB.nullable(true));
     final Field<JSONB> operatorDbt = DSL.field("operator_dbt", SQLDataType.JSONB.nullable(true));
     final Field<Boolean> tombstone = DSL.field("tombstone", SQLDataType.BOOLEAN.nullable(false).defaultValue(false));
-    final Field<OffsetDateTime> createdAt = DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
-    final Field<OffsetDateTime> updatedAt = DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
+    final Field<OffsetDateTime> createdAt =
+        DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
+    final Field<OffsetDateTime> updatedAt =
+        DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
 
     ctx.createTableIfNotExists("operation")
         .columns(id,
@@ -418,8 +428,10 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     final Field<UUID> connectionId = DSL.field("connection_id", SQLDataType.UUID.nullable(false));
     final Field<UUID> operationId = DSL.field("operation_id", SQLDataType.UUID.nullable(false));
-    final Field<OffsetDateTime> createdAt = DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
-    final Field<OffsetDateTime> updatedAt = DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
+    final Field<OffsetDateTime> createdAt =
+        DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
+    final Field<OffsetDateTime> updatedAt =
+        DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
 
     ctx.createTableIfNotExists("connection_operation")
         .columns(id,
@@ -448,8 +460,10 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     final Field<JSONB> schedule = DSL.field("schedule", SQLDataType.JSONB.nullable(true));
     final Field<Boolean> manual = DSL.field("manual", SQLDataType.BOOLEAN.nullable(false));
     final Field<JSONB> resourceRequirements = DSL.field("resource_requirements", SQLDataType.JSONB.nullable(true));
-    final Field<OffsetDateTime> createdAt = DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
-    final Field<OffsetDateTime> updatedAt = DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
+    final Field<OffsetDateTime> createdAt =
+        DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
+    final Field<OffsetDateTime> updatedAt =
+        DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
 
     ctx.createTableIfNotExists("connection")
         .columns(id,
@@ -508,8 +522,10 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     final Field<UUID> connectionId = DSL.field("connection_id", SQLDataType.UUID.nullable(false));
     final Field<JSONB> state = DSL.field("state", SQLDataType.JSONB.nullable(true));
-    final Field<OffsetDateTime> createdAt = DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
-    final Field<OffsetDateTime> updatedAt = DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
+    final Field<OffsetDateTime> createdAt =
+        DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
+    final Field<OffsetDateTime> updatedAt =
+        DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
 
     ctx.createTableIfNotExists("state")
         .columns(id,
@@ -543,12 +559,14 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
   }
 
   private static void populateConnectionOperation(final DSLContext ctx,
-                                                           final ConfigWithMetadata<StandardSync> standardSyncWithMetadata) {
+                                                  final ConfigWithMetadata<StandardSync> standardSyncWithMetadata) {
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     final Field<UUID> connectionId = DSL.field("connection_id", SQLDataType.UUID.nullable(false));
     final Field<UUID> operationId = DSL.field("operation_id", SQLDataType.UUID.nullable(false));
-    final Field<OffsetDateTime> createdAt = DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
-    final Field<OffsetDateTime> updatedAt = DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
+    final Field<OffsetDateTime> createdAt =
+        DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
+    final Field<OffsetDateTime> updatedAt =
+        DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
 
     final StandardSync standardSync = standardSyncWithMetadata.getConfig();
     for (final UUID operationIdFromStandardSync : standardSync.getOperationIds()) {
@@ -568,8 +586,10 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
                                                                          final DSLContext ctx) {
     final Field<String> configId = DSL.field("config_id", SQLDataType.VARCHAR(36).nullable(false));
     final Field<String> configType = DSL.field("config_type", SQLDataType.VARCHAR(60).nullable(false));
-    final Field<OffsetDateTime> createdAt = DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
-    final Field<OffsetDateTime> updatedAt = DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
+    final Field<OffsetDateTime> createdAt =
+        DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
+    final Field<OffsetDateTime> updatedAt =
+        DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
     final Field<JSONB> configBlob = DSL.field("config_blob", SQLDataType.JSONB.nullable(false));
     final Result<Record> results = ctx.select(asterisk()).from(DSL.table("airbyte_configs")).where(configType.eq(airbyteConfigType.name())).fetch();
 
@@ -615,6 +635,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     public String getLiteral() {
       return literal;
     }
+
   }
 
   public enum NamespaceDefinitionType implements EnumType {
@@ -648,6 +669,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     public String getLiteral() {
       return literal;
     }
+
   }
 
   public enum StatusType implements EnumType {
@@ -681,6 +703,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     public String getLiteral() {
       return literal;
     }
+
   }
 
   public enum OperatorType implements EnumType {
@@ -713,6 +736,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     public String getLiteral() {
       return literal;
     }
+
   }
 
   public enum ActorType implements EnumType {
