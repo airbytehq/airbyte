@@ -47,8 +47,8 @@ create table "public"."airbyte_configs"(
   "config_id" varchar(36) not null,
   "config_type" varchar(60) not null,
   "config_blob" jsonb not null,
-  "created_at" timestamptz(35) not null default cast(current_timestamp as timestamp with time zone),
-  "updated_at" timestamptz(35) not null default cast(current_timestamp as timestamp with time zone),
+  "created_at" timestamptz(35) not null default null,
+  "updated_at" timestamptz(35) not null default null,
   constraint "airbyte_configs_pkey"
     primary key ("id")
 );
