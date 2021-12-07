@@ -14,6 +14,7 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
+import io.airbyte.integrations.destination.s3.S3Destination;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -33,14 +34,9 @@ import org.apache.commons.csv.CSVPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+public abstract class S3StreamCopier implements StreamCopier {
 
-/**
- * @deprecated See {@link S3StreamCopier}
- */
-@Deprecated
-public abstract class LegacyS3StreamCopier implements StreamCopier {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(LegacyS3StreamCopier.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(S3StreamCopier.class);
 
   private static final int DEFAULT_UPLOAD_THREADS = 10; // The S3 cli uses 10 threads by default.
   private static final int DEFAULT_QUEUE_CAPACITY = DEFAULT_UPLOAD_THREADS;
@@ -69,15 +65,15 @@ public abstract class LegacyS3StreamCopier implements StreamCopier {
   protected final String stagingFolder;
   private final StagingFilenameGenerator filenameGenerator;
 
-  public LegacyS3StreamCopier(final String stagingFolder,
-                              final DestinationSyncMode destSyncMode,
-                              final String schema,
-                              final String streamName,
-                              final AmazonS3 client,
-                              final JdbcDatabase db,
-                              final S3DestinationConfig s3Config,
-                              final ExtendedNameTransformer nameTransformer,
-                              final SqlOperations sqlOperations) {
+  public S3StreamCopier(final String stagingFolder,
+      final DestinationSyncMode destSyncMode,
+      final String schema,
+      final String streamName,
+      final AmazonS3 client,
+      final JdbcDatabase db,
+      final S3DestinationConfig s3Config,
+      final ExtendedNameTransformer nameTransformer,
+      final SqlOperations sqlOperations) {
     this.destSyncMode = destSyncMode;
     this.schemaName = schema;
     this.streamName = streamName;
@@ -225,11 +221,15 @@ public abstract class LegacyS3StreamCopier implements StreamCopier {
     LOGGER.info("All data for {} stream uploaded.", streamName);
   }
 
+  public static void attemptS3WriteAndDelete(final S3DestinationConfig s3Config) {
+    S3Destination.attemptS3WriteAndDelete(s3Config, "");
+  }
+
   public abstract void copyS3CsvFileIntoTable(JdbcDatabase database,
-                                              String s3FileLocation,
-                                              String schema,
-                                              String tableName,
-                                              S3DestinationConfig s3Config)
+      String s3FileLocation,
+      String schema,
+      String tableName,
+      S3DestinationConfig s3Config)
       throws SQLException;
 
 }
