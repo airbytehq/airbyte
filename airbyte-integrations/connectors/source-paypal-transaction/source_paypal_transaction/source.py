@@ -4,6 +4,8 @@
 
 import logging
 import time
+import json
+from json.decoder import JSONDecodeError
 from abc import ABC
 from datetime import datetime, timedelta
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -14,6 +16,30 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, Oauth2Authenticator
 from dateutil.parser import isoparse
+
+
+class PaypalHttpException(Exception):
+    """Just for formatting the exception as Square"""
+
+    def __init__(self, error: requests.exceptions.HTTPError):
+        self.error = error
+
+    def __str__(self):
+        message = repr(self.error)
+
+        if self.error.response.content:
+            content = self.error.response.content.decode()
+            try:
+                details = json.loads(content)
+            except json.decoder.JSONDecodeError as e:
+                details = content
+
+            message = f"{message} Details: {details}"
+
+        return message
+
+    def __repr__(self):
+        return self.__str__()
 
 
 def get_endpoint(is_sandbox: bool = False) -> str:
@@ -227,6 +253,12 @@ class PaypalTransactionStream(HttpStream, ABC):
 
         return slices
 
+    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+        try:
+            return super()._send_request(request, request_kwargs)
+        except requests.exceptions.HTTPError as http_error:
+            raise PaypalHttpException(http_error)
+
 
 class Transactions(PaypalTransactionStream):
     """List Paypal Transactions on a specific date range
@@ -351,9 +383,24 @@ class SourcePaypalTransaction(AbstractSource):
 
         # Try to initiate a stream and validate input date params
         try:
+            # validate input date ranges
             Transactions(authenticator=authenticator, **config).validate_input_dates()
+
+            # validate if Paypal is able to extract data for given start_data
+            start_date = isoparse(config['start_date'])
+            end_date = start_date + timedelta(days=1)
+            stream_slice = {
+                "start_date": start_date.isoformat(),
+                "end_date": end_date.isoformat()
+            }
+            records = Transactions(authenticator=authenticator, **config).read_records(sync_mode='full', stream_slice=stream_slice)
+            list(records)
+
         except Exception as e:
-            return False, e
+            if "Data for the given start date is not available" in repr(e):
+                return False, f"Data for the given start date ({config['start_date']}) is not available, please use more recent start date"
+            else:
+                return False, e
 
         return True, None
 
