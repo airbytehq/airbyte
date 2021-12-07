@@ -196,11 +196,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         """
         Override to make http_method configurable per method call
         """
-        args = {
-            "method": http_method,
-            "url": urljoin(self.url_base, path),
-            "headers": headers, "params": params
-        }
+        args = {"method": http_method, "url": urljoin(self.url_base, path), "headers": headers, "params": params}
         if http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:
                 raise RequestBodyException(
