@@ -16,69 +16,16 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-/**
- * Handles minio and S3.
- */
 public class S3WorkerDocStoreClient implements WorkerDocStoreClient {
 
-  private final LogConfigs config;
   private final String bucketName;
   private final Path jobRoot;
   private final S3Client s3Client;
 
-  // todo (cgardens) - log config is the wrong class
-  public S3WorkerDocStoreClient(final LogConfigs config, final Path jobRoot) {
-    this.config = config;
-    this.bucketName = config.getS3LogBucket();
+  public S3WorkerDocStoreClient(final S3Client s3Client, final String bucketName, final Path jobRoot) {
+    this.s3Client = s3Client;
+    this.bucketName = bucketName;
     this.jobRoot = jobRoot;
-    this.s3Client = getS3Client(config);
-  }
-
-  // config
-  // bucket name
-  // s3Region
-  // s3endpoint
-
-  // todo (cgardens) - dedupe with S3Logs#createS3ClientIfNotExist
-  private static S3Client getS3Client(final LogConfigs config) {
-      assertValidS3Configuration(configs);
-
-      final var builder = S3Client.builder();
-
-      // Pure S3 Client
-      final var s3Region = configs.getS3LogBucketRegion();
-      if (!s3Region.isBlank()) {
-        builder.region(Region.of(s3Region));
-      }
-
-      // The Minio S3 client.
-      final var minioEndpoint = configs.getS3MinioEndpoint();
-      if (!minioEndpoint.isBlank()) {
-        try {
-          final var minioUri = new URI(minioEndpoint);
-          builder.endpointOverride(minioUri);
-          builder.region(Region.US_EAST_1); // Although this is not used, the S3 client will error out if this is not set. Set a stub value.
-        } catch (final URISyntaxException e) {
-          throw new RuntimeException("Error creating S3 log client to Minio", e);
-        }
-      }
-
-      return builder.build();
-  }
-
-  private static void assertValidS3Configuration(final LogConfigs config) {
-    Preconditions.checkNotNull(configs.getAwsAccessKey());
-    Preconditions.checkNotNull(configs.getAwsSecretAccessKey());
-    Preconditions.checkNotNull(configs.getS3LogBucket());
-
-    // When region is set, endpoint cannot be set and vice versa.
-    if (configs.getS3LogBucketRegion().isBlank()) {
-      Preconditions.checkNotNull(configs.getS3MinioEndpoint(), "Either S3 region or endpoint needs to be configured.");
-    }
-
-    if (configs.getS3MinioEndpoint().isBlank()) {
-      Preconditions.checkNotNull(configs.getS3LogBucketRegion(), "Either S3 region or endpoint needs to be configured.");
-    }
   }
 
   @Override
