@@ -59,6 +59,7 @@ class ReportInfo:
     status: Status
     metric_objects: List[dict]
 
+
 class RetryableException(Exception):
     pass
 
@@ -149,7 +150,6 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                     metric=metric_object,
                 ).dict()
 
-
     @backoff.on_exception(
         backoff.expo,
         ReportGenerationFailure,
@@ -160,7 +160,6 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         logger.info(f"Waiting for {len(report_infos)} report(s) to be generated")
         self._try_read_records(report_infos)
         return report_infos
-
 
     @backoff.on_exception(
         backoff.constant,
@@ -183,7 +182,6 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                     report_info.metric_objects = self._download_report(report_info, download_url)
                 except requests.HTTPError as error:
                     raise ReportGenerationFailure(error)
-
 
         pending_report_status = [(r.profile_id, r.report_id, r.status) for r in self._incomplete_report_infos(report_infos)]
         if len(pending_report_status) > 0:

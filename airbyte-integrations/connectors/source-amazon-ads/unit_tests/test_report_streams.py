@@ -286,7 +286,6 @@ def test_display_report_stream_backoff(mocker, test_config, modifiers, expected)
                 return (200, {}, response)
 
         callback = StatusCallback()
-
         responses.add_callback(responses.GET, re.compile(r"https://advertising-api.amazon.com/v2/reports/[^/]+$"), callback=callback)
         config = AmazonAdsConfig(**test_config)
         profiles = make_profiles()
