@@ -11,7 +11,6 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
-import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -36,16 +35,13 @@ import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
 import io.airbyte.server.errors.KnownExceptionMapper;
 import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
-import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.serviceclient.WorkflowServiceStubs;
-import java.io.IOException;
 import java.net.http.HttpClient;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -60,7 +56,6 @@ public class ServerApp implements ServerRunnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
   private static final int PORT = 8001;
-  private static final AirbyteVersion VERSION_BREAK = new AirbyteVersion("0.32.0-alpha");
 
   private final AirbyteVersion airbyteVersion;
   private final Set<Class<?>> customComponentClasses;
@@ -109,36 +104,6 @@ public class ServerApp implements ServerRunnable {
     final String banner = MoreResources.readResource("banner/banner.txt");
     LOGGER.info(banner + String.format("Version: %s\n", airbyteVersion.serialize()));
     server.join();
-  }
-
-  private static void createDeploymentIfNoneExists(final JobPersistence jobPersistence) throws IOException {
-    final Optional<UUID> deploymentOptional = jobPersistence.getDeployment();
-    if (deploymentOptional.isPresent()) {
-      LOGGER.info("running deployment: {}", deploymentOptional.get());
-    } else {
-      final UUID deploymentId = UUID.randomUUID();
-      jobPersistence.setDeployment(deploymentId);
-      LOGGER.info("created deployment: {}", deploymentId);
-    }
-  }
-
-  private static void createWorkspaceIfNoneExists(final ConfigRepository configRepository) throws JsonValidationException, IOException {
-    if (!configRepository.listStandardWorkspaces(true).isEmpty()) {
-      LOGGER.info("workspace already exists for the deployment.");
-      return;
-    }
-
-    final UUID workspaceId = UUID.randomUUID();
-    final StandardWorkspace workspace = new StandardWorkspace()
-        .withWorkspaceId(workspaceId)
-        .withCustomerId(UUID.randomUUID())
-        .withName(workspaceId.toString())
-        .withSlug(workspaceId.toString())
-        .withInitialSetupComplete(false)
-        .withDisplaySetupWizard(true)
-        .withTombstone(false);
-    configRepository.writeStandardWorkspace(workspace);
-    TrackingClientSingleton.get().identify(workspaceId);
   }
 
   public static ServerRunnable getServer(final ServerFactory apiFactory, final ConfigPersistence seed) throws Exception {

@@ -54,17 +54,21 @@ public interface Configs {
 
   String getDatabaseUrl();
 
+  String getJobsDatabaseMinimumFlywayMigrationVersion();
+
+  long getJobsDatabaseInitializationTimeoutMs();
+
   String getConfigDatabaseUser();
 
   String getConfigDatabasePassword();
 
   String getConfigDatabaseUrl();
 
-  boolean runDatabaseMigrationOnStartup();
-
   String getConfigsDatabaseMinimumFlywayMigrationVersion();
 
-  String getJobsDatabaseMinimumFlywayMigrationVersion();
+  long getConfigsDatabaseInitializationTimeoutMs();
+
+  boolean runDatabaseMigrationOnStartup();
 
   // Airbyte Services
   String getTemporalHost();
