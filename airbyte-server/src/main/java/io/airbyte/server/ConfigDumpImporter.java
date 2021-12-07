@@ -32,10 +32,7 @@ import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
-import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.IdNotFoundKnownException;
-import io.airbyte.server.handlers.DestinationHandler;
-import io.airbyte.server.handlers.SourceHandler;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
@@ -73,7 +70,6 @@ public class ConfigDumpImporter {
 
   private final ConfigRepository configRepository;
   private final WorkspaceHelper workspaceHelper;
-  private final SpecFetcher specFetcher;
   private final JsonSchemaValidator jsonSchemaValidator;
   private final JobPersistence jobPersistence;
   private final boolean importDefinitions;
@@ -81,9 +77,8 @@ public class ConfigDumpImporter {
   public ConfigDumpImporter(final ConfigRepository configRepository,
                             final JobPersistence jobPersistence,
                             final WorkspaceHelper workspaceHelper,
-                            final SpecFetcher specFetcher,
                             final boolean importDefinitions) {
-    this(configRepository, jobPersistence, workspaceHelper, new JsonSchemaValidator(), specFetcher, importDefinitions);
+    this(configRepository, jobPersistence, workspaceHelper, new JsonSchemaValidator(), importDefinitions);
   }
 
   @VisibleForTesting
@@ -91,13 +86,11 @@ public class ConfigDumpImporter {
                             final JobPersistence jobPersistence,
                             final WorkspaceHelper workspaceHelper,
                             final JsonSchemaValidator jsonSchemaValidator,
-                            final SpecFetcher specFetcher,
                             final boolean importDefinitions) {
     this.jsonSchemaValidator = jsonSchemaValidator;
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
     this.workspaceHelper = workspaceHelper;
-    this.specFetcher = specFetcher;
     this.importDefinitions = importDefinitions;
   }
 
@@ -420,7 +413,7 @@ public class ConfigDumpImporter {
                 if (sourceDefinition == null) {
                   return;
                 }
-                configRepository.writeSourceConnection(sourceConnection, SourceHandler.getSpecFromSourceDefinitionId(specFetcher, sourceDefinition));
+                configRepository.writeSourceConnection(sourceConnection, sourceDefinition.getSpec());
               } catch (final ConfigNotFoundException e) {
                 return;
               }
@@ -448,7 +441,7 @@ public class ConfigDumpImporter {
                 if (destinationDefinition == null) {
                   return;
                 }
-                configRepository.writeDestinationConnection(destinationConnection, DestinationHandler.getSpec(specFetcher, destinationDefinition));
+                configRepository.writeDestinationConnection(destinationConnection, destinationDefinition.getSpec());
               } catch (final ConfigNotFoundException e) {
                 return;
               }
