@@ -29,6 +29,7 @@ import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.temporal.client.BatchRequest;
 import io.temporal.client.WorkflowClient;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -126,13 +127,13 @@ public class TemporalClient {
     final ConnectionUpdaterWorkflow connectionUpdaterWorkflow = getWorkflowOptionsWithWorkflowId(ConnectionUpdaterWorkflow.class,
         TemporalJobType.CONNECTION_UPDATER, "connection_updater_" + connectionId);
     final BatchRequest signalRequest = client.newSignalWithStartRequest();
-    final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, jobId, jobConfig, attemptId);
+    final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, Optional.of(jobId), jobConfig, Optional.of(attemptId), false);
     signalRequest.add(connectionUpdaterWorkflow::run, input);
     // TODO: Only if not manual
     signalRequest.add(connectionUpdaterWorkflow::skipWaitForScheduling);
     final ExecutorService threadpool = Executors.newCachedThreadPool();
     final Future<Void> futureTask = threadpool.submit(() -> {
-      final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attemptId);
+      final JobRunConfig jobRunConfig = new JobRunConfig();
       execute(jobRunConfig, () -> client.signalWithStart(signalRequest));
 
       return null;

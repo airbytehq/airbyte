@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
+import io.airbyte.workers.temporal.exception.NonRetryableException;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import java.util.UUID;
@@ -40,5 +41,39 @@ public interface JobCreationActivity {
    */
   @ActivityMethod
   JobCreationOutput createNewJob(JobCreationInput input);
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  class AttemptCreationInput {
+
+    private long jobId;
+
+  }
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  class AttemptCreationOutput {
+
+    private int attemptId;
+
+  }
+
+  @ActivityMethod
+  AttemptCreationOutput createNewAttempt(AttemptCreationInput input) throws NonRetryableException;
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  class JobSuccessInput {
+
+    private long jobId;
+    private int attemptId;
+
+  }
+
+  @ActivityMethod
+  void jobSuccess(JobSuccessInput input);
 
 }
