@@ -211,6 +211,7 @@ public class SchedulerApp {
     LOGGER.info("temporalHost = " + temporalHost);
 
     // Wait for the server to initialize the database and run migration
+    // This should be converted into check for the migration version. Everything else as per.
     waitForServer(configs);
     LOGGER.info("Creating Job DB connection pool...");
     final Database jobDatabase = new JobsDatabaseInstance(
