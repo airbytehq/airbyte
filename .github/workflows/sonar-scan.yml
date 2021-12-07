@@ -23,6 +23,7 @@ jobs:
             -Dsonar.exclusions=**/*.java
             -Dsonar.verbose=true
             -Dsonar.tests=**/unit_tests/
+            -Dsonar.test.inclusions=**/unit_tests/**
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
