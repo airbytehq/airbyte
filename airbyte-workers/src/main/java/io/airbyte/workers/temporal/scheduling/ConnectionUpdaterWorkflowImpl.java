@@ -26,8 +26,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
 
   private final CancellationScope syncWorkflowCancellationScope = CancellationScope.current();
 
-  public ConnectionUpdaterWorkflowImpl() {
-  }
+  public ConnectionUpdaterWorkflowImpl() {}
 
   @Override
   public SyncResult run(final ConnectionUpdaterInput connectionUpdaterInput) {
