@@ -9,7 +9,12 @@ from pydantic import BaseModel
 
 
 class BaseConfig(BaseModel):
-    """Base class for connector spec"""
+    """Base class for connector spec, adds the following behaviour:
+
+    - resolve $ref and replace it with definition
+    - replace all occurrences of anyOf with oneOf
+    - drop description
+    """
 
     @classmethod
     def _rename_key(cls, schema: Any, old_key: str, new_key: str) -> None:
