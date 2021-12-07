@@ -81,10 +81,10 @@
       "type": ["null", "integer"]
     },
     "latitude": {
-      "type": ["null", "integer"]
+      "type": ["null", "float"]
     },
     "longitude": {
-      "type": ["null", "integer"]
+      "type": ["null", "float"]
     },
     "money_format": {
       "type": ["null", "string"]
