@@ -316,7 +316,7 @@ class Stream(ABC):
     def _filter_old_records(self, records: Iterable) -> Iterable:
         """Skip records that was updated before our start_date"""
         for record in records:
-            updated_at = record.get(self.updated_at_field) or None
+            updated_at = record.get(self.updated_at_field)
             if updated_at:
                 updated_at = self._field_to_datetime(updated_at)
                 if updated_at < self._start_date:
@@ -704,7 +704,6 @@ class PropertyHistoryStream(IncrementalStream):
     Is used to get all Contacts and the history of their respective
     Properties. Whenever a property is changed it is added here.
     Docs: https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts
-
     """
     more_key = "has-more"
     url = "/contacts/v1/lists/all/contacts/all"
