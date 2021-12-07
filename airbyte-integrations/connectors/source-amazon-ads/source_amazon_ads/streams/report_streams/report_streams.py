@@ -180,8 +180,11 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                 message = f"Report for {report_info.profile_id} with {report_info.record_type} type generation failed"
                 raise ReportGenerationFailure(message)
             elif report_status == Status.SUCCESS:
-                report_info.metric_objects = self._download_report(report_info, download_url)
-                completed_reports += 1
+                try:
+                    report_info.metric_objects = self._download_report(report_info, download_url)
+                    completed_reports += 1
+                except requests.HTTPError as error:
+                    raise ReportGenerationFailure(error)
 
         incomplete_count = len(incomplete_report_infos) - completed_reports
         if incomplete_count > 0:
@@ -372,10 +375,16 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         profile_time = report_date.astimezone(profile_tz)
         return profile_time.strftime(ReportStream.REPORT_DATE_FORMAT)
 
+    @backoff.on_exception(
+        backoff.expo,
+        requests.HTTPError,
+        max_tries=5,
+    )
     def _download_report(self, report_info: ReportInfo, url: str) -> List[dict]:
         """
         Download and parse report result
         """
         response = self._send_http_request(url, report_info.profile_id)
+        response.raise_for_status()
         raw_string = decompress(response.content).decode("utf")
         return json.loads(raw_string)
