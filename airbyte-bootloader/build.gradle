@@ -1,0 +1,23 @@
+plugins {
+    id 'application'
+}
+
+dependencies {
+    implementation project(':airbyte-config:init')
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-config:persistence')
+    implementation project(':airbyte-db:lib')
+    implementation project(":airbyte-json-validation")
+    implementation project(':airbyte-scheduler:persistence')
+
+    implementation "org.flywaydb:flyway-core:7.14.0"
+
+    testImplementation "org.testcontainers:postgresql:1.15.3"
+    testImplementation 'uk.org.webcompere:system-stubs-jupiter:1.2.0'
+}
+
+application {
+    applicationName = "airbyte-bootloader"
+    mainClass = 'io.airbyte.bootloader.BootloaderApp'
+    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
+}
