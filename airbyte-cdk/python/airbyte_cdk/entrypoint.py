@@ -84,7 +84,7 @@ class AirbyteEntrypoint(object):
                 # jsonschema's additionalProperties flag wont fail the validation
                 config, internal_config = split_config(config)
                 if self.source.check_config_against_spec or cmd == "check":
-                    check_config_against_spec_or_exit(config, source_spec, self.logger)
+                    check_config_against_spec_or_exit(config, source_spec)
                 # Put internal flags back to config dict
                 config.update(internal_config.dict())
 

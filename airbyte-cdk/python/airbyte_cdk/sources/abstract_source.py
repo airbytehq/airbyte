@@ -171,7 +171,6 @@ class AbstractSource(Source, ABC):
         if stream_state:
             logger.info(f"Setting state of {stream_name} stream to {stream_state}")
 
-        checkpoint_interval = stream_instance.state_checkpoint_interval
         slices = stream_instance.stream_slices(
             cursor_field=configured_stream.cursor_field, sync_mode=SyncMode.incremental, stream_state=stream_state
         )
@@ -186,6 +185,7 @@ class AbstractSource(Source, ABC):
             for record_counter, record_data in enumerate(records, start=1):
                 yield self._as_airbyte_record(stream_name, record_data)
                 stream_state = stream_instance.get_updated_state(stream_state, record_data)
+                checkpoint_interval = stream_instance.state_checkpoint_interval
                 if checkpoint_interval and record_counter % checkpoint_interval == 0:
                     yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
 
