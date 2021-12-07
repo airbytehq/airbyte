@@ -1,9 +1,9 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-import logging
+
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union, List
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
@@ -65,8 +65,7 @@ class KlaviyoStream(HttpStream, ABC):
 
 
 class IncrementalKlaviyoStream(KlaviyoStream, ABC):
-    """ Base class for all incremental streams, requires cursor_field to be declared
-    """
+    """Base class for all incremental streams, requires cursor_field to be declared"""
 
     def __init__(self, start_date: str, **kwargs):
         super().__init__(**kwargs)
@@ -83,8 +82,7 @@ class IncrementalKlaviyoStream(KlaviyoStream, ABC):
         """
 
     def request_params(self, stream_state=None, **kwargs):
-        """ Add incremental filters
-        """
+        """Add incremental filters"""
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
 
@@ -120,8 +118,7 @@ class IncrementalKlaviyoStream(KlaviyoStream, ABC):
 
 
 class ReverseIncrementalKlaviyoStream(KlaviyoStream, ABC):
-    """ Base class for all streams that natively incremental but supports desc & asc order
-    """
+    """Base class for all streams that natively incremental but supports desc & asc order"""
 
     def __init__(self, start_date: str, **kwargs):
         super().__init__(**kwargs)
@@ -132,8 +129,7 @@ class ReverseIncrementalKlaviyoStream(KlaviyoStream, ABC):
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
-        """ How often to checkpoint state (i.e: emit a STATE message). By default return the same value as page_size
-        """
+        """How often to checkpoint state (i.e: emit a STATE message). By default return the same value as page_size"""
         return None if self._reversed else self.page_size
 
     @property
@@ -147,8 +143,7 @@ class ReverseIncrementalKlaviyoStream(KlaviyoStream, ABC):
         """
 
     def request_params(self, stream_state=None, **kwargs):
-        """ Add incremental filters
-        """
+        """Add incremental filters"""
         stream_state = stream_state or {}
         if stream_state:
             self._reversed = True
