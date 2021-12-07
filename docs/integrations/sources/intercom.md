@@ -55,6 +55,7 @@ Please read [How to get your Access Token](https://developers.intercom.com/build
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.9 | 2021-12-07 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Updated fields and descriptions |
 | 0.1.8 | 2021-09-28 | [7060](https://github.com/airbytehq/airbyte/pull/7060) | Added oauth support |
 | 0.1.7 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
 | 0.1.6 | 2021-10-07 | [6879](https://github.com/airbytehq/airbyte/pull/6879) | Corrected pagination for contacts |

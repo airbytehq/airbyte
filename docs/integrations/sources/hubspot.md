@@ -96,6 +96,7 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.27 | 2021-12-07 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | updated fields and descriptions||
 | 0.1.26 | 2021-11-30 | [8329](https://github.com/airbytehq/airbyte/pull/8329) | removed 'skip_dynamic_fields' config param |
 | 0.1.25 | 2021-11-23 | [8216](https://github.com/airbytehq/airbyte/pull/8216) | skip dynamic fields for testing only |
 | 0.1.24 | 2021-11-09 | [7683](https://github.com/airbytehq/airbyte/pull/7683) | bugfix 'Hubspot' -> 'HubSpot' |
