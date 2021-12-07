@@ -20,7 +20,7 @@ jobs:
         with:
           projectBaseDir: airbyte-integrations/connectors
           args: >
-	  -Dsonar.projectKey=airbytehq_airbyte
+	      -Dsonar.projectKey=airbytehq_airbyte
           -Dsonar.exclusions=**/*.java
           -Dsonar.tests=*/unit_tests/
           -Dsonar.verbose=true
