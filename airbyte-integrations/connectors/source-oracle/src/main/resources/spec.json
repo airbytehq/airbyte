@@ -48,7 +48,7 @@
       "encryption": {
         "title": "Encryption",
         "type": "object",
-        "description": "The encryption method with is used for communicating with the database.",
+        "description": "The encryption method with is used when communicating with the database.",
         "order": 6,
         "oneOf": [
           {
