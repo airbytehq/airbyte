@@ -98,7 +98,7 @@
     },
     {
       "stream": {
-        "name": "orders_refunds",
+        "name": "order_refunds",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
@@ -110,7 +110,7 @@
     },
     {
       "stream": {
-        "name": "orders_risks",
+        "name": "order_risks",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,

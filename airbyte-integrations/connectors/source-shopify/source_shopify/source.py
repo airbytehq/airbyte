@@ -141,12 +141,14 @@ class ChildSubstream(IncrementalShopifyStream):
 
     ::  @ parent_stream_class - defines the parent stream object to read from
     ::  @ slice_key - defines the name of the property in stream slices dict.
-    ::  @ record_field_name - the name of the field inside of parent stream record. Default is `id`.
+    ::  @ nested_record - the name of the field inside of parent stream record. Default is `id`.
+    ::  @ nested_record_field_name - the name of the field inside of nested_record.
     """
 
     parent_stream_class: object = None
     slice_key: str = None
-    record_field_name: str = "id"
+    nested_record: str = "id"
+    nested_record_field_name: str = None
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {"limit": self.limit}
@@ -157,14 +159,14 @@ class ChildSubstream(IncrementalShopifyStream):
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Reading the parent stream for slices with structure:
-        EXAMPLE: for given record_field_name as `id` of Orders,
+        EXAMPLE: for given nested_record as `id` of Orders,
 
         Output: [ {slice_key: 123}, {slice_key: 456}, ..., {slice_key: 999} ]
         """
         parent_stream = self.parent_stream_class(self.config)
         parent_stream_state = stream_state_cache.cached_state.get(parent_stream.name)
         for record in parent_stream.read_records(stream_state=parent_stream_state, **kwargs):
-            yield {self.slice_key: record[self.record_field_name]}
+            yield {self.slice_key: record[self.nested_record]}
 
     def read_records(
         self,
@@ -174,7 +176,13 @@ class ChildSubstream(IncrementalShopifyStream):
     ) -> Iterable[Mapping[str, Any]]:
         """Reading child streams records for each `id`"""
 
-        self.logger.info(f"Reading {self.name} for {self.slice_key}: {stream_slice.get(self.slice_key)}")
+        slice_data = stream_slice.get(self.slice_key)
+        # sometimes the stream_slice.get(self.slice_key) has the list of records,
+        # to avoid data exposition inside the logs, we should get the data we need correctly out of stream_slice.
+        if isinstance(slice_data, list) and self.nested_record_field_name is not None:
+            slice_data = slice_data[0].get(self.nested_record_field_name)
+
+        self.logger.info(f"Reading {self.name} for {self.slice_key}: {slice_data}")
         records = super().read_records(stream_slice=stream_slice, **kwargs)
         yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=records)
 
@@ -256,7 +264,7 @@ class Collects(IncrementalShopifyStream):
         return params
 
 
-class OrdersRefunds(ChildSubstream):
+class OrderRefunds(ChildSubstream):
 
     parent_stream_class: object = Orders
     slice_key = "order_id"
@@ -269,7 +277,7 @@ class OrdersRefunds(ChildSubstream):
         return f"orders/{order_id}/{self.data_field}.json"
 
 
-class OrdersRisks(ChildSubstream):
+class OrderRisks(ChildSubstream):
 
     parent_stream_class: object = Orders
     slice_key = "order_id"
@@ -364,12 +372,13 @@ class InventoryItems(ChildSubstream):
 
     parent_stream_class: object = Products
     slice_key = "id"
-    record_field_name = "variants"
-
+    nested_record = "variants"
+    nested_record_field_name = "inventory_item_id"
     data_field = "inventory_items"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        ids = ",".join(str(x["inventory_item_id"]) for x in stream_slice[self.slice_key])
+
+        ids = ",".join(str(x[self.nested_record_field_name]) for x in stream_slice[self.slice_key])
         return f"inventory_items.json?ids={ids}"
 
 
@@ -436,8 +445,8 @@ class SourceShopify(AbstractSource):
             Metafields(config),
             CustomCollections(config),
             Collects(config),
-            OrdersRefunds(config),
-            OrdersRisks(config),
+            OrderRefunds(config),
+            OrderRisks(config),
             Transactions(config),
             Pages(config),
             PriceRules(config),
