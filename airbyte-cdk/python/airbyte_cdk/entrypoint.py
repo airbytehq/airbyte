@@ -17,13 +17,13 @@ from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets
 
-
+logger = init_logger("airbyte")
 
 
 class AirbyteEntrypoint(object):
     def __init__(self, source: Source):
         self.source = source
-        self.logger = init_logger(f"airbyte.{getattr(source, 'name', '')}")
+        self.logger = logging.getLogger(f"airbyte.{getattr(source, 'name', '')}")
 
     @staticmethod
     def parse_args(args: List[str]) -> argparse.Namespace:

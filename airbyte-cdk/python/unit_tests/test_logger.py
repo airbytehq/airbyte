@@ -4,6 +4,7 @@
 
 
 import json
+import logging
 from typing import Dict
 
 import pytest
@@ -12,7 +13,7 @@ from airbyte_cdk.logger import AirbyteLogFormatter, init_logger
 
 @pytest.fixture(scope="session")
 def logger():
-    logger = init_logger("Test logger")
+    logger = logging.getLogger("Test logger")
     return logger
 
 

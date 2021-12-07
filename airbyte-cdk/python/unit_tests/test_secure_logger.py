@@ -1,13 +1,14 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
+import logging
 import sys
 from argparse import Namespace
 from typing import Any, Iterable, Mapping, MutableMapping
 
 import pytest
 from airbyte_cdk import AirbyteEntrypoint, AirbyteLogger
+from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
 from airbyte_cdk.sources import Source
 
@@ -121,7 +122,9 @@ def simple_config():
         "spec_with_airbyte_secrets_not_string",
     ],
 )
-def test_airbyte_secret_is_masked_on_logger_output(source_spec, mocker, capsys, config):
+def test_airbyte_secret_is_masked_on_logger_output(source_spec, mocker, config, caplog):
+    caplog.set_level(logging.DEBUG, logger="airbyte.test")
+    caplog.handler.setFormatter(AirbyteLogFormatter())
     entrypoint = AirbyteEntrypoint(MockSource())
     parsed_args = Namespace(command="read", config="", state="", catalog="")
     mocker.patch.object(
@@ -134,14 +137,16 @@ def test_airbyte_secret_is_masked_on_logger_output(source_spec, mocker, capsys, 
     mocker.patch.object(MockSource, "read_state", return_value={})
     mocker.patch.object(MockSource, "read_catalog", return_value={})
     list(entrypoint.run(parsed_args))
-    log_result = capsys.readouterr().out + capsys.readouterr().err
+    log_result = caplog.text
     expected_secret_values = [config[k] for k, v in source_spec["properties"].items() if v.get("airbyte_secret")]
     expected_plain_text_values = [config[k] for k, v in source_spec["properties"].items() if not v.get("airbyte_secret")]
     assert all([str(v) not in log_result for v in expected_secret_values])
     assert all([str(v) in log_result for v in expected_plain_text_values])
 
 
-def test_airbyte_secrets_are_masked_on_uncaught_exceptions(mocker, capsys):
+def test_airbyte_secrets_are_masked_on_uncaught_exceptions(mocker, caplog):
+    caplog.set_level(logging.DEBUG, logger="airbyte.test")
+    caplog.handler.setFormatter(AirbyteLogFormatter())
     class BrokenSource(MockSource):
         def read(
             self,
@@ -181,11 +186,12 @@ def test_airbyte_secrets_are_masked_on_uncaught_exceptions(mocker, capsys):
         list(entrypoint.run(parsed_args))
     except Exception:
         sys.excepthook(*sys.exc_info())
-        log_result = capsys.readouterr().out + capsys.readouterr().err
-        assert I_AM_A_SECRET_VALUE not in log_result, "Should have filtered secret value from exception"
+        assert I_AM_A_SECRET_VALUE not in caplog.text, "Should have filtered secret value from exception"
 
 
-def test_non_airbyte_secrets_are_not_masked_on_uncaught_exceptions(mocker, capsys):
+def test_non_airbyte_secrets_are_not_masked_on_uncaught_exceptions(mocker, caplog):
+    caplog.set_level(logging.DEBUG, logger="airbyte.test")
+    caplog.handler.setFormatter(AirbyteLogFormatter())
     class BrokenSource(MockSource):
         def read(
             self,
@@ -220,11 +226,10 @@ def test_non_airbyte_secrets_are_not_masked_on_uncaught_exceptions(mocker, capsy
     mocker.patch.object(MockSource, "read_config", return_value=None)
     mocker.patch.object(MockSource, "read_state", return_value={})
     mocker.patch.object(MockSource, "read_catalog", return_value={})
-    # mocker.patch.object(MockSource, "read", side_effect=Exception("Exception:" + NOT_A_SECRET_VALUE))
+    mocker.patch.object(MockSource, "read", side_effect=Exception("Exception:" + NOT_A_SECRET_VALUE))
 
     try:
         list(entrypoint.run(parsed_args))
     except Exception:
         sys.excepthook(*sys.exc_info())
-        log_result = capsys.readouterr().out + capsys.readouterr().err
-        assert NOT_A_SECRET_VALUE in log_result, "Should not have filtered non-secret value from exception"
+        assert NOT_A_SECRET_VALUE in caplog.text, "Should not have filtered non-secret value from exception"
