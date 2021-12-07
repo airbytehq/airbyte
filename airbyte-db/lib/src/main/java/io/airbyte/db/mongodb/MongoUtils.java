@@ -123,7 +123,7 @@ public class MongoUtils {
       if (data != null) {
         jsonNodes.put(fieldName, data.asText());
       } else {
-        LOGGER.error("Field list out of sync, Document doesn't contain field: {}", fieldName);
+        LOGGER.debug("WARNING Field list out of sync, Document doesn't contain field: {}", fieldName);
       }
     }
   }
