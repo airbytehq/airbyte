@@ -87,6 +87,9 @@
             "has_past_due_invoice": {
               "type": "boolean"
             },
+            "dunning_campaign_id": {
+              "type": ["null", "string"]
+            },
             "created_at": {
               "type": "string"
             },

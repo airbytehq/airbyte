@@ -157,6 +157,15 @@
     "subtotal": {
       "type": "number"
     },
+    "tax": {
+      "type": "number"
+    },
+    "tax_info": {
+      "type": "object"
+    },
+    "total": {
+      "type": "number"
+    },
     "collection_method": {
       "type": "string"
     },
@@ -194,6 +203,9 @@
       "type": ["null", "string"]
     },
     "bank_account_authorized_at": {
+      "type": ["null", "string"]
+    },
+    "gateway_code": {
       "type": ["null", "string"]
     },
     "billing_info_id": {

@@ -1,72 +1,53 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
-
 import json
-from datetime import datetime
-from typing import Dict, Generator
+from typing import Mapping, Any, List, Tuple, Optional
 
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models.airbyte_protocol import (
-    AirbyteCatalog,
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    ConfiguredAirbyteCatalog,
-    Status,
-    Type,
-)
-from airbyte_cdk.sources.source import Source
-
-from .client import Client
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import Stream
+from recurly import Client, ApiError
+from .streams import RecurlyAccountsStream, RecurlyCouponsStream, RecurlyInvoicesStream, \
+    RecurlyTransactionsStream, RecurlySubscriptionsStream, RecurlyPlansStream, \
+    RecurlyMeasuredUnitsStream, RecurlyExportDatesStream
 
 
-class SourceRecurly(Source):
+class SourceRecurly(AbstractSource):
     """
-    Recurly API Reference: https://developers.recurly.com/api/v2019-10-10/index.html
+    Recurly API Reference: https://developers.recurly.com/api/v2021-02-25/
     """
-
     def __init__(self):
-        super().__init__()
+        super(SourceRecurly, self).__init__()
 
-    def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
-        client = self._client(config)
-        alive, error = client.health_check()
-        if not alive:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"{error}")
+        self.__client = None
 
-        return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+        try:
+            # Checking the API key by trying a test API call to get the first account
+            self._client(config).list_accounts().first()
+            return True, None
+        except ApiError as err:
+            return False, err.args[0]
 
-    def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
-        client = self._client(config)
-
-        return AirbyteCatalog(streams=client.get_streams())
-
-    def read(
-        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
-    ) -> Generator[AirbyteMessage, None, None]:
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         client = self._client(config)
 
-        logger.info("Starting syncing recurly")
-        for configured_stream in catalog.streams:
-            # TODO handle incremental syncs
-            stream = configured_stream.stream
-            if stream.name not in client.ENTITIES:
-                logger.warn(f"Stream '{stream}' not found in the recognized entities")
-                continue
-            for record in self._read_record(client=client, stream=stream.name):
-                yield AirbyteMessage(type=Type.RECORD, record=record)
+        return [
+            RecurlyAccountsStream(client=client),
+            RecurlyCouponsStream(client=client),
+            RecurlyInvoicesStream(client=client),
+            RecurlyMeasuredUnitsStream(client=client),
+            RecurlyPlansStream(client=client),
+            RecurlySubscriptionsStream(client=client),
+            RecurlyTransactionsStream(client=client),
+            RecurlyExportDatesStream(client=client)
+        ]
 
-        logger.info("Finished syncing recurly")
+    def _client(self, config: json) -> Client:
+        if not self.__client:
+            self.__client = Client(api_key=config["api_key"])
 
-    def _client(self, config: json):
-        client = Client(api_key=config["api_key"])
+        return self.__client
 
-        return client
 
-    @staticmethod
-    def _read_record(client: Client, stream: str):
-        for record in client.get_entities(stream):
-            now = int(datetime.now().timestamp()) * 1000
-            yield AirbyteRecordMessage(stream=stream, data=record, emitted_at=now)
