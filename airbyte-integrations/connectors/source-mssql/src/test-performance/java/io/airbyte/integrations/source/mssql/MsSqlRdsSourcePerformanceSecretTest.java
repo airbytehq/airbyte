@@ -47,66 +47,73 @@ public class MsSqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
   @Test
   public void test100tables100recordsDb() throws Exception {
     int numberOfDummyRecords = 100;
+    int numberOfColumns = 240;
     int numberOfStreams = 100;
     String defaultDbSchemaName = "dbo";
 
     setupDatabase("test100tables100recordsDb");
 
-    performTest(defaultDbSchemaName, numberOfStreams, numberOfDummyRecords);
+    performTest(defaultDbSchemaName, numberOfStreams, numberOfColumns, numberOfDummyRecords);
   }
 
   @Test
   public void test1000tables240columns200recordsDb() throws Exception {
     int numberOfDummyRecords = 200;
+    int numberOfColumns = 240;
     int numberOfStreams = 1000;
     String defaultDbSchemaName = "dbo";
 
     setupDatabase("test1000tables240columns200recordsDb");
 
-    performTest(defaultDbSchemaName, numberOfStreams, numberOfDummyRecords);
+    performTest(defaultDbSchemaName, numberOfStreams, numberOfColumns, numberOfDummyRecords);
   }
 
   @Test
   public void test5000tables240columns200recordsDb() throws Exception {
     int numberOfDummyRecords = 200;
+    int numberOfColumns = 240;
     int numberOfStreams = 5000;
     String defaultDbSchemaName = "dbo";
 
     setupDatabase("test5000tables240columns200recordsDb");
 
-    performTest(defaultDbSchemaName, numberOfStreams, numberOfDummyRecords);
+    performTest(defaultDbSchemaName, numberOfStreams, numberOfColumns, numberOfDummyRecords);
   }
 
+  @Test
   public void testSmall1000tableswith10000recordsDb() throws Exception {
     int numberOfDummyRecords = 10011;
+    int numberOfColumns = 240;
     int numberOfStreams = 1000;
     String defaultDbSchemaName = "dbo";
 
     setupDatabase("newsmall1000tableswith10000rows");
 
-    performTest(defaultDbSchemaName, numberOfStreams, numberOfDummyRecords);
+    performTest(defaultDbSchemaName, numberOfStreams, numberOfColumns, numberOfDummyRecords);
   }
 
   @Test
   public void testInterim15tableswith50000recordsDb() throws Exception {
     int numberOfDummyRecords = 50051;
+    int numberOfColumns = 240;
     int numberOfStreams = 15;
     String defaultDbSchemaName = "dbo";
 
     setupDatabase("newinterim15tableswith50000records");
 
-    performTest(defaultDbSchemaName, numberOfStreams, numberOfDummyRecords);
+    performTest(defaultDbSchemaName, numberOfStreams, numberOfColumns, numberOfDummyRecords);
   }
 
   @Test
   public void testRegular25tables50000recordsDb() throws Exception {
     int numberOfDummyRecords = 50052;
+    int numberOfColumns = 240;
     int numberOfStreams = 25;
     String defaultDbSchemaName = "dbo";
 
     setupDatabase("newregular25tables50000records");
 
-    performTest(defaultDbSchemaName, numberOfStreams, numberOfDummyRecords);
+    performTest(defaultDbSchemaName, numberOfStreams, numberOfColumns, numberOfDummyRecords);
   }
 
 }

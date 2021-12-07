@@ -67,66 +67,73 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
   @Test
   public void test100tables100recordsDb() throws Exception {
     int numberOfDummyRecords = 100; // 200 is near the max value for one shot in batching;
+    int numberOfColumns = 240;
     int numberOfStreams = 100;
     String schemaName = "test100tables100recordsDb";
 
     setupDatabase(schemaName);
 
-    performTest(schemaName, numberOfStreams, numberOfDummyRecords);
+    performTest(schemaName, numberOfStreams, numberOfColumns, numberOfDummyRecords);
   }
 
   @Test
   public void test1000tables240columns200recordsDb() throws Exception {
     int numberOfDummyRecords = 200;
+    int numberOfColumns = 240;
     int numberOfStreams = 1000;
     String schemaName = "test1000tables240columns200recordsDb";
 
     setupDatabase(schemaName);
 
-    performTest(schemaName, numberOfStreams, numberOfDummyRecords);
+    performTest(schemaName, numberOfStreams, numberOfColumns, numberOfDummyRecords);
   }
 
   @Test
   public void test5000tables240columns200recordsDb() throws Exception {
     int numberOfDummyRecords = 200;
+    int numberOfColumns = 240;
     int numberOfStreams = 5000;
     String schemaName = "test5000tables240columns200recordsDb";
 
     setupDatabase(schemaName);
 
-    performTest(schemaName, numberOfStreams, numberOfDummyRecords);
+    performTest(schemaName, numberOfStreams, numberOfColumns, numberOfDummyRecords);
   }
 
+  @Test
   public void testSmall1000tableswith10000recordsDb() throws Exception {
     int numberOfDummyRecords = 10001;
+    int numberOfColumns = 240;
     int numberOfStreams = 1000;
     String schemaName = "newsmall1000tableswith10000rows";
 
     setupDatabase(schemaName);
 
-    performTest(schemaName, numberOfStreams, numberOfDummyRecords);
+    performTest(schemaName, numberOfStreams, numberOfColumns, numberOfDummyRecords);
   }
 
   @Test
   public void testInterim15tableswith50000recordsDb() throws Exception {
     int numberOfDummyRecords = 50010;
+    int numberOfColumns = 240;
     int numberOfStreams = 15;
     String schemaName = "newinterim15tableswith50000records";
 
     setupDatabase(schemaName);
 
-    performTest(schemaName, numberOfStreams, numberOfDummyRecords);
+    performTest(schemaName, numberOfStreams, numberOfColumns, numberOfDummyRecords);
   }
 
   @Test
   public void testRegular25tables50000recordsDb() throws Exception {
     int numberOfDummyRecords = 50003;
+    int numberOfColumns = 240;
     int numberOfStreams = 25;
     String schemaName = "newregular25tables50000records";
 
     setupDatabase(schemaName);
 
-    performTest(schemaName, numberOfStreams, numberOfDummyRecords);
+    performTest(schemaName, numberOfStreams, numberOfColumns, numberOfDummyRecords);
   }
 
 }

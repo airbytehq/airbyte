@@ -53,63 +53,70 @@ public class PostgresRdsSourcePerformanceSecretTest extends AbstractSourcePerfor
   @Test
   public void test100tables100recordsDb() throws Exception {
     int numberOfDummyRecords = 100; // 200 is near the max value for one shot in batching;
+    int numberOfColumns = 240;
     int numberOfStreams = 100;
     String dbName = "test100tables100recordsDb";
 
     setupDatabase(dbName);
 
-    performTest(dbName, numberOfStreams, numberOfDummyRecords);
+    performTest(dbName, numberOfStreams, numberOfColumns, numberOfDummyRecords);
   }
 
   @Test
   public void test1000tables240columns200recordsDb() throws Exception {
     int numberOfDummyRecords = 200;
+    int numberOfColumns = 240;
     int numberOfStreams = 1000;
     String dbName = "test1000tables240columns200recordsDb";
 
     setupDatabase(dbName);
 
-    performTest(dbName, numberOfStreams, numberOfDummyRecords);
+    performTest(dbName, numberOfStreams, numberOfColumns, numberOfDummyRecords);
   }
 
   @Test
   public void test5000tables240columns200recordsDb() throws Exception {
     int numberOfDummyRecords = 200;
+    int numberOfColumns = 240;
     int numberOfStreams = 5000;
     String dbName = "test5000tables240columns200recordsDb";
 
     setupDatabase(dbName);
 
-    performTest(dbName, numberOfStreams, numberOfDummyRecords);
+    performTest(dbName, numberOfStreams, numberOfColumns, numberOfDummyRecords);
   }
 
+  @Test
   public void testSmall1000tableswith10000recordsDb() throws Exception {
     int numberOfDummyRecords = 10001;
+    int numberOfColumns = 8;
     int numberOfStreams = 1000;
     String dbName = "newsmall1000tableswith10000rows";
     setupDatabase(dbName);
 
-    performTest(dbName, numberOfStreams, numberOfDummyRecords);
+    performTest(dbName, numberOfStreams, numberOfColumns, numberOfDummyRecords);
   }
 
   @Test
   public void testInterim15tableswith50000recordsDb() throws Exception {
     int numberOfDummyRecords = 50010;
+    int numberOfColumns = 8;
     int numberOfStreams = 15;
     String dbName = "newinterim15tableswith50000records";
     setupDatabase(dbName);
 
-    performTest(dbName, numberOfStreams, numberOfDummyRecords);
+    performTest(dbName, numberOfStreams, numberOfColumns, numberOfDummyRecords);
   }
 
   @Test
   public void testRegular25tables50000recordsDb() throws Exception {
     int numberOfDummyRecords = 50011;
+    int numberOfColumns = 8;
     int numberOfStreams = 25;
     String dbName = "newregular25tables50000records";
     setupDatabase(dbName);
 
-    performTest(dbName, numberOfStreams, numberOfDummyRecords);
+    performTest(dbName, numberOfStreams, numberOfColumns, numberOfDummyRecords);
   }
 
 }

@@ -121,9 +121,10 @@ public abstract class AbstractSourcePerformanceTest extends SourceBasePerformanc
 
   protected void performTest(final String dbName,
                              final int numberOfStreams,
+                             final int numberOfColumns,
                              final int numberOfDummyRecords)
       throws Exception {
-    catalog = getConfiguredCatalog(dbName, numberOfStreams, numberOfDummyRecords);
+    catalog = getConfiguredCatalog(dbName, numberOfStreams, numberOfColumns);
     mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
         numberOfStreams, numberOfDummyRecords);
     checkStatusMap = runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
