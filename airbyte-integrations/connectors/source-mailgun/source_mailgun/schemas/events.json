@@ -222,10 +222,10 @@
       }
     },
     "timestamp": {
-      "type":  "number"
+      "type": "number"
     },
     "user-variables": {
-      "type":  ["null", "object"]
+      "type": ["null", "object"]
     }
   }
 }

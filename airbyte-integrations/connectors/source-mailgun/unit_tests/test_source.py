@@ -1,13 +1,13 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 import json
 from unittest.mock import MagicMock
 
 import pytest
 import requests as requests
 import responses
-
 from source_mailgun.source import SourceMailgun
 
 from . import TEST_CONFIG

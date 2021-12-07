@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
-import static io.airbyte.integrations.destination.snowflake.SnowflakeDestination.isInternalStaging;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;

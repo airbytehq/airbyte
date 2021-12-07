@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 import datetime
 import json
 import os.path
