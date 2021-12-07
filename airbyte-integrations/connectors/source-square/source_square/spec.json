@@ -15,14 +15,14 @@
       },
       "is_sandbox": {
         "type": "boolean",
-        "description": "Determines the sandbox (true) or production (false) API version.",
+        "description": "Determines whether to use the sandbox or production environment.",
         "title": "Is Sandbox",
         "examples": [true, false],
         "default": true
       },
       "start_date": {
         "type": "string",
-        "description": "UTC date in the format YYYY-MM-DD. Any data before this date will not be replicated. Leave blank for full sync.",
+        "description": "UTC date in the format YYYY-MM-DD. Any data before this date will not be replicated. If not set, all data will be replicated.",
         "title": "Start Date",
         "examples": ["2021-01-01"],
         "default": "1970-01-01",

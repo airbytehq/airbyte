@@ -22,7 +22,7 @@
       },
       "tables": {
         "type": "array",
-        "description": "The list of the Tables to integrate",
+        "description": "The list of Tables to integrate",
         "title": "Tables",
         "examples": ["table 1", "table 2"]
       }
