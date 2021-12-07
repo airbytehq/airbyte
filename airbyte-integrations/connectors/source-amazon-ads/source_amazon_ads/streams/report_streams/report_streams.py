@@ -168,10 +168,9 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         max_time=REPORT_WAIT_TIMEOUT,
     )
     def _try_read_records(self, report_infos):
-        incomplete_report_infos = [r for r in report_infos if r.status != Status.SUCCESS]
-        completed_reports = 0
+        incomplete_report_infos = self._incomplete_report_infos(report_infos)
 
-        logger.info(f"Checking report status, {len(incomplete_report_infos)} report(s) remained")
+        logger.info(f"Checking report status, {len(incomplete_report_infos)} report(s) remaining")
         for report_info in incomplete_report_infos:
             report_status, download_url = self._check_status(report_info)
             report_info.status = report_status
@@ -182,14 +181,17 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             elif report_status == Status.SUCCESS:
                 try:
                     report_info.metric_objects = self._download_report(report_info, download_url)
-                    completed_reports += 1
                 except requests.HTTPError as error:
                     raise ReportGenerationFailure(error)
 
-        incomplete_count = len(incomplete_report_infos) - completed_reports
-        if incomplete_count > 0:
-            message = f"Report generation in progress, {incomplete_count} report(s) remained"
+
+        pending_report_status = [(r.profile_id, r.report_id, r.status) for r in self._incomplete_report_infos(report_infos)]
+        if len(pending_report_status) > 0:
+            message = f"Report generation in progress: {repr(pending_report_status)}"
             raise ReportGenerationInProgress(message)
+
+    def _incomplete_report_infos(self, report_infos):
+        return [r for r in report_infos if r.status != Status.SUCCESS]
 
     def _generate_model(self):
         """
