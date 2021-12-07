@@ -5,6 +5,7 @@
 
 import argparse
 import importlib
+import logging
 import os.path
 import sys
 import tempfile
@@ -16,7 +17,7 @@ from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets
 
-logger = init_logger("airbyte")
+
 
 
 class AirbyteEntrypoint(object):
