@@ -15,7 +15,7 @@
       },
       "is_sandbox": {
         "type": "boolean",
-        "description": "Determines the sandbox (true) or production (false) API version.",
+        "description": "Determines whether to use the sandbox or production environment.",
         "title": "Is Sandbox",
         "examples": [true, false],
         "default": true
