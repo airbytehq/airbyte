@@ -18,20 +18,21 @@
 #             └── AdGroupsReports
 
 import json
+from abc import ABC, abstractmethod
+from datetime import datetime
+from enum import Enum
+from functools import total_ordering
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, TypeVar, Union
+
 import pendulum
 import pydantic
 import requests
-from abc import ABC, abstractmethod
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from datetime import datetime
-from enum import Enum
-from functools import total_ordering
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, TypeVar, Union
 
 # TikTok Initial release date is September 2016
 DEFAULT_START_DATE = "2016-09-01"
@@ -186,7 +187,7 @@ class ListAdvertiserIdsStream(TiktokStream):
         return self._advertiser_id > 0
 
     def request_params(
-            self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
 
         return {
@@ -221,13 +222,8 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
         self._advertiser_storage = ListAdvertiserIdsStream(
             advertiser_id=advertiser_id, app_id=app_id, secret=secret, access_token=self.authenticator.token
         )
-        self._max_cursor_date = None
+        self.max_cursor_date = None
         self._advertiser_ids = self._advertiser_storage.advertiser_ids
-
-    @property
-    def max_cursor_date(self):
-        """ "Override it if needed to format a state value"""
-        return self._max_cursor_date
 
     @property
     def is_sandbox(self):
@@ -248,11 +244,11 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
             yield {"advertiser_id": advertiser_id}
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
-            stream_slice: Mapping[str, Any] = None,
-            **kwargs,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        **kwargs,
     ) -> MutableMapping[str, Any]:
         params = {"page_size": self.page_size}
         if self.fields:
@@ -291,7 +287,7 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
             params.update(next_page_token)
         return params
 
-    def select_cursor_field_value(self, data: Mapping[str, Any] = None) -> str:
+    def select_cursor_field_value(self, data: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None) -> str:
         if not data or not self.cursor_field:
             return None
 
@@ -301,24 +297,22 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
             result = result.get(key)
         return result
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[
-        Mapping]:
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         """Additional data filtering"""
         state = self.select_cursor_field_value(stream_state) or self._start_time
 
         for record in super().parse_response(response=response, stream_state=stream_state, **kwargs):
-            updated = self.select_cursor_field_value(record)
+            updated = self.select_cursor_field_value(record, stream_state)
             if updated is None:
                 yield record
             elif updated <= state:
                 continue
             else:
-                if not self._max_cursor_date or self._max_cursor_date < updated:
-                    self._max_cursor_date = updated
+                if not self.max_cursor_date or self.max_cursor_date < updated:
+                    self.max_cursor_date = updated
                 yield record
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
-    Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         # needs to save a last state if all advertisers are used before only
         current_stream_state_value = (self.select_cursor_field_value(current_stream_state)) or ""
 
@@ -402,8 +396,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
         return []
 
     @staticmethod
-    def _get_time_interval(start_date: Union[datetime, str], granularity: ReportGranularity) -> Iterable[
-        Tuple[datetime, datetime]]:
+    def _get_time_interval(start_date: Union[datetime, str], granularity: ReportGranularity) -> Iterable[Tuple[datetime, datetime]]:
         """Due to time range restrictions based on the level of granularity of reports, we have to chunk API calls in order
         to get the desired time range.
         Docs: https://ads.tiktok.com/marketing_api/docs?id=1714590313280513
@@ -517,7 +510,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
         return "reports/integrated/get/"
 
     def request_params(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
 
@@ -539,23 +532,10 @@ class BasicReports(IncrementalTiktokStream, ABC):
         """All reports have same schema"""
         return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("basic_reports")
 
-    def __format_state_value(self, value):
-        if not value:
-            return value
-        dt = pendulum.parse(value)
-        if self.report_granularity == ReportGranularity.DAY:
-            dt = dt.end_of("day")
-        elif self.report_granularity == ReportGranularity.HOUR:
-            dt = dt.end_of("hour")
-        return dt.strftime("%Y-%m-%d %H:%M:%S")
-
-    @property
-    def max_cursor_date(self):
-        return self.__format_state_value(self._max_cursor_data)
-
-    def select_cursor_field_value(self, data: Mapping[str, Any] = None) -> str:
-        value = super().select_cursor_field_value(data)
-        return self.__format_state_value(value.dict() if isinstance(value, JsonUpdatedState) else value)
+    def select_cursor_field_value(self, data: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None) -> str:
+        if stream_slice:
+            return stream_slice["end_date"]
+        return super().select_cursor_field_value(data)
 
 
 class AdsReports(BasicReports):
