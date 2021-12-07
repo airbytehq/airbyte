@@ -14,16 +14,16 @@ jobs:
         with:
           fetch-depth: 0
       - uses: sonarsource/sonarqube-scan-action@master
+        with:
+          projectBaseDir: app/src
+          args: >
+            -Dsonar.projectKey=airbytehq_airbyte
+            -Dsonar.exclusions=**/*.java
+            -Dsonar.verbose=true
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        with:
-          projectBaseDir: airbyte-integrations/connectors
-          args: >
-	      -Dsonar.projectKey=airbytehq_airbyte
-          -Dsonar.exclusions=**/*.java
-          -Dsonar.tests=*/unit_tests/
-          -Dsonar.verbose=true
+
         # If you wish to fail your job when the Quality Gate is red, uncomment the
         # following lines. This would typically be used to fail a deployment.
         # - uses: sonarsource/sonarqube-quality-gate-action@master
