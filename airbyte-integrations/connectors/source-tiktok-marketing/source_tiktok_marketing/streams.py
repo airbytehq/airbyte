@@ -297,12 +297,14 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
             result = result.get(key)
         return result
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping]:
         """Additional data filtering"""
         state = self.select_cursor_field_value(stream_state) or self._start_time
 
         for record in super().parse_response(response=response, stream_state=stream_state, **kwargs):
-            updated = self.select_cursor_field_value(record, stream_state)
+            updated = self.select_cursor_field_value(record, stream_slice)
             if updated is None:
                 yield record
             elif updated <= state:
