@@ -37,6 +37,7 @@ def init_unhandled_exception_output_filtering(logger: logging.Logger) -> None:
     Make sure unhandled exceptions are not printed to the console without passing through the Airbyte logger and having
     secrets removed.
     """
+
     def hook_fn(_logger, exception_type, exception_value, traceback_):
         # For developer ergonomics, we want to see the stack trace in the logs when we do a ctrl-c
         if issubclass(exception_type, KeyboardInterrupt):
