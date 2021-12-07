@@ -283,8 +283,6 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
           .fetchOne();
       assertEquals(standardSyncState, Jsons.deserialize(record.value1().data(), StandardSyncState.class));
       if (expectedTimestamp != null) {
-        System.out.println("expectedTimestamp = " + expectedTimestamp.getNano());
-        System.out.println("record            = " + record.value2().getNano());
         assertEquals(expectedTimestamp, record.value2());
         assertEquals(expectedTimestamp, record.value3());
       }
