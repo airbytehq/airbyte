@@ -11,7 +11,7 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
+import io.airbyte.integrations.destination.jdbc.copy.s3.LegacyS3StreamCopier;
 import io.airbyte.integrations.destination.redshift.manifest.Entry;
 import io.airbyte.integrations.destination.redshift.manifest.Manifest;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RedshiftStreamCopier extends S3StreamCopier {
+public class RedshiftStreamCopier extends LegacyS3StreamCopier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftStreamCopier.class);
   private static final int FILE_PREFIX_LENGTH = 5;

@@ -9,14 +9,14 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
+import io.airbyte.integrations.destination.jdbc.copy.s3.LegacyS3StreamCopier;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeS3StreamCopier extends S3StreamCopier {
+public class SnowflakeS3StreamCopier extends LegacyS3StreamCopier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeS3StreamCopier.class);
   private static final int FILE_PREFIX_LENGTH = 5;
