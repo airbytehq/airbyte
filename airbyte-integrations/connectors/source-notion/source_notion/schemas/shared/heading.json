@@ -1,0 +1,8 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": false,
+  "properties": {
+    "text": { "type": "array", "items": { "$ref": "rich_text.json" } }
+  }
+}

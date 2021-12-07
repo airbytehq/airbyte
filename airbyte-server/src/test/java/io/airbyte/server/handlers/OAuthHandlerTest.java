@@ -30,9 +30,9 @@ import org.mockito.Mockito;
 
 class OAuthHandlerTest {
 
-  ConfigRepository configRepository;
-  OAuthHandler handler;
-  TrackingClient trackingClient;
+  private ConfigRepository configRepository;
+  private OAuthHandler handler;
+  private TrackingClient trackingClient;
   private HttpClient httpClient;
 
   @BeforeEach

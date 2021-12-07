@@ -258,6 +258,17 @@ class Campaigns(FBMarketingIncrementalStream):
         return self._api.account.get_campaigns(params=params)
 
 
+class Videos(FBMarketingIncrementalStream):
+    """See: https://developers.facebook.com/docs/marketing-api/reference/video"""
+
+    entity_prefix = "video"
+    enable_deleted = True
+
+    @backoff_policy
+    def _read_records(self, params: Mapping[str, Any]) -> Iterator:
+        return self._api.account.get_ad_videos(params=params)
+
+
 class AdsInsights(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/insights"""
 

@@ -1,10 +1,11 @@
 {{ config(
-    indexes = [{'columns':['_airbyte_emitted_at'],'type':'hash'}],
+    indexes = [{'columns':['_airbyte_emitted_at'],'type':'btree'}],
     unique_key = '_airbyte_ab_id',
     schema = "test_normalization_namespace",
     tags = [ "top-level" ]
 ) }}
 -- Final base SQL model
+-- depends_on: {{ ref('simple_stream_with_n__lting_into_long_names_ab3') }}
 select
     {{ adapter.quote('id') }},
     {{ adapter.quote('date') }},

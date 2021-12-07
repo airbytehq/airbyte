@@ -6,7 +6,7 @@ import { PageViewContainer } from "components/CenteredPageComponents";
 import { H1 } from "components";
 import { PreferencesForm } from "views/Settings/PreferencesForm";
 import HeadTitle from "components/HeadTitle";
-import { useAnalytics } from "hooks/useAnalytics";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import useWorkspace from "hooks/services/useWorkspace";
 
 const Title = styled(H1)`
@@ -14,7 +14,7 @@ const Title = styled(H1)`
 `;
 
 const PreferencesPage: React.FC = () => {
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
   useEffect(() => analyticsService.page("Preferences Page"), [
     analyticsService,
   ]);
