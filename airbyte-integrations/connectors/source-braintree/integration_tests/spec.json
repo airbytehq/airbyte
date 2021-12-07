@@ -18,14 +18,14 @@
       },
       "private_key": {
         "title": "Private Key",
-        "description": "TBraintree Private Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/braintree\">docs</a> for more information on how to obtain this key.",
+        "description": "Braintree Private Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/braintree\">docs</a> for more information on how to obtain this key.",
         "name": "Private Key",
         "airbyte_secret": true,
         "type": "string"
       },
       "start_date": {
         "title": "Start Date",
-        "description": "UTC date and time in the format. Any data before this date will not be replicated.",
+        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         "name": "Start Date",
         "examples": ["2020", "2020-12-30", "2020-11-22 20:20:05"],
         "type": "string",
