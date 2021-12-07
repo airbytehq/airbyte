@@ -4,26 +4,23 @@
 
 package io.airbyte.db.instance.configs.migrations;
 
-import static io.airbyte.db.instance.configs.migrations.V0_32_8_001__AirbyteConfigDatabaseDenormalization.NamespaceDefinitionType.fromStandardSync;
-import static io.airbyte.db.instance.configs.migrations.V0_32_8_001__AirbyteConfigDatabaseDenormalization.OperatorType.fromStandardSyncOperation;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.foreignKey;
 import static org.jooq.impl.DSL.primaryKey;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
-import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
@@ -199,7 +196,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
           .set(documentationUrl, standardSourceDefinition.getDocumentationUrl())
           .set(icon, standardSourceDefinition.getIcon())
           .set(actorType, ActorType.source)
-          .set(sourceType, SourceType.fromStandardSourceDefinition(standardSourceDefinition.getSourceType()))
+          .set(sourceType, Enums.toEnum(standardSourceDefinition.getSourceType().value(), SourceType.class).orElseThrow())
           .set(spec, JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getSpec())))
           .set(createdAt, OffsetDateTime.ofInstant(configWithMetadata.getCreatedAt(), ZoneOffset.UTC))
           .set(updatedAt, OffsetDateTime.ofInstant(configWithMetadata.getUpdatedAt(), ZoneOffset.UTC))
@@ -407,7 +404,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
           .set(id, standardSyncOperation.getOperationId())
           .set(workspaceId, standardSyncOperation.getWorkspaceId())
           .set(name, standardSyncOperation.getName())
-          .set(operatorType, fromStandardSyncOperation(standardSyncOperation.getOperatorType()))
+          .set(operatorType, Enums.toEnum(standardSyncOperation.getOperatorType().value(), OperatorType.class).orElseThrow())
           .set(operatorNormalization, JSONB.valueOf(Jsons.serialize(standardSyncOperation.getOperatorNormalization())))
           .set(operatorDbt, JSONB.valueOf(Jsons.serialize(standardSyncOperation.getOperatorDbt())))
           .set(tombstone, standardSyncOperation.getTombstone())
@@ -417,6 +414,26 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     }
 
     LOGGER.info("operation table populated with " + configsWithMetadata.size() + " records");
+  }
+
+  private static void createConnectionOperation(final DSLContext ctx) {
+    final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
+    final Field<UUID> connectionId = DSL.field("connection_id", SQLDataType.UUID.nullable(false));
+    final Field<UUID> operationId = DSL.field("operation_id", SQLDataType.UUID.nullable(false));
+    final Field<OffsetDateTime> createdAt = DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false));
+    final Field<OffsetDateTime> updatedAt = DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false));
+
+    ctx.createTableIfNotExists("connection_operation")
+        .columns(id,
+            connectionId,
+            operationId,
+            createdAt,
+            updatedAt)
+        .constraints(primaryKey(id, connectionId, operationId),
+            foreignKey(connectionId).references("connection", "id"),
+            foreignKey(operationId).references("operation", "id"))
+        .execute();
+    LOGGER.info("connection_operation table created");
   }
 
   private static void createAndPopulateConnection(final DSLContext ctx) {
@@ -459,32 +476,31 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     ctx.createIndex("connection_destination_id_idx").on("connection", "destination_id").execute();
 
     LOGGER.info("connection table created");
+    createConnectionOperation(ctx);
 
     final List<ConfigWithMetadata<StandardSync>> configsWithMetadata = listConfigsWithMetadata(
         ConfigSchema.STANDARD_SYNC,
         StandardSync.class,
         ctx);
-    boolean connectionOperationCreated = false;
     for (final ConfigWithMetadata<StandardSync> configWithMetadata : configsWithMetadata) {
       final StandardSync standardSync = configWithMetadata.getConfig();
       ctx.insertInto(DSL.table("connection"))
           .set(id, standardSync.getConnectionId())
-          .set(namespaceDefinition, fromStandardSync(standardSync.getNamespaceDefinition()))
+          .set(namespaceDefinition, Enums.toEnum(standardSync.getNamespaceDefinition().value(), NamespaceDefinitionType.class).orElseThrow())
           .set(namespaceFormat, standardSync.getNamespaceFormat())
           .set(prefix, standardSync.getPrefix())
           .set(sourceId, standardSync.getSourceId())
           .set(destinationId, standardSync.getDestinationId())
           .set(name, standardSync.getName())
           .set(catalog, JSONB.valueOf(Jsons.serialize(standardSync.getCatalog())))
-          .set(status, StatusType.fromStandardSync(standardSync.getStatus()))
+          .set(status, Enums.toEnum(standardSync.getStatus().value(), StatusType.class).orElseThrow())
           .set(schedule, JSONB.valueOf(Jsons.serialize(standardSync.getSchedule())))
           .set(manual, standardSync.getManual())
           .set(resourceRequirements, JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
           .set(createdAt, OffsetDateTime.ofInstant(configWithMetadata.getCreatedAt(), ZoneOffset.UTC))
           .set(updatedAt, OffsetDateTime.ofInstant(configWithMetadata.getUpdatedAt(), ZoneOffset.UTC))
           .execute();
-      createAndPopulateConnectionOperation(ctx, !connectionOperationCreated, configWithMetadata);
-      connectionOperationCreated = true;
+      populateConnectionOperation(ctx, configWithMetadata);
     }
 
     LOGGER.info("connection table populated with " + configsWithMetadata.size() + " records");
@@ -528,8 +544,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     LOGGER.info("state table populated with " + configsWithMetadata.size() + " records");
   }
 
-  private static void createAndPopulateConnectionOperation(final DSLContext ctx,
-                                                           final boolean createTable,
+  private static void populateConnectionOperation(final DSLContext ctx,
                                                            final ConfigWithMetadata<StandardSync> standardSyncWithMetadata) {
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     final Field<UUID> connectionId = DSL.field("connection_id", SQLDataType.UUID.nullable(false));
@@ -537,19 +552,6 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     final Field<OffsetDateTime> createdAt = DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false));
     final Field<OffsetDateTime> updatedAt = DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false));
 
-    if (createTable) {
-      ctx.createTableIfNotExists("connection_operation")
-          .columns(id,
-              connectionId,
-              operationId,
-              createdAt,
-              updatedAt)
-          .constraints(primaryKey(id, connectionId, operationId),
-              foreignKey(connectionId).references("connection", "id"),
-              foreignKey(operationId).references("operation", "id"))
-          .execute();
-      LOGGER.info("connection_operation table created");
-    }
     final StandardSync standardSync = standardSyncWithMetadata.getConfig();
     for (final UUID operationIdFromStandardSync : standardSync.getOperationIds()) {
       ctx.insertInto(DSL.table("connection_operation"))
@@ -615,44 +617,6 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     public String getLiteral() {
       return literal;
     }
-
-    public static SourceType fromStandardSourceDefinition(StandardSourceDefinition.SourceType sourceType) {
-      switch (sourceType) {
-        case API -> {
-          return api;
-        }
-        case FILE -> {
-          return file;
-        }
-        case DATABASE -> {
-          return database;
-        }
-        case CUSTOM -> {
-          return custom;
-        }
-      }
-      throw new IllegalArgumentException("Unidentified source type " + sourceType);
-    }
-
-    public static StandardSourceDefinition.SourceType fromSourceType(SourceType sourceType) {
-      switch (sourceType) {
-
-        case api -> {
-          return StandardSourceDefinition.SourceType.API;
-        }
-        case file -> {
-          return StandardSourceDefinition.SourceType.FILE;
-        }
-        case database -> {
-          return StandardSourceDefinition.SourceType.DATABASE;
-        }
-        case custom -> {
-          return StandardSourceDefinition.SourceType.CUSTOM;
-        }
-      }
-      throw new IllegalArgumentException("Unidentified source type " + sourceType);
-    }
-
   }
 
   public enum NamespaceDefinitionType implements EnumType {
@@ -675,7 +639,6 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     @Override
     public Schema getSchema() {
       return new SchemaImpl(DSL.name("public"), null);
-
     }
 
     @Override
@@ -687,40 +650,6 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     public String getLiteral() {
       return literal;
     }
-
-    public static NamespaceDefinitionType fromStandardSync(io.airbyte.config.JobSyncConfig.NamespaceDefinitionType namespaceDefinitionType) {
-      switch (namespaceDefinitionType) {
-
-        case SOURCE -> {
-          return source;
-        }
-        case DESTINATION -> {
-          return destination;
-        }
-        case CUSTOMFORMAT -> {
-          return customformat;
-        }
-      }
-      throw new IllegalArgumentException("Unidentified namespace definition type " + namespaceDefinitionType);
-    }
-
-    public static io.airbyte.config.JobSyncConfig.NamespaceDefinitionType fromNamespaceDefinitionType(
-                                                                                                      NamespaceDefinitionType namespaceDefinitionType) {
-      switch (namespaceDefinitionType) {
-
-        case source -> {
-          return JobSyncConfig.NamespaceDefinitionType.SOURCE;
-        }
-        case destination -> {
-          return JobSyncConfig.NamespaceDefinitionType.DESTINATION;
-        }
-        case customformat -> {
-          return JobSyncConfig.NamespaceDefinitionType.CUSTOMFORMAT;
-        }
-      }
-      throw new IllegalArgumentException("Unidentified namespace definition type " + namespaceDefinitionType);
-    }
-
   }
 
   public enum StatusType implements EnumType {
@@ -743,7 +672,6 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     @Override
     public Schema getSchema() {
       return new SchemaImpl(DSL.name("public"), null);
-
     }
 
     @Override
@@ -755,38 +683,6 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     public String getLiteral() {
       return literal;
     }
-
-    public static StatusType fromStandardSync(StandardSync.Status status) {
-      switch (status) {
-        case ACTIVE -> {
-          return active;
-        }
-        case INACTIVE -> {
-          return inactive;
-        }
-        case DEPRECATED -> {
-          return deprecated;
-        }
-      }
-      throw new IllegalArgumentException("Unidentified status type " + status);
-    }
-
-    public static StandardSync.Status fromStatusType(StatusType status) {
-      switch (status) {
-
-        case active -> {
-          return Status.ACTIVE;
-        }
-        case inactive -> {
-          return Status.INACTIVE;
-        }
-        case deprecated -> {
-          return Status.DEPRECATED;
-        }
-      }
-      throw new IllegalArgumentException("Unidentified status type " + status);
-    }
-
   }
 
   public enum OperatorType implements EnumType {
@@ -819,32 +715,6 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     public String getLiteral() {
       return literal;
     }
-
-    public static OperatorType fromStandardSyncOperation(StandardSyncOperation.OperatorType operatorType) {
-      switch (operatorType) {
-
-        case NORMALIZATION -> {
-          return normalization;
-        }
-        case DBT -> {
-          return dbt;
-        }
-      }
-      throw new IllegalArgumentException("Unidentified operator type " + operatorType);
-    }
-
-    public static StandardSyncOperation.OperatorType fromOperatorType(OperatorType operatorType) {
-      switch (operatorType) {
-        case normalization -> {
-          return StandardSyncOperation.OperatorType.NORMALIZATION;
-        }
-        case dbt -> {
-          return StandardSyncOperation.OperatorType.DBT;
-        }
-      }
-      throw new IllegalArgumentException("Unidentified operator type " + operatorType);
-    }
-
   }
 
   public enum ActorType implements EnumType {

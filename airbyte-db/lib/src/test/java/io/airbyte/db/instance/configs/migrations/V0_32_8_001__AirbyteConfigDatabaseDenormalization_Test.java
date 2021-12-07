@@ -10,13 +10,10 @@ import static io.airbyte.db.instance.configs.migrations.SetupForNormalizedTables
 import static io.airbyte.db.instance.configs.migrations.SetupForNormalizedTablesTest.standardSyncStates;
 import static io.airbyte.db.instance.configs.migrations.SetupForNormalizedTablesTest.standardSyncs;
 import static io.airbyte.db.instance.configs.migrations.SetupForNormalizedTablesTest.standardWorkspace;
-import static io.airbyte.db.instance.configs.migrations.V0_32_8_001__AirbyteConfigDatabaseDenormalization.NamespaceDefinitionType.fromNamespaceDefinitionType;
-import static io.airbyte.db.instance.configs.migrations.V0_32_8_001__AirbyteConfigDatabaseDenormalization.OperatorType.fromOperatorType;
-import static io.airbyte.db.instance.configs.migrations.V0_32_8_001__AirbyteConfigDatabaseDenormalization.SourceType.fromSourceType;
-import static io.airbyte.db.instance.configs.migrations.V0_32_8_001__AirbyteConfigDatabaseDenormalization.StatusType.fromStatusType;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.table;
 
+import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
@@ -159,7 +156,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
           .withDockerRepository(sourceDefinition.get(dockerRepository))
           .withDocumentationUrl(sourceDefinition.get(documentationUrl))
           .withName(sourceDefinition.get(name))
-          .withSourceType(fromSourceType(sourceDefinition.get(sourceType)))
+          .withSourceType(Enums.toEnum(sourceDefinition.get(sourceType, String.class), StandardSourceDefinition.SourceType.class).orElseThrow())
           .withSpec(Jsons.deserialize(sourceDefinition.get(spec).data(), ConnectorSpecification.class));
       Assertions.assertTrue(expectedDefinitions.contains(standardSourceDefinition));
       Assertions.assertEquals(now(), sourceDefinition.get(createdAt).toInstant());
@@ -347,7 +344,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
           .withOperationId(record.get(id))
           .withName(record.get(name))
           .withWorkspaceId(record.get(workspaceId))
-          .withOperatorType(fromOperatorType(record.get(operatorType)))
+          .withOperatorType(Enums.toEnum(record.get(operatorType, String.class), StandardSyncOperation.OperatorType.class).orElseThrow())
           .withOperatorNormalization(Jsons.deserialize(record.get(operatorNormalization).data(), OperatorNormalization.class))
           .withOperatorDbt(Jsons.deserialize(record.get(operatorDbt).data(), OperatorDbt.class))
           .withTombstone(record.get(tombstone));
@@ -384,14 +381,16 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
     for (final Record record : standardSyncs) {
       final StandardSync standardSync = new StandardSync()
           .withConnectionId(record.get(id))
-          .withNamespaceDefinition(fromNamespaceDefinitionType(record.get(namespaceDefinition)))
+          .withNamespaceDefinition(
+              Enums.toEnum(record.get(namespaceDefinition, String.class), io.airbyte.config.JobSyncConfig.NamespaceDefinitionType.class)
+                  .orElseThrow())
           .withNamespaceFormat(record.get(namespaceFormat))
           .withPrefix(record.get(prefix))
           .withSourceId(record.get(sourceId))
           .withDestinationId(record.get(destinationId))
           .withName(record.get(name))
           .withCatalog(Jsons.deserialize(record.get(catalog).data(), ConfiguredAirbyteCatalog.class))
-          .withStatus(fromStatusType(record.get(status)))
+          .withStatus(Enums.toEnum(record.get(status, String.class), StandardSync.Status.class).orElseThrow())
           .withSchedule(Jsons.deserialize(record.get(schedule).data(), Schedule.class))
           .withManual(record.get(manual))
           .withOperationIds(connectionOperationIds(record.get(id), context))
