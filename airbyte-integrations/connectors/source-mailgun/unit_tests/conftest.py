@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 from base64 import b64encode
 from unittest.mock import MagicMock
 
