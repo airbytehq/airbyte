@@ -19,9 +19,17 @@ import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import java.util.Optional;
 import lombok.val;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.PostgreSQLContainer;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
+@ExtendWith(SystemStubsExtension.class)
 public class BootloaderAppTest {
+
+  @SystemStub
+  private EnvironmentVariables environmentVariables;
 
   @Test
   void testBootloaderAppBlankDb() throws Exception {
@@ -30,7 +38,6 @@ public class BootloaderAppTest {
         .withUsername("docker")
         .withPassword("docker");
     container.start();
-
     val version = "0.33.0-alpha";
 
     val mockedConfigs = mock(Configs.class);
@@ -42,6 +49,13 @@ public class BootloaderAppTest {
     when(mockedConfigs.getDatabasePassword()).thenReturn(container.getPassword());
     when(mockedConfigs.getAirbyteVersion()).thenReturn(new AirbyteVersion(version));
     when(mockedConfigs.runDatabaseMigrationOnStartup()).thenReturn(true);
+
+    // Although we are able to inject mocked configs into the Bootloader, a particular migration in the
+    // configs database
+    // requires the env var to be set. Flyway prevents injection, so we dynamically set this instead.
+    environmentVariables.set("DATABASE_USER", "docker");
+    environmentVariables.set("DATABASE_PASSWORD", "docker");
+    environmentVariables.set("DATABASE_URL", container.getJdbcUrl());
 
     val bootloader = new BootloaderApp(mockedConfigs);
     bootloader.load();
