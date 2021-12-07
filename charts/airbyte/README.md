@@ -39,7 +39,6 @@
 | `webapp.tolerations`         | Tolerations for webapp pod assignment.                           | `[]`             |
 | `webapp.ingress.enabled`     | Set to true to enable ingress record generation                  | `false`          |
 | `webapp.ingress.className`   | Specifies ingressClassName for clusters >= 1.18+                 | `""`             |
-| `webapp.ingress.hosts`       | Ingress Hosts configuration                                      | `[]`             |
 | `webapp.ingress.annotations` | Ingress annotations done as key:value pairs                      | `{}`             |
 | `webapp.ingress.hosts`       | The list of hostnames to be covered with this ingress record.    | `[]`             |
 | `webapp.ingress.tls`         | Custom ingress TLS configuration                                 | `[]`             |
@@ -176,14 +175,18 @@
 | `externalDatabase.port`                      | Database port number                                                                      | `5432`       |
 
 
-### Minio parameters
+### Logs parameters
 
-| Name                       | Description                                      | Value       |
-| -------------------------- | ------------------------------------------------ | ----------- |
-| `minio.enabled`            | Switch to enable or disable the Minio helm chart | `true`      |
-| `minio.accessKey.password` | Minio Access Key                                 | `minio`     |
-| `minio.secretKey.password` | Minio Secret Key                                 | `minio123`  |
-| `externalMinio.host`       | Minio Host                                       | `localhost` |
-| `externalMinio.port`       | Minio Port                                       | `9000`      |
+| Name                         | Description                                            | Value              |
+| ---------------------------- | ------------------------------------------------------ | ------------------ |
+| `logs.accessKey.password`    | Logs Access Key                                        | `minio`            |
+| `logs.secretKey.password`    | Logs Secret Key                                        | `minio123`         |
+| `logs.minio.enabled`         | Switch to enable or disable the Minio helm chart       | `true`             |
+| `logs.externalMinio.enabled` | Switch to enable or disable an external Minio instance | `false`            |
+| `logs.externalMinio.host`    | External Minio Host                                    | `localhost`        |
+| `logs.externalMinio.port`    | External Minio Port                                    | `9000`             |
+| `logs.s3.enabled`            | Switch to enable or disable custom S3 Log location     | `false`            |
+| `logs.s3.bucket`             | Bucket name where logs should be stored                | `airbyte-dev-logs` |
+| `logs.s3.bucketRegion`       | Region of the bucket (must be empty if using minio)    | `""`               |
 
 

@@ -534,8 +534,8 @@ logs:
     enabled: true
 
   ## @param logs.externalMinio.enabled Switch to enable or disable an external Minio instance
-  ## @param logs.externalMinio.host Minio Host
-  ## @param logs.externalMinio.port Minio Port
+  ## @param logs.externalMinio.host External Minio Host
+  ## @param logs.externalMinio.port External Minio Port
   externalMinio:
     enabled: false
     host: localhost
