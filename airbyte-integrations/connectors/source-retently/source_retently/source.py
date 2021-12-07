@@ -11,15 +11,30 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuthenticator
 
 
 class SourceRetently(AbstractSource):
+    @staticmethod
+    def get_authenticator(config):
+        credentials = config.get("credentials", {})
+        if credentials and "client_id" in credentials:
+            return Oauth2Authenticator(
+                token_refresh_endpoint="https://app.retently.com/api/oauth/token",
+                client_id=credentials["client_id"],
+                client_secret=credentials["client_secret"],
+                refresh_token=credentials["refresh_token"],
+            )
+
+        api_key = credentials.get("api_key", config.get("api_key"))
+        if not api_key:
+            raise Exception("Config validation error: 'api_key' is a required property")
+        auth_method = f"api_key={api_key}"
+        return TokenAuthenticator(token="", auth_method=auth_method)
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            api_key = config["api_key"]
-            auth_method = f"api_key={api_key}"
-            auth = TokenAuthenticator(token="", auth_method=auth_method)
+            auth = self.get_authenticator(config)
             stream = Companies(auth)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
@@ -28,9 +43,7 @@ class SourceRetently(AbstractSource):
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        api_key = config["api_key"]
-        auth_method = f"api_key={api_key}"
-        auth = TokenAuthenticator(token="", auth_method=auth_method)
+        auth = self.get_authenticator(config)
         return [Customers(auth), Companies(auth), Reports(auth)]
 
 
