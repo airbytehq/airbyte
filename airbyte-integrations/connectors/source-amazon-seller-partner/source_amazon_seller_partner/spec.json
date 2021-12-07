@@ -21,7 +21,7 @@
       },
       "refresh_token": {
         "title": "Refresh Token",
-        "description": "The Refresh Token obtained via authorization (can be passed to the client instead).",
+        "description": "The Refresh Token obtained via OAuth flow authorization.",
         "airbyte_secret": true,
         "type": "string"
       },

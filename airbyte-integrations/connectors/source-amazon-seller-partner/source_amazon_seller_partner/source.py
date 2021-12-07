@@ -45,7 +45,7 @@ class ConnectorConfig(BaseModel):
         examples=["30", "365"],
     )
     refresh_token: str = Field(
-        description="The Refresh Token obtained via authorization (can be passed to the client instead).",
+        description="The Refresh Token obtained via OAuth flow authorization.",
         title="Refresh Token",
         airbyte_secret=True,
     )
