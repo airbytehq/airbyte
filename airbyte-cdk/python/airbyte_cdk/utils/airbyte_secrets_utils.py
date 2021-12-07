@@ -17,8 +17,4 @@ def get_secrets(source: Source, config: Mapping[str, Any], logger: logging.Logge
     secret_key_names = [
         ".".join(key.split(".")[:1]) for key, value in flattened_key_values.items() if value and key.endswith("airbyte_secret")
     ]
-    return [
-        str(get_value_by_dot_notation(config, key))
-        for key in secret_key_names
-        if config.get(key)
-    ]
+    return [str(get_value_by_dot_notation(config, key)) for key in secret_key_names if config.get(key)]
