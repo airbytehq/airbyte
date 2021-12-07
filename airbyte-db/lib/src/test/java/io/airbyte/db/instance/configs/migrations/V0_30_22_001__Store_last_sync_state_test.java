@@ -158,7 +158,13 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
             .withConnectionId(CONNECTION_2_ID)
             .withState(new State().withState(Jsons.deserialize("{ \"cursor\": 3 }"))));
 
-    final OffsetDateTime timestamp = OffsetDateTime.now();
+    final OffsetDateTime timestampWithFullPrecision = OffsetDateTime.now();
+    /*
+     * The AWS CI machines get a higher precision value here (2021-12-07T19:56:28.967213187Z) vs what is
+     * retrievable on Postgres or on my local machine (2021-12-07T19:56:28.967213Z). Truncating the
+     * value to match.
+     */
+    final OffsetDateTime timestamp = timestampWithFullPrecision.withNano(Math.toIntExact(1000L * timestampWithFullPrecision.getNano() / 1000L));
 
     database.query(ctx -> {
       V0_30_22_001__Store_last_sync_state.copyData(ctx, STD_CONNECTION_STATES, timestamp);
@@ -277,6 +283,8 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
           .fetchOne();
       assertEquals(standardSyncState, Jsons.deserialize(record.value1().data(), StandardSyncState.class));
       if (expectedTimestamp != null) {
+        System.out.println("expectedTimestamp = " + expectedTimestamp.getNano());
+        System.out.println("record            = " + record.value2().getNano());
         assertEquals(expectedTimestamp, record.value2());
         assertEquals(expectedTimestamp, record.value3());
       }
