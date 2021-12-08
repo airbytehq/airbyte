@@ -10,7 +10,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
+import com.google.common.collect.UnmodifiableIterator;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -671,6 +673,7 @@ public class DefaultJobPersistence implements JobPersistence {
    * TODO: we need version specific importers to copy data to the database. Issue: #5682.
    */
   private static void importTable(final DSLContext ctx, final String schema, final JobsDatabaseSchema tableType, final Stream<JsonNode> jsonStream) {
+    LOGGER.info("Importing table {} from archive into database.", tableType.name());
     final Table<Record> tableSql = getTable(schema, tableType.name());
     final JsonNode jsonSchema = tableType.getTableDefinition();
     if (jsonSchema != null) {
@@ -686,15 +689,20 @@ public class DefaultJobPersistence implements JobPersistence {
         }
         return values;
       });
-      // Then Insert rows into table
-      final InsertValuesStepN<Record> insertStep = ctx
-          .insertInto(tableSql)
-          .columns(columns);
-      data.forEach(insertStep::values);
-      if (insertStep.getBindValues().size() > 0) {
-        // LOGGER.debug(insertStep.toString());
-        ctx.batch(insertStep).execute();
-      }
+      // Then insert rows into table in batches, to avoid crashing due to inserting too much data at once
+      final UnmodifiableIterator<List<List<?>>> partitions = Iterators.partition(data.iterator(), 100);
+      partitions.forEachRemaining(values -> {
+        final InsertValuesStepN<Record> insertStep = ctx
+            .insertInto(tableSql)
+            .columns(columns);
+
+        values.forEach(insertStep::values);
+
+        if (insertStep.getBindValues().size() > 0) {
+          // LOGGER.debug(insertStep.toString());
+          ctx.batch(insertStep).execute();
+        }
+      });
       final Optional<Field<?>> idColumn = columns.stream().filter(f -> f.getName().equals("id")).findFirst();
       if (idColumn.isPresent())
         resetIdentityColumn(ctx, schema, tableType);
