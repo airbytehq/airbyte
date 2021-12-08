@@ -41,6 +41,10 @@ public class TemporalWorkerRunFactory {
     return WorkerRun.create(workspaceRoot, job.getId(), attemptId, createSupplier(job, attemptId), airbyteVersionOrWarnings);
   }
 
+  public void createNewSchedulerWorkflow(final UUID connectionId) {
+    temporalClient.submitConnectionUpdaterAsync(connectionId);
+  }
+
   public CheckedSupplier<OutputAndStatus<JobOutput>, Exception> createSupplier(final Job job, final int attemptId) {
     final TemporalJobType temporalJobType = toTemporalJobType(job.getConfigType());
     final UUID connectionId = UUID.fromString(job.getScope());
@@ -50,7 +54,7 @@ public class TemporalWorkerRunFactory {
         LOGGER.error("flag checking ____________");
         if (featureFlags.usesNewScheduler()) {
           LOGGER.error("Running the new workflow ____________");
-          temporalClient.submitConnectionUpdaterAsync(job.getId(), attemptId, connectionId, job.getConfig());
+          temporalClient.submitConnectionUpdaterAsync(connectionId);
 
           return toOutputAndStatusConnector();
         }

@@ -35,14 +35,11 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.scheduler.app.SchedulerApp;
-import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
@@ -53,9 +50,7 @@ import io.airbyte.server.handlers.helpers.SourceMatcher;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
-import io.airbyte.workers.worker_run.WorkerRun;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -205,21 +200,9 @@ public class ConnectionsHandler {
     trackNewConnection(standardSync);
 
     if (featureFlags.usesNewScheduler()) {
-      final long jobId = jobFactory.create(connectionId);
-      SchedulerApp.PENDING_JOBS.getAndIncrement();
-      final Job createdJob = jobPersistence.getJob(jobId);
-      LOGGER.error("Running: " + createdJob);
       try {
-        final WorkerRun workerRun = temporalWorkerRunFactory.create(createdJob);
-
-        LOGGER.error("Starting the worker run _____");
-        final Path logFilePath = workerRun.getJobRoot().resolve(LogClientSingleton.LOG_FILENAME);
-        final long persistedAttemptId = jobPersistence.createAttempt(jobId, logFilePath);
-
-        LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs, workerRun.getJobRoot());
-        workerRun.call();
-        LOGGER.error("Finished the worker run ______");
-
+        LOGGER.error("CALLLLLLLING ____________");
+        temporalWorkerRunFactory.createNewSchedulerWorkflow(connectionId);
       } catch (final Exception e) {
         e.printStackTrace();
       }

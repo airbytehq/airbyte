@@ -325,6 +325,8 @@ public class SchedulerHandler {
       standardSyncOperations.add(standardSyncOperation);
     }
 
+    // TODO: bmoric -> new WF
+
     final Job job = schedulerJobClient.createOrGetActiveSyncJob(
         sourceConnection,
         destinationConnection,

@@ -25,6 +25,7 @@ import io.temporal.api.enums.v1.ParentClosePolicy;
 import io.temporal.workflow.CancellationScope;
 import io.temporal.workflow.ChildWorkflowOptions;
 import io.temporal.workflow.Workflow;
+import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
@@ -70,8 +71,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
       // Sync workflow
       final SyncInput getSyncInputActivitySyncInput = new SyncInput(
           maybeAttemptId.get(),
-          maybeJobId.get(),
-          connectionUpdaterInput.getJobConfig());
+          maybeJobId.get());
 
       final SyncOutput syncWorkflowInputs = getSyncInputActivity.getSyncWorkflowInput(getSyncInputActivitySyncInput);
 
@@ -124,6 +124,8 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
       } else {
         jobCreationActivity.jobFailure(new JobFailureInput(
             connectionUpdaterInput.getJobId()));
+
+        Workflow.await(Duration.ofMinutes(1), () -> skipScheduling());
 
         connectionUpdaterInput.setJobId(null);
         connectionUpdaterInput.setAttemptNumber(1);

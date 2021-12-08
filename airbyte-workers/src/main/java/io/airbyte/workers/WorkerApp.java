@@ -144,7 +144,8 @@ public class WorkerApp {
     connectionUpdaterWorker.registerWorkflowImplementationTypes(ConnectionUpdaterWorkflowImpl.class);
     connectionUpdaterWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
     connectionUpdaterWorker.registerActivitiesImplementations(
-        new GenerateInputActivityImpl(),
+        new GenerateInputActivityImpl(
+            jobPersistence),
         new JobCreationActivityImpl(
             jobFactory,
             jobPersistence,

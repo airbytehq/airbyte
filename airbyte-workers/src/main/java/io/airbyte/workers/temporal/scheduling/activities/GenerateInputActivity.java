@@ -4,7 +4,6 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import io.airbyte.config.JobConfig;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
@@ -24,7 +23,6 @@ public interface GenerateInputActivity {
 
     private int attemptId;
     private long jobId;
-    private JobConfig jobConfig;
 
   }
 
