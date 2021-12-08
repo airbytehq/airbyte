@@ -158,8 +158,18 @@ class Admins(IntercomStream):
 
 class Companies(IncrementalIntercomStream):
     """Return list of all companies.
-    API Docs: https://developers.intercom.com/intercom-api-reference/reference#iterating-over-all-companies
-    Endpoint: https://api.intercom.io/companies/scroll
+     The Intercom API provides 2 similar endpoint for loading of companies:
+    1) "standard" - https://developers.intercom.com/intercom-api-reference/reference#list-companies.
+       But this endpoint does not work well for huge datasets and can have performance problems.
+    2) "scroll" - https://developers.intercom.com/intercom-api-reference/reference#iterating-over-all-companies
+       It has good performance but at same time only one script/client can use it.
+
+     According to above circumstances no one endpoint can't be used permanently. That's why this stream tries can
+    apply both endpoints according to the following logic:
+    1) By default the stream tries to load data by "scroll" endpoint.
+    2) Try to wait a "scroll" request within a minute (3 attempts with delay 20,5 seconds)
+       if a "stroll" is busy by another script
+    3) Switch to using of the "standard" endpoint.
     """
 
     class EndpointType(Enum):
@@ -235,15 +245,14 @@ class Companies(IncrementalIntercomStream):
         if self.check_exists_scroll(response):
             self.logger.warning("A previous scroll request is exists. " "It must be deleted within an minute automatically")
             # try to check 3 times
-            return 2
             return 20.5
         return super().backoff_time(response)
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-
-        data = response.json()
-        if data.get("errors"):
-            return
+        if not self.raise_on_http_errors:
+            data = response.json()
+            if data.get("errors"):
+                return
         yield from super().parse_response(response, stream_state=stream_state, **kwargs)
 
 
