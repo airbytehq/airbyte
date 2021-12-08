@@ -9,6 +9,7 @@
     "properties": {
       "api_token": {
         "type": "string",
+        "title": "API token",
         "description": "Tempo API Token.",
         "airbyte_secret": true
       }
