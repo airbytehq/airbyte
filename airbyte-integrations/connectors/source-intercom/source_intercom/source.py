@@ -5,6 +5,7 @@
 import time
 from abc import ABC
 from datetime import datetime
+from enum import Enum
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
@@ -13,7 +14,8 @@ from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from requests.auth import AuthBase
 
 
 class IntercomStream(HttpStream, ABC):
@@ -27,13 +29,23 @@ class IntercomStream(HttpStream, ABC):
 
     def __init__(
         self,
-        authenticator: HttpAuthenticator,
+        authenticator: AuthBase,
         start_date: str = None,
         **kwargs,
     ):
         self.start_date = start_date
 
         super().__init__(authenticator=authenticator)
+
+    @property
+    def authenticator(self):
+        """
+        Fix of the bug when isinstance(authenticator, AuthBase) and
+        default logic returns  incorrect authenticator values
+        """
+        if self._session.auth:
+            return self._session.auth
+        return super().authenticator
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -95,7 +107,7 @@ class IncrementalIntercomStream(IntercomStream, ABC):
         during the slicing.
         """
 
-        if not stream_state or record[self.cursor_field] >= stream_state.get(self.cursor_field):
+        if not stream_state or record[self.cursor_field] > stream_state.get(self.cursor_field):
             yield record
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
@@ -124,10 +136,12 @@ class ChildStreamMixin:
     parent_stream_class: Optional[IntercomStream] = None
 
     def stream_slices(self, sync_mode, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        for item in self.parent_stream_class(authenticator=self.authenticator, start_date=self.start_date).read_records(
-            sync_mode=sync_mode
-        ):
-            yield {"id": item["id"]}
+        parent_stream = self.parent_stream_class(authenticator=self.authenticator, start_date=self.start_date)
+        for slice in parent_stream.stream_slices(sync_mode=sync_mode):
+            for item in self.parent_stream_class(
+                authenticator=self.authenticator, start_date=self.start_date, stream_slice=slice
+            ).read_records(sync_mode=sync_mode):
+                yield {"id": item["id"]}
 
 
 class Admins(IntercomStream):
@@ -148,20 +162,41 @@ class Companies(IncrementalIntercomStream):
     Endpoint: https://api.intercom.io/companies/scroll
     """
 
+    class EndpointType(Enum):
+        scroll = "companies/scroll"
+        standard = "companies"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._backoff_count = 0
+        self._endpoint_type = self.EndpointType.scroll
+        self._total_count = None  # uses for saving of a total_count value once
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """For reset scroll needs to iterate pages untill the last.
         Another way need wait 1 min for the scroll to expire to get a new list for companies segments."""
-
         data = response.json()
-        scroll_param = data.get("scroll_param")
+        if self._total_count is None and data.get("total_count"):
+            self._total_count = data["total_count"]
+            self.logger.info(f"found {self._total_count} companies")
+        if self.can_use_scroll():
 
-        # this stream always has only one data field
-        data_field = self.data_fields[0]
-        if scroll_param and data.get(data_field):
-            return {"scroll_param": scroll_param}
+            scroll_param = data.get("scroll_param")
+
+            # this stream always has only one data field
+            data_field = self.data_fields[0]
+            if scroll_param and data.get(data_field):
+                return {"scroll_param": scroll_param}
+        elif not data.get("errors"):
+            return super().next_page_token(response)
+        return None
+
+    def can_use_scroll(self):
+        """Check backoff count"""
+        return self._backoff_count <= 3
 
     def path(self, **kwargs) -> str:
-        return "companies/scroll"
+        return self._endpoint_type.value
 
     @classmethod
     def check_exists_scroll(cls, response: requests.Response) -> bool:
@@ -174,8 +209,25 @@ class Companies(IncrementalIntercomStream):
 
         return False
 
+    @property
+    def raise_on_http_errors(self) -> bool:
+        if not self.can_use_scroll() and self._endpoint_type == self.EndpointType.scroll:
+            return False
+        return True
+
+    def stream_slices(self, sync_mode, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        yield None
+        if not self.can_use_scroll():
+            self._endpoint_type = self.EndpointType.standard
+            yield None
+
     def should_retry(self, response: requests.Response) -> bool:
         if self.check_exists_scroll(response):
+            self._backoff_count += 1
+            if not self.can_use_scroll():
+                self.logger.error("Can't create a new scroll request within an minute. " "Let's try to use a standard non-scroll endpoint.")
+                return False
+
             return True
         return super().should_retry(response)
 
@@ -183,8 +235,16 @@ class Companies(IncrementalIntercomStream):
         if self.check_exists_scroll(response):
             self.logger.warning("A previous scroll request is exists. " "It must be deleted within an minute automatically")
             # try to check 3 times
+            return 2
             return 20.5
         return super().backoff_time(response)
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+
+        data = response.json()
+        if data.get("errors"):
+            return
+        yield from super().parse_response(response, stream_state=stream_state, **kwargs)
 
 
 class CompanySegments(ChildStreamMixin, IncrementalIntercomStream):

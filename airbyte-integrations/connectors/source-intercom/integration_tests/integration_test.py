@@ -27,6 +27,7 @@ def stream_attributes() -> Mapping[str, str]:
         return json.load(json_file)
 
 
+@pytest.mark.skip(reason="test another one")
 @pytest.mark.parametrize(
     "version,not_supported_streams,custom_companies_data_field",
     (
@@ -82,16 +83,22 @@ def test_companies_scroll(stream_attributes):
     stream3 = Companies(authenticator=authenticator)
 
     # read the first stream and stop
-    next(stream1.read_records(sync_mode=SyncMode.full_refresh))
+    for slice in stream1.stream_slices(sync_mode=SyncMode.full_refresh):
+        next(stream1.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice), None)
+        break
 
     start_time = time.time()
     # read all records
-    records = list(stream2.read_records(sync_mode=SyncMode.full_refresh))
+    records = []
+    for slice in stream2.stream_slices(sync_mode=SyncMode.full_refresh):
+        records += list(stream2.read_records(sync_mode=SyncMode, stream_slice=slice))
     assert len(records) == 3
     assert (time.time() - start_time) > 60.0
 
     start_time = time.time()
-    # read all records again
-    records = list(stream3.read_records(sync_mode=SyncMode.full_refresh))
+    # read all records
+    records = []
+    for slice in stream3.stream_slices(sync_mode=SyncMode.full_refresh):
+        records += list(stream3.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice))
     assert len(records) == 3
     assert (time.time() - start_time) < 5.0
