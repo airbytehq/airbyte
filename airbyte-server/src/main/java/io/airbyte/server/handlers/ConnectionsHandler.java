@@ -42,8 +42,6 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.app.SchedulerApp;
-import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
-import io.airbyte.scheduler.app.worker_run.WorkerRun;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
@@ -54,6 +52,8 @@ import io.airbyte.server.handlers.helpers.DestinationMatcher;
 import io.airbyte.server.handlers.helpers.SourceMatcher;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
+import io.airbyte.workers.worker_run.WorkerRun;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -204,26 +204,25 @@ public class ConnectionsHandler {
 
     trackNewConnection(standardSync);
 
-    if (true) {
+    if (featureFlags.usesNewScheduler()) {
+      final long jobId = jobFactory.create(connectionId);
+      SchedulerApp.PENDING_JOBS.getAndIncrement();
+      final Job createdJob = jobPersistence.getJob(jobId);
+      LOGGER.error("Running: " + createdJob);
+      try {
+        final WorkerRun workerRun = temporalWorkerRunFactory.create(createdJob);
 
-    }
-    final long jobId = jobFactory.create(connectionId);
-    SchedulerApp.PENDING_JOBS.getAndIncrement();
-    final Job createdJob = jobPersistence.getJob(jobId);
-    LOGGER.error("Running: " + createdJob);
-    try {
-      final WorkerRun workerRun = temporalWorkerRunFactory.create(createdJob);
+        LOGGER.error("Starting the worker run _____");
+        final Path logFilePath = workerRun.getJobRoot().resolve(LogClientSingleton.LOG_FILENAME);
+        final long persistedAttemptId = jobPersistence.createAttempt(jobId, logFilePath);
 
-      LOGGER.error("Starting the worker run _____");
-      final Path logFilePath = workerRun.getJobRoot().resolve(LogClientSingleton.LOG_FILENAME);
-      final long persistedAttemptId = jobPersistence.createAttempt(jobId, logFilePath);
-      // assertSameIds(attemptNumber, persistedAttemptId);
-      LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs, workerRun.getJobRoot());
-      workerRun.call();
-      LOGGER.error("Finished the worker run ______");
+        LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs, workerRun.getJobRoot());
+        workerRun.call();
+        LOGGER.error("Finished the worker run ______");
 
-    } catch (final Exception e) {
-      e.printStackTrace();
+      } catch (final Exception e) {
+        e.printStackTrace();
+      }
     }
 
     return buildConnectionRead(connectionId);

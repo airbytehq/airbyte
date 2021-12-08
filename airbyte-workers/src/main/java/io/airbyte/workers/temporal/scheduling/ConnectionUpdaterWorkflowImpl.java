@@ -5,14 +5,25 @@
 package io.airbyte.workers.temporal.scheduling;
 
 import io.airbyte.workers.temporal.TemporalJobType;
-import io.airbyte.workers.temporal.scheduling.activities.GetSyncInputActivity;
+import io.airbyte.workers.temporal.exception.NonRetryableException;
+import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
+import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverInput;
+import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity;
+import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.SyncInput;
+import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.SyncOutput;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationActivity;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationActivity.AttemptCreationInput;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationActivity.AttemptCreationOutput;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationActivity.JobCreationInput;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationActivity.JobCreationOutput;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationActivity.JobSuccessInput;
 import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.temporal.api.enums.v1.ParentClosePolicy;
 import io.temporal.workflow.CancellationScope;
 import io.temporal.workflow.ChildWorkflowOptions;
 import io.temporal.workflow.Workflow;
-import java.time.Duration;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,56 +33,88 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
   private boolean isRunning = false;
   private boolean isDeleted = false;
   private boolean skipScheduling = false;
-  private final GetSyncInputActivity getSyncInputActivity = Workflow.newActivityStub(GetSyncInputActivity.class, ActivityConfiguration.OPTIONS);
 
-  private CancellationScope syncWorkflowCancellationScope = CancellationScope.current();
+  private final GenerateInputActivity getSyncInputActivity = Workflow.newActivityStub(GenerateInputActivity.class, ActivityConfiguration.OPTIONS);
+  private final JobCreationActivity jobCreationActivity = Workflow.newActivityStub(JobCreationActivity.class, ActivityConfiguration.OPTIONS);
+  private final ConfigFetchActivity configFetchActivity = Workflow.newActivityStub(ConfigFetchActivity.class, ActivityConfiguration.OPTIONS);
+
+  private final CancellationScope syncWorkflowCancellationScope = CancellationScope.current();
 
   public ConnectionUpdaterWorkflowImpl() {}
 
   @Override
-  public SyncResult run(final ConnectionUpdaterInput connectionUpdaterInput) {
-    // TODO: bmoric get time to wait through an activity
-    final Duration timeToWait = Duration.ofMinutes(5);
+  public SyncResult run(final ConnectionUpdaterInput connectionUpdaterInput) throws NonRetryableException {
+    try {
 
-    Workflow.await(timeToWait, () -> skipScheduling());
+      // Scheduling
+      final ConfigFetchActivity.ScheduleRetrieverInput scheduleRetrieverInput = new ScheduleRetrieverInput(
+          connectionUpdaterInput.getConnectionId());
+      final ConfigFetchActivity.ScheduleRetrieverOutput scheduleRetrieverOutput = configFetchActivity.getPeriodicity(scheduleRetrieverInput);
+      Workflow.await(scheduleRetrieverOutput.getPeriodicity(), () -> skipScheduling() || connectionUpdaterInput.isFromFailure());
 
-    // TODO: Fetch config (maybe store it in GCS)
-    log.info("Starting child WF");
+      // Job and attempt creation
+      final Optional<Long> maybeJobId = Optional.ofNullable(connectionUpdaterInput.getJobId()).or(() -> {
+        final JobCreationOutput jobCreationOutput = jobCreationActivity.createNewJob(new JobCreationInput(
+            connectionUpdaterInput.getConnectionId()));
+        return Optional.ofNullable(jobCreationOutput.getJobId());
+      });
 
-    final GetSyncInputActivity.Input getSyncInputActivityInput = new GetSyncInputActivity.Input(
-        connectionUpdaterInput.getAttemptId(),
-        connectionUpdaterInput.getJobId(),
-        connectionUpdaterInput.getJobConfig());
+      final Optional<Integer> maybeAttemptId = Optional.ofNullable(connectionUpdaterInput.getAttemptId()).or(() -> maybeJobId.map(jobId -> {
+        final AttemptCreationOutput attemptCreationOutput = jobCreationActivity.createNewAttempt(new AttemptCreationInput(
+            jobId));
+        return attemptCreationOutput.getAttemptId();
+      }));
 
-    final GetSyncInputActivity.Output syncWorkflowInputs = getSyncInputActivity.getSyncWorkflowInput(getSyncInputActivityInput);
+      // Sync workflow
+      final SyncInput getSyncInputActivitySyncInput = new SyncInput(
+          maybeAttemptId.get(),
+          maybeJobId.get(),
+          connectionUpdaterInput.getJobConfig());
 
-    final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
-        ChildWorkflowOptions.newBuilder()
-            .setWorkflowId("sync_" + connectionUpdaterInput.getJobId())
-            .setTaskQueue(TemporalJobType.SYNC.name())
-            // This will cancel the child workflow when the parent is terminated
-            .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_TERMINATE)
-            .build());
+      final SyncOutput syncWorkflowInputs = getSyncInputActivity.getSyncWorkflowInput(getSyncInputActivitySyncInput);
 
-    final UUID connectionId = connectionUpdaterInput.getConnectionId();
+      final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
+          ChildWorkflowOptions.newBuilder()
+              .setWorkflowId("sync_" + connectionUpdaterInput.getJobId())
+              .setTaskQueue(TemporalJobType.SYNC.name())
+              // This will cancel the child workflow when the parent is terminated
+              .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_TERMINATE)
+              .build());
 
-    log.error("Running for: " + connectionId);
-    childSync.run(
-        syncWorkflowInputs.getJobRunConfig(),
-        syncWorkflowInputs.getSourceLauncherConfig(),
-        syncWorkflowInputs.getDestinationLauncherConfig(),
-        syncWorkflowInputs.getSyncInput(),
-        connectionId);
+      final UUID connectionId = connectionUpdaterInput.getConnectionId();
 
-    syncWorkflowCancellationScope = Workflow.newCancellationScope(() -> childSync.run(null, null, null, null, null));
+      log.error("Running for: " + connectionId);
+      childSync.run(
+          syncWorkflowInputs.getJobRunConfig(),
+          syncWorkflowInputs.getSourceLauncherConfig(),
+          syncWorkflowInputs.getDestinationLauncherConfig(),
+          syncWorkflowInputs.getSyncInput(),
+          connectionId);
 
-    if (isDeleted) {
-      return new SyncResult(true);
-    } else {
-      // TODO: Create a new job here
+      if (isDeleted) {
+        // Stop the runs
+        return new SyncResult(true);
+      } else {
+        // report success
+        jobCreationActivity.jobSuccess(new JobSuccessInput(
+            Long.parseLong(syncWorkflowInputs.getJobRunConfig().getJobId()),
+            syncWorkflowInputs.getJobRunConfig().getAttemptId().intValue()));
+
+        connectionUpdaterInput.setJobId(null);
+        connectionUpdaterInput.setFromFailure(false);
+      }
+    } catch (final Exception e) {
+      // TODO: Do we need to stop retrying at some points
+      log.error("The connection update workflow has failed, will create a new attempt.", e);
+
+      // report failure
+      connectionUpdaterInput.setFromFailure(true);
+    } finally {
+      // Continue the workflow as new
+      connectionUpdaterInput.setAttemptId(null);
       Workflow.continueAsNew(connectionUpdaterInput);
     }
-    // This should not be reachable
+    // This should not be reachable as we always continue as new even if there is a failure
     return null;
   }
 

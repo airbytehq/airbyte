@@ -10,10 +10,10 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.temporal.TemporalUtils;
 
-public class GetSyncInputActivityImpl implements GetSyncInputActivity {
+public class GenerateInputActivityImpl implements GenerateInputActivity {
 
   @Override
-  public Output getSyncWorkflowInput(final Input input) {
+  public SyncOutput getSyncWorkflowInput(final SyncInput input) {
     final long jobId = input.getJobId();
     final int attempt = input.getAttemptId();
     final JobSyncConfig config = input.getJobConfig().getSync();
@@ -41,7 +41,7 @@ public class GetSyncInputActivityImpl implements GetSyncInputActivity {
         .withState(config.getState())
         .withResourceRequirements(config.getResourceRequirements());
 
-    return new Output(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
+    return new SyncOutput(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
   }
 
 }

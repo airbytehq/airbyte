@@ -4,6 +4,10 @@
 
 package io.airbyte.workers.temporal.exception;
 
-public class NonRetryableException extends Exception {
+public class NonRetryableException extends RuntimeException {
+
+  public NonRetryableException(final Exception e) {
+    super(e);
+  }
 
 }

@@ -126,7 +126,7 @@ public class TemporalClient {
     final ConnectionUpdaterWorkflow connectionUpdaterWorkflow = getWorkflowOptionsWithWorkflowId(ConnectionUpdaterWorkflow.class,
         TemporalJobType.CONNECTION_UPDATER, "connection_updater_" + connectionId);
     final BatchRequest signalRequest = client.newSignalWithStartRequest();
-    final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, jobId, jobConfig, attemptId);
+    final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, jobId, jobConfig, attemptId, false);
     signalRequest.add(connectionUpdaterWorkflow::run, input);
     // TODO: Only if not manual
     signalRequest.add(connectionUpdaterWorkflow::skipWaitForScheduling);
