@@ -16,7 +16,11 @@ import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.s3.S3Destination;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
+import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
+import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -58,45 +62,66 @@ public abstract class S3StreamCopier implements StreamCopier {
   protected final JdbcDatabase db;
   private final ExtendedNameTransformer nameTransformer;
   private final SqlOperations sqlOperations;
+  private final ConfiguredAirbyteStream configuredAirbyteStream;
+  private final Timestamp uploadTime;
   protected final Set<String> s3StagingFiles = new HashSet<>();
   private final Map<String, StreamTransferManager> multipartUploadManagers = new HashMap<>();
   private final Map<String, MultiPartOutputStream> outputStreams = new HashMap<>();
   private final Map<String, CSVPrinter> csvPrinters = new HashMap<>();
   protected final String stagingFolder;
   private final StagingFilenameGenerator filenameGenerator;
+  private final Map<String, S3CsvWriter> stagingWriters = new HashMap<>();
 
   public S3StreamCopier(final String stagingFolder,
-      final DestinationSyncMode destSyncMode,
       final String schema,
-      final String streamName,
       final AmazonS3 client,
       final JdbcDatabase db,
       final S3DestinationConfig s3Config,
       final ExtendedNameTransformer nameTransformer,
-      final SqlOperations sqlOperations) {
-    this.destSyncMode = destSyncMode;
+      final SqlOperations sqlOperations,
+      final ConfiguredAirbyteStream configuredAirbyteStream,
+      final Timestamp uploadTime) {
+    this.destSyncMode = configuredAirbyteStream.getDestinationSyncMode();
     this.schemaName = schema;
-    this.streamName = streamName;
+    this.streamName = configuredAirbyteStream.getStream().getName();
     this.stagingFolder = stagingFolder;
     this.db = db;
     this.nameTransformer = nameTransformer;
     this.sqlOperations = sqlOperations;
-    this.tmpTableName = nameTransformer.getTmpTableName(streamName);
+    this.configuredAirbyteStream = configuredAirbyteStream;
+    this.uploadTime = uploadTime;
+    this.tmpTableName = nameTransformer.getTmpTableName(this.streamName);
     this.s3Client = client;
     this.s3Config = s3Config;
-    this.filenameGenerator = new StagingFilenameGenerator(streamName, MAX_PARTS_PER_FILE);
+    this.filenameGenerator = new StagingFilenameGenerator(this.streamName, MAX_PARTS_PER_FILE);
   }
 
   private String prepareS3StagingFile() {
     return String.join("/", stagingFolder, schemaName, filenameGenerator.getStagingFilename());
   }
 
+  /*
+   * old behavior: create s3://bucket/randomUuid/(namespace|schemaName)/generatedFilename
+   * S3CsvWiter: create s3://bucket/bucketPath(/namespace)?/streamName/time.csv
+   */
   @Override
   public String prepareStagingFile() {
     final var name = prepareS3StagingFile();
-    if (!s3StagingFiles.contains(name)) {
-      s3StagingFiles.add(name);
+    if (!stagingWriters.containsKey(name)) {
       LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
+
+      try {
+        final S3CsvWriter writer = new S3CsvWriter(
+            s3Config.cloneWithFormatConfig(new S3CsvFormatConfig(Flattening.ROOT_LEVEL, (long) s3Config.getPartSize())),
+            s3Client,
+            configuredAirbyteStream,
+            uploadTime
+        );
+        stagingWriters.put(name, writer);
+      } catch (final IOException e) {
+        throw new RuntimeException(e);
+      }
+
       // The stream transfer manager lets us greedily stream into S3. The native AWS SDK does not
       // have support for streaming multipart uploads;
       // The alternative is first writing the entire output to disk before loading into S3. This is not

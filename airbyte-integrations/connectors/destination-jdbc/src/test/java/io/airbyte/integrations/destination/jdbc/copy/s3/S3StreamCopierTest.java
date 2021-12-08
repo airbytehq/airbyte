@@ -19,7 +19,11 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,9 +48,7 @@ public class S3StreamCopierTest {
 
     copier = new S3StreamCopier(
         "fake-staging-folder",
-        DestinationSyncMode.OVERWRITE,
         "fake-schema",
-        "fake-stream",
         s3Client,
         db,
         new S3DestinationConfig(
@@ -59,7 +61,11 @@ public class S3StreamCopierTest {
             null
         ),
         new ExtendedNameTransformer(),
-        sqlOperations
+        sqlOperations,
+        new ConfiguredAirbyteStream()
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(new AirbyteStream().withName("fake-stream")),
+        Timestamp.from(Instant.now())
     ) {
       @Override
       public void copyS3CsvFileIntoTable(
@@ -108,7 +114,8 @@ public class S3StreamCopierTest {
     final RuntimeException exception = assertThrows(RuntimeException.class, () -> copier.closeStagingUploader(true));
 
     // the wrapping chain is RuntimeException -> ExecutionException -> RuntimeException -> InterruptedException
-    assertEquals(InterruptedException.class, exception.getCause().getCause().getCause().getClass(), "Original exception: " + ExceptionUtils.readStackTrace(exception));
+    assertEquals(InterruptedException.class, exception.getCause().getCause().getCause().getClass(),
+        "Original exception: " + ExceptionUtils.readStackTrace(exception));
   }
 
   @Test
