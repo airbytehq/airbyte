@@ -17,12 +17,12 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.DatabaseConfigPersistence;
+import io.airbyte.config.persistence.DatabaseConfigPersistence2;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.DatabaseMigrator;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.db.instance.configs.ConfigsDatabaseInstance2;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
@@ -155,12 +155,12 @@ public class ServerApp implements ServerRunnable {
     ConfigDumpImporter.initStagedResourceFolder();
 
     LOGGER.info("Creating config repository...");
-    final Database configDatabase = new ConfigsDatabaseInstance(
+    final Database configDatabase = new ConfigsDatabaseInstance2(
         configs.getConfigDatabaseUser(),
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
             .getAndInitialize();
-    final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).migrateFileConfigs(configs);
+    final DatabaseConfigPersistence2 configPersistence = new DatabaseConfigPersistence2(configDatabase).migrateFileConfigs(configs);
 
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
