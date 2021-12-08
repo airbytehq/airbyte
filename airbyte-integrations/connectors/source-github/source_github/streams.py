@@ -57,6 +57,11 @@ class GithubStream(HttpStream, ABC):
         super().__init__(**kwargs)
         self.repositories = repositories
 
+        MAX_RETRIES = 3
+        adapter = requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES)
+        self._session.mount("https://", adapter)
+        self._session.mount("http://", adapter)
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/{self.name}"
 
