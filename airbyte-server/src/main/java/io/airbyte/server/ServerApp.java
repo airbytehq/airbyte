@@ -24,6 +24,7 @@ import io.airbyte.db.instance.MinimumFlywayMigrationVersionCheck;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
 import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
@@ -110,23 +111,36 @@ public class ServerApp implements ServerRunnable {
     server.join();
   }
 
-  public static ServerRunnable getServer(final ServerFactory apiFactory, final ConfigPersistence seed) throws Exception {
-    final Configs configs = new EnvConfigs();
-
-    LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(),
-        LogClientSingleton.getInstance().getServerLogsRoot(configs.getWorkspaceRoot()));
-
-    LOGGER.info("Checking config database flyway migration version..");
-    val configsDatabaseInstance =
-        new ConfigsDatabaseInstance(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(), configs.getConfigDatabaseUrl());
+  private static void assertDatabasesReady(Configs configs, DatabaseInstance configsDatabaseInstance, DatabaseInstance jobsDatabaseInstance)
+      throws InterruptedException {
+    LOGGER.info("Checking configs database flyway migration version..");
     MinimumFlywayMigrationVersionCheck.assertDatabase(configsDatabaseInstance, MinimumFlywayMigrationVersionCheck.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS);
     val configsMigrator = new ConfigsDatabaseMigrator(configsDatabaseInstance.getInitialized(), ServerApp.class.getName());
     MinimumFlywayMigrationVersionCheck.assertMigrations(configsMigrator, configs.getConfigsDatabaseMinimumFlywayMigrationVersion(),
         configs.getConfigsDatabaseInitializationTimeoutMs());
 
     LOGGER.info("Checking jobs database flyway migration version..");
-    final DatabaseInstance jobDatabaseInstance =
+    MinimumFlywayMigrationVersionCheck.assertDatabase(jobsDatabaseInstance, MinimumFlywayMigrationVersionCheck.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS);
+    val jobsMigrator = new JobsDatabaseMigrator(jobsDatabaseInstance.getInitialized(), ServerApp.class.getName());
+    MinimumFlywayMigrationVersionCheck.assertMigrations(jobsMigrator, configs.getJobsDatabaseMinimumFlywayMigrationVersion(),
+        configs.getJobsDatabaseInitializationTimeoutMs());
+
+  }
+
+  public static ServerRunnable getServer(final ServerFactory apiFactory, final ConfigPersistence seed) throws Exception {
+    final Configs configs = new EnvConfigs();
+
+    LogClientSingleton.getInstance().setWorkspaceMdc(
+        configs.getWorkerEnvironment(),
+        configs.getLogConfigs(),
+        LogClientSingleton.getInstance().getServerLogsRoot(configs.getWorkspaceRoot()));
+
+    LOGGER.info("Checking databases..");
+    final DatabaseInstance configsDatabaseInstance =
+        new ConfigsDatabaseInstance(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(), configs.getConfigDatabaseUrl());
+    final DatabaseInstance jobsDatabaseInstance =
         new JobsDatabaseInstance(configs.getDatabaseUser(), configs.getDatabasePassword(), configs.getDatabaseUrl());
+    assertDatabasesReady(configs, configsDatabaseInstance, jobsDatabaseInstance);
 
     LOGGER.info("Creating Staged Resource folder...");
     ConfigDumpImporter.initStagedResourceFolder();
@@ -141,7 +155,7 @@ public class ServerApp implements ServerRunnable {
         new ConfigRepository(configPersistence.withValidation(), secretsHydrator, secretPersistence, ephemeralSecretPersistence);
 
     LOGGER.info("Creating jobs persistence...");
-    final Database jobDatabase = jobDatabaseInstance.getInitialized();
+    final Database jobDatabase = jobsDatabaseInstance.getInitialized();
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
 
     TrackingClientSingleton.initialize(
