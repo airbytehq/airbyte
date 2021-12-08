@@ -19,8 +19,8 @@ TEST_REQUIREMENTS = [
 setup(
     name="source_qualaroo",
     description="Source implementation for Qualaroo.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
+    author="Daniel Diamond",
+    author_email="danieldiamond1@gmail.com",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
