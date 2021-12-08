@@ -11,7 +11,7 @@ from functools import total_ordering
 @total_ordering
 @dataclass
 class FileInfo:
-    """Class for sharing of metadate"""
+    """Class for sharing of metadata"""
 
     key: str
     size: int
