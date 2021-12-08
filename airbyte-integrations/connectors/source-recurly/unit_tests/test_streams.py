@@ -1,9 +1,17 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 import unittest
 from datetime import datetime, timedelta
 from unittest.mock import Mock
 
-from source_recurly.streams import BaseRecurlyStream, RecurlyExportDatesStream, RecurlyAccountCouponRedemptionsStream, \
-    RecurlyMeasuredUnitsStream
+from source_recurly.streams import (
+    BaseRecurlyStream,
+    RecurlyAccountCouponRedemptionsStream,
+    RecurlyExportDatesStream,
+    RecurlyMeasuredUnitsStream,
+)
 
 METHOD_NAME = "list_resource"
 
@@ -14,7 +22,6 @@ class RecurlyTestStream(BaseRecurlyStream):
 
 
 class TestStreams(unittest.TestCase):
-
     def setUp(self) -> None:
         self.client_mock = Mock()
         getattr(self.client_mock, METHOD_NAME).return_value.items.return_value = iter([None])
@@ -67,10 +74,7 @@ class TestStreams(unittest.TestCase):
         next(iter(stream.read_records(self.sync_mode_mock)))
 
         self.client_mock.list_accounts.assert_called_once_with(params=self.params)
-        self.client_mock.list_account_coupon_redemptions.assert_called_once_with(
-            account_id=account_id_mock,
-            params=self.params
-        )
+        self.client_mock.list_account_coupon_redemptions.assert_called_once_with(account_id=account_id_mock, params=self.params)
 
     def test_export_dates_read_records(self):
         stream = RecurlyExportDatesStream(client=self.client_mock)

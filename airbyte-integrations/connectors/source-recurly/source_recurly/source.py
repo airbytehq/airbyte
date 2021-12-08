@@ -1,22 +1,32 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-from typing import Mapping, Any, List, Tuple, Optional
+
+from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from recurly import Client, ApiError
+from recurly import ApiError, Client
 
-from .streams import RecurlyAccountsStream, RecurlyCouponsStream, RecurlyInvoicesStream, \
-    RecurlyTransactionsStream, RecurlySubscriptionsStream, RecurlyPlansStream, \
-    RecurlyMeasuredUnitsStream, RecurlyExportDatesStream, RecurlyAccountCouponRedemptionsStream
+from .streams import (
+    RecurlyAccountCouponRedemptionsStream,
+    RecurlyAccountsStream,
+    RecurlyCouponsStream,
+    RecurlyExportDatesStream,
+    RecurlyInvoicesStream,
+    RecurlyMeasuredUnitsStream,
+    RecurlyPlansStream,
+    RecurlySubscriptionsStream,
+    RecurlyTransactionsStream,
+)
 
 
 class SourceRecurly(AbstractSource):
     """
     Recurly API Reference: https://developers.recurly.com/api/v2021-02-25/
     """
+
     def __init__(self):
         super(SourceRecurly, self).__init__()
 
@@ -44,7 +54,7 @@ class SourceRecurly(AbstractSource):
             RecurlyPlansStream(**args),
             RecurlySubscriptionsStream(**args),
             RecurlyTransactionsStream(**args),
-            RecurlyExportDatesStream(**args)
+            RecurlyExportDatesStream(**args),
         ]
 
     def _client(self, api_key: str) -> Client:
@@ -52,5 +62,3 @@ class SourceRecurly(AbstractSource):
             self.__client = Client(api_key=api_key)
 
         return self.__client
-
-

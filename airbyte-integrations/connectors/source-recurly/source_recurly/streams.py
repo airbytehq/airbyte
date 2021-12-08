@@ -1,5 +1,9 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 from abc import abstractmethod
-from typing import Optional, Union, List, Mapping, Any, Iterable, MutableMapping
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
@@ -79,8 +83,13 @@ class BaseRecurlyStream(Stream):
         """
         return self.DEFAULT_CURSOR
 
-    def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, any] = None,
-                     stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
         """
         The method to be called to retrieve records from the Recurly API. It uses the Recurly Python client.
         Resources having different logic (such as the `export_dates`) can override this method
@@ -136,8 +145,13 @@ class RecurlyAccountsStream(BaseRecurlyStream):
 class RecurlyAccountCouponRedemptionsStream(BaseRecurlyStream):
     name = "account_coupon_redemptions"
 
-    def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, any] = None,
-                     stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
         """
         The method to be called to retrieve the accounts coupon redemptions from Recurly. To retrieve the coupon
         redemptions, a seprate call to list all the accounts should be made to pass the `account_id` to the account
@@ -191,8 +205,13 @@ class RecurlyExportDatesStream(BaseRecurlyStream):
 
     cursor_field = []  # Disable `incremental` sync for `export_dates` Recurly API call
 
-    def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, any] = None,
-                     stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
         """
         Reads the `export_dates` response from Recurly. This is a special API call different from other Recurly
         resources and hence treated differently
