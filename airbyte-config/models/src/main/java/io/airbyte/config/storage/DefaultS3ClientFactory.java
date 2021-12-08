@@ -5,8 +5,8 @@
 package io.airbyte.config.storage;
 
 import com.google.common.base.Preconditions;
+import io.airbyte.config.storage.CloudStorageConfigs.S3ApiWorkerStorageConfig;
 import io.airbyte.config.storage.CloudStorageConfigs.S3Config;
-import io.airbyte.config.storage.CloudStorageConfigs.S3LikeWorkerStorageConfig;
 import java.util.function.Supplier;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -31,7 +31,7 @@ public class DefaultS3ClientFactory implements Supplier<S3Client> {
     Preconditions.checkArgument(!config.getRegion().isBlank());
   }
 
-  static void validateBase(final S3LikeWorkerStorageConfig s3BaseConfig) {
+  static void validateBase(final S3ApiWorkerStorageConfig s3BaseConfig) {
     Preconditions.checkArgument(!s3BaseConfig.getAwsAccessKey().isBlank());
     Preconditions.checkArgument(!s3BaseConfig.getAwsSecretAccessKey().isBlank());
     Preconditions.checkArgument(!s3BaseConfig.getBucketName().isBlank());

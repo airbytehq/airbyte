@@ -88,13 +88,13 @@ public class CloudStorageConfigs {
     return gcsConfig;
   }
 
-  public static abstract class S3LikeWorkerStorageConfig {
+  public static abstract class S3ApiWorkerStorageConfig {
 
     private final String bucketName;
     private final String awsAccessKey;
     private final String awsSecretAccessKey;
 
-    protected S3LikeWorkerStorageConfig(final String bucketName, final String awsAccessKey, final String awsSecretAccessKey) {
+    protected S3ApiWorkerStorageConfig(final String bucketName, final String awsAccessKey, final String awsSecretAccessKey) {
       this.bucketName = bucketName;
       this.awsAccessKey = awsAccessKey;
       this.awsSecretAccessKey = awsSecretAccessKey;
@@ -114,7 +114,7 @@ public class CloudStorageConfigs {
 
   }
 
-  public static class S3Config extends S3LikeWorkerStorageConfig {
+  public static class S3Config extends S3ApiWorkerStorageConfig {
 
     private final String region;
 
@@ -129,7 +129,7 @@ public class CloudStorageConfigs {
 
   }
 
-  public static class MinioConfig extends S3LikeWorkerStorageConfig {
+  public static class MinioConfig extends S3ApiWorkerStorageConfig {
 
     private final String minioEndpoint;
 

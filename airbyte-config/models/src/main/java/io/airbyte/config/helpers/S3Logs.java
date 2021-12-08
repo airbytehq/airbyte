@@ -8,7 +8,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.config.storage.CloudStorageConfigs;
-import io.airbyte.config.storage.CloudStorageConfigs.S3LikeWorkerStorageConfig;
+import io.airbyte.config.storage.CloudStorageConfigs.S3ApiWorkerStorageConfig;
 import io.airbyte.config.storage.CloudStorageConfigs.WorkerStorageType;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -47,7 +47,7 @@ public class S3Logs implements CloudLogs {
   }
 
   private static String getBucketName(final CloudStorageConfigs configs) {
-    final S3LikeWorkerStorageConfig config;
+    final S3ApiWorkerStorageConfig config;
     if (configs.getType() == WorkerStorageType.S3) {
       config = configs.getS3Config();
     } else if (configs.getType() == WorkerStorageType.MINIO) {
