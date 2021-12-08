@@ -14,9 +14,8 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
- * An S3 configuration. Typical usage sets at most one of {@code bucketPath} (necessary for more
- * delicate data syncing to S3) and {@code partSize} (used by certain bulk-load database
- * operations).
+ * An S3 configuration. Typical usage sets at most one of {@code bucketPath} (necessary for more delicate data syncing to S3) and {@code partSize}
+ * (used by certain bulk-load database operations).
  */
 public class S3DestinationConfig {
 
@@ -35,29 +34,28 @@ public class S3DestinationConfig {
   private final S3FormatConfig formatConfig;
 
   /**
-   * The part size should not matter in any use case that depends on this constructor. So the default
-   * 10 MB is used.
+   * The part size should not matter in any use case that depends on this constructor. So the default 10 MB is used.
    */
   public S3DestinationConfig(
-                             final String endpoint,
-                             final String bucketName,
-                             final String bucketPath,
-                             final String bucketRegion,
-                             final String accessKeyId,
-                             final String secretAccessKey,
-                             final S3FormatConfig formatConfig) {
+      final String endpoint,
+      final String bucketName,
+      final String bucketPath,
+      final String bucketRegion,
+      final String accessKeyId,
+      final String secretAccessKey,
+      final S3FormatConfig formatConfig) {
     this(endpoint, bucketName, bucketPath, bucketRegion, accessKeyId, secretAccessKey, DEFAULT_PART_SIZE_MB, formatConfig);
   }
 
   public S3DestinationConfig(
-                             final String endpoint,
-                             final String bucketName,
-                             final String bucketPath,
-                             final String bucketRegion,
-                             final String accessKeyId,
-                             final String secretAccessKey,
-                             final Integer partSize,
-                             final S3FormatConfig formatConfig) {
+      final String endpoint,
+      final String bucketName,
+      final String bucketPath,
+      final String bucketRegion,
+      final String accessKeyId,
+      final String secretAccessKey,
+      final Integer partSize,
+      final S3FormatConfig formatConfig) {
     this.endpoint = endpoint;
     this.bucketName = bucketName;
     this.bucketPath = bucketPath;
@@ -148,4 +146,16 @@ public class S3DestinationConfig {
         .build();
   }
 
+  public S3DestinationConfig cloneWithFormatConfig(final S3FormatConfig formatConfig) {
+    return new S3DestinationConfig(
+        this.endpoint,
+        this.bucketName,
+        this.bucketPath,
+        this.bucketRegion,
+        this.accessKeyId,
+        this.secretAccessKey,
+        this.partSize,
+        formatConfig
+    );
+  }
 }

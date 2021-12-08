@@ -15,7 +15,9 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 
-// TODO create new S3StreamCopierFactory
+/**
+ * See {@link S3StreamCopierFactory} instead.
+ */
 @Deprecated
 public abstract class LegacyS3StreamCopierFactory implements StreamCopierFactory<S3DestinationConfig> {
 
