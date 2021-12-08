@@ -112,7 +112,8 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         return date.strftime("%Y-%m-%d")
 
     def path(self, **kwargs) -> str:
-        return "reports:batchGet"
+        # need add './' for correct urllib.parse.urljoin work due to path contains ':'
+        return "./reports:batchGet"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = response.json().get("nextPageToken")
@@ -173,21 +174,29 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         # Add the dimensions to the schema
         for dimension in self.dimensions:
             data_type = self.lookup_data_type("dimension", dimension)
+            data_format = self.lookup_data_format(dimension)
             dimension = dimension.replace("ga:", "ga_")
 
-            schema["properties"][dimension] = {
-                "type": [data_type],
+            dimension_data = {
+                "type": [data_type]
             }
+            if data_format:
+                dimension_data["format"] = data_format
+            schema["properties"][dimension] = dimension_data
 
         # Add the metrics to the schema
         for metric in self.metrics:
             data_type = self.lookup_data_type("metric", metric)
+            data_format = self.lookup_data_format(metric)
             metric = metric.replace("ga:", "ga_")
 
-            schema["properties"][metric] = {
-                # metrics are allowed to also have null values
-                "type": ["null", data_type],
+            # metrics are allowed to also have null values
+            metric_data = {
+                "type": ["null", data_type]
             }
+            if data_format:
+                metric_data["format"] = data_format
+            schema["properties"][metric] = metric_data
 
         return schema
 
@@ -268,6 +277,12 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         data_type = self.map_type.get(attr_type, "string")
 
         return data_type
+
+    @staticmethod
+    def lookup_data_format(attribute: str) -> str or None:
+        if attribute == "ga:date":
+            return "date"
+        return
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
