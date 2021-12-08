@@ -3,9 +3,6 @@ FROM openjdk:${JDK_VERSION}-slim AS worker
 
 ARG DOCKER_BUILD_ARCH=amd64
 
-RUN groupadd --gid 1000 airbyte && \
-    useradd --uid 1000 --gid airbyte airbyte
-
 # Install Docker to launch worker images. Eventually should be replaced with Docker-java.
 # See https://gitter.im/docker-java/docker-java?at=5f3eb87ba8c1780176603f4e for more information on why we are not currently using Docker-java
 RUN apt-get update && apt-get install -y \
@@ -27,9 +24,6 @@ WORKDIR /app
 
 # Move worker app
 ADD bin/${APPLICATION}-0.33.5-alpha.tar /app
-
-# Set user to Airbyte, use numeric value for k8s runAsNonRoot PodSecurityPolicy
-USER 1000:1000
 
 # wait for upstream dependencies to become available before starting server
 ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-0.33.5-alpha/bin/${APPLICATION}"]

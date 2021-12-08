@@ -132,7 +132,7 @@ kubectl apply -k kube/overlays/stable
 
 After 2-5 minutes, `kubectl get pods | grep airbyte` should show `Running` as the status for all the core Airbyte pods. This may take longer on Kubernetes clusters with slow internet connections.
 
-Run `kubectl port-forward svc/airbyte-webapp-svc 8000:8080` to allow access to the UI/API.
+Run `kubectl port-forward svc/airbyte-webapp-svc 8000:80` to allow access to the UI/API.
 
 Now visit [http://localhost:8000](http://localhost:8000) in your browser and start moving some data!
 
