@@ -9,12 +9,12 @@
     "properties": {
       "client_id": {
         "title": "Client ID",
-        "description": "The Consumer Key that can be found when viewing your app in Salesforce.",
+        "description": "The Client ID of your Salesforce developer application.",
         "type": "string"
       },
       "client_secret": {
         "title": "Client Secret",
-        "description": "The Consumer Secret that can be found when viewing your app in Salesforce.",
+        "description": "The Client Secret of your Salesforce developer application.",
         "type": "string",
         "airbyte_secret": true
       },
