@@ -327,11 +327,11 @@ class IncrementalUnsortedCursorStream(IncrementalUnsortedStream, ABC):
     """Stream for loading without sorting but with cursor based pagination"""
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        has_more = response.json().get("meta").get("has_more")
+        has_more = response.json().get("meta", {}).get("has_more")
         if not has_more:
             self._finished = True
             return None
-        return response.json().get("meta").get("after_cursor")
+        return response.json().get("meta", {}).get("after_cursor")
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(next_page_token=next_page_token, **kwargs)
