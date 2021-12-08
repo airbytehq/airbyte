@@ -5,67 +5,138 @@
     "title": "Microsoft Teams Spec",
     "type": "object",
     "required": ["period"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
-      "tenant_id": {
-        "title": "Directory (tenant) ID",
-        "type": "string",
-        "description": "Directory (tenant) ID"
-      },
-      "client_id": {
-        "title": "Application (client) ID",
-        "type": "string",
-        "description": "Application (client) ID"
-      },
-      "client_secret": {
-        "title": "Client Secret",
-        "type": "string",
-        "description": "Client secret",
-        "airbyte_secret": true
-      },
       "period": {
         "type": "string",
         "description": "Specifies the length of time over which the Team Device Report stream is aggregated. The supported values are: D7, D30, D90, and D180.",
         "examples": ["D7"]
       },
       "credentials": {
+        "title": "Authentication mechanism",
+        "description": "Choose how to authenticate to Microsoft",
         "type": "object",
-        "title": "Authenticate via Microsoft (OAuth 2.0)",
-        "required": ["tenant_id", "client_id", "client_secret", "refresh_token"],
-        "additionalProperties": false,
-        "properties": {
-          "tenant_id": {
-            "title": "Directory (tenant) ID",
-            "type": "string",
-            "description": "Directory (tenant) ID"
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "Authenticate via Microsoft (OAuth 2.0)",
+            "required": ["tenant_id", "client_id", "client_secret", "refresh_token"],
+            "additionalProperties": false,
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Client",
+                "enum": ["Client"],
+                "default": "Client",
+                "order": 0
+              },
+              "tenant_id": {
+                "title": "Directory (tenant) ID",
+                "type": "string",
+                "description": "Directory (tenant) ID"
+              },
+              "client_id": {
+                "title": "Application (client) ID",
+                "type": "string",
+                "description": "Application (client) ID"
+              },
+              "client_secret": {
+                "title": "Client Secret",
+                "type": "string",
+                "description": "Client secret",
+                "airbyte_secret": true
+              },
+              "refresh_token": {
+                "title": "Refresh Token",
+                "type": "string",
+                "description": "A refresh token generated using the above client ID and secret",
+                "airbyte_secret": true
+              }
+            }
           },
-          "client_id": {
-            "title": "Application (client) ID",
-            "type": "string",
-            "description": "Application (client) ID"
-          },
-          "client_secret": {
-            "title": "Client Secret",
-            "type": "string",
-            "description": "Client secret",
-            "airbyte_secret": true
-          },
-          "refresh_token": {
-            "title": "Refresh Token",
-            "type": "string",
-            "description": "A refresh token generated using the above client ID and secret",
-            "airbyte_secret": true
+          {
+            "type": "object",
+            "title": "Authenticate via Microsoft",
+            "required": ["tenant_id", "client_id", "client_secret"],
+            "additionalProperties": false,
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Token",
+                "enum": ["Token"],
+                "default": "Token",
+                "order": 0
+              },
+              "tenant_id": {
+                "title": "Directory (tenant) ID",
+                "type": "string",
+                "description": "Directory (tenant) ID"
+              },
+              "client_id": {
+                "title": "Application (client) ID",
+                "type": "string",
+                "description": "Application (client) ID"
+              },
+              "client_secret": {
+                "title": "Client Secret",
+                "type": "string",
+                "description": "Client secret",
+                "airbyte_secret": true
+              }
+            }
           }
-        }
+        ]
       }
     }
   },
-  "authSpecification": {
-    "auth_type": "oauth2.0",
-    "oauth2Specification": {
-      "rootObject": ["credentials"],
-      "oauthFlowInitParameters": [["tenant_id"], ["client_id"], ["client_secret"]],
-      "oauthFlowOutputParameters": [["refresh_token"]]
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": ["credentials", "auth_type"],
+    "predicate_value": "Client",
+    "oauth_config_specification": {
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "refresh_token"]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tenant_id": {
+            "type": "string"
+          },
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "tenant_id"]
+          },
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_id"]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_secret"]
+          }
+        }
+      }
     }
   }
 }
