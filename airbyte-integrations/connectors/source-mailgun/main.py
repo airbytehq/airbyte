@@ -5,9 +5,9 @@
 
 import sys
 
-from base_python.entrypoint import launch
-from google_sheets_source import GoogleSheetsSource
+from airbyte_cdk.entrypoint import launch
+from source_mailgun import SourceMailgun
 
 if __name__ == "__main__":
-    source = GoogleSheetsSource()
+    source = SourceMailgun()
     launch(source, sys.argv[1:])

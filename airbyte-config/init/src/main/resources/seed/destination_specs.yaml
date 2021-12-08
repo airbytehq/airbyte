@@ -3111,7 +3111,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.3.18"
+- dockerImage: "airbyte/destination-snowflake:0.3.19"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:
@@ -3197,6 +3197,19 @@
                 enum:
                 - "Internal Staging"
                 default: "Internal Staging"
+          - title: "Standard Inserts"
+            additionalProperties: false
+            description: "Uses <pre>INSERT</pre> statements to send batches of records\
+              \ to Snowflake. Easiest (no setup) but not recommended for large production\
+              \ workloads due to slow speed."
+            required:
+            - "method"
+            properties:
+              method:
+                type: "string"
+                enum:
+                - "Standard"
+                default: "Standard"
           - title: "AWS S3 Staging"
             additionalProperties: false
             description: "Writes large batches of records to a file, uploads the file\

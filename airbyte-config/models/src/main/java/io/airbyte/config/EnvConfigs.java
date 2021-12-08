@@ -10,7 +10,10 @@ import com.google.common.base.Strings;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
-import io.airbyte.config.helpers.LogConfiguration;
+import io.airbyte.config.storage.CloudStorageConfigs;
+import io.airbyte.config.storage.CloudStorageConfigs.GcsConfig;
+import io.airbyte.config.storage.CloudStorageConfigs.MinioConfig;
+import io.airbyte.config.storage.CloudStorageConfigs.S3Config;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -101,7 +104,7 @@ public class EnvConfigs implements Configs {
   public static final String DEFAULT_NETWORK = "host";
 
   private final Function<String, String> getEnv;
-  private final LogConfiguration logConfiguration;
+  private final LogConfigs logConfigs;
 
   public EnvConfigs() {
     this(System::getenv);
@@ -109,14 +112,29 @@ public class EnvConfigs implements Configs {
 
   EnvConfigs(final Function<String, String> getEnv) {
     this.getEnv = getEnv;
-    this.logConfiguration = new LogConfiguration(
-        getEnvOrDefault(LogClientSingleton.S3_LOG_BUCKET, ""),
-        getEnvOrDefault(LogClientSingleton.S3_LOG_BUCKET_REGION, ""),
-        getEnvOrDefault(LogClientSingleton.AWS_ACCESS_KEY_ID, ""),
-        getEnvOrDefault(LogClientSingleton.AWS_SECRET_ACCESS_KEY, ""),
-        getEnvOrDefault(LogClientSingleton.S3_MINIO_ENDPOINT, ""),
-        getEnvOrDefault(LogClientSingleton.GCS_LOG_BUCKET, ""),
-        getEnvOrDefault(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, ""));
+    this.logConfigs = new LogConfigs(getLogConfiguration().orElse(null));
+  }
+
+  private Optional<CloudStorageConfigs> getLogConfiguration() {
+    if (getEnv(LogClientSingleton.GCS_LOG_BUCKET) != null) {
+      return Optional.of(CloudStorageConfigs.gcs(new GcsConfig(
+          getEnvOrDefault(LogClientSingleton.GCS_LOG_BUCKET, ""),
+          getEnvOrDefault(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, ""))));
+    } else if (getEnv(LogClientSingleton.S3_MINIO_ENDPOINT) != null) {
+      return Optional.of(CloudStorageConfigs.minio(new MinioConfig(
+          getEnvOrDefault(LogClientSingleton.S3_LOG_BUCKET, ""),
+          getEnvOrDefault(LogClientSingleton.AWS_ACCESS_KEY_ID, ""),
+          getEnvOrDefault(LogClientSingleton.AWS_SECRET_ACCESS_KEY, ""),
+          getEnvOrDefault(LogClientSingleton.S3_MINIO_ENDPOINT, ""))));
+    } else if (getEnv(LogClientSingleton.S3_LOG_BUCKET_REGION) != null) {
+      return Optional.of(CloudStorageConfigs.s3(new S3Config(
+          getEnvOrDefault(LogClientSingleton.S3_LOG_BUCKET, ""),
+          getEnvOrDefault(LogClientSingleton.AWS_ACCESS_KEY_ID, ""),
+          getEnvOrDefault(LogClientSingleton.AWS_SECRET_ACCESS_KEY, ""),
+          getEnvOrDefault(LogClientSingleton.S3_LOG_BUCKET_REGION, ""))));
+    } else {
+      return Optional.empty();
+    }
   }
 
   // CORE
@@ -402,9 +420,8 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(JOB_POD_MAIN_CONTAINER_MEMORY_LIMIT, DEFAULT_JOB_POD_MEMORY_REQUIREMENT);
   }
 
-  // Logging/Monitoring/Tracking
   public LogConfigs getLogConfigs() {
-    return logConfiguration;
+    return logConfigs;
   }
 
   @Override
