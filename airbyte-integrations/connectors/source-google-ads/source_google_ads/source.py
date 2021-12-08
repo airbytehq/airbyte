@@ -3,7 +3,7 @@
 #
 
 
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping, Tuple, Union
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
@@ -41,12 +41,19 @@ class SourceGoogleAds(AbstractSource):
         return credentials
 
     @staticmethod
-    def get_time_zone(google_api) -> [timezone, str]:
-        account = next(Accounts(api=google_api).read_records(sync_mode=None), {})
+    def get_account_info(google_api) -> dict:
+        return next(Accounts(api=google_api).read_records(sync_mode=None), {})
+
+    @staticmethod
+    def get_time_zone(account: dict) -> Union[timezone, str]:
         time_zone_name = account.get("customer.time_zone")
         if time_zone_name:
             return Timezone(time_zone_name)
         return "local"
+
+    @staticmethod
+    def is_manager_account(account: dict) -> bool:
+        return bool(account.get("customer.manager"))
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
@@ -67,7 +74,8 @@ class SourceGoogleAds(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         google_api = GoogleAds(credentials=self.get_credentials(config), customer_id=config["customer_id"])
-        time_zone = self.get_time_zone(google_api)
+        account_info = self.get_account_info(google_api)
+        time_zone = self.get_time_zone(account_info)
         incremental_stream_config = dict(
             api=google_api,
             conversion_window_days=config["conversion_window_days"],
@@ -89,9 +97,8 @@ class SourceGoogleAds(AbstractSource):
         ]
         streams.extend(custom_query_streams)
 
-        is_manager_account = "login_customer_id" in config and config["login_customer_id"].strip()
         # Metrics streams cannot be requested for a manager account.
-        if not is_manager_account:
+        if not self.is_manager_account(account_info):
             streams.extend([
                 UserLocationReport(**incremental_stream_config),
                 AccountPerformanceReport(**incremental_stream_config),
