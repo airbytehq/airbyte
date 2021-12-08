@@ -72,6 +72,8 @@ public class Databases {
         database = createPostgresDatabase(username, password, jdbcConnectionString);
         if (!isDbReady.apply(database)) {
           LOGGER.info("Database is not ready yet. Please wait a moment, it might still be initializing...");
+          database.close();
+
           database = null;
           Exceptions.toRuntime(() -> Thread.sleep(DEFAULT_WAIT_MS));
           totalTime += DEFAULT_WAIT_MS;
