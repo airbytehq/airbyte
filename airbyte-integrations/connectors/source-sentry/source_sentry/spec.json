@@ -27,7 +27,7 @@
       "project": {
         "type": "string",
         "title": "Project",
-        "description": "The Name of the Project you wanto sync."
+        "description": "The Name of the Project you want to sync."
       }
     }
   }
