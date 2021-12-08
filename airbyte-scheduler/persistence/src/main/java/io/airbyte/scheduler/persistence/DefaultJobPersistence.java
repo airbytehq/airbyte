@@ -640,6 +640,10 @@ public class DefaultJobPersistence implements JobPersistence {
     if (!data.isEmpty()) {
       createSchema(BACKUP_SCHEMA);
       jobDatabase.transaction(ctx -> {
+        // obtain locks on all tables first, to prevent deadlocks
+        for (final JobsDatabaseSchema tableType : data.keySet()) {
+          ctx.execute(String.format("LOCK TABLE %s IN ACCESS EXCLUSIVE MODE", tableType.name()));
+        }
         for (final JobsDatabaseSchema tableType : data.keySet()) {
           if (!incrementalImport) {
             truncateTable(ctx, targetSchema, tableType.name(), BACKUP_SCHEMA);
