@@ -230,16 +230,14 @@ public class ConfigDumpImporter {
   public void importDatabaseFromArchive(final Path storageRoot, final AirbyteVersion airbyteVersion) throws IOException {
     try {
       final Map<JobsDatabaseSchema, Stream<JsonNode>> data = new HashMap<>();
-      for (final JobsDatabaseSchema tableType : JobsDatabaseSchema.values()) {
+      for (final JobsDatabaseSchema tableType : JobsDatabaseSchema.getImportExportTableTypes()) {
         final Path tablePath = buildTablePath(storageRoot, tableType.name());
         Stream<JsonNode> tableStream = readTableFromArchive(tableType, tablePath);
 
         if (tableType == JobsDatabaseSchema.AIRBYTE_METADATA) {
           tableStream = replaceDeploymentMetadata(jobPersistence, tableStream);
         }
-        if (tableType.getIsPartOfImportExport()) {
-          data.put(tableType, tableStream);
-        }
+        data.put(tableType, tableStream);
       }
       jobPersistence.importDatabase(airbyteVersion.serialize(), data);
       LOGGER.info("Successful upgrade of airbyte postgres database from archive");

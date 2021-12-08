@@ -52,6 +52,10 @@ public enum JobsDatabaseSchema implements TableSchema {
     return JsonSchemaValidator.getSchema(schemaFile);
   }
 
+  public boolean getIsPartOfImportExport() {
+    return this.isPartofImportExport;
+  }
+
   /**
    * @return table names in lower case
    */
@@ -59,7 +63,8 @@ public enum JobsDatabaseSchema implements TableSchema {
     return Stream.of(JobsDatabaseSchema.values()).map(JobsDatabaseSchema::getTableName).collect(Collectors.toSet());
   }
 
-  public boolean getIsPartOfImportExport() {
-    return this.isPartofImportExport;
+  public static Set<JobsDatabaseSchema> getImportExportTableTypes() {
+    return Stream.of(JobsDatabaseSchema.values()).filter(JobsDatabaseSchema::getIsPartOfImportExport).collect(Collectors.toSet());
   }
+
 }
