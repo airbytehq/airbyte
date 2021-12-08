@@ -2,17 +2,21 @@
 
 ## Overview
 
-The Recurly source supports Full Refresh syncs. That is, every time a sync is run, Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
+The Recurly source supports _Full Refresh_ as well as _Incremental_ syncs. 
+
+_Full Refresh_ sync means every time a sync is run, Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
+_Incremental_ syn means only changed resources are copied from Recurly. For the first run, it will be a Full Refresh sync.
 
 ### Output schema
 
 Several output streams are available from this source:
 
 * [Accounts](https://docs.recurly.com/docs/accounts)
+* [Account Coupon Redemptions](https://docs.recurly.com/docs/coupons#redemptions)
 * [Coupons](https://docs.recurly.com/docs/coupons)
-* Automated Exports
+* [Automated Exports](https://docs.recurly.com/docs/export-overview)
 * [Invoices](https://docs.recurly.com/docs/invoices)
-* Measured Units
+* [Measured Units](https://developers.recurly.com/api/v2021-02-25/index.html#tag/measured_unit)
 * [Plans](https://docs.recurly.com/docs/plans)
 * [Subscriptions](https://docs.recurly.com/docs/subscriptions)
 * [Transactions](https://docs.recurly.com/docs/transactions)
@@ -24,7 +28,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 | Feature | Supported? |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
-| Incremental Sync | Coming soon |
+| Incremental Sync | Yes |
 | Replicate Incremental Deletes | Coming soon |
 | SSL connection | Yes |
 | Namespaces | No |
@@ -50,5 +54,5 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :--- | :--- |
-| 0.2.6   | 2021-12-06 | [8468](https://github.com/airbytehq/airbyte/pull/8468) | Migrate to the CDK |
+| 0.3.0   | 2021-12-08 | [8468](https://github.com/airbytehq/airbyte/pull/8468) | Support Incremental Sync Mode |
 
