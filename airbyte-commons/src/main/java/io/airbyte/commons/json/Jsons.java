@@ -60,7 +60,7 @@ public class Jsons {
   public static <T> Optional<T> tryDeserialize(final String jsonString, final Class<T> klass) {
     try {
       return Optional.of(OBJECT_MAPPER.readValue(jsonString, klass));
-    } catch (final IOException e) {
+    } catch (final Throwable e) {
       return Optional.empty();
     }
   }
@@ -68,7 +68,7 @@ public class Jsons {
   public static Optional<JsonNode> tryDeserialize(final String jsonString) {
     try {
       return Optional.of(OBJECT_MAPPER.readTree(jsonString));
-    } catch (final IOException e) {
+    } catch (final Throwable e) {
       return Optional.empty();
     }
   }
