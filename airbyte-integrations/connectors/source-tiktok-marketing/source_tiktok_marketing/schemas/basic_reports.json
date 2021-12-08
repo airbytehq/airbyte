@@ -56,16 +56,16 @@
           "type": ["null", "number"]
         },
         "impressions": {
-          "type": ["null", "number"]
+          "type": ["null", "integer"]
         },
         "clicks": {
-          "type": ["null", "number"]
+          "type": ["null", "integer"]
         },
         "ctr": {
           "type": ["null", "number"]
         },
         "reach": {
-          "type": ["null", "number"]
+          "type": ["null", "integer"]
         },
         "cost_per_1000_reached": {
           "type": ["null", "number"]
