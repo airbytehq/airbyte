@@ -27,6 +27,10 @@ public class GcsCloudDocumentStoreClient implements CloudDocumentStoreClient {
     this.root = root;
   }
 
+  public void createBucket(final Storage gcsClient, final String bucketName) {
+    gcsClient.bu
+  }
+
   String getKey(final String id) {
     return root + "/" + id;
   }

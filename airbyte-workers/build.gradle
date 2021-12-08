@@ -78,19 +78,9 @@ Task dockerBuildTask = getDockerBuildTask("worker",  "$project.projectDir")
 dockerBuildTask.dependsOn(copyGeneratedTar)
 assemble.dependsOn(dockerBuildTask)
 
-
-test {
-    useJUnitPlatform {
-        excludeTags 'log4j2-config', 'cloud-storage'
-    }
-    testLogging {
-        events "passed", "skipped", "failed"
-    }
-}
-
 task cloudStorageIntegrationTest(type: Test) {
     useJUnitPlatform {
-        includeTags 'cloud-storage'
+        includeTags cloudStorageTestTagName
     }
     testLogging {
         events "passed", "skipped", "failed"

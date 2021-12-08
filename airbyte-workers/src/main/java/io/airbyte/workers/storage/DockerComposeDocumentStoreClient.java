@@ -34,11 +34,11 @@ public class DockerComposeDocumentStoreClient implements CloudDocumentStoreClien
   @Override
   public void write(final String id, final String document) {
     final Path path = getPath(id);
-    createDirectoriesSafe(path.getParent());
+    createDirectoryWithParents(path.getParent());
     IOs.writeFile(path, document);
   }
 
-  private void createDirectoriesSafe(final Path path) {
+  private void createDirectoryWithParents(final Path path) {
     try {
       Files.createDirectories(path);
     } catch (final IOException e) {
