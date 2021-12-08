@@ -25,28 +25,30 @@ class SourceRecurly(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         try:
             # Checking the API key by trying a test API call to get the first account
-            self._client(config).list_accounts().first()
+            self._client(config["api_key"]).list_accounts().first()
             return True, None
         except ApiError as err:
             return False, err.args[0]
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        client = self._client(config)
+        client = self._client(api_key=config["api_key"])
+
+        args = {"client": client, "begin_time": config.get("begin_time")}
 
         return [
-            RecurlyAccountsStream(client=client),
-            RecurlyCouponsStream(client=client),
-            RecurlyInvoicesStream(client=client),
-            RecurlyMeasuredUnitsStream(client=client),
-            RecurlyPlansStream(client=client),
-            RecurlySubscriptionsStream(client=client),
-            RecurlyTransactionsStream(client=client),
-            RecurlyExportDatesStream(client=client)
+            RecurlyAccountsStream(**args),
+            RecurlyCouponsStream(**args),
+            RecurlyInvoicesStream(**args),
+            RecurlyMeasuredUnitsStream(**args),
+            RecurlyPlansStream(**args),
+            RecurlySubscriptionsStream(**args),
+            RecurlyTransactionsStream(**args),
+            RecurlyExportDatesStream(**args)
         ]
 
-    def _client(self, config: json) -> Client:
+    def _client(self, api_key: str) -> Client:
         if not self.__client:
-            self.__client = Client(api_key=config["api_key"])
+            self.__client = Client(api_key=api_key)
 
         return self.__client
 
