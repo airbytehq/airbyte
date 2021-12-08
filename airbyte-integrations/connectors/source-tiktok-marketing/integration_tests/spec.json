@@ -70,7 +70,7 @@
       },
       "report_granularity": {
         "title": "Report Granularity",
-        "description": "Which time granularity should be grouped by; for LIFETIME there will be no grouping",
+        "description": "Which time granularity should be grouped by; for LIFETIME there will be no grouping. This option is used for reports' stream only",
         "default": "DAY",
         "enum": ["LIFETIME", "DAY", "HOUR"],
         "order": 4,

@@ -55,7 +55,8 @@ class SourceTiktokMarketingSpec(BaseModel):
     )
 
     report_granularity: str = Field(
-        description="Which time granularity should be grouped by; for LIFETIME there will be no grouping",
+        description="Which time granularity should be grouped by; for LIFETIME there will be no grouping. "
+        "This option is used for reports' streams only.",
         default=ReportGranularity.default().value,
         enum=[g.value for g in ReportGranularity],
         order=4,

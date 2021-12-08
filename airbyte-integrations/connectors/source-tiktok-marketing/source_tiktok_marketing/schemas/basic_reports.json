@@ -71,7 +71,7 @@
           "type": ["null", "number"]
         },
         "conversion": {
-          "type": ["null", "number"]
+          "type": ["null", "integer"]
         },
         "cost_per_conversion": {
           "type": ["null", "number"]
@@ -80,7 +80,7 @@
           "type": ["null", "number"]
         },
         "real_time_conversion": {
-          "type": ["null", "number"]
+          "type": ["null", "integer"]
         },
         "real_time_cost_per_conversion": {
           "type": ["null", "number"]
