@@ -30,7 +30,7 @@ public class AvroNameTransformer extends ExtendedNameTransformer {
     }
   }
 
-  public String resovleNamespace(String fieldName, List<String> recordFieldNames) {
+  public String resolveNamespace(String fieldName, List<String> recordFieldNames) {
     return AVRO_RECORD_NAMESPACE
         .concat(".")
         .concat(fieldName)
