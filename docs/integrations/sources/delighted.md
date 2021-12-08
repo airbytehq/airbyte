@@ -37,4 +37,5 @@ This connector supports `API PASSWORD` as the authentication method.
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.1 | 2021-12-08 | [8494](https://github.com/airbytehq/airbyte/pull/8494) | Update fields in source-connectors specifications |
 | 0.1.0 | 2021-10-27 | [4551](https://github.com/airbytehq/airbyte/pull/4551) | Add Delighted source connector |

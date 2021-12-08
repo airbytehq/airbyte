@@ -62,6 +62,7 @@ You can also enter your own password for the keystore, but if you don't, the pas
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.4 | 2021-12-08 | [8494](https://github.com/airbytehq/airbyte/pull/8494) | Update fields in source-connectors specifications |
 | 0.1.3 | 2021-11-05 | [7670](https://github.com/airbytehq/airbyte/pull/7670) | Updated unique DB2 types transformation |
 | 0.1.2 | 2021-10-25 | [7355](https://github.com/airbytehq/airbyte/pull/7355) | Added ssl support |
 | 0.1.1 | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |
