@@ -154,18 +154,18 @@ public class EnvConfigs implements Configs {
     if (getEnv(STATE_STORAGE_GCS_BUCKET_NAME) != null) {
       return Optional.of(CloudStorageConfigs.gcs(new GcsConfig(
           getEnvOrDefault(STATE_STORAGE_GCS_BUCKET_NAME, ""),
-          getEnvOrDefault(STATE_STORAGE_GCS_APPLICATION_CREDENTIALS, ""))));
+          getEnvOrDefault(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, ""))));
     } else if (getEnv(STATE_STORAGE_MINIO_ENDPOINT) != null) {
       return Optional.of(CloudStorageConfigs.minio(new MinioConfig(
           getEnvOrDefault(STATE_STORAGE_MINIO_BUCKET_NAME, ""),
-          getEnvOrDefault(STATE_STORAGE_MINIO_ACCESS_KEY, ""),
-          getEnvOrDefault(STATE_STORAGE_MINIO_SECRET_ACCESS_KEY, ""),
+          getEnvOrDefault(LogClientSingleton.AWS_ACCESS_KEY_ID, ""),
+          getEnvOrDefault(LogClientSingleton.AWS_SECRET_ACCESS_KEY, ""),
           getEnvOrDefault(STATE_STORAGE_MINIO_ENDPOINT, ""))));
     } else if (getEnv(STATE_STORAGE_S3_REGION) != null) {
       return Optional.of(CloudStorageConfigs.s3(new S3Config(
           getEnvOrDefault(STATE_STORAGE_S3_BUCKET_NAME, ""),
-          getEnvOrDefault(STATE_STORAGE_S3_ACCESS_KEY, ""),
-          getEnvOrDefault(STATE_STORAGE_S3_SECRET_ACCESS_KEY, ""),
+          getEnvOrDefault(LogClientSingleton.AWS_ACCESS_KEY_ID, ""),
+          getEnvOrDefault(LogClientSingleton.AWS_SECRET_ACCESS_KEY, ""),
           getEnvOrDefault(STATE_STORAGE_S3_REGION, ""))));
     } else {
       return Optional.empty();
