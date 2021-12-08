@@ -4,11 +4,10 @@
 
 
 from abc import ABC
+from email.utils import parsedate_tz
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
-from email.utils import parsedate_tz
-from datetime import datetime
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -68,6 +67,7 @@ class BigcommerceStream(HttpStream, ABC):
         records = json_response.get(self.data, []) if self.data is not None else json_response
         yield from records
 
+
 class IncrementalBigcommerceStream(BigcommerceStream, ABC):
     # Getting page size as 'limit' from parent class
     @property
@@ -109,11 +109,13 @@ class OrderSubstream(IncrementalBigcommerceStream):
             slice = super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
             yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
 
+
 class Customers(IncrementalBigcommerceStream):
     data_field = "customers"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}"
+
 
 class Orders(IncrementalBigcommerceStream):
     data_field = "orders"
@@ -130,7 +132,7 @@ class Orders(IncrementalBigcommerceStream):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         max_date = ""
-        if not current_stream_state.get(self.cursor_field) :
+        if not current_stream_state.get(self.cursor_field):
             max_date = latest_record.get(self.cursor_field, "")
         elif latest_record.get(self.cursor_field) and current_stream_state.get(self.cursor_field):
             latest_state_date_time = parsedate_tz(latest_record.get(self.cursor_field))
@@ -141,13 +143,13 @@ class Orders(IncrementalBigcommerceStream):
 
         return {self.cursor_field: max_date}
 
-
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if len(response.content) > 0 and len(response.json()) == self.limit:
             self.page = self.page + 1
             return dict(page=self.page)
         else:
             return None
+
 
 class Pages(IncrementalBigcommerceStream):
     data_field = "pages"
@@ -171,6 +173,7 @@ class Pages(IncrementalBigcommerceStream):
         slice = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, stream_state=stream_state)
         yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
 
+
 class Transactions(OrderSubstream):
     data_field = "transactions"
     cursor_field = "id"
@@ -188,12 +191,14 @@ class Transactions(OrderSubstream):
         params = {"limit": self.limit}
         return params
 
+
 class BigcommerceAuthenticator(HttpAuthenticator):
     def __init__(self, token: str):
         self.token = token
 
     def get_auth_header(self) -> Mapping[str, Any]:
         return {"X-Auth-Token": f"{self.token}"}
+
 
 class SourceBigcommerce(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
