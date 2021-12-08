@@ -17,7 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-@Tag("logger-client")
+@Tag("cloud-storage")
 class GcsCloudDocumentStoreClientTest {
 
   private static final String BUCKET_NAME = "airbyte-kube-integration-logging-test";
