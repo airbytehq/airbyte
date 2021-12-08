@@ -40,6 +40,7 @@ This Source is capable of syncing the following core Streams:
 * [InventoryLevels](https://shopify.dev/api/admin-rest/2021-10/resources/inventorylevel)
 * [Fulfillment Orders](https://shopify.dev/api/admin-rest/2021-07/resources/fulfillmentorder)
 * [Fulfillments](https://shopify.dev/api/admin-rest/2021-07/resources/fulfillment)
+* [Shop](https://shopify.dev/api/admin-rest/2021-07/resources/shop)
 
 #### NOTE:
 
@@ -100,6 +101,7 @@ This connector support both: `OAuth 2.0` and `API PASSWORD` (for private applica
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.25 | 2021-12-02 | [8297](https://github.com/airbytehq/airbyte/pull/8297) | Added Shop stream |
 | 0.1.24 | 2021-11-30 | [7783](https://github.com/airbytehq/airbyte/pull/7783) | Reviewed and corrected schemas for all streams |
 | 0.1.23 | 2021-11-15 | [7973](https://github.com/airbytehq/airbyte/pull/7973) | Added `InventoryItems` |
 | 0.1.22 | 2021-10-18 | [7101](https://github.com/airbytehq/airbyte/pull/7107) | Added FulfillmentOrders, Fulfillments streams |
