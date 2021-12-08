@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 
 public class MinimumFlywayMigrationVersionCheck {
 
+  public static final long DEFAULT_ASSERT_DATABASE_TIMEOUT_MS = 2 * BaseDatabaseInstance.DEFAULT_CONNECTION_TIMEOUT_MS;
+
   private static final Logger LOGGER = LoggerFactory.getLogger(MinimumFlywayMigrationVersionCheck.class);
   private static final long DEFAULT_POLL_PERIOD_MS = 2000;
 

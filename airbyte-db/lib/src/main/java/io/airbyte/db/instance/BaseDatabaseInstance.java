@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class BaseDatabaseInstance implements DatabaseInstance {
 
+  // Public so classes consuming the getInitialized method have a sense of the time taken.
   public static final long DEFAULT_CONNECTION_TIMEOUT_MS = 30 * 1000;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseDatabaseInstance.class);
