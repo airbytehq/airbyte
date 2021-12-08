@@ -78,7 +78,7 @@ class IncrementalWoocommerceStream(WoocommerceStream, ABC):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         if(self.cursor_field == "date_modified" and datetime.now().isoformat() < current_stream_state.get(self.cursor_field, "")):
-            return latest_record.get(self.cursor_field, "")
+            return {self.cursor_field: latest_record.get(self.cursor_field, "")}
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
     def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):

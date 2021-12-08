@@ -4,5 +4,6 @@
   "dockerRepository": "airbyte/source-woocommerce",
   "dockerImageTag": "0.1.1",
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/woocommerce",
-  "icon": "woocommerce.svg"
+  "icon": "woocommerce.svg",
+  "sourceType": "api"
 }
