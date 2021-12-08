@@ -6,9 +6,7 @@ spec:
   type: NodePort
   ports:
     - port: 80
-      targetPort: http
       protocol: TCP
-      name: http
   selector:
     airbyte: webapp
 ---
@@ -61,6 +59,4 @@ spec:
                   name: airbyte-env
                   key: INTERNAL_API_HOST
           ports:
-            - name: http
-              containerPort: 8080
-              protocol: TCP
+            - containerPort: 80
