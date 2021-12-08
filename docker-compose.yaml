@@ -23,6 +23,7 @@ services:
     logging: *default-logging
     container_name: airbyte-bootloader
     environment:
+      - AIRBYTE_VERSION=${VERSION}
       - DATABASE_USER=${DATABASE_USER}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
       - DATABASE_URL=${DATABASE_URL}

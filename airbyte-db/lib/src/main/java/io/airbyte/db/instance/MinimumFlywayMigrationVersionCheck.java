@@ -34,6 +34,7 @@ public class MinimumFlywayMigrationVersionCheck {
   public static void assertMigrations(DatabaseMigrator migrator, String minimumFlywayVersion, long timeoutMs) throws InterruptedException {
     var currWaitingTime = 0;
     var currDatabaseMigrationVersion = migrator.getLatestMigration().getVersion().getVersion();
+
     while (currDatabaseMigrationVersion.compareTo(minimumFlywayVersion) < 0) {
       if (currWaitingTime >= timeoutMs) {
         throw new RuntimeException("Timeout while waiting for database to fulfill minimum flyway migration version..");
