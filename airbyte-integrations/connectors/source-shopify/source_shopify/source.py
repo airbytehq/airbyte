@@ -402,6 +402,19 @@ class Fulfillments(ChildSubstream):
         return f"orders/{order_id}/{self.data_field}.json"
 
 
+class Shop(ShopifyStream):
+    data_field = "shop"
+
+    @limiter.balance_rate_limit()
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        json_response = response.json()
+        record = json_response.get(self.data_field, []) if self.data_field is not None else json_response
+        return [record]
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+
 class SourceShopify(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
 
@@ -447,4 +460,5 @@ class SourceShopify(AbstractSource):
             InventoryLevels(config),
             FulfillmentOrders(config),
             Fulfillments(config),
+            Shop(config),
         ]
