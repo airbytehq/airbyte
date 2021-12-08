@@ -43,5 +43,6 @@ This Source is capable of syncing the following Streams:
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.1 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
 | 0.1.0 | 2021-08-16 | [3787](https://github.com/airbytehq/airbyte/pull/5418) | Add Native Shortio Source Connector |
 

@@ -80,10 +80,10 @@ class CockroachDbSourceTest {
       .toDefaultConfiguredCatalog(CATALOG);
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
       createRecord(STREAM_NAME, SCHEMA_NAME,
-          map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
+          map("id", new BigDecimal("1.0"), "name", "goku", "power", Double.POSITIVE_INFINITY)),
       createRecord(STREAM_NAME, SCHEMA_NAME,
           map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
-      createRecord(STREAM_NAME, SCHEMA_NAME, map("id", null, "name", "piccolo", "power", null)));
+      createRecord(STREAM_NAME, SCHEMA_NAME, map("id", Double.NaN, "name", "piccolo", "power", Double.NEGATIVE_INFINITY)));
 
   private static final Set<AirbyteMessage> UTF8_MESSAGES = Sets.newHashSet(
       createRecord(STREAM_NAME, SCHEMA_NAME,
@@ -96,7 +96,7 @@ class CockroachDbSourceTest {
 
   @BeforeAll
   static void init() {
-    PSQL_DB = new CockroachContainer("cockroachdb/cockroach");
+    PSQL_DB = new CockroachContainer("cockroachdb/cockroach:v20.2.18");
     PSQL_DB.start();
   }
 
@@ -168,7 +168,7 @@ class CockroachDbSourceTest {
   public void testCanReadUtf8() throws Exception {
     // force the db server to start with sql_ascii encoding to verify the tap can read UTF8 even when
     // default settings are in another encoding
-    try (final CockroachContainer db = new CockroachContainer("cockroachdb/cockroach")) {
+    try (final CockroachContainer db = new CockroachContainer("cockroachdb/cockroach:v20.2.18")) {
       // .withCommand("postgres -c client_encoding=sql_ascii")
       db.start();
       final JsonNode config = getConfig(db);

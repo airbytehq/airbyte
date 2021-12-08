@@ -7,7 +7,7 @@ from typing import Any, List, Mapping, Tuple
 import boto3
 import requests
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import ConnectorSpecification
+from airbyte_cdk.models import ConnectorSpecification, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from pydantic import Field
@@ -23,6 +23,7 @@ from source_amazon_seller_partner.streams import (
     FulfilledShipmentsReports,
     MerchantListingsReports,
     Orders,
+    SellerFeedbackReports,
     VendorDirectFulfillmentShipping,
     VendorInventoryHealthReports,
 )
@@ -36,6 +37,11 @@ class ConnectorConfig(BaseModel):
         description="UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         examples=["2017-01-25T00:00:00Z"],
+    )
+    period_in_days: int = Field(
+        30,
+        description="Will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.",
+        examples=["30", "365"],
     )
     refresh_token: str = Field(
         description="The refresh token used obtained via authorization (can be passed to the client instead)", airbyte_secret=True
@@ -78,6 +84,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             "aws_signature": aws_signature,
             "replication_start_date": config.replication_start_date,
             "marketplace_ids": [marketplace_id],
+            "period_in_days": config.period_in_days,
         }
         return stream_kwargs
 
@@ -87,22 +94,15 @@ class SourceAmazonSellerPartner(AbstractSource):
         Validate if response has the expected error code and body.
         Show error message in case of request exception or unexpected response.
         """
-
-        error_msg = "Unable to connect to Amazon Seller API with the provided credentials - {error}"
         try:
             config = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
             stream_kwargs = self._get_stream_kwargs(config)
-
-            reports_res = requests.get(
-                url=f"{stream_kwargs['url_base']}{MerchantListingsReports.path_prefix}/reports",
-                headers={**stream_kwargs["authenticator"].get_auth_header(), "content-type": "application/json"},
-                params={"reportTypes": MerchantListingsReports.name},
-                auth=stream_kwargs["aws_signature"],
-            )
-            connected = reports_res.status_code == 200 and reports_res.json().get("payload")
-            return connected, None if connected else error_msg.format(error=reports_res.json())
-        except Exception as error:
-            return False, error_msg.format(error=repr(error))
+            orders_stream = Orders(**stream_kwargs)
+            next(orders_stream.read_records(sync_mode=SyncMode.full_refresh))
+            return True, None
+        except StopIteration or requests.exceptions.RequestException as e:
+            if isinstance(e, StopIteration):
+                e = "Could not check connection without data for Orders stream. " "Please change value for replication start date field."
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
@@ -122,6 +122,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             VendorDirectFulfillmentShipping(**stream_kwargs),
             VendorInventoryHealthReports(**stream_kwargs),
             Orders(**stream_kwargs),
+            SellerFeedbackReports(**stream_kwargs),
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:

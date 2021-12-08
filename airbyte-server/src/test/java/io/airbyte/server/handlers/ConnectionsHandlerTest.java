@@ -66,12 +66,14 @@ class ConnectionsHandlerTest {
   private UUID workspaceId;
   private UUID sourceDefinitionId;
   private UUID sourceId;
+  private UUID deletedSourceId;
   private UUID destinationDefinitionId;
   private UUID destinationId;
 
   private SourceConnection source;
   private DestinationConnection destination;
   private StandardSync standardSync;
+  private StandardSync standardSyncDeleted;
   private UUID connectionId;
   private UUID operationId;
   private StandardSyncOperation standardSyncOperation;
@@ -109,6 +111,20 @@ class ConnectionsHandlerTest {
         .withManual(false)
         .withSchedule(ConnectionHelpers.generateBasicSchedule())
         .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+    standardSyncDeleted = new StandardSync()
+        .withConnectionId(connectionId)
+        .withName("presto to hudi2")
+        .withNamespaceDefinition(JobSyncConfig.NamespaceDefinitionType.SOURCE)
+        .withNamespaceFormat(null)
+        .withPrefix("presto_to_hudi2")
+        .withStatus(StandardSync.Status.DEPRECATED)
+        .withCatalog(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog())
+        .withSourceId(sourceId)
+        .withDestinationId(destinationId)
+        .withOperationIds(List.of(operationId))
+        .withManual(false)
+        .withSchedule(ConnectionHelpers.generateBasicSchedule())
+        .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
 
     standardSyncOperation = new StandardSyncOperation()
         .withOperationId(operationId)
@@ -121,6 +137,7 @@ class ConnectionsHandlerTest {
     connectionsHandler = new ConnectionsHandler(configRepository, uuidGenerator, workspaceHelper, trackingClient);
 
     when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceId)).thenReturn(workspaceId);
+    when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(deletedSourceId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(destinationId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(operationId)).thenReturn(workspaceId);
   }
@@ -321,7 +338,7 @@ class ConnectionsHandlerTest {
   @Test
   void testListConnectionsForWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configRepository.listStandardSyncs())
-        .thenReturn(Lists.newArrayList(standardSync));
+        .thenReturn(Lists.newArrayList(standardSync, standardSyncDeleted));
     when(configRepository.getSourceConnection(source.getSourceId()))
         .thenReturn(source);
     when(configRepository.getStandardSync(standardSync.getConnectionId()))
@@ -329,10 +346,17 @@ class ConnectionsHandlerTest {
 
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(source.getWorkspaceId());
     final ConnectionReadList actualConnectionReadList = connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody);
-
+    assertEquals(1, actualConnectionReadList.getConnections().size());
     assertEquals(
         ConnectionHelpers.generateExpectedConnectionRead(standardSync),
         actualConnectionReadList.getConnections().get(0));
+
+    final ConnectionReadList actualConnectionReadListWithDeleted = connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody, true);
+    final List<ConnectionRead> connections = actualConnectionReadListWithDeleted.getConnections();
+    assertEquals(2, connections.size());
+    assertEquals(ConnectionHelpers.generateExpectedConnectionRead(standardSync), connections.get(0));
+    assertEquals(ConnectionHelpers.generateExpectedConnectionRead(standardSyncDeleted), connections.get(1));
+
   }
 
   @Test

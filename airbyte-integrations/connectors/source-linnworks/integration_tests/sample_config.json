@@ -1,0 +1,6 @@
+{
+  "application_id": "the_id",
+  "application_secret": "the_secret",
+  "token": "the_token",
+  "start_date": "2021-01-01T00:00:00+00:00"
+}

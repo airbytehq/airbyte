@@ -13,10 +13,11 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.SchedulerJobClient;
-import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
+import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -25,7 +26,7 @@ import org.slf4j.MDC;
 public interface ServerFactory {
 
   ServerRunnable create(SchedulerJobClient schedulerJobClient,
-                        SpecCachingSynchronousSchedulerClient cachingSchedulerClient,
+                        SynchronousSchedulerClient cachingSchedulerClient,
                         WorkflowServiceStubs temporalService,
                         ConfigRepository configRepository,
                         JobPersistence jobPersistence,
@@ -37,13 +38,14 @@ public interface ServerFactory {
                         LogConfigs logConfigs,
                         String webappUrl,
                         AirbyteVersion airbyteVersion,
-                        Path workspaceRoot);
+                        Path workspaceRoot,
+                        HttpClient httpClient);
 
   class Api implements ServerFactory {
 
     @Override
     public ServerRunnable create(final SchedulerJobClient schedulerJobClient,
-                                 final SpecCachingSynchronousSchedulerClient cachingSchedulerClient,
+                                 final SynchronousSchedulerClient synchronousSchedulerClient,
                                  final WorkflowServiceStubs temporalService,
                                  final ConfigRepository configRepository,
                                  final JobPersistence jobPersistence,
@@ -55,7 +57,8 @@ public interface ServerFactory {
                                  final LogConfigs logConfigs,
                                  final String webappUrl,
                                  final AirbyteVersion airbyteVersion,
-                                 final Path workspaceRoot) {
+                                 final Path workspaceRoot,
+                                 final HttpClient httpClient) {
       // set static values for factory
       ConfigurationApiFactory.setValues(
           temporalService,
@@ -63,7 +66,7 @@ public interface ServerFactory {
           jobPersistence,
           seed,
           schedulerJobClient,
-          cachingSchedulerClient,
+          synchronousSchedulerClient,
           new FileTtlManager(10, TimeUnit.MINUTES, 10),
           MDC.getCopyOfContextMap(),
           configsDatabase,
@@ -73,7 +76,8 @@ public interface ServerFactory {
           logConfigs,
           webappUrl,
           airbyteVersion,
-          workspaceRoot);
+          workspaceRoot,
+          httpClient);
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class);

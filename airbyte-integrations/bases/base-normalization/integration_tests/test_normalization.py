@@ -124,10 +124,12 @@ def run_incremental_normalization(destination_type: DestinationType, test_resour
 
 
 def run_schema_change_normalization(destination_type: DestinationType, test_resource_name: str, test_root_dir: str):
-    if destination_type.value in [DestinationType.MSSQL.value, DestinationType.MYSQL.value, DestinationType.ORACLE.value]:
+    if destination_type.value in [DestinationType.MYSQL.value, DestinationType.ORACLE.value]:
+        # TODO: upgrade dbt-adapter repositories to work with dbt 0.21.0+ (outside airbyte's control)
         pytest.skip(f"{destination_type} does not support schema change in incremental yet (requires dbt 0.21.0+)")
-    if destination_type.value in [DestinationType.SNOWFLAKE.value]:
-        pytest.skip(f"{destination_type} is disabled as it doesnt support schema change in incremental yet (column type changes)")
+    if destination_type.value in [DestinationType.MSSQL.value, DestinationType.SNOWFLAKE.value]:
+        # TODO: create/fix github issue in corresponding dbt-adapter repository to handle schema changes (outside airbyte's control)
+        pytest.skip(f"{destination_type} is disabled as it doesnt fully support schema change in incremental yet")
 
     setup_schema_change_data(destination_type, test_resource_name, test_root_dir)
     generate_dbt_models(destination_type, test_resource_name, test_root_dir, "modified_models", "catalog_schema_change.json")
@@ -182,17 +184,7 @@ def setup_test_dir(destination_type: DestinationType, test_resource_name: str) -
     elif destination_type.value == DestinationType.ORACLE.value:
         copy_tree("../dbt-project-template-oracle", test_root_dir)
         dbt_project_yaml = "../dbt-project-template-oracle/dbt_project.yml"
-    if destination_type.value not in (DestinationType.REDSHIFT.value, DestinationType.ORACLE.value):
-        # Prefer 'view' to 'ephemeral' for tests so it's easier to debug with dbt
-        dbt_test_utils.copy_replace(
-            dbt_project_yaml,
-            os.path.join(test_root_dir, "dbt_project.yml"),
-            pattern="ephemeral",
-            replace_value="view",
-        )
-    else:
-        # keep ephemeral tables
-        dbt_test_utils.copy_replace(dbt_project_yaml, os.path.join(test_root_dir, "dbt_project.yml"))
+    dbt_test_utils.copy_replace(dbt_project_yaml, os.path.join(test_root_dir, "dbt_project.yml"))
     return test_root_dir
 
 

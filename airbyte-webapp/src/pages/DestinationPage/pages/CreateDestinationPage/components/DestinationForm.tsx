@@ -10,7 +10,7 @@ import { JobsLogItem } from "components/JobItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
-import { useAnalytics } from "hooks/useAnalytics";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 
 type IProps = {
   onSubmit: (values: {
@@ -35,7 +35,7 @@ const DestinationForm: React.FC<IProps> = ({
   afterSelectConnector,
 }) => {
   const { location } = useRouter();
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
 
   const [destinationDefinitionId, setDestinationDefinitionId] = useState(
     location.state?.destinationDefinitionId || ""
@@ -45,8 +45,6 @@ const DestinationForm: React.FC<IProps> = ({
     isLoading,
     sourceDefinitionError,
   } = useDestinationDefinitionSpecificationLoad(destinationDefinitionId);
-
-  console.log(sourceDefinitionError);
 
   const onDropDownSelect = (destinationDefinitionId: string) => {
     setDestinationDefinitionId(destinationDefinitionId);
@@ -79,26 +77,30 @@ const DestinationForm: React.FC<IProps> = ({
   const errorMessage = error ? createFormErrorMessage(error) : null;
 
   return (
-    <ContentCard title={<FormattedMessage id="onboarding.destinationSetUp" />}>
-      <ServiceForm
-        onServiceSelect={onDropDownSelect}
-        fetchingConnectorError={sourceDefinitionError}
-        onSubmit={onSubmitForm}
-        formType="destination"
-        availableServices={destinationDefinitions}
-        selectedConnector={destinationDefinitionSpecification}
-        hasSuccess={hasSuccess}
-        errorMessage={errorMessage}
-        isLoading={isLoading}
-        formValues={
-          destinationDefinitionId
-            ? { serviceType: destinationDefinitionId }
-            : undefined
-        }
-        allowChangeConnector
-      />
-      <JobsLogItem jobInfo={jobInfo} />
-    </ContentCard>
+    <>
+      <ContentCard
+        title={<FormattedMessage id="onboarding.destinationSetUp" />}
+      >
+        <ServiceForm
+          onServiceSelect={onDropDownSelect}
+          fetchingConnectorError={sourceDefinitionError}
+          onSubmit={onSubmitForm}
+          formType="destination"
+          availableServices={destinationDefinitions}
+          selectedConnector={destinationDefinitionSpecification}
+          hasSuccess={hasSuccess}
+          errorMessage={errorMessage}
+          isLoading={isLoading}
+          formValues={
+            destinationDefinitionId
+              ? { serviceType: destinationDefinitionId }
+              : undefined
+          }
+          allowChangeConnector
+        />
+        <JobsLogItem jobInfo={jobInfo} />
+      </ContentCard>
+    </>
   );
 };
 

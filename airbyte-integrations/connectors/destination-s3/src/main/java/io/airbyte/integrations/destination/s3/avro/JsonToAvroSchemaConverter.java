@@ -30,7 +30,8 @@ import tech.allegro.schema.json2avro.converter.AdditionalPropertyField;
  * The main function of this class is to convert a JsonSchema to Avro schema. It can also
  * standardize schema names, and keep track of a mapping from the original names to the standardized
  * ones, which is needed for unit tests.
- * <p/>
+ * <p>
+ * </p>
  * For limitations of this converter, see the README of this connector:
  * https://docs.airbyte.io/integrations/destinations/s3#avro
  */
@@ -39,6 +40,7 @@ public class JsonToAvroSchemaConverter {
   private static final Schema UUID_SCHEMA = LogicalTypes.uuid()
       .addToSchema(Schema.create(Schema.Type.STRING));
   private static final Schema NULL_SCHEMA = Schema.create(Schema.Type.NULL);
+  private static final Schema STRING_SCHEMA = Schema.create(Schema.Type.STRING);
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonToAvroSchemaConverter.class);
   private static final Schema TIMESTAMP_MILLIS_SCHEMA = LogicalTypes.timestampMillis()
       .addToSchema(Schema.create(Schema.Type.LONG));
@@ -171,7 +173,20 @@ public class JsonToAvroSchemaConverter {
 
     final Schema fieldSchema;
     switch (fieldType) {
-      case STRING, NUMBER, INTEGER, BOOLEAN -> fieldSchema = Schema.create(fieldType.getAvroType());
+      case NUMBER, INTEGER, BOOLEAN -> fieldSchema = Schema.create(fieldType.getAvroType());
+      case STRING -> {
+        if (fieldDefinition.has("format")) {
+          String format = fieldDefinition.get("format").asText();
+          fieldSchema = switch (format) {
+            case "date-time" -> LogicalTypes.timestampMicros().addToSchema(Schema.create(Schema.Type.LONG));
+            case "date" -> LogicalTypes.date().addToSchema(Schema.create(Schema.Type.INT));
+            case "time" -> LogicalTypes.timeMicros().addToSchema(Schema.create(Schema.Type.LONG));
+            default -> Schema.create(fieldType.getAvroType());
+          };
+        } else {
+          fieldSchema = Schema.create(fieldType.getAvroType());
+        }
+      }
       case COMBINED -> {
         final Optional<JsonNode> combinedRestriction = getCombinedRestriction(fieldDefinition);
         final List<Schema> unionTypes = getSchemasFromTypes(fieldName, (ArrayNode) combinedRestriction.get());
@@ -238,6 +253,14 @@ public class JsonToAvroSchemaConverter {
       // Mark every field as nullable to prevent missing value exceptions from Avro / Parquet.
       if (!nonNullFieldTypes.contains(NULL_SCHEMA)) {
         nonNullFieldTypes.add(0, NULL_SCHEMA);
+      }
+      // Logical types are converted to a union of logical type itself and string. The purpose is to
+      // default the logical type field to a string, if the value of the logical type field is invalid and
+      // cannot be properly processed.
+      if ((nonNullFieldTypes
+          .stream().anyMatch(schema -> schema.getLogicalType() != null)) &&
+          (!nonNullFieldTypes.contains(STRING_SCHEMA))) {
+        nonNullFieldTypes.add(STRING_SCHEMA);
       }
       return Schema.createUnion(nonNullFieldTypes);
     }

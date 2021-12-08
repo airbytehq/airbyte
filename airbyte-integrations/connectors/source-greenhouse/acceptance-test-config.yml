@@ -16,8 +16,7 @@ tests:
     - config_path: "secrets/config_users_only.json"
   basic_read:
     - config_path: "secrets/config.json"
-      # TODO: replace with configured_catalog.json when https://github.com/airbytehq/airbyte/issues/6546 is resolved
-      configured_catalog_path: "integration_tests/configured_catalog_no_demographics.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog_users_only.json"
   full_refresh:

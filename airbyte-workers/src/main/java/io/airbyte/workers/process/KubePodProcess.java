@@ -7,7 +7,7 @@ package io.airbyte.workers.process;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
-import io.airbyte.config.WorkerPodToleration;
+import io.airbyte.config.TolerationPOJO;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
@@ -135,7 +135,9 @@ public class KubePodProcess extends Process {
     return pod.getStatus().getPodIP();
   }
 
-  private static Container getInit(final boolean usesStdin, final List<VolumeMount> mainVolumeMounts) {
+  private static Container getInit(final boolean usesStdin,
+                                   final List<VolumeMount> mainVolumeMounts,
+                                   final String busyboxImage) {
     var initEntrypointStr = String.format("mkfifo %s && mkfifo %s", STDOUT_PIPE_FILE, STDERR_PIPE_FILE);
 
     if (usesStdin) {
@@ -146,7 +148,7 @@ public class KubePodProcess extends Process {
 
     return new ContainerBuilder()
         .withName(INIT_CONTAINER_NAME)
-        .withImage("busybox:1.28")
+        .withImage(busyboxImage)
         .withWorkingDir(CONFIG_DIR)
         .withCommand("sh", "-c", initEntrypointStr)
         .withVolumeMounts(mainVolumeMounts)
@@ -233,7 +235,7 @@ public class KubePodProcess extends Process {
     LOGGER.info("Init container ready..");
   }
 
-  private Toleration[] buildPodTolerations(final List<WorkerPodToleration> tolerations) {
+  private Toleration[] buildPodTolerations(final List<TolerationPOJO> tolerations) {
     if (tolerations == null || tolerations.isEmpty()) {
       return null;
     }
@@ -261,9 +263,12 @@ public class KubePodProcess extends Process {
                         final String entrypointOverride,
                         final ResourceRequirements resourceRequirements,
                         final String imagePullSecret,
-                        final List<WorkerPodToleration> tolerations,
+                        final List<TolerationPOJO> tolerations,
                         final Map<String, String> nodeSelectors,
                         final Map<String, String> labels,
+                        final String socatImage,
+                        final String busyboxImage,
+                        final String curlImage,
                         final String... args)
       throws IOException, InterruptedException {
     this.fabricClient = fabricClient;
@@ -313,7 +318,7 @@ public class KubePodProcess extends Process {
         .withMountPath(TERMINATION_DIR)
         .build();
 
-    final Container init = getInit(usesStdin, List.of(pipeVolumeMount, configVolumeMount));
+    final Container init = getInit(usesStdin, List.of(pipeVolumeMount, configVolumeMount), busyboxImage);
     final Container main = getMain(
         image,
         imagePullPolicy,
@@ -325,21 +330,21 @@ public class KubePodProcess extends Process {
 
     final Container remoteStdin = new ContainerBuilder()
         .withName("remote-stdin")
-        .withImage("alpine/socat:1.7.4.1-r1")
+        .withImage(socatImage)
         .withCommand("sh", "-c", "socat -d TCP-L:9001 STDOUT > " + STDIN_PIPE_FILE)
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .build();
 
     final Container relayStdout = new ContainerBuilder()
         .withName("relay-stdout")
-        .withImage("alpine/socat:1.7.4.1-r1")
+        .withImage(socatImage)
         .withCommand("sh", "-c", String.format("cat %s | socat -d - TCP:%s:%s", STDOUT_PIPE_FILE, processRunnerHost, stdoutLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .build();
 
     final Container relayStderr = new ContainerBuilder()
         .withName("relay-stderr")
-        .withImage("alpine/socat:1.7.4.1-r1")
+        .withImage(socatImage)
         .withCommand("sh", "-c", String.format("cat %s | socat -d - TCP:%s:%s", STDERR_PIPE_FILE, processRunnerHost, stderrLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .build();
@@ -353,7 +358,7 @@ public class KubePodProcess extends Process {
 
     final Container callHeartbeatServer = new ContainerBuilder()
         .withName("call-heartbeat-server")
-        .withImage("curlimages/curl:7.77.0")
+        .withImage(curlImage)
         .withCommand("sh")
         .withArgs("-c", heartbeatCommand)
         .withVolumeMounts(terminationVolumeMount)

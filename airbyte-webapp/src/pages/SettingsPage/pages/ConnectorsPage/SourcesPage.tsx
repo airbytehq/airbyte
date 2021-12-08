@@ -1,31 +1,23 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
-import { useFetcher, useResource } from "rest-hooks";
+import { useFetcher } from "rest-hooks";
 import { useAsyncFn } from "react-use";
 
 import SourceDefinitionResource, {
   SourceDefinition,
 } from "core/resources/SourceDefinition";
-import { SourceResource } from "core/resources/Source";
 import useConnector from "hooks/services/useConnector";
 import ConnectorsView from "./components/ConnectorsView";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useSourceDefinitionList } from "hooks/services/useSourceDefinition";
+import { useSourceList } from "hooks/services/useSourceHook";
 
 const SourcesPage: React.FC = () => {
   const [isUpdateSuccess, setIsUpdateSucces] = useState(false);
   const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
 
-  const { workspace } = useWorkspace();
   const formatMessage = useIntl().formatMessage;
-  const { sources } = useResource(SourceResource.listShape(), {
-    workspaceId: workspace.workspaceId,
-  });
-  const { sourceDefinitions } = useResource(
-    SourceDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
+  const { sources } = useSourceList();
+  const { sourceDefinitions } = useSourceDefinitionList();
 
   const updateSourceDefinition = useFetcher(
     SourceDefinitionResource.updateShape()

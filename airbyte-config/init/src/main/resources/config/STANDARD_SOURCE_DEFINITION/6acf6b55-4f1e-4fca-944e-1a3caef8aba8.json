@@ -3,5 +3,6 @@
   "name": "Instagram",
   "dockerRepository": "airbyte/source-instagram",
   "dockerImageTag": "0.1.9",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-instagram"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-instagram",
+  "icon": "instagram.svg"
 }
