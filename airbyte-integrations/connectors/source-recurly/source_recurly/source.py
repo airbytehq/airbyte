@@ -1,16 +1,16 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-import json
 from typing import Mapping, Any, List, Tuple, Optional
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from recurly import Client, ApiError
+
 from .streams import RecurlyAccountsStream, RecurlyCouponsStream, RecurlyInvoicesStream, \
     RecurlyTransactionsStream, RecurlySubscriptionsStream, RecurlyPlansStream, \
-    RecurlyMeasuredUnitsStream, RecurlyExportDatesStream
+    RecurlyMeasuredUnitsStream, RecurlyExportDatesStream, RecurlyAccountCouponRedemptionsStream
 
 
 class SourceRecurly(AbstractSource):
@@ -38,6 +38,7 @@ class SourceRecurly(AbstractSource):
         return [
             RecurlyAccountsStream(**args),
             RecurlyCouponsStream(**args),
+            RecurlyAccountCouponRedemptionsStream(**args),
             RecurlyInvoicesStream(**args),
             RecurlyMeasuredUnitsStream(**args),
             RecurlyPlansStream(**args),

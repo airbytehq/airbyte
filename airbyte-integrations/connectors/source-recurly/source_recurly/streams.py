@@ -99,7 +99,7 @@ class BaseRecurlyStream(Stream):
         items = getattr(self._client, self.client_method_name)(params=params).items()
 
         for item in items:
-            yield self.__item_to_dict(item)
+            yield self._item_to_dict(item)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """
@@ -111,26 +111,54 @@ class BaseRecurlyStream(Stream):
         :rtype: dict
         """
         current_updated_at = (current_stream_state or {}).get(self.cursor_field, "")
-        latest_record_updated_at = latest_record[self.sort_key].isoformat()
+        latest_record_updated_at = latest_record[self.cursor_field].isoformat()
 
         return {self.cursor_field: max(latest_record_updated_at, current_updated_at)}
 
-    def __item_to_dict(self, resource):
+    def _item_to_dict(self, resource):
         """
         Recursively converts the Recurly resource object to `dict`
         """
         if isinstance(resource, dict):
-            return dict((key, self.__item_to_dict(value)) for key, value in resource.items())
+            return dict((key, self._item_to_dict(value)) for key, value in resource.items())
         elif hasattr(resource, "__iter__") and not isinstance(resource, str):
-            return [self.__item_to_dict(value) for value in resource]
+            return [self._item_to_dict(value) for value in resource]
         elif hasattr(resource, "__dict__"):
-            return dict([(key, self.__item_to_dict(value)) for key, value in resource.__dict__.items()])
+            return dict([(key, self._item_to_dict(value)) for key, value in resource.__dict__.items()])
         else:
             return resource
 
 
 class RecurlyAccountsStream(BaseRecurlyStream):
     name = "accounts"
+
+
+class RecurlyAccountCouponRedemptionsStream(BaseRecurlyStream):
+    name = "account_coupon_redemptions"
+
+    def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, any] = None,
+                     stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
+        """
+        The method to be called to retrieve the accounts coupon redemptions from Recurly. To retrieve the coupon
+        redemptions, a seprate call to list all the accounts should be made to pass the `account_id` to the account
+        coupon code redemption API call.
+
+        :return: Iterable of dictionaries representing the Recurly resource
+        :rtype: Iterable
+        """
+        params = {"order": "asc", "sort": self.sort_key}
+
+        self.begin_time = (stream_state and stream_state[self.cursor_field]) or self.begin_time
+
+        if self.begin_time:
+            params.update({self.BEGIN_TIME_PARAM: self.begin_time})
+
+        # Call the Recurly client methods
+        accounts = self._client.list_accounts(params=params).items()
+        for account in accounts:
+            coupons = self._client.list_account_coupon_redemptions(account_id=account.id, params=params).items()
+            for coupon in coupons:
+                yield self._item_to_dict(coupon)
 
 
 class RecurlyCouponsStream(BaseRecurlyStream):
