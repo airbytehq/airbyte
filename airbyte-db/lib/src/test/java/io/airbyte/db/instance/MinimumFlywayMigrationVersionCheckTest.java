@@ -27,7 +27,7 @@ public class MinimumFlywayMigrationVersionCheckTest {
     val migrator = mock(DatabaseMigrator.class);
     when(migrator.getLatestMigration()).thenReturn(new StubMigrationInfo(version));
 
-    assertDoesNotThrow(() -> MinimumFlywayMigrationVersionCheck.assertDatabase(migrator, version, DEFAULT_TIMEOUT_MS));
+    assertDoesNotThrow(() -> MinimumFlywayMigrationVersionCheck.assertMigrations(migrator, version, DEFAULT_TIMEOUT_MS));
   }
 
   @Test
@@ -37,7 +37,7 @@ public class MinimumFlywayMigrationVersionCheckTest {
     val migrator = mock(DatabaseMigrator.class);
     when(migrator.getLatestMigration()).thenReturn(new StubMigrationInfo(latestVersion));
 
-    assertDoesNotThrow(() -> MinimumFlywayMigrationVersionCheck.assertDatabase(migrator, minVersion, DEFAULT_TIMEOUT_MS));
+    assertDoesNotThrow(() -> MinimumFlywayMigrationVersionCheck.assertMigrations(migrator, minVersion, DEFAULT_TIMEOUT_MS));
   }
 
   @Test
@@ -53,7 +53,7 @@ public class MinimumFlywayMigrationVersionCheckTest {
         .thenReturn(new StubMigrationInfo(startVersion))
         .thenReturn(new StubMigrationInfo(latestVersion));
 
-    assertDoesNotThrow(() -> MinimumFlywayMigrationVersionCheck.assertDatabase(migrator, minVersion, DEFAULT_TIMEOUT_MS));
+    assertDoesNotThrow(() -> MinimumFlywayMigrationVersionCheck.assertMigrations(migrator, minVersion, DEFAULT_TIMEOUT_MS));
   }
 
   @Test
@@ -64,7 +64,7 @@ public class MinimumFlywayMigrationVersionCheckTest {
     val migrator = mock(DatabaseMigrator.class);
     when(migrator.getLatestMigration()).thenReturn(new StubMigrationInfo(startVersion));
 
-    assertThrows(RuntimeException.class, () -> MinimumFlywayMigrationVersionCheck.assertDatabase(migrator, minVersion, DEFAULT_TIMEOUT_MS));
+    assertThrows(RuntimeException.class, () -> MinimumFlywayMigrationVersionCheck.assertMigrations(migrator, minVersion, DEFAULT_TIMEOUT_MS));
   }
 
   private static class StubMigrationInfo implements MigrationInfo {
