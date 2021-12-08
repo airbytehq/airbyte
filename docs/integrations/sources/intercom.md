@@ -55,6 +55,7 @@ Please read [How to get your Access Token](https://developers.intercom.com/build
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.10 | 2021-12-07 | [8579](https://github.com/airbytehq/airbyte/pull/8579) | Fix 'conversations' order and sorting |
 | 0.1.9 | 2021-12-03 | [8395](https://github.com/airbytehq/airbyte/pull/8395) | Fix backoff of 'companies' stream |
 | 0.1.8 | 2021-11-09 | [7060](https://github.com/airbytehq/airbyte/pull/7060) | Added oauth support |
 | 0.1.7 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
