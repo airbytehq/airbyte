@@ -518,15 +518,15 @@ class Tickets(IncrementalExportStream):
 # endpoints provide a pagination mechanism but we can't manage a response order
 
 
-class Groups(IncrementalUnsortedPageStream):
+class Groups(IncrementalUnsortedCursorStream):
     """Groups stream: https://developer.zendesk.com/api-reference/ticketing/groups/groups/"""
 
 
-class GroupMemberships(IncrementalUnsortedPageStream):
+class GroupMemberships(IncrementalUnsortedCursorStream):
     """GroupMemberships stream: https://developer.zendesk.com/api-reference/ticketing/groups/group_memberships/"""
 
 
-class SatisfactionRatings(IncrementalUnsortedPageStream):
+class SatisfactionRatings(IncrementalUnsortedCursorStream):
     """SatisfactionRatings stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/satisfaction_ratings/
 
     The ZenDesk API for this stream provides the filter "start_time" that can be used for incremental logic
