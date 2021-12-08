@@ -213,7 +213,7 @@ public class JsonToAvroSchemaConverter {
         final String stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(fieldName);
         recordFieldNames.add(stdName);
         fieldSchema = getAvroSchema(fieldDefinition, fieldName,
-            AvroConstants.NAME_TRANSFORMER.resovleNamespace(stdName, recordFieldNames), false);
+            AvroConstants.NAME_TRANSFORMER.resolveNamespace(stdName, recordFieldNames), false);
       }
       default -> throw new IllegalStateException(
           String.format("Unexpected type for field %s: %s", fieldName, fieldType));
