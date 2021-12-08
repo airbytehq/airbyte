@@ -51,7 +51,7 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.State;
-import io.airbyte.config.helpers.LogConfiguration;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -155,7 +155,7 @@ class SchedulerHandlerTest {
         mock(WorkflowServiceStubs.class),
         mock(OAuthConfigSupplier.class),
         WorkerEnvironment.DOCKER,
-        LogConfiguration.EMPTY);
+        LogConfigs.EMPTY);
   }
 
   @Test
