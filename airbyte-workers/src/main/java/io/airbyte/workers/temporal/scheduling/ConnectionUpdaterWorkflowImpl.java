@@ -46,29 +46,26 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
   public SyncResult run(final ConnectionUpdaterInput connectionUpdaterInput) throws NonRetryableException {
     try {
 
-      final Optional<Long> maybeJobId = connectionUpdaterInput.getJobId().or(() -> {
+      // Scheduling
+      final ConfigFetchActivity.ScheduleRetrieverInput scheduleRetrieverInput = new ScheduleRetrieverInput(
+          connectionUpdaterInput.getConnectionId());
+      final ConfigFetchActivity.ScheduleRetrieverOutput scheduleRetrieverOutput = configFetchActivity.getPeriodicity(scheduleRetrieverInput);
+      Workflow.await(scheduleRetrieverOutput.getPeriodicity(), () -> skipScheduling() || connectionUpdaterInput.isFromFailure());
+
+      // Job and attempt creation
+      final Optional<Long> maybeJobId = Optional.ofNullable(connectionUpdaterInput.getJobId()).or(() -> {
         final JobCreationOutput jobCreationOutput = jobCreationActivity.createNewJob(new JobCreationInput(
             connectionUpdaterInput.getConnectionId()));
-
         return Optional.ofNullable(jobCreationOutput.getJobId());
       });
 
-      final Optional<Integer> maybeAttemptId = connectionUpdaterInput.getAttemptId().or(() -> maybeJobId.map(jobId -> {
+      final Optional<Integer> maybeAttemptId = Optional.ofNullable(connectionUpdaterInput.getAttemptId()).or(() -> maybeJobId.map(jobId -> {
         final AttemptCreationOutput attemptCreationOutput = jobCreationActivity.createNewAttempt(new AttemptCreationInput(
             jobId));
         return attemptCreationOutput.getAttemptId();
       }));
 
-      final ConfigFetchActivity.ScheduleRetrieverInput scheduleRetrieverInput = new ScheduleRetrieverInput(
-          connectionUpdaterInput.getConnectionId());
-
-      final ConfigFetchActivity.ScheduleRetrieverOutput scheduleRetrieverOutput = configFetchActivity.getPeriodicity(scheduleRetrieverInput);
-
-      Workflow.await(scheduleRetrieverOutput.getPeriodicity(), () -> skipScheduling() || connectionUpdaterInput.isFromFailure());
-
-      // TODO: Fetch config (maybe store it in GCS)
-      log.info("Starting child WF");
-
+      // Sync workflow
       final SyncInput getSyncInputActivitySyncInput = new SyncInput(
           maybeAttemptId.get(),
           maybeJobId.get(),
@@ -95,22 +92,26 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
           connectionId);
 
       if (isDeleted) {
+        // Stop the runs
         return new SyncResult(true);
       } else {
+        // report success
         jobCreationActivity.jobSuccess(new JobSuccessInput(
             Long.parseLong(syncWorkflowInputs.getJobRunConfig().getJobId()),
             syncWorkflowInputs.getJobRunConfig().getAttemptId().intValue()));
 
-        connectionUpdaterInput.setJobId(Optional.empty());
+        connectionUpdaterInput.setJobId(null);
         connectionUpdaterInput.setFromFailure(false);
       }
     } catch (final Exception e) {
       // TODO: Do we need to stop retrying at some points
       log.error("The connection update workflow has failed, will create a new attempt.", e);
 
+      // report failure
       connectionUpdaterInput.setFromFailure(true);
     } finally {
-      connectionUpdaterInput.setAttemptId(Optional.empty());
+      // Continue the workflow as new
+      connectionUpdaterInput.setAttemptId(null);
       Workflow.continueAsNew(connectionUpdaterInput);
     }
     // This should not be reachable as we always continue as new even if there is a failure
