@@ -22,6 +22,9 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance2;
+import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
+import io.airbyte.db.instance.development.DevDatabaseMigrator;
+import io.airbyte.db.instance.development.MigrationDevHelper;
 import java.util.Collections;
 import java.util.UUID;
 import org.jooq.DSLContext;
@@ -46,6 +49,10 @@ public class DatabaseConfigPersistence2LoadDataTest extends BaseDatabaseConfigPe
   public static void setup() throws Exception {
     database = new ConfigsDatabaseInstance2(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
     configPersistence = spy(new DatabaseConfigPersistence2(database));
+    final ConfigsDatabaseMigrator configsDatabaseMigrator =
+        new ConfigsDatabaseMigrator(database, DatabaseConfigPersistence2LoadDataTest.class.getName());
+    final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
+    MigrationDevHelper.runLastMigration(devDatabaseMigrator);
     database.query(ctx -> ctx
         .execute("TRUNCATE TABLE state, connection_operation, connection, operation, actor_oauth_parameter, actor, actor_definition, workspace"));
   }

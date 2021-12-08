@@ -7,6 +7,8 @@ package io.airbyte.db.instance.configs;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
+import io.airbyte.db.Databases;
+import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.BaseDatabaseInstance;
 import io.airbyte.db.instance.DatabaseInstance;
 import java.io.IOException;
@@ -19,14 +21,15 @@ public class ConfigsDatabaseInstance2 extends BaseDatabaseInstance implements Da
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigsDatabaseInstance2.class);
 
   private static final String DATABASE_LOGGING_NAME = "airbyte configs";
-  private static final String SCHEMA_PATH = "configs_database/schema2.sql";
+  private static final String SCHEMA_PATH = "configs_database/schema.sql";
   private static final Function<Database, Boolean> IS_CONFIGS_DATABASE_READY = database -> {
     try {
       LOGGER.info("Testing if airbyte_configs has been created and seeded...");
-      // TODO fix this
-      Thread.sleep(5000);
-      return true;
-      // return database.query(ctx -> hasData(ctx, "airbyte_configs"));
+      if (database.query(ctx -> hasTable(ctx, "airbyte_configs")) && database.query(ctx -> hasData(ctx, "airbyte_configs"))) {
+        return true;
+      }
+
+      return database.query(ctx -> hasTable(ctx, "state"));
     } catch (Exception e) {
       return false;
     }
@@ -34,11 +37,52 @@ public class ConfigsDatabaseInstance2 extends BaseDatabaseInstance implements Da
 
   @VisibleForTesting
   public ConfigsDatabaseInstance2(final String username, final String password, final String connectionString, final String schema) {
-    super(username, password, connectionString, schema, DATABASE_LOGGING_NAME, ConfigsDatabaseSchema2.getTableNames(), IS_CONFIGS_DATABASE_READY);
+    super(username, password, connectionString, schema, DATABASE_LOGGING_NAME, ConfigsDatabase2Tables.getTableNames(), IS_CONFIGS_DATABASE_READY);
   }
 
   public ConfigsDatabaseInstance2(final String username, final String password, final String connectionString) throws IOException {
     this(username, password, connectionString, MoreResources.readResource(SCHEMA_PATH));
+  }
+
+  @Override
+  public boolean isInitialized() throws IOException {
+    final Database database = Databases.createPostgresDatabaseWithRetry(
+        username,
+        password,
+        connectionString,
+        isDatabaseConnected(databaseName));
+    return new ExceptionWrappingDatabase(database).transaction(ctx -> {
+      if (hasTable(ctx, "state") || hasTable(ctx, "airbyte_configs")) {
+        LOGGER.info("The {} database is initialized", databaseName);
+        return true;
+      }
+      LOGGER.info("The {} database is not initialized; initializing it with schema", databaseName);
+      return false;
+    });
+  }
+
+  @Override
+  public Database getAndInitialize() throws IOException {
+    // When we need to setup the database, it means the database will be initialized after
+    // we connect to the database. So the database itself is considered ready as long as
+    // the connection is alive.
+    final Database database = Databases.createPostgresDatabaseWithRetry(
+        username,
+        password,
+        connectionString,
+        isDatabaseConnected(databaseName));
+
+    new ExceptionWrappingDatabase(database).transaction(ctx -> {
+      if (hasTable(ctx, "state") || hasTable(ctx, "airbyte_configs")) {
+        LOGGER.info("The {} database has been initialized", databaseName);
+        return null;
+      }
+      LOGGER.info("The {} database has not been initialized; initializing it with schema: {}", databaseName, initialSchema);
+      ctx.execute(initialSchema);
+      return null;
+    });
+
+    return database;
   }
 
 }

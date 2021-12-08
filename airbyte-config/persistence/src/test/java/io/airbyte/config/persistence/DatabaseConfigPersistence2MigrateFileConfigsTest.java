@@ -16,6 +16,9 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.config.Configs;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance2;
+import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
+import io.airbyte.db.instance.development.DevDatabaseMigrator;
+import io.airbyte.db.instance.development.MigrationDevHelper;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
@@ -38,6 +41,10 @@ public class DatabaseConfigPersistence2MigrateFileConfigsTest extends BaseDataba
   public static void setup() throws Exception {
     database = new ConfigsDatabaseInstance2(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
     configPersistence = spy(new DatabaseConfigPersistence2(database));
+    final ConfigsDatabaseMigrator configsDatabaseMigrator =
+        new ConfigsDatabaseMigrator(database, DatabaseConfigPersistence2LoadDataTest.class.getName());
+    final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
+    MigrationDevHelper.runLastMigration(devDatabaseMigrator);
   }
 
   @AfterAll

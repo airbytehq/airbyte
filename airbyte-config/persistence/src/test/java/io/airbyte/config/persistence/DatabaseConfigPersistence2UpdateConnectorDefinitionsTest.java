@@ -13,6 +13,9 @@ import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.DatabaseConfigPersistence2.ConnectorInfo;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance2;
+import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
+import io.airbyte.db.instance.development.DevDatabaseMigrator;
+import io.airbyte.db.instance.development.MigrationDevHelper;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -37,6 +40,10 @@ public class DatabaseConfigPersistence2UpdateConnectorDefinitionsTest extends Ba
   public static void setup() throws Exception {
     database = new ConfigsDatabaseInstance2(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
     configPersistence = new DatabaseConfigPersistence2(database);
+    final ConfigsDatabaseMigrator configsDatabaseMigrator =
+        new ConfigsDatabaseMigrator(database, DatabaseConfigPersistence2LoadDataTest.class.getName());
+    final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
+    MigrationDevHelper.runLastMigration(devDatabaseMigrator);
   }
 
   @AfterAll

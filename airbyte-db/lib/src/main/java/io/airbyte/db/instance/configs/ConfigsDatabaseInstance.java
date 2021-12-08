@@ -31,7 +31,7 @@ public class ConfigsDatabaseInstance extends BaseDatabaseInstance implements Dat
 
   @VisibleForTesting
   public ConfigsDatabaseInstance(final String username, final String password, final String connectionString, final String schema) {
-    super(username, password, connectionString, schema, DATABASE_LOGGING_NAME, ConfigsDatabaseSchema.getTableNames(), IS_CONFIGS_DATABASE_READY);
+    super(username, password, connectionString, schema, DATABASE_LOGGING_NAME, ConfigsDatabaseTables.getTableNames(), IS_CONFIGS_DATABASE_READY);
   }
 
   public ConfigsDatabaseInstance(final String username, final String password, final String connectionString) throws IOException {

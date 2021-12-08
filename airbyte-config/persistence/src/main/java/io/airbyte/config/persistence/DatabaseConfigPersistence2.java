@@ -71,6 +71,7 @@ import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Record1;
 import org.jooq.Result;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,18 +79,43 @@ public class DatabaseConfigPersistence2 implements ConfigPersistence {
 
   private final ExceptionWrappingDatabase database;
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseConfigPersistence2.class);
+  private final DatabaseConfigPersistence oldConfigPersistence;
+  private boolean useNewPersistence;
 
   public DatabaseConfigPersistence2(final Database database) {
+    this.oldConfigPersistence = new DatabaseConfigPersistence(database);
     this.database = new ExceptionWrappingDatabase(database);
+    this.useNewPersistence = false;
   }
 
   public ValidatingConfigPersistence withValidation() {
     return new ValidatingConfigPersistence(this);
   }
 
+  private boolean useNewPersistence() throws IOException {
+    if (useNewPersistence) {
+      LOGGER.info("Using new Persistence");
+      return true;
+    }
+    useNewPersistence = database.query(ctx -> ctx.fetchExists(select()
+        .from("information_schema.tables")
+        .where(DSL.field("table_name").eq(WORKSPACE.getName())
+            .and(DSL.field("table_schema").eq("public")))));
+    if (useNewPersistence) {
+      LOGGER.info("Using new Persistence");
+    } else {
+      LOGGER.info("Using old Persistence");
+    }
+    return useNewPersistence;
+  }
+
   @Override
   public <T> T getConfig(AirbyteConfig configType, String configId, Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException, IOException {
+    if (!useNewPersistence()) {
+      return oldConfigPersistence.getConfig(configType, configId, clazz);
+    }
+
     if (configType == ConfigSchema.STANDARD_WORKSPACE) {
       return (T) getStandardWorkspace(configId);
     } else if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
@@ -340,6 +366,9 @@ public class DatabaseConfigPersistence2 implements ConfigPersistence {
 
   @Override
   public <T> List<T> listConfigs(AirbyteConfig configType, Class<T> clazz) throws JsonValidationException, IOException {
+    if (!useNewPersistence()) {
+      return oldConfigPersistence.listConfigs(configType, clazz);
+    }
     final List<T> config = new ArrayList<>();
     if (configType == ConfigSchema.STANDARD_WORKSPACE) {
       getStandardWorkspaceWithMetadata().forEach(c -> config.add((T) c.getConfig()));
@@ -370,6 +399,9 @@ public class DatabaseConfigPersistence2 implements ConfigPersistence {
 
   @Override
   public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(AirbyteConfig configType, Class<T> clazz) throws IOException {
+    if (!useNewPersistence()) {
+      return oldConfigPersistence.listConfigsWithMetadata(configType, clazz);
+    }
     final List<ConfigWithMetadata<T>> configWithMetadata = new ArrayList<>();
     if (configType == ConfigSchema.STANDARD_WORKSPACE) {
       getStandardWorkspaceWithMetadata().forEach(c -> configWithMetadata.add((ConfigWithMetadata<T>) c));
@@ -666,6 +698,10 @@ public class DatabaseConfigPersistence2 implements ConfigPersistence {
 
   @Override
   public <T> void writeConfig(AirbyteConfig configType, String configId, T config) throws JsonValidationException, IOException {
+    if (!useNewPersistence()) {
+      oldConfigPersistence.writeConfig(configType, configId, config);
+      return;
+    }
     if (configType == ConfigSchema.STANDARD_WORKSPACE) {
       writeStandardWorkspace(Collections.singletonList((StandardWorkspace) config));
     } else if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
@@ -1170,6 +1206,10 @@ public class DatabaseConfigPersistence2 implements ConfigPersistence {
 
   @Override
   public <T> void writeConfigs(AirbyteConfig configType, Map<String, T> configs) throws IOException, JsonValidationException {
+    if (!useNewPersistence()) {
+      oldConfigPersistence.writeConfigs(configType, configs);
+      return;
+    }
     if (configType == ConfigSchema.STANDARD_WORKSPACE) {
       writeStandardWorkspace(configs.values().stream().map(c -> (StandardWorkspace) c).collect(Collectors.toList()));
     } else if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
@@ -1197,6 +1237,10 @@ public class DatabaseConfigPersistence2 implements ConfigPersistence {
 
   @Override
   public void deleteConfig(AirbyteConfig configType, String configId) throws ConfigNotFoundException, IOException {
+    if (!useNewPersistence()) {
+      oldConfigPersistence.deleteConfig(configType, configId);
+      return;
+    }
     if (configType == ConfigSchema.STANDARD_WORKSPACE) {
       deleteStandardWorkspace(configId);
     } else if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
@@ -1346,6 +1390,10 @@ public class DatabaseConfigPersistence2 implements ConfigPersistence {
 
   @Override
   public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
+    if (!useNewPersistence()) {
+      oldConfigPersistence.replaceAllConfigs(configs, dryRun);
+      return;
+    }
     if (dryRun) {
       return;
     }
@@ -1452,6 +1500,9 @@ public class DatabaseConfigPersistence2 implements ConfigPersistence {
 
   @Override
   public Map<String, Stream<JsonNode>> dumpConfigs() throws IOException {
+    if (!useNewPersistence()) {
+      return oldConfigPersistence.dumpConfigs();
+    }
     LOGGER.info("Exporting all configs...");
 
     final Map<String, Stream<JsonNode>> result = new HashMap<>();
@@ -1510,12 +1561,17 @@ public class DatabaseConfigPersistence2 implements ConfigPersistence {
 
   @Override
   public void loadData(final ConfigPersistence seedConfigPersistence) throws IOException {
+    if (!useNewPersistence()) {
+      oldConfigPersistence.loadData(seedConfigPersistence);
+      return;
+    }
     database.transaction(ctx -> {
       updateConfigsFromSeed(ctx, seedConfigPersistence);
       return null;
     });
   }
 
+  @VisibleForTesting
   void updateConfigsFromSeed(final DSLContext ctx, final ConfigPersistence seedConfigPersistence) throws SQLException {
     LOGGER.info("Updating connector definitions from the seed if necessary...");
 
@@ -1726,6 +1782,7 @@ public class DatabaseConfigPersistence2 implements ConfigPersistence {
     return new ConnectorCounter(newCount, updatedCount);
   }
 
+  @VisibleForTesting
   static Set<String> getNewFields(final JsonNode currentDefinition, final JsonNode latestDefinition) {
     final Set<String> currentFields = MoreIterators.toSet(currentDefinition.fieldNames());
     final Set<String> latestFields = MoreIterators.toSet(latestDefinition.fieldNames());
@@ -1735,12 +1792,14 @@ public class DatabaseConfigPersistence2 implements ConfigPersistence {
   /**
    * @return a clone of the current definition with the new fields from the latest definition.
    */
+  @VisibleForTesting
   static JsonNode getDefinitionWithNewFields(final JsonNode currentDefinition, final JsonNode latestDefinition, final Set<String> newFields) {
     final ObjectNode currentClone = (ObjectNode) Jsons.clone(currentDefinition);
     newFields.forEach(field -> currentClone.set(field, latestDefinition.get(field)));
     return currentClone;
   }
 
+  @VisibleForTesting
   static boolean hasNewVersion(final String currentVersion, final String latestVersion) {
     try {
       return new AirbyteVersion(latestVersion).patchVersionCompareTo(new AirbyteVersion(currentVersion)) > 0;
@@ -1755,6 +1814,10 @@ public class DatabaseConfigPersistence2 implements ConfigPersistence {
    * persistence, copy the existing configs from local files.
    */
   public DatabaseConfigPersistence2 migrateFileConfigs(final Configs serverConfigs) throws IOException {
+    if (!useNewPersistence()) {
+      oldConfigPersistence.migrateFileConfigs(serverConfigs);
+      return this;
+    }
     database.transaction(ctx -> {
       final boolean isInitialized = ctx.fetchExists(ACTOR_DEFINITION);
       if (isInitialized) {
