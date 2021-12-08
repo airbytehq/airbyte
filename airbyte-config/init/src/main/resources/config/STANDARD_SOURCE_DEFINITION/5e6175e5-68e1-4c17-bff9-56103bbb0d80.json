@@ -3,5 +3,6 @@
   "name": "Gitlab",
   "dockerRepository": "airbyte/source-gitlab",
   "dockerImageTag": "0.1.2",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/gitlab"
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/gitlab",
+  "icon": "gitlab.svg"
 }

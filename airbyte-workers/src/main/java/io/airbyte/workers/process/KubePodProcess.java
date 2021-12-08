@@ -7,7 +7,7 @@ package io.airbyte.workers.process;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
-import io.airbyte.config.WorkerPodToleration;
+import io.airbyte.config.TolerationPOJO;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
@@ -235,7 +235,7 @@ public class KubePodProcess extends Process {
     LOGGER.info("Init container ready..");
   }
 
-  private Toleration[] buildPodTolerations(final List<WorkerPodToleration> tolerations) {
+  private Toleration[] buildPodTolerations(final List<TolerationPOJO> tolerations) {
     if (tolerations == null || tolerations.isEmpty()) {
       return null;
     }
@@ -263,7 +263,7 @@ public class KubePodProcess extends Process {
                         final String entrypointOverride,
                         final ResourceRequirements resourceRequirements,
                         final String imagePullSecret,
-                        final List<WorkerPodToleration> tolerations,
+                        final List<TolerationPOJO> tolerations,
                         final Map<String, String> nodeSelectors,
                         final Map<String, String> labels,
                         final String socatImage,

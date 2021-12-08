@@ -42,7 +42,7 @@
           "type": "string"
         },
         "parent_account_id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "bill_to": {
           "type": "string"
@@ -50,13 +50,13 @@
       }
     },
     "billing_info_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "subscription_ids": {
       "type": "array"
     },
     "previous_invoice_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "number": {
       "type": "string"
@@ -74,7 +74,7 @@
       "type": "object",
       "properties": {
         "name_on_account": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "company": {
           "type": "string"
@@ -109,7 +109,7 @@
       }
     },
     "shipping_address": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "id": {
           "type": "string"
@@ -192,7 +192,7 @@
       "type": "number"
     },
     "tax_info": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "type": {
           "type": "string"
@@ -209,13 +209,13 @@
       "type": "string"
     },
     "vat_reverse_charge_notes": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "terms_and_conditions": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "customer_notes": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "line_items": {
       "type": "object",
@@ -227,7 +227,7 @@
           "type": "boolean"
         },
         "next": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "data": {
           "type": "array"

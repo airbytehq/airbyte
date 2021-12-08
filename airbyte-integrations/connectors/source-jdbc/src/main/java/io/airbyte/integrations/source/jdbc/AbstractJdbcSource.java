@@ -59,8 +59,6 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
   protected static final String JDBC_COLUMN_TABLE_NAME = "TABLE_NAME";
   protected static final String JDBC_COLUMN_COLUMN_NAME = "COLUMN_NAME";
   private static final String JDBC_COLUMN_DATA_TYPE = "DATA_TYPE";
-  protected static final String GRANTEE = "GRANTEE";
-  protected static final String PRIVILEGE = "PRIVILEGE";
 
   private static final String INTERNAL_SCHEMA_NAME = "schemaName";
   private static final String INTERNAL_TABLE_NAME = "tableName";
