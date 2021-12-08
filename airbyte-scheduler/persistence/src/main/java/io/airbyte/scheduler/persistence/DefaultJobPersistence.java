@@ -689,8 +689,8 @@ public class DefaultJobPersistence implements JobPersistence {
         }
         return values;
       });
+      // Then insert rows into table in batches, to avoid crashing due to inserting too much data at once
       final UnmodifiableIterator<List<List<?>>> partitions = Iterators.partition(data.iterator(), 100);
-      // Then Insert rows into table in batches of 100
       partitions.forEachRemaining(values -> {
         final InsertValuesStepN<Record> insertStep = ctx
             .insertInto(tableSql)
