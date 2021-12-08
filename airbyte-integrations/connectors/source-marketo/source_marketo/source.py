@@ -343,13 +343,9 @@ class Activities(MarketoExportBase):
             "activityDate": {"type": ["null", "string"], "format": "date-time"},
             "activityTypeId": {"type": ["null", "integer"]},
             "campaignId": {"type": ["null", "integer"]},
-            "attributes": {"type": ["null", "string"]},
+            "primaryAttributeValueId": {"type": ["null", "string"]},
+            "primaryAttributeValue": {"type": ["null", "string"]},
         }
-
-        if "primaryAttribute" in self.activity:
-            properties["primaryAttributeValue"] = {"type": ["null", "string"]}
-            properties["primaryAttributeName"] = {"type": ["null", "string"]}
-            properties["primaryAttributeValueId"] = {"type": ["null", "string"]}
 
         if "attributes" in self.activity:
             for attr in self.activity["attributes"]:
