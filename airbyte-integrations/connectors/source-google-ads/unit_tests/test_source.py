@@ -25,18 +25,32 @@ def test_streams_count(config):
     assert len(streams) == expected_streams_number
 
 
-def test_streams_count_for_manager(config):
+def test_non_manager_account():
+    mock_account_info = {"customer.manager": False}
     source = SourceGoogleAds()
-    config["login_customer_id"] = config["customer_id"]
-    streams = source.streams(config)
-    expected_streams_number = 8
-    assert len(streams) == expected_streams_number
+    is_manager_account = source.is_manager_account(mock_account_info)
+    assert not is_manager_account
+
+
+def test_manager_account():
+    mock_account_info = {"customer.manager": True}
+    source = SourceGoogleAds()
+    is_manager_account = source.is_manager_account(mock_account_info)
+    assert is_manager_account
+
+
+def test_time_zone():
+    mock_account_info = {}
+    source = SourceGoogleAds()
+    time_zone = source.get_time_zone(mock_account_info)
+    assert time_zone == "local"
 
 
 # this requires the config because instantiating a stream creates a google client. TODO refactor so client can be mocked.
 def test_get_updated_state(config):
     google_api = GoogleAds(credentials=config["credentials"], customer_id=config["customer_id"])
-    client = AdGroupAdReport(start_date=config["start_date"], api=google_api, conversion_window_days=config["conversion_window_days"], time_zone="local")
+    client = AdGroupAdReport(start_date=config["start_date"], api=google_api,
+                             conversion_window_days=config["conversion_window_days"], time_zone="local")
     current_state_stream = {}
     latest_record = {"segments.date": "2020-01-01"}
 
