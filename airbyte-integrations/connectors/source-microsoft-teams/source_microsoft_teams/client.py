@@ -9,6 +9,7 @@ import json
 import pkgutil
 import sys
 import time
+from functools import lru_cache
 from typing import Dict, List, Optional, Tuple, Union
 
 import backoff
@@ -58,7 +59,11 @@ class Client:
                 "client_secret": config["client_secret"],
             }
         self._group_ids = None
-        self.msal_app = msal.ConfidentialClientApplication(
+
+    @lru_cache(maxsize=None)
+    @property
+    def msal_app(self):
+        return msal.ConfidentialClientApplication(
             self.credentials["client_id"],
             authority=f"https://login.microsoftonline.com/" f"{self.credentials['tenant_id']}",
             client_credential=self.credentials["client_secret"],
@@ -131,6 +136,8 @@ class Client:
             return True, None
         except MsalServiceError as err:
             return False, err.args[0]
+        except Exception as e:
+            return False, str(e)
 
     def get_streams(self):
         streams = []
