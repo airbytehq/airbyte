@@ -109,18 +109,17 @@ public class SchedulerHandler {
         logConfigs);
   }
 
-  @VisibleForTesting
-  SchedulerHandler(final ConfigRepository configRepository,
-                   final SchedulerJobClient schedulerJobClient,
-                   final SynchronousSchedulerClient synchronousSchedulerClient,
-                   final ConfigurationUpdate configurationUpdate,
-                   final JsonSchemaValidator jsonSchemaValidator,
-                   final JobPersistence jobPersistence,
-                   final JobNotifier jobNotifier,
-                   final WorkflowServiceStubs temporalService,
-                   final OAuthConfigSupplier oAuthConfigSupplier,
-                   final WorkerEnvironment workerEnvironment,
-                   final LogConfigs logConfigs) {
+  @VisibleForTesting SchedulerHandler(final ConfigRepository configRepository,
+                                      final SchedulerJobClient schedulerJobClient,
+                                      final SynchronousSchedulerClient synchronousSchedulerClient,
+                                      final ConfigurationUpdate configurationUpdate,
+                                      final JsonSchemaValidator jsonSchemaValidator,
+                                      final JobPersistence jobPersistence,
+                                      final JobNotifier jobNotifier,
+                                      final WorkflowServiceStubs temporalService,
+                                      final OAuthConfigSupplier oAuthConfigSupplier,
+                                      final WorkerEnvironment workerEnvironment,
+                                      final LogConfigs logConfigs) {
     this.configRepository = configRepository;
     this.schedulerJobClient = schedulerJobClient;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
@@ -270,7 +269,7 @@ public class SchedulerHandler {
   }
 
   public DestinationDefinitionSpecificationRead getDestinationSpecification(
-                                                                            final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
+      final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID destinationDefinitionId = destinationDefinitionIdRequestBody.getDestinationDefinitionId();
     final StandardDestinationDefinition destination = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
@@ -324,8 +323,6 @@ public class SchedulerHandler {
       final StandardSyncOperation standardSyncOperation = configRepository.getStandardSyncOperation(operationId);
       standardSyncOperations.add(standardSyncOperation);
     }
-
-    // TODO: bmoric -> new WF
 
     final Job job = schedulerJobClient.createOrGetActiveSyncJob(
         sourceConnection,

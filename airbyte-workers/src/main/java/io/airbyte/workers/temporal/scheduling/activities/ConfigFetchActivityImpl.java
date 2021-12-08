@@ -32,19 +32,21 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
   public ScheduleRetrieverOutput getPeriodicity(final ScheduleRetrieverInput input) {
     try {
       final Optional<Job> previousJobOptional = jobPersistence.getLastReplicationJob(input.getConnectionId());
+      final StandardSync standardSync = configPersistence.getStandardSync(input.getConnectionId());
+
+      if (previousJobOptional.isEmpty()) {
+        if (standardSync.getSchedule() != null) {
+          // Non-manual syncs don't wait for their first run
+          return new ScheduleRetrieverOutput(Duration.ZERO);
+        } else {
+          // Manual syncs wait for their first run
+          return new ScheduleRetrieverOutput(Duration.ofDays(100 * 365));
+        }
+      }
 
       final Job previousJob = previousJobOptional.get();
-
       final long prevRunStart = previousJob.getStartedAtInSecond().orElse(previousJob.getCreatedAtInSecond());
-      final StandardSync standardSync = configPersistence.getStandardSync(input.getConnectionId());
       log.error("Standard sync = " + standardSync + ", schedule = " + standardSync.getSchedule());
-      // if non-manual scheduler, and there has never been a previous run, always schedule.
-      if (previousJobOptional.isEmpty() && standardSync.getSchedule() != null) {
-        return new ScheduleRetrieverOutput(Duration.ZERO);
-      } else if (standardSync.getSchedule() == null) {
-        // Use a random 10 years because we can't use Long.MAX_VALUE
-        return new ScheduleRetrieverOutput(Duration.ofDays(100 * 365));
-      }
 
       final long nextRunStart = prevRunStart + ScheduleHelpers.getIntervalInSecond(standardSync.getSchedule());
 

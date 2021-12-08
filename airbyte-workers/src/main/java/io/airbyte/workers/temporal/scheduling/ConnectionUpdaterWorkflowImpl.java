@@ -43,7 +43,8 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
 
   private final CancellationScope syncWorkflowCancellationScope = CancellationScope.current();
 
-  public ConnectionUpdaterWorkflowImpl() {}
+  public ConnectionUpdaterWorkflowImpl() {
+  }
 
   @Override
   public SyncResult run(final ConnectionUpdaterInput connectionUpdaterInput) throws NonRetryableException {
@@ -134,6 +135,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
     } finally {
       // Continue the workflow as new
       connectionUpdaterInput.setAttemptId(null);
+      resetState();
       Workflow.continueAsNew(connectionUpdaterInput);
     }
     // This should not be reachable as we always continue as new even if there is a failure
@@ -176,6 +178,12 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
 
   private Boolean skipScheduling() {
     return skipScheduling;
+  }
+
+  private void resetState() {
+    isRunning = false;
+    isDeleted = false;
+    skipScheduling = false;
   }
 
 }

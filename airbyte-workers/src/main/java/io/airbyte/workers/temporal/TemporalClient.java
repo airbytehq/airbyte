@@ -132,8 +132,9 @@ public class TemporalClient {
     signalRequest.add(connectionUpdaterWorkflow::run, input);
 
     final ExecutorService threadpool = Executors.newCachedThreadPool();
+
     final Future<Void> futureTask = threadpool.submit(() -> {
-      client.signalWithStart(signalRequest);
+      connectionUpdaterWorkflow.run(input);
 
       return null;
     });
