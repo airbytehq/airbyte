@@ -65,7 +65,7 @@ spec:
         {{- end }}
         ports:
         - name: http
-          containerPort: 80
+          containerPort: 8080
           protocol: TCP
         {{- if .Values.webapp.resources }}
         resources: {{- toYaml .Values.webapp.resources | nindent 10 }}

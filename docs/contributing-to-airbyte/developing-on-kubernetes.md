@@ -14,7 +14,7 @@ If you're developing locally using Minikube/Docker Desktop/Kind, you can iterate
 ./gradlew build # build dev images
 kubectl delete -k kube/overlays/dev # optional (allows you to recreate resources from scratch)
 kubectl apply -k kube/overlays/dev # applies manifests
-kubectl port-forward svc/airbyte-webapp-svc 8000:80 # port forward the api/ui
+kubectl port-forward svc/airbyte-webapp-svc 8000:8080 # port forward the api/ui
 ```
 
 ## Iteration Cycle \(on GKE\)
