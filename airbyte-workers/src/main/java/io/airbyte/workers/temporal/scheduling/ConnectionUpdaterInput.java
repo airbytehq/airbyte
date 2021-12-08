@@ -25,7 +25,7 @@ public class ConnectionUpdaterInput {
   private JobConfig jobConfig;
   @Nullable
   private Integer attemptId;
-  @NonNull
   private boolean fromFailure;
+  private int attemptNumber;
 
 }

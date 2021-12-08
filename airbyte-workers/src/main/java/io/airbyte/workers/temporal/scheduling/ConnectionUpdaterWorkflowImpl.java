@@ -16,7 +16,9 @@ import io.airbyte.workers.temporal.scheduling.activities.JobCreationActivity.Att
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationActivity.AttemptCreationOutput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationActivity.JobCreationInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationActivity.JobCreationOutput;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationActivity.JobFailureInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationActivity.JobSuccessInput;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationActivity.attemptFailureInput;
 import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.temporal.api.enums.v1.ParentClosePolicy;
@@ -101,14 +103,32 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
             syncWorkflowInputs.getJobRunConfig().getAttemptId().intValue()));
 
         connectionUpdaterInput.setJobId(null);
+        connectionUpdaterInput.setAttemptNumber(1);
         connectionUpdaterInput.setFromFailure(false);
       }
     } catch (final Exception e) {
       // TODO: Do we need to stop retrying at some points
       log.error("The connection update workflow has failed, will create a new attempt.", e);
 
-      // report failure
-      connectionUpdaterInput.setFromFailure(true);
+      jobCreationActivity.attemptFailure(new attemptFailureInput(
+          connectionUpdaterInput.getJobId(),
+          connectionUpdaterInput.getAttemptId()));
+
+      final int maxAttempt = configFetchActivity.getMaxAttempt().getMaxAttempt();
+      final int attemptNumber = connectionUpdaterInput.getAttemptNumber();
+
+      if (maxAttempt > attemptNumber) {
+        // restart from failure
+        connectionUpdaterInput.setAttemptNumber(attemptNumber + 1);
+        connectionUpdaterInput.setFromFailure(true);
+      } else {
+        jobCreationActivity.jobFailure(new JobFailureInput(
+            connectionUpdaterInput.getJobId()));
+
+        connectionUpdaterInput.setJobId(null);
+        connectionUpdaterInput.setAttemptNumber(1);
+        connectionUpdaterInput.setFromFailure(false);
+      }
     } finally {
       // Continue the workflow as new
       connectionUpdaterInput.setAttemptId(null);

@@ -91,6 +91,7 @@ public class WorkerApp {
   private final SyncJobFactory jobFactory;
   private final JobPersistence jobPersistence;
   private final TemporalWorkerRunFactory temporalWorkerRunFactory;
+  private final Configs configs;
 
   public void start() {
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
@@ -150,7 +151,7 @@ public class WorkerApp {
             temporalWorkerRunFactory,
             workerEnvironment,
             logConfigs),
-        new ConfigFetchActivityImpl(configRepository, jobPersistence));
+        new ConfigFetchActivityImpl(configRepository, jobPersistence, configs));
 
     factory.start();
   }
@@ -243,7 +244,8 @@ public class WorkerApp {
         configs.getAirbyteVersionOrWarning(),
         jobFactory,
         jobPersistence,
-        temporalWorkerRunFactory).start();
+        temporalWorkerRunFactory,
+        configs).start();
   }
 
 }

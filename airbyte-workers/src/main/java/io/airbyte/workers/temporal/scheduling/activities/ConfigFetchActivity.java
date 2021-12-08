@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal.scheduling.activities;
 
 import io.temporal.activity.ActivityInterface;
+import io.temporal.activity.ActivityMethod;
 import java.time.Duration;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -32,6 +33,19 @@ public interface ConfigFetchActivity {
 
   }
 
+  @ActivityMethod
   ScheduleRetrieverOutput getPeriodicity(ScheduleRetrieverInput input);
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  class GetMaxAttemptOutput {
+
+    private int maxAttempt;
+
+  }
+
+  @ActivityMethod
+  GetMaxAttemptOutput getMaxAttempt();
 
 }

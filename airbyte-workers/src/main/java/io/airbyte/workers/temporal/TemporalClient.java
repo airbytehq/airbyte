@@ -126,10 +126,9 @@ public class TemporalClient {
     final ConnectionUpdaterWorkflow connectionUpdaterWorkflow = getWorkflowOptionsWithWorkflowId(ConnectionUpdaterWorkflow.class,
         TemporalJobType.CONNECTION_UPDATER, "connection_updater_" + connectionId);
     final BatchRequest signalRequest = client.newSignalWithStartRequest();
-    final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, jobId, jobConfig, attemptId, false);
+    final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, jobId, jobConfig, attemptId, false, 1);
     signalRequest.add(connectionUpdaterWorkflow::run, input);
     // TODO: Only if not manual
-    signalRequest.add(connectionUpdaterWorkflow::skipWaitForScheduling);
     final ExecutorService threadpool = Executors.newCachedThreadPool();
     final Future<Void> futureTask = threadpool.submit(() -> {
       final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attemptId);
