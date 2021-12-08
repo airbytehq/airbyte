@@ -237,8 +237,9 @@ public class ConfigDumpImporter {
         if (tableType == JobsDatabaseSchema.AIRBYTE_METADATA) {
           tableStream = replaceDeploymentMetadata(jobPersistence, tableStream);
         }
-
-        data.put(tableType, tableStream);
+        if (tableType.getIsPartOfImportExport()) {
+          data.put(tableType, tableStream);
+        }
       }
       jobPersistence.importDatabase(airbyteVersion.serialize(), data);
       LOGGER.info("Successful upgrade of airbyte postgres database from archive");

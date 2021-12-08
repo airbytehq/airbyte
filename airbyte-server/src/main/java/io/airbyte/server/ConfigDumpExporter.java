@@ -95,7 +95,7 @@ public class ConfigDumpExporter {
         .collect(Collectors.toMap(e -> e.getKey().name(), Entry::getValue));
     Files.createDirectories(parentFolder.resolve(DB_FOLDER_NAME));
     for (final Map.Entry<String, Stream<JsonNode>> table : tables.entrySet()) {
-      if (!table.getKey().equals(JobsDatabaseSchema.JOBS.getTableName())) {
+      if (JobsDatabaseSchema.valueOf(table.getKey().toUpperCase()).getIsPartOfImportExport()) {
         final Path tablePath = buildTablePath(parentFolder, table.getKey());
         writeTableToArchive(tablePath, table.getValue());
       }

@@ -22,16 +22,23 @@ import java.util.stream.Stream;
  */
 public enum JobsDatabaseSchema implements TableSchema {
 
-  ATTEMPTS("Attempts.yaml"),
-  JOBS("Jobs.yaml"),
+  ATTEMPTS("Attempts.yaml", false),
+  JOBS("Jobs.yaml", false),
   AIRBYTE_METADATA("AirbyteMetadata.yaml");
 
   static final Path SCHEMAS_ROOT = JsonSchemas.prepareSchemas("jobs_database", JobsDatabaseSchema.class);
 
   private final String schemaFilename;
+  private final Boolean isPartofImportExport;
 
   JobsDatabaseSchema(final String schemaFilename) {
     this.schemaFilename = schemaFilename;
+    this.isPartofImportExport = true;
+  }
+
+  JobsDatabaseSchema(final String schemaFilename, final boolean isPartofImportExport) {
+    this.schemaFilename = schemaFilename;
+    this.isPartofImportExport = isPartofImportExport;
   }
 
   @Override
@@ -52,4 +59,7 @@ public enum JobsDatabaseSchema implements TableSchema {
     return Stream.of(JobsDatabaseSchema.values()).map(JobsDatabaseSchema::getTableName).collect(Collectors.toSet());
   }
 
+  public boolean getIsPartOfImportExport() {
+    return this.isPartofImportExport;
+  }
 }
