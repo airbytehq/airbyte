@@ -21,7 +21,7 @@ import io.airbyte.commons.logging.LoggingHelper.Color;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
-import io.airbyte.config.helpers.LogConfiguration;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.TestConfigHelpers;
 import io.airbyte.workers.WorkerConstants;
@@ -62,7 +62,7 @@ class DefaultAirbyteDestinationTest {
   static {
     try {
       logJobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
-      LogClientSingleton.getInstance().setJobMdc(WorkerEnvironment.DOCKER, LogConfiguration.EMPTY, logJobRoot);
+      LogClientSingleton.getInstance().setJobMdc(WorkerEnvironment.DOCKER, LogConfigs.EMPTY, logJobRoot);
     } catch (final IOException e) {
       e.printStackTrace();
     }
