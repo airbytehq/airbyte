@@ -14,7 +14,6 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
-import io.airbyte.integrations.destination.s3.S3Destination;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -222,10 +221,6 @@ public abstract class S3StreamCopier implements StreamCopier {
       multipartUploadManager.complete();
     }
     LOGGER.info("All data for {} stream uploaded.", streamName);
-  }
-
-  public static void attemptS3WriteAndDelete(final S3DestinationConfig s3Config) {
-    S3Destination.attemptS3WriteAndDelete(s3Config, "");
   }
 
   public abstract void copyS3CsvFileIntoTable(JdbcDatabase database,
