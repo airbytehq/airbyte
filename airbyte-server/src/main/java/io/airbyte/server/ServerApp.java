@@ -19,6 +19,8 @@ import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
+import io.airbyte.db.instance.DatabaseMigrator;
+import io.airbyte.db.instance.MinimumFlywayMigrationVersionCheck;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
@@ -113,6 +115,7 @@ public class ServerApp implements ServerRunnable {
         LogClientSingleton.getInstance().getServerLogsRoot(configs.getWorkspaceRoot()));
 
     LOGGER.info("Checking for minimum flyway migration versions..");
+    MinimumFlywayMigrationVersionCheck.assertDatabase();
 
     LOGGER.info("Creating Staged Resource folder...");
     ConfigDumpImporter.initStagedResourceFolder();
