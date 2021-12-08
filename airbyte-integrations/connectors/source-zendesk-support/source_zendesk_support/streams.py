@@ -323,6 +323,24 @@ class IncrementalUnsortedPageStream(IncrementalUnsortedStream, ABC):
         return params
 
 
+class IncrementalUnsortedCursorStream(IncrementalUnsortedStream, ABC):
+    """Stream for loading without sorting but with cursor based pagination"""
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        has_more = response.json().get("meta").get("has_more")
+        if not has_more:
+            self._finished = True
+            return None
+        return response.json().get("meta").get("after_cursor")
+
+    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(next_page_token=next_page_token, **kwargs)
+        params["page[size]"] = self.page_size
+        if next_page_token:
+            params["page[after]"] = next_page_token
+        return params
+
+
 class FullRefreshStream(IncrementalUnsortedPageStream, ABC):
     """ "Stream for endpoints where there are not any created_at or updated_at fields"""
 
@@ -464,7 +482,8 @@ class TicketComments(IncrementalSortedPageStream):
 # 2) pagination and sorting mechanism
 # 3) cursor pagination and sorting mechanism
 # 4) without sorting but with pagination
-# 5) without created_at/updated_at fields
+# 5) without sorting but with cursor pagination
+# 6) without created_at/updated_at fields
 
 # endpoints provide a built-in incremental approach
 
@@ -546,8 +565,16 @@ class TicketForms(IncrementalUnsortedPageStream):
     """TicketForms stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_forms/"""
 
 
-class TicketMetrics(IncrementalUnsortedPageStream):
+class TicketMetrics(IncrementalUnsortedCursorStream):
     """TicketMetric stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metrics/"""
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        # Tickets are ordered chronologically by created date, from newest to oldest.
+        # No need to get next page once cursor passed initial state
+        if self.is_finished:
+            return None
+
+        return super().next_page_token(response)
 
 
 class TicketMetricEvents(IncrementalExportStream):
