@@ -26,35 +26,35 @@ class S3CloudDocumentStoreClientTest {
   private static final String DOCUMENT = "hello";
   private static final String DOCUMENT2 = "bye";
 
-  private S3CloudDocumentStoreClient s3CloudDocumentStoreClient;
+  private S3CloudDocumentStoreClient client;
 
   @BeforeEach
   void setup() {
     final Path root = Path.of("state-test" + UUID.randomUUID());
     final S3Client s3Client = S3Client.builder().region(REGION).build();
-    s3CloudDocumentStoreClient = new S3CloudDocumentStoreClient(s3Client, BUCKET_NAME, root);
+    client = new S3CloudDocumentStoreClient(s3Client, BUCKET_NAME, root);
   }
 
   // todo (cgardens) - possible to dedupe this test with GcsCloudDocumentStoreClientTest
   @Test
   void test() {
-    final Optional<String> emptyResponse = s3CloudDocumentStoreClient.read(KEY);
+    final Optional<String> emptyResponse = client.read(KEY);
     assertFalse(emptyResponse.isPresent());
 
-    s3CloudDocumentStoreClient.write(KEY, DOCUMENT);
-    final Optional<String> actualDocument = s3CloudDocumentStoreClient.read(KEY);
+    client.write(KEY, DOCUMENT);
+    final Optional<String> actualDocument = client.read(KEY);
     assertTrue(actualDocument.isPresent());
     assertEquals(DOCUMENT, actualDocument.get());
 
-    s3CloudDocumentStoreClient.write(KEY, DOCUMENT2);
-    final Optional<String> actualDocumentUpdated = s3CloudDocumentStoreClient.read(KEY);
+    client.write(KEY, DOCUMENT2);
+    final Optional<String> actualDocumentUpdated = client.read(KEY);
     assertTrue(actualDocumentUpdated.isPresent());
     assertEquals(DOCUMENT2, actualDocumentUpdated.get());
 
-    assertTrue(s3CloudDocumentStoreClient.delete(KEY));
-    assertFalse(s3CloudDocumentStoreClient.delete(KEY));
+    assertTrue(client.delete(KEY));
+    assertFalse(client.delete(KEY));
 
-    final Optional<String> emptyResponseAfterDeletion = s3CloudDocumentStoreClient.read(KEY);
+    final Optional<String> emptyResponseAfterDeletion = client.read(KEY);
     assertFalse(emptyResponseAfterDeletion.isPresent());
   }
 

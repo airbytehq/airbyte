@@ -8,30 +8,25 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.StorageOptions;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-@Tag("logger-client")
-class GcsCloudDocumentStoreClientTest {
+class DockerComposeDocumentStoreClientTest {
 
-  private static final String BUCKET_NAME = "airbyte-kube-integration-logging-test";
   private static final String KEY = "a";
   private static final String DOCUMENT = "hello";
   private static final String DOCUMENT2 = "bye";
 
-  private GcsCloudDocumentStoreClient client;
+  private DockerComposeDocumentStoreClient client;
 
   @BeforeEach
-  void setup() {
-    final Path root = Path.of("state-test" + UUID.randomUUID());
-    final Storage gcsClient = StorageOptions.getDefaultInstance().getService();
-    client = new GcsCloudDocumentStoreClient(gcsClient, BUCKET_NAME, root);
+  void setup() throws IOException {
+    final Path testRoot = Files.createTempDirectory(Path.of("/tmp"), "document_store");
+    client = new DockerComposeDocumentStoreClient(testRoot);
   }
 
   // todo (cgardens) - possible to dedupe this test with S3CloudDocumentStoreClientTest

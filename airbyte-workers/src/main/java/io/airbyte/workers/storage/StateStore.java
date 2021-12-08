@@ -47,6 +47,10 @@ public class StateStore {
         STATE_ROOT));
   }
 
+  public StateStore dockerCompose(final Path workspaceMount) {
+    return new StateStore(new DockerComposeDocumentStoreClient(workspaceMount));
+  }
+
   public StateStore(final CloudDocumentStoreClient documentStoreClient) {
     this.documentStoreClient = documentStoreClient;
   }
