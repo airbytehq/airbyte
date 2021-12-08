@@ -164,7 +164,7 @@ services:
     container_name: airbyte-webapp
     restart: unless-stopped
     ports:
-      - 8000:8080
+      - 8000:80
     environment:
       - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
       - AIRBYTE_VERSION=${VERSION}
