@@ -12,7 +12,7 @@
       "type": "string"
     },
     "original_transaction_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "account": {
       "type": "object",
@@ -39,7 +39,7 @@
           "type": "string"
         },
         "parent_account_id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "bill_to": {
           "type": "string"
@@ -47,7 +47,7 @@
       }
     },
     "invoice": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "id": {
           "type": "string"
@@ -67,7 +67,7 @@
       }
     },
     "voided_by_invoice": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "id": {
           "type": "string"
@@ -193,19 +193,19 @@
       }
     },
     "ip_address_v4": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "ip_address_country": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "status_code": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "status_message": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "customer_message": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "customer_message_locale": {
       "type": "string"
@@ -214,7 +214,7 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "object": {
           "type": "string"
@@ -234,10 +234,10 @@
       "type": "string"
     },
     "gateway_approval_code": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "gateway_response_code": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "gateway_response_time": {
       "type": "number"
@@ -246,7 +246,7 @@
       "type": "object"
     },
     "cvv_check": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "avs_check": {
       "type": "string"
