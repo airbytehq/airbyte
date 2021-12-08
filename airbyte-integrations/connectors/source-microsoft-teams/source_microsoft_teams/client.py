@@ -60,8 +60,8 @@ class Client:
             }
         self._group_ids = None
 
-    @lru_cache(maxsize=None)
     @property
+    @lru_cache(maxsize=None)
     def msal_app(self):
         return msal.ConfidentialClientApplication(
             self.credentials["client_id"],
