@@ -1,5 +1,12 @@
 # Gradle Cheatsheet
 
+{% hint style="info" %}
+If you are running in a Mac M1 you need to do a quick workaround: edit the file `tools/code-generator/Dockerfile` and change the line `FROM python:3.7-slim` to `FROM python:3.8-slim`. This will help you building connectors using Gradle,
+but can be cases where others components will need another changes to be build using the Mac M1.
+
+There is a long discussion about running Airbyte on a Mac M1 you can follow [here](https://github.com/airbytehq/airbyte/issues/2017).
+{% endhint %}
+
 ## Overview
 
 We have 3 ways of slicing our builds:
