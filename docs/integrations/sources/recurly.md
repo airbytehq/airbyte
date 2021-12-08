@@ -50,5 +50,6 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :--- | :--- |
+| 0.2.7   | 2021-12-08 | [8617](https://github.com/airbytehq/airbyte/pull/8617) | Update connector fields title/description |
 | 0.2.6   | 2021-12-06 | [8468](https://github.com/airbytehq/airbyte/pull/8468) | Migrate to the CDK |
 
