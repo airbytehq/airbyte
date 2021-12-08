@@ -15,6 +15,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.bigquery.BigQueryDenormalizedDestination;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
+import io.airbyte.integrations.destination.bigquery.uploader.BigQueryDirectUploader;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQueryDenormalizedUploadStandardStrategy extends BigQueryUploadStandardStrategy {
+public class BigQueryDenormalizedUploadStandardStrategy extends AbstractBigQueryUploadStrategy<BigQueryDirectUploader> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedUploadStandardStrategy.class);
 

@@ -31,10 +31,15 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
+import io.airbyte.integrations.destination.bigquery.uploader.BigQueryDirectUploader;
+import io.airbyte.integrations.destination.bigquery.uploader.GcsAvroBigQueryUploader;
+import io.airbyte.integrations.destination.bigquery.writer.BigQueryTableWriter;
 import io.airbyte.integrations.destination.gcs.GcsDestination;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsS3Helper;
-import io.airbyte.integrations.destination.gcs.csv.GcsCsvWriter;
+import io.airbyte.integrations.destination.gcs.avro.GcsAvroWriter;
+import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -180,7 +185,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                             final Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException {
     final BigQuery bigquery = getBigQuery(config);
-    final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs = new HashMap<>();
+    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs = new HashMap<>();
     final Set<String> existingSchemas = new HashSet<>();
     final boolean isGcsUploadingMode = UploadingMethod.GCS.equals(getLoadingMethod(config));
     final boolean isKeepFilesInGcs = isKeepFilesInGcs(config);
@@ -220,23 +225,21 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
       if (isGcsUploadingMode) {
         final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
-            .getGcsDestinationConfig(BigQueryUtils.getGcsJsonNodeConfig(config));
-        final GcsCsvWriter gcsCsvWriter = initGcsWriter(gcsDestinationConfig, configStream);
+            .getGcsDestinationConfig(BigQueryUtils.getGcsAvroJsonNodeConfig(config));
+        final GcsAvroWriter gcsCsvWriter = initGcsWriter(gcsDestinationConfig, configStream);
         gcsCsvWriter.initialize();
 
         writeConfigs.put(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
-            new BigQueryWriteConfig(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName),
-                writer, syncMode, schema, gcsCsvWriter, gcsDestinationConfig));
+            new GcsAvroBigQueryUploader(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName),
+                    gcsCsvWriter, syncMode, schema, gcsDestinationConfig, bigquery));
       } else {
         writeConfigs.put(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
-            new BigQueryWriteConfig(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName),
-                writer, syncMode, schema, null, null));
+            new BigQueryDirectUploader(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName),
+                new BigQueryTableWriter(writer), syncMode, schema, null, bigquery));
       }
 
     }
-    // write to tmp tables
-    // if success copy delete main table if exists. rename tmp tables to real tables.
-    return getRecordConsumer(bigquery, writeConfigs, catalog, outputRecordCollector, isGcsUploadingMode, isKeepFilesInGcs);
+    return getRecordConsumer(writeConfigs, outputRecordCollector);
   }
 
   /**
@@ -250,26 +253,23 @@ public class BigQueryDestination extends BaseConnector implements Destination {
    * @return GcsCsvWriter
    * @throws IOException
    */
-  private GcsCsvWriter initGcsWriter(final GcsDestinationConfig gcsDestinationConfig,
+  private GcsAvroWriter initGcsWriter(final GcsDestinationConfig gcsDestinationConfig,
                                      final ConfiguredAirbyteStream configuredStream)
       throws IOException {
     final Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
     final AmazonS3 s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
-    return new GcsCsvWriter(gcsDestinationConfig, s3Client, configuredStream, uploadTimestamp);
+    return new GcsAvroWriter(gcsDestinationConfig, s3Client, configuredStream, uploadTimestamp, AvroConstants.JSON_CONVERTER);
+//    return new GcsCsvWriter(gcsDestinationConfig, s3Client, configuredStream, uploadTimestamp);
   }
 
   protected String getTargetTableName(final String streamName) {
     return namingResolver.getRawTableName(streamName);
   }
 
-  protected AirbyteMessageConsumer getRecordConsumer(final BigQuery bigquery,
-                                                     final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
-                                                     final ConfiguredAirbyteCatalog catalog,
-                                                     final Consumer<AirbyteMessage> outputRecordCollector,
-                                                     final boolean isGcsUploadingMode,
-                                                     final boolean isKeepFilesInGcs) {
-    return new BigQueryRecordConsumer(bigquery, writeConfigs, catalog, outputRecordCollector, isGcsUploadingMode, isKeepFilesInGcs);
+  protected AirbyteMessageConsumer getRecordConsumer(final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs,
+                                                     final Consumer<AirbyteMessage> outputRecordCollector) {
+    return new BigQueryRecordConsumer(writeConfigs, outputRecordCollector);
   }
 
   protected Schema getBigQuerySchema(final JsonNode jsonSchema) {

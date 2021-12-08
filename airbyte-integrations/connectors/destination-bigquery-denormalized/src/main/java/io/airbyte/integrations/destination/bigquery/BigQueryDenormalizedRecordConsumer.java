@@ -8,6 +8,7 @@ import com.google.cloud.bigquery.BigQuery;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination.UploadingMethod;
+import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.integrations.destination.bigquery.strategy.BigQueryDenormalizedUploadStandardStrategy;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -26,7 +27,7 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
   private final Set<String> fieldsWithRefDefinition;
 
   public BigQueryDenormalizedRecordConsumer(final BigQuery bigquery,
-                                            final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
+                                            final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader> writeConfigs,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector,
                                             final StandardNameTransformer namingResolver,

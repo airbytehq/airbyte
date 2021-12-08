@@ -139,6 +139,23 @@ public class BigQueryUtils {
     return gcsJsonNode;
   }
 
+  public static JsonNode getGcsAvroJsonNodeConfig(final JsonNode config) {
+    final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
+    final JsonNode gcsJsonNode = Jsons.jsonNode(ImmutableMap.builder()
+            .put(BigQueryConsts.GCS_BUCKET_NAME, loadingMethod.get(BigQueryConsts.GCS_BUCKET_NAME))
+            .put(BigQueryConsts.GCS_BUCKET_PATH, loadingMethod.get(BigQueryConsts.GCS_BUCKET_PATH))
+            .put(BigQueryConsts.GCS_BUCKET_REGION, getDatasetLocation(config))
+            .put(BigQueryConsts.CREDENTIAL, loadingMethod.get(BigQueryConsts.CREDENTIAL))
+            .put(BigQueryConsts.FORMAT, Jsons.deserialize("{\n"
+                    + "  \"format_type\": \"AVRO\",\n"
+                    + "  \"flattening\": \"No flattening\"\n"
+                    + "}"))
+            .build());
+
+    LOGGER.debug("Composed GCS config is: \n" + gcsJsonNode.toPrettyString());
+    return gcsJsonNode;
+  }
+
   public static String getDatasetLocation(final JsonNode config) {
     if (config.has(BigQueryConsts.CONFIG_DATASET_LOCATION)) {
       return config.get(BigQueryConsts.CONFIG_DATASET_LOCATION).asText();

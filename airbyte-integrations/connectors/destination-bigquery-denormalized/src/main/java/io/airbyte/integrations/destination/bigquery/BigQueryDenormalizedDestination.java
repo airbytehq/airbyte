@@ -21,6 +21,7 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.Collections;
@@ -54,7 +55,7 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   }
 
   protected AirbyteMessageConsumer getRecordConsumer(final BigQuery bigquery,
-                                                     final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
+                                                     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs,
                                                      final ConfiguredAirbyteCatalog catalog,
                                                      final Consumer<AirbyteMessage> outputRecordCollector,
                                                      final boolean isGcsUploadingMode,
