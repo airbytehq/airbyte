@@ -184,7 +184,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
       final String matched = matcher.group();
       final String logSource = matched.substring(11, matched.length() - 2);
 
-      final String modifiedLine = logSource + " " + line.replaceFirst(matched, "");
+      final String modifiedLine = logSource + " " + line.replace(matched, "");
       logger.accept(modifiedLine);
     } else {
       logger.accept(line);
