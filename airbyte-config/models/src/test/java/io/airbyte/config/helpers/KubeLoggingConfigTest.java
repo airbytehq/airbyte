@@ -42,7 +42,7 @@ public class KubeLoggingConfigTest {
   /**
    * Because this test tests our env var set up is compatible with our Log4j2 configuration, we are
    * unable to perform injection, and instead rely on env vars set in
-   * ./tools/bin/cloud_storage_logging_test.sh.
+   * ./tools/bin/cloud_storage_test.sh.
    *
    * This test will fail if certain env vars aren't set.
    */

@@ -28,7 +28,7 @@ jsonSchema2Pojo {
 
 test {
     useJUnitPlatform {
-        excludeTags 'log4j2-config', 'logger-client'
+        excludeTags 'log4j2-config', 'cloud-storage-integration-test'
     }
     testLogging {
         events "passed", "skipped", "failed"
@@ -44,9 +44,9 @@ task log4j2IntegrationTest(type: Test) {
     }
 }
 
-task logClientsIntegrationTest(type: Test) {
+task cloudStorageIntegrationTest(type: Test) {
     useJUnitPlatform {
-        includeTags 'logger-client'
+        includeTags 'cloud-storage-integration-test'
     }
     testLogging {
         events "passed", "skipped", "failed"

@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
-@Tag("logger-client")
+@Tag("cloud-storage-integration-test")
 class S3CloudDocumentStoreClientTest {
 
   private static final String BUCKET_NAME = "airbyte-kube-integration-logging-test";

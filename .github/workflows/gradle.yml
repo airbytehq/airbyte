@@ -481,7 +481,7 @@ jobs:
           CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube.sh
 
       - name: Run Logging Tests
-        run: ./tools/bin/cloud_storage_logging_test.sh
+        run: ./tools/bin/cloud_storage_test.sh
         env:
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
           GOOGLE_CLOUD_STORAGE_TEST_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}

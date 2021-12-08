@@ -17,7 +17,7 @@ export GCS_LOG_BUCKET=airbyte-kube-integration-logging-test
 
 # Run the logging test first since the same client is used in the log4j2 integration test.
 echo "Running log client tests.."
-SUB_BUILD=PLATFORM ./gradlew :airbyte-config:models:logClientsIntegrationTest  --scan
+SUB_BUILD=PLATFORM ./gradlew :airbyte-config:models:cloudStorageIntegrationTest  --scan
 
 # Reset existing configurations and run this for each possible configuration
 # These configurations mirror the configurations documented in https://docs.airbyte.io/deploying-airbyte/on-kubernetes#configure-logs.

@@ -17,7 +17,7 @@ import java.util.List;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-@Tag("logger-client")
+@Tag("cloud-storage-integration-test")
 public class GcsLogsTest {
 
   private static Storage getClientFactory() {

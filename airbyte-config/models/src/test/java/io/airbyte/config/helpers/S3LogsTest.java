@@ -20,7 +20,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-@Tag("logger-client")
+@Tag("cloud-storage-integration-test")
 public class S3LogsTest {
 
   private static final String REGION_STRING = "us-west-2";
