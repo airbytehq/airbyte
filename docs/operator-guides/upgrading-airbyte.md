@@ -77,7 +77,7 @@ If you are upgrading from \(i.e. your current version of Airbyte is\) Airbyte ve
 
    After 2-5 minutes, `kubectl get pods | grep airbyte` should show `Running` as the status for all the core Airbyte pods. This may take longer on Kubernetes clusters with slow internet connections.
 
-   Run `kubectl port-forward svc/airbyte-webapp-svc 8000:80` to allow access to the UI/API.
+   Run `kubectl port-forward svc/airbyte-webapp-svc 8000:8080` to allow access to the UI/API.
 
 ## Upgrading on K8s \(0.26.4-alpha and below\)
 
