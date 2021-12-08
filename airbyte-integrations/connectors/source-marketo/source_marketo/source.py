@@ -62,6 +62,9 @@ class MarketoStream(HttpStream, ABC):
             yield record
 
     def normalize_datetime(self, dt: str, format="%Y-%m-%dT%H:%M:%SZ%z"):
+        """
+        Convert '2018-09-07T17:37:18Z+0000' -> '2018-09-07T17:37:18Z'
+        """
         try:
             res = datetime.datetime.strptime(dt, format)
         except ValueError:
