@@ -5,7 +5,7 @@
 
 from enum import Enum
 from pathlib import Path
-from typing import List, Mapping, Optional, Set, Dict
+from typing import List, Mapping, Optional, Set
 
 from pydantic import BaseModel, Field, validator
 

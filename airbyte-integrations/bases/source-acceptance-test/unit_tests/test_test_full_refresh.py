@@ -1,27 +1,19 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 from typing import Dict, List
 from unittest.mock import MagicMock
 
 import pytest
 from _pytest.outcomes import Failed
-from airbyte_cdk.models import (
-    ConfiguredAirbyteCatalog,
-    ConfiguredAirbyteStream,
-    AirbyteStream,
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    Type,
-)
-
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, Type
 from source_acceptance_test.config import ConnectionTestConfig
-from source_acceptance_test.tests.test_full_refresh import (
-    TestFullRefresh as _TestFullRefresh,
-)
+from source_acceptance_test.tests.test_full_refresh import TestFullRefresh as _TestFullRefresh
 
 
 class ReadTestConfigWithIgnoreFields(ConnectionTestConfig):
-    ignored_fields: Dict[str, List[str]] = {
-        "test_stream": ["ignore_me", "ignore_me_too"]
-    }
+    ignored_fields: Dict[str, List[str]] = {"test_stream": ["ignore_me", "ignore_me_too"]}
 
 
 test_cases = [
@@ -68,9 +60,7 @@ test_cases = [
     test_cases,
     ids=[test_case[-1] for test_case in test_cases],
 )
-def test_read_with_ignore_fields(
-    schema, record, expected_record, should_fail, test_case_name
-):
+def test_read_with_ignore_fields(schema, record, expected_record, should_fail, test_case_name):
     catalog = get_default_catalog(schema)
     input_config = ReadTestConfigWithIgnoreFields()
     docker_runner_mock = MagicMock()
@@ -79,9 +69,7 @@ def test_read_with_ignore_fields(
         return [
             AirbyteMessage(
                 type=Type.RECORD,
-                record=AirbyteRecordMessage(
-                    stream="test_stream", data=record_, emitted_at=111
-                ),
+                record=AirbyteRecordMessage(stream="test_stream", data=record_, emitted_at=111),
             )
         ]
 
