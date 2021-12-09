@@ -156,7 +156,6 @@ const SideBar: React.FC = () => {
             options={[
               { value: "docs" },
               { value: "slack" },
-              { value: "status" },
               { value: "recipes" },
             ]}
           >
