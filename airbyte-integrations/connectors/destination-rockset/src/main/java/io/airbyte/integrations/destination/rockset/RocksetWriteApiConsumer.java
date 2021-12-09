@@ -1,27 +1,6 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
-
 package io.airbyte.integrations.destination.rockset;
 
 import static io.airbyte.integrations.destination.rockset.RocksetUtils.*;
@@ -37,7 +16,6 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.DestinationSyncMode;
 
-import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -72,7 +50,7 @@ public class RocksetWriteApiConsumer implements AirbyteMessageConsumer {
             Consumer<AirbyteMessage> outputRecordCollector) {
         this.apiKey = config.get(API_KEY_ID).asText();
         this.apiServer = config.get(API_SERVER_ID).asText();
-        this.workspace = config.get(WORKSPACE_ID).asText();
+        this.workspace = config.get(ROCKSET_WORKSPACE_ID).asText();
 
         this.catalog = catalog;
         this.outputRecordCollector = outputRecordCollector;
@@ -95,7 +73,7 @@ public class RocksetWriteApiConsumer implements AirbyteMessageConsumer {
                 .toArray(CompletableFuture[]::new);
 
         CompletableFuture<?>[] appendStreams = catalog.getStreams().stream()
-                .filter(s -> s.getDestinationSyncMode() != DestinationSyncMode.OVERWRITE)
+                .filter(s -> s.getDestinationSyncMode() == DestinationSyncMode.APPEND)
                 .map(s -> s.getStream().getName())
                 .map(nameTransformer::convertStreamName)
                 .map(this::createCollectionIntoReadyState)
