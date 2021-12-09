@@ -213,6 +213,8 @@ public class Databases {
     connectionPool.setDriverClassName(driverClassName);
     connectionPool.setUsername(username);
     connectionPool.setPassword(password);
+    connectionPool.setInitialSize(0);
+    connectionPool.setMaxTotal(5);
     connectionPool.setUrl(jdbcConnectionString);
     connectionProperties.ifPresent(connectionPool::setConnectionProperties);
     return connectionPool;
