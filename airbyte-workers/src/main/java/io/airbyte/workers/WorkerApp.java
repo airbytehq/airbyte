@@ -188,9 +188,8 @@ public class WorkerApp {
           configs.getLocalDockerMount(),
 
           // this needs to point at the Docker network Airbyte is running on, not the host network or job
-          // runner network
-          // otherwise it can't talk with the db/minio
-          "airbyte_default", // todo: should this be configurable via envconfigs?
+          // runner network, otherwise it can't talk with the db/minio
+          "airbyte_default",
 
           true);
     }
