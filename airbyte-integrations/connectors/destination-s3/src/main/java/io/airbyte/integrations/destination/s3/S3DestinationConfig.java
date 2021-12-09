@@ -71,15 +71,25 @@ public class S3DestinationConfig {
     if (config.get("part_size") != null) {
       partSize = config.get("part_size").asInt();
     }
+    String bucketPath = null;
+    if (config.get("s3_bucket_path") != null) {
+      bucketPath = config.get("s3_bucket_path").asText();
+    }
+    // In the "normal" S3 destination, this is never null. However, the Redshift and Snowflake copy destinations don't set a Format config.
+    S3FormatConfig format = null;
+    if (config.get("format") != null) {
+      format = S3FormatConfigs.getS3FormatConfig(config);
+    }
     return new S3DestinationConfig(
         config.get("s3_endpoint") == null ? "" : config.get("s3_endpoint").asText(),
         config.get("s3_bucket_name").asText(),
-        config.get("s3_bucket_path").asText(),
+        bucketPath,
         config.get("s3_bucket_region").asText(),
         config.get("access_key_id").asText(),
         config.get("secret_access_key").asText(),
         partSize,
-        S3FormatConfigs.getS3FormatConfig(config));
+        format
+    );
   }
 
   public String getEndpoint() {
