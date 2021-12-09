@@ -127,6 +127,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
       case BOOLEAN -> JsonSchemaPrimitive.BOOLEAN;
       case TINYINT, SMALLINT, INTEGER, BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL -> JsonSchemaPrimitive.NUMBER;
       case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaPrimitive.STRING_BINARY;
+      case ARRAY -> JsonSchemaPrimitive.ARRAY;
       default -> JsonSchemaPrimitive.STRING;
     };
   }

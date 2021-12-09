@@ -430,7 +430,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("text")
             .fullSourceDataType("text[]")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaPrimitive.ARRAY)
             .addInsertValues("'{10000, 10000, 10000, 10000}'", "null")
             .addExpectedValues("[\"10000\",\"10000\",\"10000\",\"10000\"]", null)
             .build());
