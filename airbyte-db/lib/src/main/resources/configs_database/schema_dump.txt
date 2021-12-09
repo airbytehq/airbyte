@@ -1,8 +1,3 @@
-create type "source_type" as enum ('api', 'file', 'database', 'custom');
-create type "actor_type" as enum ('source', 'destination');
-create type "operator_type" as enum ('normalization', 'dbt');
-create type "namespace_definition_type" as enum ('source', 'destination', 'customformat');
-create type "status_type" as enum ('active', 'inactive', 'deprecated');
 create table "public"."actor"(
   "id" uuid not null,
   "workspace_id" uuid not null,
@@ -11,8 +6,8 @@ create table "public"."actor"(
   "configuration" jsonb not null,
   "actor_type" actor_type not null,
   "tombstone" bool not null default false,
-  "created_at" timestamptz(35) not null default cast(current_timestamp as timestamp with time zone),
-  "updated_at" timestamptz(35) not null default cast(current_timestamp as timestamp with time zone),
+  "created_at" timestamptz(35) not null default null,
+  "updated_at" timestamptz(35) not null default null,
   constraint "actor_pkey"
     primary key ("id")
 );
@@ -26,8 +21,8 @@ create table "public"."actor_definition"(
   "actor_type" actor_type not null,
   "source_type" source_type null,
   "spec" jsonb not null,
-  "created_at" timestamptz(35) not null default cast(current_timestamp as timestamp with time zone),
-  "updated_at" timestamptz(35) not null default cast(current_timestamp as timestamp with time zone),
+  "created_at" timestamptz(35) not null default null,
+  "updated_at" timestamptz(35) not null default null,
   constraint "actor_definition_pkey"
     primary key ("id")
 );
@@ -37,8 +32,8 @@ create table "public"."actor_oauth_parameter"(
   "actor_definition_id" uuid not null,
   "configuration" jsonb not null,
   "actor_type" actor_type not null,
-  "created_at" timestamptz(35) not null default cast(current_timestamp as timestamp with time zone),
-  "updated_at" timestamptz(35) not null default cast(current_timestamp as timestamp with time zone),
+  "created_at" timestamptz(35) not null default null,
+  "updated_at" timestamptz(35) not null default null,
   constraint "actor_oauth_parameter_pkey"
     primary key ("id")
 );
@@ -79,8 +74,8 @@ create table "public"."connection"(
   "schedule" jsonb null,
   "manual" bool not null,
   "resource_requirements" jsonb null,
-  "created_at" timestamptz(35) not null default cast(current_timestamp as timestamp with time zone),
-  "updated_at" timestamptz(35) not null default cast(current_timestamp as timestamp with time zone),
+  "created_at" timestamptz(35) not null default null,
+  "updated_at" timestamptz(35) not null default null,
   constraint "connection_pkey"
     primary key ("id")
 );
@@ -88,12 +83,12 @@ create table "public"."connection_operation"(
   "id" uuid not null,
   "connection_id" uuid not null,
   "operation_id" uuid not null,
-  "created_at" timestamptz(35) not null default cast(current_timestamp as timestamp with time zone),
-  "updated_at" timestamptz(35) not null default cast(current_timestamp as timestamp with time zone),
+  "created_at" timestamptz(35) not null default null,
+  "updated_at" timestamptz(35) not null default null,
   constraint "connection_operation_pkey"
     primary key (
-      "id",
-      "connection_id",
+      "id", 
+      "connection_id", 
       "operation_id"
     )
 );
@@ -105,8 +100,8 @@ create table "public"."operation"(
   "operator_normalization" jsonb null,
   "operator_dbt" jsonb null,
   "tombstone" bool not null default false,
-  "created_at" timestamptz(35) not null default cast(current_timestamp as timestamp with time zone),
-  "updated_at" timestamptz(35) not null default cast(current_timestamp as timestamp with time zone),
+  "created_at" timestamptz(35) not null default null,
+  "updated_at" timestamptz(35) not null default null,
   constraint "operation_pkey"
     primary key ("id")
 );
@@ -114,11 +109,11 @@ create table "public"."state"(
   "id" uuid not null,
   "connection_id" uuid not null,
   "state" jsonb null,
-  "created_at" timestamptz(35) not null default cast(current_timestamp as timestamp with time zone),
-  "updated_at" timestamptz(35) not null default cast(current_timestamp as timestamp with time zone),
+  "created_at" timestamptz(35) not null default null,
+  "updated_at" timestamptz(35) not null default null,
   constraint "state_pkey"
     primary key (
-      "id",
+      "id", 
       "connection_id"
     )
 );
@@ -137,8 +132,8 @@ create table "public"."workspace"(
   "notifications" jsonb null,
   "first_completed_sync" bool null,
   "feedback_done" bool null,
-  "created_at" timestamptz(35) not null default cast(current_timestamp as timestamp with time zone),
-  "updated_at" timestamptz(35) not null default cast(current_timestamp as timestamp with time zone),
+  "created_at" timestamptz(35) not null default null,
+  "updated_at" timestamptz(35) not null default null,
   constraint "workspace_pkey"
     primary key ("id")
 );

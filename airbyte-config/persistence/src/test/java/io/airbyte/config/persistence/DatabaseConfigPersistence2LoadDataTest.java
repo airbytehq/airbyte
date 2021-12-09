@@ -38,7 +38,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 /**
- * Unit test for the {@link DatabaseConfigPersistence#loadData} method.
+ * Unit test for the {@link DatabaseConfigPersistence2#loadData} method.
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class DatabaseConfigPersistence2LoadDataTest extends BaseDatabaseConfigPersistence2Test {

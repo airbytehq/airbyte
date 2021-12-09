@@ -30,7 +30,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit test for the {@link DatabaseConfigPersistence#migrateFileConfigs} method.
+ * Unit test for the {@link DatabaseConfigPersistence2#migrateFileConfigs} method.
  */
 public class DatabaseConfigPersistence2MigrateFileConfigsTest extends BaseDatabaseConfigPersistence2Test {
 

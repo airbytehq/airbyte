@@ -40,9 +40,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * See {@link DatabaseConfigPersistenceLoadDataTest},
- * {@link DatabaseConfigPersistenceMigrateFileConfigsTest}, and
- * {@link DatabaseConfigPersistenceUpdateConnectorDefinitionsTest} for testing of specific methods.
+ * See {@link DatabaseConfigPersistence2LoadDataTest},
+ * {@link DatabaseConfigPersistence2MigrateFileConfigsTest}, and
+ * {@link DatabaseConfigPersistence2UpdateConnectorDefinitionsTest} for testing of specific methods.
  */
 public class DatabaseConfigPersistence2Test extends BaseDatabaseConfigPersistence2Test {
 
@@ -185,78 +185,34 @@ public class DatabaseConfigPersistence2Test extends BaseDatabaseConfigPersistenc
     assertEquals(newVersion, result.get(connectorRepository).dockerImageTag);
   }
 
-  // @Test
-  // public void testInsertConfigRecord() throws Exception {
-  // final OffsetDateTime timestamp = OffsetDateTime.now();
-  // final UUID definitionId = UUID.randomUUID();
-  // final String connectorRepository = "airbyte/test-connector";
-  //
-  // // when the record does not exist, it is inserted
-  // final StandardSourceDefinition source1 = new StandardSourceDefinition()
-  // .withSourceDefinitionId(definitionId)
-  // .withDockerRepository(connectorRepository)
-  // .withDockerImageTag("0.1.2");
-  // int insertionCount = database.query(ctx -> configPersistence.insertConfigRecord(
-  // ctx,
-  // timestamp,
-  // ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
-  // Jsons.jsonNode(source1),
-  // ConfigSchema.STANDARD_SOURCE_DEFINITION.getIdFieldName()));
-  // assertEquals(1, insertionCount);
-  // // write an irrelevant source to make sure that it is not changed
-  // writeSource(configPersistence, SOURCE_GITHUB);
-  // assertRecordCount(2);
-  // assertHasSource(source1);
-  // assertHasSource(SOURCE_GITHUB);
-  //
-  // // when the record already exists, it is ignored
-  // final StandardSourceDefinition source2 = new StandardSourceDefinition()
-  // .withSourceDefinitionId(definitionId)
-  // .withDockerRepository(connectorRepository)
-  // .withDockerImageTag("0.1.5");
-  // insertionCount = database.query(ctx -> configPersistence.insertConfigRecord(
-  // ctx,
-  // timestamp,
-  // ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
-  // Jsons.jsonNode(source2),
-  // ConfigSchema.STANDARD_SOURCE_DEFINITION.getIdFieldName()));
-  // assertEquals(0, insertionCount);
-  // assertRecordCount(2);
-  // assertHasSource(source1);
-  // assertHasSource(SOURCE_GITHUB);
-  // }
+  @Test
+  public void testInsertConfigRecord() throws Exception {
+    final UUID definitionId = UUID.randomUUID();
+    final String connectorRepository = "airbyte/test-connector";
 
-  // @Test
-  // public void testUpdateConfigRecord() throws Exception {
-  // final OffsetDateTime timestamp = OffsetDateTime.now();
-  // final UUID definitionId = UUID.randomUUID();
-  // final String connectorRepository = "airbyte/test-connector";
-  //
-  // final StandardSourceDefinition oldSource = new StandardSourceDefinition()
-  // .withSourceDefinitionId(definitionId)
-  // .withDockerRepository(connectorRepository)
-  // .withDockerImageTag("0.3.5");
-  // writeSource(configPersistence, oldSource);
-  // // write an irrelevant source to make sure that it is not changed
-  // writeSource(configPersistence, SOURCE_GITHUB);
-  // assertRecordCount(2);
-  // assertHasSource(oldSource);
-  // assertHasSource(SOURCE_GITHUB);
-  //
-  // final StandardSourceDefinition newSource = new StandardSourceDefinition()
-  // .withSourceDefinitionId(definitionId)
-  // .withDockerRepository(connectorRepository)
-  // .withDockerImageTag("0.3.5");
-  // database.query(ctx -> configPersistence.updateConfigRecord(
-  // ctx,
-  // timestamp,
-  // ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
-  // Jsons.jsonNode(newSource),
-  // definitionId.toString()));
-  // assertRecordCount(2);
-  // assertHasSource(newSource);
-  // assertHasSource(SOURCE_GITHUB);
-  // }
+    // when the record does not exist, it is inserted
+    final StandardSourceDefinition source1 = new StandardSourceDefinition()
+        .withSourceDefinitionId(definitionId)
+        .withDockerRepository(connectorRepository)
+        .withDockerImageTag("0.1.2")
+        .withName("random-name");
+    writeSource(configPersistence, source1);
+    // write an irrelevant source to make sure that it is not changed
+    writeSource(configPersistence, SOURCE_GITHUB);
+    assertRecordCount(2, ACTOR_DEFINITION);
+    assertHasSource(source1);
+    assertHasSource(SOURCE_GITHUB);
+    // when the record already exists, it is updated
+    final StandardSourceDefinition source2 = new StandardSourceDefinition()
+        .withSourceDefinitionId(definitionId)
+        .withDockerRepository(connectorRepository)
+        .withDockerImageTag("0.1.5")
+        .withName("random-name-2");
+    writeSource(configPersistence, source2);
+    assertRecordCount(2, ACTOR_DEFINITION);
+    assertHasSource(source2);
+    assertHasSource(SOURCE_GITHUB);
+  }
 
   @Test
   public void testHasNewVersion() {
