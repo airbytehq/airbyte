@@ -185,7 +185,6 @@ public class WorkerApp {
       final String localIp = InetAddress.getLocalHost().getHostAddress();
       final String kubeHeartbeatUrl = localIp + ":" + KUBE_HEARTBEAT_PORT;
       LOGGER.info("Using Kubernetes namespace: {}", configs.getJobPodKubeNamespace());
-      // todo: expose 3 ports from the orchestrator pod (heartbeat, stdout, stderr)
       return new KubeProcessFactory(workerConfigs, configs.getJobPodKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl, true);
     } else {
       return new DockerProcessFactory(
