@@ -55,8 +55,37 @@ test $run_status == "0" || {
    # Save gradle scan link to github GRADLE_SCAN_LINK variable for next job.
    # https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
    echo "GRADLE_SCAN_LINK=$link" >> $GITHUB_ENV
+
+   skipped_failed_info=`sed -n '/^=* short test summary info =*/,/^=* [0-9]/p' build.out`
+   if ! test -z "$skipped_failed_info"
+      then
+         echo "PYTHON_SHORT_TEST_SUMMARY_INFO<<EOF" >> $GITHUB_ENV
+         echo "Python short test summary info:" >> $GITHUB_ENV
+         echo '```' >> $GITHUB_ENV
+         echo "$skipped_failed_info" >> $GITHUB_ENV
+         echo '```' >> $GITHUB_ENV
+         echo "EOF" >> $GITHUB_ENV
+   else
+      echo "PYTHON_SHORT_TEST_SUMMARY_INFO=No skipped/failed tests"
+   fi
+
    exit $run_status
 }
+
+skipped_failed_info=`sed -n '/^=* short test summary info =*/,/^=* [0-9]/p' build.out`
+
+if ! test -z "$skipped_failed_info"
+then
+   echo "PYTHON_SHORT_TEST_SUMMARY_INFO<<EOF" >> $GITHUB_ENV
+   echo "Python short test summary info:" >> $GITHUB_ENV
+   echo '```' >> $GITHUB_ENV
+   echo "$skipped_failed_info" >> $GITHUB_ENV
+   echo '```' >> $GITHUB_ENV
+   echo "EOF" >> $GITHUB_ENV
+else
+   echo "PYTHON_SHORT_TEST_SUMMARY_INFO=No skipped/failed tests"
+fi
+
 
 # Build successed
 coverage_report=`sed -n '/^[ \t]*-\+ coverage: /,/TOTAL   /p' build.out`
