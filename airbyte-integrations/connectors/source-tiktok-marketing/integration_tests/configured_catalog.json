@@ -4,19 +4,10 @@
       "stream": {
         "name": "ads",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "modify_time"
-        ],
-        "source_defined_primary_key": [
-          [
-            "ad_id"
-          ]
-        ]
+        "default_cursor_field": ["modify_time"],
+        "source_defined_primary_key": [["ad_id"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append"
@@ -25,36 +16,17 @@
       "stream": {
         "name": "ads_reports",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_cursor": true,
-        "default_cursor_field": [
-          "dimensions",
-          "stat_time_day"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
     },
     {
       "stream": {
         "name": "advertisers",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
@@ -63,19 +35,10 @@
       "stream": {
         "name": "ad_groups",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "modify_time"
-        ],
-        "source_defined_primary_key": [
-          [
-            "adgroup_id"
-          ]
-        ]
+        "default_cursor_field": ["modify_time"],
+        "source_defined_primary_key": [["adgroup_id"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append"
@@ -84,41 +47,19 @@
       "stream": {
         "name": "ad_groups_reports",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_cursor": true,
-        "default_cursor_field": [
-          "dimensions",
-          "stat_time_day"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
     },
     {
       "stream": {
         "name": "campaigns",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "modify_time"
-        ],
-        "source_defined_primary_key": [
-          [
-            "campaign_id"
-          ]
-        ]
+        "default_cursor_field": ["modify_time"],
+        "source_defined_primary_key": [["campaign_id"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append"
@@ -127,22 +68,9 @@
       "stream": {
         "name": "campaigns_reports",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_cursor": true,
-        "default_cursor_field": [
-          "dimensions",
-          "stat_time_day"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
     }
   ]
