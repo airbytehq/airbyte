@@ -22,15 +22,15 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 /**
  * Document store on top of the S3Client.
  */
-public class S3CloudDocumentStoreClient implements CloudDocumentStoreClient {
+public class S3DocumentStoreClient implements DocumentStoreClient {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(S3CloudDocumentStoreClient.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(S3DocumentStoreClient.class);
 
   private final String bucketName;
   private final Path root;
   private final S3Client s3Client;
 
-  public S3CloudDocumentStoreClient(final S3Client s3Client, final String bucketName, final Path root) {
+  public S3DocumentStoreClient(final S3Client s3Client, final String bucketName, final Path root) {
     this.s3Client = s3Client;
     this.bucketName = bucketName;
     this.root = root;

@@ -18,20 +18,20 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 @Tag("cloud-storage")
-class GcsCloudDocumentStoreClientTest {
+class GcsDocumentStoreClientTest {
 
   private static final String BUCKET_NAME = "airbyte-kube-integration-logging-test";
   private static final String KEY = "a";
   private static final String DOCUMENT = "hello";
   private static final String DOCUMENT2 = "bye";
 
-  private GcsCloudDocumentStoreClient client;
+  private GcsDocumentStoreClient client;
 
   @BeforeEach
   void setup() {
     final Path root = Path.of("state-test" + UUID.randomUUID());
     final Storage gcsClient = StorageOptions.getDefaultInstance().getService();
-    client = new GcsCloudDocumentStoreClient(gcsClient, BUCKET_NAME, root);
+    client = new GcsDocumentStoreClient(gcsClient, BUCKET_NAME, root);
   }
 
   // todo (cgardens) - possible to dedupe this test with S3CloudDocumentStoreClientTest

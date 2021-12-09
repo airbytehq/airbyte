@@ -9,7 +9,7 @@ import java.util.Optional;
 /**
  * Interface for treating cloud storage like a simple document store.
  */
-public interface CloudDocumentStoreClient {
+public interface DocumentStoreClient {
 
   /**
    * Writes a document with a given id. If a document already exists at this id it will be

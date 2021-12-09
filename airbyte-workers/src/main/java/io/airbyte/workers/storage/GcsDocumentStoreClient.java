@@ -15,20 +15,16 @@ import java.util.Optional;
 /**
  * Document store on top of the GCS Client (Storage).
  */
-public class GcsCloudDocumentStoreClient implements CloudDocumentStoreClient {
+public class GcsDocumentStoreClient implements DocumentStoreClient {
 
   private final String bucketName;
   private final Path root;
   private final Storage gcsClient;
 
-  public GcsCloudDocumentStoreClient(final Storage gcsClient, final String bucketName, final Path root) {
+  public GcsDocumentStoreClient(final Storage gcsClient, final String bucketName, final Path root) {
     this.gcsClient = gcsClient;
     this.bucketName = bucketName;
     this.root = root;
-  }
-
-  public void createBucket(final Storage gcsClient, final String bucketName) {
-    gcsClient.bu
   }
 
   String getKey(final String id) {

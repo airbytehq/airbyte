@@ -20,38 +20,38 @@ import java.util.UUID;
  * Leverages the CloudDocumentStore. The root directory is state and then each activityRunId is the
  * key.
  */
-public class StateStore {
+public class WorkerStore {
 
   private static final Path STATE_ROOT = Path.of("state");
 
-  private final CloudDocumentStoreClient documentStoreClient;
+  private final DocumentStoreClient documentStoreClient;
 
-  public StateStore s3(final S3Config config) {
-    return new StateStore(new S3CloudDocumentStoreClient(
+  public static WorkerStore s3(final S3Config config) {
+    return new WorkerStore(new S3DocumentStoreClient(
         new DefaultS3ClientFactory(config).get(),
         config.getBucketName(),
         STATE_ROOT));
   }
 
-  public StateStore minio(final MinioConfig config) {
-    return new StateStore(new S3CloudDocumentStoreClient(
+  public static WorkerStore minio(final MinioConfig config) {
+    return new WorkerStore(new S3DocumentStoreClient(
         new MinioS3ClientFactory(config).get(),
         config.getBucketName(),
         STATE_ROOT));
   }
 
-  public StateStore gcs(final GcsConfig config) {
-    return new StateStore(new GcsCloudDocumentStoreClient(
+  public static WorkerStore gcs(final GcsConfig config) {
+    return new WorkerStore(new GcsDocumentStoreClient(
         new DefaultGcsClientFactory(config).get(),
         config.getBucketName(),
         STATE_ROOT));
   }
 
-  public StateStore dockerCompose(final Path workspaceMount) {
-    return new StateStore(new DockerComposeDocumentStoreClient(workspaceMount));
+  public static WorkerStore dockerCompose(final Path workspaceMount) {
+    return new WorkerStore(new DockerComposeDocumentStoreClient(workspaceMount));
   }
 
-  public StateStore(final CloudDocumentStoreClient documentStoreClient) {
+  public WorkerStore(final DocumentStoreClient documentStoreClient) {
     this.documentStoreClient = documentStoreClient;
   }
 

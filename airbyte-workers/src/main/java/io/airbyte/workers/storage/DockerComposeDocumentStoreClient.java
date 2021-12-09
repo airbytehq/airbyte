@@ -14,7 +14,7 @@ import java.util.Optional;
  * Document store for when all we have is an FS. This should only be used in the docker-compose
  * case. Leverages the workspace mount as a storage area.
  */
-public class DockerComposeDocumentStoreClient implements CloudDocumentStoreClient {
+public class DockerComposeDocumentStoreClient implements DocumentStoreClient {
 
   private static final Path STATE_PATH = Path.of("state");
   private final Path workspaceMount;

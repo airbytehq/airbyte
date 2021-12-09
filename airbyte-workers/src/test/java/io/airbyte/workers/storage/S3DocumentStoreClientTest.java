@@ -18,7 +18,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
 @Tag("cloud-storage")
-class S3CloudDocumentStoreClientTest {
+class S3DocumentStoreClientTest {
 
   private static final String BUCKET_NAME = "airbyte-kube-integration-logging-test";
   private static final Region REGION = Region.of("us-west-2");
@@ -26,13 +26,13 @@ class S3CloudDocumentStoreClientTest {
   private static final String DOCUMENT = "hello";
   private static final String DOCUMENT2 = "bye";
 
-  private S3CloudDocumentStoreClient client;
+  private S3DocumentStoreClient client;
 
   @BeforeEach
   void setup() {
     final Path root = Path.of("state-test" + UUID.randomUUID());
     final S3Client s3Client = S3Client.builder().region(REGION).build();
-    client = new S3CloudDocumentStoreClient(s3Client, BUCKET_NAME, root);
+    client = new S3DocumentStoreClient(s3Client, BUCKET_NAME, root);
   }
 
   // todo (cgardens) - possible to dedupe this test with GcsCloudDocumentStoreClientTest

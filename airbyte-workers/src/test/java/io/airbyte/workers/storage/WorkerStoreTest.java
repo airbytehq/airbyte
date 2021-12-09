@@ -20,18 +20,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
-class StateStoreTest {
+class WorkerStoreTest {
 
   private static final UUID ACTIVITY_RUN_ID = UUID.randomUUID();
   private static final State STATE = new State().withState(Jsons.jsonNode(ImmutableMap.of("a", 1)));
 
-  private CloudDocumentStoreClient documentStore;
-  private StateStore store;
+  private DocumentStoreClient documentStore;
+  private WorkerStore store;
 
   @BeforeEach
   void setup() {
-    documentStore = mock(CloudDocumentStoreClient.class);
-    store = new StateStore(documentStore);
+    documentStore = mock(DocumentStoreClient.class);
+    store = new WorkerStore(documentStore);
   }
 
   @Test
