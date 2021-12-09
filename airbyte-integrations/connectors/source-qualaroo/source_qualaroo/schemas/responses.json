@@ -67,86 +67,8 @@
     "answered_questions": {
       "type": [
         "null",
-        "object"
-      ],
-      "properties": {
-        "581047": {
-          "type": [
-            "null",
-            "object"
-          ],
-          "properties": {
-            "question_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
-            },
-            "question_title": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "question_type": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "answer": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "selected_option_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
-            }
-          }
-        },
-        "581048": {
-          "type": [
-            "null",
-            "object"
-          ],
-          "properties": {
-            "question_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
-            },
-            "question_title": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "question_type": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "answer": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "selected_option_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
-            }
-          }
-        }
-      }
+        "array"
+      ]
     },
     "properties": {
       "type": [

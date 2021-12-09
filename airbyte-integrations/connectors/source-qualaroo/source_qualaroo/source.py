@@ -106,6 +106,17 @@ class Responses(ChildStreamMixin, QualarooStream):
     limit = 500
     extra_params = {}
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response_data = response.json()
+
+        # de-nest the answered_questions object if exists
+        for rec in response_data:
+            if 'answered_questions' in rec:
+                rec['answered_questions'] = list(
+                    rec['answered_questions'].values()
+                )
+        yield from response_data
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"nudges/{stream_slice['id']}/responses.json"
 
