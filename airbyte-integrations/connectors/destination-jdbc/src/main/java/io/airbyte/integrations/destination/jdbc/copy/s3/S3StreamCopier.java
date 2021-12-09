@@ -92,8 +92,6 @@ public abstract class S3StreamCopier implements StreamCopier {
       LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
 
       try {
-        // TODO get name from writer somehow
-        // TODO each writer should be able to suffix with some random/sequential string, to enforce multiple files
         final S3CsvWriter writer = new S3CsvWriter(
             s3Config.cloneWithFormatConfig(new S3CsvFormatConfig(Flattening.NO, (long) s3Config.getPartSize())),
             s3Client,
