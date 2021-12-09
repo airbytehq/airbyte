@@ -49,6 +49,9 @@ public class S3StreamCopierTest {
   // equivalent to Thu, 09 Dec 2021 19:17:54 GMT
   private static final Timestamp UPLOAD_TIME = Timestamp.from(Instant.ofEpochMilli(1639077474000L));
 
+  private static final String EXPECTED_FILENAME1 = "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000_fake-stream_00000.csv";
+  private static final String EXPECTED_FILENAME2 = "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000_fake-stream_00001.csv";
+
   private AmazonS3Client s3Client;
   private JdbcDatabase db;
   private SqlOperations sqlOperations;
@@ -143,10 +146,7 @@ public class S3StreamCopierTest {
     final String firstFile = copier.prepareStagingFile();
     assertTrue(firstFile.startsWith("_fake-stream_0000"), "Object path was actually " + firstFile);
     assertEquals("fake-bucket", streamTransferManagerConstructorArguments.get(0).bucket);
-    assertEquals(
-        "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000_fake-stream_00000.csv",
-        streamTransferManagerConstructorArguments.get(0).object
-    );
+    assertEquals(EXPECTED_FILENAME1, streamTransferManagerConstructorArguments.get(0).object);
     final List<StreamTransferManager> firstManagers = streamTransferManagerMockedConstruction.constructed();
     final StreamTransferManager firstManager = firstManagers.get(0);
     verify(firstManager).partSize(PART_SIZE);
@@ -167,10 +167,7 @@ public class S3StreamCopierTest {
     final String secondFile = copier.prepareStagingFile();
     assertEquals("_fake-stream_00001", secondFile);
     assertEquals("fake-bucket", streamTransferManagerConstructorArguments.get(1).bucket);
-    assertEquals(
-        "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000_fake-stream_00001.csv",
-        streamTransferManagerConstructorArguments.get(1).object
-    );
+    assertEquals(EXPECTED_FILENAME2, streamTransferManagerConstructorArguments.get(1).object);
     final List<StreamTransferManager> secondManagers = streamTransferManagerMockedConstruction.constructed();
     final StreamTransferManager secondManager = secondManagers.get(1);
     verify(secondManager).partSize(PART_SIZE);
@@ -203,11 +200,11 @@ public class S3StreamCopierTest {
 
   @Test
   public void deletesStagingFiles() throws Exception {
-    final String file = copier.prepareStagingFile();
-    doReturn(true).when(s3Client).doesObjectExist("fake-bucket", file);
+    copier.prepareStagingFile();
+    doReturn(true).when(s3Client).doesObjectExist("fake-bucket", EXPECTED_FILENAME1);
 
     copier.removeFileAndDropTmpTable();
 
-    verify(s3Client).deleteObject("fake-bucket", file);
+    verify(s3Client).deleteObject("fake-bucket", EXPECTED_FILENAME1);
   }
 }
