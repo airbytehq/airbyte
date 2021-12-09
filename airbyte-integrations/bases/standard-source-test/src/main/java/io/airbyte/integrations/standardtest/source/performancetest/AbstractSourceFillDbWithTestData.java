@@ -7,6 +7,7 @@ package io.airbyte.integrations.standardtest.source.performancetest;
 import io.airbyte.db.Database;
 import java.util.StringJoiner;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -38,6 +39,7 @@ public abstract class AbstractSourceFillDbWithTestData extends AbstractSourceBas
    * The test added test data to a new DB. 1. Set DB creds in static variables above 2. Set desired
    * number for streams, coolumns and records 3. Run the test
    */
+  @Disabled
   @ParameterizedTest
   @MethodSource("provideParameters")
   public void addTestData(String dbName,
