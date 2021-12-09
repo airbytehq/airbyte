@@ -10,7 +10,7 @@ The Airbyte Task documentation on Prefect project can be found [here](https://do
 
 ## 1. Set up the tools
 
-First, make sure you have Docker installed. \(We'll be using the `docker-compose` command, so your install should contain `docker-compose`.\)
+First, make sure you have Docker installed. We'll be using the `docker-compose` command, so your install should contain `docker-compose`.
 
 ### **Start Airbyte**
 
@@ -20,7 +20,7 @@ For the purposes of this tutorial, set your Connection's **sync frequency** to *
 
 ### **Start Prefect**
 
-If you don't have an Prefect instance, we recommend following this [guide](https://docs.prefect.io/core/getting_started/install.html) to set one up.
+If you don't have a Prefect instance, we recommend following this [guide](https://docs.prefect.io/core/getting_started/install.html) to set one up.
 
 ## 2. Create a Flow in Prefect to trigger your Airbyte job
 
@@ -71,11 +71,11 @@ After run the file `python3 airbyte_prefect_flow.py` this will register the Flow
 
 ![](../.gitbook/assets/airbyte_prefect_register_flow.png)
 
-Access the link from the output from the previous command to see the Flow in Prefect Server, or you can navigate in Prefect UI to find the new Flow (default UI is located at `localhost:8080`).
+Access the link from the output from the previous command to see the Flow in Prefect Server, or you can navigate in Prefect UI to find the new Flow -> Access the link from the output from the previous command to see the Flow in the Prefect Server. Alternatively, you can go to the Prefect UI to find the new Flow.
 
 ![](../.gitbook/assets/airbyte_prefect_flow.png)
 
-Click in the button `Run` and configure your first run.
+Click on the button `Run` and configure your first run.
 ![](../.gitbook/assets/airbyte_prefect_flow_configure_run.png)
 
 After a few moments you should see the finished run.
