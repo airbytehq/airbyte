@@ -92,7 +92,7 @@ class Destination(Connector, ABC):
             return
         config = self.read_config(config_path=parsed_args.config)
         if self.check_config_against_spec or cmd == "check":
-            check_config_against_spec_or_exit(config, spec, self.logger)
+            check_config_against_spec_or_exit(config, spec)
 
         if cmd == "check":
             yield self._run_check(config=config)

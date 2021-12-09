@@ -1,0 +1,8 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "hop_v2": {
+      "type": ["boolean", "null"]
+    }
+  }
+}
