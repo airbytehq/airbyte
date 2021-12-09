@@ -8,7 +8,8 @@ import io.airbyte.integrations.standardtest.source.AbstractSourceConnectorTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 
 /**
- * This abstract class contains common methods for both steams - Fill Db scripts and Performance tests.
+ * This abstract class contains common methods for both steams - Fill Db scripts and Performance
+ * tests.
  */
 public abstract class AbstractSourceBasePerformanceTest extends AbstractSourceConnectorTest {
 
