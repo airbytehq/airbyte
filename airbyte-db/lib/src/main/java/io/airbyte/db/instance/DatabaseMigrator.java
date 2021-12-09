@@ -23,6 +23,11 @@ public interface DatabaseMigrator {
   List<MigrationInfo> list();
 
   /**
+   * Get the latest migration information.
+   */
+  MigrationInfo getLatestMigration();
+
+  /**
    * Setup Flyway migration in a database and create baseline.
    */
   BaselineResult createBaseline();
