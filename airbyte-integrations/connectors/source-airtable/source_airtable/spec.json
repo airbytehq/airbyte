@@ -22,6 +22,9 @@
       },
       "tables": {
         "type": "array",
+        "items": {
+          "type": "string"
+        },
         "description": "The list of Tables to integrate.",
         "title": "Tables",
         "examples": ["table 1", "table 2"]
