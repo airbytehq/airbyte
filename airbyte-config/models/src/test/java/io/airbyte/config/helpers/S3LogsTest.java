@@ -6,7 +6,7 @@ package io.airbyte.config.helpers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.storage.CloudStorageConfigs;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -26,7 +26,11 @@ public class S3LogsTest {
   private static final String REGION_STRING = "us-west-2";
   private static final Region REGION = Region.of(REGION_STRING);
   private static final String BUCKET_NAME = "airbyte-kube-integration-logging-test";
-  private static final LogConfigs logConfigs = new EnvConfigs().getLogConfigs();
+  private static final LogConfigs logConfigs = new LogConfigs(CloudStorageConfigs.s3(new CloudStorageConfigs.S3Config(
+    System.getenv(LogClientSingleton.S3_LOG_BUCKET),
+    System.getenv(LogClientSingleton.AWS_ACCESS_KEY_ID),
+    System.getenv(LogClientSingleton.AWS_SECRET_ACCESS_KEY),
+    System.getenv(LogClientSingleton.S3_LOG_BUCKET_REGION))));;
 
   private S3Client s3Client;
 
