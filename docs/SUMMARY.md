@@ -22,6 +22,7 @@
   * [Configuring the Airbyte Database](operator-guides/configuring-airbyte-db.md)
   * [Browsing Output Logs](operator-guides/browsing-output-logs.md)
   * [Using the Airflow Airbyte Operator](operator-guides/using-the-airflow-airbyte-operator.md)
+  * [Using the Prefect Task](operator-guides/using-prefect-task.md)
   * [Windows - Browsing Local File Output](operator-guides/locating-files-local-destination.md)
   * [Transformations and Normalization](operator-guides/transformation-and-normalization/README.md)
     * [Transformations with SQL (Part 1/3)](operator-guides/transformation-and-normalization/transformations-with-sql.md)
