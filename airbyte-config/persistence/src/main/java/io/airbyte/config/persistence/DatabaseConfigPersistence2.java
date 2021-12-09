@@ -811,7 +811,6 @@ public class DatabaseConfigPersistence2 implements ConfigPersistence {
                     : Enums.toEnum(standardSourceDefinition.getSourceType().value(),
                         io.airbyte.db.instance.configs.jooq.enums.SourceType.class).orElseThrow())
             .set(ACTOR_DEFINITION.SPEC, JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getSpec())))
-            .set(ACTOR_DEFINITION.CREATED_AT, timestamp)
             .set(ACTOR_DEFINITION.UPDATED_AT, timestamp)
             .where(ACTOR_DEFINITION.ID.eq(standardSourceDefinition.getSourceDefinitionId()))
             .execute();
@@ -861,7 +860,6 @@ public class DatabaseConfigPersistence2 implements ConfigPersistence {
             .set(ACTOR_DEFINITION.ICON, standardDestinationDefinition.getIcon())
             .set(ACTOR_DEFINITION.ACTOR_TYPE, ActorType.destination)
             .set(ACTOR_DEFINITION.SPEC, JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getSpec())))
-            .set(ACTOR_DEFINITION.CREATED_AT, timestamp)
             .set(ACTOR_DEFINITION.UPDATED_AT, timestamp)
             .where(ACTOR_DEFINITION.ID.eq(standardDestinationDefinition.getDestinationDefinitionId()))
             .execute();
