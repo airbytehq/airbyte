@@ -9,7 +9,6 @@ export AWS_ACCESS_KEY_ID="$(echo "$AWS_S3_INTEGRATION_TEST_CREDS" | jq -r .aws_a
 export AWS_SECRET_ACCESS_KEY="$(echo "$AWS_S3_INTEGRATION_TEST_CREDS" | jq -r .aws_secret_access_key)"
 export S3_LOG_BUCKET=airbyte-kube-integration-logging-test
 export S3_LOG_BUCKET_REGION=us-west-2
-export S3_MINIO_ENDPOINT=
 
 # GCS
 echo "$GOOGLE_CLOUD_STORAGE_TEST_CREDS" > "/tmp/gcs.json"
