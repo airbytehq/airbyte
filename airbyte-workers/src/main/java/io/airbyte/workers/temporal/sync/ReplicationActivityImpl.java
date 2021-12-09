@@ -171,26 +171,6 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     return standardSyncOutput;
   }
 
-  private static final Pattern LOG_SOURCE_PATTERN = Pattern.compile("log_source=.*, ");
-
-  /**
-   * Moves the prefix for a consumed container log (like the highlighted source or destination printed as part of the
-   * MDC) to the start of the line. This will allow the logs for the container orchestrator to look much cleaner.
-   */
-  public static void prefixMovingLogger(final Consumer<String> logger, final String line) {
-    final Matcher matcher = LOG_SOURCE_PATTERN.matcher(line);
-
-    if (matcher.find()) {
-      final String matched = matcher.group();
-      final String logSource = matched.substring(11, matched.length() - 2);
-
-      final String modifiedLine = logSource + " " + line.replace(matched, "");
-      logger.accept(modifiedLine);
-    } else {
-      logger.accept(line);
-    }
-  }
-
   private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getWorkerFactory(
                                                                                                     final IntegrationLauncherConfig sourceLauncherConfig,
                                                                                                     final IntegrationLauncherConfig destinationLauncherConfig,
@@ -238,12 +218,12 @@ public class ReplicationActivityImpl implements ReplicationActivity {
               output.set(maybeOutput.get());
             } else {
               try (final var mdcScope = LOG_MDC_BUILDER.build()) {
-                prefixMovingLogger(LOGGER::info, line);
+                LOGGER.info(line);
               }
             }
           });
 
-          LineGobbler.gobble(process.getErrorStream(), line -> prefixMovingLogger(LOGGER::error, line), LOG_MDC_BUILDER);
+          LineGobbler.gobble(process.getErrorStream(), LOGGER::error, LOG_MDC_BUILDER);
 
           WorkerUtils.wait(process);
 

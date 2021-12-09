@@ -131,7 +131,9 @@ public class LogClientSingleton {
   public void setJobMdc(final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs, final Path path) {
     if (shouldUseLocalLogs(workerEnvironment)) {
       LOGGER.debug("Setting docker job mdc");
-      MDC.put(LogClientSingleton.JOB_LOG_PATH_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());
+      final String resolvedPath = path.resolve(LogClientSingleton.LOG_FILENAME).toString();
+      MDC.put(LogClientSingleton.JOB_LOG_PATH_MDC_KEY, resolvedPath);
+      LOGGER.info("Setting job log path to: " + resolvedPath);
     } else {
       LOGGER.debug("Setting kube job mdc");
       createCloudClientIfNull(logConfigs);

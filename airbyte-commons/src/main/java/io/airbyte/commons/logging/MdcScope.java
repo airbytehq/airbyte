@@ -48,6 +48,7 @@ public class MdcScope implements AutoCloseable {
 
     private Optional<String> maybeLogPrefix = Optional.empty();
     private Optional<Color> maybePrefixColor = Optional.empty();
+    private boolean simple = true;
 
     public Builder setLogPrefix(final String logPrefix) {
       this.maybeLogPrefix = Optional.ofNullable(logPrefix);
@@ -61,15 +62,25 @@ public class MdcScope implements AutoCloseable {
       return this;
     }
 
+    public Builder setSimple(final boolean simple) {
+      this.simple = simple;
+
+      return this;
+    }
+
     public MdcScope build() {
       final Map<String, String> extraMdcEntries = new HashMap<>();
 
-      maybeLogPrefix.stream().forEach(logPrefix -> {
+      maybeLogPrefix.ifPresent(logPrefix -> {
         final String potentiallyColoredLog = maybePrefixColor
             .map(color -> LoggingHelper.applyColor(color, logPrefix))
             .orElse(logPrefix);
 
         extraMdcEntries.put(LoggingHelper.LOG_SOURCE_MDC_KEY, potentiallyColoredLog);
+
+        if(simple) {
+          extraMdcEntries.put("simple", "true");
+        }
       });
 
       return new MdcScope(extraMdcEntries);
