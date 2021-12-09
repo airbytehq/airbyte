@@ -16,6 +16,7 @@ import io.fabric8.kubernetes.api.model.DeletionPropagation;
 import io.fabric8.kubernetes.api.model.LocalObjectReference;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
+import io.fabric8.kubernetes.api.model.PodFluent;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.ResourceRequirementsBuilder;
 import io.fabric8.kubernetes.api.model.Toleration;
@@ -260,7 +261,8 @@ public class KubePodProcess extends Process {
         .toArray(Toleration[]::new);
   }
 
-  public KubePodProcess(final String processRunnerHost,
+  public KubePodProcess(final boolean isOrchestrator,
+                        final String processRunnerHost,
                         final ApiClient officialClient,
                         final KubernetesClient fabricClient,
                         final String podName,
@@ -382,14 +384,19 @@ public class KubePodProcess extends Process {
     final List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr, callHeartbeatServer)
         : List.of(main, relayStdout, relayStderr, callHeartbeatServer);
 
-    final Pod pod = new PodBuilder()
+    PodFluent.SpecNested<PodBuilder> podBuilder = new PodBuilder()
         .withApiVersion("v1")
         .withNewMetadata()
         .withName(podName)
         .withLabels(labels)
         .endMetadata()
-        .withNewSpec()
-        .withTolerations(buildPodTolerations(tolerations))
+        .withNewSpec();
+
+    if (isOrchestrator) {
+      podBuilder = podBuilder.withServiceAccount("airbyte-admin").withAutomountServiceAccountToken(true);
+    }
+
+    final Pod pod = podBuilder.withTolerations(buildPodTolerations(tolerations))
         .withImagePullSecrets(new LocalObjectReference(imagePullSecret)) // An empty string turns this into a no-op setting.
         .withNodeSelector(nodeSelectors.isEmpty() ? null : nodeSelectors)
         .withRestartPolicy("Never")

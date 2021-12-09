@@ -51,6 +51,7 @@ public class KubeProcessFactory implements ProcessFactory {
   private final KubernetesClient fabricClient;
   private final String kubeHeartbeatUrl;
   private final String processRunnerHost;
+  private final boolean isOrchestrator;
 
   /**
    * Sets up a process factory with the default processRunnerHost.
@@ -59,9 +60,10 @@ public class KubeProcessFactory implements ProcessFactory {
                             final String namespace,
                             final ApiClient officialClient,
                             final KubernetesClient fabricClient,
-                            final String kubeHeartbeatUrl) {
+                            final String kubeHeartbeatUrl,
+                            final boolean isOrchestrator) {
     this(workerConfigs, namespace, officialClient, fabricClient, kubeHeartbeatUrl,
-        Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()));
+        Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()), isOrchestrator);
   }
 
   /**
@@ -72,6 +74,7 @@ public class KubeProcessFactory implements ProcessFactory {
    *        itself
    * @param processRunnerHost is the local host or ip of the machine running the process factory.
    *        injectable for testing.
+   * @param isOrchestrator determines if this should run as airbyte-admin
    */
   @VisibleForTesting
   public KubeProcessFactory(final WorkerConfigs workerConfigs,
@@ -79,13 +82,15 @@ public class KubeProcessFactory implements ProcessFactory {
                             final ApiClient officialClient,
                             final KubernetesClient fabricClient,
                             final String kubeHeartbeatUrl,
-                            final String processRunnerHost) {
+                            final String processRunnerHost,
+                            final boolean isOrchestrator) {
     this.workerConfigs = workerConfigs;
     this.namespace = namespace;
     this.officialClient = officialClient;
     this.fabricClient = fabricClient;
     this.kubeHeartbeatUrl = kubeHeartbeatUrl;
     this.processRunnerHost = processRunnerHost;
+    this.isOrchestrator = isOrchestrator;
   }
 
   @Override
@@ -119,6 +124,7 @@ public class KubeProcessFactory implements ProcessFactory {
       allLabels.putAll(generalKubeLabels);
 
       return new KubePodProcess(
+          isOrchestrator,
           processRunnerHost,
           officialClient,
           fabricClient,

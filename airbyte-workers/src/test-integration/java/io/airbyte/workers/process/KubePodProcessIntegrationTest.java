@@ -64,7 +64,8 @@ public class KubePodProcessIntegrationTest {
     fabricClient = new DefaultKubernetesClient();
 
     KubePortManagerSingleton.init(new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
-    processFactory = new KubeProcessFactory(new WorkerConfigs(new EnvConfigs()), "default", officialClient, fabricClient, heartbeatUrl, getHost());
+    processFactory =
+        new KubeProcessFactory(new WorkerConfigs(new EnvConfigs()), "default", officialClient, fabricClient, heartbeatUrl, getHost(), false);
   }
 
   @BeforeEach

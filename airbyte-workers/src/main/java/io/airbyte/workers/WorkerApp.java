@@ -164,7 +164,7 @@ public class WorkerApp {
       final String localIp = InetAddress.getLocalHost().getHostAddress();
       final String kubeHeartbeatUrl = localIp + ":" + KUBE_HEARTBEAT_PORT;
       LOGGER.info("Using Kubernetes namespace: {}", configs.getJobPodKubeNamespace());
-      return new KubeProcessFactory(workerConfigs, configs.getJobPodKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl);
+      return new KubeProcessFactory(workerConfigs, configs.getJobPodKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl, false);
     } else {
       return new DockerProcessFactory(
           workerConfigs,
@@ -177,12 +177,18 @@ public class WorkerApp {
   }
 
   private static ProcessFactory getOrchestratorProcessFactory(final Configs configs) throws IOException {
+    final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
+
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
-      // there is no difference for kube
-      return getJobProcessFactory(configs);
+      final ApiClient officialClient = Config.defaultClient();
+      final KubernetesClient fabricClient = new DefaultKubernetesClient();
+      final String localIp = InetAddress.getLocalHost().getHostAddress();
+      final String kubeHeartbeatUrl = localIp + ":" + KUBE_HEARTBEAT_PORT;
+      LOGGER.info("Using Kubernetes namespace: {}", configs.getJobPodKubeNamespace());
+      return new KubeProcessFactory(workerConfigs, configs.getJobPodKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl, true);
     } else {
       return new DockerProcessFactory(
-          new WorkerConfigs(configs),
+          workerConfigs,
           configs.getWorkspaceRoot(),
           configs.getWorkspaceDockerMount(),
           configs.getLocalDockerMount(),

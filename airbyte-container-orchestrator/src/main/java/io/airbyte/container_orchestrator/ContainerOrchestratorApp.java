@@ -44,6 +44,12 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Entrypoint for the application responsible for launching containers and handling all message
+ * passing. Currently, this is only implemented for syncing but in the future it will be available
+ * for normalization and dbt. Also, the current version relies on a heartbeat from a Temporal
+ * worker. This will also be removed in the future.
+ */
 public class ContainerOrchestratorApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ContainerOrchestratorApp.class);
@@ -122,10 +128,11 @@ public class ContainerOrchestratorApp {
     WorkerHeartbeatServer heartbeatServer = null;
 
     try {
+      // read files that contain all necessary configuration
       final String application = Files.readString(Path.of(ReplicationLauncherWorker.INIT_FILE_APPLICATION));
-
       final Map<String, String> envMap =
           (Map<String, String>) Jsons.deserialize(Files.readString(Path.of(ReplicationLauncherWorker.INIT_FILE_ENV_MAP)), Map.class);
+
       final Configs configs = new EnvConfigs(envMap::get);
 
       heartbeatServer = new WorkerHeartbeatServer(WorkerApp.KUBE_HEARTBEAT_PORT);
@@ -149,6 +156,9 @@ public class ContainerOrchestratorApp {
     System.exit(0);
   }
 
+  /**
+   * Creates a process builder factory that will be used to create connector containers/pods.
+   */
   private static ProcessFactory getProcessBuilderFactory(final Configs configs, final WorkerConfigs workerConfigs) throws IOException {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
       final ApiClient officialClient = Config.defaultClient();
@@ -156,7 +166,7 @@ public class ContainerOrchestratorApp {
       final String localIp = InetAddress.getLocalHost().getHostAddress();
       final String kubeHeartbeatUrl = localIp + ":" + WorkerApp.KUBE_HEARTBEAT_PORT;
       LOGGER.info("Using Kubernetes namespace: {}", configs.getJobPodKubeNamespace());
-      return new KubeProcessFactory(workerConfigs, configs.getJobPodKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl);
+      return new KubeProcessFactory(workerConfigs, configs.getJobPodKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl, false);
     } else {
       return new DockerProcessFactory(
           workerConfigs,
