@@ -17,8 +17,6 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcSourceOperations;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
@@ -53,15 +51,12 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
   static final String DRIVER_CLASS = "org.postgresql.Driver";
 
-  private final JdbcSourceOperations sourceOperations;
-
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new PostgresSource(), List.of("host"), List.of("port"));
   }
 
   PostgresSource() {
-    super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration());
-    this.sourceOperations = JdbcUtils.getDefaultSourceOperations();
+    super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration(), new PostgresSourceOperations());
   }
 
   @Override
@@ -235,13 +230,13 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   @Override
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(JdbcDatabase database, String schema) throws SQLException {
     return database.query(connection -> {
-          final PreparedStatement ps = connection.prepareStatement(
-              "SELECT DISTINCT table_catalog, table_schema, table_name, privilege_type\n"
-                  + "FROM   information_schema.table_privileges\n"
-                  + "WHERE  grantee = ? AND privilege_type = 'SELECT'");
-          ps.setString(1, database.getDatabaseConfig().get("username").asText());
-          return ps;
-        }, sourceOperations::rowToJson)
+      final PreparedStatement ps = connection.prepareStatement(
+          "SELECT DISTINCT table_catalog, table_schema, table_name, privilege_type\n"
+              + "FROM   information_schema.table_privileges\n"
+              + "WHERE  grantee = ? AND privilege_type = 'SELECT'");
+      ps.setString(1, database.getDatabaseConfig().get("username").asText());
+      return ps;
+    }, sourceOperations::rowToJson)
         .collect(toSet())
         .stream()
         .map(e -> JdbcPrivilegeDto.builder()

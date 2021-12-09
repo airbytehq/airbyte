@@ -1,7 +1,20 @@
 {
   "type": "object",
   "properties": {
-    "note_attributes": {},
+    "note_attributes": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
     "location_id": {
       "type": ["null", "integer"]
     },
@@ -115,7 +128,33 @@
     "tax_lines": {
       "items": {
         "properties": {
-          "price_set": {},
+          "price_set": {
+            "type": ["null", "object"],
+            "properties": {
+              "shop_money": {
+                "type": ["null", "object"],
+                "properties": {
+                  "amount": {
+                    "type": ["null", "number"]
+                  },
+                  "currency_code": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "presentment_money": {
+                "type": ["null", "object"],
+                "properties": {
+                  "amount": {
+                    "type": ["null", "number"]
+                  },
+                  "currency_code": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            }
+          },
           "price": {
             "type": ["null", "number"]
           },
@@ -173,10 +212,93 @@
     "line_items": {
       "items": {
         "properties": {
-          "applied_discounts": {},
-          "total_discount_set": {},
-          "pre_tax_price_set": {},
-          "price_set": {},
+          "applied_discounts": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "total_discount_set": {
+            "type": ["null", "object"],
+            "properties": {
+              "shop_money": {
+                "type": ["null", "object"],
+                "properties": {
+                  "amount": {
+                    "type": ["null", "number"]
+                  },
+                  "currency_code": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "presentment_money": {
+                "type": ["null", "object"],
+                "properties": {
+                  "amount": {
+                    "type": ["null", "number"]
+                  },
+                  "currency_code": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            }
+          },
+          "pre_tax_price_set": {
+            "properties": {
+              "shop_money": {
+                "properties": {
+                  "currency_code": {
+                    "type": ["null", "string"]
+                  },
+                  "amount": {
+                    "type": ["null", "number"]
+                  }
+                },
+                "type": ["null", "object"]
+              },
+              "presentment_money": {
+                "properties": {
+                  "currency_code": {
+                    "type": ["null", "string"]
+                  },
+                  "amount": {
+                    "type": ["null", "number"]
+                  }
+                },
+                "type": ["null", "object"]
+              }
+            },
+            "type": ["null", "object"]
+          },
+          "price_set": {
+            "type": ["null", "object"],
+            "properties": {
+              "shop_money": {
+                "type": ["null", "object"],
+                "properties": {
+                  "amount": {
+                    "type": ["null", "number"]
+                  },
+                  "currency_code": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "presentment_money": {
+                "type": ["null", "object"],
+                "properties": {
+                  "amount": {
+                    "type": ["null", "number"]
+                  },
+                  "currency_code": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            }
+          },
           "grams": {
             "type": ["null", "integer"]
           },
@@ -221,8 +343,8 @@
                 "type": ["null", "array"]
               },
               {
-                "properties": {},
-                "type": ["null", "object"]
+                "type": ["null", "object"],
+                "additionalProperties": true
               }
             ]
           },
@@ -230,19 +352,45 @@
             "type": ["null", "string"]
           },
           "discount_allocations": {
+            "type": ["null", "array"],
             "items": {
+              "type": ["null", "object"],
               "properties": {
                 "discount_application_index": {
                   "type": ["null", "integer"]
                 },
-                "amount_set": {},
+                "amount_set": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "shop_money": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "amount": {
+                          "type": ["null", "string"]
+                        },
+                        "currency_code": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    },
+                    "presentment_money": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "amount": {
+                          "type": ["null", "string"]
+                        },
+                        "currency_code": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  }
+                },
                 "amount": {
                   "type": ["null", "number"]
                 }
-              },
-              "type": ["null", "object"]
-            },
-            "type": ["null", "array"]
+              }
+            }
           },
           "admin_graphql_api_id": {
             "type": ["null", "string"]
@@ -281,7 +429,33 @@
           "tax_lines": {
             "items": {
               "properties": {
-                "price_set": {},
+                "price_set": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "shop_money": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "amount": {
+                          "type": ["null", "number"]
+                        },
+                        "currency_code": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    },
+                    "presentment_money": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "amount": {
+                          "type": ["null", "number"]
+                        },
+                        "currency_code": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  }
+                },
                 "price": {
                   "type": ["null", "number"]
                 },
@@ -412,8 +586,12 @@
       "items": {
         "type": ["null", "object"],
         "properties": {
-          "applied_discounts": {},
-          "custom_tax_lines": {},
+          "applied_discounts": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
           "phone": {
             "type": ["null", "string"]
           },
@@ -444,7 +622,33 @@
           "tax_lines": {
             "items": {
               "properties": {
-                "price_set": {},
+                "price_set": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "shop_money": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "amount": {
+                          "type": ["null", "number"]
+                        },
+                        "currency_code": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    },
+                    "presentment_money": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "amount": {
+                          "type": ["null", "number"]
+                        },
+                        "currency_code": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  }
+                },
                 "price": {
                   "type": ["null", "number"]
                 },
@@ -716,7 +920,7 @@
         "tags": {
           "type": ["null", "string"]
         },
-        "tax_exempt": {
+        "tax_exemptions": {
           "type": ["null", "boolean"]
         },
         "id": {

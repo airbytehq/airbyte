@@ -155,6 +155,7 @@
     * [Zoom](integrations/sources/zoom.md)
     * [Zuora](integrations/sources/zuora.md)
   * [Destinations](integrations/destinations/README.md)
+    * [Amazon SQS](integrations/destinations/amazon-sqs.md)
     * [AzureBlobStorage](integrations/destinations/azureblobstorage.md)
     * [BigQuery](integrations/destinations/bigquery.md)
     * [Databricks](integrations/destinations/databricks.md)

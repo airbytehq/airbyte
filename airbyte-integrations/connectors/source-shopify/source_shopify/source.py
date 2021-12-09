@@ -72,7 +72,6 @@ class ShopifyStream(HttpStream, ABC):
         """The name of the field in the response which contains the data"""
 
 
-# Basic incremental stream
 class IncrementalShopifyStream(ShopifyStream, ABC):
 
     # Setting the check point interval to the limit of the records output
@@ -103,7 +102,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         # Getting records >= state
         if stream_state:
             for record in records_slice:
-                if record.get(self.cursor_field) >= stream_state.get(self.cursor_field):
+                if record.get(self.cursor_field, "") >= stream_state.get(self.cursor_field):
                     yield record
         else:
             yield from records_slice
@@ -343,7 +342,6 @@ class Locations(ShopifyStream):
 class InventoryLevels(ChildSubstream):
     parent_stream_class: object = Locations
     slice_key = "location_id"
-    cursor_field = "updated_at"
 
     data_field = "inventory_levels"
 
@@ -359,10 +357,20 @@ class InventoryLevels(ChildSubstream):
             return record
 
         # associate the surrogate key
-        yield from map(
-            generate_key,
-            records_stream,
-        )
+        yield from map(generate_key, records_stream)
+
+
+class InventoryItems(ChildSubstream):
+
+    parent_stream_class: object = Products
+    slice_key = "id"
+    record_field_name = "variants"
+
+    data_field = "inventory_items"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        ids = ",".join(str(x["inventory_item_id"]) for x in stream_slice[self.slice_key])
+        return f"inventory_items.json?ids={ids}"
 
 
 class FulfillmentOrders(ChildSubstream):
@@ -392,6 +400,19 @@ class Fulfillments(ChildSubstream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         order_id = stream_slice[self.slice_key]
         return f"orders/{order_id}/{self.data_field}.json"
+
+
+class Shop(ShopifyStream):
+    data_field = "shop"
+
+    @limiter.balance_rate_limit()
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        json_response = response.json()
+        record = json_response.get(self.data_field, []) if self.data_field is not None else json_response
+        return [record]
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
 
 
 class SourceShopify(AbstractSource):
@@ -435,7 +456,9 @@ class SourceShopify(AbstractSource):
             PriceRules(config),
             DiscountCodes(config),
             Locations(config),
+            InventoryItems(config),
             InventoryLevels(config),
             FulfillmentOrders(config),
             Fulfillments(config),
+            Shop(config),
         ]
