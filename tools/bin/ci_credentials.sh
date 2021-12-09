@@ -58,7 +58,6 @@ function write_secret_to_disk() {
   mkdir -p "$secrets_dir"
   echo "Saved a secret => ${secrets_dir}/${cred_filename}"
   echo "$creds" > "${secrets_dir}/${cred_filename}"
-  cat "${secrets_dir}/${cred_filename}"
 }
 
 function write_all_secrets() {
@@ -278,6 +277,8 @@ read_secrets source-stripe "$SOURCE_STRIPE_CREDS"
 read_secrets source-stripe "$STRIPE_INTEGRATION_CONNECTED_ACCOUNT_TEST_CREDS" "connected_account_config.json"
 read_secrets source-surveymonkey "$SURVEYMONKEY_TEST_CREDS"
 read_secrets source-tempo "$TEMPO_INTEGRATION_TEST_CREDS"
+read_secrets source-tiktok-marketing "$SOURCE_TIKTOK_MARKETING_TEST_CREDS"
+read_secrets source-tiktok-marketing "$SOURCE_TIKTOK_MARKETING_PROD_TEST_CREDS" "prod_config.json"
 read_secrets source-twilio "$TWILIO_TEST_CREDS"
 read_secrets source-typeform "$SOURCE_TYPEFORM_CREDS"
 read_secrets source-us-census "$SOURCE_US_CENSUS_TEST_CREDS"
