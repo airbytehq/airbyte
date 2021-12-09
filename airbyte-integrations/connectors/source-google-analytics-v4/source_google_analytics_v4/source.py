@@ -8,7 +8,7 @@ import pkgutil
 import time
 from abc import ABC
 from datetime import datetime
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import jwt
 import pendulum
@@ -177,9 +177,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             data_format = self.lookup_data_format(dimension)
             dimension = dimension.replace("ga:", "ga_")
 
-            dimension_data = {
-                "type": [data_type]
-            }
+            dimension_data = {"type": [data_type]}
             if data_format:
                 dimension_data["format"] = data_format
             schema["properties"][dimension] = dimension_data
@@ -191,9 +189,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             metric = metric.replace("ga:", "ga_")
 
             # metrics are allowed to also have null values
-            metric_data = {
-                "type": ["null", data_type]
-            }
+            metric_data = {"type": ["null", data_type]}
             if data_format:
                 metric_data["format"] = data_format
             schema["properties"][metric] = metric_data
@@ -279,7 +275,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         return data_type
 
     @staticmethod
-    def lookup_data_format(attribute: str) -> str or None:
+    def lookup_data_format(attribute: str) -> Union[str, None]:
         if attribute == "ga:date":
             return "date"
         return
