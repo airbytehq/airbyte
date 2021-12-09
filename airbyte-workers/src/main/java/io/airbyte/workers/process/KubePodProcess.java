@@ -91,7 +91,7 @@ public class KubePodProcess extends Process {
 
   private static final String INIT_CONTAINER_NAME = "init";
   private static final Long STATUS_CHECK_INTERVAL_MS = 30 * 1000L;
-  private static final String DEFAULT_MEMORY_LIMIT = "3Mi";
+  private static final String DEFAULT_MEMORY_LIMIT = "6Mi";
   private static final ResourceRequirements DEFAULT_SIDECAR_RESOURCES = new ResourceRequirements()
       .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_LIMIT);
 
