@@ -64,9 +64,11 @@ class SourceTiktokMarketingSpec(BaseModel):
 
     @staticmethod
     def change_format_to_oneOf(schema: dict, field_name: str) -> dict:
-        schema["properties"][field_name]["oneOf"] = deepcopy(schema["properties"][field_name]["anyOf"])
+
         schema["properties"][field_name]["type"] = "object"
-        del schema["properties"][field_name]["anyOf"]
+        if "oneOf" not in schema["properties"][field_name]:
+            schema["properties"][field_name]["oneOf"] = schema["properties"][field_name].pop("anyOf")
+
         return schema
 
     @staticmethod
