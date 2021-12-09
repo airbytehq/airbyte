@@ -35,7 +35,7 @@ This source is capable of syncing the following tables and their data:
 
 **Note**: Due to constraints from the Google Ads API, the `click_view` stream retrieves data one day at a time and can only retrieve data newer than 90 days ago
 
-**Note**: Due to constraints from the Google Ads API, [metrics](https://developers.google.com/google-ads/api/fields/v8/metrics) cannot be requested for a manager account. If we try to sync streams with metrics for the manager account, we will get the `REQUESTED_METRICS_FOR_MANAGER` [error](https://developers.google.com/google-ads/api/reference/rpc/v8/QueryErrorEnum.QueryError?hl=en#requested_metrics_for_manager). Metrics present in all report tables and all report streams. All report streams are unavailable for a manager account.
+**Note**: Due to constraints from the Google Ads API, [metrics](https://developers.google.com/google-ads/api/fields/v8/metrics) cannot be requested for a manager account. Therefore, report streams are only available when pulling data from a non-manager account. 
 
 ## Getting Started \(Airbyte-Cloud\)
 
