@@ -58,6 +58,7 @@ function write_secret_to_disk() {
   mkdir -p "$secrets_dir"
   echo "Saved a secret => ${secrets_dir}/${cred_filename}"
   echo "$creds" > "${secrets_dir}/${cred_filename}"
+  cat "${secrets_dir}/${cred_filename}"
 }
 
 function write_all_secrets() {
