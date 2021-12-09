@@ -4,6 +4,12 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/azureblobstorage
   icon: azureblobstorage.svg
+- name: Amazon SQS
+  destinationDefinitionId: 0eeee7fb-518f-4045-bacc-9619e31c43ea
+  dockerRepository: airbyte/destination-amazon-sqs
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/amazonsqs
+  icon: amazonsqs.svg
 - name: BigQuery
   destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   dockerRepository: airbyte/destination-bigquery
