@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
+import io.airbyte.scheduler.models.AttemptWithJobInfo;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import java.io.IOException;
@@ -152,6 +153,15 @@ public interface JobPersistence {
   Optional<Job> getLastReplicationJob(UUID connectionId) throws IOException;
 
   Optional<Job> getNextJob() throws IOException;
+
+  /**
+   * @param configType The type of job
+   * @param attemptEndedAtTimestamp The timestamp after which you want the attempts
+   * @return List of attempts (with job attached) that ended after the provided timestamp, sorted by
+   *         attempts' endedAt in ascending order
+   * @throws IOException
+   */
+  List<AttemptWithJobInfo> listAttemptsWithJobInfo(ConfigType configType, Instant attemptEndedAtTimestamp) throws IOException;
 
   /// ARCHIVE
 
