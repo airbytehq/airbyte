@@ -57,37 +57,36 @@ public class BootloaderApp {
   }
 
   public void load() throws Exception {
-    final Database configDatabase = new ConfigsDatabaseInstance(
-        configs.getConfigDatabaseUser(),
-        configs.getConfigDatabasePassword(),
-        configs.getConfigDatabaseUrl())
-            .getAndInitialize();
-    final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
-    final ConfigRepository configRepository =
-        new ConfigRepository(configPersistence.withValidation(), null, Optional.empty(), Optional.empty());
-    createWorkspaceIfNoneExists(configRepository);
-    LOGGER.info("Set up config database and default workspace..");
+    LOGGER.info("Setting up config database and default workspace..");
 
-    final Database jobDatabase = new JobsDatabaseInstance(
-        configs.getDatabaseUser(),
-        configs.getDatabasePassword(),
-        configs.getDatabaseUrl())
-            .getAndInitialize();
-    final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
-    createDeploymentIfNoneExists(jobPersistence);
-    LOGGER.info("Set up job database and default deployment..");
+    try (
+        final Database configDatabase =
+            new ConfigsDatabaseInstance(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(), configs.getConfigDatabaseUrl())
+                .getAndInitialize();
+        final Database jobDatabase =
+            new JobsDatabaseInstance(configs.getDatabaseUser(), configs.getDatabasePassword(), configs.getDatabaseUrl()).getAndInitialize()) {
 
-    final AirbyteVersion currAirbyteVersion = configs.getAirbyteVersion();
-    assertNonBreakingMigration(jobPersistence, currAirbyteVersion);
+      final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
+      final ConfigRepository configRepository =
+          new ConfigRepository(configPersistence.withValidation(), null, Optional.empty(), Optional.empty());
+      createWorkspaceIfNoneExists(configRepository);
 
-    runFlywayMigration(configs, configDatabase, jobDatabase);
-    LOGGER.info("Ran Flyway migrations...");
+      final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
+      createDeploymentIfNoneExists(jobPersistence);
+      LOGGER.info("Set up job database and default deployment..");
 
-    jobPersistence.setVersion(currAirbyteVersion.serialize());
-    LOGGER.info("Set version to {}", currAirbyteVersion);
+      final AirbyteVersion currAirbyteVersion = configs.getAirbyteVersion();
+      assertNonBreakingMigration(jobPersistence, currAirbyteVersion);
 
-    configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
-    LOGGER.info("Loaded seed data...");
+      runFlywayMigration(configs, configDatabase, jobDatabase);
+      LOGGER.info("Ran Flyway migrations...");
+
+      jobPersistence.setVersion(currAirbyteVersion.serialize());
+      LOGGER.info("Set version to {}", currAirbyteVersion);
+
+      configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
+      LOGGER.info("Loaded seed data...");
+    }
 
     LOGGER.info("Finished bootstrapping Airbyte environment..");
   }
