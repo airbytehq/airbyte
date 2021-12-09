@@ -5,11 +5,9 @@
 
 import json
 import re
-from copy import deepcopy
-from typing import Union
-
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
+from typing import Union
 
 from .streams import DEFAULT_START_DATE, ReportGranularity
 
@@ -56,7 +54,7 @@ class SourceTiktokMarketingSpec(BaseModel):
 
     report_granularity: str = Field(
         description="Which time granularity should be grouped by; for LIFETIME there will be no grouping. "
-        "This option is used for reports' streams only.",
+                    "This option is used for reports' streams only.",
         default=ReportGranularity.default().value,
         enum=[g.value for g in ReportGranularity],
         order=4,
