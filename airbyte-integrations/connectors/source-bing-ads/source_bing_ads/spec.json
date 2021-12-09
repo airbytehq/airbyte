@@ -78,7 +78,7 @@
       "customer_id": {
         "type": "string",
         "title": "Customer ID",
-        "description": "User's Customer ID."
+        "description": "User's Customer ID. Go to your Accounts and Billing page. Your Customer ID will be listed on the Accounts tab under the heading Customer."
       },
       "developer_token": {
         "type": "string",
@@ -94,8 +94,8 @@
       },
       "user_id": {
         "type": "string",
-        "title": "User ID",
-        "description": "Unique user identifier."
+        "title": "Account ID",
+        "description": "Bing Ads Account ID. You can find Account ID by going to your profile and selecting Accounts and Billing."
       },
       "reports_start_date": {
         "type": "string",
