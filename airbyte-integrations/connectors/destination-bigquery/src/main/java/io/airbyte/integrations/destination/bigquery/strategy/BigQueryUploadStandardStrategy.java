@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery.strategy;
 
 import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.printHeapMemoryConsumption;
@@ -46,8 +50,9 @@ public class BigQueryUploadStandardStrategy implements BigQueryUploadStrategy {
   private final ConfiguredAirbyteCatalog catalog;
   private final Consumer<AirbyteMessage> outputRecordCollector;
 
-  public BigQueryUploadStandardStrategy(BigQuery bigquery, ConfiguredAirbyteCatalog catalog,
-      Consumer<AirbyteMessage> outputRecordCollector) {
+  public BigQueryUploadStandardStrategy(BigQuery bigquery,
+                                        ConfiguredAirbyteCatalog catalog,
+                                        Consumer<AirbyteMessage> outputRecordCollector) {
     this.bigquery = bigquery;
     this.catalog = catalog;
     this.outputRecordCollector = outputRecordCollector;
@@ -137,8 +142,8 @@ public class BigQueryUploadStandardStrategy implements BigQueryUploadStrategy {
   }
 
   private void partitionIfUnpartitioned(final BigQueryWriteConfig bigQueryWriteConfig,
-      final BigQuery bigquery,
-      final TableId destinationTableId) {
+                                        final BigQuery bigquery,
+                                        final TableId destinationTableId) {
     try {
       final QueryJobConfiguration queryConfig = QueryJobConfiguration
           .newBuilder(
@@ -181,10 +186,10 @@ public class BigQueryUploadStandardStrategy implements BigQueryUploadStrategy {
 
   // https://cloud.google.com/bigquery/docs/managing-tables#copying_a_single_source_table
   private static void copyTable(
-      final BigQuery bigquery,
-      final TableId sourceTableId,
-      final TableId destinationTableId,
-      final WriteDisposition syncMode) {
+                                final BigQuery bigquery,
+                                final TableId sourceTableId,
+                                final TableId destinationTableId,
+                                final WriteDisposition syncMode) {
     final CopyJobConfiguration configuration = CopyJobConfiguration.newBuilder(destinationTableId, sourceTableId)
         .setCreateDisposition(CreateDisposition.CREATE_IF_NEEDED)
         .setWriteDisposition(syncMode)
@@ -200,19 +205,20 @@ public class BigQueryUploadStandardStrategy implements BigQueryUploadStrategy {
   }
 
   protected String getCreatePartitionedTableFromSelectQuery(final Schema schema,
-      final String projectId,
-      final TableId destinationTableId,
-      final String tmpPartitionTable) {
+                                                            final String projectId,
+                                                            final TableId destinationTableId,
+                                                            final String tmpPartitionTable) {
     return String.format("create table `%s.%s.%s` (", projectId, destinationTableId.getDataset(), tmpPartitionTable)
         + schema.getFields().stream()
-        .map(field -> String.format("%s %s", field.getName(), field.getType()))
-        .collect(Collectors.joining(", "))
+            .map(field -> String.format("%s %s", field.getName(), field.getType()))
+            .collect(Collectors.joining(", "))
         + ") partition by date("
         + JavaBaseConstants.COLUMN_NAME_EMITTED_AT
         + ") as select "
         + schema.getFields().stream()
-        .map(Field::getName)
-        .collect(Collectors.joining(", "))
+            .map(Field::getName)
+            .collect(Collectors.joining(", "))
         + String.format(" from `%s.%s.%s`", projectId, destinationTableId.getDataset(), destinationTableId.getTable());
   }
+
 }
