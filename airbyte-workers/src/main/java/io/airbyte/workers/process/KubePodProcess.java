@@ -229,7 +229,10 @@ public class KubePodProcess extends Process {
         final Copy copy = new Copy(officialClient);
         copy.copyFileToPod(namespace, podName, INIT_CONTAINER_NAME, contents, containerPath);
 
-      } catch (final IOException | ApiException e) {
+        // add a wait for stability until we debug why copyFileToPod isn't working 100% of the time
+        TimeUnit.SECONDS.sleep(2);
+
+      } catch (final IOException | ApiException | InterruptedException e) {
         throw new RuntimeException(e);
       }
     }
