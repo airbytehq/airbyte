@@ -17,7 +17,7 @@
         <Property name="s3-minio-endpoint">$${sys:S3_MINIO_ENDPOINT:-${env:S3_MINIO_ENDPOINT}}</Property>
         <Property name="s3-path-style-access">$${sys:S3_PATH_STYLE_ACCESS:-${env:S3_PATH_STYLE_ACCESS}}</Property>
 
-        <Property name="gcp-storage-bucket">$${sys:GCS_LOG_BUCKET:-${env:GCS_LOG_BUCKET}}</Property>
+        <Property name="gcs-log-bucket">$${sys:GCS_LOG_BUCKET:-${env:GCS_LOG_BUCKET}}</Property>
     </Properties>
 
     <Appenders>
