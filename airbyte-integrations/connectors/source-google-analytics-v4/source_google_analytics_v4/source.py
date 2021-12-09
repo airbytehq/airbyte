@@ -91,7 +91,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
     def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
         self.start_date = config["start_date"]
-        self.window_in_days = config["window_in_days"]
+        self.window_in_days = config.get("window_in_days", 90)
         self.view_id = config["view_id"]
         self.metrics = config["metrics"]
         self.dimensions = config["dimensions"]
@@ -112,7 +112,8 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         return date.strftime("%Y-%m-%d")
 
     def path(self, **kwargs) -> str:
-        return "reports:batchGet"
+        # need add './' for correct urllib.parse.urljoin work due to path contains ':'
+        return "./reports:batchGet"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = response.json().get("nextPageToken")
@@ -535,9 +536,6 @@ class SourceGoogleAnalyticsV4(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         streams: List[GoogleAnalyticsV4Stream] = []
-
-        if "window_in_days" not in config:
-            config["window_in_days"] = 90
 
         authenticator = self.get_authenticator(config)
 
