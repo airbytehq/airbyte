@@ -46,9 +46,15 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Entrypoint for the application responsible for launching containers and handling all message
- * passing. Currently, this is only implemented for syncing but in the future it will be available
- * for normalization and dbt. Also, the current version relies on a heartbeat from a Temporal
- * worker. This will also be removed in the future.
+ * passing. Currently, this is only implemented for replication but in the future it will be
+ * available for normalization and dbt. Also, the current version relies on a heartbeat from a
+ * Temporal worker. This will also be removed in the future so this can run fully async.
+ *
+ * This application retrieves most of its configuration from copied files from the calling Temporal
+ * worker.
+ *
+ * This app uses default logging which is directly captured by the calling Temporal worker. In the
+ * future this will need to independently interact with cloud storage.
  */
 public class ContainerOrchestratorApp {
 
@@ -162,7 +168,11 @@ public class ContainerOrchestratorApp {
       final String localIp = InetAddress.getLocalHost().getHostAddress();
       final String kubeHeartbeatUrl = localIp + ":" + WorkerApp.KUBE_HEARTBEAT_PORT;
       LOGGER.info("Using Kubernetes namespace: {}", configs.getJobPodKubeNamespace());
+
+      // this needs to have two ports for the source and two ports for the destination (all four must be
+      // exposed)
       KubePortManagerSingleton.init(ReplicationLauncherWorker.PORTS);
+
       return new KubeProcessFactory(workerConfigs, configs.getJobPodKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl, false);
     } else {
       return new DockerProcessFactory(

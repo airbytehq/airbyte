@@ -31,8 +31,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Launches a container-orchestrator container or pod to manage the message passing for the
- * replication step.
+ * Launches a container-orchestrator container/pod to manage the message passing for the replication
+ * step. This step configs onto the container-orchestrator and retrieves logs and the output from
+ * the container-orchestrator.
  */
 public class ReplicationLauncherWorker implements Worker<StandardSyncInput, ReplicationOutput> {
 
