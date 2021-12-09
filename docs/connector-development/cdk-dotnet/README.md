@@ -1,4 +1,4 @@
-# Connector Development Kit \(Dotnet\)
+# Connector Development Kit \(C# .NET\)
 
 The [Airbyte Dotnet CDK](https://github.com/mrhamburg/airbyte.cdk.dotnet) is a framework for rapidly developing production-grade Airbyte connectors. The CDK currently offers helpers specific for creating Airbyte source connectors for:
 
