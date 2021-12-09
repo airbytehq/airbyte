@@ -592,8 +592,10 @@ class SlaPolicies(FullRefreshStream):
     def path(self, *args, **kwargs) -> str:
         return "slas/policies.json"
 
+
 class Brands(FullRefreshStream):
     """Brands stream: https://developer.zendesk.com/api-reference/ticketing/account-configuration/brands/#list-brands"""
+
 
 class CustomRoles(FullRefreshStream):
     """CustomRoles stream: https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles"""

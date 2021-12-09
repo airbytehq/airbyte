@@ -111,5 +111,5 @@ class SourceZendeskSupport(AbstractSource):
             Tickets(**args),
             Users(**args),
             Brands(**args),
-            CustomRoles(**args)
+            CustomRoles(**args),
         ]
