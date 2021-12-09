@@ -18,11 +18,11 @@ import { Auth } from "packages/cloud/views/auth";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom/useIntercom";
 
+import { useGetWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
 import {
-  useGetWorkspace,
   useWorkspaceService,
   WorkspaceServiceProvider,
-} from "packages/cloud/services/workspaces/WorkspacesService";
+} from "services/workspaces/WorkspacesService";
 import OnboardingPage from "pages/OnboardingPage";
 import { CreditsPage } from "packages/cloud/views/credits";
 import { ConfirmEmailPage } from "./views/auth/ConfirmEmailPage";

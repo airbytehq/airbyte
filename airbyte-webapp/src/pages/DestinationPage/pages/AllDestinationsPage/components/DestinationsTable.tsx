@@ -6,9 +6,9 @@ import { EntityTableDataItem } from "components/EntityTable/types";
 
 import { Routes } from "pages/routes";
 import useRouter from "hooks/useRouter";
-import { Destination } from "core/resources/Destination";
 import { useDestinationDefinitionList } from "hooks/services/useDestinationDefinition";
 import { useConnectionList } from "hooks/services/useConnectionHook";
+import { Destination } from "core/domain/connector";
 
 type IProps = {
   destinations: Destination[];

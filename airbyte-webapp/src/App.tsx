@@ -3,6 +3,7 @@ import { ThemeProvider } from "styled-components";
 import { IntlProvider } from "react-intl";
 import { CacheProvider } from "rest-hooks";
 import { QueryClient, QueryClientProvider } from "react-query";
+import { BrowserRouter as Router } from "react-router-dom";
 
 import en from "./locales/en.json";
 import GlobalStyle from "./global-styles";
@@ -13,9 +14,7 @@ import LoadingPage from "./components/LoadingPage";
 import ApiErrorBoundary from "./components/ApiErrorBoundary";
 import NotificationService from "hooks/services/Notification";
 import { AnalyticsProvider } from "views/common/AnalyticsProvider";
-import { usePickFirstWorkspace } from "hooks/services/useWorkspace";
 import { FeatureService } from "hooks/services/Feature";
-import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { ServicesProvider } from "core/servicesProvider";
 import { useApiServices } from "core/defaultServices";
 import {
@@ -26,6 +25,7 @@ import {
   ValueProvider,
   windowConfigProvider,
 } from "./config";
+import { WorkspaceServiceProvider } from "./services/workspaces/WorkspacesService";
 
 const StyleProvider: React.FC = ({ children }) => (
   <ThemeProvider theme={theme}>
@@ -40,7 +40,13 @@ const I18NProvider: React.FC = ({ children }) => (
   </IntlProvider>
 );
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      suspense: true,
+    },
+  },
+});
 
 const StoreProvider: React.FC = ({ children }) => (
   <CacheProvider>
@@ -53,48 +59,46 @@ const configProviders: ValueProvider<Config> = [
   windowConfigProvider,
 ];
 
-const services = {
-  currentWorkspaceProvider: usePickFirstWorkspace,
-};
-
-const AppServices: React.FC = ({ children }) => (
-  <ServicesProvider inject={services}>
-    <ServiceOverrides>{children}</ServiceOverrides>
-  </ServicesProvider>
-);
-
 const ServiceOverrides: React.FC = React.memo(({ children }) => {
   useApiServices();
   return <>{children}</>;
 });
+
+const Services: React.FC = ({ children }) => (
+  <ConfigServiceProvider
+    defaultConfig={defaultConfig}
+    providers={configProviders}
+  >
+    <AnalyticsProvider>
+      <ApiErrorBoundary>
+        <WorkspaceServiceProvider>
+          <FeatureService>
+            <NotificationService>
+              <ServicesProvider>
+                <ServiceOverrides>{children}</ServiceOverrides>
+              </ServicesProvider>
+            </NotificationService>
+          </FeatureService>
+        </WorkspaceServiceProvider>
+      </ApiErrorBoundary>
+    </AnalyticsProvider>
+  </ConfigServiceProvider>
+);
 
 const App: React.FC = () => {
   return (
     <React.StrictMode>
       <StyleProvider>
         <I18NProvider>
-          <StoreProvider>
-            <Suspense fallback={<LoadingPage />}>
-              <ConfigServiceProvider
-                defaultConfig={defaultConfig}
-                providers={configProviders}
-              >
-                <AnalyticsProvider>
-                  <ApiErrorBoundary>
-                    <FeatureService>
-                      <NotificationService>
-                        <AppServices>
-                          <OnboardingServiceProvider>
-                            <Routing />
-                          </OnboardingServiceProvider>
-                        </AppServices>
-                      </NotificationService>
-                    </FeatureService>
-                  </ApiErrorBoundary>
-                </AnalyticsProvider>
-              </ConfigServiceProvider>
-            </Suspense>
-          </StoreProvider>
+          <Router>
+            <StoreProvider>
+              <Suspense fallback={<LoadingPage />}>
+                <Services>
+                  <Routing />
+                </Services>
+              </Suspense>
+            </StoreProvider>
+          </Router>
         </I18NProvider>
       </StyleProvider>
     </React.StrictMode>

@@ -15,14 +15,16 @@ import ExistingEntityForm from "./components/ExistingEntityForm";
 import SourceForm from "./components/SourceForm";
 import DestinationForm from "./components/DestinationForm";
 import CreateConnectionContent from "components/CreateConnectionContent";
-import SourceResource, { Source } from "core/resources/Source";
-import DestinationResource, { Destination } from "core/resources/Destination";
-import DestinationDefinitionResource, {
+import SourceResource from "core/resources/Source";
+import DestinationResource from "core/resources/Destination";
+import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
+import {
+  Destination,
   DestinationDefinition,
-} from "core/resources/DestinationDefinition";
-import SourceDefinitionResource, {
+  Source,
   SourceDefinition,
-} from "core/resources/SourceDefinition";
+} from "../../../../core/domain/connector";
 
 type IProps = {
   type: "source" | "destination" | "connection";

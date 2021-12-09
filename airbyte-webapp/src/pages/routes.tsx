@@ -1,10 +1,5 @@
-import React, { Suspense, useMemo } from "react";
-import {
-  BrowserRouter as Router,
-  Redirect,
-  Route,
-  Switch,
-} from "react-router-dom";
+import React, { Suspense, useEffect, useMemo } from "react";
+import { Redirect, Route, Switch } from "react-router-dom";
 import { useIntl } from "react-intl";
 
 import { useConfig } from "config";
@@ -19,14 +14,20 @@ import LoadingPage from "components/LoadingPage";
 import MainView from "views/layout/MainView";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 
-import { useWorkspace } from "hooks/services/useWorkspace";
 import { useNotificationService } from "hooks/services/Notification";
 import { useApiHealthPoll } from "hooks/services/Health";
 import {
+  TrackPageAnalytics,
   useAnalyticsIdentifyUser,
   useAnalyticsRegisterValues,
-  TrackPageAnalytics,
 } from "hooks/services/Analytics";
+import { Workspace } from "core/resources/Workspace";
+import {
+  useListWorkspaces,
+  useWorkspaceService,
+} from "../services/workspaces/WorkspacesService";
+import { OnboardingServiceProvider } from "../hooks/services/Onboarding";
+import useRouter from "../hooks/useRouter";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -48,55 +49,6 @@ export enum Routes {
   Root = "/",
 }
 
-const MainViewRoutes = () => {
-  const { workspace } = useWorkspace();
-  const mainRedirect = workspace.displaySetupWizard
-    ? Routes.Onboarding
-    : Routes.Connections;
-
-  return (
-    <MainView>
-      <Suspense fallback={<LoadingPage />}>
-        <Switch>
-          <Route path={Routes.AuthFlow}>
-            <CompleteOauthRequest />
-          </Route>
-          <Route path={Routes.Destination}>
-            <DestinationPage />
-          </Route>
-          <Route path={Routes.Source}>
-            <SourcesPage />
-          </Route>
-          <Route path={Routes.Connections}>
-            <ConnectionPage />
-          </Route>
-          <Route path={Routes.Settings}>
-            <SettingsPage />
-          </Route>
-          {workspace.displaySetupWizard && (
-            <Route path={Routes.Onboarding}>
-              <OnboardingPage />
-            </Route>
-          )}
-          <Route exact path={Routes.Source}>
-            <SourcesPage />
-          </Route>
-          <Redirect to={mainRedirect} />
-        </Switch>
-      </Suspense>
-    </MainView>
-  );
-};
-
-const PreferencesRoutes = () => (
-  <Switch>
-    <Route path={Routes.Preferences}>
-      <PreferencesPage />
-    </Route>
-    <Redirect to={Routes.Preferences} />
-  </Switch>
-);
-
 function useDemo() {
   const { formatMessage } = useIntl();
   const config = useConfig();
@@ -114,12 +66,7 @@ function useDemo() {
   useNotificationService(config.isDemo ? demoNotification : undefined);
 }
 
-export const Routing: React.FC = () => {
-  useApiHealthPoll();
-  useDemo();
-
-  const { workspace } = useWorkspace();
-
+const useAddAnalyticsContextForWorkspace = (workspace: Workspace): void => {
   const analyticsContext = useMemo(
     () => ({
       workspace_id: workspace.workspaceId,
@@ -129,19 +76,93 @@ export const Routing: React.FC = () => {
   );
   useAnalyticsRegisterValues(analyticsContext);
   useAnalyticsIdentifyUser(workspace.workspaceId);
+};
+
+const MainViewRoutes: React.FC<{ workspace: Workspace }> = ({ workspace }) => (
+  <MainView>
+    <Suspense fallback={<LoadingPage />}>
+      <Switch>
+        <Route path={Routes.AuthFlow}>
+          <CompleteOauthRequest />
+        </Route>
+        <Route path={Routes.Destination}>
+          <DestinationPage />
+        </Route>
+        <Route path={Routes.Source}>
+          <SourcesPage />
+        </Route>
+        <Route path={Routes.Connections}>
+          <ConnectionPage />
+        </Route>
+        <Route path={Routes.Settings}>
+          <SettingsPage />
+        </Route>
+        {workspace.displaySetupWizard && (
+          <Route path={Routes.Onboarding}>
+            <OnboardingPage />
+          </Route>
+        )}
+        <Redirect
+          to={
+            workspace.displaySetupWizard
+              ? Routes.Onboarding
+              : Routes.Connections
+          }
+        />
+      </Switch>
+    </Suspense>
+  </MainView>
+);
+
+const PreferencesRoutes = () => (
+  <Switch>
+    <Route path={Routes.Preferences}>
+      <PreferencesPage />
+    </Route>
+    <Redirect to={Routes.Preferences} />
+  </Switch>
+);
+
+export const useAutoSelectFirstWorkspace = (): Workspace => {
+  const workspaces = useListWorkspaces();
+
+  const currentWorkspace = workspaces[0];
+
+  const { selectWorkspace } = useWorkspaceService();
+
+  const { pathname } = useRouter();
+  const currentPath = pathname.split("/");
+  const currentWorkspaceId =
+    currentPath[0] === "workspace" ? currentPath[1] : null;
+
+  console.log(currentWorkspaceId);
+
+  useEffect(() => selectWorkspace(currentWorkspace.workspaceId), [
+    currentWorkspace.workspaceId,
+  ]);
+
+  return workspaces[0];
+};
+
+export const Routing: React.FC = () => {
+  const workspace = useAutoSelectFirstWorkspace();
+
+  useAddAnalyticsContextForWorkspace(workspace);
+  useApiHealthPoll();
+  useDemo();
 
   return (
-    <Router>
-      <Suspense fallback={<LoadingPage />}>
+    <Suspense fallback={<LoadingPage />}>
+      <OnboardingServiceProvider>
         {!workspace.initialSetupComplete ? (
           <PreferencesRoutes />
         ) : (
           <>
             <TrackPageAnalytics />
-            <MainViewRoutes />
+            <MainViewRoutes workspace={workspace} />
           </>
         )}
-      </Suspense>
-    </Router>
+      </OnboardingServiceProvider>
+    </Suspense>
   );
 };

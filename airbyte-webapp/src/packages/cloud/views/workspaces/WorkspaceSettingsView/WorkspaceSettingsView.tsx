@@ -10,6 +10,8 @@ import {
 import { Button, LabeledInput, LoadingButton } from "components";
 import {
   useGetWorkspace,
+  useRemoveWorkspace,
+  useUpdateWorkspace,
   useWorkspaceService,
 } from "packages/cloud/services/workspaces/WorkspacesService";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -35,12 +37,10 @@ const Buttons = styled.div`
 export const WorkspaceSettingsView: React.FC = () => {
   const formatMessage = useIntl().formatMessage;
 
-  const {
-    selectWorkspace,
-    removeWorkspace,
-    updateWorkspace,
-  } = useWorkspaceService();
+  const { selectWorkspace } = useWorkspaceService();
   const currentWorkspace = useCurrentWorkspace();
+  const removeWorkspace = useRemoveWorkspace();
+  const updateWorkspace = useUpdateWorkspace();
   const { data: workspace, isLoading } = useGetWorkspace(
     currentWorkspace.workspaceId
   );

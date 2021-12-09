@@ -4,23 +4,18 @@ import WorkspaceResource, { Workspace } from "core/resources/Workspace";
 import NotificationsResource, {
   Notifications,
 } from "core/resources/Notifications";
-import { useGetService } from "core/servicesProvider";
-import { useAnalyticsService } from "./Analytics";
-import { Source } from "core/resources/Source";
-import { Destination } from "core/resources/Destination";
 
-export const usePickFirstWorkspace = (): Workspace => {
-  const { workspaces } = useResource(WorkspaceResource.listShape(), {});
-
-  return workspaces[0];
-};
+import { useAnalyticsService } from "hooks/services/Analytics";
+import { useWorkspaceService } from "services/workspaces/WorkspacesService";
+import { Destination, Source } from "core/domain/connector";
 
 const useCurrentWorkspace = (): Workspace => {
-  const workspaceProviderService = useGetService<() => Workspace>(
-    "currentWorkspaceProvider"
-  );
+  const { currentWorkspaceId } = useWorkspaceService();
+  const currentWorkspace = useResource(WorkspaceResource.detailShape(), {
+    workspaceId: currentWorkspaceId,
+  });
 
-  return workspaceProviderService();
+  return currentWorkspace;
 };
 
 export type WebhookPayload = {

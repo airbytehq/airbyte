@@ -200,7 +200,7 @@ describe("Service Form", () => {
     });
   });
 
-  describe.skip("filling service form", () => {
+  describe("filling service form", () => {
     let result: ServiceFormValues;
     let container: HTMLElement;
     beforeEach(() => {

@@ -8,7 +8,6 @@ import { JobsLogItem } from "components/JobItem";
 import DeleteBlock from "components/DeleteBlock";
 
 import ServiceForm from "views/Connector/ServiceForm";
-import { Destination } from "core/resources/Destination";
 import DestinationDefinitionSpecificationResource from "core/resources/DestinationDefinitionSpecification";
 import useDestination from "hooks/services/useDestinationHook";
 import { Connection } from "core/resources/Connection";
@@ -17,6 +16,7 @@ import { ConnectionConfiguration } from "core/domain/connection";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 
 import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { Destination } from "core/domain/connector";
 
 const Content = styled.div`
   width: 100%;
