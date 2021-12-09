@@ -24,7 +24,7 @@ public class GcsLogsTest {
   private static Storage getClientFactory() {
     return new DefaultGcsClientFactory(new CloudStorageConfigs.GcsConfig(
         System.getenv(LogClientSingleton.GCS_LOG_BUCKET),
-        System.getenv(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS))).get();;
+        System.getenv(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS))).get();
   }
 
   /**
