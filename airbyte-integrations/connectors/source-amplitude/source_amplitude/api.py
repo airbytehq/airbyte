@@ -27,8 +27,8 @@ class AmplitudeStream(HttpStream, ABC):
         return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        respose_data = response.json()
-        yield from respose_data.get(self.name, [])
+        response_data = response.json()
+        yield from response_data.get(self.name, [])
 
     def path(self, **kwargs) -> str:
         return f"{self.api_version}/{self.name}"
@@ -43,8 +43,8 @@ class Annotations(AmplitudeStream):
     primary_key = "id"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        respose_data = response.json()
-        yield from respose_data.get("data", [])
+        response_data = response.json()
+        yield from response_data.get("data", [])
 
 
 class IncrementalAmplitudeStream(AmplitudeStream, ABC):
@@ -95,7 +95,8 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
         else:
             start_datetime = self._start_date
             if stream_state.get(self.cursor_field):
-                start_datetime = pendulum.parse(stream_state[self.cursor_field])
+                start_datetime = pendulum.parse(
+                    stream_state[self.cursor_field])
 
             params.update(
                 {
@@ -132,7 +133,11 @@ class Events(IncrementalAmplitudeStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
-        params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=None)
+        params = self.request_params(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=None
+        )
 
         # API returns data only when requested with a difference between 'start' and 'end' of 6 or more hours.
         if pendulum.parse(params["start"]).add(hours=6) > pendulum.parse(params["end"]):
@@ -144,7 +149,8 @@ class Events(IncrementalAmplitudeStream):
             yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
         except requests.exceptions.HTTPError as error:
             if error.response.status_code == 404:
-                self.logger.warn(f"Error during syncing {self.name} stream - {error}")
+                self.logger.warn(
+                    f"Error during syncing {self.name} stream - {error}")
                 return []
             else:
                 raise
@@ -152,9 +158,14 @@ class Events(IncrementalAmplitudeStream):
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
+        params = super().request_params(
+            stream_state=stream_state,
+            next_page_token=next_page_token,
+            **kwargs
+        )
         if stream_state or next_page_token:
-            params["start"] = pendulum.parse(params["start"]).add(hours=1).strftime(self.date_template)
+            params["start"] = pendulum.parse(params["start"]).add(
+                hours=1).strftime(self.date_template)
         return params
 
     def path(
