@@ -9,7 +9,6 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
-import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.DefaultReplicationWorker;
@@ -129,41 +128,6 @@ public class ContainerOrchestratorApp {
           (Map<String, String>) Jsons.deserialize(Files.readString(Path.of(ReplicationLauncherWorker.INIT_FILE_ENV_MAP)), Map.class);
       final Configs configs = new EnvConfigs(envMap::get);
 
-      // set logging-related vars as properties so (at runtime) we can read these when processing
-      // log4j2.xml
-      setPropertyFromEnvVar(EnvConfigs.LOG_LEVEL);
-      setPropertyFromEnvVar(EnvConfigs.S3_PATH_STYLE_ACCESS);
-
-      final var storageConfigs = configs.getLogConfigs().getStorageConfigs();
-
-      if (storageConfigs != null) {
-        final var s3Config = storageConfigs.getS3Config();
-        final var minioConfig = storageConfigs.getMinioConfig();
-        final var gcsConfig = storageConfigs.getGcsConfig();
-
-        if (s3Config != null) {
-          System.setProperty(LogClientSingleton.S3_LOG_BUCKET, s3Config.getBucketName());
-          System.setProperty(LogClientSingleton.S3_LOG_BUCKET_REGION, s3Config.getRegion());
-          System.setProperty(LogClientSingleton.AWS_ACCESS_KEY_ID, s3Config.getAwsAccessKey());
-          System.setProperty(LogClientSingleton.AWS_SECRET_ACCESS_KEY, s3Config.getAwsSecretAccessKey());
-        }
-
-        if (minioConfig != null) {
-          System.setProperty(LogClientSingleton.S3_LOG_BUCKET, minioConfig.getBucketName());
-          System.setProperty(LogClientSingleton.AWS_ACCESS_KEY_ID, minioConfig.getAwsAccessKey());
-          System.setProperty(LogClientSingleton.AWS_SECRET_ACCESS_KEY, minioConfig.getAwsSecretAccessKey());
-          System.setProperty(LogClientSingleton.S3_MINIO_ENDPOINT, minioConfig.getMinioEndpoint());
-        }
-
-        if (gcsConfig != null) {
-          System.setProperty(LogClientSingleton.GCS_LOG_BUCKET, gcsConfig.getBucketName());
-          System.setProperty(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, gcsConfig.getGoogleApplicationCredentials());
-        }
-      }
-
-      final var logPath = LogClientSingleton.getInstance().getSchedulerLogsRoot(configs.getWorkspaceRoot());
-      LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(), logPath);
-
       heartbeatServer = new WorkerHeartbeatServer(WorkerApp.KUBE_HEARTBEAT_PORT);
       heartbeatServer.startBackground();
 
@@ -183,12 +147,6 @@ public class ContainerOrchestratorApp {
     // required to kill kube client
     LOGGER.info("Runner closing...");
     System.exit(0);
-  }
-
-  private static void setPropertyFromEnvVar(final String envVar) {
-    if (System.getenv().containsKey(envVar)) {
-      System.setProperty(envVar, System.getenv(envVar));
-    }
   }
 
   private static ProcessFactory getProcessBuilderFactory(final Configs configs, final WorkerConfigs workerConfigs) throws IOException {
