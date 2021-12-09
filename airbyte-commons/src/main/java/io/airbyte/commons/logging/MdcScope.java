@@ -78,7 +78,7 @@ public class MdcScope implements AutoCloseable {
 
         extraMdcEntries.put(LoggingHelper.LOG_SOURCE_MDC_KEY, potentiallyColoredLog);
 
-        if(simple) {
+        if (simple) {
           // outputs much less information for this line. see log4j2.xml to see exactly what this does
           extraMdcEntries.put("simple", "true");
         }
