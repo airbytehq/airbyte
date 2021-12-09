@@ -441,6 +441,7 @@ class Programs(IncrementalMarketoStream):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         for record in super().parse_response(response, stream_state, **kwargs):
+            # delete +00:00 part from the end of createdAt and updatedAt
             record["updatedAt"] = self.normalize_datetime(record["updatedAt"])
             record["createdAt"] = self.normalize_datetime(record["createdAt"])
             yield record
