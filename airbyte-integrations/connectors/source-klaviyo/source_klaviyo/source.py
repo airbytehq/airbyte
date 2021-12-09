@@ -60,6 +60,7 @@ class SourceKlaviyo(AbstractSource):
             Events(api_key=config.api_key, start_date=config.start_date),
             GlobalExclusions(api_key=config.api_key),
             Lists(api_key=config.api_key),
+            Metrics(api_key=config.api_key)
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:

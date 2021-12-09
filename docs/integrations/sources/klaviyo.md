@@ -51,4 +51,5 @@ Please follow these [steps](https://help.klaviyo.com/hc/en-us/articles/115005062
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| `0.1.3` | 2021-12-09 | [6952](https://github.com/airbytehq/airbyte/pull/6952) | Enable Metrics Stream |
 | `0.1.2` | 2021-10-19 | [6952](https://github.com/airbytehq/airbyte/pull/6952) | Update schema validation in SAT |
