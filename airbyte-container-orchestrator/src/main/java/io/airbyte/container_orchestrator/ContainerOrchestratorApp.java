@@ -32,7 +32,7 @@ import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
 import io.airbyte.workers.protocols.airbyte.EmptyAirbyteSource;
 import io.airbyte.workers.protocols.airbyte.NamespacingMapper;
-import io.airbyte.workers.temporal.sync.ReplicationActivityImpl;
+import io.airbyte.workers.temporal.sync.ReplicationLauncherWorker;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
@@ -63,16 +63,17 @@ public class ContainerOrchestratorApp {
     LOGGER.info("Attempting to retrieve config files...");
 
     final JobRunConfig jobRunConfig =
-        Jsons.deserialize(Files.readString(Path.of(ReplicationActivityImpl.INIT_FILE_JOB_RUN_CONFIG)), JobRunConfig.class);
+        Jsons.deserialize(Files.readString(Path.of(ReplicationLauncherWorker.INIT_FILE_JOB_RUN_CONFIG)), JobRunConfig.class);
 
     final IntegrationLauncherConfig sourceLauncherConfig =
-        Jsons.deserialize(Files.readString(Path.of(ReplicationActivityImpl.INIT_FILE_SOURCE_LAUNCHER_CONFIG)), IntegrationLauncherConfig.class);
+        Jsons.deserialize(Files.readString(Path.of(ReplicationLauncherWorker.INIT_FILE_SOURCE_LAUNCHER_CONFIG)), IntegrationLauncherConfig.class);
 
     final IntegrationLauncherConfig destinationLauncherConfig =
-        Jsons.deserialize(Files.readString(Path.of(ReplicationActivityImpl.INIT_FILE_DESTINATION_LAUNCHER_CONFIG)), IntegrationLauncherConfig.class);
+        Jsons.deserialize(Files.readString(Path.of(ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG)),
+            IntegrationLauncherConfig.class);
 
     final StandardSyncInput syncInput =
-        Jsons.deserialize(Files.readString(Path.of(ReplicationActivityImpl.INIT_FILE_SYNC_INPUT)), StandardSyncInput.class);
+        Jsons.deserialize(Files.readString(Path.of(ReplicationLauncherWorker.INIT_FILE_SYNC_INPUT)), StandardSyncInput.class);
 
     LOGGER.info("Setting up source launcher...");
     final IntegrationLauncher sourceLauncher = new AirbyteIntegrationLauncher(
@@ -122,10 +123,10 @@ public class ContainerOrchestratorApp {
     WorkerHeartbeatServer heartbeatServer = null;
 
     try {
-      final String application = Files.readString(Path.of(ReplicationActivityImpl.INIT_FILE_APPLICATION));
+      final String application = Files.readString(Path.of(ReplicationLauncherWorker.INIT_FILE_APPLICATION));
 
       final Map<String, String> envMap =
-          (Map<String, String>) Jsons.deserialize(Files.readString(Path.of(ReplicationActivityImpl.INIT_FILE_ENV_MAP)), Map.class);
+          (Map<String, String>) Jsons.deserialize(Files.readString(Path.of(ReplicationLauncherWorker.INIT_FILE_ENV_MAP)), Map.class);
       final Configs configs = new EnvConfigs(envMap::get);
 
       // set logging-related vars as properties so (at runtime) we can read these when processing
@@ -146,7 +147,7 @@ public class ContainerOrchestratorApp {
       heartbeatServer = new WorkerHeartbeatServer(WorkerApp.KUBE_HEARTBEAT_PORT);
       heartbeatServer.startBackground();
 
-      if (application.equals(ReplicationActivityImpl.REPLICATION)) {
+      if (application.equals(ReplicationLauncherWorker.REPLICATION)) {
         replicationRunner(configs);
       } else {
         LOGGER.error("Runner failed", new IllegalStateException("Unexpected value: " + application));
