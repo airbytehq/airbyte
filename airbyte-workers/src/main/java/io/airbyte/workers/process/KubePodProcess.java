@@ -91,6 +91,9 @@ public class KubePodProcess extends Process {
 
   private static final String INIT_CONTAINER_NAME = "init";
   private static final Long STATUS_CHECK_INTERVAL_MS = 30 * 1000L;
+  private static final String DEFAULT_MEMORY_LIMIT = "3Mi";
+  private static final ResourceRequirements DEFAULT_SIDECAR_RESOURCES = new ResourceRequirements()
+      .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_LIMIT);
 
   private static final String PIPES_DIR = "/pipes";
   private static final String STDIN_PIPE_FILE = PIPES_DIR + "/stdin";
@@ -328,11 +331,13 @@ public class KubePodProcess extends Process {
         resourceRequirements,
         args);
 
+    final io.fabric8.kubernetes.api.model.ResourceRequirements sidecarResources = getResourceRequirementsBuilder(DEFAULT_SIDECAR_RESOURCES).build();
     final Container remoteStdin = new ContainerBuilder()
         .withName("remote-stdin")
         .withImage(socatImage)
         .withCommand("sh", "-c", "socat -d TCP-L:9001 STDOUT > " + STDIN_PIPE_FILE)
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
+        .withResources(sidecarResources)
         .build();
 
     final Container relayStdout = new ContainerBuilder()
@@ -340,6 +345,7 @@ public class KubePodProcess extends Process {
         .withImage(socatImage)
         .withCommand("sh", "-c", String.format("cat %s | socat -d - TCP:%s:%s", STDOUT_PIPE_FILE, processRunnerHost, stdoutLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
+        .withResources(sidecarResources)
         .build();
 
     final Container relayStderr = new ContainerBuilder()
@@ -347,6 +353,7 @@ public class KubePodProcess extends Process {
         .withImage(socatImage)
         .withCommand("sh", "-c", String.format("cat %s | socat -d - TCP:%s:%s", STDERR_PIPE_FILE, processRunnerHost, stderrLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
+        .withResources(sidecarResources)
         .build();
 
     // communicates via a file if it isn't able to reach the heartbeating server and succeeds if the
@@ -362,6 +369,7 @@ public class KubePodProcess extends Process {
         .withCommand("sh")
         .withArgs("-c", heartbeatCommand)
         .withVolumeMounts(terminationVolumeMount)
+        .withResources(sidecarResources)
         .build();
 
     final List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr, callHeartbeatServer)
