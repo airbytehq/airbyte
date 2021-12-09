@@ -8,6 +8,8 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
@@ -213,6 +215,7 @@ public class ServerApp implements ServerRunnable {
     final DefaultSynchronousSchedulerClient syncSchedulerClient =
         new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
     // version in the database when the server main method is called. may be empty if this is the first
     // time the server is started.
@@ -256,7 +259,8 @@ public class ServerApp implements ServerRunnable {
         configs.getWebappUrl(),
         configs.getAirbyteVersion(),
         configs.getWorkspaceRoot(),
-        httpClient);
+        httpClient,
+        featureFlags);
   }
 
   @VisibleForTesting

@@ -58,7 +58,9 @@ import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.converters.OauthModelConverter;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.temporal.TemporalClient.ManualSyncSubmissionResult;
 import io.airbyte.workers.temporal.TemporalUtils;
+import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.workflowservice.v1.RequestCancelWorkflowExecutionRequest;
 import io.temporal.serviceclient.WorkflowServiceStubs;
@@ -85,6 +87,7 @@ public class SchedulerHandler {
   private final JobConverter jobConverter;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
+  private final TemporalWorkerRunFactory temporalWorkerRunFactory;
 
   public SchedulerHandler(final ConfigRepository configRepository,
                           final SchedulerJobClient schedulerJobClient,
@@ -94,7 +97,8 @@ public class SchedulerHandler {
                           final WorkflowServiceStubs temporalService,
                           final OAuthConfigSupplier oAuthConfigSupplier,
                           final WorkerEnvironment workerEnvironment,
-                          final LogConfigs logConfigs) {
+                          final LogConfigs logConfigs,
+                          final TemporalWorkerRunFactory temporalWorkerRunFactory) {
     this(
         configRepository,
         schedulerJobClient,
@@ -106,20 +110,23 @@ public class SchedulerHandler {
         temporalService,
         oAuthConfigSupplier,
         workerEnvironment,
-        logConfigs);
+        logConfigs,
+        temporalWorkerRunFactory);
   }
 
-  @VisibleForTesting SchedulerHandler(final ConfigRepository configRepository,
-                                      final SchedulerJobClient schedulerJobClient,
-                                      final SynchronousSchedulerClient synchronousSchedulerClient,
-                                      final ConfigurationUpdate configurationUpdate,
-                                      final JsonSchemaValidator jsonSchemaValidator,
-                                      final JobPersistence jobPersistence,
-                                      final JobNotifier jobNotifier,
-                                      final WorkflowServiceStubs temporalService,
-                                      final OAuthConfigSupplier oAuthConfigSupplier,
-                                      final WorkerEnvironment workerEnvironment,
-                                      final LogConfigs logConfigs) {
+  @VisibleForTesting
+  SchedulerHandler(final ConfigRepository configRepository,
+                   final SchedulerJobClient schedulerJobClient,
+                   final SynchronousSchedulerClient synchronousSchedulerClient,
+                   final ConfigurationUpdate configurationUpdate,
+                   final JsonSchemaValidator jsonSchemaValidator,
+                   final JobPersistence jobPersistence,
+                   final JobNotifier jobNotifier,
+                   final WorkflowServiceStubs temporalService,
+                   final OAuthConfigSupplier oAuthConfigSupplier,
+                   final WorkerEnvironment workerEnvironment,
+                   final LogConfigs logConfigs,
+                   final TemporalWorkerRunFactory temporalWorkerRunFactory) {
     this.configRepository = configRepository;
     this.schedulerJobClient = schedulerJobClient;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
@@ -132,6 +139,7 @@ public class SchedulerHandler {
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
     this.jobConverter = new JobConverter(workerEnvironment, logConfigs);
+    this.temporalWorkerRunFactory = temporalWorkerRunFactory;
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(final SourceIdRequestBody sourceIdRequestBody)
@@ -269,7 +277,7 @@ public class SchedulerHandler {
   }
 
   public DestinationDefinitionSpecificationRead getDestinationSpecification(
-      final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
+                                                                            final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID destinationDefinitionId = destinationDefinitionIdRequestBody.getDestinationDefinitionId();
     final StandardDestinationDefinition destination = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
@@ -427,6 +435,18 @@ public class SchedulerHandler {
       throws IOException, JsonValidationException, ConfigNotFoundException {
     final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destDefId);
     return destinationDef.getSpec();
+  }
+
+  public JobInfoRead createManualRun(final UUID connectionId) throws IOException {
+    final ManualSyncSubmissionResult manualSyncSubmissionResult = temporalWorkerRunFactory.startNewManualSync(connectionId);
+
+    if (manualSyncSubmissionResult.getFailingReason().isPresent()) {
+      throw new IllegalStateException(manualSyncSubmissionResult.getFailingReason().get());
+    }
+
+    final Job job = jobPersistence.getJob(manualSyncSubmissionResult.getJobId().get());
+
+    return jobConverter.getJobInfoRead(job);
   }
 
 }

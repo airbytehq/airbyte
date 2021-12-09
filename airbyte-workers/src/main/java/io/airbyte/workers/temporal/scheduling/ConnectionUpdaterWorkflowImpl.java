@@ -33,9 +33,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow {
 
+  public long NON_RUNNING_JOB_ID;
+  public int NON_RUNNING_ATTEMPT_ID;
+
   private boolean isRunning = false;
   private boolean isDeleted = false;
   private boolean skipScheduling = false;
+
+  Optional<Long> maybeJobId = Optional.empty();
+  Optional<Integer> maybeAttemptId = Optional.empty();
 
   private final GenerateInputActivity getSyncInputActivity = Workflow.newActivityStub(GenerateInputActivity.class, ActivityConfiguration.OPTIONS);
   private final JobCreationActivity jobCreationActivity = Workflow.newActivityStub(JobCreationActivity.class, ActivityConfiguration.OPTIONS);
@@ -43,8 +49,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
 
   private final CancellationScope syncWorkflowCancellationScope = CancellationScope.current();
 
-  public ConnectionUpdaterWorkflowImpl() {
-  }
+  public ConnectionUpdaterWorkflowImpl() {}
 
   @Override
   public SyncResult run(final ConnectionUpdaterInput connectionUpdaterInput) throws NonRetryableException {
@@ -57,7 +62,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
       Workflow.await(scheduleRetrieverOutput.getPeriodicity(), () -> skipScheduling() || connectionUpdaterInput.isFromFailure());
 
       // Job and attempt creation
-      final Optional<Long> maybeJobId = Optional.ofNullable(connectionUpdaterInput.getJobId()).or(() -> {
+      maybeJobId = Optional.ofNullable(connectionUpdaterInput.getJobId()).or(() -> {
         final JobCreationOutput jobCreationOutput = jobCreationActivity.createNewJob(new JobCreationInput(
             connectionUpdaterInput.getConnectionId()));
         return Optional.ofNullable(jobCreationOutput.getJobId());
@@ -75,6 +80,8 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
           maybeJobId.get());
 
       final SyncOutput syncWorkflowInputs = getSyncInputActivity.getSyncWorkflowInput(getSyncInputActivitySyncInput);
+
+      isRunning = true;
 
       final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
           ChildWorkflowOptions.newBuilder()
@@ -154,7 +161,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
       return;
     }
 
-    isRunning = true;
+    skipScheduling = true;
   }
 
   @Override
@@ -174,6 +181,13 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
         isRunning,
         isDeleted,
         skipScheduling);
+  }
+
+  @Override
+  public JobInformation getJobInformation() {
+    return new JobInformation(
+        maybeJobId.orElse(NON_RUNNING_JOB_ID),
+        maybeAttemptId.orElse(NON_RUNNING_ATTEMPT_ID));
   }
 
   private Boolean skipScheduling() {

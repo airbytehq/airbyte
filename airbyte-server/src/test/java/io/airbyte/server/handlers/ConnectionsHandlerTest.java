@@ -32,7 +32,6 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
-import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DataType;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobSyncConfig;
@@ -157,12 +156,7 @@ class ConnectionsHandlerTest {
         uuidGenerator,
         workspaceHelper,
         trackingClient,
-        jobFactory,
-        jobPersistence,
         temporalWorkflowHandler,
-        // For the reviewer, is this right?
-        WorkerEnvironment.DOCKER,
-        logConfigs,
         featureFlags);
 
     when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceId)).thenReturn(workspaceId);

@@ -34,14 +34,13 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
       final Optional<Job> previousJobOptional = jobPersistence.getLastReplicationJob(input.getConnectionId());
       final StandardSync standardSync = configPersistence.getStandardSync(input.getConnectionId());
 
-      if (previousJobOptional.isEmpty()) {
-        if (standardSync.getSchedule() != null) {
-          // Non-manual syncs don't wait for their first run
-          return new ScheduleRetrieverOutput(Duration.ZERO);
-        } else {
-          // Manual syncs wait for their first run
-          return new ScheduleRetrieverOutput(Duration.ofDays(100 * 365));
-        }
+      if (previousJobOptional.isEmpty() && standardSync.getSchedule() != null) {
+        // Non-manual syncs don't wait for their first run
+        return new ScheduleRetrieverOutput(Duration.ZERO);
+      }
+      if (standardSync.getSchedule() == null) {
+        // Manual syncs wait for their first run
+        return new ScheduleRetrieverOutput(Duration.ofDays(100 * 365));
       }
 
       final Job previousJob = previousJobOptional.get();

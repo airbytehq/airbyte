@@ -5,6 +5,7 @@
 package io.airbyte.server;
 
 import io.airbyte.analytics.TrackingClient;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -42,6 +43,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static String webappUrl;
   private static AirbyteVersion airbyteVersion;
   private static HttpClient httpClient;
+  private static FeatureFlags featureFlags;
 
   public static void setValues(
                                final WorkflowServiceStubs temporalService,
@@ -60,7 +62,8 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
                                final String webappUrl,
                                final AirbyteVersion airbyteVersion,
                                final Path workspaceRoot,
-                               final HttpClient httpClient) {
+                               final HttpClient httpClient,
+                               final FeatureFlags featureFlags) {
     ConfigurationApiFactory.configRepository = configRepository;
     ConfigurationApiFactory.jobPersistence = jobPersistence;
     ConfigurationApiFactory.seed = seed;
@@ -78,6 +81,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.webappUrl = webappUrl;
     ConfigurationApiFactory.airbyteVersion = airbyteVersion;
     ConfigurationApiFactory.httpClient = httpClient;
+    ConfigurationApiFactory.featureFlags = featureFlags;
   }
 
   @Override
@@ -100,7 +104,8 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.webappUrl,
         ConfigurationApiFactory.airbyteVersion,
         ConfigurationApiFactory.workspaceRoot,
-        ConfigurationApiFactory.httpClient);
+        ConfigurationApiFactory.httpClient,
+        ConfigurationApiFactory.featureFlags);
   }
 
   @Override

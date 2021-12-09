@@ -81,7 +81,6 @@ import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceReadList;
 import io.airbyte.api.model.WorkspaceUpdate;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.version.AirbyteVersion;
@@ -95,11 +94,9 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
-import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
-import io.airbyte.scheduler.persistence.job_factory.DefaultSyncJobFactory;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.server.errors.BadObjectSchemaKnownException;
 import io.airbyte.server.errors.IdNotFoundKnownException;
@@ -155,6 +152,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final LogConfigs logConfigs;
   private final Path workspaceRoot;
   private final ConfigRepository configRepository;
+  private final FeatureFlags featureFlags;
 
   public ConfigurationApi(final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
@@ -171,7 +169,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final String webappUrl,
                           final AirbyteVersion airbyteVersion,
                           final Path workspaceRoot,
-                          final HttpClient httpClient) {
+                          final HttpClient httpClient,
+                          final FeatureFlags featureFlags) {
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
     this.workspaceRoot = workspaceRoot;
@@ -182,6 +181,15 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         configRepository,
         new WorkspaceHelper(configRepository, jobPersistence),
         trackingClient);
+
+    final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
+    sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, synchronousSchedulerClient);
+    final Configs configs = new EnvConfigs();
+    final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(
+        TemporalClient.production(configs.getTemporalHost(), workspaceRoot),
+        workspaceRoot,
+        configs.getAirbyteVersionOrWarning(),
+        featureFlags);
     schedulerHandler = new SchedulerHandler(
         configRepository,
         schedulerJobClient,
@@ -189,29 +197,13 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         jobPersistence,
         jobNotifier,
         temporalService,
-        new OAuthConfigSupplier(configRepository, trackingClient), workerEnvironment, logConfigs);
-    final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
-    sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, synchronousSchedulerClient);
-    final Configs configs = new EnvConfigs();
-    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-    final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(
-        TemporalClient.production(configs.getTemporalHost(), workspaceRoot),
-        workspaceRoot,
-        configs.getAirbyteVersionOrWarning(),
-        featureFlags);
+        new OAuthConfigSupplier(configRepository, trackingClient), workerEnvironment, logConfigs, temporalWorkerRunFactory);
     final ExecutorService threadPool = Executors.newFixedThreadPool(configs.getMaxWorkers().getMaxSyncWorkers());
     connectionsHandler = new ConnectionsHandler(
         configRepository,
         workspaceHelper,
         trackingClient,
-        new DefaultSyncJobFactory(
-            new DefaultJobCreator(jobPersistence, configRepository),
-            configRepository,
-            new OAuthConfigSupplier(configRepository, trackingClient)),
-        jobPersistence,
         temporalWorkerRunFactory,
-        workerEnvironment,
-        logConfigs,
         featureFlags);
     operationsHandler = new OperationsHandler(configRepository);
     destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, synchronousSchedulerClient);
@@ -240,6 +232,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     openApiConfigHandler = new OpenApiConfigHandler();
     dbMigrationHandler = new DbMigrationHandler(configsDatabase, jobsDatabase);
     this.configRepository = configRepository;
+    this.featureFlags = featureFlags;
   }
 
   // WORKSPACE
@@ -546,6 +539,10 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public JobInfoRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
+    if (featureFlags.usesNewScheduler()) {
+      return execute(() -> schedulerHandler.createManualRun(connectionIdRequestBody.getConnectionId()));
+    }
+
     return execute(() -> schedulerHandler.syncConnection(connectionIdRequestBody));
   }
 

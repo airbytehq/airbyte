@@ -27,7 +27,6 @@ import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
@@ -35,14 +34,11 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
-import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.server.converters.CatalogConverter;
 import io.airbyte.server.handlers.helpers.ConnectionMatcher;
 import io.airbyte.server.handlers.helpers.DestinationMatcher;
@@ -69,11 +65,7 @@ public class ConnectionsHandler {
   private final Supplier<UUID> uuidGenerator;
   private final WorkspaceHelper workspaceHelper;
   private final TrackingClient trackingClient;
-  private final SyncJobFactory jobFactory;
-  private final JobPersistence jobPersistence;
   private final TemporalWorkerRunFactory temporalWorkerRunFactory;
-  private final WorkerEnvironment workerEnvironment;
-  private final LogConfigs logConfigs;
   private final FeatureFlags featureFlags;
 
   @VisibleForTesting
@@ -81,21 +73,13 @@ public class ConnectionsHandler {
                      final Supplier<UUID> uuidGenerator,
                      final WorkspaceHelper workspaceHelper,
                      final TrackingClient trackingClient,
-                     final SyncJobFactory jobFactory,
-                     final JobPersistence jobPersistence,
                      final TemporalWorkerRunFactory temporalWorkerRunFactory,
-                     final WorkerEnvironment workerEnvironment,
-                     final LogConfigs logConfigs,
                      final FeatureFlags featureFlags) {
     this.configRepository = configRepository;
     this.uuidGenerator = uuidGenerator;
     this.workspaceHelper = workspaceHelper;
     this.trackingClient = trackingClient;
-    this.jobFactory = jobFactory;
-    this.jobPersistence = jobPersistence;
     this.temporalWorkerRunFactory = temporalWorkerRunFactory;
-    this.workerEnvironment = workerEnvironment;
-    this.logConfigs = logConfigs;
     this.featureFlags = featureFlags;
   }
 
@@ -103,22 +87,14 @@ public class ConnectionsHandler {
                             final ConfigRepository configRepository,
                             final WorkspaceHelper workspaceHelper,
                             final TrackingClient trackingClient,
-                            final SyncJobFactory jobFactory,
-                            final JobPersistence jobPersistence,
                             final TemporalWorkerRunFactory temporalWorkerRunFactory,
-                            final WorkerEnvironment workerEnvironment,
-                            final LogConfigs logConfigs,
                             final FeatureFlags featureFlags) {
     this(
         configRepository,
         UUID::randomUUID,
         workspaceHelper,
         trackingClient,
-        jobFactory,
-        jobPersistence,
         temporalWorkerRunFactory,
-        workerEnvironment,
-        logConfigs,
         featureFlags);
   }
 
@@ -199,9 +175,10 @@ public class ConnectionsHandler {
 
     trackNewConnection(standardSync);
 
+    LOGGER.error("ff: " + featureFlags);
+    LOGGER.error("ff.uNS: " + featureFlags.usesNewScheduler());
     if (featureFlags.usesNewScheduler()) {
       try {
-        LOGGER.error("CALLLLLLLING ____________");
         temporalWorkerRunFactory.createNewSchedulerWorkflow(connectionId);
       } catch (final Exception e) {
         e.printStackTrace();

@@ -18,6 +18,7 @@ import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.temporal.TemporalClient;
+import io.airbyte.workers.temporal.TemporalClient.ManualSyncSubmissionResult;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.TemporalResponse;
 import java.nio.file.Path;
@@ -43,6 +44,10 @@ public class TemporalWorkerRunFactory {
 
   public void createNewSchedulerWorkflow(final UUID connectionId) {
     temporalClient.submitConnectionUpdaterAsync(connectionId);
+  }
+
+  public ManualSyncSubmissionResult startNewManualSync(final UUID connectionId) {
+    return temporalClient.startNewManualSync(connectionId);
   }
 
   public CheckedSupplier<OutputAndStatus<JobOutput>, Exception> createSupplier(final Job job, final int attemptId) {

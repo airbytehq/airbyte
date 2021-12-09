@@ -23,16 +23,25 @@ import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflow;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflow;
 import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterInput;
 import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterWorkflow;
+import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterWorkflow.WorkflowState;
 import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
+import io.temporal.api.workflow.v1.WorkflowExecutionInfo;
+import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsRequest;
+import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsResponse;
 import io.temporal.client.BatchRequest;
 import io.temporal.client.WorkflowClient;
+import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -40,16 +49,18 @@ public class TemporalClient {
 
   private final Path workspaceRoot;
   private final WorkflowClient client;
+  private final WorkflowServiceStubs service;
 
   public static TemporalClient production(final String temporalHost, final Path workspaceRoot) {
-    return new TemporalClient(TemporalUtils.createTemporalClient(temporalHost), workspaceRoot);
+    return new TemporalClient(TemporalUtils.createTemporalClient(temporalHost), workspaceRoot, TemporalUtils.createTemporalService(temporalHost));
   }
 
   // todo (cgardens) - there are two sources of truth on workspace root. we need to get this down to
   // one. either temporal decides and can report it or it is injected into temporal runs.
-  public TemporalClient(final WorkflowClient client, final Path workspaceRoot) {
+  public TemporalClient(final WorkflowClient client, final Path workspaceRoot, final WorkflowServiceStubs workflowServiceStubs) {
     this.client = client;
     this.workspaceRoot = workspaceRoot;
+    this.service = workflowServiceStubs;
   }
 
   public TemporalResponse<ConnectorSpecification> submitGetSpec(final UUID jobId, final int attempt, final JobGetSpecConfig config) {
@@ -141,12 +152,66 @@ public class TemporalClient {
     log.info("Scheduler temporal wf started");
   }
 
+  @Value
+  public class ManualSyncSubmissionResult {
+
+    final Optional<String> failingReason;
+    final Optional<Long> jobId;
+
+  }
+
+  public ManualSyncSubmissionResult startNewManualSync(final UUID connectionId) {
+    log.info("Manual sync request");
+    final List<WorkflowExecutionInfo> workflows = getExecutionsResponse("connection_updater_" + connectionId);
+
+    if (workflows.isEmpty()) {
+      return new ManualSyncSubmissionResult(
+          Optional.of("No scheduler workflow is running for: " + connectionId),
+          Optional.empty());
+    }
+
+    final ConnectionUpdaterWorkflow connectionUpdaterWorkflow =
+        getExistingWorkflow(ConnectionUpdaterWorkflow.class, "connection_updater_" + connectionId);
+    final WorkflowState workflowState = connectionUpdaterWorkflow.getState();
+
+    if (workflowState.isRunning()) {
+      // TODO Bmoric: Error is running
+      return new ManualSyncSubmissionResult(
+          Optional.of("A sync is already running for: " + connectionId),
+          Optional.empty());
+    }
+
+    connectionUpdaterWorkflow.submitManualSync();
+
+    do {
+      try {
+        Thread.sleep(10);
+      } catch (final InterruptedException e) {
+        return new ManualSyncSubmissionResult(
+            Optional.of("Didn't managed to start a sync for: " + connectionId),
+            Optional.empty());
+      }
+    } while (!connectionUpdaterWorkflow.getState().isRunning());
+
+    log.info("end of manual schedule");
+
+    final long jobId = connectionUpdaterWorkflow.getJobInformation().getJobId();
+
+    return new ManualSyncSubmissionResult(
+        Optional.empty(),
+        Optional.of(jobId));
+  }
+
   private <T> T getWorkflowStub(final Class<T> workflowClass, final TemporalJobType jobType) {
     return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptions(jobType));
   }
 
   private <T> T getWorkflowOptionsWithWorkflowId(final Class<T> workflowClass, final TemporalJobType jobType, final String name) {
     return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptionsWithWorkflowId(jobType, name));
+  }
+
+  private <T> T getExistingWorkflow(final Class<T> workflowClass, final String name) {
+    return client.newWorkflowStub(workflowClass, name);
   }
 
   @VisibleForTesting
@@ -165,6 +230,25 @@ public class TemporalClient {
 
     final JobMetadata metadata = new JobMetadata(exception == null, logPath);
     return new TemporalResponse<>(operationOutput, metadata);
+  }
+
+  public List<WorkflowExecutionInfo> getExecutionsResponse(final String workflowName) {
+    final ListOpenWorkflowExecutionsRequest openWorkflowExecutionsRequest =
+        ListOpenWorkflowExecutionsRequest.newBuilder()
+            .setNamespace(client.getOptions().getNamespace())
+            .build();
+    final ListOpenWorkflowExecutionsResponse listOpenWorkflowExecutionsRequest =
+        service.blockingStub().listOpenWorkflowExecutions(openWorkflowExecutionsRequest);
+
+    listOpenWorkflowExecutionsRequest.getExecutionsList().stream()
+        .forEach((workflowExecutionInfo -> log.error("wei: " + workflowExecutionInfo)));
+
+    final List<WorkflowExecutionInfo> workflowExecutionInfos = listOpenWorkflowExecutionsRequest.getExecutionsList().stream()
+        .filter((workflowExecutionInfo -> workflowExecutionInfo.getExecution().getWorkflowId().equals(workflowName)))
+        .collect(Collectors.toList());
+
+    log.error("result.size: " + workflowExecutionInfos.size());
+    return workflowExecutionInfos;
   }
 
 }
