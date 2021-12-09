@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.42
+Add base pydantic model for connector config and schemas.
+
+## 0.1.41
+Fix build error
+
 ## 0.1.40
 Filter airbyte_secrets values at logger and other logging refactorings.  
 
