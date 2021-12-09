@@ -97,10 +97,7 @@ def test_comments_not_found_ticket(prepare_stream_args, status_code, expected_co
         )
         comments = stream.read_records(
             sync_mode=None,
-            stream_slice={
-                "id": fake_id,
-                "generated_timestamp": fake_timestamp
-            },
+            stream_slice={"id": fake_id, "generated_timestamp": fake_timestamp},
         )
         if expected_exception:
             with pytest.raises(expected_exception):

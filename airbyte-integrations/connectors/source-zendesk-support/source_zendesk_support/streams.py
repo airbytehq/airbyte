@@ -278,7 +278,7 @@ class IncrementalUnsortedStream(IncrementalEntityStream, ABC):
         """try to select relevant data only"""
 
         # Ticket comments couldn't use cursor field as it's state and use ticket last_end_time
-        if not self.cursor_field or self.name == 'ticket_comments':
+        if not self.cursor_field or self.name == "ticket_comments":
             yield from super().parse_response(response, stream_state=stream_state, **kwargs)
         else:
             send_cnt = 0
@@ -436,7 +436,7 @@ class TicketComments(IncrementalSortedPageStream):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """Adds a last cursor ticket updated time for a comment state"""
         new_state = super().get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
-        new_state[LAST_END_TIME_KEY] = latest_record.get('generated_timestamp')
+        new_state[LAST_END_TIME_KEY] = latest_record.get("generated_timestamp")
         return new_state
 
     def parse_response(
@@ -449,7 +449,7 @@ class TicketComments(IncrementalSortedPageStream):
             ticket_id = stream_slice["id"]
             generated_timestamp = stream_slice["generated_timestamp"]
             result = super().parse_response(response, stream_state=stream_state, stream_slice=stream_slice, **kwargs)
-            enriched_result = map(lambda x: x.update({"ticket_id": ticket_id, "generated_timestamp":generated_timestamp}) or x, result)
+            enriched_result = map(lambda x: x.update({"ticket_id": ticket_id, "generated_timestamp": generated_timestamp}) or x, result)
             yield from enriched_result
         elif response.status_code == 404:
             ticket_id = stream_slice["id"]
