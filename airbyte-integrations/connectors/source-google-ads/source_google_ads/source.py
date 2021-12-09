@@ -6,7 +6,6 @@
 from typing import Any, List, Mapping, Tuple, Union
 
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.errors import GoogleAdsException
