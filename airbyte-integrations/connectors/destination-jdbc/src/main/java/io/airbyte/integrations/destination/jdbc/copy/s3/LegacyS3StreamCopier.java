@@ -107,7 +107,7 @@ public abstract class LegacyS3StreamCopier implements StreamCopier {
       // feasible with large tables.
       // Data is chunked into parts. A part is sent off to a queue to be uploaded once it has reached it's
       // configured part size.
-      // Memory consumption is queue capacity * part size = 10 * 10 = 100 MB at current configurations.
+      // Memory consumption is (numUploadThreads + queue capacity) * part size = (10 + 10) * 10 = 200 MB at current configurations.
       final var manager = new StreamTransferManager(s3Config.getBucketName(), name, s3Client)
           .numUploadThreads(DEFAULT_UPLOAD_THREADS)
           .queueCapacity(DEFAULT_QUEUE_CAPACITY)

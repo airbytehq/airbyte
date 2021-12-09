@@ -35,9 +35,23 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
   private final CSVPrinter csvPrinter;
 
   public S3CsvWriter(final S3DestinationConfig config,
-                     final AmazonS3 s3Client,
-                     final ConfiguredAirbyteStream configuredStream,
-                     final Timestamp uploadTimestamp)
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream,
+      final Timestamp uploadTimestamp,
+      final int uploadThreads,
+      final int queueCapacity)
+      throws IOException {
+    this(config, s3Client, configuredStream, uploadTimestamp);
+
+    this.uploadManager
+        .numUploadThreads(uploadThreads)
+        .queueCapacity(queueCapacity);
+  }
+
+  public S3CsvWriter(final S3DestinationConfig config,
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream,
+      final Timestamp uploadTimestamp)
       throws IOException {
     super(config, s3Client, configuredStream);
 

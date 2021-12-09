@@ -4,37 +4,27 @@
 
 package io.airbyte.integrations.destination.jdbc.copy.s3;
 
-import alex.mojaki.s3upload.MultiPartOutputStream;
-import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
-import io.airbyte.integrations.destination.s3.S3Destination;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
+import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,13 +54,9 @@ public abstract class S3StreamCopier implements StreamCopier {
   private final SqlOperations sqlOperations;
   private final ConfiguredAirbyteStream configuredAirbyteStream;
   private final Timestamp uploadTime;
-  protected final Set<String> s3StagingFiles = new HashSet<>();
-  private final Map<String, StreamTransferManager> multipartUploadManagers = new HashMap<>();
-  private final Map<String, MultiPartOutputStream> outputStreams = new HashMap<>();
-  private final Map<String, CSVPrinter> csvPrinters = new HashMap<>();
   protected final String stagingFolder;
   private final StagingFilenameGenerator filenameGenerator;
-  private final Map<String, S3CsvWriter> stagingWriters = new HashMap<>();
+  private final Map<String, S3Writer> stagingWriters = new HashMap<>();
 
   public S3StreamCopier(final String stagingFolder,
       final String schema,
@@ -102,7 +88,7 @@ public abstract class S3StreamCopier implements StreamCopier {
 
   /*
    * old behavior: create s3://bucket/randomUuid/(namespace|schemaName)/generatedFilename
-   * S3CsvWiter: create s3://bucket/bucketPath(/namespace)?/streamName/time.csv
+   * S3CsvWriter: create s3://bucket/bucketPath(/namespace)?/streamName/time.csv
    */
   @Override
   public String prepareStagingFile() {
@@ -111,36 +97,17 @@ public abstract class S3StreamCopier implements StreamCopier {
       LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
 
       try {
+        // TODO get name from writer somehow
+        // TODO each writer should be able to suffix with some random/sequential string, to enforce multiple files
         final S3CsvWriter writer = new S3CsvWriter(
-            s3Config.cloneWithFormatConfig(new S3CsvFormatConfig(Flattening.ROOT_LEVEL, (long) s3Config.getPartSize())),
+            s3Config.cloneWithFormatConfig(new S3CsvFormatConfig(Flattening.NO, (long) s3Config.getPartSize())),
             s3Client,
             configuredAirbyteStream,
-            uploadTime
+            uploadTime,
+            DEFAULT_UPLOAD_THREADS,
+            DEFAULT_QUEUE_CAPACITY
         );
         stagingWriters.put(name, writer);
-      } catch (final IOException e) {
-        throw new RuntimeException(e);
-      }
-
-      // The stream transfer manager lets us greedily stream into S3. The native AWS SDK does not
-      // have support for streaming multipart uploads;
-      // The alternative is first writing the entire output to disk before loading into S3. This is not
-      // feasible with large tables.
-      // Data is chunked into parts. A part is sent off to a queue to be uploaded once it has reached it's
-      // configured part size.
-      // Memory consumption is queue capacity * part size = 10 * 10 = 100 MB at current configurations.
-      final var manager = new StreamTransferManager(s3Config.getBucketName(), name, s3Client)
-          .numUploadThreads(DEFAULT_UPLOAD_THREADS)
-          .queueCapacity(DEFAULT_QUEUE_CAPACITY)
-          .partSize(s3Config.getPartSize());
-      multipartUploadManagers.put(name, manager);
-      final var outputStream = manager.getMultiPartOutputStreams().get(0);
-      // We only need one output stream as we only have one input stream. This is reasonably performant.
-      // See the above comment.
-      outputStreams.put(name, outputStream);
-      final var writer = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
-      try {
-        csvPrinters.put(name, new CSVPrinter(writer, CSVFormat.DEFAULT));
       } catch (final IOException e) {
         throw new RuntimeException(e);
       }
@@ -150,21 +117,16 @@ public abstract class S3StreamCopier implements StreamCopier {
 
   @Override
   public void write(final UUID id, final AirbyteRecordMessage recordMessage, final String s3FileName) throws Exception {
-    if (csvPrinters.containsKey(s3FileName)) {
-      csvPrinters.get(s3FileName).printRecord(id,
-          Jsons.serialize(recordMessage.getData()),
-          Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
+    if (stagingWriters.containsKey(s3FileName)) {
+      stagingWriters.get(s3FileName).write(id, recordMessage);
     }
   }
 
   @Override
   public void closeStagingUploader(final boolean hasFailed) throws Exception {
-    if (hasFailed) {
-      for (final var multipartUploadManager : multipartUploadManagers.values()) {
-        multipartUploadManager.abort();
-      }
+    for (final S3Writer writer : stagingWriters.values()) {
+      writer.close(hasFailed);
     }
-    closeAndWaitForUpload();
   }
 
   @Override
@@ -182,7 +144,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   @Override
   public void copyStagingFileToTemporaryTable() throws Exception {
     LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .", tmpTableName, streamName, schemaName);
-    s3StagingFiles.forEach(s3StagingFile -> Exceptions.toRuntime(() -> {
+    stagingWriters.keySet().forEach(s3StagingFile -> Exceptions.toRuntime(() -> {
       copyS3CsvFileIntoTable(db, getFullS3Path(s3Config.getBucketName(), s3StagingFile), schemaName, tmpTableName, s3Config);
     }));
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
@@ -212,7 +174,7 @@ public abstract class S3StreamCopier implements StreamCopier {
 
   @Override
   public void removeFileAndDropTmpTable() throws Exception {
-    s3StagingFiles.forEach(s3StagingFile -> {
+    stagingWriters.keySet().forEach(s3StagingFile -> {
       LOGGER.info("Begin cleaning s3 staging file {}.", s3StagingFile);
       if (s3Client.doesObjectExist(s3Config.getBucketName(), s3StagingFile)) {
         s3Client.deleteObject(s3Config.getBucketName(), s3StagingFile);
@@ -227,27 +189,6 @@ public abstract class S3StreamCopier implements StreamCopier {
 
   protected static String getFullS3Path(final String s3BucketName, final String s3StagingFile) {
     return String.join("/", "s3:/", s3BucketName, s3StagingFile);
-  }
-
-  /**
-   * Closes the printers/outputstreams and waits for any buffered uploads to complete.
-   */
-  private void closeAndWaitForUpload() throws IOException {
-    LOGGER.info("Uploading remaining data for {} stream.", streamName);
-    for (final var csvPrinter : csvPrinters.values()) {
-      csvPrinter.close();
-    }
-    for (final var outputStream : outputStreams.values()) {
-      outputStream.close();
-    }
-    for (final var multipartUploadManager : multipartUploadManagers.values()) {
-      multipartUploadManager.complete();
-    }
-    LOGGER.info("All data for {} stream uploaded.", streamName);
-  }
-
-  public static void attemptS3WriteAndDelete(final S3DestinationConfig s3Config) {
-    S3Destination.attemptS3WriteAndDelete(s3Config, "");
   }
 
   public abstract void copyS3CsvFileIntoTable(JdbcDatabase database,
