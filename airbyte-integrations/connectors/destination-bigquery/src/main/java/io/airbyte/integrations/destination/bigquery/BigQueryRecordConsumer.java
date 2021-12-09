@@ -10,7 +10,6 @@ import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-import java.io.IOException;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
@@ -36,7 +35,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   @Override
-  public void acceptTracked(final AirbyteMessage message) throws IOException {
+  public void acceptTracked(final AirbyteMessage message) {
     if (message.getType() == Type.STATE) {
       lastStateMessage = message;
     } else if (message.getType() == Type.RECORD) {
@@ -51,11 +50,10 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     writeConfigs.get(pair).upload(message);
   }
 
-
   @Override
   public void close(final boolean hasFailed) {
     LOGGER.info("Started closing all connections");
-    writeConfigs.values().parallelStream().forEach(uploader -> uploader.close(hasFailed));
+    writeConfigs.values().parallelStream().forEach(uploader -> uploader.close(hasFailed, outputRecordCollector, lastStateMessage));
   }
 
 }

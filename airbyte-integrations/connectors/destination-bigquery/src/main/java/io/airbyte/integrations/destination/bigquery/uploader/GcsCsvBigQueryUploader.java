@@ -17,8 +17,8 @@ import static com.amazonaws.util.StringUtils.UTF8;
 
 public class GcsCsvBigQueryUploader extends AbstractGscBigQueryUploader<GcsCsvWriter> {
 
-    public GcsCsvBigQueryUploader(TableId table, TableId tmpTable, GcsCsvWriter writer, JobInfo.WriteDisposition syncMode, Schema schema, GcsDestinationConfig gcsDestinationConfig, BigQuery bigQuery) {
-        super(table, tmpTable, writer, syncMode, schema, gcsDestinationConfig, bigQuery);
+    public GcsCsvBigQueryUploader(TableId table, TableId tmpTable, GcsCsvWriter writer, JobInfo.WriteDisposition syncMode, Schema schema, GcsDestinationConfig gcsDestinationConfig, BigQuery bigQuery, boolean isKeepFilesInGcs) {
+        super(table, tmpTable, writer, syncMode, schema, gcsDestinationConfig, bigQuery, isKeepFilesInGcs);
     }
 
     @Override
@@ -34,8 +34,6 @@ public class GcsCsvBigQueryUploader extends AbstractGscBigQueryUploader<GcsCsvWr
 
     @Override
     protected JsonNode formatRecord(final AirbyteRecordMessage recordMessage) {
-        // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds then
-        // use BQ helpers to string-format correctly.
         final long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
         final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
         final JsonNode formattedData = StandardNameTransformer.formatJsonPath(recordMessage.getData());

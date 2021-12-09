@@ -12,17 +12,20 @@ import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsS3Helper;
 import io.airbyte.integrations.destination.gcs.writer.GscWriter;
+import io.airbyte.protocol.models.AirbyteMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public abstract class AbstractGscBigQueryUploader<T extends GscWriter> extends AbstractBigQueryUploader<GscWriter> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGscBigQueryUploader.class);
 
   private final boolean isKeepFilesInGcs;
+  protected final GcsDestinationConfig gcsDestinationConfig;
 
   AbstractGscBigQueryUploader(final TableId table,
                               final TableId tmpTable,
@@ -32,26 +35,26 @@ public abstract class AbstractGscBigQueryUploader<T extends GscWriter> extends A
                               final GcsDestinationConfig gcsDestinationConfig,
                               final BigQuery bigQuery,
                               final boolean isKeepFilesInGcs) {
-    super(table, tmpTable, writer, syncMode, schema, gcsDestinationConfig, bigQuery);
+    super(table, tmpTable, writer, syncMode, schema, bigQuery);
     this.isKeepFilesInGcs = isKeepFilesInGcs;
+    this.gcsDestinationConfig = gcsDestinationConfig;
   }
 
   @Override
-  public void closeWriter(boolean hasFailed) throws Exception {
-    writer.close(hasFailed);
-    // copy data from tmp gcs storage to bigquery tables
-    try {
-      loadCsvFromGcsTruncate();
-    } catch (final Exception e) {
-      LOGGER.error("Failed to load data from GCS "+getFileTypeName()+" file to BigQuery tmp table with reason: " + e.getMessage());
-      throw new RuntimeException(e);
+  public void postProcessAction(boolean hasFailed) throws Exception {
+    if (isKeepFilesInGcs) {
+      deleteGcsFiles();
     }
   }
 
-  abstract protected LoadJobConfiguration getLoadConfiguration();
+  @Override
+  protected void uploadData(Consumer<AirbyteMessage> outputRecordCollector, AirbyteMessage lastStateMessage) throws Exception {
+    LOGGER.info("Uploading data to the tmp table {}.", tmpTable.getTable());
+    uploadDataFromFileToTmpTable();
+    super.uploadData(outputRecordCollector, lastStateMessage);
+  }
 
-  private void loadCsvFromGcsTruncate()
-          throws Exception {
+  protected void uploadDataFromFileToTmpTable() throws Exception {
     try {
       final String fileLocation = this.writer.getFileLocation();
 
@@ -90,11 +93,10 @@ public abstract class AbstractGscBigQueryUploader<T extends GscWriter> extends A
     } catch (final BigQueryException | InterruptedException e) {
       LOGGER.error("Column not added during load append \n" + e.toString());
       throw new RuntimeException("Column not added during load append \n" + e.toString());
-    } finally {
-      if (isKeepFilesInGcs)
-        deleteGcsFiles();
     }
   }
+
+  abstract protected LoadJobConfiguration getLoadConfiguration();
 
   private String getFileTypeName() {
     return writer.getFileFormat().getFileExtension();

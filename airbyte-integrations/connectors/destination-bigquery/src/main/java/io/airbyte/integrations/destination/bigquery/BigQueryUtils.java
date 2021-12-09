@@ -33,6 +33,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -72,7 +75,7 @@ public class BigQueryUtils {
     }
   }
 
-  static void createSchemaAndTableIfNeeded(final BigQuery bigquery,
+  public static void createSchemaAndTableIfNeeded(final BigQuery bigquery,
                                            final Set<String> existingSchemas,
                                            final String schemaName,
                                            final String tmpTableName,
@@ -205,6 +208,72 @@ public class BigQueryUtils {
         data.put(e, googleBigQueryDateFormat);
       }
     });
+  }
+
+  public static String getSchema(final JsonNode config, final ConfiguredAirbyteStream stream) {
+    final String defaultSchema = config.get(BigQueryConsts.CONFIG_DATASET_ID).asText();
+    final String srcNamespace = stream.getStream().getNamespace();
+    if (srcNamespace == null) {
+      return defaultSchema;
+    }
+    return srcNamespace;
+  }
+
+  public static JobInfo.WriteDisposition getWriteDisposition(final DestinationSyncMode syncMode) {
+    if (syncMode == null) {
+      throw new IllegalStateException("Undefined destination sync mode");
+    }
+    switch (syncMode) {
+      case OVERWRITE -> {
+        return JobInfo.WriteDisposition.WRITE_TRUNCATE;
+      }
+      case APPEND, APPEND_DEDUP -> {
+        return JobInfo.WriteDisposition.WRITE_APPEND;
+      }
+      default -> throw new IllegalStateException("Unrecognized destination sync mode: " + syncMode);
+    }
+  }
+
+  public static boolean isUsingJsonCredentials(final JsonNode config) {
+    return config.has(BigQueryConsts.CONFIG_CREDS) && !config.get(BigQueryConsts.CONFIG_CREDS).asText().isEmpty();
+  }
+
+  // https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html
+  public static Integer getBigQueryClientChunkSize(final JsonNode config) {
+    Integer chunkSizeFromConfig = null;
+    if (config.has(BigQueryConsts.BIG_QUERY_CLIENT_CHUNK_SIZE)) {
+      chunkSizeFromConfig = config.get(BigQueryConsts.BIG_QUERY_CLIENT_CHUNK_SIZE).asInt();
+      if (chunkSizeFromConfig <= 0) {
+        LOGGER.error("BigQuery client Chunk (buffer) size must be a positive number (MB), but was:" + chunkSizeFromConfig);
+        throw new IllegalArgumentException("BigQuery client Chunk (buffer) size must be a positive number (MB)");
+      }
+      chunkSizeFromConfig = chunkSizeFromConfig * BigQueryConsts.MiB;
+    }
+    return chunkSizeFromConfig;
+  }
+
+  public static UploadingMethod getLoadingMethod(final JsonNode config) {
+    final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
+    if (loadingMethod != null && BigQueryConsts.GCS_STAGING.equals(loadingMethod.get(BigQueryConsts.METHOD).asText())) {
+      LOGGER.info("Selected loading method is set to: " + UploadingMethod.GCS);
+      return UploadingMethod.GCS;
+    } else {
+      LOGGER.info("Selected loading method is set to: " + UploadingMethod.STANDARD);
+      return UploadingMethod.STANDARD;
+    }
+  }
+
+  public static boolean isKeepFilesInGcs(final JsonNode config) {
+    final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
+    if (loadingMethod != null && loadingMethod.get(BigQueryConsts.KEEP_GCS_FILES) != null
+            && BigQueryConsts.KEEP_GCS_FILES_VAL
+            .equals(loadingMethod.get(BigQueryConsts.KEEP_GCS_FILES).asText())) {
+      LOGGER.info("All tmp files GCS will be kept in bucket when replication is finished");
+      return true;
+    } else {
+      LOGGER.info("All tmp files will be removed from GCS when replication is finished");
+      return false;
+    }
   }
 
 }
