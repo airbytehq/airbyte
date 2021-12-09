@@ -11,18 +11,11 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourceFillDbWithTestData;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.params.provider.Arguments;
 
 public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData {
-
-  protected static final Logger c = LoggerFactory.getLogger(FillMsSqlTestDbScriptTest.class);
-
-  private static final String CREATE_DB_TABLE_TEMPLATE = "CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, %s)";
-  private static final String INSERT_INTO_DB_TABLE_QUERY_TEMPLATE = "INSERT INTO %s.%s (%s) VALUES %s";
-  private static final String TEST_DB_FIELD_TYPE = "varchar(10)";
 
   private JsonNode config;
 
@@ -67,58 +60,21 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
     return database;
   }
 
-  @Override
-  protected String getCreateTableTemplate() {
-    return CREATE_DB_TABLE_TEMPLATE;
-  }
-
-  @Override
-  protected String getInsertQueryTemplate() {
-    return INSERT_INTO_DB_TABLE_QUERY_TEMPLATE;
-  }
-
-  @Override
-  protected String getTestFieldType() {
-    return TEST_DB_FIELD_TYPE;
-  }
-
   /**
-   * The test added test data to a new DB. 1. Set DB creds in static variables above 2. Set desired
-   * number for streams, coolumns and records 3. Run the test
+   * This is a data provider for fill DB script,, Each argument's group would be ran as a separate
+   * test. 1st arg - a name of DB that will be used in jdbc connection string. 2nd arg - a schemaName
+   * that will be ised as a NameSpace in Configured Airbyte Catalog. 3rd arg - a number of expected
+   * records retrieved in each stream. 4th arg - a number of messages batches
+   * (numberOfMessages*numberOfBatches, ex. 100*2=200 messages in total in each stream) 5th arg - a
+   * number of columns in each stream\table that will be use for Airbyte Cataloq configuration 6th arg
+   * - a number of streams to read in configured airbyte Catalog. Each stream\table in DB should be
+   * names like "test_0", "test_1",..., test_n.
    */
-  @Test
-  @Disabled
-  public void addTestDataToDbAndCheckTheResult() throws Exception {
-    int numberOfColumns = 240;
-    int numberOfDummyRecords = 200;
-    int numberOfStreams = 1;
-    int numberOfBatches = 1;
-
-    String dbname = "your_db_name";
-    String defaultSchemaName = "dbo";
-
-    final Database database = setupDatabase(dbname); // "dbo" is a default schema name in DB
-
-    database.query(ctx -> {
-      for (int currentSteamNumber = 0; currentSteamNumber < numberOfStreams; currentSteamNumber++) {
-
-        String currentTableName = String.format(getTestStreamNameTemplate(), currentSteamNumber);
-
-        ctx.fetch(prepareCreateTableQuery(defaultSchemaName, numberOfColumns, currentTableName));
-        for (int i = 0; i < numberOfBatches; i++) {
-          String insertQueryTemplate = prepareInsertQueryTemplatePostgres(defaultSchemaName, i,
-              numberOfColumns,
-              numberOfDummyRecords);
-          ctx.fetch(String.format(insertQueryTemplate, currentTableName));
-        }
-
-        c.info("Finished processing for stream " + currentSteamNumber);
-      }
-      return null;
-    });
-
-    database.close();
-
+  @BeforeAll
+  public static void beforeAll() {
+    AbstractSourceFillDbWithTestData.testArgs = Stream.of(
+        Arguments.of("your_db_name", "dbo", 100, 2, 240, 1000) // "dbo" is a default schema name in MsSQl DB
+    );
   }
 
 }

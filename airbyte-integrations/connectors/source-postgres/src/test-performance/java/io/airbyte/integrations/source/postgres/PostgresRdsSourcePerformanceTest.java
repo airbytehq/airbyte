@@ -2,23 +2,20 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.mysql;
+package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourcePerformanceTest;
 import java.nio.file.Path;
 import java.util.stream.Stream;
-import org.jooq.SQLDialect;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.provider.Arguments;
 
-public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerformanceTest {
+public class PostgresRdsSourcePerformanceTest extends AbstractSourcePerformanceTest {
 
   private JsonNode config;
   private static final String PERFORMANCE_SECRET_CREDS = "secrets/performance-config.json";
@@ -33,37 +30,26 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
 
   @Override
   protected String getImageName() {
-    return "airbyte/source-mysql:dev";
+    return "airbyte/source-postgres:dev";
   }
 
   @Override
-  protected void setupDatabase(String dbName) throws Exception {
+  protected void setupDatabase(String dbName) {
     JsonNode plainConfig = Jsons.deserialize(IOs.readFile(Path.of(PERFORMANCE_SECRET_CREDS)));
+
+    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
+        .put("method", "Standard")
+        .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", plainConfig.get("host"))
         .put("port", plainConfig.get("port"))
-        .put("database", dbName)
+        .put("database", plainConfig.get("database"))
         .put("username", plainConfig.get("username"))
         .put("password", plainConfig.get("password"))
-        .put("replication_method", plainConfig.get("replication_method"))
+        .put("ssl", true)
+        .put("replication_method", replicationMethod)
         .build());
-
-    final Database database = Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:mysql://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            dbName),
-        "com.mysql.cj.jdbc.Driver",
-        SQLDialect.MYSQL,
-        "zeroDateTimeBehavior=convertToNull");
-
-    // It disable strict mode in the DB and allows to insert specific values.
-    // For example, it's possible to insert date with zero values "2021-00-00"
-    database.query(ctx -> ctx.execute("SET @@sql_mode=''"));
-    database.close();
   }
 
   /**
@@ -79,7 +65,7 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
     AbstractSourcePerformanceTest.testArgs = Stream.of(
         Arguments.of("test1000tables240columns200recordsDb", "test1000tables240columns200recordsDb", 200, 240, 1000),
         Arguments.of("test5000tables240columns200recordsDb", "test5000tables240columns200recordsDb", 200, 240, 1000),
-        Arguments.of("newregular25tables50000records", "newregular25tables50000records", 50003, 8, 25),
+        Arguments.of("newregular25tables50000records", "newregular25tables50000records", 50011, 8, 25),
         Arguments.of("newsmall1000tableswith10000rows", "newsmall1000tableswith10000rows", 10001, 8, 1000));
   }
 

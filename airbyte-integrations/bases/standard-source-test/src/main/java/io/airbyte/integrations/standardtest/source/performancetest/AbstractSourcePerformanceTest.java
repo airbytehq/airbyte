@@ -21,21 +21,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This abstract class contains common helpers and boilerplate for comprehensively testing that all
- * data types in a source can be read and handled correctly by the connector and within Airbyte's
- * type system.
+ * This abstract class contains common methods for Performance tests.
  */
-public abstract class AbstractSourcePerformanceTest extends SourceBasePerformanceTest {
+public abstract class AbstractSourcePerformanceTest extends AbstractSourceBasePerformanceTest {
 
   protected static final Logger c = LoggerFactory.getLogger(AbstractSourcePerformanceTest.class);
+  protected static Stream testArgs;
   private static final String ID_COLUMN_NAME = "id";
-  private ConfiguredAirbyteCatalog catalog;
-  private Map<String, Integer> mapOfExpectedRecordsCount;
-  private Map<String, Integer> checkStatusMap;
 
   /**
    * Setup the test database. All tables and data described in the registered tests will be put there.
@@ -43,6 +43,46 @@ public abstract class AbstractSourcePerformanceTest extends SourceBasePerformanc
    * @throws Exception - might throw any exception during initialization.
    */
   protected abstract void setupDatabase(String dbName) throws Exception;
+
+  @ParameterizedTest
+  @MethodSource("provideParameters")
+  public void testPerformance(String dbName,
+                              String schemaName,
+                              int numberOfDummyRecords,
+                              int numberOfColumns,
+                              int numberOfStreams)
+      throws Exception {
+
+    setupDatabase(dbName);
+
+    ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(schemaName, numberOfStreams,
+        numberOfColumns);
+    Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
+        numberOfStreams, numberOfDummyRecords);
+    Map<String, Integer> checkStatusMap = runReadVerifyNumberOfReceivedMsgs(catalog, null,
+        mapOfExpectedRecordsCount);
+    validateNumberOfReceivedMsgs(checkStatusMap);
+
+  }
+
+  /**
+   * This is a data provider for performance tests, Each argument's group would be ran as a separate
+   * test. Set the "testArgs" in test class of your DB in @BeforeTest method.
+   *
+   * 1st arg - a name of DB that will be used in jdbc connection string. 2nd arg - a schemaName that
+   * will be ised as a NameSpace in Configured Airbyte Catalog. 3rd arg - a number of expected records
+   * retrieved in each stream. 4th arg - a number of columns in each stream\table that will be use for
+   * Airbyte Cataloq configuration 5th arg - a number of streams to read in configured airbyte
+   * Catalog. Each stream\table in DB should be names like "test_0", "test_1",..., test_n.
+   *
+   * Example: Stream.of( Arguments.of("test1000tables240columns200recordsDb", "dbo", 200, 240, 1000),
+   * Arguments.of("test5000tables240columns200recordsDb", "dbo", 200, 240, 1000),
+   * Arguments.of("newregular25tables50000records", "dbo", 50052, 8, 25),
+   * Arguments.of("newsmall1000tableswith10000rows", "dbo", 10011, 8, 1000) );
+   */
+  private static Stream<Arguments> provideParameters() {
+    return testArgs;
+  }
 
   /**
    * The column name will be used for a PK column in the test tables. Override it if default name is
@@ -117,18 +157,6 @@ public abstract class AbstractSourcePerformanceTest extends SourceBasePerformanc
     }
 
     return new ConfiguredAirbyteCatalog().withStreams(streams);
-  }
-
-  protected void performTest(final String dbName,
-                             final int numberOfStreams,
-                             final int numberOfColumns,
-                             final int numberOfDummyRecords)
-      throws Exception {
-    catalog = getConfiguredCatalog(dbName, numberOfStreams, numberOfColumns);
-    mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
-        numberOfStreams, numberOfDummyRecords);
-    checkStatusMap = runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
-    validateNumberOfReceivedMsgs(checkStatusMap);
   }
 
 }
