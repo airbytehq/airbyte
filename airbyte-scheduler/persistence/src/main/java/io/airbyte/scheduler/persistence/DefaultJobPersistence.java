@@ -26,7 +26,7 @@ import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
-import io.airbyte.scheduler.models.AttemptWithJob;
+import io.airbyte.scheduler.models.AttemptWithJobInfo;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import java.io.IOException;
@@ -411,7 +411,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<AttemptWithJob> listAttemptsWithJobs(final ConfigType configType, final Instant attemptEndedAtTimestamp) throws IOException {
+  public List<AttemptWithJobInfo> listAttemptsWithJobInfo(final ConfigType configType, final Instant attemptEndedAtTimestamp) throws IOException {
     final LocalDateTime timeConvertedIntoLocalDateTime = LocalDateTime.ofInstant(attemptEndedAtTimestamp, ZoneOffset.UTC);
     return jobDatabase.query(ctx -> getAttemptsWithJobsFromResult(ctx.fetch(
         BASE_JOB_SELECT_AND_JOIN + "WHERE " + "CAST(config_type AS VARCHAR) =  ? AND " + " attempts.ended_at > ? ORDER BY attempts.ended_at ASC",
@@ -446,11 +446,11 @@ public class DefaultJobPersistence implements JobPersistence {
             .orElse(null));
   }
 
-  private static List<AttemptWithJob> getAttemptsWithJobsFromResult(final Result<Record> result) {
+  private static List<AttemptWithJobInfo> getAttemptsWithJobsFromResult(final Result<Record> result) {
     return result
         .stream()
         .filter(record -> record.getValue("attempt_number") != null)
-        .map(record -> new AttemptWithJob(getAttemptFromRecord(record), getJobFromRecord(record)))
+        .map(record -> new AttemptWithJobInfo(getAttemptFromRecord(record), getJobFromRecord(record)))
         .collect(Collectors.toList());
   }
 

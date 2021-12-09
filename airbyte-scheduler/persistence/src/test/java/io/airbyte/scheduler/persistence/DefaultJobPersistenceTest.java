@@ -31,7 +31,7 @@ import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
-import io.airbyte.scheduler.models.AttemptWithJob;
+import io.airbyte.scheduler.models.AttemptWithJobInfo;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -376,8 +376,8 @@ class DefaultJobPersistenceTest {
   }
 
   @Test
-  @DisplayName("Should return correct list of AttemptsWithJobs when querying on end timestamp, sorted by attempt end time")
-  void testListAttemptsWithJobs() throws IOException {
+  @DisplayName("Should return correct list of AttemptWithJobInfo when querying on end timestamp, sorted by attempt end time")
+  void testListAttemptsWithJobInfo() throws IOException {
     final Instant now = Instant.parse("2021-01-01T00:00:00Z");
     final Supplier<Instant> timeSupplier = incrementingSecondSupplier(now);
     jobPersistence = new DefaultJobPersistence(jobDatabase, timeSupplier, 30, 500, 10);
@@ -400,38 +400,38 @@ class DefaultJobPersistenceTest {
     jobPersistence.succeedAttempt(job1, job1Attempt3);
     jobPersistence.succeedAttempt(job2, job2Attempt3);
 
-    final List<AttemptWithJob> allAttempts = jobPersistence.listAttemptsWithJobs(ConfigType.SYNC, Instant.ofEpochSecond(0));
+    final List<AttemptWithJobInfo> allAttempts = jobPersistence.listAttemptsWithJobInfo(ConfigType.SYNC, Instant.ofEpochSecond(0));
     assertEquals(6, allAttempts.size());
 
-    assertEquals(job1, allAttempts.get(0).getJob().getId());
+    assertEquals(job1, allAttempts.get(0).getJobInfo().getId());
     assertEquals(job1Attempt1, allAttempts.get(0).getAttempt().getId());
 
-    assertEquals(job2, allAttempts.get(1).getJob().getId());
+    assertEquals(job2, allAttempts.get(1).getJobInfo().getId());
     assertEquals(job2Attempt1, allAttempts.get(1).getAttempt().getId());
 
-    assertEquals(job2, allAttempts.get(2).getJob().getId());
+    assertEquals(job2, allAttempts.get(2).getJobInfo().getId());
     assertEquals(job2Attempt2, allAttempts.get(2).getAttempt().getId());
 
-    assertEquals(job1, allAttempts.get(3).getJob().getId());
+    assertEquals(job1, allAttempts.get(3).getJobInfo().getId());
     assertEquals(job1Attempt2, allAttempts.get(3).getAttempt().getId());
 
-    assertEquals(job1, allAttempts.get(4).getJob().getId());
+    assertEquals(job1, allAttempts.get(4).getJobInfo().getId());
     assertEquals(job1Attempt3, allAttempts.get(4).getAttempt().getId());
 
-    assertEquals(job2, allAttempts.get(5).getJob().getId());
+    assertEquals(job2, allAttempts.get(5).getJobInfo().getId());
     assertEquals(job2Attempt3, allAttempts.get(5).getAttempt().getId());
 
-    final List<AttemptWithJob> attemptsAfterTimestamp = jobPersistence.listAttemptsWithJobs(ConfigType.SYNC,
+    final List<AttemptWithJobInfo> attemptsAfterTimestamp = jobPersistence.listAttemptsWithJobInfo(ConfigType.SYNC,
         Instant.ofEpochSecond(allAttempts.get(2).getAttempt().getEndedAtInSecond().orElseThrow()));
     assertEquals(3, attemptsAfterTimestamp.size());
 
-    assertEquals(job1, attemptsAfterTimestamp.get(0).getJob().getId());
+    assertEquals(job1, attemptsAfterTimestamp.get(0).getJobInfo().getId());
     assertEquals(job1Attempt2, attemptsAfterTimestamp.get(0).getAttempt().getId());
 
-    assertEquals(job1, attemptsAfterTimestamp.get(1).getJob().getId());
+    assertEquals(job1, attemptsAfterTimestamp.get(1).getJobInfo().getId());
     assertEquals(job1Attempt3, attemptsAfterTimestamp.get(1).getAttempt().getId());
 
-    assertEquals(job2, attemptsAfterTimestamp.get(2).getJob().getId());
+    assertEquals(job2, attemptsAfterTimestamp.get(2).getJobInfo().getId());
     assertEquals(job2Attempt3, attemptsAfterTimestamp.get(2).getAttempt().getId());
   }
 

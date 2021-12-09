@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
-import io.airbyte.scheduler.models.AttemptWithJob;
+import io.airbyte.scheduler.models.AttemptWithJobInfo;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import java.io.IOException;
@@ -161,7 +161,7 @@ public interface JobPersistence {
    *         attempts' endedAt in ascending order
    * @throws IOException
    */
-  List<AttemptWithJob> listAttemptsWithJobs(ConfigType configType, Instant attemptEndedAtTimestamp) throws IOException;
+  List<AttemptWithJobInfo> listAttemptsWithJobInfo(ConfigType configType, Instant attemptEndedAtTimestamp) throws IOException;
 
   /// ARCHIVE
 
