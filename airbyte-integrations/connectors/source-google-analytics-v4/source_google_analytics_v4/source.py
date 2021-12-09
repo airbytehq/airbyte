@@ -112,7 +112,8 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         return date.strftime("%Y-%m-%d")
 
     def path(self, **kwargs) -> str:
-        return "reports:batchGet"
+        # need add './' for correct urllib.parse.urljoin work due to path contains ':'
+        return "./reports:batchGet"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = response.json().get("nextPageToken")
