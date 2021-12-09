@@ -39,6 +39,20 @@ def test_manager_account():
     assert is_manager_account
 
 
+def test_metrics_in_custom_query():
+    mock_query = "SELECT customer.id, metrics.conversions, campaign.start_date FROM campaign"
+    source = SourceGoogleAds()
+    is_metrics_in_custom_query = source.is_metrics_in_custom_query(mock_query)
+    assert is_metrics_in_custom_query
+
+
+def test_metrics_not_in_custom_query():
+    mock_query = "SELECT segments.ad_destination_type, campaign.start_date, campaign.end_date FROM campaign"
+    source = SourceGoogleAds()
+    is_metrics_in_custom_query = source.is_metrics_in_custom_query(mock_query)
+    assert not is_metrics_in_custom_query
+
+
 def test_time_zone():
     mock_account_info = {}
     source = SourceGoogleAds()

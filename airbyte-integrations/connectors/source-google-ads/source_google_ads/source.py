@@ -55,18 +55,33 @@ class SourceGoogleAds(AbstractSource):
     def is_manager_account(account: dict) -> bool:
         return bool(account.get("customer.manager"))
 
+    @staticmethod
+    def is_metrics_in_custom_query(query: str) -> bool:
+        fields = CustomQuery.get_query_fields(query)
+        for field in fields:
+            if field.startswith("metrics"):
+                return True
+        return False
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             logger.info("Checking the config")
             google_api = GoogleAds(credentials=self.get_credentials(config), customer_id=config["customer_id"])
-            account_stream = Accounts(api=google_api)
-            list(account_stream.read_records(sync_mode=SyncMode.full_refresh))
+            account_info = self.get_account_info(google_api)
+            is_manager_account = self.is_manager_account(account_info)
+
             # Check custom query request validity by sending metric request with non-existant time window
-            for q in config.get("custom_queries", []):
-                q = q.get("query")
-                if CustomQuery.cursor_field in q:
+            for query in config.get("custom_queries", []):
+                query = query.get("query")
+
+                if is_manager_account and self.is_metrics_in_custom_query(query):
+                    raise Exception(
+                        f"Metrics are not available for manager account. Check fields in your custom query: {query}"
+                    )
+                if CustomQuery.cursor_field in query:
                     raise Exception(f"Custom query should not contain {CustomQuery.cursor_field}")
-                req_q = CustomQuery.insert_segments_date_expr(q, "1980-01-01", "1980-01-01")
+
+                req_q = CustomQuery.insert_segments_date_expr(query, "1980-01-01", "1980-01-01")
                 google_api.send_request(req_q)
             return True, None
         except GoogleAdsException as error:
