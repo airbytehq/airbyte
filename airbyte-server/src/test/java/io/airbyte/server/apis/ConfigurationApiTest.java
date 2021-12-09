@@ -46,7 +46,7 @@ public class ConfigurationApiTest {
         mock(Database.class),
         mock(TrackingClient.class),
         WorkerEnvironment.DOCKER,
-      LogConfigs.EMPTY,
+        LogConfigs.EMPTY,
         mock(WorkerConfigs.class),
         "http://localhost",
         new AirbyteVersion("0.1.0-alpha"),

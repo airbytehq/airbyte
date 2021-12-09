@@ -131,15 +131,19 @@ public class ContainerOrchestratorApp {
 
       // set logging-related vars as properties so (at runtime) we can read these when processing
       // log4j2.xml
+      final var s3Config = configs.getLogConfigs().getStorageConfigs().getS3Config();
+      final var minioConfig = configs.getLogConfigs().getStorageConfigs().getMinioConfig();
+      final var gcsConfig = configs.getLogConfigs().getStorageConfigs().getGcsConfig();
+
       setPropertyFromEnvVar(EnvConfigs.LOG_LEVEL);
       setPropertyFromEnvVar(EnvConfigs.S3_PATH_STYLE_ACCESS);
-      System.setProperty(LogClientSingleton.S3_LOG_BUCKET, configs.getLogConfigs().getS3LogBucket());
-      System.setProperty(LogClientSingleton.S3_LOG_BUCKET_REGION, configs.getLogConfigs().getS3LogBucketRegion());
-      System.setProperty(LogClientSingleton.AWS_ACCESS_KEY_ID, configs.getLogConfigs().getAwsAccessKey());
-      System.setProperty(LogClientSingleton.AWS_SECRET_ACCESS_KEY, configs.getLogConfigs().getAwsSecretAccessKey());
-      System.setProperty(LogClientSingleton.S3_MINIO_ENDPOINT, configs.getLogConfigs().getS3MinioEndpoint());
-      System.setProperty(LogClientSingleton.GCS_LOG_BUCKET, configs.getLogConfigs().getGcsLogBucket());
-      System.setProperty(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, configs.getLogConfigs().getGoogleApplicationCredentials());
+      System.setProperty(LogClientSingleton.S3_LOG_BUCKET, s3Config.getBucketName());
+      System.setProperty(LogClientSingleton.S3_LOG_BUCKET_REGION, s3Config.getRegion());
+      System.setProperty(LogClientSingleton.AWS_ACCESS_KEY_ID, s3Config.getAwsAccessKey());
+      System.setProperty(LogClientSingleton.AWS_SECRET_ACCESS_KEY, s3Config.getAwsSecretAccessKey());
+      System.setProperty(LogClientSingleton.S3_MINIO_ENDPOINT, minioConfig.getMinioEndpoint());
+      System.setProperty(LogClientSingleton.GCS_LOG_BUCKET, gcsConfig.getBucketName());
+      System.setProperty(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, gcsConfig.getGoogleApplicationCredentials());
 
       final var logPath = LogClientSingleton.getInstance().getSchedulerLogsRoot(configs.getWorkspaceRoot());
       LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(), logPath);
