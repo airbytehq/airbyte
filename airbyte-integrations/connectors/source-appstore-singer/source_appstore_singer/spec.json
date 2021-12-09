@@ -9,31 +9,31 @@
     "properties": {
       "key_id": {
         "type": "string",
-	"title": "Key ID",
+        "title": "Key ID",
         "description": "Appstore Key ID. See the <a href=\"https://docs.airbyte.io/integrations/sources/appstore\">docs</a> for more information on how to obtain this key."
       },
       "private_key": {
         "type": "string",
-	"title": "Private Key",
+        "title": "Private Key",
         "description": "Appstore Private Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/appstore\">docs</a> for more information on how to obtain this key.",
         "airbyte_secret": true,
         "multiline": true
       },
       "issuer_id": {
         "type": "string",
-	"title": "Issuer ID",
+        "title": "Issuer ID",
         "description": "Appstore Issuer ID. See the <a href=\"https://docs.airbyte.io/integrations/sources/appstore\">docs</a> for more information on how to obtain this ID."
       },
       "vendor": {
         "type": "string",
-	"title": "Vendor ID",
+        "title": "Vendor ID",
         "description": "Appstore Vendor ID. See the <a href=\"https://docs.airbyte.io/integrations/sources/appstore\">docs</a> for more information on how to obtain this ID."
       },
       "start_date": {
         "type": "string",
-	"title": "Start Date",
+        "title": "Start Date",
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
-	"examples": ["2020-11-16T00:00:00Z"],
+        "examples": ["2020-11-16T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
       }
     }

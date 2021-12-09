@@ -32,9 +32,9 @@
         "format": "date-time"
       },
       "environment": {
+        "title": "Environment",
         "description": "Environment specifies where the data will come from.",
         "name": "Environment",
-	"title": "Environment",
         "examples": ["sandbox", "production", "qa", "development"],
         "allOf": [
           {

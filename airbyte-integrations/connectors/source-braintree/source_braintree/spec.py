@@ -22,21 +22,30 @@ class BraintreeConfig(BaseModel):
 
     merchant_id: str = Field(
         name="Merchant ID",
-	title="Merchant ID",
-        description="The unique identifier for your entire gateway account. See the <a href=\"https://docs.airbyte.io/integrations/sources/braintree\">docs</a> for more information on how to obtain this ID.",
+        title="Merchant ID",
+        description='The unique identifier for your entire gateway account. See the <a href="https://docs.airbyte.io/integrations/sources/braintree">docs</a> for more information on how to obtain this ID.',
     )
-    public_key: str = Field(name="Public key", title="Public Key", description="Braintree Public Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/braintree\">docs</a> for more information on how to obtain this key.")
-    private_key: str = Field(name="Private Key", title="Private Key", description="Braintree Private Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/braintree\">docs</a> for more information on how to obtain this key.", airbyte_secret=True)
+    public_key: str = Field(
+        name="Public Key",
+        title="Public Key",
+        description='Braintree Public Key. See the <a href="https://docs.airbyte.io/integrations/sources/braintree">docs</a> for more information on how to obtain this key.',
+    )
+    private_key: str = Field(
+        name="Private Key",
+        title="Private Key",
+        description='Braintree Private Key. See the <a href="https://docs.airbyte.io/integrations/sources/braintree">docs</a> for more information on how to obtain this key.',
+        airbyte_secret=True,
+    )
     start_date: datetime = Field(
         None,
-        name="Start date",
-	title="Start Date",
+        name="Start Date",
+        title="Start Date",
         description="UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         examples=["2020", "2020-12-30", "2020-11-22 20:20:05"],
     )
     environment: Environment = Field(
         name="Environment",
-	title="Environment",
+        title="Environment",
         description="Environment specifies where the data will come from.",
         examples=["sandbox", "production", "qa", "development"],
     )
