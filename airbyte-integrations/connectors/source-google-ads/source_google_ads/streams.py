@@ -85,7 +85,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         )
 
     def get_date_params(self, stream_slice: Mapping[str, Any], cursor_field: str, end_date: pendulum.datetime = None, time_unit: str = "months"):
-        end_date = end_date or pendulum.today(tz=self.time_zone)
+        end_date = end_date or pendulum.yesterday(tz=self.time_zone)
         start_date = pendulum.parse(stream_slice.get(cursor_field))
         if start_date > pendulum.now():
             return start_date.to_date_string(), start_date.add(days=1).to_date_string()
