@@ -5,11 +5,10 @@
 package io.airbyte.config.helpers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
+import com.google.cloud.storage.Storage;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.storage.DefaultGcsClientFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -21,13 +20,8 @@ import org.junit.jupiter.api.Test;
 @Tag("logger-client")
 public class GcsLogsTest {
 
-  @Test
-  public void testMissingConfiguration() {
-    final var configs = mock(LogConfigs.class);
-    when(configs.getGoogleApplicationCredentials()).thenReturn("");
-    when(configs.getGcsLogBucket()).thenReturn("");
-
-    assertThrows(RuntimeException.class, () -> new GcsLogs().downloadCloudLog(configs, "this-path-should-not-matter"));
+  private static Storage getClientFactory() {
+    return new DefaultGcsClientFactory(new EnvConfigs().getLogConfigs().getStorageConfigs().getGcsConfig()).get();
   }
 
   /**
@@ -37,7 +31,7 @@ public class GcsLogsTest {
    */
   @Test
   public void testRetrieveAllLogs() throws IOException {
-    final File data = GcsLogs.getFile((new EnvConfigs()).getLogConfigs(), "paginate", 6);
+    final File data = GcsLogs.getFile(getClientFactory(), (new EnvConfigs()).getLogConfigs(), "paginate", 6);
 
     final var retrieved = new ArrayList<String>();
     Files.lines(data.toPath()).forEach(retrieved::add);
@@ -56,7 +50,7 @@ public class GcsLogsTest {
    */
   @Test
   public void testTail() throws IOException {
-    final var data = new GcsLogs().tailCloudLog((new EnvConfigs()).getLogConfigs(), "tail", 6);
+    final var data = new GcsLogs(GcsLogsTest::getClientFactory).tailCloudLog((new EnvConfigs()).getLogConfigs(), "tail", 6);
 
     final var expected = List.of("Line 4", "Line 5", "Line 6", "Line 7", "Line 8", "Line 9");
     assertEquals(data, expected);

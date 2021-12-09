@@ -43,7 +43,7 @@
 - name: Appstore
   sourceDefinitionId: 2af123bf-0aaf-4e0d-9784-cb497f23741a
   dockerRepository: airbyte/source-appstore-singer
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.2.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/appstore
   icon: appstore.svg
   sourceType: api
@@ -71,7 +71,7 @@
 - name: BigCommerce
   sourceDefinitionId: 59c5501b-9f95-411e-9269-7143c939adbd
   dockerRepository: airbyte/source-bigcommerce
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/bigcommerce
   icon: bigcommerce.svg
   sourceType: api
@@ -211,7 +211,7 @@
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.2.6
+  dockerImageTag: 0.2.7
   documentationUrl: https://docs.airbyte.io/integrations/sources/github
   icon: github.svg
   sourceType: api
@@ -233,7 +233,7 @@
   sourceDefinitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
   dockerRepository: airbyte/source-google-analytics-v4
   dockerImageTag: 0.1.12
-  documentationUrl: https://docs.airbyte.io/integrations/sources/source-google-analytics-v4
+  documentationUrl: https://docs.airbyte.io/integrations/sources/google-analytics-v4
   icon: google-analytics.svg
   sourceType: api
 - name: Google Directory
@@ -253,7 +253,7 @@
 - name: Google Sheets
   sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
   dockerRepository: airbyte/source-google-sheets
-  dockerImageTag: 0.2.6
+  dockerImageTag: 0.2.7
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-sheets
   icon: google-sheets.svg
   sourceType: file
@@ -369,6 +369,13 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/mailchimp
   icon: mailchimp.svg
   sourceType: api
+- name: Mailgun
+  sourceDefinitionId: 5b9cb09e-1003-4f9c-983d-5779d1b2cd51
+  dockerRepository: airbyte/source-mailgun
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/mailgun
+  icon: mailgun.svg
+  sourceType: api
 - name: Marketo
   sourceDefinitionId: 9e0556f4-69df-4522-a3fb-03264d36b348
   dockerRepository: airbyte/source-marketo
@@ -407,7 +414,7 @@
 - name: MongoDb
   sourceDefinitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
   dockerRepository: airbyte/source-mongodb-v2
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.io/integrations/sources/mongodb-v2
   icon: mongodb.svg
   sourceType: database
@@ -568,7 +575,7 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.io/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
@@ -582,7 +589,7 @@
 - name: Shopify
   sourceDefinitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
   dockerRepository: airbyte/source-shopify
-  dockerImageTag: 0.1.24
+  dockerImageTag: 0.1.25
   documentationUrl: https://docs.airbyte.io/integrations/sources/shopify
   icon: shopify.svg
   sourceType: api
@@ -679,7 +686,7 @@
 - name: Typeform
   sourceDefinitionId: e7eff203-90bf-43e5-a240-19ea3056c474
   dockerRepository: airbyte/source-typeform
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/typeform
   icon: typeform.svg
   sourceType: api
