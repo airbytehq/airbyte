@@ -64,19 +64,22 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
     days_of_data_storage = None
     cursor_field = "segments.date"
     primary_key = None
-    time_unit = "months"
+    time_unit = "days"
 
-    def __init__(self, start_date: str, conversion_window_days: int, **kwargs):
+    def __init__(self, start_date: str, conversion_window_days: int, end_date: str=None, **kwargs):
         self.conversion_window_days = conversion_window_days
         self._start_date = start_date
+        self._end_date = end_date
         super().__init__(**kwargs)
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
         start_date = stream_state.get(self.cursor_field) or self._start_date
+        end_date = stream_state.get(self.cursor_field) or self._end_date
 
         return chunk_date_range(
             start_date=start_date,
+            end_date=end_date,
             conversion_window=self.conversion_window_days,
             field=self.cursor_field,
             time_unit=self.time_unit,
