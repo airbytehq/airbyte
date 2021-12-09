@@ -2,10 +2,10 @@ name: Airbyte CI
 
 on:
   schedule:
-    - cron: '0 */1 * * *'
+    - cron: "0 */1 * * *"
   push:
     branches-ignore:
-      - 'gitbook/v1'
+      - "gitbook/v1"
 
 jobs:
   ## Gradle Build (Connectors Base)
@@ -79,15 +79,15 @@ jobs:
 
       - uses: actions/setup-java@v1
         with:
-          java-version: '14'
+          java-version: "14"
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '16.13.0'
+          node-version: "16.13.0"
 
       - uses: actions/setup-python@v2
         with:
-          python-version: '3.7'
+          python-version: "3.7"
 
       - name: Install Pyenv
         run: python3 -m pip install virtualenv==16.7.9 --user
@@ -206,11 +206,11 @@ jobs:
 
       - uses: actions/setup-java@v1
         with:
-          java-version: '14'
+          java-version: "14"
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '16.13.0'
+          node-version: "16.13.0"
 
       - name: Set up CI Gradle Properties
         run: |
@@ -229,7 +229,7 @@ jobs:
 
       - name: Build
         run: |
-            SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
+          SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
 
       - name: Integration test
         run: SUB_BUILD=PLATFORM ./gradlew newIntegrationTest
@@ -330,11 +330,11 @@ jobs:
 
       - uses: actions/setup-java@v1
         with:
-          java-version: '14'
+          java-version: "14"
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '16.13.0'
+          node-version: "16.13.0"
 
       - name: Install Cypress Test Dependencies
         run: sudo apt-get update && sudo apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
@@ -411,11 +411,11 @@ jobs:
 
       - uses: actions/setup-java@v1
         with:
-          java-version: '14'
+          java-version: "14"
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '16.13.0'
+          node-version: "16.13.0"
 
       - name: Fix EC-2 Runner
         run: |

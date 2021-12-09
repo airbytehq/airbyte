@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.cloud.storage.Storage;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.storage.CloudStorageConfigs;
 import io.airbyte.config.storage.DefaultGcsClientFactory;
 import java.io.File;
 import java.io.IOException;
@@ -21,7 +22,9 @@ import org.junit.jupiter.api.Test;
 public class GcsLogsTest {
 
   private static Storage getClientFactory() {
-    return new DefaultGcsClientFactory(new EnvConfigs().getLogConfigs().getStorageConfigs().getGcsConfig()).get();
+    return new DefaultGcsClientFactory(new CloudStorageConfigs.GcsConfig(
+        System.getenv(LogClientSingleton.GCS_LOG_BUCKET),
+        System.getenv(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS))).get();
   }
 
   /**
