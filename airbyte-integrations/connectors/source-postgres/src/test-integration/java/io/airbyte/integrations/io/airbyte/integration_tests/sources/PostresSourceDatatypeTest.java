@@ -375,7 +375,7 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("pg_lsn")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'7/A25801C8'::pg_lsn", "'0/0'::pg_lsn", "null")
-            .addExpectedValues("7/A25801C8", "0/0",null)
+            .addExpectedValues("7/A25801C8", "0/0", null)
             .build());
 
     // The numeric type in Postres may contain 'Nan' type, but in JdbcUtils-> rowToJson
