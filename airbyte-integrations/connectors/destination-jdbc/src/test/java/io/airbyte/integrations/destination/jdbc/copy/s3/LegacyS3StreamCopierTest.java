@@ -4,32 +4,33 @@
 
 package io.airbyte.integrations.destination.jdbc.copy.s3;
 
+import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockConstructionWithAnswer;
+import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.verify;
 
+import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3Client;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.util.List;
-import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.commons.util.ExceptionUtils;
 import org.mockito.MockedConstruction;
 
 /**
+ * IF YOU'RE SEEING WEIRD BEHAVIOR INVOLVING MOCKED OBJECTS: double-check the mockConstruction() call in setup(). You might need to update the methods
+ * being mocked.
+ * <p>
  * Tests to help define what the legacy S3 stream copier did.
  * <p>
  * Does not verify SQL operations, as they're fairly transparent.
@@ -47,13 +48,24 @@ public class LegacyS3StreamCopierTest {
 
   @BeforeEach
   public void setup() {
-    s3Client = mock(AmazonS3Client.class, RETURNS_DEEP_STUBS);
+    s3Client = mock(AmazonS3Client.class);
     db = mock(JdbcDatabase.class);
     sqlOperations = mock(SqlOperations.class);
 
-    streamTransferManagerMockedConstruction = mockConstructionWithAnswer(StreamTransferManager.class, RETURNS_DEEP_STUBS);
+    // This is basically RETURNS_SELF, except with getMultiPartOutputStreams configured correctly.
+    // Other non-void methods (e.g. toString()) will return null.
+    streamTransferManagerMockedConstruction = mockConstruction(
+        StreamTransferManager.class,
+        (mock, context) -> {
+          doReturn(mock).when(mock).numUploadThreads(anyInt());
+          doReturn(mock).when(mock).queueCapacity(anyInt());
+          doReturn(mock).when(mock).partSize(anyLong());
+          doReturn(singletonList(mock(MultiPartOutputStream.class))).when(mock).getMultiPartOutputStreams();
+        }
+    );
 
     copier = new LegacyS3StreamCopier(
+        // In reality, this is normally a UUID - see CopyConsumerFactory#createWriteConfigs
         "fake-staging-folder",
         DestinationSyncMode.OVERWRITE,
         "fake-schema",
@@ -97,7 +109,7 @@ public class LegacyS3StreamCopierTest {
     assertEquals("fake-staging-folder/fake-schema/fake-stream_00000", firstFile);
     final List<StreamTransferManager> firstManagers = streamTransferManagerMockedConstruction.constructed();
     final StreamTransferManager firstManager = firstManagers.get(0);
-    verify(firstManager.numUploadThreads(anyInt()).queueCapacity(anyInt())).partSize(PART_SIZE);
+    verify(firstManager).partSize(PART_SIZE);
     assertEquals(1, firstManagers.size(), "There were actually " + firstManagers.size() + " upload managers");
 
     // Each file will contain multiple parts, so the first MAX_PARTS_PER_FILE will all go into the same file (i.e. we should not start more uploads)
@@ -114,7 +126,7 @@ public class LegacyS3StreamCopierTest {
     assertEquals("fake-staging-folder/fake-schema/fake-stream_00001", secondFile);
     final List<StreamTransferManager> secondManagers = streamTransferManagerMockedConstruction.constructed();
     final StreamTransferManager secondManager = secondManagers.get(1);
-    verify(secondManager.numUploadThreads(anyInt()).queueCapacity(anyInt())).partSize(PART_SIZE);
+    verify(secondManager).partSize(PART_SIZE);
     assertEquals(2, secondManagers.size(), "There were actually " + secondManagers.size() + " upload managers");
   }
 
@@ -126,22 +138,18 @@ public class LegacyS3StreamCopierTest {
 
     final List<StreamTransferManager> managers = streamTransferManagerMockedConstruction.constructed();
     final StreamTransferManager manager = managers.get(0);
-    verify(manager).numUploadThreads(10);
     verify(manager).complete();
   }
 
   @Test
   public void closesS3Upload_when_stagingUploaderClosedFailingly() throws Exception {
-    final String file = copier.prepareStagingFile();
-    // This is needed to trick the StreamTransferManager into thinking it has data that needs to be written.
-    copier.write(UUID.randomUUID(), new AirbyteRecordMessage().withEmittedAt(84L), file);
+    copier.prepareStagingFile();
 
-    // TODO why does this throw an interruptedexception
-    final RuntimeException exception = assertThrows(RuntimeException.class, () -> copier.closeStagingUploader(true));
+    copier.closeStagingUploader(true);
 
-    // the wrapping chain is RuntimeException -> ExecutionException -> RuntimeException -> InterruptedException
-    assertEquals(InterruptedException.class, exception.getCause().getCause().getCause().getClass(),
-        "Original exception: " + ExceptionUtils.readStackTrace(exception));
+    final List<StreamTransferManager> managers = streamTransferManagerMockedConstruction.constructed();
+    final StreamTransferManager manager = managers.get(0);
+    verify(manager).abort();
   }
 
   @Test
