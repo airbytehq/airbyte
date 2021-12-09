@@ -277,7 +277,7 @@ class HttpStream(Stream, ABC):
         Unexpected persistent exceptions are not handled and will cause the sync to fail.
         """
         AirbyteSentry.add_breadcrumb(message=f"Issue {request.url}", data=request_kwargs)
-        with AirbyteSentry.start_transaction_span(op="_send"):
+        with AirbyteSentry.start_transaction_span(op="_send", description=request.url):
             response: requests.Response = self._session.send(request, **request_kwargs)
 
         if self.should_retry(response):
