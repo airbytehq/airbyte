@@ -21,7 +21,7 @@ public class AttemptWithJobInfo {
     private final JobConfig config;
     private final JobStatus status;
 
-    JobInfo(final long id, final ConfigType configType, final String scope, final JobConfig config, final JobStatus status) {
+    public JobInfo(final long id, final ConfigType configType, final String scope, final JobConfig config, final JobStatus status) {
       this.id = id;
       this.configType = configType;
       this.scope = scope;
