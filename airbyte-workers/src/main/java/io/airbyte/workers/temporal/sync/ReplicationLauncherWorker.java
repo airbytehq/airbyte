@@ -84,6 +84,8 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
   @Override
   public ReplicationOutput run(StandardSyncInput standardSyncInput, Path jobRoot) throws WorkerException {
     try {
+      LOGGER.info("");
+
       final Path jobPath = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
 
       final Map<String, String> fileMap = Map.of(
