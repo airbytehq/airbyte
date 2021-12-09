@@ -134,6 +134,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 
 | Connector | Grade |
 | :--- | :--- |
+| [Amazon SQS](destinations/amazon-sqs.md) | Alpha |
 | [AzureBlobStorage](destinations/azureblobstorage.md) | Alpha |
 | [BigQuery](destinations/bigquery.md) | Certified |
 | [Chargify \(Keen\)](destinations/chargify.md) | Alpha |
