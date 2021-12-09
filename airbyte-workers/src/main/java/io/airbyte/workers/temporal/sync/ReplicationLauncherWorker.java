@@ -8,6 +8,7 @@ import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper;
 import io.airbyte.commons.logging.MdcScope;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
@@ -27,6 +28,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,11 +54,31 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
   public static final String INIT_FILE_ENV_MAP = "envMap.json";
 
   // define two ports for stdout/stderr usage on the container orchestrator pod
-  public static int PORT1 = 9877;
-  public static int PORT2 = 9878;
-  public static int PORT3 = 9879;
-  public static int PORT4 = 9880;
-  public static Set<Integer> PORTS = Set.of(PORT1, PORT2, PORT3, PORT4);
+  public static final int PORT1 = 9877;
+  public static final int PORT2 = 9878;
+  public static final int PORT3 = 9879;
+  public static final int PORT4 = 9880;
+  public static final Set<Integer> PORTS = Set.of(PORT1, PORT2, PORT3, PORT4);
+
+  // set of env vars necessary for the container orchestrator app to run
+  public static final Set<String> ENV_VARS_TO_TRANSFER = Set.of(
+      EnvConfigs.WORKER_ENVIRONMENT,
+      EnvConfigs.JOB_POD_TOLERATIONS,
+      EnvConfigs.JOB_POD_CURL_IMAGE,
+      EnvConfigs.JOB_POD_BUSYBOX_IMAGE,
+      EnvConfigs.JOB_POD_SOCAT_IMAGE,
+      EnvConfigs.JOB_POD_MAIN_CONTAINER_IMAGE_PULL_POLICY,
+      EnvConfigs.JOB_POD_MAIN_CONTAINER_IMAGE_PULL_SECRET,
+      EnvConfigs.JOB_POD_NODE_SELECTORS,
+      EnvConfigs.DOCKER_NETWORK,
+      EnvConfigs.LOCAL_DOCKER_MOUNT,
+      EnvConfigs.WORKSPACE_DOCKER_MOUNT,
+      EnvConfigs.WORKSPACE_ROOT,
+      EnvConfigs.DEFAULT_JOB_POD_KUBE_NAMESPACE,
+      EnvConfigs.JOB_POD_MAIN_CONTAINER_CPU_REQUEST,
+      EnvConfigs.JOB_POD_MAIN_CONTAINER_CPU_LIMIT,
+      EnvConfigs.JOB_POD_MAIN_CONTAINER_MEMORY_REQUEST,
+      EnvConfigs.JOB_POD_MAIN_CONTAINER_MEMORY_LIMIT);
 
   private final AtomicBoolean cancelled = new AtomicBoolean(false);
   private final IntegrationLauncherConfig sourceLauncherConfig;
@@ -95,13 +117,19 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
     try {
       final Path jobPath = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
 
+      // we want to filter down to remove secrets, so we aren't writing over a bunch of unnecessary
+      // secrets
+      final Map<String, String> envMap = System.getenv().entrySet().stream()
+          .filter(entry -> ENV_VARS_TO_TRANSFER.contains(entry.getKey()))
+          .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
       final Map<String, String> fileMap = Map.of(
           INIT_FILE_APPLICATION, REPLICATION,
           INIT_FILE_JOB_RUN_CONFIG, Jsons.serialize(jobRunConfig),
           INIT_FILE_SOURCE_LAUNCHER_CONFIG, Jsons.serialize(sourceLauncherConfig),
           INIT_FILE_DESTINATION_LAUNCHER_CONFIG, Jsons.serialize(destinationLauncherConfig),
           INIT_FILE_SYNC_INPUT, Jsons.serialize(syncInput),
-          INIT_FILE_ENV_MAP, Jsons.serialize(System.getenv()));
+          INIT_FILE_ENV_MAP, Jsons.serialize(envMap));
 
       process = processFactory.create(
           "runner-" + UUID.randomUUID().toString().substring(0, 10),
