@@ -3,10 +3,8 @@
 #
 
 import logging
-from datetime import datetime
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Type
+from typing import Any, List, Mapping, MutableMapping, Tuple, Type
 
-import pendulum
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
@@ -21,9 +19,8 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from jsonschema import RefResolver
-from pydantic import BaseModel, Field
 from source_facebook_marketing.api import API
-from source_facebook_marketing.common import SourceFacebookMarketingConfig
+from source_facebook_marketing.common import ConnectorConfig
 from source_facebook_marketing.streams import (
     AdCreatives,
     Ads,
@@ -54,15 +51,14 @@ class SourceFacebookMarketing(AbstractSource):
         error_msg = None
 
         try:
-            config = SourceFacebookMarketingConfig(config)
+            config = ConnectorConfig(**config)
             api = API(config)
             account_ids = {str(account["account_id"]) for account in api.accounts}
 
             if config.account_selection_strategy_is_subset:
-                config_account_ids = set(config.account_ids)
+                config_account_ids = set(config.accounts.ids)
                 if not config_account_ids.issubset(account_ids):
-                    raise Exception(
-                        f"Account Ids: {config_account_ids.difference(account_ids)} not found on this user.")
+                    raise Exception(f"Account Ids: {config_account_ids.difference(account_ids)} not found on this user.")
             elif config.account_selection_strategy_is_all:
                 if not account_ids:
                     raise Exception("You don't have accounts assigned to this user.")
@@ -80,7 +76,7 @@ class SourceFacebookMarketing(AbstractSource):
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        config = SourceFacebookMarketingConfig(config)
+        config = ConnectorConfig(**config)
         api = API(config)
 
         insights_args = dict(
@@ -132,10 +128,10 @@ class SourceFacebookMarketing(AbstractSource):
         insights_custom_streams = list()
 
         for insight in insights:
-            args["name"] = f"Custom{insight['name']}"
-            args["fields"] = list(set(insight["fields"]))
-            args["breakdowns"] = list(set(insight["breakdowns"]))
-            args["action_breakdowns"] = list(set(insight["action_breakdowns"]))
+            args["name"] = f"Custom{insight.name}"
+            args["fields"] = list(set(insight.fields))
+            args["breakdowns"] = list(set(insight.breakdowns))
+            args["action_breakdowns"] = list(set(insight.action_breakdowns))
             insight_stream = AdsInsights(**args)
             insights_custom_streams.append(insight_stream)
 

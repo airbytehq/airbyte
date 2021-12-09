@@ -5,7 +5,7 @@
 import json
 import logging
 from time import sleep
-from typing import List, Type
+from typing import List, Set, Type
 
 import pendulum
 from cached_property import cached_property
@@ -13,7 +13,7 @@ from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.exceptions import FacebookRequestError
-from source_facebook_marketing.common import FacebookAPIException, SourceFacebookMarketingConfig
+from source_facebook_marketing.common import ConnectorConfig, FacebookAPIException
 
 logger = logging.getLogger("airbyte")
 
@@ -98,7 +98,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
 class API:
     """Simple wrapper around Facebook API"""
 
-    def __init__(self, config: SourceFacebookMarketingConfig):
+    def __init__(self, config: ConnectorConfig):
 
         self.__config = config
 
@@ -116,13 +116,19 @@ class API:
         try:
             accounts_found = list(fb_user.User(fbid="me").get_ad_accounts())
             if self.__config.account_selection_strategy_is_subset:
-                account_ids = self.__config.account_ids
-                accounts_found = list(
-                    filter(
-                        lambda x: not account_ids or x["account_id"] in account_ids,
-                        accounts_found
-                    )
-                )
+                account_ids = self.__config.accounts.ids
+                accounts_found = list(filter(lambda x: not account_ids or x["account_id"] in account_ids, accounts_found))
+
+                accounts_missing = self._accounts_missing_from_config(accounts_found)
+                if accounts_missing:
+                    raise FacebookAPIException(f"Couldn't find account(s) with id {accounts_missing}")
+
             return accounts_found
         except FacebookRequestError as exc:
             raise FacebookAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
+
+    def _accounts_missing_from_config(self, accounts: List[Type[AdAccount]]) -> Set[str]:
+        """Returns a list of account ids missing from config accounts"""
+        config_account_ids = set(self.__config.accounts.ids)
+        account_ids = set(map(lambda x: x.get("account_id"), accounts))
+        return config_account_ids.difference(account_ids)
