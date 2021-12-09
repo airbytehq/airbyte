@@ -78,7 +78,8 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
       EnvConfigs.JOB_POD_MAIN_CONTAINER_CPU_REQUEST,
       EnvConfigs.JOB_POD_MAIN_CONTAINER_CPU_LIMIT,
       EnvConfigs.JOB_POD_MAIN_CONTAINER_MEMORY_REQUEST,
-      EnvConfigs.JOB_POD_MAIN_CONTAINER_MEMORY_LIMIT);
+      EnvConfigs.JOB_POD_MAIN_CONTAINER_MEMORY_LIMIT,
+      EnvConfigs.LOCAL_ROOT);
 
   private final AtomicBoolean cancelled = new AtomicBoolean(false);
   private final IntegrationLauncherConfig sourceLauncherConfig;
