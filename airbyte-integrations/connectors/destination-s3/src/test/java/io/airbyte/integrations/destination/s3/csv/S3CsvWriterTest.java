@@ -36,7 +36,7 @@ class S3CsvWriterTest {
   private static final int UPLOAD_THREADS = 8;
   private static final int QUEUE_CAPACITY = 9;
 
-  public static final String EXPECTED_OBJECT_KEY = "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000_0.csv";
+  public static final String EXPECTED_OBJECT_KEY = "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000fake-suffix.csv";
 
   private S3CsvWriter writer;
 
@@ -102,7 +102,8 @@ class S3CsvWriterTest {
         configuredStream,
         UPLOAD_TIME,
         UPLOAD_THREADS,
-        QUEUE_CAPACITY
+        QUEUE_CAPACITY,
+        "fake-suffix"
     );
   }
 
