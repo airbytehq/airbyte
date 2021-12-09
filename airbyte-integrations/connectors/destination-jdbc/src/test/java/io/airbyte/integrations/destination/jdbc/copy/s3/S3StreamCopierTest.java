@@ -46,6 +46,8 @@ public class S3StreamCopierTest {
   private static final int PART_SIZE = 5;
   private static final int UPLOAD_THREADS = 10;
   private static final int QUEUE_CAPACITY = 10;
+  // equivalent to Thu, 09 Dec 2021 19:17:54 GMT
+  private static final Timestamp UPLOAD_TIME = Timestamp.from(Instant.ofEpochMilli(1639077474000L));
 
   private AmazonS3Client s3Client;
   private JdbcDatabase db;
@@ -116,7 +118,7 @@ public class S3StreamCopierTest {
                 .withName("fake-stream")
                 .withNamespace("fake-namespace")
             ),
-        Timestamp.from(Instant.now())
+        UPLOAD_TIME
     ) {
       @Override
       public void copyS3CsvFileIntoTable(
@@ -139,9 +141,12 @@ public class S3StreamCopierTest {
   public void createSequentialStagingFiles_when_multipleFilesRequested() {
     // When we call prepareStagingFile() the first time, it should create exactly one upload manager
     final String firstFile = copier.prepareStagingFile();
-    assertTrue(firstFile.startsWith("fake-bucketPath/fake-namespace/fake-stream/"), "Object path was actually " + firstFile);
+    assertTrue(firstFile.startsWith("_fake-stream_0000"), "Object path was actually " + firstFile);
     assertEquals("fake-bucket", streamTransferManagerConstructorArguments.get(0).bucket);
-    assertEquals("arst", streamTransferManagerConstructorArguments.get(0).object);
+    assertEquals(
+        "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000_fake-stream_00000.csv",
+        streamTransferManagerConstructorArguments.get(0).object
+    );
     final List<StreamTransferManager> firstManagers = streamTransferManagerMockedConstruction.constructed();
     final StreamTransferManager firstManager = firstManagers.get(0);
     verify(firstManager).partSize(PART_SIZE);
@@ -153,16 +158,19 @@ public class S3StreamCopierTest {
     // We've already called prepareStagingFile() once, so only go to MAX_PARTS_PER_FILE - 1
     for (var i = 0; i < S3StreamCopier.MAX_PARTS_PER_FILE - 1; i++) {
       final String existingFile = copier.prepareStagingFile();
-      assertEquals("fake-staging-folder/fake-schema/fake-stream_00000", existingFile, "preparing file number " + i);
+      assertEquals("_fake-stream_00000", existingFile, "preparing file number " + i);
       final int streamManagerCount = streamTransferManagerMockedConstruction.constructed().size();
       assertEquals(1, streamManagerCount, "There were actually " + streamManagerCount + " upload managers");
     }
 
     // Now that we've hit the MAX_PARTS_PER_FILE, we should start a new upload
     final String secondFile = copier.prepareStagingFile();
-    assertEquals("fake-staging-folder/fake-schema/fake-stream_00001", secondFile);
+    assertEquals("_fake-stream_00001", secondFile);
     assertEquals("fake-bucket", streamTransferManagerConstructorArguments.get(1).bucket);
-    assertEquals("arst", streamTransferManagerConstructorArguments.get(1).object);
+    assertEquals(
+        "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000_fake-stream_00001.csv",
+        streamTransferManagerConstructorArguments.get(1).object
+    );
     final List<StreamTransferManager> secondManagers = streamTransferManagerMockedConstruction.constructed();
     final StreamTransferManager secondManager = secondManagers.get(1);
     verify(secondManager).partSize(PART_SIZE);

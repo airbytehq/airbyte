@@ -40,9 +40,10 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
       final ConfiguredAirbyteStream configuredStream,
       final Timestamp uploadTimestamp,
       final int uploadThreads,
-      final int queueCapacity)
+      final int queueCapacity,
+      final String customSuffix)
       throws IOException {
-    this(config, s3Client, configuredStream, uploadTimestamp);
+    this(config, s3Client, configuredStream, uploadTimestamp, customSuffix);
 
     this.uploadManager
         .numUploadThreads(uploadThreads)
@@ -54,13 +55,22 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
       final ConfiguredAirbyteStream configuredStream,
       final Timestamp uploadTimestamp)
       throws IOException {
+    this(config, s3Client, configuredStream, uploadTimestamp, BaseS3Writer.DEFAULT_SUFFIX);
+  }
+
+  public S3CsvWriter(final S3DestinationConfig config,
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream,
+      final Timestamp uploadTimestamp,
+      final String customFileSuffix)
+      throws IOException {
     super(config, s3Client, configuredStream);
 
     final S3CsvFormatConfig formatConfig = (S3CsvFormatConfig) config.getFormatConfig();
     this.csvSheetGenerator = CsvSheetGenerator.Factory.create(configuredStream.getStream().getJsonSchema(),
         formatConfig);
 
-    final String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.CSV);
+    final String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, customFileSuffix, S3Format.CSV);
     this.objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(),

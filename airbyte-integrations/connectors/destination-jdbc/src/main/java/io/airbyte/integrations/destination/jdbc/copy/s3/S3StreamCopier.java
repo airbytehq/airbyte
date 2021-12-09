@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.jdbc.copy.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
-import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
@@ -56,7 +55,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   private final Timestamp uploadTime;
   protected final String stagingFolder;
   private final StagingFilenameGenerator filenameGenerator;
-  private final Map<String, S3Writer> stagingWriters = new HashMap<>();
+  private final Map<String, S3Writer> stagingWritersBySuffix = new HashMap<>();
 
   public S3StreamCopier(final String stagingFolder,
       final String schema,
@@ -82,18 +81,14 @@ public abstract class S3StreamCopier implements StreamCopier {
     this.filenameGenerator = new StagingFilenameGenerator(this.streamName, MAX_PARTS_PER_FILE);
   }
 
-  private String prepareS3StagingFile() {
-    return String.join("/", stagingFolder, schemaName, filenameGenerator.getStagingFilename());
-  }
-
   /*
    * old behavior: create s3://bucket/randomUuid/(namespace|schemaName)/generatedFilename
-   * S3CsvWriter: create s3://bucket/bucketPath(/namespace)?/streamName/time.csv
+   * S3CsvWriter: create s3://bucket/bucketPath(/namespace)?/streamName/time_generatedSuffix.csv
    */
   @Override
   public String prepareStagingFile() {
-    final var name = prepareS3StagingFile();
-    if (!stagingWriters.containsKey(name)) {
+    final var suffix = "_" + filenameGenerator.getStagingFilename();
+    if (!stagingWritersBySuffix.containsKey(suffix)) {
       LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
 
       try {
@@ -105,26 +100,27 @@ public abstract class S3StreamCopier implements StreamCopier {
             configuredAirbyteStream,
             uploadTime,
             DEFAULT_UPLOAD_THREADS,
-            DEFAULT_QUEUE_CAPACITY
+            DEFAULT_QUEUE_CAPACITY,
+            suffix
         );
-        stagingWriters.put(name, writer);
+        stagingWritersBySuffix.put(suffix, writer);
       } catch (final IOException e) {
         throw new RuntimeException(e);
       }
     }
-    return name;
+    return suffix;
   }
 
   @Override
-  public void write(final UUID id, final AirbyteRecordMessage recordMessage, final String s3FileName) throws Exception {
-    if (stagingWriters.containsKey(s3FileName)) {
-      stagingWriters.get(s3FileName).write(id, recordMessage);
+  public void write(final UUID id, final AirbyteRecordMessage recordMessage, final String suffix) throws Exception {
+    if (stagingWritersBySuffix.containsKey(suffix)) {
+      stagingWritersBySuffix.get(suffix).write(id, recordMessage);
     }
   }
 
   @Override
   public void closeStagingUploader(final boolean hasFailed) throws Exception {
-    for (final S3Writer writer : stagingWriters.values()) {
+    for (final S3Writer writer : stagingWritersBySuffix.values()) {
       writer.close(hasFailed);
     }
   }
@@ -144,9 +140,10 @@ public abstract class S3StreamCopier implements StreamCopier {
   @Override
   public void copyStagingFileToTemporaryTable() throws Exception {
     LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .", tmpTableName, streamName, schemaName);
-    stagingWriters.keySet().forEach(s3StagingFile -> Exceptions.toRuntime(() -> {
-      copyS3CsvFileIntoTable(db, getFullS3Path(s3Config.getBucketName(), s3StagingFile), schemaName, tmpTableName, s3Config);
-    }));
+    for (final Map.Entry<String, S3Writer> entry : stagingWritersBySuffix.entrySet()) {
+      final String objectKey = entry.getValue().getObjectKey();
+      copyS3CsvFileIntoTable(db, getFullS3Path(s3Config.getBucketName(), objectKey), schemaName, tmpTableName, s3Config);
+    }
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
 
@@ -174,13 +171,16 @@ public abstract class S3StreamCopier implements StreamCopier {
 
   @Override
   public void removeFileAndDropTmpTable() throws Exception {
-    stagingWriters.keySet().forEach(s3StagingFile -> {
-      LOGGER.info("Begin cleaning s3 staging file {}.", s3StagingFile);
-      if (s3Client.doesObjectExist(s3Config.getBucketName(), s3StagingFile)) {
-        s3Client.deleteObject(s3Config.getBucketName(), s3StagingFile);
+    for (final Map.Entry<String, S3Writer> entry : stagingWritersBySuffix.entrySet()) {
+      final String suffix = entry.getKey();
+      final String objectKey = entry.getValue().getObjectKey();
+
+      LOGGER.info("Begin cleaning s3 staging file {}.", objectKey);
+      if (s3Client.doesObjectExist(s3Config.getBucketName(), objectKey)) {
+        s3Client.deleteObject(s3Config.getBucketName(), objectKey);
       }
-      LOGGER.info("S3 staging file {} cleaned.", s3StagingFile);
-    });
+      LOGGER.info("S3 staging file {} cleaned.", suffix);
+    }
 
     LOGGER.info("Begin cleaning {} tmp table in destination.", tmpTableName);
     sqlOperations.dropTableIfExists(db, schemaName, tmpTableName);
