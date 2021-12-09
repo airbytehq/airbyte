@@ -9,8 +9,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 /**
- * {@link S3Writer} is responsible for writing Airbyte stream data to an S3 location in a specific
- * format.
+ * {@link S3Writer} is responsible for writing Airbyte stream data to an S3 location in a specific format.
  */
 public interface S3Writer {
 
@@ -28,5 +27,7 @@ public interface S3Writer {
    * Close the S3 writer for the stream.
    */
   void close(boolean hasFailed) throws IOException;
+
+  String getObjectKey();
 
 }

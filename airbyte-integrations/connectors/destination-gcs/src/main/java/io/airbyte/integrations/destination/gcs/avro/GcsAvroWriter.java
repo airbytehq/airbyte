@@ -38,11 +38,11 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer {
   private final DataFileWriter<GenericData.Record> dataFileWriter;
 
   public GcsAvroWriter(final GcsDestinationConfig config,
-                       final AmazonS3 s3Client,
-                       final ConfiguredAirbyteStream configuredStream,
-                       final Timestamp uploadTimestamp,
-                       final Schema schema,
-                       final JsonAvroConverter converter)
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream,
+      final Timestamp uploadTimestamp,
+      final Schema schema,
+      final JsonAvroConverter converter)
       throws IOException {
     super(config, s3Client, configuredStream);
 
@@ -85,4 +85,9 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer {
     uploadManager.abort();
   }
 
+  @Override
+  public String getObjectKey() {
+    // TODO
+    throw new UnsupportedOperationException("not yet implemented");
+  }
 }

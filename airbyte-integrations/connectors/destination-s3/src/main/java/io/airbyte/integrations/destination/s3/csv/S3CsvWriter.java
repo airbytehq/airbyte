@@ -33,6 +33,7 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
   private final StreamTransferManager uploadManager;
   private final MultiPartOutputStream outputStream;
   private final CSVPrinter csvPrinter;
+  private final String objectKey;
 
   public S3CsvWriter(final S3DestinationConfig config,
       final AmazonS3 s3Client,
@@ -60,7 +61,7 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
         formatConfig);
 
     final String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.CSV);
-    final String objectKey = String.join("/", outputPrefix, outputFilename);
+    this.objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(),
         objectKey);
@@ -93,4 +94,8 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
     uploadManager.abort();
   }
 
+  @Override
+  public String getObjectKey() {
+    return objectKey;
+  }
 }

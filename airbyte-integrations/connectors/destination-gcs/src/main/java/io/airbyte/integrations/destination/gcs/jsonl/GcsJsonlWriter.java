@@ -37,9 +37,9 @@ public class GcsJsonlWriter extends BaseGcsWriter implements S3Writer {
   private final PrintWriter printWriter;
 
   public GcsJsonlWriter(final GcsDestinationConfig config,
-                        final AmazonS3 s3Client,
-                        final ConfiguredAirbyteStream configuredStream,
-                        final Timestamp uploadTimestamp) {
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream,
+      final Timestamp uploadTimestamp) {
     super(config, s3Client, configuredStream);
 
     final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.JSONL);
@@ -78,4 +78,9 @@ public class GcsJsonlWriter extends BaseGcsWriter implements S3Writer {
     uploadManager.abort();
   }
 
+  @Override
+  public String getObjectKey() {
+    // TODO
+    throw new UnsupportedOperationException("not yet implemented");
+  }
 }

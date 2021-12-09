@@ -38,9 +38,9 @@ public class GcsCsvWriter extends BaseGcsWriter implements S3Writer {
   private final String gcsCsvFileLocation; // this used in destination-bigquery (GCS upload type)
 
   public GcsCsvWriter(final GcsDestinationConfig config,
-                      final AmazonS3 s3Client,
-                      final ConfiguredAirbyteStream configuredStream,
-                      final Timestamp uploadTimestamp)
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream,
+      final Timestamp uploadTimestamp)
       throws IOException {
     super(config, s3Client, configuredStream);
 
@@ -90,4 +90,9 @@ public class GcsCsvWriter extends BaseGcsWriter implements S3Writer {
     return csvPrinter;
   }
 
+  @Override
+  public String getObjectKey() {
+    // TODO
+    throw new UnsupportedOperationException("not yet implemented");
+  }
 }

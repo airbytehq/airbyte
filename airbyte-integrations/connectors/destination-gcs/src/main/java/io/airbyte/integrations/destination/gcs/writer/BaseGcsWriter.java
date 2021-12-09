@@ -44,8 +44,8 @@ public abstract class BaseGcsWriter implements S3Writer {
   protected final String outputPrefix;
 
   protected BaseGcsWriter(final GcsDestinationConfig config,
-                          final AmazonS3 s3Client,
-                          final ConfiguredAirbyteStream configuredStream) {
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream) {
     this.config = config;
     this.s3Client = s3Client;
     this.stream = configuredStream.getStream();
@@ -90,9 +90,8 @@ public abstract class BaseGcsWriter implements S3Writer {
   }
 
   /**
-   * {@link AmazonS3#doesBucketExistV2} should be used to check the bucket existence. However, this
-   * method does not work for GCS. So we use {@link AmazonS3#headBucket} instead, which will throw an
-   * exception if the bucket does not exist, or there is no permission to access it.
+   * {@link AmazonS3#doesBucketExistV2} should be used to check the bucket existence. However, this method does not work for GCS. So we use {@link
+   * AmazonS3#headBucket} instead, which will throw an exception if the bucket does not exist, or there is no permission to access it.
    */
   public boolean gcsBucketExist(final AmazonS3 s3Client, final String bucket) {
     try {
@@ -141,4 +140,9 @@ public abstract class BaseGcsWriter implements S3Writer {
         format.getFileExtension());
   }
 
+  @Override
+  public String getObjectKey() {
+    // TODO
+    throw new UnsupportedOperationException("not yet implemented");
+  }
 }

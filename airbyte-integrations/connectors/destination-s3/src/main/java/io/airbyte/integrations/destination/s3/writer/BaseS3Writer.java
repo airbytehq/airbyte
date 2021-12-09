@@ -45,8 +45,8 @@ public abstract class BaseS3Writer implements S3Writer {
   protected final String outputPrefix;
 
   protected BaseS3Writer(final S3DestinationConfig config,
-                         final AmazonS3 s3Client,
-                         final ConfiguredAirbyteStream configuredStream) {
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream) {
     this.config = config;
     this.s3Client = s3Client;
     this.stream = configuredStream.getStream();
@@ -134,4 +134,9 @@ public abstract class BaseS3Writer implements S3Writer {
         format.getFileExtension());
   }
 
+  @Override
+  public String getObjectKey() {
+    // TODO
+    throw new UnsupportedOperationException("not yet implemented");
+  }
 }

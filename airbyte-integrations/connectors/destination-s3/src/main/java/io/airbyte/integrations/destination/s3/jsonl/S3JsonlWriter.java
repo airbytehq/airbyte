@@ -39,9 +39,9 @@ public class S3JsonlWriter extends BaseS3Writer implements S3Writer {
   private final PrintWriter printWriter;
 
   public S3JsonlWriter(final S3DestinationConfig config,
-                       final AmazonS3 s3Client,
-                       final ConfiguredAirbyteStream configuredStream,
-                       final Timestamp uploadTimestamp) {
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream,
+      final Timestamp uploadTimestamp) {
     super(config, s3Client, configuredStream);
 
     final String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.JSONL);
@@ -80,4 +80,9 @@ public class S3JsonlWriter extends BaseS3Writer implements S3Writer {
     uploadManager.abort();
   }
 
+  @Override
+  public String getObjectKey() {
+    // TODO
+    throw new UnsupportedOperationException("not yet implemented");
+  }
 }
