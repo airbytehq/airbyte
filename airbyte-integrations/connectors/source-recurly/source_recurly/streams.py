@@ -27,7 +27,7 @@ class BaseRecurlyStream(Stream):
     @abstractmethod
     def name(self):
         """
-        The name of the Recurly resource. All children inherits from this class should set the resource name
+        The name of the Recurly resource. All children inherit from this class should set the resource name
         """
         pass
 
