@@ -158,7 +158,7 @@ class IncrementalStreamAPI(StreamAPI, ABC):
     def state(self) -> Optional[Mapping[str, Any]]:
         """Current state, if wasn't set return None"""
         if self._state:
-            return {self.state_pk: str(self._state)}
+            return {self.state_pk: str(self._state).replace("+00:00", "Z")}
         return None
 
     @state.setter
