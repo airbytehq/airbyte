@@ -6,11 +6,8 @@ package io.airbyte.oauth.flows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuth2Flow;
-import io.airbyte.protocol.models.OAuthConfigSpecification;
-import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -21,7 +18,11 @@ import org.apache.http.client.utils.URIBuilder;
 
 public class MicrosoftTeamsOAuthFlow extends BaseOAuth2Flow {
 
-  private static String TENANT_ID;
+  /*
+   * hard-coded TENANT_ID for testing
+   */
+
+  private static final String TENANT_ID = "277f8a66-1e88-46c9-8c7b-23c442857904";
 
   public MicrosoftTeamsOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
@@ -29,18 +30,6 @@ public class MicrosoftTeamsOAuthFlow extends BaseOAuth2Flow {
 
   public MicrosoftTeamsOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier, TOKEN_REQUEST_CONTENT_TYPE.JSON);
-  }
-
-  @Override
-  public String getSourceConsentUrl(final UUID workspaceId,
-                                    final UUID sourceDefinitionId,
-                                    final String redirectUrl,
-                                    final JsonNode inputOAuthConfiguration,
-                                    final OAuthConfigSpecification oAuthConfigSpecification)
-      throws IOException, ConfigNotFoundException, JsonValidationException {
-    final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
-    TENANT_ID = getConfigValueUnsafe(oAuthParamConfig, "tenant_id");
-    return super.getSourceConsentUrl(workspaceId, sourceDefinitionId, redirectUrl, inputOAuthConfiguration, oAuthConfigSpecification);
   }
 
   /**
