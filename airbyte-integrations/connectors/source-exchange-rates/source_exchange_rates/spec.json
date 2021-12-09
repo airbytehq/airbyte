@@ -9,26 +9,26 @@
     "properties": {
       "start_date": {
         "type": "string",
-	title": "Start Date",
+	"title": "Start Date",
         "description": "Any data before this date will not be replicated.",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "examples": ["YYYY-MM-DD"]
       },
       "access_key": {
         "type": "string",
-	title": "Access Key",
+	"title": "Access Key",
         "description": "Exchange Rates Access Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/exchangeratesapi\">docs</a> for more information on how to obtain this key.",
         "airbyte_secret": true
       },
       "base": {
         "type": "string",
-	title": "Base",
+	"title": "Base",
         "description": "ISO reference currency. See <a href=\"https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html\">here</a>. Free plan doesn't support Source Currency Switching, default base currency is EUR.",
         "examples": ["EUR", "USD"]
       },
       "ignore_weekends": {
         "type": "boolean",
-	title": "Ignore Weekends",
+	"title": "Ignore Weekends",
         "description": "Ignore weekends? (Exchanges don't run on weekends).",
         "default": true
       }
