@@ -75,7 +75,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
         start_date = stream_state.get(self.cursor_field) or self._start_date
-        end_date = stream_state.get(self.cursor_field) or self._end_date
+        end_date = self._end_date
 
         return chunk_date_range(
             start_date=start_date,
