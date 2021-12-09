@@ -10,7 +10,7 @@ To build a new connector in Java or Python, we provide templates so you don't ne
 
 You can build a connector very quickly in Python with the [Airbyte CDK](cdk-python/), which generates 75% of the code required for you.
 
-## .NET/C# Connector-Development Kit \(CDK\)
+## C#/.NET Connector-Development Kit \(CDK\)
 
 You can build a connector very quickly in C# .NET with the [Airbyte Dotnet CDK](cdk-dotnet/), which generates 75% of the code required for you.
 
