@@ -217,12 +217,12 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
     // allows deletion of a dataset that has contents
     final BigQuery.DatasetDeleteOption option = BigQuery.DatasetDeleteOption.deleteContents();
 
-//    final boolean success = bigquery.delete(dataset.getDatasetId(), option);
-//    if (success) {
-//      LOGGER.info("BQ Dataset " + dataset + " deleted...");
-//    } else {
-//      LOGGER.info("BQ Dataset cleanup for " + dataset + " failed!");
-//    }
+    final boolean success = bigquery.delete(dataset.getDatasetId(), option);
+    if (success) {
+      LOGGER.info("BQ Dataset " + dataset + " deleted...");
+    } else {
+      LOGGER.info("BQ Dataset cleanup for " + dataset + " failed!");
+    }
 
     tornDown = true;
   }
