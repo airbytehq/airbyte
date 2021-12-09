@@ -131,19 +131,35 @@ public class ContainerOrchestratorApp {
 
       // set logging-related vars as properties so (at runtime) we can read these when processing
       // log4j2.xml
-      final var s3Config = configs.getLogConfigs().getStorageConfigs().getS3Config();
-      final var minioConfig = configs.getLogConfigs().getStorageConfigs().getMinioConfig();
-      final var gcsConfig = configs.getLogConfigs().getStorageConfigs().getGcsConfig();
-
       setPropertyFromEnvVar(EnvConfigs.LOG_LEVEL);
       setPropertyFromEnvVar(EnvConfigs.S3_PATH_STYLE_ACCESS);
-      System.setProperty(LogClientSingleton.S3_LOG_BUCKET, s3Config.getBucketName());
-      System.setProperty(LogClientSingleton.S3_LOG_BUCKET_REGION, s3Config.getRegion());
-      System.setProperty(LogClientSingleton.AWS_ACCESS_KEY_ID, s3Config.getAwsAccessKey());
-      System.setProperty(LogClientSingleton.AWS_SECRET_ACCESS_KEY, s3Config.getAwsSecretAccessKey());
-      System.setProperty(LogClientSingleton.S3_MINIO_ENDPOINT, minioConfig.getMinioEndpoint());
-      System.setProperty(LogClientSingleton.GCS_LOG_BUCKET, gcsConfig.getBucketName());
-      System.setProperty(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, gcsConfig.getGoogleApplicationCredentials());
+
+      final var storageConfigs = configs.getLogConfigs().getStorageConfigs();
+
+      if (storageConfigs != null) {
+        final var s3Config = storageConfigs.getS3Config();
+        final var minioConfig = storageConfigs.getMinioConfig();
+        final var gcsConfig = storageConfigs.getGcsConfig();
+
+        if (s3Config != null) {
+          System.setProperty(LogClientSingleton.S3_LOG_BUCKET, s3Config.getBucketName());
+          System.setProperty(LogClientSingleton.S3_LOG_BUCKET_REGION, s3Config.getRegion());
+          System.setProperty(LogClientSingleton.AWS_ACCESS_KEY_ID, s3Config.getAwsAccessKey());
+          System.setProperty(LogClientSingleton.AWS_SECRET_ACCESS_KEY, s3Config.getAwsSecretAccessKey());
+        }
+
+        if (minioConfig != null) {
+          System.setProperty(LogClientSingleton.S3_LOG_BUCKET, minioConfig.getBucketName());
+          System.setProperty(LogClientSingleton.AWS_ACCESS_KEY_ID, minioConfig.getAwsAccessKey());
+          System.setProperty(LogClientSingleton.AWS_SECRET_ACCESS_KEY, minioConfig.getAwsSecretAccessKey());
+          System.setProperty(LogClientSingleton.S3_MINIO_ENDPOINT, minioConfig.getMinioEndpoint());
+        }
+
+        if (gcsConfig != null) {
+          System.setProperty(LogClientSingleton.GCS_LOG_BUCKET, gcsConfig.getBucketName());
+          System.setProperty(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, gcsConfig.getGoogleApplicationCredentials());
+        }
+      }
 
       final var logPath = LogClientSingleton.getInstance().getSchedulerLogsRoot(configs.getWorkspaceRoot());
       LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(), logPath);
