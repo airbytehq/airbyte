@@ -16,7 +16,7 @@
       "is_sandbox": {
         "type": "boolean",
         "description": "Determines whether to use the sandbox or production environment.",
-        "title": "Is Sandbox",
+        "title": "Sandbox",
         "examples": [true, false],
         "default": true
       },
