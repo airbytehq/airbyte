@@ -165,6 +165,7 @@ read_secrets destination-pubsub "$DESTINATION_PUBSUB_TEST_CREDS" "credentials.js
 read_secrets destination-redshift "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS"
 read_secrets destination-dynamodb "$DESTINATION_DYNAMODB_TEST_CREDS"
 read_secrets destination-oracle "$AWS_ORACLE_INTEGRATION_TEST_CREDS"
+read_secrets destination-rockset "$DESTINATION_ROCKSET_TEST_CREDS"
 read_secrets destination-s3 "$DESTINATION_S3_INTEGRATION_TEST_CREDS"
 read_secrets destination-azure-blob-storage "$DESTINATION_AZURE_BLOB_CREDS"
 read_secrets destination-snowflake "$SNOWFLAKE_GCS_COPY_INTEGRATION_TEST_CREDS" "copy_gcs_config.json"
