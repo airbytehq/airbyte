@@ -115,9 +115,9 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
       mdcSetter.accept(jobRoot);
 
       if (MDC.get(LogClientSingleton.JOB_LOG_PATH_MDC_KEY) != null) {
-        LOGGER.info("Setting Docker volume job log path to: " + MDC.get(LogClientSingleton.JOB_LOG_PATH_MDC_KEY));
+        LOGGER.info("Docker volume job log path: " + MDC.get(LogClientSingleton.JOB_LOG_PATH_MDC_KEY));
       } else if (MDC.get(LogClientSingleton.CLOUD_JOB_LOG_PATH_MDC_KEY) != null) {
-        LOGGER.info("Setting cloud storage job log path to: " + MDC.get(LogClientSingleton.CLOUD_JOB_LOG_PATH_MDC_KEY));
+        LOGGER.info("Cloud storage job log path: " + MDC.get(LogClientSingleton.CLOUD_JOB_LOG_PATH_MDC_KEY));
       }
 
       LOGGER.info("Executing worker wrapper. Airbyte version: {}", airbyteVersion);
