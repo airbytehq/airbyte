@@ -48,7 +48,8 @@ public class KubePortManagerSingleton {
 
   /**
    * Sets up the port range; make sure init(ports) is called once prior to repeatedly using
-   * getInstance(). Init won't fail (it will perform a no-op) if re-initializd with the same set of ports.
+   * getInstance(). Init won't fail (it will perform a no-op) if re-initializd with the same set of
+   * ports.
    */
   public static synchronized void init(final Set<Integer> ports) {
     if (instance != null && Sets.intersection(instance.getAllPorts(), ports).size() == ports.size()) {

@@ -18,7 +18,6 @@ import io.temporal.client.WorkflowStub;
 import io.temporal.common.RetryOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
-import io.temporal.workflow.ChildWorkflowOptions;
 import io.temporal.workflow.Functions;
 import java.io.Serializable;
 import java.util.Set;
