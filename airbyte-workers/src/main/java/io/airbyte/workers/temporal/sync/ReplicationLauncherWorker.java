@@ -53,7 +53,9 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
   // define two ports for stdout/stderr usage on the container orchestrator pod
   public static int PORT1 = 9877;
   public static int PORT2 = 9878;
-  public static Set<Integer> PORTS = Set.of(PORT1, PORT2);
+  public static int PORT3 = 9879;
+  public static int PORT4 = 9880;
+  public static Set<Integer> PORTS = Set.of(PORT1, PORT2, PORT3, PORT4);
 
   private final AtomicBoolean cancelled = new AtomicBoolean(false);
   private final IntegrationLauncherConfig sourceLauncherConfig;
@@ -113,7 +115,9 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
           Map.of(
               WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT,
               PORT1, PORT1,
-              PORT2, PORT2));
+              PORT2, PORT2,
+              PORT3, PORT3,
+              PORT4, PORT4));
 
       final AtomicReference<ReplicationOutput> output = new AtomicReference<>();
 
