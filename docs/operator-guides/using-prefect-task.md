@@ -67,7 +67,7 @@ The Airbyte Prefect Task accepts the following parameters:
 * `airbyte_api_version`: default value is `v1`.
 * `connection_id`: The ID of the Airbyte Connection to be triggered by Prefect.
 
-After run the file `python3 airbyte_prefect_flow.py` this will register the Flow in Prefect Server.
+After running the file, `python3 airbyte_prefect_flow.py` this will register the Flow in Prefect Server.
 
 ![](../.gitbook/assets/airbyte_prefect_register_flow.png)
 
@@ -82,7 +82,7 @@ After a few moments you should see the finished run.
 
 ![](../.gitbook/assets/airbyte_prefect_flow_run.png)
 
-After that you have the option to configure a more complex Schedule to your Flow. See the [Prefect Schedule docs](https://docs.prefect.io/core/concepts/schedules.html)
+After that you have the option to configure a more complex Schedule to your Flow. See the [Prefect Schedule docs.](https://docs.prefect.io/core/concepts/schedules.html)
 
 ## That's it!
 
