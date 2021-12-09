@@ -38,7 +38,6 @@ public abstract class AbstractBigQueryUploader<T extends CommonWriter> {
   protected final WriteDisposition syncMode;
   protected final Schema schema;
   protected final T writer;
-  protected final GcsDestinationConfig gcsDestinationConfig;
   protected final BigQuery bigQuery;
 
   AbstractBigQueryUploader(final TableId table,
@@ -52,7 +51,6 @@ public abstract class AbstractBigQueryUploader<T extends CommonWriter> {
     this.writer = writer;
     this.syncMode = syncMode;
     this.schema = schema;
-    this.gcsDestinationConfig = gcsDestinationConfig;
     this.bigQuery = bigQuery;
   }
   
