@@ -9,7 +9,7 @@
     "properties": {
       "queue_url": {
         "title": "Queue URL",
-        "description": "URL of the SQS Queue",
+        "description": "The full AWS endpoint URL of the SQS Queue.",
         "type": "string",
         "examples": [
           "https://sqs.eu-west-1.amazonaws.com/1234567890/my-example-queue"
@@ -18,7 +18,7 @@
       },
       "region": {
         "title": "AWS Region",
-        "description": "AWS Region of the SQS Queue",
+        "description": "The region code for the SQS Queue.",
         "type": "string",
         "enum": [
           "us-east-1",
@@ -58,35 +58,35 @@
       },
       "max_batch_size": {
         "title": "Max Batch Size",
-        "description": "Max amount of messages to get in one batch (10 max)",
+        "description": "The max amount of messages to consume in a single poll (10 max)",
         "type": "integer",
         "examples": ["5"],
         "order": 3
       },
       "max_wait_time": {
         "title": "Max Wait Time",
-        "description": "Max amount of time in seconds to wait for messages in a single poll (20 max)",
+        "description": "The max amount of time (in seconds) to poll for messages before committing a batch (or timing out) unless we fill a batch (as per Max Batch Size) (20 max)",
         "type": "integer",
         "examples": ["5"],
         "order": 4
       },
       "attributes_to_return": {
         "title": "Message Attributes To Return",
-        "description": "Comma separated list of Mesage Attribute names to return",
+        "description": "A comma separated list of Attributes to return for each message",
         "type": "string",
         "examples": ["attr1,attr2"],
         "order": 5
       },
       "visibility_timeout": {
         "title": "Message Visibility Timeout",
-        "description": "Modify the Visibility Timeout of the individual message from the Queue's default (seconds).",
+        "description": "After a message is read, how much time (in seconds) should the message be hidden from other consumers. After this timeout, the message is not deleted and can be re-read.",
         "type": "integer",
         "examples": ["15"],
         "order": 6
       },
       "access_key": {
         "title": "AWS IAM Access Key ID",
-        "description": "The Access Key ID of the AWS IAM Role to use for pulling messages",
+        "description": "The Access Key for the IAM User with permissions on this Queue. See the <a href=\"https://docs.airbyte.io/integrations/sources/amazon-sqs\">docs</a> for more information on how to obtain this key.",
         "type": "string",
         "examples": ["xxxxxHRNxxx3TBxxxxxx"],
         "airbyte_secret": true,
@@ -94,7 +94,7 @@
       },
       "secret_key": {
         "title": "AWS IAM Secret Key",
-        "description": "The Secret Key of the AWS IAM Role to use for pulling messages",
+        "description": "The Secret Key for the IAM User with permissions on this Queue. See the <a href=\"https://docs.airbyte.io/integrations/sources/amazon-sqs\">docs</a> for more information on how to obtain this key.",
         "type": "string",
         "examples": ["hu+qE5exxxxT6o/ZrKsxxxxxxBhxxXLexxxxxVKz"],
         "airbyte_secret": true,

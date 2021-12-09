@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docsurl.com",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/asana",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Asana Spec",
@@ -7,7 +7,7 @@
     "additionalProperties": true,
     "properties": {
       "credentials": {
-        "title": "Authentication mechanism",
+        "title": "Authentication Mechanism",
         "description": "Choose how to authenticate to Github",
         "type": "object",
         "oneOf": [
@@ -18,14 +18,14 @@
             "properties": {
               "option_title": {
                 "type": "string",
-                "title": "Credentials title",
+                "title": "Credentials Title",
                 "description": "PAT Credentials",
                 "const": "PAT Credentials"
               },
               "personal_access_token": {
                 "type": "string",
                 "title": "Personal Access Token",
-                "description": "Asana Personal Access Token (generate yours <a href=\"https://app.asana.com/0/developer-console\">here</a>).",
+                "description": "Asana Personal Access Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/asana\">docs</a> for more information on how to obtain this token.",
                 "airbyte_secret": true
               }
             }
@@ -37,26 +37,26 @@
             "properties": {
               "option_title": {
                 "type": "string",
-                "title": "Credentials title",
+                "title": "Credentials Title",
                 "description": "OAuth Credentials",
                 "const": "OAuth Credentials"
               },
               "client_id": {
                 "type": "string",
-                "title": "",
-                "description": "",
+                "title": "Client ID",
+                "description": "The username of your Asana developer application.",
                 "airbyte_secret": true
               },
               "client_secret": {
                 "type": "string",
-                "title": "",
-                "description": "",
+                "title": "Client Secret",
+                "description": "The password of your Asana developer application.",
                 "airbyte_secret": true
               },
               "refresh_token": {
                 "type": "string",
-                "title": "",
-                "description": "",
+                "title": "Refresh Token",
+                "description": "Asana Refresh Token which can be used to fetch new Bearer Tokens when the current one expires.",
                 "airbyte_secret": true
               }
             }
