@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -23,6 +24,7 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessFactory;
@@ -87,6 +89,8 @@ public abstract class AbstractSourceConnectorTest {
    */
   protected abstract void tearDown(TestDestinationEnv testEnv) throws Exception;
 
+  private WorkerConfigs workerConfigs;
+
   @BeforeEach
   public void setUpInternal() throws Exception {
     final Path testDir = Path.of("/tmp/airbyte_tests/");
@@ -95,14 +99,17 @@ public abstract class AbstractSourceConnectorTest {
     jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"));
     localRoot = Files.createTempDirectory(testDir, "output");
     environment = new TestDestinationEnv(localRoot);
+    workerConfigs = new WorkerConfigs(new EnvConfigs());
 
     setupEnvironment(environment);
 
     processFactory = new DockerProcessFactory(
+        workerConfigs,
         workspaceRoot,
         workspaceRoot.toString(),
         localRoot.toString(),
-        "host");
+        "host",
+        false);
   }
 
   @AfterEach
@@ -111,23 +118,28 @@ public abstract class AbstractSourceConnectorTest {
   }
 
   protected ConnectorSpecification runSpec() throws WorkerException {
-    return new DefaultGetSpecWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory))
-        .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
+    return new DefaultGetSpecWorker(
+        workerConfigs,
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements()))
+            .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
   }
 
   protected StandardCheckConnectionOutput runCheck() throws Exception {
-    return new DefaultCheckConnectionWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory))
-        .run(new StandardCheckConnectionInput().withConnectionConfiguration(getConfig()), jobRoot);
+    return new DefaultCheckConnectionWorker(
+        workerConfigs,
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements()))
+            .run(new StandardCheckConnectionInput().withConnectionConfiguration(getConfig()), jobRoot);
   }
 
   protected AirbyteCatalog runDiscover() throws Exception {
-    return new DefaultDiscoverCatalogWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory))
-        .run(new StandardDiscoverCatalogInput().withConnectionConfiguration(getConfig()), jobRoot);
+    return new DefaultDiscoverCatalogWorker(
+        workerConfigs,
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements()))
+            .run(new StandardDiscoverCatalogInput().withConnectionConfiguration(getConfig()), jobRoot);
   }
 
   protected void checkEntrypointEnvVariable() throws Exception {
     final String entrypoint = EntrypointEnvChecker.getEntrypointEnvVariable(
-        new WorkerConfigs(new EnvConfigs()),
         processFactory,
         String.valueOf(JOB_ID),
         JOB_ATTEMPT,
@@ -149,7 +161,8 @@ public abstract class AbstractSourceConnectorTest {
         .withState(state == null ? null : new State().withState(state))
         .withCatalog(catalog);
 
-    final AirbyteSource source = new DefaultAirbyteSource(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory));
+    final AirbyteSource source = new DefaultAirbyteSource(workerConfigs,
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements()));
     final List<AirbyteMessage> messages = new ArrayList<>();
     source.start(sourceConfig, jobRoot);
     while (!source.isFinished()) {
@@ -170,7 +183,8 @@ public abstract class AbstractSourceConnectorTest {
         .withState(state == null ? null : new State().withState(state))
         .withCatalog(catalog);
 
-    final AirbyteSource source = new DefaultAirbyteSource(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory));
+    final AirbyteSource source = new DefaultAirbyteSource(workerConfigs,
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements()));
     source.start(sourceConfig, jobRoot);
 
     while (!source.isFinished()) {
