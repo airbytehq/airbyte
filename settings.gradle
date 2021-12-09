@@ -54,8 +54,10 @@ include ':airbyte-scheduler:persistence' // used by airbyte-workers.
 
 // platform
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
-
+    include ':airbyte-bootloader'
     include ':airbyte-cli'
+    include ':airbyte-config:init'
+    include ':airbyte-config:specs'
     include ':airbyte-e2e-testing'
     include ':airbyte-oauth'
     include ':airbyte-container-orchestrator'
@@ -65,8 +67,6 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     // include 'airbyte-temporal' todo: revert
     include ':airbyte-tests'
     include ':airbyte-webapp'
-    include ':airbyte-config:init'
-    include ':airbyte-config:specs'
 }
 
 // connectors base

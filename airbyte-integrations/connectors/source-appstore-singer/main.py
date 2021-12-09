@@ -5,9 +5,9 @@
 
 import sys
 
-from base_python.entrypoint import launch
-from source_recurly import SourceRecurly
+from airbyte_cdk.entrypoint import launch
+from source_appstore_singer import SourceAppstoreSinger
 
 if __name__ == "__main__":
-    source = SourceRecurly()
+    source = SourceAppstoreSinger()
     launch(source, sys.argv[1:])

@@ -5,9 +5,9 @@
 
 import sys
 
-from base_python.entrypoint import launch
-from source_microsoft_teams import SourceMicrosoftTeams
+from airbyte_cdk.entrypoint import launch
+from google_sheets_source import GoogleSheetsSource
 
 if __name__ == "__main__":
-    source = SourceMicrosoftTeams()
+    source = GoogleSheetsSource()
     launch(source, sys.argv[1:])
