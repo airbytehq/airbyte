@@ -16,8 +16,12 @@ import java.util.Optional;
  */
 public class DockerComposeDocumentStoreClient implements DocumentStoreClient {
 
-  private static final Path STATE_PATH = Path.of("state");
+  private static final Path STATE_PATH = Path.of("document_store");
   private final Path workspaceMount;
+
+  public static DockerComposeDocumentStoreClient create(final Path workspaceMount) {
+    return new DockerComposeDocumentStoreClient(workspaceMount);
+  }
 
   public DockerComposeDocumentStoreClient(final Path workspaceMount) {
     this.workspaceMount = workspaceMount;

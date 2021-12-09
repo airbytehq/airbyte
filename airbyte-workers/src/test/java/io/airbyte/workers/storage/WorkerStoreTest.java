@@ -12,8 +12,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.State;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,8 +22,8 @@ import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 class WorkerStoreTest {
 
-  private static final UUID ACTIVITY_RUN_ID = UUID.randomUUID();
-  private static final State STATE = new State().withState(Jsons.jsonNode(ImmutableMap.of("a", 1)));
+  private static final UUID ID = UUID.randomUUID();
+  private static final JsonNode DOCUMENT = Jsons.jsonNode(ImmutableMap.of("a", 1));
 
   private DocumentStoreClient documentStore;
   private WorkerStore store;
@@ -36,34 +36,34 @@ class WorkerStoreTest {
 
   @Test
   void testWrite() {
-    store.setState(ACTIVITY_RUN_ID, STATE);
+    store.set(ID, DOCUMENT);
     // overwrites are allowed, so test calling it twice.
-    store.setState(ACTIVITY_RUN_ID, STATE);
-    verify(documentStore, times(2)).write(ACTIVITY_RUN_ID.toString(), Jsons.serialize(STATE));
+    store.set(ID, DOCUMENT);
+    verify(documentStore, times(2)).write(ID.toString(), Jsons.serialize(DOCUMENT));
   }
 
   @Test
   void testReadExists() {
-    when(documentStore.read(ACTIVITY_RUN_ID.toString())).thenReturn(Optional.of(Jsons.serialize(STATE)));
-    assertEquals(Optional.of(STATE), store.getState(ACTIVITY_RUN_ID));
+    when(documentStore.read(ID.toString())).thenReturn(Optional.of(Jsons.serialize(DOCUMENT)));
+    assertEquals(Optional.of(DOCUMENT), store.get(ID));
   }
 
   @Test
   void testReadNotExists() {
-    when(documentStore.read(ACTIVITY_RUN_ID.toString())).thenReturn(Optional.empty());
-    assertEquals(Optional.empty(), store.getState(ACTIVITY_RUN_ID));
+    when(documentStore.read(ID.toString())).thenReturn(Optional.empty());
+    assertEquals(Optional.empty(), store.get(ID));
   }
 
   @Test
   void testDeleteExists() {
-    when(documentStore.delete(ACTIVITY_RUN_ID.toString())).thenReturn(true);
-    assertTrue(store.deleteState(ACTIVITY_RUN_ID));
+    when(documentStore.delete(ID.toString())).thenReturn(true);
+    assertTrue(store.delete(ID));
   }
 
   @Test
   void testDeleteNotExists() {
-    when(documentStore.delete(ACTIVITY_RUN_ID.toString())).thenReturn(false);
-    assertFalse(store.deleteState(ACTIVITY_RUN_ID));
+    when(documentStore.delete(ID.toString())).thenReturn(false);
+    assertFalse(store.delete(ID));
   }
 
 }

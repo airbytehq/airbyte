@@ -4,6 +4,10 @@
 
 package io.airbyte.workers.storage;
 
+import io.airbyte.config.storage.CloudStorageConfigs.MinioConfig;
+import io.airbyte.config.storage.CloudStorageConfigs.S3Config;
+import io.airbyte.config.storage.DefaultS3ClientFactory;
+import io.airbyte.config.storage.MinioS3ClientFactory;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -29,6 +33,20 @@ public class S3DocumentStoreClient implements DocumentStoreClient {
   private final String bucketName;
   private final Path root;
   private final S3Client s3Client;
+
+  public static S3DocumentStoreClient minio(final MinioConfig config, final Path root) {
+    return new S3DocumentStoreClient(
+        new MinioS3ClientFactory(config).get(),
+        config.getBucketName(),
+        root);
+  }
+
+  public static S3DocumentStoreClient s3(final S3Config config, final Path root) {
+    return new S3DocumentStoreClient(
+        new DefaultS3ClientFactory(config).get(),
+        config.getBucketName(),
+        root);
+  }
 
   public S3DocumentStoreClient(final S3Client s3Client, final String bucketName, final Path root) {
     this.s3Client = s3Client;

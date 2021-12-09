@@ -8,6 +8,8 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
+import io.airbyte.config.storage.CloudStorageConfigs.GcsConfig;
+import io.airbyte.config.storage.DefaultGcsClientFactory;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -20,6 +22,13 @@ public class GcsDocumentStoreClient implements DocumentStoreClient {
   private final String bucketName;
   private final Path root;
   private final Storage gcsClient;
+
+  public static GcsDocumentStoreClient create(final GcsConfig config, final Path root) {
+    return new GcsDocumentStoreClient(
+        new DefaultGcsClientFactory(config).get(),
+        config.getBucketName(),
+        root);
+  }
 
   public GcsDocumentStoreClient(final Storage gcsClient, final String bucketName, final Path root) {
     this.gcsClient = gcsClient;
