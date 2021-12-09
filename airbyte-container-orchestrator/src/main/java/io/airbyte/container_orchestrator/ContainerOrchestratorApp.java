@@ -58,10 +58,6 @@ public class ContainerOrchestratorApp {
 
     LOGGER.info("Starting replication runner app...");
 
-    if (configs.getWorkerEnvironment().equals(Configs.WorkerEnvironment.KUBERNETES)) {
-      KubePortManagerSingleton.init(configs.getTemporalWorkerPorts());
-    }
-
     final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
     final ProcessFactory processFactory = getProcessBuilderFactory(configs, workerConfigs);
 
@@ -166,6 +162,7 @@ public class ContainerOrchestratorApp {
       final String localIp = InetAddress.getLocalHost().getHostAddress();
       final String kubeHeartbeatUrl = localIp + ":" + WorkerApp.KUBE_HEARTBEAT_PORT;
       LOGGER.info("Using Kubernetes namespace: {}", configs.getJobPodKubeNamespace());
+      KubePortManagerSingleton.init(ReplicationLauncherWorker.PORTS);
       return new KubeProcessFactory(workerConfigs, configs.getJobPodKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl, false);
     } else {
       return new DockerProcessFactory(
