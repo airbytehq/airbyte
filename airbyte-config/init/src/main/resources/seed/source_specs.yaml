@@ -1880,7 +1880,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.1.16"
+- dockerImage: "airbyte/source-google-ads:0.1.18"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-ads"
     connectionSpecification:
@@ -1940,12 +1940,13 @@
                 >docs</a>"
               airbyte_secret: true
         customer_id:
-          title: "Customer Id"
+          title: "Customer ID"
           type: "string"
           description: "Customer id must be specified as a 10-digit number without\
             \ dashes. More instruction on how to find this value in our <a href=\"\
             https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\"\
-            >docs</a>"
+            >docs</a>. Metrics streams like AdGroupAdReport cannot be requested for\
+            \ a manager account."
           order: 1
         start_date:
           type: "string"
