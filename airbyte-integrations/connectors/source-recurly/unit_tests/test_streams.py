@@ -73,7 +73,7 @@ class TestStreams(unittest.TestCase):
 
         next(iter(stream.read_records(self.sync_mode_mock)))
 
-        self.client_mock.list_accounts.assert_called_once_with(params=self.params)
+        self.client_mock.list_accounts.assert_called_once()
         self.client_mock.list_account_coupon_redemptions.assert_called_once_with(account_id=account_id_mock, params=self.params)
 
     def test_export_dates_read_records(self):
