@@ -5,15 +5,9 @@ you need to follow a few simple steps.
 
 1. Create a new database.
 2. On the new database, run script **1-create-copy-tables-procedure.sql** to create the table copy procedure.
+   You can run the script use the Postgres command line client: - **psql -h host -d userstoreis -U admin -p port -a -q -f /path/to/script/1-create-copy-tables-procedure.sql**
 3. Run script **2-create-insert-rows-to-table-procedure.sql** to create a procedure for creating a table with the specified number of records.
-4. In the **3-run-script.sql** file, you need to change a few points to create the required number of tables and records in them.
-   1. Change the value for the number of tables.
-   
-      ![](images/table_count_postgres.png)
-   2. You can add records of different sizes to the table - 50 bytes, 500 bytes, 10 kilobytes, and 100 kilobytes. To do this, 
-   you need to specify the number of records for each size.
-   
-      ![](images/rows_count_postgres.png)
+4. Follow the TODOs in **3-run-script.sql** to change the number of tables, and the number of records of different sizes.
 5. Execute the **3-run-script.sql** script with your changes for the new database. After the script finishes its work, you will receive the number of tables specified in the script, with names starting with **test_0** and ending with **test_(the number of tables minus 1)**.
 
 

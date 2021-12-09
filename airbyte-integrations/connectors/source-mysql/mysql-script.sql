@@ -226,9 +226,14 @@ set @largeText = '\'test weight 100kb - 10kb text, 10kb text, 10kb text, 10kb te
 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text,
 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text, 10kb text , 10kb text, 10kb text, 10kb text\'';
 
+-- TODO: change the following @allrows to control the number of records with different sizes
+-- number of 50B records
 call insert_rows(0, 5000000, @extraSmallText);
+-- number of 500B records
 call insert_rows(0, 50000, @smallText);
+-- number of 10KB records
 call insert_rows(0, 5000, @regularText);
+-- number of 100KB records
 call insert_rows(0, 50, @largeText);
 end #
 
@@ -238,6 +243,7 @@ call table_create();
 drop procedure if exists table_create;
 drop procedure if exists insert_rows;
 
+-- TODO: change the value to control the number of tables
 call table_copy(1);
 drop procedure if exists table_copy;
 ALTER TABLE test RENAME test_0;
