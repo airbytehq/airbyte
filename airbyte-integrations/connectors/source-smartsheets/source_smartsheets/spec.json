@@ -8,14 +8,14 @@
     "additionalProperties": false,
     "properties": {
       "access_token": {
-        "title": "API Access token",
-        "description": "Found in Profile > Apps & Integrations > API Access within Smartsheet app",
+        "title": "Access Token",
+        "description": "The Access Token for making authenticated requests. Find in the main menu: Account > Apps & Integrations > API Access",
         "type": "string",
         "airbyte_secret": true
       },
       "spreadsheet_id": {
-        "title": "Smartsheet ID",
-        "description": "Found in File > Properties",
+        "title": "Sheet ID",
+        "description": "The spreadsheet ID. Find in the spreadsheet menu: File > Properties",
         "type": "string"
       }
     }
