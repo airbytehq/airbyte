@@ -14,7 +14,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.io.Resources;
-import io.airbyte.commons.io.Archives;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.DestinationConnection;
@@ -121,7 +120,8 @@ public class RunMigrationTest {
     final File file = Path
         .of(Resources.getResource("migration/03a4c904-c91d-447f-ab59-27a43b52c2fd.gz").toURI())
         .toFile();
-    final JobPersistence jobPersistence = getJobPersistence(file, INITIAL_VERSION);
+    final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
+    jobPersistence.setVersion(INITIAL_VERSION);
     assertPreMigrationConfigs(configPersistence, jobPersistence);
 
     runMigration(configPersistence, jobPersistence);
@@ -350,18 +350,6 @@ public class RunMigrationTest {
         YamlSeedConfigPersistence.getDefault())) {
       runMigration.run();
     }
-  }
-
-  @SuppressWarnings("SameParameterValue")
-  private JobPersistence getJobPersistence(final File file, final String version) throws IOException {
-    final DefaultJobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
-    final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), "db_init");
-    resourceToBeCleanedUp.add(tempFolder.toFile());
-
-    Archives.extractArchive(file.toPath(), tempFolder);
-    final DatabaseArchiver databaseArchiver = new DatabaseArchiver(jobPersistence);
-    databaseArchiver.importDatabaseFromArchive(tempFolder, version);
-    return jobPersistence;
   }
 
 }

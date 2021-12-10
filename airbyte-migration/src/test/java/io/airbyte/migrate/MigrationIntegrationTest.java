@@ -77,8 +77,6 @@ class MigrationIntegrationTest {
   private static final Map<ResourceId, List<JsonNode>> V0_14_0_TEST_RECORDS = ImmutableMap
       .<ResourceId, List<JsonNode>>builder()
       .put(SOURCE_DEFINITION_RESOURCE_ID, ImmutableList.of(STANDARD_SOURCE_DEFINITION1, STANDARD_SOURCE_DEFINITION2))
-      .put(JOB_RESOURCE_ID, ImmutableList.of(JOB))
-      .put(AIRBYTE_METADATA_RESOURCE_ID, ImmutableList.of(AIRBYTE_METADATA))
       .build();
 
   @BeforeEach
@@ -119,7 +117,7 @@ class MigrationIntegrationTest {
     migrate.run(config);
 
     assertExpectedOutputVersion(outputRoot, targetVersion);
-    assertRecordsInOutput(V0_14_0_TEST_RECORDS, 3);
+    assertRecordsInOutput(V0_14_0_TEST_RECORDS, 1);
   }
 
   @Test
@@ -337,11 +335,6 @@ class MigrationIntegrationTest {
         ResourceType.CONFIG,
         Enums.valuesAsStrings(MigrationV0_14_0.ConfigKeys.class),
         archiveRoot.resolve(ResourceType.CONFIG.getDirectoryName()),
-        resourceToRecords);
-    writeInputs(
-        ResourceType.JOB,
-        Enums.valuesAsStrings(MigrationV0_14_0.JobKeys.class),
-        archiveRoot.resolve(ResourceType.JOB.getDirectoryName()),
         resourceToRecords);
     IOs.writeFile(archiveRoot, Migrate.VERSION_FILE_NAME, version);
   }

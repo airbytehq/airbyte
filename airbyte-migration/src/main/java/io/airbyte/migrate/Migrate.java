@@ -9,7 +9,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.lang.Exceptions;
-import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.set.MoreSets;
 import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -137,9 +136,8 @@ public class Migrate {
   }
 
   private Map<ResourceId, AutoCloseableIterator<JsonNode>> createInputStreams(final Migration migration, final Path migrationInputRoot) {
-    final Map<ResourceId, AutoCloseableIterator<JsonNode>> resourceIdToInputStreams = MoreMaps.merge(
-        createInputStreamsForResourceType(migrationInputRoot, ResourceType.CONFIG),
-        createInputStreamsForResourceType(migrationInputRoot, ResourceType.JOB));
+    final Map<ResourceId, AutoCloseableIterator<JsonNode>> resourceIdToInputStreams =
+        createInputStreamsForResourceType(migrationInputRoot, ResourceType.CONFIG);
 
     System.out.println("\n\nschema = \n" + migration.getInputSchema().keySet().stream().map(ResourceId::getName).collect(Collectors.joining("\n")));
     System.out.println("\n\nrecords = \n" + resourceIdToInputStreams.keySet().stream().map(ResourceId::getName).collect(Collectors.joining("\n")));
