@@ -149,6 +149,7 @@ export_github_secrets
 
 
 # Please maintain this organisation and alphabetise.
+read_secrets destination-amazon-sqs "$DESTINATION_AMAZON_SQS_CREDS"
 read_secrets destination-bigquery "$BIGQUERY_INTEGRATION_TEST_CREDS" "credentials.json"
 read_secrets destination-bigquery-denormalized "$BIGQUERY_DENORMALIZED_INTEGRATION_TEST_CREDS" "credentials.json"
 read_secrets destination-databricks "$DESTINATION_DATABRICKS_CREDS"
