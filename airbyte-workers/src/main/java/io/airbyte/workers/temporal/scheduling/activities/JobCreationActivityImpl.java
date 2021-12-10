@@ -73,9 +73,18 @@ public class JobCreationActivityImpl implements JobCreationActivity {
   }
 
   @Override
-  public void attemptFailure(final attemptFailureInput input) {
+  public void attemptFailure(final AttemptFailureInput input) {
     try {
       jobPersistence.failAttempt(input.getJobId(), input.getAttemptId());
+    } catch (final IOException e) {
+      throw new NonRetryableException(e);
+    }
+  }
+
+  @Override
+  public void jobCancelled(final JobCancelledInput input) {
+    try {
+      jobPersistence.cancelJob(input.getJobId());
     } catch (final IOException e) {
       throw new NonRetryableException(e);
     }

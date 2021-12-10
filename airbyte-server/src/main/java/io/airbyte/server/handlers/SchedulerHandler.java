@@ -449,4 +449,16 @@ public class SchedulerHandler {
     return jobConverter.getJobInfoRead(job);
   }
 
+  public JobInfoRead createNewSchedulerCancellation(final Long id) throws IOException {
+    final Job job = jobPersistence.getJob(id);
+
+    final ManualSyncSubmissionResult manualSyncSubmissionResult = temporalWorkerRunFactory.startNewCancelation(UUID.fromString(job.getScope()));
+
+    if (manualSyncSubmissionResult.getFailingReason().isPresent()) {
+      throw new IllegalStateException(manualSyncSubmissionResult.getFailingReason().get());
+    }
+
+    return jobConverter.getJobInfoRead(job);
+  }
+
 }

@@ -19,13 +19,10 @@ public interface ConnectionUpdaterWorkflow {
   SyncResult run(ConnectionUpdaterInput connectionUpdaterInput);
 
   @SignalMethod
-  void updateSchedule(SchedulingInput input);
-
-  @SignalMethod
   void submitManualSync();
 
   @SignalMethod
-  void skipWaitForScheduling();
+  void cancelJob();
 
   @SignalMethod
   void deleteConnection();

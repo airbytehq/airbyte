@@ -202,6 +202,49 @@ public class TemporalClient {
         Optional.of(jobId));
   }
 
+  @Value
+  public class NewCancellationSubmissionResult {
+
+    final Optional<String> failingReason;
+    final Optional<Long> jobId;
+
+  }
+
+  public ManualSyncSubmissionResult startNewCancelation(final UUID connectionId) {
+    log.info("Manual sync request");
+
+    final List<WorkflowExecutionInfo> workflows = getExecutionsResponse("connection_updater_" + connectionId);
+
+    if (workflows.isEmpty()) {
+      return new ManualSyncSubmissionResult(
+          Optional.of("No scheduler workflow is running for: " + connectionId),
+          Optional.empty());
+    }
+
+    final ConnectionUpdaterWorkflow connectionUpdaterWorkflow =
+        getExistingWorkflow(ConnectionUpdaterWorkflow.class, "connection_updater_" + connectionId);
+
+    connectionUpdaterWorkflow.cancelJob();
+
+    do {
+      try {
+        Thread.sleep(10);
+      } catch (final InterruptedException e) {
+        return new ManualSyncSubmissionResult(
+            Optional.of("Didn't manage cancel a sync for: " + connectionId),
+            Optional.empty());
+      }
+    } while (connectionUpdaterWorkflow.getState().isRunning());
+
+    log.info("end of manual schedule");
+
+    final long jobId = connectionUpdaterWorkflow.getJobInformation().getJobId();
+
+    return new ManualSyncSubmissionResult(
+        Optional.empty(),
+        Optional.of(jobId));
+  }
+
   private <T> T getWorkflowStub(final Class<T> workflowClass, final TemporalJobType jobType) {
     return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptions(jobType));
   }

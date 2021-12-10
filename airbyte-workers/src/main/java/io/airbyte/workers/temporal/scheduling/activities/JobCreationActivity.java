@@ -85,18 +85,32 @@ public interface JobCreationActivity {
 
   }
 
+  @ActivityMethod
   void jobFailure(JobFailureInput input);
 
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
-  class attemptFailureInput {
+  class AttemptFailureInput {
 
     private long jobId;
     private int attemptId;
 
   }
 
-  void attemptFailure(attemptFailureInput input);
+  @ActivityMethod
+  void attemptFailure(AttemptFailureInput input);
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  class JobCancelledInput {
+
+    private long jobId;
+
+  }
+
+  @ActivityMethod
+  void jobCancelled(JobCancelledInput input);
 
 }

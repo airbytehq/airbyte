@@ -50,6 +50,10 @@ public class TemporalWorkerRunFactory {
     return temporalClient.startNewManualSync(connectionId);
   }
 
+  public ManualSyncSubmissionResult startNewCancelation(final UUID connectionId) {
+    return temporalClient.startNewCancelation(connectionId);
+  }
+
   public CheckedSupplier<OutputAndStatus<JobOutput>, Exception> createSupplier(final Job job, final int attemptId) {
     final TemporalJobType temporalJobType = toTemporalJobType(job.getConfigType());
     final UUID connectionId = UUID.fromString(job.getScope());
