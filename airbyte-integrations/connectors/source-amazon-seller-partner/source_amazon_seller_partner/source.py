@@ -48,7 +48,7 @@ class ConnectorConfig(BaseModel):
     report_options: str = Field(
         None,
         description="Additional information passed to reports. This varies by report type. Must be a valid json string.",
-        examples=['{"reportPeriod": "WEEK"}', '{"custom": "true"}'],
+        examples=['{"GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT": {"reportPeriod": "WEEK"}}', '{"GET_SOME_REPORT": {"custom": "true"}}'],
     )
     refresh_token: str = Field(
         description="The Refresh Token obtained via OAuth flow authorization.",

@@ -290,6 +290,9 @@ class ReportsAmazonSPStream(Stream, ABC):
     def parse_document(self, document):
         return csv.DictReader(StringIO(document), delimiter="\t")
 
+    def report_options(self):
+        return json_lib.loads(self._report_options).get(self.name)
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -395,9 +398,9 @@ class BrandAnalyticsSearchTermsReports(ReportsAmazonSPStream):
 
     def _report_data(self) -> Mapping[str, Any]:
          data = super()._report_data()
-         if self._report_options is not None:
-             report_options = json_lib.loads(self._report_options)
-             data.update(self._augmented_data(report_options))
+         options = self.report_options()
+         if options is not None:
+             data.update(self._augmented_data(options))
 
          return data
 
