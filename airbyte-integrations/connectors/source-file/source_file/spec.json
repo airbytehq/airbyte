@@ -11,7 +11,7 @@
       "dataset_name": {
         "type": "string",
         "title": "Dataset Name",
-        "description": "The Name of the final table to replicate this file in (should include letters, numbers dash and underscores only)."
+        "description": "The Name of the final table to replicate this file into (should include letters, numbers dash and underscores only)."
       },
       "format": {
         "type": "string",
