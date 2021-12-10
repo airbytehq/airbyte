@@ -31,7 +31,7 @@ import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
-import io.airbyte.config.helpers.LogConfiguration;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.app.worker_run.WorkerRun;
@@ -104,7 +104,7 @@ public class JobSubmitterTest {
         jobTracker,
         jobNotifier,
         WorkerEnvironment.DOCKER,
-        LogConfiguration.EMPTY,
+        LogConfigs.EMPTY,
         configRepository));
   }
 
