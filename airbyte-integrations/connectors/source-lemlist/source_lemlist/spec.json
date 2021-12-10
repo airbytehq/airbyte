@@ -9,7 +9,7 @@
     "properties": {
       "api_key": {
         "type": "string",
-        "title": "API key", 
+        "title": "API key",
         "description": "Lemlist API key.",
         "airbyte_secret": true
       }
