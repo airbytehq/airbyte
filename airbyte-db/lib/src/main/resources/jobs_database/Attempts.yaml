@@ -35,5 +35,3 @@ properties:
   ended_at:
     # todo should be datetime.
     type: ["null", string]
-  failure_reason:
-    type: ["null", string]

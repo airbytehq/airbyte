@@ -180,8 +180,7 @@ public class SchedulerApp {
 
       jobPersistence.failAttempt(
           zombieJob.getId(),
-          currentAttemptNumber,
-          "Job attempt was failed because it was a zombie. This is likely due to a restart of the scheduler.");
+          currentAttemptNumber);
     }
   }
 
