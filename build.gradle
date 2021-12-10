@@ -199,10 +199,14 @@ subprojects {
 
     def integrationTagName = 'platform-integration'
     def slowIntegrationTagName = 'platform-slow-integration'
+    // make tag accessible in submodules.
+    ext {
+        cloudStorageTestTagName = 'cloud-storage'
+    }
 
     test {
         useJUnitPlatform {
-            excludeTags(integrationTagName, slowIntegrationTagName)
+            excludeTags(integrationTagName, slowIntegrationTagName, cloudStorageTestTagName)
         }
         testLogging() {
             events 'failed'
