@@ -29,7 +29,7 @@ class MarketoStream(HttpStream, ABC):
         super().__init__(authenticator=config["authenticator"])
         self.config = config
         self.start_date = config["start_date"]
-        self.window_in_days = config["window_in_days"]
+        self.window_in_days = config.get("window_in_days", 30)
         self._url_base = config["domain_url"].rstrip("/") + "/"
         self.stream_name = stream_name
         self.param = param
@@ -435,7 +435,8 @@ class Programs(IncrementalMarketoStream):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         for record in super().parse_response(response, stream_state, **kwargs):
-            record["updatedAt"] = record["updatedAt"][:-5]  # delete +00:00 part from the end of updatedAt
+            # delete +00:00 part from the end of createdAt and updatedAt
+            record["updatedAt"], record["createdAt"] = record["updatedAt"][:-5], record["createdAt"][:-5]
             yield record
 
 

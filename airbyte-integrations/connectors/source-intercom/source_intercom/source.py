@@ -64,8 +64,6 @@ class IntercomStream(HttpStream, ABC):
                 self.logger.error(f"Stream {self.name}: {e.response.status_code} " f"{e.response.reason} - {error_message}")
             raise e
 
-    # def get_data(self, response: requests.Response) -> List:
-
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
 
         data = response.json()
@@ -208,6 +206,11 @@ class Conversations(IncrementalIntercomStream):
     """
 
     data_fields = ["conversations"]
+
+    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(next_page_token, **kwargs)
+        params.update({"order": "asc", "sort": self.cursor_field})
+        return params
 
     def path(self, **kwargs) -> str:
         return "conversations"

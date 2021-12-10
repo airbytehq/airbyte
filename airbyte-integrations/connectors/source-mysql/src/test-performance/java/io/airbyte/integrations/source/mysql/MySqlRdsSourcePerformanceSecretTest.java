@@ -13,8 +13,10 @@ import io.airbyte.db.Databases;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourcePerformanceTest;
 import java.nio.file.Path;
+import java.util.stream.Stream;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.params.provider.Arguments;
 
 public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerformanceTest {
 
@@ -64,76 +66,21 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
     database.close();
   }
 
-  @Test
-  public void test100tables100recordsDb() throws Exception {
-    int numberOfDummyRecords = 100; // 200 is near the max value for one shot in batching;
-    int numberOfColumns = 240;
-    int numberOfStreams = 100;
-    String schemaName = "test100tables100recordsDb";
-
-    setupDatabase(schemaName);
-
-    performTest(schemaName, numberOfStreams, numberOfColumns, numberOfDummyRecords);
-  }
-
-  @Test
-  public void test1000tables240columns200recordsDb() throws Exception {
-    int numberOfDummyRecords = 200;
-    int numberOfColumns = 240;
-    int numberOfStreams = 1000;
-    String schemaName = "test1000tables240columns200recordsDb";
-
-    setupDatabase(schemaName);
-
-    performTest(schemaName, numberOfStreams, numberOfColumns, numberOfDummyRecords);
-  }
-
-  @Test
-  public void test5000tables240columns200recordsDb() throws Exception {
-    int numberOfDummyRecords = 200;
-    int numberOfColumns = 240;
-    int numberOfStreams = 5000;
-    String schemaName = "test5000tables240columns200recordsDb";
-
-    setupDatabase(schemaName);
-
-    performTest(schemaName, numberOfStreams, numberOfColumns, numberOfDummyRecords);
-  }
-
-  @Test
-  public void testSmall1000tableswith10000recordsDb() throws Exception {
-    int numberOfDummyRecords = 10001;
-    int numberOfColumns = 240;
-    int numberOfStreams = 1000;
-    String schemaName = "newsmall1000tableswith10000rows";
-
-    setupDatabase(schemaName);
-
-    performTest(schemaName, numberOfStreams, numberOfColumns, numberOfDummyRecords);
-  }
-
-  @Test
-  public void testInterim15tableswith50000recordsDb() throws Exception {
-    int numberOfDummyRecords = 50010;
-    int numberOfColumns = 240;
-    int numberOfStreams = 15;
-    String schemaName = "newinterim15tableswith50000records";
-
-    setupDatabase(schemaName);
-
-    performTest(schemaName, numberOfStreams, numberOfColumns, numberOfDummyRecords);
-  }
-
-  @Test
-  public void testRegular25tables50000recordsDb() throws Exception {
-    int numberOfDummyRecords = 50003;
-    int numberOfColumns = 240;
-    int numberOfStreams = 25;
-    String schemaName = "newregular25tables50000records";
-
-    setupDatabase(schemaName);
-
-    performTest(schemaName, numberOfStreams, numberOfColumns, numberOfDummyRecords);
+  /**
+   * This is a data provider for performance tests, Each argument's group would be ran as a separate
+   * test. 1st arg - a name of DB that will be used in jdbc connection string. 2nd arg - a schemaName
+   * that will be ised as a NameSpace in Configured Airbyte Catalog. 3rd arg - a number of expected
+   * records retrieved in each stream. 4th arg - a number of columns in each stream\table that will be
+   * use for Airbyte Cataloq configuration 5th arg - a number of streams to read in configured airbyte
+   * Catalog. Each stream\table in DB should be names like "test_0", "test_1",..., test_n.
+   */
+  @BeforeAll
+  public static void beforeAll() {
+    AbstractSourcePerformanceTest.testArgs = Stream.of(
+        Arguments.of("test1000tables240columns200recordsDb", "test1000tables240columns200recordsDb", 200, 240, 1000),
+        Arguments.of("test5000tables240columns200recordsDb", "test5000tables240columns200recordsDb", 200, 240, 1000),
+        Arguments.of("newregular25tables50000records", "newregular25tables50000records", 50003, 8, 25),
+        Arguments.of("newsmall1000tableswith10000rows", "newsmall1000tableswith10000rows", 10001, 8, 1000));
   }
 
 }

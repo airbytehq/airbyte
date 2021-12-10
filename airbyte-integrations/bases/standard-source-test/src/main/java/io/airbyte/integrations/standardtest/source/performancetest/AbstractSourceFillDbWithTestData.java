@@ -6,11 +6,26 @@ package io.airbyte.integrations.standardtest.source.performancetest;
 
 import io.airbyte.db.Database;
 import java.util.StringJoiner;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public abstract class AbstractSourceFillDbWithTestData extends SourceBasePerformanceTest {
+/**
+ * This abstract class contains common methods for Fill Db scripts.
+ */
+public abstract class AbstractSourceFillDbWithTestData extends AbstractSourceBasePerformanceTest {
 
-  private static final String TEST_VALUE_TEMPLATE = "\"Some test value %s\"";
+  private static final String CREATE_DB_TABLE_TEMPLATE = "CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, %s)";
+  private static final String INSERT_INTO_DB_TABLE_QUERY_TEMPLATE = "INSERT INTO %s.%s (%s) VALUES %s";
+  private static final String TEST_DB_FIELD_TYPE = "varchar(10)";
+
+  protected static final Logger c = LoggerFactory.getLogger(AbstractSourceFillDbWithTestData.class);
   private static final String TEST_VALUE_TEMPLATE_POSTGRES = "\'Value id_placeholder\'";
+  protected static Stream testArgs;
 
   /**
    * Setup the test database. All tables and data described in the registered tests will be put there.
@@ -21,25 +36,59 @@ public abstract class AbstractSourceFillDbWithTestData extends SourceBasePerform
   protected abstract Database setupDatabase(String dbName) throws Exception;
 
   /**
-   * Get a create table template for a DB
-   *
-   * @return a create tabple template, ex. "CREATE TABLE test.%s(id INTEGER PRIMARY KEY, %s)"
+   * The test added test data to a new DB. 1. Set DB creds in static variables above 2. Set desired
+   * number for streams, coolumns and records 3. Run the test
    */
-  protected abstract String getCreateTableTemplate();
+  @Disabled
+  @ParameterizedTest
+  @MethodSource("provideParameters")
+  public void addTestData(String dbName,
+                          String schemaName,
+                          int numberOfDummyRecords,
+                          int numberOfBatches,
+                          int numberOfColumns,
+                          int numberOfStreams)
+      throws Exception {
+
+    final Database database = setupDatabase(dbName);
+
+    database.query(ctx -> {
+      for (int currentSteamNumber = 0; currentSteamNumber < numberOfStreams; currentSteamNumber++) {
+
+        String currentTableName = String.format(getTestStreamNameTemplate(), currentSteamNumber);
+
+        ctx.fetch(prepareCreateTableQuery(schemaName, numberOfColumns, currentTableName));
+        for (int i = 0; i < numberOfBatches; i++) {
+          String insertQueryTemplate = prepareInsertQueryTemplate(schemaName, i,
+              numberOfColumns,
+              numberOfDummyRecords);
+          ctx.fetch(String.format(insertQueryTemplate, currentTableName));
+        }
+
+        c.info("Finished processing for stream " + currentSteamNumber);
+      }
+      return null;
+    });
+
+    database.close();
+
+  }
 
   /**
-   * Get a test field'stype that will be used in DB for table creation.
+   * This is a data provider for fill DB script,, Each argument's group would be ran as a separate
+   * test. Set the "testArgs" in test class of your DB in @BeforeTest method.
    *
-   * @return a test's field type. Ex: varchar(8)
-   */
-  protected abstract String getTestFieldType();
-
-  /**
-   * Get a INSERT query template for a DB
+   * 1st arg - a name of DB that will be used in jdbc connection string. 2nd arg - a schemaName that
+   * will be ised as a NameSpace in Configured Airbyte Catalog. 3rd arg - a number of expected records
+   * retrieved in each stream. 4th arg - a number of columns in each stream\table that will be use for
+   * Airbyte Cataloq configuration 5th arg - a number of streams to read in configured airbyte
+   * Catalog. Each stream\table in DB should be names like "test_0", "test_1",..., test_n.
    *
-   * @return an INSERT into table query template, ex. "INSERT INTO test.%s (%s) VALUES %s"
+   * Stream.of( Arguments.of("your_db_name", "your_schema_name", 100, 2, 240, 1000) );
    */
-  protected abstract String getInsertQueryTemplate();
+  private static Stream<Arguments> provideParameters() {
+    return testArgs;
+  }
 
   protected String prepareCreateTableQuery(final String dbSchemaName,
                                            final int numberOfColumns,
@@ -47,47 +96,16 @@ public abstract class AbstractSourceFillDbWithTestData extends SourceBasePerform
 
     StringJoiner sj = new StringJoiner(",");
     for (int i = 0; i < numberOfColumns; i++) {
-      sj.add(String.format(" %s%s %s", getTestColumnName(), i, getTestFieldType()));
+      sj.add(String.format(" %s%s %s", getTestColumnName(), i, TEST_DB_FIELD_TYPE));
     }
 
-    return String.format(getCreateTableTemplate(), dbSchemaName, currentTableName, sj.toString());
+    return String.format(CREATE_DB_TABLE_TEMPLATE, dbSchemaName, currentTableName, sj.toString());
   }
 
-  // ex. INSERT INTO test.test_1 (id, test_column0, test_column1) VALUES (101,"zzz0", "sss0"), ("102",
-  // "zzzz1", "sss1");
   protected String prepareInsertQueryTemplate(final String dbSchemaName,
+                                              final int batchNumber,
                                               final int numberOfColumns,
                                               final int recordsNumber) {
-
-    StringJoiner fieldsNames = new StringJoiner(",");
-    fieldsNames.add("id");
-
-    StringJoiner baseInsertQuery = new StringJoiner(",");
-    baseInsertQuery.add("%s");
-
-    for (int i = 0; i < numberOfColumns; i++) {
-      fieldsNames.add(getTestColumnName() + i);
-      baseInsertQuery.add(String.format(TEST_VALUE_TEMPLATE, i));
-    }
-
-    StringJoiner insertGroupValuesJoiner = new StringJoiner(",");
-
-    for (int currentRecordNumber = 0; currentRecordNumber < recordsNumber; currentRecordNumber++) {
-      insertGroupValuesJoiner
-          .add("(" + String.format(baseInsertQuery.toString(), currentRecordNumber) + ")");
-    }
-
-    return String
-        .format(getInsertQueryTemplate(), dbSchemaName, "%s", fieldsNames.toString(),
-            insertGroupValuesJoiner.toString());
-  }
-
-  // ex. INSERT INTO "test100tables100recordsDb".test_0 (id,test_column0)
-  // VALUES (0,'Value t0'), (1,'Value t1');
-  protected String prepareInsertQueryTemplatePostgres(final String dbSchemaName,
-                                                      final int batchNumber,
-                                                      final int numberOfColumns,
-                                                      final int recordsNumber) {
 
     StringJoiner fieldsNames = new StringJoiner(",");
     fieldsNames.add("id");
@@ -113,7 +131,7 @@ public abstract class AbstractSourceFillDbWithTestData extends SourceBasePerform
     }
 
     return String
-        .format(getInsertQueryTemplate(), dbSchemaName, "%s", fieldsNames.toString(),
+        .format(INSERT_INTO_DB_TABLE_QUERY_TEMPLATE, dbSchemaName, "%s", fieldsNames.toString(),
             insertGroupValuesJoiner.toString());
   }
 

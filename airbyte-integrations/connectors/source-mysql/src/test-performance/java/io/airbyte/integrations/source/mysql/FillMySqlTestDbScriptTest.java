@@ -12,20 +12,14 @@ import io.airbyte.db.Databases;
 import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourceFillDbWithTestData;
+import java.util.stream.Stream;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.params.provider.Arguments;
 
 public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData {
 
-  protected static final Logger c = LoggerFactory.getLogger(FillMySqlTestDbScriptTest.class);
-
   private JsonNode config;
-  private static final String CREATE_DB_TABLE_TEMPLATE = "CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, %s)";
-  private static final String INSERT_INTO_DB_TABLE_QUERY_TEMPLATE = "INSERT INTO %s.%s (%s) VALUES %s";
-  private static final String TEST_DB_FIELD_TYPE = "varchar(8)";
 
   @Override
   protected JsonNode getConfig() {
@@ -69,55 +63,22 @@ public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
     return database;
   }
 
-  @Override
-  protected String getCreateTableTemplate() {
-    return CREATE_DB_TABLE_TEMPLATE;
-  }
-
-  @Override
-  protected String getInsertQueryTemplate() {
-    return INSERT_INTO_DB_TABLE_QUERY_TEMPLATE;
-  }
-
-  @Override
-  protected String getTestFieldType() {
-    return TEST_DB_FIELD_TYPE;
-  }
-
   /**
-   * The test added test data to a new DB and check results. 1. Set DB creds in static variables above
-   * 2. Set desired number for streams, coolumns and records 3. Run the test
+   * This is a data provider for fill DB script,, Each argument's group would be ran as a separate
+   * test. 1st arg - a name of DB that will be used in jdbc connection string. 2nd arg - a schemaName
+   * that will be ised as a NameSpace in Configured Airbyte Catalog. 3rd arg - a number of expected
+   * records retrieved in each stream. 4th arg - a number of messages batches
+   * (numberOfMessages*numberOfBatches, ex. 100*2=200 messages in total in each stream) 5th arg - a
+   * number of columns in each stream\table that will be use for Airbyte Cataloq configuration 6th arg
+   * - a number of streams to read in configured airbyte Catalog. Each stream\table in DB should be
+   * names like "test_0", "test_1",..., test_n.
    */
-  @Test
-  @Disabled
-  public void addTestDataToDbAndCheckTheResult() throws Exception {
-    int numberOfColumns = 240; // 240 is near the max value for varchar(8) type
-    // 200 is near the max value for 1 batch call,if need more - implement multiple batching for single
-    // stream
-    int numberOfDummyRecords = 200; // 200;
-    int numberOfStreams = 1;
-    String schemaName = "your_schema_name";
-
-    final Database database = setupDatabase(schemaName);
-
-    database.query(ctx -> {
-      String insertQueryTemplate = prepareInsertQueryTemplate(schemaName, numberOfColumns,
-          numberOfDummyRecords);
-
-      for (int currentSteamNumber = 0; currentSteamNumber < numberOfStreams; currentSteamNumber++) {
-        // CREATE TABLE test.test_1_int(id INTEGER PRIMARY KEY, test_column int)
-
-        String currentTableName = String.format(getTestStreamNameTemplate(), currentSteamNumber);
-
-        ctx.fetch(prepareCreateTableQuery(schemaName, numberOfColumns, currentTableName));
-        ctx.fetch(String.format(insertQueryTemplate, currentTableName));
-
-        c.info("Finished processing for stream " + currentSteamNumber);
-      }
-      return null;
-    });
-
-    database.close();
+  @BeforeAll
+  public static void beforeAll() {
+    AbstractSourceFillDbWithTestData.testArgs = Stream.of(
+        Arguments.of("your_db_name", "your_schema_name", 100, 2, 240, 1000)
+    // for MySQL DB name ans schema name would be the same
+    );
   }
 
 }
