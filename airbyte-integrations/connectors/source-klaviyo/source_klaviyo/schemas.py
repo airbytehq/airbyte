@@ -4,7 +4,7 @@
 
 
 from datetime import datetime
-from typing import Any, List, MutableMapping, Optional, Dict
+from typing import Any, Dict, List, MutableMapping, Optional
 
 from jsonschema import RefResolver
 from pydantic import BaseModel, Extra
