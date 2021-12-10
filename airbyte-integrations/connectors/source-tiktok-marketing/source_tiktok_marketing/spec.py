@@ -32,9 +32,9 @@ class ProductionEnvSpec(BaseModel):
 
     # it is float because UI has the bug https://github.com/airbytehq/airbyte/issues/6875
     app_id: str = Field(
-        description="The App id applied by the developer.",
+        description="The App ID applied by the developer.",
     )
-    secret: str = Field(description="The private key of the developer's application.", airbyte_secret=True)
+    secret: str = Field(description="The private key of the developer application.", airbyte_secret=True)
 
 
 class SourceTiktokMarketingSpec(BaseModel):
@@ -43,10 +43,10 @@ class SourceTiktokMarketingSpec(BaseModel):
 
     environment: Union[ProductionEnvSpec, SandboxEnvSpec] = Field(default=ProductionEnvSpec.Config.title, order=2)
 
-    access_token: str = Field(description="Long-term Authorized Access Token.", order=1, airbyte_secret=True)
+    access_token: str = Field(description="The Long-term Authorized Access Token.", order=1, airbyte_secret=True)
 
     start_date: str = Field(
-        description="Start Date in format: YYYY-MM-DD.",
+        description="The Start Date in format: YYYY-MM-DD. Any data before this date will not be replicated. If this parameter is not set, all data will be replicated.",
         default=DEFAULT_START_DATE,
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         order=3,
