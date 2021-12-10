@@ -391,6 +391,7 @@ class PullRequests(SemiIncrementalGithubStream):
     """
 
     page_size = 50
+    first_read_override_key = "first_read_override"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -400,7 +401,7 @@ class PullRequests(SemiIncrementalGithubStream):
         """
         Decide if this a first read or not by the presence of the state object
         """
-        self._first_read = not bool(stream_state)
+        self._first_read = not bool(stream_state) or stream_state.get(self.first_read_override_key, False)
         yield from super().read_records(stream_state=stream_state, **kwargs)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -664,18 +665,18 @@ class PullRequestSubstream(HttpSubStream, SemiIncrementalGithubStream, ABC):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent_stream_slices = list(super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state))
-        if self.parent.is_sorted_descending:
-            parent_stream_slices.reverse()
-
+        """
+        Override the parent PullRequests stream configuration to always fetch records in ascending order
+        """
+        parent_state = deepcopy(stream_state) or {}
+        parent_state[PullRequests.first_read_override_key] = True
+        parent_stream_slices = super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=parent_state)
         for parent_stream_slice in parent_stream_slices:
             yield {
                 "pull_request_number": parent_stream_slice["parent"]["number"],
                 "repository": parent_stream_slice["parent"]["repository"],
             }
 
-    # We've already determined the list of pull requests to run the stream against.
-    # Skip the start_point_map and cursor_field logic in SemiIncrementalGithubStream.read_records.
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -683,6 +684,10 @@ class PullRequestSubstream(HttpSubStream, SemiIncrementalGithubStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
+        """
+        We've already determined the list of pull requests to run the stream against.
+        Skip the start_point_map and cursor_field logic in SemiIncrementalGithubStream.read_records.
+        """
         yield from super(SemiIncrementalGithubStream, self).read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         )
