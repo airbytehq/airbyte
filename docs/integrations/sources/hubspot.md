@@ -96,7 +96,7 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.27 | 2021-12-10 | [0000](https://github.com/airbytehq/airbyte/pull/0000) | Add incremental sync support for `companies`, `contact_lists`, `contacts`, `deals`, `line_items`, `products`, `quotes`, `tickets` streams |
+| 0.1.27 | 2021-12-10 | [8699](https://github.com/airbytehq/airbyte/pull/8699) | Add incremental sync support for `companies`, `contact_lists`, `contacts`, `deals`, `line_items`, `products`, `quotes`, `tickets` streams |
 | 0.1.26 | 2021-11-30 | [8329](https://github.com/airbytehq/airbyte/pull/8329) | Removed 'skip_dynamic_fields' config param |
 | 0.1.25 | 2021-11-23 | [8216](https://github.com/airbytehq/airbyte/pull/8216) | Add skip dynamic fields for testing only |
 | 0.1.24 | 2021-11-09 | [7683](https://github.com/airbytehq/airbyte/pull/7683) | Fix name issue 'Hubspot' -> 'HubSpot' |
