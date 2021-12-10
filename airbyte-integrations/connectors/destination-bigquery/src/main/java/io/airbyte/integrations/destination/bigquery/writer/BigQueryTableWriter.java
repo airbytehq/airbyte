@@ -22,9 +22,7 @@ public class BigQueryTableWriter implements CommonWriter {
     }
 
     @Override
-    public void initialize() throws IOException {
-
-    }
+    public void initialize() throws IOException { }
 
     @Override
     public void write(JsonNode formattedData) throws IOException {
@@ -32,9 +30,7 @@ public class BigQueryTableWriter implements CommonWriter {
     }
 
     @Override
-    public void close(boolean hasFailed) throws Exception {
-
-    }
+    public void close(boolean hasFailed) throws Exception { this.writeChannel.close();  }
 
     public TableDataWriteChannel getWriteChannel() {
         return writeChannel;

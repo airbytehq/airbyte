@@ -9,6 +9,7 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.cloud.bigquery.*;
 import com.google.cloud.bigquery.JobInfo.WriteDisposition;
+import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsS3Helper;
 import io.airbyte.integrations.destination.gcs.writer.GscWriter;
@@ -69,26 +70,12 @@ public abstract class AbstractGscBigQueryUploader<T extends GscWriter> extends A
       // https://googleapis.dev/java/google-cloud-clients/latest/index.html?com/google/cloud/bigquery/package-summary.html
       // Load the table
       final Job loadJob = this.bigQuery.create(JobInfo.of(configuration));
-
       LOGGER.info("Created a new job GCS "+getFileTypeName()+" file to tmp BigQuery table: " + loadJob);
-      LOGGER.info("Waiting for job to complete...");
 
       // Load data from a GCS parquet file into the table
       // Blocks until this load table job completes its execution, either failing or succeeding.
-      final Job completedJob = loadJob.waitFor();
+      BigQueryUtils.waitForJobFinish(loadJob);
 
-      // Check for errors
-      if (completedJob == null) {
-        LOGGER.error("Job not executed since it no longer exists.");
-        throw new Exception("Job not executed since it no longer exists.");
-      } else if (completedJob.getStatus().getError() != null) {
-        // You can also look at queryJob.getStatus().getExecutionErrors() for all
-        // errors, not just the latest one.
-        final String msg = "BigQuery was unable to load into the table due to an error: \n"
-                + loadJob.getStatus().getError();
-        LOGGER.error(msg);
-        throw new Exception(msg);
-      }
       LOGGER.info("Table is successfully overwritten by "+getFileTypeName()+" file loaded from GCS");
     } catch (final BigQueryException | InterruptedException e) {
       LOGGER.error("Column not added during load append \n" + e.toString());

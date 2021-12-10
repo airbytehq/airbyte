@@ -19,13 +19,13 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryRecordConsumer.class);
 
-  private final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs;
+  private final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap;
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private AirbyteMessage lastStateMessage = null;
 
-  public BigQueryRecordConsumer(final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs,
+  public BigQueryRecordConsumer(final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap,
       final Consumer<AirbyteMessage> outputRecordCollector) {
-    this.writeConfigs = writeConfigs;
+    this.uploaderMap = uploaderMap;
     this.outputRecordCollector = outputRecordCollector;
   }
 
@@ -47,13 +47,13 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
   private void processRecord(AirbyteMessage message) {
     final var pair = AirbyteStreamNameNamespacePair.fromRecordMessage(message.getRecord());
-    writeConfigs.get(pair).upload(message);
+    uploaderMap.get(pair).upload(message);
   }
 
   @Override
   public void close(final boolean hasFailed) {
     LOGGER.info("Started closing all connections");
-    writeConfigs.values().parallelStream().forEach(uploader -> uploader.close(hasFailed, outputRecordCollector, lastStateMessage));
+    uploaderMap.values().parallelStream().forEach(uploader -> uploader.close(hasFailed, outputRecordCollector, lastStateMessage));
   }
 
 }

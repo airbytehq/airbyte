@@ -276,4 +276,17 @@ public class BigQueryUtils {
     }
   }
 
+  public static void waitForJobFinish(Job job) throws InterruptedException {
+    if (job != null) {
+      try {
+        LOGGER.info("Waiting for job finish {}. Status: {}", job, job.getStatus());
+        job.waitFor();
+        LOGGER.info("Job finish {} with status {}", job, job.getStatus());
+      } catch (RuntimeException e) {
+        // @TODO Maria, please put your error logging here :)
+        throw e;
+      }
+    }
+  }
+
 }
