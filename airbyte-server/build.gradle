@@ -51,7 +51,7 @@ dependencies {
     implementation 'commons-cli:commons-cli:1.4'
     implementation 'org.eclipse.jetty:jetty-server:9.4.31.v20200723'
     implementation 'org.eclipse.jetty:jetty-servlet:9.4.31.v20200723'
-    implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.3'
+    implementation 'org.glassfish.jaxb:jaxb-runtime:3.0.2'
     implementation 'org.glassfish.jersey.containers:jersey-container-servlet'
     implementation 'org.glassfish.jersey.inject:jersey-hk2'
     implementation 'org.glassfish.jersey.media:jersey-media-json-jackson'
