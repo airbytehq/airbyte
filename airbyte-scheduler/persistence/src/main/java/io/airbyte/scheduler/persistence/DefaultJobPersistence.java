@@ -271,6 +271,25 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
+  public void failAttempt(final long jobId, final int attemptNumber, final String reason) throws IOException {
+    final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
+    jobDatabase.transaction(ctx -> {
+      // do not overwrite terminal states.
+      updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.INCOMPLETE, now);
+
+      ctx.execute(
+          "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? , ended_at = ?, failure_reason = ? WHERE job_id = ? AND attempt_number = ?",
+          Sqls.toSqlName(AttemptStatus.FAILED),
+          now,
+          now,
+          reason,
+          jobId,
+          attemptNumber);
+      return null;
+    });
+  }
+
+  @Override
   public void succeedAttempt(final long jobId, final int attemptNumber) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
     jobDatabase.transaction(ctx -> {
