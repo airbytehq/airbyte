@@ -180,8 +180,7 @@ class ReverseIncrementalKlaviyoStream(KlaviyoStream, ABC):
         """
         :return an iterable containing each record in the response
         """
-        response_json = response.json()
-        for record in response_json.get("data", []):  # API returns records in a container array "data"
+        for record in super().parse_response(response=response, **kwargs):
             if self._reversed:
                 if pendulum.parse(record[self.cursor_field]) < self._low_boundary:
                     self._reached_old_records = True

@@ -27,7 +27,7 @@ This Source is capable of syncing the following core Streams:
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
-| Incremental Sync | Yes | Only Events |
+| Incremental Sync | Yes | Only Events and Global Exclusions|
 | Namespaces | No |  |
 
 ### Performance considerations
@@ -52,3 +52,4 @@ Please follow these [steps](https://help.klaviyo.com/hc/en-us/articles/115005062
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
 | `0.1.2` | 2021-10-19 | [6952](https://github.com/airbytehq/airbyte/pull/6952) | Update schema validation in SAT |
+| `0.1.3` | 2021-12-09 | [8592](https://github.com/airbytehq/airbyte/pull/8592) | Improve performance and make Global Exclusions stream incremental. |
