@@ -21,6 +21,7 @@ import com.rockset.client.model.DeleteDocumentsRequest;
 import com.rockset.client.model.DeleteDocumentsRequestData;
 import com.rockset.client.model.ErrorModel;
 import com.rockset.client.model.GetCollectionResponse;
+import com.rockset.client.model.ListCollectionsResponse;
 import com.rockset.client.model.QueryRequest;
 import com.rockset.client.model.QueryRequestSql;
 import com.rockset.client.model.QueryResponse;
@@ -200,8 +201,20 @@ public class RocksetUtils {
         }
     }
 
+    private static boolean doesCollectionExist(ApiClient client, String workspace, String cname) throws Exception {
+        final ListCollectionsResponse collectionsResponse = new CollectionsApi(client).workspace(workspace);
+        return collectionsResponse
+                .getData()
+                .stream()
+                .anyMatch(coll -> coll.getName().equals(cname));
+    }
+
     public static void clearCollectionIfCollectionExists(ApiClient client, String workspace, String cname) {
         Exceptions.toRuntime(() -> {
+
+            if (!doesCollectionExist(client, workspace, cname)) {
+                return;
+            }
 
             final QueryRequest qr = new QueryRequest().sql(new QueryRequestSql().query(String.format("SELECT _id from %s.%s", workspace, cname)));
             try {
