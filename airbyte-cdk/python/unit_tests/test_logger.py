@@ -6,6 +6,7 @@
 import json
 import logging
 import subprocess
+import sys
 from typing import Dict
 
 import pytest
@@ -108,7 +109,7 @@ def test_unhandled_logger():
     expected_output = log_message.json(exclude_unset=True)
 
     with pytest.raises(subprocess.CalledProcessError) as err:
-        subprocess.check_output(["python", "-c", cmd], stderr=subprocess.STDOUT)
+        subprocess.check_output([sys.executable, "-c", cmd], stderr=subprocess.STDOUT)
 
     assert not err.value.stderr, "nothing on the stderr"
     assert err.value.output.decode("utf-8").strip() == expected_output, "Error should be printed in expected form"
