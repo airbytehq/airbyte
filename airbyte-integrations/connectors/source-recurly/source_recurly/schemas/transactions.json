@@ -107,6 +107,9 @@
     "success": {
       "type": "boolean"
     },
+    "backup_payment_method_used": {
+      "type": "boolean"
+    },
     "refunded": {
       "type": "boolean"
     },

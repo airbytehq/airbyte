@@ -1,0 +1,180 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "object": {
+      "type": "string"
+    },
+    "account": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "object": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "company": {
+          "type": "string"
+        },
+        "parent_account_id": {
+          "type": "string"
+        },
+        "bill_to": {
+          "type": "string"
+        },
+        "dunning_campaign_id": {
+          "type": "string"
+        }
+      },
+      "$schema": "http://json-schema.org/schema#"
+    },
+    "subscription_id": {
+      "type": "string"
+    },
+    "coupon": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "object": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "max_redemptions": {
+          "type": ["null", "number"]
+        },
+        "max_redemptions_per_account": {
+          "type": ["null", "number"]
+        },
+        "unique_coupon_codes_count": {
+          "type": "number"
+        },
+        "unique_code_template": {
+          "type": ["null", "string"]
+        },
+        "duration": {
+          "type": "string"
+        },
+        "temporal_amount": {
+          "type": ["null", "number"]
+        },
+        "temporal_unit": {
+          "type": ["null", "string"]
+        },
+        "free_trial_unit": {
+          "type": "string"
+        },
+        "free_trial_amount": {
+          "type": "number"
+        },
+        "applies_to_all_plans": {
+          "type": "boolean"
+        },
+        "applies_to_all_items": {
+          "type": "boolean"
+        },
+        "applies_to_non_plan_charges": {
+          "type": "boolean"
+        },
+        "plans": {
+          "type": "array"
+        },
+        "items": {
+          "type": "array"
+        },
+        "redemption_resource": {
+          "type": "string"
+        },
+        "discount": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "percent": {
+              "type": "number"
+            },
+            "currencies": {
+              "type": "array"
+            },
+            "trial": {
+              "type": "object",
+              "properties": {
+                "unit": {
+                  "type": "string"
+                },
+                "length": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        },
+        "coupon_type": {
+          "type": "string"
+        },
+        "hosted_page_description": {
+          "type": ["null", "string"]
+        },
+        "invoice_description": {
+          "type": ["null", "string"]
+        },
+        "redeem_by": {
+          "type": ["null", "string"]
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        },
+        "expired_at": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "state": {
+      "type": "string"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "discounted": {
+      "type": "number"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "removed_at": {
+      "type": ["null", "string"]
+    }
+  }
+}
