@@ -9,13 +9,13 @@
     "properties": {
       "host": {
         "description": "The host name of the database.",
-	"title": "Host",
+        "title": "Host",
         "type": "string",
         "order": 0
       },
       "port": {
         "description": "The port of the database.",
-	"title": "Port",
+        "title": "Port",
         "type": "integer",
         "minimum": 0,
         "maximum": 65536,
@@ -24,21 +24,21 @@
         "order": 1
       },
       "db": {
-       "description": "The name of the database.",
-	"title": "Database",
+        "description": "The name of the database.",
+        "title": "Database",
         "type": "string",
         "examples": ["default"],
         "order": 2
       },
       "username": {
         "description": "The username which is used to access the database.",
-	"title": "Username",
+        "title": "Username",
         "type": "string",
         "order": 3
       },
       "password": {
-         "description": "The password associated with this username.",
-	"title": "Password",
+        "description": "The password associated with this username.",
+        "title": "Password",
         "type": "string",
         "airbyte_secret": true,
         "order": 4

@@ -16,37 +16,37 @@
     "properties": {
       "region": {
         "type": "string",
-	"title": "Region",
+        "title": "Region",
         "description": "The default Commercetools Region to use.",
         "examples": ["us-central1", "australia-southeast1"]
       },
       "host": {
         "type": "string",
-	"title": "Host",
+        "title": "Host",
         "enum": ["gcp", "aws"],
         "description": "The cloud provider your shop is hosted."
       },
       "start_date": {
         "type": "string",
-	"title": "Start Date",
+        "title": "Start Date",
         "description": "The date you would like to replicate data. Format: YYYY-MM-DD. Any data before this date will not be replicated.",
         "examples": ["2021-01-01"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
       },
       "project_key": {
         "type": "string",
-	"title": "Project Key",
+        "title": "Project Key",
         "description": "Commercetools Project Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/commercetools\">docs</a> for more information on how to obtain this key."
       },
       "client_id": {
         "type": "string",
-	"title": "Client ID",
+        "title": "Client ID",
         "description": "The Client ID of your Commercetools developer application.",
         "airbyte_secret": true
       },
       "client_secret": {
         "type": "string",
-	"title": "Client Secret",
+        "title": "Client Secret",
         "description": "The Client Secret of your Commercetools developer application.",
         "airbyte_secret": true
       }

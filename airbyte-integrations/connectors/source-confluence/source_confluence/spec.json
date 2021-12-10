@@ -9,19 +9,19 @@
     "properties": {
       "api_token": {
         "type": "string",
-	"title": "API Token",
+        "title": "API Token",
         "description": "Confluence API Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/confluence\">docs</a> for more information on how to obtain this token.",
         "airbyte_secret": true
       },
       "domain_name": {
         "type": "string",
-	"title": "Domain Name",
+        "title": "Domain Name",
         "description": "The name of your Confluence domain.",
         "examples": ["example.atlassian.net"]
       },
       "email": {
         "type": "string",
-	"title": "Email",
+        "title": "Email",
         "description": "Confluence login email.",
         "examples": ["abc@example.com"]
       }

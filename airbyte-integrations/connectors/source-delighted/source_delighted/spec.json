@@ -9,13 +9,13 @@
     "properties": {
       "since": {
         "type": "integer",
-	"title": "Since",
+        "title": "Since",
         "description": "An optional Unix timestamp to restrict responses to those created on or after this time.",
         "examples": [1625328167]
       },
       "api_key": {
         "type": "string",
-	"title": "API Key",
+        "title": "API Key",
         "description": "Delighted API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/delighted\">docs</a> for more information on how to obtain this key.",
         "airbyte_secret": true
       }
