@@ -9,6 +9,8 @@ from typing import Any, Mapping
 import backoff
 import pendulum
 from facebook_business.adobjects.adreportrun import AdReportRun
+from facebook_business.adobjects.objectparser import ObjectParser
+from facebook_business.api import FacebookRequest, FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.api import API
 
@@ -86,11 +88,24 @@ class AsyncJob:
         :return: True if completed successfully, False - if task still running
         :raises: JobException in case job failed to start, failed or timed out
         """
+        if self._finish_time:
+            return True
         try:
+            self._update_job()
             return self._check_status()
         except JobException:
             self._failed = True
             return True
+
+    def batch_update_request(self) -> FacebookRequest:
+        if self._finish_time:
+            # No need to update job status if its already completed
+            return None
+        return self._job.api_get(pending=True)
+
+    def process_batch_result(self, response: FacebookResponse):
+        self._job = ObjectParser(reuse_object=self._job).parse_single(response.json())
+        self._check_status()
 
     @property
     def failed(self) -> bool:
@@ -109,7 +124,6 @@ class AsyncJob:
         :return: True if the job is completed, False - if the job is still running
         :raises: errors if job failed or timed out
         """
-        self._update_job()
         job_progress_pct = self._job["async_percent_completion"]
         logger.info(f"{self} is {job_progress_pct}% complete ({self._job['async_status']})")
         runtime = self.elapsed_time

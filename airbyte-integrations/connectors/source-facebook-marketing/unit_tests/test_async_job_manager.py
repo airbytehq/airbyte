@@ -26,6 +26,14 @@ def job_mock():
         yield async_job_mock
 
 
+def make_api_mock():
+    api_mock = MagicMock()
+    api_mock.api.ads_insights_throttle = 0.5, 0.5
+    api_mock.api.new_batch.return_value = api_mock
+    api_mock.execute.return_value = None
+    return api_mock
+
+
 @pytest.mark.parametrize(
     "from_date,to,days_per_job",
     [
@@ -39,8 +47,7 @@ def job_mock():
 def test_async_job_manager(job_mock, from_date, to, days_per_job):
     from_date, to = pendulum.parse(from_date), pendulum.parse(to)
     assert from_date <= to
-    api_mock = MagicMock()
-    api_mock.api.ads_insights_throttle = 0.5
+    api_mock = make_api_mock()
     job_manager = InsightsAsyncJobManager(
         api=api_mock,
         job_params={"breakdowns": []},
@@ -61,8 +68,7 @@ def test_async_job_manager(job_mock, from_date, to, days_per_job):
 def test_async_job_manager_to_date_greater_from(job_mock):
     from_date, to = pendulum.parse("2020-10-10"), pendulum.parse("2019-10-10")
     assert from_date > to
-    api_mock = MagicMock()
-    api_mock.api.ads_insights_throttle = 0.5
+    api_mock = make_api_mock()
     job_manager = InsightsAsyncJobManager(
         api=api_mock,
         job_params={"breakdowns": []},
@@ -75,8 +81,7 @@ def test_async_job_manager_to_date_greater_from(job_mock):
 
 def test_job_failed(job_mock):
     from_date, to = pendulum.parse("2019-10-10"), pendulum.parse("2019-10-10")
-    api_mock = MagicMock()
-    api_mock.api.ads_insights_throttle = 0.5
+    api_mock = make_api_mock()
     job_manager = InsightsAsyncJobManager(
         api=api_mock,
         job_params={"breakdowns": []},
@@ -93,8 +98,7 @@ def test_job_failed(job_mock):
 
 def test_job_failed_two_times(job_mock):
     from_date, to = pendulum.parse("2019-10-10"), pendulum.parse("2019-10-10")
-    api_mock = MagicMock()
-    api_mock.api.ads_insights_throttle = 0.5
+    api_mock = make_api_mock()
     job_manager = InsightsAsyncJobManager(
         api=api_mock,
         job_params={"breakdowns": []},
@@ -112,8 +116,7 @@ def test_job_failed_two_times(job_mock):
 
 def test_job_wait_unitll_completed(job_mock, time_sleep_mock):
     from_date, to = pendulum.parse("2019-10-10"), pendulum.parse("2019-10-10")
-    api_mock = MagicMock()
-    api_mock.api.ads_insights_throttle = 0.5
+    api_mock = make_api_mock()
     job_manager = InsightsAsyncJobManager(
         api=api_mock,
         job_params={"breakdowns": []},

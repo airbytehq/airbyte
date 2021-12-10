@@ -5,6 +5,7 @@
 import json
 import logging
 from time import sleep
+from typing import Tuple
 
 import pendulum
 from cached_property import cached_property
@@ -28,10 +29,10 @@ class MyFacebookAdsApi(FacebookAdsApi):
     pause_interval_minimum = pendulum.duration(minutes=1)  # default pause interval if reached or close to call rate limit
 
     # Insights async jobs throttle, from 1 to 100
-    _ads_insights_throttle: float = None
+    _ads_insights_throttle: Tuple[float, float]
 
     @property
-    def ads_insights_throttle(self):
+    def ads_insights_throttle(self) -> Tuple[float, float]:
         return self._ads_insights_throttle
 
     @staticmethod
@@ -99,7 +100,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
         ads_insights_throttle = response.headers().get("x-fb-ads-insights-throttle")
         if ads_insights_throttle:
             ads_insights_throttle = json.loads(ads_insights_throttle)
-            self._ads_insights_throttle = min(ads_insights_throttle.get("app_id_util_pct"), ads_insights_throttle.get("acc_id_util_pct"))
+            self._ads_insights_throttle = ads_insights_throttle.get("app_id_util_pct"), ads_insights_throttle.get("acc_id_util_pct")
 
     def call(
         self,
