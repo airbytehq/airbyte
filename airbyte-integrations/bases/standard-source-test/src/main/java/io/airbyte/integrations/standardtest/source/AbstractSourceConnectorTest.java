@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.JobGetSpecConfig;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
@@ -24,6 +25,7 @@ import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
 import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
@@ -33,6 +35,7 @@ import io.airbyte.workers.test_helpers.EntrypointEnvChecker;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -52,6 +55,11 @@ public abstract class AbstractSourceConnectorTest {
 
   private static final String JOB_ID = String.valueOf(0L);
   private static final int JOB_ATTEMPT = 0;
+
+  private static final String CPU_REQUEST_FIELD_NAME = "cpuRequest";
+  private static final String CPU_LIMIT_FIELD_NAME = "cpuLimit";
+  private static final String MEMORY_REQUEST_FIELD_NAME = "memoryRequest";
+  private static final String MEMORY_LIMIT_FIELD_NAME = "memoryLimit";
 
   /**
    * Name of the docker image that the tests will run against.
@@ -169,7 +177,9 @@ public abstract class AbstractSourceConnectorTest {
         .withState(state == null ? null : new State().withState(state))
         .withCatalog(catalog);
 
-    final AirbyteSource source = new DefaultAirbyteSource(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory));
+    final Map<String, String> mapOfResourceRequirementsParams = prepareResourceRequestMapBySystemProperties();
+    final AirbyteSource source =
+        prepareAirbyteSource(!mapOfResourceRequirementsParams.isEmpty() ? prepareResourceRequirements(mapOfResourceRequirementsParams) : null);
     source.start(sourceConfig, jobRoot);
 
     while (!source.isFinished()) {
@@ -184,6 +194,36 @@ public abstract class AbstractSourceConnectorTest {
     }
     source.close();
     return mapOfExpectedRecordsCount;
+  }
+
+  protected ResourceRequirements prepareResourceRequirements(Map<String, String> mapOfResourceRequirementsParams) {
+    return new ResourceRequirements().withCpuRequest(mapOfResourceRequirementsParams.get(CPU_REQUEST_FIELD_NAME))
+        .withCpuLimit(mapOfResourceRequirementsParams.get(CPU_LIMIT_FIELD_NAME))
+        .withMemoryRequest(mapOfResourceRequirementsParams.get(MEMORY_REQUEST_FIELD_NAME))
+        .withMemoryLimit(mapOfResourceRequirementsParams.get(MEMORY_LIMIT_FIELD_NAME));
+  }
+
+  private AirbyteSource prepareAirbyteSource(ResourceRequirements resourceRequirements) {
+    var integrationLauncher = resourceRequirements == null ? new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory)
+        : new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, resourceRequirements);
+    return new DefaultAirbyteSource(integrationLauncher);
+  }
+
+  private static Map<String, String> prepareResourceRequestMapBySystemProperties() {
+    var cpuLimit = System.getProperty(CPU_LIMIT_FIELD_NAME);
+    var memoryLimit = System.getProperty(MEMORY_LIMIT_FIELD_NAME);
+    if (cpuLimit.isBlank() || cpuLimit.isEmpty()) {
+      cpuLimit = WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuLimit();
+    }
+    if (memoryLimit.isBlank() || memoryLimit.isEmpty()) {
+      memoryLimit = WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryLimit();
+    }
+    Map<String, String> result = new HashMap<>();
+    result.put(CPU_REQUEST_FIELD_NAME, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuRequest());
+    result.put(CPU_LIMIT_FIELD_NAME, cpuLimit);
+    result.put(MEMORY_REQUEST_FIELD_NAME, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryRequest());
+    result.put(MEMORY_LIMIT_FIELD_NAME, memoryLimit);
+    return result;
   }
 
 }
