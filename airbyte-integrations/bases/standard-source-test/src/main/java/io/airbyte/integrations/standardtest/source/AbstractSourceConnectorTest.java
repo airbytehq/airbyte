@@ -41,6 +41,8 @@ import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This abstract class contains helpful functionality and boilerplate for testing a source
@@ -48,6 +50,7 @@ import org.junit.jupiter.api.BeforeEach;
  */
 public abstract class AbstractSourceConnectorTest {
 
+  protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractSourceConnectorTest.class);
   private TestDestinationEnv environment;
   private Path jobRoot;
   protected Path localRoot;
@@ -218,6 +221,8 @@ public abstract class AbstractSourceConnectorTest {
     if (memoryLimit.isBlank() || memoryLimit.isEmpty()) {
       memoryLimit = WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryLimit();
     }
+    LOGGER.error("cpu limit -->> {}", cpuLimit);
+    LOGGER.error("memory limit -->> {}", memoryLimit);
     Map<String, String> result = new HashMap<>();
     result.put(CPU_REQUEST_FIELD_NAME, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuRequest());
     result.put(CPU_LIMIT_FIELD_NAME, cpuLimit);
