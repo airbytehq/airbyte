@@ -269,10 +269,10 @@ subprojects {
 
 
         // SLF4J as a facade over Log4j2 required dependencies
-        implementation 'org.apache.logging.log4j:log4j-api:2.11.0'
-        implementation 'org.apache.logging.log4j:log4j-core:2.11.0'
-        implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.11.0'
-        implementation 'org.apache.logging.log4j:log4j-web:2.14.1'
+        implementation 'org.apache.logging.log4j:log4j-api:2.15.0'
+        implementation 'org.apache.logging.log4j:log4j-core:2.15.0'
+        implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.15.0'
+        implementation 'org.apache.logging.log4j:log4j-web:2.15.0'
 
         // Bridges from other logging implementations to SLF4J
         implementation 'org.slf4j:jul-to-slf4j:1.7.30' // JUL bridge
