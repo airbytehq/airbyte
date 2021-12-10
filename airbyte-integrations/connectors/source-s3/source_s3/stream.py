@@ -73,5 +73,4 @@ class IncrementalFileStreamS3(IncrementalFileStream):
         msg = f"Iterating S3 bucket '{self._provider['bucket']}'"
         self.logger.info(msg + f" with prefix: '{prefix}' " if prefix != "" else msg)
 
-        for blob in self._list_bucket(accept_key=lambda k: not k.endswith("/")):  # filter out 'folders', we just want actual blobs
-            yield blob
+        yield from self._list_bucket(accept_key=lambda k: not k.endswith("/"))

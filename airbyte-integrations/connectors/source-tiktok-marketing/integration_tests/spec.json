@@ -8,6 +8,7 @@
       "environment": {
         "title": "Environment",
         "default": "Production",
+        "order": 2,
         "oneOf": [
           {
             "title": "Production",
@@ -20,12 +21,12 @@
               },
               "app_id": {
                 "title": "App Id",
-                "description": "The App id applied by the developer.",
+                "description": "The App ID applied by the developer.",
                 "type": "string"
               },
               "secret": {
                 "title": "Secret",
-                "description": "The private key of the developer's application.",
+                "description": "The private key of the developer application.",
                 "airbyte_secret": true,
                 "type": "string"
               }
@@ -54,15 +55,25 @@
       },
       "access_token": {
         "title": "Access Token",
-        "description": "Long-term Authorized Access Token.",
+        "description": "The Long-term Authorized Access Token.",
+        "order": 1,
         "airbyte_secret": true,
         "type": "string"
       },
       "start_date": {
         "title": "Start Date",
-        "description": "Start Date in format: YYYY-MM-DD.",
-        "default": "01-09-2016",
+        "description": "The Start Date in format: YYYY-MM-DD. Any data before this date will not be replicated. If this parameter is not set, all data will be replicated.",
+        "default": "2016-09-01",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "order": 3,
+        "type": "string"
+      },
+      "report_granularity": {
+        "title": "Report Granularity",
+        "description": "Which time granularity should be grouped by; for LIFETIME there will be no grouping. This option is used for reports' streams only.",
+        "default": "DAY",
+        "enum": ["LIFETIME", "DAY", "HOUR"],
+        "order": 4,
         "type": "string"
       }
     },
