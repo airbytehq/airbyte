@@ -100,7 +100,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
         ads_insights_throttle = response.headers().get("x-fb-ads-insights-throttle")
         if ads_insights_throttle:
             ads_insights_throttle = json.loads(ads_insights_throttle)
-            self._ads_insights_throttle = ads_insights_throttle.get("app_id_util_pct"), ads_insights_throttle.get("acc_id_util_pct")
+            self._ads_insights_throttle = ads_insights_throttle.get("app_id_util_pct", 0), ads_insights_throttle.get("acc_id_util_pct", 0)
 
     def call(
         self,
