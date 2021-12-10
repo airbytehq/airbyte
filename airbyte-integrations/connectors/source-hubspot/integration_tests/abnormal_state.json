@@ -1,8 +1,32 @@
 {
+  "companies": {
+    "updatedAt": "2221-02-23T00:00:00Z"
+  },
+  "contact_lists": {
+    "timestamp": 4770964127000
+  },
+  "contacts": {
+    "updatedAt": "2221-02-23T00:00:00Z"
+  },
+  "deals": {
+    "updatedAt": "2221-02-23T00:00:00Z"
+  },
   "email_events": {
-    "timestamp": "2121-03-19T17:00:45.743000+00:00"
+    "timestamp": 4770964127000
+  },
+  "line_items": {
+    "updatedAt": "2221-02-23T00:00:00Z"
+  },
+  "products": {
+    "updatedAt": "2221-02-23T00:00:00Z"
+  },
+  "quotes": {
+    "updatedAt": "2221-02-23T00:00:00Z"
   },
   "subscription_changes": {
-    "timestamp": "2121-03-19T16:58:54.301000+00:00"
+    "timestamp": 4770964127000
+  },
+  "tickets": {
+    "updatedAt": "2221-02-23T00:00:00Z"
   }
 }
