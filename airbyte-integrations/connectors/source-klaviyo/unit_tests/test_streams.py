@@ -90,7 +90,9 @@ class TestKlaviyoStream:
 
 class TestIncrementalKlaviyoStream:
     def test_cursor_field_is_required(self):
-        with pytest.raises(TypeError, match="Can't instantiate abstract class IncrementalKlaviyoStream with abstract methods cursor_field, path, schema"):
+        with pytest.raises(
+            TypeError, match="Can't instantiate abstract class IncrementalKlaviyoStream with abstract methods cursor_field, path, schema"
+        ):
             IncrementalKlaviyoStream(api_key="some_key", start_date=START_DATE.isoformat())
 
     @pytest.mark.parametrize(
@@ -119,7 +121,11 @@ class TestIncrementalKlaviyoStream:
                 {"api_key": "some_key", "count": 100, "sort": "asc", "since": 123},
             ),
             # finally state > start_date and can be used
-            (None, {"updated_at": START_DATE.int_timestamp + 1}, {"api_key": "some_key", "count": 100, "sort": "asc", "since": START_DATE.int_timestamp + 1}),
+            (
+                None,
+                {"updated_at": START_DATE.int_timestamp + 1},
+                {"api_key": "some_key", "count": 100, "sort": "asc", "since": START_DATE.int_timestamp + 1},
+            ),
         ],
     )
     def test_request_params(self, next_page_token, stream_state, expected_params):
@@ -159,7 +165,10 @@ class TestIncrementalKlaviyoStream:
 
 class TestReverseIncrementalKlaviyoStream:
     def test_cursor_field_is_required(self):
-        with pytest.raises(TypeError, match="Can't instantiate abstract class ReverseIncrementalKlaviyoStream with abstract methods cursor_field, path, schema"):
+        with pytest.raises(
+            TypeError,
+            match="Can't instantiate abstract class ReverseIncrementalKlaviyoStream with abstract methods cursor_field, path, schema",
+        ):
             ReverseIncrementalKlaviyoStream(api_key="some_key", start_date=START_DATE.isoformat())
 
     def test_state_checkpoint_interval(self):
@@ -205,7 +214,9 @@ class TestReverseIncrementalKlaviyoStream:
 
         response.json.return_value = {
             "data": [{"updated_at": ts_below_low_boundary}, {"updated_at": ts_above_low_boundary}],
-            "end": 108, "total": 110, "page": 9,
+            "end": 108,
+            "total": 110,
+            "page": 9,
         }
         stream = SomeReverseIncrementalStream(api_key="some_key", start_date=START_DATE.isoformat())
         stream.request_params(stream_state={"updated_at": ts_below_low_boundary})
@@ -221,7 +232,9 @@ class TestReverseIncrementalKlaviyoStream:
         ts_above_low_boundary = (ts_state + pendulum.duration(minutes=1)).isoformat()
         response.json.return_value = {
             "data": [{"updated_at": ts_above_low_boundary}, {"updated_at": ts_above_low_boundary}, {"updated_at": ts_below_low_boundary}],
-            "end": 108, "total": 110, "page": 9,
+            "end": 108,
+            "total": 110,
+            "page": 9,
         }
         stream = SomeReverseIncrementalStream(api_key="some_key", start_date=START_DATE.isoformat())
         stream.request_params(stream_state={"updated_at": ts_state.isoformat()})
@@ -236,7 +249,9 @@ class TestReverseIncrementalKlaviyoStream:
 
         response.json.return_value = {
             "data": [{"updated_at": ts_below_low_boundary}, {"updated_at": ts_below_low_boundary}, {"updated_at": ts_above_low_boundary}],
-            "end": 108, "total": 110, "page": 9,
+            "end": 108,
+            "total": 110,
+            "page": 9,
         }
         stream = SomeReverseIncrementalStream(api_key="some_key", start_date=START_DATE.isoformat())
         stream.request_params(stream_state={})
