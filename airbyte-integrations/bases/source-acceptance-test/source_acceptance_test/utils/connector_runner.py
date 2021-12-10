@@ -3,15 +3,17 @@
 #
 
 
+import docker
 import json
 import logging
+import re
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
+from docker.errors import ContainerError
 from pathlib import Path
+from pydantic import ValidationError
 from typing import Iterable, List, Mapping, Optional
 
-import docker
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
-from docker.errors import ContainerError
-from pydantic import ValidationError
+CONTAINER_PREFIX = "airbyte_tests_"
 
 
 class ConnectorRunner:
@@ -34,7 +36,8 @@ class ConnectorRunner:
     def input_folder(self) -> Path:
         return self._volume_base / f"run_{self._runs}" / "input"
 
-    def _prepare_volumes(self, config: Optional[Mapping], state: Optional[Mapping], catalog: Optional[ConfiguredAirbyteCatalog]):
+    def _prepare_volumes(self, config: Optional[Mapping], state: Optional[Mapping],
+                         catalog: Optional[ConfiguredAirbyteCatalog]):
         self.input_folder.mkdir(parents=True)
         self.output_folder.mkdir(parents=True)
 
@@ -90,26 +93,45 @@ class ConnectorRunner:
     def run(self, cmd, config=None, state=None, catalog=None, **kwargs) -> Iterable[AirbyteMessage]:
         self._runs += 1
         volumes = self._prepare_volumes(config, state, catalog)
-        logging.info("Docker run: \n%s\ninput: %s\noutput: %s", cmd, self.input_folder, self.output_folder)
-        try:
-            logs = self._client.containers.run(
-                image=self._image, command=cmd, working_dir="/data", volumes=volumes, network="host", stdout=True, stderr=True, **kwargs
-            )
-        except ContainerError as err:
-            # beautify error from container
-            patched_error = ContainerError(
-                container=err.container, exit_status=err.exit_status, command=err.command, image=err.image, stderr=err.stderr.decode()
-            )
-            raise patched_error from None  # get rid of any previous exception stack
 
-        with open(str(self.output_folder / "raw"), "wb+") as f:
-            f.write(logs)
+        logging.info(f"Docker run: \n{cmd}\n"
+                     f"input: {self.input_folder}\noutput: {self.output_folder}")
 
-        for line in logs.decode("utf-8").splitlines():
+        container = self._client.containers.create(
+            image=self._image, command=cmd,
+            working_dir="/data",
+            auto_remove=True, detach=True,
+            **kwargs
+        )
+
+        for line in container.restart(
+                stdout=True, stderr=True,
+                stream=True, logs=True,
+                remove=True,
+        ):
+            line = line.strip().decode()
             try:
-                yield AirbyteMessage.parse_raw(line)
+                message = AirbyteMessage.parse_raw(line)
             except ValidationError as exc:
-                logging.warning("Unable to parse connector's output %s", exc)
+                logging.warning("Unable to parse connector's output %s, error: %s", line, exc)
+                continue
+
+            if message.type == Type.LOG and "Traceback (most recent call last)" in message.log.message:
+                logging.error(message.log.message.replace("\\\\n", "\n"))
+            else:
+                yield message
+
+        exit_status = container.wait()
+        if exit_status["StatusCode"]:
+            logging.error(f"Docker container was failed with cmd: {cmd}, "
+                          f'code {exit_status["StatusCode"]}, error: {exit_status["Error"]}')
+            raise ContainerError(
+                container=container,
+                exit_status=exit_status["StatusCode"],
+                command=cmd,
+                image=self._image,
+                stderr=exit_status["Error"],
+            )
 
     @property
     def env_variables(self):
