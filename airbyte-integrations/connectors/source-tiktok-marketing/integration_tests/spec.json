@@ -21,12 +21,12 @@
               },
               "app_id": {
                 "title": "App Id",
-                "description": "The App id applied by the developer.",
+                "description": "The App ID applied by the developer.",
                 "type": "string"
               },
               "secret": {
                 "title": "Secret",
-                "description": "The private key of the developer's application.",
+                "description": "The private key of the developer application.",
                 "airbyte_secret": true,
                 "type": "string"
               }
@@ -55,14 +55,14 @@
       },
       "access_token": {
         "title": "Access Token",
-        "description": "Long-term Authorized Access Token.",
+        "description": "The Long-term Authorized Access Token.",
         "order": 1,
         "airbyte_secret": true,
         "type": "string"
       },
       "start_date": {
         "title": "Start Date",
-        "description": "Start Date in format: YYYY-MM-DD.",
+        "description": "The Start Date in format: YYYY-MM-DD. Any data before this date will not be replicated. If this parameter is not set, all data will be replicated.",
         "default": "2016-09-01",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "order": 3,
