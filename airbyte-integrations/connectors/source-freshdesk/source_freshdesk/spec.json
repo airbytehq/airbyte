@@ -23,7 +23,7 @@
       "requests_per_minute": {
         "title": "Requests per minute",
         "type": "integer",
-        "description": "The number of requests per minute that this source allowed to use."
+        "description": "The number of requests per minute that this source allowed to use. There is a rate limit of 50 requests per minute per app per account."
       },
       "start_date": {
         "title": "Start Date",

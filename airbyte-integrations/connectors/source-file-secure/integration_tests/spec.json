@@ -10,19 +10,19 @@
       "dataset_name": {
         "type": "string",
         "title": "Dataset Name",
-        "description": "The Name of the final table where to replicate this file (should include only letters, numbers dash and underscores)."
+        "description": "The Name of the final table where to replicate this file into (should include only letters, numbers dash and underscores)."
       },
       "format": {
         "type": "string",
         "enum": ["csv", "json", "jsonl", "excel", "feather", "parquet"],
         "default": "csv",
-        "title": "Format",
+        "title": "File Format",
         "description": "The Format of the file which should be replicated (Warning: some format may be experimental, please refer to docs)."
       },
       "reader_options": {
         "type": "string",
         "title": "Reader Options",
-        "description": "This should be a string in JSON format and depended on the chosen file format to provide additional options and tune its behavior.",
+        "description": "This should be a string in JSON format. It depends on the chosen file format to provide additional options and tune its behavior.",
         "examples": ["{}", "{'sep': ' '}"]
       },
       "url": {
@@ -32,7 +32,7 @@
       },
       "provider": {
         "type": "object",
-        "title": "Provider",
+        "title": "Storage Provider",
         "description": "The storage Provider or Location of the file(s) which should be replicated.",
         "default": "Public Web",
         "oneOf": [
