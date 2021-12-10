@@ -8,6 +8,7 @@
       "environment": {
         "title": "Environment",
         "default": "Production",
+        "order": 2,
         "oneOf": [
           {
             "title": "Production",
@@ -55,14 +56,24 @@
       "access_token": {
         "title": "Access Token",
         "description": "Long-term Authorized Access Token.",
+        "order": 1,
         "airbyte_secret": true,
         "type": "string"
       },
       "start_date": {
         "title": "Start Date",
         "description": "Start Date in format: YYYY-MM-DD.",
-        "default": "01-09-2016",
+        "default": "2016-09-01",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "order": 3,
+        "type": "string"
+      },
+      "report_granularity": {
+        "title": "Report Granularity",
+        "description": "Which time granularity should be grouped by; for LIFETIME there will be no grouping. This option is used for reports' streams only.",
+        "default": "DAY",
+        "enum": ["LIFETIME", "DAY", "HOUR"],
+        "order": 4,
         "type": "string"
       }
     },

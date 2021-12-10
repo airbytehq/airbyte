@@ -326,7 +326,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-appstore-singer:0.2.4"
+- dockerImage: "airbyte/source-appstore-singer:0.2.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/appstore"
     connectionSpecification:
@@ -1880,7 +1880,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.1.16"
+- dockerImage: "airbyte/source-google-ads:0.1.18"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-ads"
     connectionSpecification:
@@ -1940,12 +1940,13 @@
                 >docs</a>"
               airbyte_secret: true
         customer_id:
-          title: "Customer Id"
+          title: "Customer ID"
           type: "string"
           description: "Customer id must be specified as a 10-digit number without\
             \ dashes. More instruction on how to find this value in our <a href=\"\
             https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\"\
-            >docs</a>"
+            >docs</a>. Metrics streams like AdGroupAdReport cannot be requested for\
+            \ a manager account."
           order: 1
         start_date:
           type: "string"
@@ -2011,7 +2012,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-v4:0.1.12"
+- dockerImage: "airbyte/source-google-analytics-v4:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-analytics-v4"
     connectionSpecification:
@@ -6199,7 +6200,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tiktok-marketing:0.1.1"
+- dockerImage: "airbyte/source-tiktok-marketing:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
@@ -6210,6 +6211,8 @@
         environment:
           title: "Environment"
           default: "Production"
+          order: 2
+          type: "object"
           oneOf:
           - title: "Production"
             type: "object"
@@ -6244,17 +6247,30 @@
                 type: "string"
             required:
             - "advertiser_id"
-          type: "object"
         access_token:
           title: "Access Token"
           description: "Long-term Authorized Access Token."
+          order: 1
           airbyte_secret: true
           type: "string"
         start_date:
           title: "Start Date"
           description: "Start Date in format: YYYY-MM-DD."
-          default: "01-09-2016"
+          default: "2016-09-01"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          order: 3
+          type: "string"
+        report_granularity:
+          title: "Report Granularity"
+          description: "Which time granularity should be grouped by; for LIFETIME\
+            \ there will be no grouping. This option is used for reports' streams\
+            \ only."
+          default: "DAY"
+          enum:
+          - "LIFETIME"
+          - "DAY"
+          - "HOUR"
+          order: 4
           type: "string"
       required:
       - "access_token"
