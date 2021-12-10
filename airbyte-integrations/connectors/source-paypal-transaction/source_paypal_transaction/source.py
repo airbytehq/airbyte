@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -18,7 +19,7 @@ from dateutil.parser import isoparse
 
 
 class PaypalHttpException(Exception):
-    """Just for formatting the exception as Square"""
+    """HTTPError Exception with detailed info"""
 
     def __init__(self, error: requests.exceptions.HTTPError):
         self.error = error
@@ -385,15 +386,19 @@ class SourcePaypalTransaction(AbstractSource):
             # validate input date ranges
             Transactions(authenticator=authenticator, **config).validate_input_dates()
 
-            # validate if Paypal is able to extract data for given start_data
+            # validate if Paypal API is able to extract data for given start_data
             start_date = isoparse(config["start_date"])
             end_date = start_date + timedelta(days=1)
             stream_slice = {
                 "start_date": start_date.isoformat(),
                 "end_date": end_date.isoformat(),
             }
-            records = Transactions(authenticator=authenticator, **config).read_records(sync_mode="full", stream_slice=stream_slice)
-            list(records)
+            records = Transactions(authenticator=authenticator, **config).read_records(
+                sync_mode=SyncMode.full_refresh,
+                stream_slice=stream_slice
+            )
+            # Try to read one value from records iterator
+            next(records, None)
 
         except Exception as e:
             if "Data for the given start date is not available" in repr(e):
