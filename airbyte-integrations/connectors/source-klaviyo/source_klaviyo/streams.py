@@ -45,7 +45,7 @@ class KlaviyoStream(HttpStream, ABC):
         return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         """Usually contains common params e.g. pagination size etc."""
         next_page_token = next_page_token or {}
@@ -142,7 +142,7 @@ class ReverseIncrementalKlaviyoStream(KlaviyoStream, ABC):
         :return str: The name of the cursor field.
         """
 
-    def request_params(self, stream_state=None, **kwargs):
+    def request_params(self, stream_state=None, **kwargsrequest_params):
         """Add incremental filters"""
         stream_state = stream_state or {}
         if stream_state:
