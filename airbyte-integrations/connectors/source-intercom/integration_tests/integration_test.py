@@ -3,16 +3,16 @@
 #
 
 import json
+import pytest
 import time
+from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from copy import deepcopy
 from pathlib import Path
+from requests.exceptions import HTTPError
 from typing import Mapping
 from unittest.mock import patch
 
-import pytest
-from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import SyncMode
-from requests.exceptions import HTTPError
 from source_intercom.source import Companies, ConversationParts, SourceIntercom, VersionApiAuthenticator
 
 LOGGER = AirbyteLogger()
@@ -28,18 +28,19 @@ def stream_attributes() -> Mapping[str, str]:
         return json.load(json_file)
 
 
+@pytest.mark.skip(reason="need to refresh this test, it is very slow")
 @pytest.mark.parametrize(
     "version,not_supported_streams,custom_companies_data_field",
     (
-        (1.0, ["company_segments", "company_attributes", "contact_attributes"], "companies"),
-        (1.1, ["company_segments", "company_attributes", "contact_attributes"], "companies"),
-        (1.2, ["company_segments", "company_attributes", "contact_attributes"], "companies"),
-        (1.3, ["company_segments", "company_attributes", "contact_attributes"], "companies"),
-        (1.4, ["company_segments"], "companies"),
-        (2.0, [], "data"),
-        (2.1, [], "data"),
-        (2.2, [], "data"),
-        (2.3, [], "data"),
+            (1.0, ["company_segments", "company_attributes", "contact_attributes"], "companies"),
+            (1.1, ["company_segments", "company_attributes", "contact_attributes"], "companies"),
+            (1.2, ["company_segments", "company_attributes", "contact_attributes"], "companies"),
+            (1.3, ["company_segments", "company_attributes", "contact_attributes"], "companies"),
+            (1.4, ["company_segments"], "companies"),
+            (2.0, [], "data"),
+            (2.1, [], "data"),
+            (2.2, [], "data"),
+            (2.3, [], "data"),
     ),
 )
 def test_supported_versions(stream_attributes, version, not_supported_streams, custom_companies_data_field):
@@ -49,17 +50,17 @@ def test_supported_versions(stream_attributes, version, not_supported_streams, c
     authenticator = CustomVersionApiAuthenticator(token=stream_attributes["access_token"])
     for stream in SourceIntercom().streams(deepcopy(stream_attributes)):
         stream._authenticator = authenticator
-
         if stream.name == "companies":
             stream.data_fields = [custom_companies_data_field]
         elif hasattr(stream, "parent_stream_class") and stream.parent_stream_class == Companies:
             stream.parent_stream_class.data_fields = [custom_companies_data_field]
 
-        slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
         if stream.name in not_supported_streams:
             LOGGER.info(f"version {version} shouldn't be supported the stream '{stream.name}'")
             with pytest.raises(HTTPError) as err:
-                next(stream.read_records(sync_mode=None, stream_slice=slices[0]), None)
+                for slice in stream.stream_slices(sync_mode=SyncMode.full_refresh):
+                    next(stream.read_records(sync_mode=None, stream_slice=slice), None)
+                    break
             # example of response errors:
             # {"type": "error.list", "request_id": "000hjqhpf95ef3b8f8v0",
             #  "errors": [{"code": "intercom_version_invalid", "message": "The requested version could not be found"}]}
@@ -68,12 +69,13 @@ def test_supported_versions(stream_attributes, version, not_supported_streams, c
             LOGGER.info(f"version {version} doesn't support the stream '{stream.name}', error: {err_data}")
         else:
             LOGGER.info(f"version {version} should be supported the stream '{stream.name}'")
-            records = stream.read_records(sync_mode=None, stream_slice=slices[0])
-            if stream.name == "companies":
-                # need to read all records for scroll resetting
-                list(records)
-            else:
-                next(records, None)
+            for slice in stream.stream_slices(sync_mode=SyncMode.full_refresh):
+                records = stream.read_records(sync_mode=None, stream_slice=slice)
+                if stream.name == "companies":
+                    # need to read all records for scroll resetting
+                    list(records)
+                else:
+                    next(records, None)
 
 
 def test_companies_scroll(stream_attributes):
