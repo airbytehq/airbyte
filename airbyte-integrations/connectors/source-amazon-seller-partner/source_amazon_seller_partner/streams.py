@@ -290,7 +290,7 @@ class ReportsAmazonSPStream(Stream, ABC):
     def parse_document(self, document):
         return csv.DictReader(StringIO(document), delimiter="\t")
 
-    def report_options(self):
+    def report_options(self) -> Mapping[str, Any]:
         return json_lib.loads(self._report_options).get(self.name)
 
     def read_records(
@@ -396,8 +396,14 @@ class BrandAnalyticsSearchTermsReports(ReportsAmazonSPStream):
         parsed = json_lib.loads(document)
         return parsed.get("dataByDepartmentAndSearchTerm", {})
 
-    def _report_data(self) -> Mapping[str, Any]:
-         data = super()._report_data()
+    def _report_data(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+         data = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
          options = self.report_options()
          if options is not None:
              data.update(self._augmented_data(options))
@@ -428,7 +434,7 @@ class BrandAnalyticsSearchTermsReports(ReportsAmazonSPStream):
                 pendulum.week_starts_at(pendulum.MONDAY)
                 pendulum.week_ends_at(pendulum.SUNDAY)
             elif report_options["reportPeriod"] == "MONTH":
-                now = now.subtract(months=1)
+                now = now.subtract(months=3)
                 data_start_time = now.start_of("month")
                 data_end_time = now.end_of("month")
             else:
