@@ -60,6 +60,7 @@ public abstract class AbstractBigQueryUploader<T extends CommonWriter> {
 
   public void upload(AirbyteMessage airbyteMessage) {
     try {
+      LOGGER.info("Writing message record : " + airbyteMessage.getRecord());
       writer.write((formatRecord(airbyteMessage.getRecord())));
     } catch (final IOException | RuntimeException e) {
       LOGGER.error("Got an error while writing message: {}", e.getMessage(), e);
@@ -87,12 +88,12 @@ public abstract class AbstractBigQueryUploader<T extends CommonWriter> {
   public void close(boolean hasFailed, Consumer<AirbyteMessage> outputRecordCollector, AirbyteMessage lastStateMessage) {
         try {
           LOGGER.info("Closing connector:" + this);
+          this.writer.close(hasFailed);
 
           if (!hasFailed) {
             uploadData(outputRecordCollector, lastStateMessage);
           }
           this.postProcessAction(hasFailed);
-          this.writer.close(hasFailed);
           LOGGER.info("Closed connector:" + this);
         } catch (final Exception e) {
           LOGGER.error(String.format("Failed to close %s writer, \n details: %s", this, e.getMessage()));
