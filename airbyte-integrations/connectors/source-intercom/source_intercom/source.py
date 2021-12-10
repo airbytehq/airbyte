@@ -162,7 +162,7 @@ class Companies(IncrementalIntercomStream):
     1) "standard" - https://developers.intercom.com/intercom-api-reference/reference#list-companies.
        But this endpoint does not work well for huge datasets and can have performance problems.
     2) "scroll" - https://developers.intercom.com/intercom-api-reference/reference#iterating-over-all-companies
-       It has good performance but at same time only one script/client can use it.
+       It has good performance but at same time only one script/client can use it across the client's entire account.
 
      According to above circumstances no one endpoint can't be used permanently. That's why this stream tries can
     apply both endpoints according to the following logic:
