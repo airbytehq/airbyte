@@ -78,3 +78,12 @@ task copyGeneratedTar(type: Copy) {
 Task dockerBuildTask = getDockerBuildTask("worker",  "$project.projectDir")
 dockerBuildTask.dependsOn(copyGeneratedTar)
 assemble.dependsOn(dockerBuildTask)
+
+task cloudStorageIntegrationTest(type: Test) {
+    useJUnitPlatform {
+        includeTags cloudStorageTestTagName
+    }
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
