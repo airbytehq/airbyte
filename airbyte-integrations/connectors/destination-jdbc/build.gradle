@@ -10,6 +10,7 @@ dependencies {
 
     implementation project(':airbyte-db:lib')
     implementation project(':airbyte-integrations:bases:base-java')
+    implementation project(':airbyte-integrations:connectors:destination-s3')
     implementation project(':airbyte-protocol:models')
 
     implementation 'org.apache.commons:commons-lang3:3.11'

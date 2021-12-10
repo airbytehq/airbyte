@@ -11,8 +11,8 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.CopyConsumerFactory;
 import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
+import io.airbyte.integrations.destination.s3.S3Destination;
+import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
@@ -21,14 +21,14 @@ public class SnowflakeCopyS3Destination extends CopyDestination {
 
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     return CopyConsumerFactory.create(
         outputRecordCollector,
         getDatabase(config),
         getSqlOperations(),
         getNameTransformer(),
-        getS3Config(config),
+        getS3DestinationConfig(config),
         catalog,
         new SnowflakeS3StreamCopierFactory(),
         getConfiguredSchema(config));
@@ -36,7 +36,7 @@ public class SnowflakeCopyS3Destination extends CopyDestination {
 
   @Override
   public void checkPersistence(final JsonNode config) {
-    S3StreamCopier.attemptS3WriteAndDelete(getS3Config(config));
+    S3Destination.attemptS3WriteAndDelete(getS3DestinationConfig(config), "");
   }
 
   @Override
@@ -58,9 +58,9 @@ public class SnowflakeCopyS3Destination extends CopyDestination {
     return config.get("schema").asText();
   }
 
-  private S3Config getS3Config(final JsonNode config) {
+  private S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
     final JsonNode loadingMethod = config.get("loading_method");
-    return S3Config.getS3Config(loadingMethod);
+    return S3DestinationConfig.getS3DestinationConfig(loadingMethod);
   }
 
 }

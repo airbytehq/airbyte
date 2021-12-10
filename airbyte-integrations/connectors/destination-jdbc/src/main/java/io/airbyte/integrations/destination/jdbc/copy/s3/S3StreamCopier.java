@@ -6,12 +6,7 @@ package io.airbyte.integrations.destination.jdbc.copy.s3;
 
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -19,6 +14,7 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
+import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
@@ -43,10 +39,6 @@ public abstract class S3StreamCopier implements StreamCopier {
 
   private static final int DEFAULT_UPLOAD_THREADS = 10; // The S3 cli uses 10 threads by default.
   private static final int DEFAULT_QUEUE_CAPACITY = DEFAULT_UPLOAD_THREADS;
-  // The smallest part size is 5MB. An S3 upload can be maximally formed of 10,000 parts. This gives
-  // us an upper limit of 10,000 * 10 / 1000 = 100 GB per table with a 10MB part size limit.
-  // WARNING: Too large a part size can cause potential OOM errors.
-  public static final int DEFAULT_PART_SIZE_MB = 10;
   // It is optimal to write every 10,000,000 records (BATCH_SIZE * DEFAULT_PART) to a new file.
   // The BATCH_SIZE is defined in CopyConsumerFactory.
   // The average size of such a file will be about 1 GB.
@@ -57,7 +49,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   public static final int MAX_PARTS_PER_FILE = 1000;
 
   protected final AmazonS3 s3Client;
-  protected final S3Config s3Config;
+  protected final S3DestinationConfig s3Config;
   protected final String tmpTableName;
   private final DestinationSyncMode destSyncMode;
   protected final String schemaName;
@@ -74,15 +66,15 @@ public abstract class S3StreamCopier implements StreamCopier {
   private final StagingFilenameGenerator filenameGenerator;
 
   public S3StreamCopier(final String stagingFolder,
-                        final DestinationSyncMode destSyncMode,
-                        final String schema,
-                        final String streamName,
-                        final String s3FileName,
-                        final AmazonS3 client,
-                        final JdbcDatabase db,
-                        final S3Config s3Config,
-                        final ExtendedNameTransformer nameTransformer,
-                        final SqlOperations sqlOperations) {
+      final DestinationSyncMode destSyncMode,
+      final String schema,
+      final String streamName,
+      final String s3FileName,
+      final AmazonS3 client,
+      final JdbcDatabase db,
+      final S3DestinationConfig s3Config,
+      final ExtendedNameTransformer nameTransformer,
+      final SqlOperations sqlOperations) {
     this.destSyncMode = destSyncMode;
     this.schemaName = schema;
     this.streamName = streamName;
@@ -231,58 +223,11 @@ public abstract class S3StreamCopier implements StreamCopier {
     LOGGER.info("All data for {} stream uploaded.", streamName);
   }
 
-  public static void attemptS3WriteAndDelete(final S3Config s3Config) {
-    attemptS3WriteAndDelete(s3Config, "");
-  }
-
-  public static void attemptS3WriteAndDelete(final S3Config s3Config, final String bucketPath) {
-    final var prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
-    final String outputTableName = prefix + "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
-    attemptWriteAndDeleteS3Object(s3Config, outputTableName);
-  }
-
-  private static void attemptWriteAndDeleteS3Object(final S3Config s3Config, final String outputTableName) {
-    final var s3 = getAmazonS3(s3Config);
-    final var s3Bucket = s3Config.getBucketName();
-
-    s3.putObject(s3Bucket, outputTableName, "check-content");
-    s3.deleteObject(s3Bucket, outputTableName);
-  }
-
-  public static AmazonS3 getAmazonS3(final S3Config s3Config) {
-    final var endpoint = s3Config.getEndpoint();
-    final var region = s3Config.getRegion();
-    final var accessKeyId = s3Config.getAccessKeyId();
-    final var secretAccessKey = s3Config.getSecretAccessKey();
-
-    final var awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
-
-    if (endpoint.isEmpty()) {
-      return AmazonS3ClientBuilder.standard()
-          .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-          .withRegion(s3Config.getRegion())
-          .build();
-
-    } else {
-
-      final ClientConfiguration clientConfiguration = new ClientConfiguration();
-      clientConfiguration.setSignerOverride("AWSS3V4SignerType");
-
-      return AmazonS3ClientBuilder
-          .standard()
-          .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, region))
-          .withPathStyleAccessEnabled(true)
-          .withClientConfiguration(clientConfiguration)
-          .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-          .build();
-    }
-  }
-
   public abstract void copyS3CsvFileIntoTable(JdbcDatabase database,
-                                              String s3FileLocation,
-                                              String schema,
-                                              String tableName,
-                                              S3Config s3Config)
+      String s3FileLocation,
+      String schema,
+      String tableName,
+      S3DestinationConfig s3Config)
       throws SQLException;
 
 }
