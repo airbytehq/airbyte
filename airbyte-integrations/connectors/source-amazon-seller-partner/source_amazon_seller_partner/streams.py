@@ -434,7 +434,7 @@ class BrandAnalyticsSearchTermsReports(ReportsAmazonSPStream):
                 pendulum.week_starts_at(pendulum.MONDAY)
                 pendulum.week_ends_at(pendulum.SUNDAY)
             elif report_options["reportPeriod"] == "MONTH":
-                now = now.subtract(months=3)
+                now = now.subtract(months=1)
                 data_start_time = now.start_of("month")
                 data_end_time = now.end_of("month")
             else:
