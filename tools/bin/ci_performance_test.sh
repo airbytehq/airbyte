@@ -7,7 +7,6 @@ set -e
 # runs performance tests for an performance name
 
 connector="$1"
-cpulimit="$2"
 all_performance_tests=$(./gradlew performanceTest --dry-run | grep 'performanceTest SKIPPED' | cut -d: -f 4)
 run() {
 firstarg=""
