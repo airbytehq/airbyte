@@ -23,6 +23,7 @@ import io.airbyte.workers.temporal.scheduling.activities.JobCreationActivity.Job
 import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.temporal.api.enums.v1.ParentClosePolicy;
+import io.temporal.failure.CanceledFailure;
 import io.temporal.workflow.CancellationScope;
 import io.temporal.workflow.ChildWorkflowOptions;
 import io.temporal.workflow.Workflow;
@@ -88,7 +89,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
 
         final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
             ChildWorkflowOptions.newBuilder()
-                .setWorkflowId("sync_" + connectionUpdaterInput.getJobId())
+                .setWorkflowId("sync_" + maybeJobId.get())
                 .setTaskQueue(TemporalJobType.SYNC.name())
                 // This will cancel the child workflow when the parent is terminated
                 .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_TERMINATE)
@@ -105,9 +106,14 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
             connectionId);
       });
 
-      syncWorkflowCancellationScope.run();
-      syncWorkflowCancellationScope.wait();
-
+      try {
+        syncWorkflowCancellationScope.run();
+        syncWorkflowCancellationScope.wait();
+      } catch (final CanceledFailure cf) {
+        // When a scope is cancelled temporal will thow a CanceledFailure as you can see here:
+        // https://github.com/temporalio/sdk-java/blob/master/temporal-sdk/src/main/java/io/temporal/workflow/CancellationScope.java#L72
+        // The naming is very misleading, it is not a failure but the expected behavior...
+      }
       log.error("Is canceled: " + isCancel);
       log.error("Is deleted: " + isDeleted);
 
