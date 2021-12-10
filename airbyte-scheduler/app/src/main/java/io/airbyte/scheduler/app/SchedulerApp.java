@@ -167,14 +167,20 @@ public class SchedulerApp {
 
   private void cleanupZombies(final JobPersistence jobPersistence, final JobNotifier jobNotifier) throws IOException {
     for (final Job zombieJob : jobPersistence.listJobsWithStatus(JobStatus.RUNNING)) {
-      jobNotifier.failJob("zombie job was cancelled", zombieJob);
+      jobNotifier.failJob("zombie job was failed", zombieJob);
+
+      final int currentAttemptNumber = zombieJob.getAttemptsCount() - 1;
+
       LOGGER.warn(
-          "zombie clean up - job was cancelled. job id: {}, type: {}, scope: {}",
+          "zombie clean up - job attempt was failed. job id: {}, attempt number: {}, type: {}, scope: {}",
           zombieJob.getId(),
+          currentAttemptNumber,
           zombieJob.getConfigType(),
           zombieJob.getScope());
 
-      jobPersistence.cancelJob(zombieJob.getId());
+      jobPersistence.failAttempt(
+          zombieJob.getId(),
+          currentAttemptNumber);
     }
   }
 
