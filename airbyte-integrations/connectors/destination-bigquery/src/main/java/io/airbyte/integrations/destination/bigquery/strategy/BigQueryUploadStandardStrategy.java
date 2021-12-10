@@ -4,11 +4,11 @@
 
 package io.airbyte.integrations.destination.bigquery.strategy;
 
+import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.getJobErrorMessage;
 import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.printHeapMemoryConsumption;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.BigQueryError;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.CopyJobConfiguration;
 import com.google.cloud.bigquery.Field;
@@ -40,7 +40,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,7 +110,7 @@ public class BigQueryUploadStandardStrategy implements BigQueryUploadStrategy {
           try {
             job.waitFor();
           } catch (final BigQueryException e) {
-            String errorMessage = getErrorMessage(e.getErrors(), job);
+            String errorMessage = getJobErrorMessage(e.getErrors(), job);
             logErrorAndHeapParameters(bigQueryWriteConfig, job, errorMessage);
             throw new RuntimeException(errorMessage, e);
           } catch (final RuntimeException e) {
@@ -223,14 +222,6 @@ public class BigQueryUploadStandardStrategy implements BigQueryUploadStrategy {
             .map(Field::getName)
             .collect(Collectors.joining(", "))
         + String.format(" from `%s.%s.%s`", projectId, destinationTableId.getDataset(), destinationTableId.getTable());
-  }
-
-  private String getErrorMessage(List<BigQueryError> errors, Job job) {
-    if (!errors.isEmpty()) {
-      return String.format("Error is happened during execution for job: %s, \n For more details see Big Query Error collection: %s:", job,
-          errors.stream().map(BigQueryError::toString).collect(Collectors.joining(",\n ")));
-    }
-    return StringUtils.EMPTY;
   }
 
   private void logErrorAndHeapParameters(BigQueryWriteConfig bigQueryWriteConfig, Job job) {
