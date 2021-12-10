@@ -6,8 +6,11 @@ package io.airbyte.oauth.flows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuth2Flow;
+import io.airbyte.protocol.models.OAuthConfigSpecification;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -18,11 +21,7 @@ import org.apache.http.client.utils.URIBuilder;
 
 public class MicrosoftTeamsOAuthFlow extends BaseOAuth2Flow {
 
-  /*
-   * hard-coded TENANT_ID for testing
-   */
-
-  private static final String TENANT_ID = "277f8a66-1e88-46c9-8c7b-23c442857904";
+  private static String tenantId;
 
   public MicrosoftTeamsOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
@@ -47,11 +46,14 @@ public class MicrosoftTeamsOAuthFlow extends BaseOAuth2Flow {
                                     final String redirectUrl,
                                     final JsonNode inputOAuthConfiguration)
       throws IOException {
+
+    tenantId = getConfigValueUnsafe(inputOAuthConfiguration, "tenant_id");
+
     try {
       return new URIBuilder()
           .setScheme("https")
           .setHost("login.microsoftonline.com")
-          .setPath(TENANT_ID + "/oauth2/v2.0/authorize")
+          .setPath(tenantId + "/oauth2/v2.0/authorize")
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl)
           .addParameter("state", getState())
@@ -102,13 +104,25 @@ public class MicrosoftTeamsOAuthFlow extends BaseOAuth2Flow {
         "User.ReadWrite.All");
   }
 
+  @Override
+  public Map<String, Object> completeSourceOAuth(final UUID workspaceId,
+                                                 final UUID sourceDefinitionId,
+                                                 final Map<String, Object> queryParams,
+                                                 final String redirectUrl,
+                                                 final JsonNode inputOAuthConfiguration,
+                                                 final OAuthConfigSpecification oAuthConfigSpecification)
+      throws IOException, ConfigNotFoundException, JsonValidationException {
+    tenantId = getConfigValueUnsafe(inputOAuthConfiguration, "tenant_id");
+    return super.completeSourceOAuth(workspaceId, sourceDefinitionId, queryParams, redirectUrl, inputOAuthConfiguration, oAuthConfigSpecification);
+  }
+
   /**
    * Returns the URL where to retrieve the access token from.
    *
    */
   @Override
   protected String getAccessTokenUrl() {
-    return "https://login.microsoftonline.com/" + TENANT_ID + "/oauth2/v2.0/token";
+    return "https://login.microsoftonline.com/" + tenantId + "/oauth2/v2.0/token";
   }
 
 }
