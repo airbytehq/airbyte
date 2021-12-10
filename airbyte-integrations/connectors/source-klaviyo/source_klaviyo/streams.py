@@ -142,7 +142,7 @@ class ReverseIncrementalKlaviyoStream(KlaviyoStream, ABC):
         :return str: The name of the cursor field.
         """
 
-    def request_params(self, stream_state=None, **kwargsrequest_params):
+    def request_params(self, stream_state=None, **kwargs):
         """Add incremental filters"""
         stream_state = stream_state or {}
         if stream_state:
@@ -158,8 +158,10 @@ class ReverseIncrementalKlaviyoStream(KlaviyoStream, ABC):
         Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
-        state_ts = int(current_stream_state.get(self.cursor_field, 0))
-        return {self.cursor_field: max(latest_record.get(self.cursor_field), state_ts)}
+        latest_cursor = pendulum.parse(latest_record[self.cursor_field])
+        if current_stream_state:
+            latest_cursor = max(pendulum.parse(latest_record[self.cursor_field]), pendulum.parse(current_stream_state[self.cursor_field]))
+        return {self.cursor_field: latest_cursor.isoformat()}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
