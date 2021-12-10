@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.32
+Add info about skipped failed tests in /test command message on GitHub: [#8691](https://github.com/airbytehq/airbyte/pull/8691)
+
+## 0.1.31
+Take ConfiguredAirbyteCatalog from discover command by default
+
 ## 0.1.30
 Validate if each field in a stream has appeared at least once in some record.
 

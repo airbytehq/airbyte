@@ -11,7 +11,7 @@ import com.google.cloud.bigquery.TableId;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.csv.GcsCsvWriter;
 
-class BigQueryWriteConfig {
+public class BigQueryWriteConfig {
 
   private final TableId table;
   private final TableId tmpTable;
