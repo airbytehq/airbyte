@@ -447,7 +447,9 @@ class IncrementalStream(Stream, ABC):
     def state(self) -> Optional[Mapping[str, Any]]:
         """Current state, if wasn't set return None"""
         if self._state:
-            return {self.state_pk: int(self._state.timestamp() * 1000)} if self.state_pk == "timestamp" else {self.state_pk: str(self._state)}
+            return (
+                {self.state_pk: int(self._state.timestamp() * 1000)} if self.state_pk == "timestamp" else {self.state_pk: str(self._state)}
+            )
         return None
 
     @state.setter
