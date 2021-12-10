@@ -6,7 +6,21 @@ import pytest
 from source_google_ads.custom_query_stream import CustomQuery
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.streams import AdGroupAdReport, chunk_date_range
+import pendulum
 
+
+## Test chunck date range without end date
+def test_chunk_date_range_without_end_date():
+    start_date = pendulum.now().subtract(days=5).to_date_string()
+    conversion_window = 0
+    field = "date"
+    response = chunk_date_range(start_date, conversion_window, field)
+    start_date = pendulum.parse(start_date)
+    expected_response = []
+    while start_date < pendulum.now():
+        expected_response.append({field: start_date.to_date_string()})
+        start_date = start_date.add(1)
+    assert expected_response == response
 
 def test_chunk_date_range():
     start_date = "2021-03-04"
@@ -46,6 +60,21 @@ def get_instance_from_config(config, query):
     )
     return instance
 
+# get he instance with a config 
+def get_instance_from_config_with_end_date(config, query):
+    start_date = "2021-03-04"
+    end_date = "2021-04-04"
+    conversion_window_days = 14
+    google_api = GoogleAds(credentials=config["credentials"], customer_id=config["customer_id"])
+
+    instance = CustomQuery(
+        api=google_api,
+        conversion_window_days=conversion_window_days,
+        start_date=start_date,
+        end_date=end_date,
+        custom_query_config={"query": query, "table_name": "whatever_table"},
+    )
+    return instance
 
 @pytest.mark.parametrize(
     "query, fields",
@@ -188,6 +217,28 @@ def test_get_json_schema_parse_query(config):
     schema_keys = final_schema["properties"]
     assert set(schema_keys) == set(final_fields)  # test 1
 
+# Test get json schema when start and end date are provided in the config file
+def test_get_json_schema_parse_query_with_end_date(config):
+    query = """
+        SELECT
+            campaign.accessible_bidding_strategy,
+            segments.ad_destination_type,
+            campaign.start_date,
+            campaign.end_date
+        FROM campaign
+        """
+    final_fields = [
+        "campaign.accessible_bidding_strategy",
+        "segments.ad_destination_type",
+        "campaign.start_date",
+        "campaign.end_date",
+        "segments.date",
+    ]
+
+    instance = get_instance_from_config_with_end_date(config=config, query=query)
+    final_schema = instance.get_json_schema()
+    schema_keys = final_schema["properties"]
+    assert set(schema_keys) == set(final_fields)  # test 1
 
 def test_google_type_conversion(config):
     """
