@@ -9,8 +9,8 @@
     "properties": {
       "api_token": {
         "type": "string",
-        "title": "API Token",
-        "description": "Kustomer API Token",
+        "title": "API Key",
+        "description": "Kustomer API Key. See the <a href=\"https://developer.kustomer.com/kustomer-api-docs/reference/authentication\">docs</a>" on how to obtain this",
         "airbyte_secret": true
       },
       "start_date": {
@@ -27,7 +27,7 @@
       "date_window_size": {
         "type": "string",
         "title": "Date Window Size",
-        "description": "The integer number of days (between the from and to dates) for the date-filtered endpoints"
+        "description": "The integer number of days (between the from and to dates) for date-windowing through the date-filtered endpoints (default 60 days)."
       },
       "page_size_limit": {
         "type": "string",

@@ -35,7 +35,7 @@
       "start_date": {
         "title": "Start Date",
         "type": "string",
-        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
+        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated. If this option is not set, the connector will replicate data from up to one year ago by default.",
         "examples": ["2021-11-16"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$"
       },
