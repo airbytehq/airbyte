@@ -11,7 +11,7 @@
         "type": "integer",
 	"title": "Since",
         "description": "An optional Unix timestamp to restrict responses to those created on or after this time.",
-        "example (for 1 hour ago)": [1638540972]
+        "example": [1625328167]
       },
       "api_key": {
         "type": "string",
