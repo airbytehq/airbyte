@@ -23,7 +23,7 @@
       "reader_options": {
         "type": "string",
         "title": "Reader Options",
-        "description": "This should be a string in JSON format and depended on the chosen file format to provide additional options and tune its behavior.",
+        "description": "This should be a string in JSON format. It depends on the chosen file format to provide additional options and tune its behavior.",
         "examples": ["{}", "{'sep': ' '}"]
       },
       "url": {
