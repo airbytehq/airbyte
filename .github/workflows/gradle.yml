@@ -79,7 +79,7 @@ jobs:
 
       - uses: actions/setup-java@v1
         with:
-          java-version: "14"
+          java-version: "17"
 
       - uses: actions/setup-node@v1
         with:
@@ -96,7 +96,11 @@ jobs:
         run: |
           mkdir -p ~/.gradle/
           cat > ~/.gradle/gradle.properties <<EOF
-          org.gradle.jvmargs=-Xmx8g -Xss4m
+          org.gradle.jvmargs=-Xmx8g -Xss4m --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
           org.gradle.workers.max=8
           org.gradle.vfs.watch=false
           EOF
@@ -206,7 +210,7 @@ jobs:
 
       - uses: actions/setup-java@v1
         with:
-          java-version: "14"
+          java-version: "17"
 
       - uses: actions/setup-node@v1
         with:
@@ -216,7 +220,11 @@ jobs:
         run: |
           mkdir -p ~/.gradle/
           cat > ~/.gradle/gradle.properties <<EOF
-          org.gradle.jvmargs=-Xmx8g -Xss4m
+          org.gradle.jvmargs=-Xmx8g -Xss4m --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
           org.gradle.workers.max=8
           org.gradle.vfs.watch=false
           EOF
@@ -330,7 +338,7 @@ jobs:
 
       - uses: actions/setup-java@v1
         with:
-          java-version: "14"
+          java-version: "17"
 
       - uses: actions/setup-node@v1
         with:
@@ -343,7 +351,11 @@ jobs:
         run: |
           mkdir -p ~/.gradle/
           cat > ~/.gradle/gradle.properties <<EOF
-          org.gradle.jvmargs=-Xmx8g -Xss4m
+          org.gradle.jvmargs=-Xmx8g -Xss4m --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
           org.gradle.workers.max=8
           org.gradle.vfs.watch=false
           EOF
@@ -411,7 +423,7 @@ jobs:
 
       - uses: actions/setup-java@v1
         with:
-          java-version: "14"
+          java-version: "17"
 
       - uses: actions/setup-node@v1
         with:
@@ -425,7 +437,11 @@ jobs:
         run: |
           mkdir -p ~/.gradle/
           cat > ~/.gradle/gradle.properties <<EOF
-          org.gradle.jvmargs=-Xmx8g -Xss4m
+          org.gradle.jvmargs=-Xmx8g -Xss4m --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
           org.gradle.workers.max=8
           org.gradle.vfs.watch=false
           EOF
