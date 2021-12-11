@@ -8,7 +8,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
@@ -33,14 +32,9 @@ public abstract class S3StreamCopier implements StreamCopier {
 
   private static final int DEFAULT_UPLOAD_THREADS = 10; // The S3 cli uses 10 threads by default.
   private static final int DEFAULT_QUEUE_CAPACITY = DEFAULT_UPLOAD_THREADS;
-  // It is optimal to write every 10,000,000 records (BATCH_SIZE * DEFAULT_PART) to a new file.
-  // The BATCH_SIZE is defined in CopyConsumerFactory.
-  // The average size of such a file will be about 1 GB.
-  // This will make it easier to work with files and speed up the recording of large amounts of data.
-  // In addition, for a large number of records, we will not get a drop in the copy request to
-  // QUERY_TIMEOUT when
-  // the records from the file are copied to the staging table.
-  public static final int MAX_PARTS_PER_FILE = 1000;
+  // 4 * 256MiB (see CopyConsumerFactory#MAX_BATCH_SIZE_BYTES) = 1GiB, which redshift wants
+  // https://docs.aws.amazon.com/redshift/latest/dg/t_loading-tables-from-s3.html "Split your load data files so that the files are about equal size, between 1 MB and 1 GB after compression"
+  public static final int MAX_PARTS_PER_FILE = 4;
 
   protected final AmazonS3 s3Client;
   protected final S3DestinationConfig s3Config;
@@ -54,18 +48,25 @@ public abstract class S3StreamCopier implements StreamCopier {
   private final ConfiguredAirbyteStream configuredAirbyteStream;
   private final Timestamp uploadTime;
   protected final String stagingFolder;
-  private final StagingFilenameGenerator filenameGenerator;
   private final Map<String, S3Writer> stagingWritersBySuffix = new HashMap<>();
 
+
+  // The number of batches of records that will be inserted into each file.
+  private final int maxPartsPerFile;
+  // The number of batches inserted into the current file.
+  private int partsAddedToCurrentFile;
+  private String currentFile;
+
   public S3StreamCopier(final String stagingFolder,
-      final String schema,
-      final AmazonS3 client,
-      final JdbcDatabase db,
-      final S3DestinationConfig s3Config,
-      final ExtendedNameTransformer nameTransformer,
-      final SqlOperations sqlOperations,
-      final ConfiguredAirbyteStream configuredAirbyteStream,
-      final Timestamp uploadTime) {
+                        final String schema,
+                        final AmazonS3 client,
+                        final JdbcDatabase db,
+                        final S3DestinationConfig s3Config,
+                        final ExtendedNameTransformer nameTransformer,
+                        final SqlOperations sqlOperations,
+                        final ConfiguredAirbyteStream configuredAirbyteStream,
+                        final Timestamp uploadTime,
+                        final int maxPartsPerFile) {
     this.destSyncMode = configuredAirbyteStream.getDestinationSyncMode();
     this.schemaName = schema;
     this.streamName = configuredAirbyteStream.getStream().getName();
@@ -78,7 +79,9 @@ public abstract class S3StreamCopier implements StreamCopier {
     this.tmpTableName = nameTransformer.getTmpTableName(this.streamName);
     this.s3Client = client;
     this.s3Config = s3Config;
-    this.filenameGenerator = new StagingFilenameGenerator(this.streamName, MAX_PARTS_PER_FILE);
+
+    this.maxPartsPerFile = maxPartsPerFile;
+    this.partsAddedToCurrentFile = maxPartsPerFile - 1; // Force a new file on the first call to prepareStagingFile()
   }
 
   /*
@@ -87,8 +90,8 @@ public abstract class S3StreamCopier implements StreamCopier {
    */
   @Override
   public String prepareStagingFile() {
-    final var suffix = "_" + filenameGenerator.getStagingFilename();
-    if (!stagingWritersBySuffix.containsKey(suffix)) {
+    partsAddedToCurrentFile = (partsAddedToCurrentFile + 1) % maxPartsPerFile;
+    if (partsAddedToCurrentFile == 0) {
       LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
 
       try {
@@ -99,14 +102,15 @@ public abstract class S3StreamCopier implements StreamCopier {
             uploadTime,
             DEFAULT_UPLOAD_THREADS,
             DEFAULT_QUEUE_CAPACITY,
-            suffix
+            "arst" // TODO remove
         );
-        stagingWritersBySuffix.put(suffix, writer);
+        currentFile = writer.getObjectKey();
+        stagingWritersBySuffix.put(currentFile, writer);
       } catch (final IOException e) {
         throw new RuntimeException(e);
       }
     }
-    return suffix;
+    return currentFile;
   }
 
   @Override
@@ -190,10 +194,10 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   public abstract void copyS3CsvFileIntoTable(JdbcDatabase database,
-      String s3FileLocation,
-      String schema,
-      String tableName,
-      S3DestinationConfig s3Config)
+                                              String s3FileLocation,
+                                              String schema,
+                                              String tableName,
+                                              S3DestinationConfig s3Config)
       throws SQLException;
 
 }
