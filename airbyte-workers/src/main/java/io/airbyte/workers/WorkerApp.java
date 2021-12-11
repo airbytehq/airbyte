@@ -7,6 +7,7 @@ package io.airbyte.workers;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
@@ -24,9 +25,11 @@ import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_factory.DefaultSyncJobFactory;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
+import io.airbyte.workers.helper.ConnectionHelper;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
@@ -40,8 +43,9 @@ import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogActivityImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflowImpl;
 import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterWorkflowImpl;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivityImpl;
+import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActivityImpl;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivityImpl;
-import io.airbyte.workers.temporal.scheduling.activities.JobCreationActivityImpl;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivityImpl;
 import io.airbyte.workers.temporal.spec.SpecActivityImpl;
 import io.airbyte.workers.temporal.spec.SpecWorkflowImpl;
 import io.airbyte.workers.temporal.sync.DbtTransformationActivityImpl;
@@ -92,6 +96,7 @@ public class WorkerApp {
   private final JobPersistence jobPersistence;
   private final TemporalWorkerRunFactory temporalWorkerRunFactory;
   private final Configs configs;
+  private final ConnectionHelper connectionHelper;
 
   public void start() {
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
@@ -145,13 +150,14 @@ public class WorkerApp {
     connectionUpdaterWorker.registerActivitiesImplementations(
         new GenerateInputActivityImpl(
             jobPersistence),
-        new JobCreationActivityImpl(
+        new JobCreationAndStatusUpdateActivityImpl(
             jobFactory,
             jobPersistence,
             temporalWorkerRunFactory,
             workerEnvironment,
             logConfigs),
-        new ConfigFetchActivityImpl(configRepository, jobPersistence, configs));
+        new ConfigFetchActivityImpl(configRepository, jobPersistence, configs),
+        new ConnectionDeletionActivityImpl(connectionHelper));
 
     factory.start();
   }
@@ -223,11 +229,21 @@ public class WorkerApp {
 
     final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot);
 
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+
     final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(
         temporalClient,
         workspaceRoot,
         configs.getAirbyteVersionOrWarning(),
-        new EnvVariableFeatureFlags());
+        featureFlags);
+
+    final WorkspaceHelper workspaceHelper = new WorkspaceHelper(
+        configRepository,
+        jobPersistence);
+
+    final ConnectionHelper connectionHelper = new ConnectionHelper(
+        configRepository,
+        workspaceHelper);
 
     new WorkerApp(
         workspaceRoot,
@@ -245,7 +261,8 @@ public class WorkerApp {
         jobFactory,
         jobPersistence,
         temporalWorkerRunFactory,
-        configs).start();
+        configs,
+        connectionHelper).start();
   }
 
 }

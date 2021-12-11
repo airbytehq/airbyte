@@ -16,6 +16,7 @@ import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.common.RetryOptions;
 import io.temporal.workflow.Workflow;
+import java.time.Duration;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +45,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                                 final IntegrationLauncherConfig destinationLauncherConfig,
                                 final StandardSyncInput syncInput,
                                 final UUID connectionId) {
+    Workflow.sleep(Duration.ofMinutes(2));
     final StandardSyncOutput run = replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
 
     final int version = Workflow.getVersion(VERSION_LABEL, Workflow.DEFAULT_VERSION, CURRENT_VERSION);

@@ -22,7 +22,6 @@ dependencies {
     implementation 'org.eclipse.jetty:jetty-server:9.4.31.v20200723'
     implementation 'org.eclipse.jetty:jetty-servlet:9.4.31.v20200723'
 
-
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-api')
     implementation project(':airbyte-config:models')
@@ -31,7 +30,6 @@ dependencies {
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-scheduler:persistence')
-    // implementation project(':airbyte-scheduler:app')
     implementation project(':airbyte-scheduler:models')
 
     testImplementation 'org.mockito:mockito-inline:2.13.0'

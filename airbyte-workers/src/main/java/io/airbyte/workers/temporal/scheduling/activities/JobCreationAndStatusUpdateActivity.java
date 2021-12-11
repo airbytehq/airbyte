@@ -13,7 +13,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @ActivityInterface
-public interface JobCreationActivity {
+public interface JobCreationAndStatusUpdateActivity {
 
   @Data
   @NoArgsConstructor

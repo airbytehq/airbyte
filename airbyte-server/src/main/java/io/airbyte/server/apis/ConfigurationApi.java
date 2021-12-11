@@ -118,6 +118,7 @@ import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.helper.ConnectionHelper;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
@@ -199,12 +200,14 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         temporalService,
         new OAuthConfigSupplier(configRepository, trackingClient), workerEnvironment, logConfigs, temporalWorkerRunFactory);
     final ExecutorService threadPool = Executors.newFixedThreadPool(configs.getMaxWorkers().getMaxSyncWorkers());
+    final ConnectionHelper connectionHelper = new ConnectionHelper(configRepository, workspaceHelper);
     connectionsHandler = new ConnectionsHandler(
         configRepository,
         workspaceHelper,
         trackingClient,
         temporalWorkerRunFactory,
-        featureFlags);
+        featureFlags,
+        connectionHelper);
     operationsHandler = new OperationsHandler(configRepository);
     destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, synchronousSchedulerClient);
     destinationHandler = new DestinationHandler(configRepository, schemaValidator, connectionsHandler);

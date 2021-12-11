@@ -152,6 +152,20 @@ public class TemporalClient {
     log.info("Scheduler temporal wf started");
   }
 
+  public void deleteConnection(final UUID connectionId) {
+    log.info("Manual sync request");
+    final List<WorkflowExecutionInfo> workflows = getExecutionsResponse("connection_updater_" + connectionId);
+
+    if (workflows.isEmpty()) {
+      throw new IllegalStateException("No running workflow for the connection {} while trying to delete it");
+    }
+
+    final ConnectionUpdaterWorkflow connectionUpdaterWorkflow =
+        getExistingWorkflow(ConnectionUpdaterWorkflow.class, "connection_updater_" + connectionId);
+
+    connectionUpdaterWorkflow.deleteConnection();
+  }
+
   @Value
   public class ManualSyncSubmissionResult {
 

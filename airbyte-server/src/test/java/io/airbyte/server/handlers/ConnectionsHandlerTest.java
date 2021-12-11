@@ -51,6 +51,7 @@ import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.helper.ConnectionHelper;
 import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import java.io.IOException;
 import java.util.Collections;
@@ -100,6 +101,9 @@ class ConnectionsHandlerTest {
   private LogConfigs logConfigs;
   @Mock
   private FeatureFlags featureFlags;
+
+  // TODO: bmoric move to a mock
+  private ConnectionHelper connectionHelper;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -151,13 +155,16 @@ class ConnectionsHandlerTest {
         .withOperationId(operationId)
         .withWorkspaceId(workspaceId);
 
+    connectionHelper = new ConnectionHelper(configRepository, workspaceHelper);
+
     connectionsHandler = new ConnectionsHandler(
         configRepository,
         uuidGenerator,
         workspaceHelper,
         trackingClient,
         temporalWorkflowHandler,
-        featureFlags);
+        featureFlags,
+        connectionHelper);
 
     when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(deletedSourceId)).thenReturn(workspaceId);
