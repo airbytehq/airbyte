@@ -1,4 +1,8 @@
-# How to use Postgres Script?
+# Postgres Source
+
+## Performance Test
+
+### Use Postgres script to populate the benchmark database
 
 In order to create a database with a certain number of tables, and a certain number of records in each of them, 
 you need to follow a few simple steps.

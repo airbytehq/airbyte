@@ -10,15 +10,16 @@ begin
 	vmax = allrows;
 	vmaxx = allrows;
 	vmaxoneinsert = insertcount;
-	counter = 0;
-	lastinsertcounter = 0;
+	counter = 1;
+	lastinsertcounter = 1;
 	lastinsert = 0;
 	fullloop = 0;
 	fullloopcounter = 0;
 
-	while vmaxx < vmaxoneinsert loop
+	while vmaxx <= vmaxoneinsert loop
       vmaxoneinsert := vmaxx;
 	  fullloop := fullloop + 1;
+	  vmaxx := vmaxx + 1;
    	end loop;
     commit;
 
