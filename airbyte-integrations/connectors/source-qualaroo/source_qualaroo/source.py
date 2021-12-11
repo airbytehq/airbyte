@@ -57,28 +57,6 @@ class ChildStreamMixin:
             yield {"id": item["id"]}
 
 
-class IncrementalQualarooStream(QualarooStream, ABC):
-    cursor_field = "date"
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        json_response = response.json()
-        last_record = next(reversed(json_response), {})
-        next_page = last_record.get("id")
-        if next_page:
-            return {"before": next_page}
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, stream_slice, next_page_token)
-        if stream_state:
-            params["start_date"] = stream_state[self.cursor_field]
-        return params
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
-
-
 class Surveys(QualarooStream):
     """Return list of all Surveys.
     API Docs: https://help.qualaroo.com/hc/en-us/articles/201969438-The-REST-Reporting-API

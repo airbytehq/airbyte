@@ -1,15 +1,33 @@
 {
   "type": "object",
   "properties": {
-    "id": ["null", "integer"],
-    "site_id": ["null", "integer"],
-    "uuid": ["null", "string"],
-    "name": ["null", "string"],
-    "active": ["null", "boolean"],
-    "kind": ["null", "string"],
-    "canonical_name": ["null", "string"],
-    "created_at": ["null", "timestamp"],
-    "survey_url": ["null", "string"],
-    "type": ["null", "string"]
+    "id": {
+      "type": "integer"
+    },
+    "site_id": {
+      "type": "integer"
+    },
+    "uuid": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": "string"
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "kind": {
+      "type": "string"
+    },
+    "canonical_name": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "survey_url": {
+      "type": "string"
+    }
   }
 }
