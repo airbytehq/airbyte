@@ -36,33 +36,32 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
   private final String objectKey;
 
   public S3CsvWriter(final S3DestinationConfig config,
-      final AmazonS3 s3Client,
-      final ConfiguredAirbyteStream configuredStream,
-      final Timestamp uploadTimestamp,
-      final int uploadThreads,
-      final int queueCapacity,
-      final String customSuffix)
+                     final AmazonS3 s3Client,
+                     final ConfiguredAirbyteStream configuredStream,
+                     final Timestamp uploadTimestamp,
+                     final int uploadThreads,
+                     final int queueCapacity,
+                     final String customSuffix)
       throws IOException {
     this(config, s3Client, configuredStream, uploadTimestamp, customSuffix);
-
     this.uploadManager
         .numUploadThreads(uploadThreads)
         .queueCapacity(queueCapacity);
   }
 
   public S3CsvWriter(final S3DestinationConfig config,
-      final AmazonS3 s3Client,
-      final ConfiguredAirbyteStream configuredStream,
-      final Timestamp uploadTimestamp)
+                     final AmazonS3 s3Client,
+                     final ConfiguredAirbyteStream configuredStream,
+                     final Timestamp uploadTimestamp)
       throws IOException {
     this(config, s3Client, configuredStream, uploadTimestamp, BaseS3Writer.DEFAULT_SUFFIX);
   }
 
   public S3CsvWriter(final S3DestinationConfig config,
-      final AmazonS3 s3Client,
-      final ConfiguredAirbyteStream configuredStream,
-      final Timestamp uploadTimestamp,
-      final String customFileSuffix)
+                     final AmazonS3 s3Client,
+                     final ConfiguredAirbyteStream configuredStream,
+                     final Timestamp uploadTimestamp,
+                     final String customFileSuffix)
       throws IOException {
     super(config, s3Client, configuredStream);
 
