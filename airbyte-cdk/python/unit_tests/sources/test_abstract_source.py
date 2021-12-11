@@ -2,12 +2,11 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-
+import logging
 from collections import defaultdict
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
 import pytest
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -25,13 +24,15 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
+logger = logging.getLogger("airbyte")
+
 
 class MockSource(AbstractSource):
     def __init__(self, check_lambda: Callable[[], Tuple[bool, Optional[Any]]] = None, streams: List[Stream] = None):
         self._streams = streams
         self.check_lambda = check_lambda
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         if self.check_lambda:
             return self.check_lambda()
         return (False, "Missing callable.")
@@ -40,11 +41,6 @@ class MockSource(AbstractSource):
         if not self._streams:
             raise Exception("Stream is not set")
         return self._streams
-
-
-@pytest.fixture
-def logger() -> AirbyteLogger:
-    return AirbyteLogger()
 
 
 def test_successful_check():

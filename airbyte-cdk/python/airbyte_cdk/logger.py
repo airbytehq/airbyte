@@ -6,7 +6,7 @@ import logging
 import logging.config
 import sys
 import traceback
-from typing import List
+from typing import List, Tuple
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage
 
@@ -49,7 +49,6 @@ def init_unhandled_exception_output_filtering(logger: logging.Logger) -> None:
 
 def init_logger(name: str = None):
     """Initial set up of logger"""
-    logging.setLoggerClass(AirbyteNativeLogger)
     logging.addLevelName(TRACE_LEVEL_NUM, "TRACE")
     logger = logging.getLogger(name)
     logger.setLevel(TRACE_LEVEL_NUM)
@@ -61,7 +60,7 @@ def init_logger(name: str = None):
 class AirbyteLogFormatter(logging.Formatter):
     """Output log records using AirbyteMessage"""
 
-    _secrets = []
+    _secrets: List[str] = []
 
     @classmethod
     def update_secrets(cls, secrets: List[str]):
@@ -88,46 +87,22 @@ class AirbyteLogFormatter(logging.Formatter):
         return log_message.json(exclude_unset=True)
 
 
-class AirbyteNativeLogger(logging.Logger):
-    """Using native logger with implementing all AirbyteLogger features"""
+def log_by_prefix(msg: str, default_level: str) -> Tuple[int, str]:
+    """Custom method, which takes log level from first word of message"""
+    valid_log_types = ["FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"]
+    split_line = msg.split()
+    first_word = next(iter(split_line), None)
+    if first_word in valid_log_types:
+        log_level = logging.getLevelName(first_word)
+        rendered_message = " ".join(split_line[1:])
+    else:
+        log_level = logging.getLevelName(default_level)
+        rendered_message = msg
 
-    def __init__(self, name):
-        super().__init__(name)
-        self.valid_log_types = ["FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"]
-
-    def log_by_prefix(self, msg, default_level):
-        """Custom method, which takes log level from first word of message"""
-        split_line = msg.split()
-        first_word = next(iter(split_line), None)
-        if first_word in self.valid_log_types:
-            log_level = logging.getLevelName(first_word)
-            rendered_message = " ".join(split_line[1:])
-        else:
-            default_level = default_level if default_level in self.valid_log_types else "INFO"
-            log_level = logging.getLevelName(default_level)
-            rendered_message = msg
-        self.log(log_level, rendered_message)
-
-    def trace(self, msg, *args, **kwargs):
-        self._log(TRACE_LEVEL_NUM, msg, args, **kwargs)
+    return log_level, rendered_message
 
 
 class AirbyteLogger:
-    def __init__(self):
-        self.valid_log_types = ["FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"]
-
-    def log_by_prefix(self, message, default_level):
-        """Custom method, which takes log level from first word of message"""
-        split_line = message.split()
-        first_word = next(iter(split_line), None)
-        if first_word in self.valid_log_types:
-            log_level = first_word
-            rendered_message = " ".join(split_line[1:])
-        else:
-            log_level = default_level
-            rendered_message = message
-        self.log(log_level, rendered_message)
-
     def log(self, level, message):
         log_record = AirbyteLogMessage(level=level, message=message)
         log_message = AirbyteMessage(type="LOG", log=log_record)

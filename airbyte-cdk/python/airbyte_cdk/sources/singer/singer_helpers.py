@@ -23,6 +23,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+from airbyte_cdk.logger import log_by_prefix
 
 _INCREMENTAL = "INCREMENTAL"
 _FULL_TABLE = "FULL_TABLE"
@@ -138,7 +139,7 @@ class SingerHelper:
             shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
         )
         for line in completed_process.stderr.splitlines():
-            logger.log_by_prefix(line, "ERROR")
+            logger.log(*log_by_prefix(line, "ERROR"))
 
         return json.loads(completed_process.stdout)
 
@@ -169,9 +170,9 @@ class SingerHelper:
                         if message_data is not None:
                             yield message_data
                     else:
-                        logger.log_by_prefix(line, "INFO")
+                        logger.log(*log_by_prefix(line, "INFO"))
                 else:
-                    logger.log_by_prefix(line, "ERROR")
+                    logger.log(*log_by_prefix(line, "ERROR"))
 
     @staticmethod
     def _read_lines(process: subprocess.Popen) -> Iterator[Tuple[str, TextIOWrapper]]:

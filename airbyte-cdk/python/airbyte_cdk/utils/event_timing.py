@@ -6,6 +6,7 @@ import datetime
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass, field
+from typing import Optional
 
 from airbyte_cdk.logger import AirbyteLogger
 
@@ -60,7 +61,7 @@ class EventTimer:
 class Event:
     name: str
     start: float = field(default_factory=time.perf_counter_ns)
-    end: float = field(default=None)
+    end: Optional[float] = field(default=None)
 
     @property
     def duration(self) -> float:
