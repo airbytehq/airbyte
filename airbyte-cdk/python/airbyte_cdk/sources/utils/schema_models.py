@@ -8,6 +8,8 @@ from pydantic import BaseModel, Extra
 from pydantic.main import ModelMetaclass
 from pydantic.typing import resolve_annotations
 
+from airbyte_cdk.sources.utils.schema_helpers import expand_refs
+
 
 class AllOptional(ModelMetaclass):
     """
@@ -74,3 +76,10 @@ class BaseSchemaModel(BaseModel):
                     elif "$ref" in prop:
                         ref = prop.pop("$ref")
                         prop["oneOf"] = [{"type": "null"}, {"$ref": ref}]
+
+    @classmethod
+    def schema(cls, **kwargs) -> Dict[str, Any]:
+        """We're overriding the schema classmethod to enable some post-processing"""
+        schema = super().schema(**kwargs)
+        expand_refs(schema)
+        return schema

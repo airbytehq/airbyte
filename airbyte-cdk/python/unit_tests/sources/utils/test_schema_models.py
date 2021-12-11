@@ -28,12 +28,15 @@ class TestSchemaWithFewNullables:
         "type": "object",
         "properties": {
             "name": {"type": ["null", "string"]},
-            "optional_item": {"oneOf": [{"type": "null"}, {"$ref": "#/definitions/InnerClass"}]},
-            "items": {"type": "array", "items": {"$ref": "#/definitions/InnerClass"}},
-        },
-        "definitions": {
-            "InnerClass": {"type": "object", "properties": {"field1": {"type": ["null", "string"]}, "field2": {"type": "integer"}}}
-        },
+            "optional_item": {"oneOf": [
+                {"type": "null"},
+                {"type": "object", "properties": {"field1": {"type": ["null", "string"]}, "field2": {"type": "integer"}}}
+            ]},
+            "items": {
+                "type": "array",
+                "items": {"type": "object", "properties": {"field1": {"type": ["null", "string"]}, "field2": {"type": "integer"}}}
+            },
+        }
     }
 
     def test_schema_postprocessing(self):
@@ -46,11 +49,11 @@ class TestSchemaWithAllOptional:
         "type": "object",
         "properties": {
             "object_id": {"type": ["null", "integer"]},
-            "item": {"oneOf": [{"type": "null"}, {"$ref": "#/definitions/InnerClass"}]},
-        },
-        "definitions": {
-            "InnerClass": {"type": "object", "properties": {"field1": {"type": ["null", "string"]}, "field2": {"type": "integer"}}}
-        },
+            "item": {"oneOf": [
+                {"type": "null"},
+                {"type": "object", "properties": {"field1": {"type": ["null", "string"]}, "field2": {"type": "integer"}}}
+            ]},
+        }
     }
 
     def test_schema_postprocessing(self):
