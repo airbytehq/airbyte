@@ -35,24 +35,21 @@ ssh opc@localhost -i <private-key-file.key> -p 2200
 
 ### Connection Method 2 : Create OCI Bastion Host Service to Login to the Instance 
 
-![OCIScreen13](https://user-images.githubusercontent.com/39692236/142787487-71d464de-38ec-4198-944a-328ccc1a0906.png)
-
+![](../.gitbook/assets/OCIScreen13.png)
 
 #### Create Bastion Host Service from OCI Console
-<img width="1257" alt="OCIScreen5" src="https://user-images.githubusercontent.com/39692236/142786778-99925599-1b68-444a-be76-2a57bd74b5e2.png">
-
+![](../.gitbook/assets/OCIScreen5.png)
 
 #### Create Port forwarding SSH Session from Bastion Service
-<img width="1251" alt="OCIScreen6" src="https://user-images.githubusercontent.com/39692236/142786791-4e6ef40c-bfe5-4b51-88ea-6d72f149c849.png">
-
+![](../.gitbook/assets/OCIScreen6.png)
 
 #### Create SSH port forwarding session on Local machine 
 
 ```text
 ssh -i <privateKey> -N -L <localPort>:10.10.1.25:22 -p 22 ocid1.bastionsession.oc1.ap-sydney-1.amaaaaaaqcins5yaf6gzqsp5beaikpg4mczr445uberbrsvj7rmsd73wtiua@host.bastion.ap-sydney-1.oci.oraclecloud.com
 ```
-<img width="945" alt="OCIScreen7" src="https://user-images.githubusercontent.com/39692236/142786799-04f148c3-130e-4ec5-b5ed-799c8bc8e449.png">
-<img width="1117" alt="OCIScreen8" src="https://user-images.githubusercontent.com/39692236/142786805-41efb983-70cc-41f0-8799-e0847bea7014.png">
+![](../.gitbook/assets/OCIScreen7.png)
+![](../.gitbook/assets/OCIScreen8.png)
 
 
 
@@ -62,8 +59,7 @@ ssh -i <privateKey> -N -L <localPort>:10.10.1.25:22 -p 22 ocid1.bastionsession.o
  ssh -i mydemo_vcn.priv opc@localhost -p 2222
 ```
 
-<img width="861" alt="OCIScreen9" src="https://user-images.githubusercontent.com/39692236/142786815-41c37189-6ab8-4dc0-b4ad-3187ecd0ec5e.png">
-
+![](../.gitbook/assets/OCIScreen9.png)
 
 
 ## Install Airbyte Prerequisites on OCI VM
@@ -119,8 +115,7 @@ Open URL in Browser : [http://localhost:8000/](http://localhost:8000/)
 ### Airbyte URL Access Method 2 : Local Port Forward to Airbyte VM using OCI Bastion Service
 
 #### Create port-forwarding session to Port 8000
-<img width="1251" alt="OCIScreen10" src="https://user-images.githubusercontent.com/39692236/142786987-4c28a846-e3ad-432b-972b-2fd75149d2f6.png">
-
+![](../.gitbook/assets/OCIScreen10.png)
 
 ```text
 ssh -i <privateKey> -N -L <localPort>:10.10.1.25:8000 -p 22 ocid1.bastionsession.oc1.ap-sydney-1.amaaaaaaqcins5yadwmzsm7ogtij3kscsqjkuw6d5cjs4csoe2luzlmra62q@host.bastion.ap-sydney-1.oci.oraclecloud.com
@@ -132,9 +127,8 @@ ssh -i <privateKey> -N -L <localPort>:10.10.1.25:8000 -p 22 ocid1.bastionsession
 ssh -i mydemo_vcn.priv -N -L 8000:10.10.1.25:8000 -p 22 ocid1.bastionsession.oc1.ap-sydney-1.amaaaaaaqcins5yadwmzsm7ogtij3kscsqjkuw6d5cjs4csoe2luzlmra62q@host.bastion.ap-sydney-1.oci.oraclecloud.com
 ```
 
-<img width="953" alt="OCIScreen11" src="https://user-images.githubusercontent.com/39692236/142787127-1bafdb58-31d0-4930-ae3b-d4092855f35c.png">
-<img width="1108" alt="OCIScreen12" src="https://user-images.githubusercontent.com/39692236/142787129-4c60df47-ad01-4db8-a2f8-53cc2a76e07d.png">
-
+![](../.gitbook/assets/OCIScreen11.png)
+![](../.gitbook/assets/OCIScreen12.png)
 
 ### Access Airbyte
 
