@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.s3.avro;
 
-import com.codepoetics.protonpack.StreamUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Preconditions;
@@ -172,7 +171,7 @@ public class JsonToAvroSchemaConverter {
       return AdditionalPropertyField.FIELD_SCHEMA;
     }
 
-    Schema fieldSchema;
+    final Schema fieldSchema;
     switch (fieldType) {
       case NUMBER, INTEGER, BOOLEAN -> fieldSchema = Schema.create(fieldType.getAvroType());
       case STRING -> {
@@ -190,16 +189,17 @@ public class JsonToAvroSchemaConverter {
       }
       case COMBINED -> {
         final Optional<JsonNode> combinedRestriction = getCombinedRestriction(fieldDefinition);
-        final List<Schema> unionTypes = getSchemasFromTypes(fieldName, (ArrayNode) combinedRestriction.get(), true);
+        final List<Schema> unionTypes = getSchemasFromTypes(fieldName, (ArrayNode) combinedRestriction.get());
         fieldSchema = Schema.createUnion(unionTypes);
       }
       case ARRAY -> {
         final JsonNode items = fieldDefinition.get("items");
         Preconditions.checkNotNull(items, "Array field %s misses the items property.", fieldName);
+
         if (items.isObject()) {
           fieldSchema = Schema.createArray(getNullableFieldTypes(String.format("%s.items", fieldName), items));
         } else if (items.isArray()) {
-          final List<Schema> arrayElementTypes = getSchemasFromTypes(fieldName, (ArrayNode) items, false);
+          final List<Schema> arrayElementTypes = getSchemasFromTypes(fieldName, (ArrayNode) items);
           arrayElementTypes.add(0, NULL_SCHEMA);
           fieldSchema = Schema.createArray(Schema.createUnion(arrayElementTypes));
         } else {
@@ -214,22 +214,17 @@ public class JsonToAvroSchemaConverter {
     return fieldSchema;
   }
 
-  List<Schema> getSchemasFromTypes(final String fieldName, final ArrayNode types, boolean combined) {
-    return StreamUtils
-        .zipWithIndex(MoreIterators.toList(types.elements())
-            .stream())
-        .flatMap(definition -> getNonNullTypes(fieldName, definition.getValue()).stream()
-            .flatMap(type -> {
-              final Schema singleFieldSchema = getSingleFieldType(combined
-                  // avro schema allows only unique names of records in case of union
-                  ? fieldName.concat("_").concat(String.valueOf(definition.getIndex()))
-                  : fieldName, type, definition.getValue());
-              if (singleFieldSchema.isUnion()) {
-                return singleFieldSchema.getTypes().stream();
-              } else {
-                return Stream.of(singleFieldSchema);
-              }
-            }))
+  List<Schema> getSchemasFromTypes(final String fieldName, final ArrayNode types) {
+    return MoreIterators.toList(types.elements())
+        .stream()
+        .flatMap(definition -> getNonNullTypes(fieldName, definition).stream().flatMap(type -> {
+          final Schema singleFieldSchema = getSingleFieldType(fieldName, type, definition);
+          if (singleFieldSchema.isUnion()) {
+            return singleFieldSchema.getTypes().stream();
+          } else {
+            return Stream.of(singleFieldSchema);
+          }
+        }))
         .distinct()
         .collect(Collectors.toList());
   }
