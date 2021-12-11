@@ -64,6 +64,9 @@ jobs:
       # Beside PyEnv, this does not set any runtimes up because it uses an AMI image that has everything pre-installed. See https://github.com/airbytehq/airbyte/issues/4559/
       - name: Install Pyenv
         run: python3 -m pip install virtualenv==16.7.9 --user
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '17'
       - name: Write Integration Test Credentials
         run: ./tools/bin/ci_credentials.sh ${{ github.event.inputs.connector }}
         env:

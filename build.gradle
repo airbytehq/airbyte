@@ -14,7 +14,7 @@ buildscript {
 plugins {
     id 'base'
     id 'pmd'
-    id 'com.diffplug.spotless' version '5.7.0'
+    id 'com.diffplug.spotless' version '6.0.0'
     id 'com.github.hierynomus.license' version '0.16.1'
 }
 
@@ -103,7 +103,7 @@ spotless {
 
         importOrder()
 
-        eclipse('4.16.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
+        eclipse('4.21.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
 
         licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE_SHORT'))
         removeUnusedImports()
@@ -132,7 +132,7 @@ def Task getDockerBuildTask(String artifactName, String projectDir) {
         def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
         def alpineImage = System.getenv('ALPINE_IMAGE') ?: 'alpine:3.4'
         def postgresImage = System.getenv('POSTGRES_IMAGE') ?: 'postgres:13-alpine'
-        def jdkVersion = System.getenv('JDK_VERSION') ?: '14.0.2'
+        def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
         def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: 'amd64'
 
         inputDir = file("$projectDir/build/docker")
@@ -178,8 +178,8 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'jacoco'
 
-    sourceCompatibility = JavaVersion.VERSION_14
-    targetCompatibility = JavaVersion.VERSION_14
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 
     repositories {
         mavenCentral()
@@ -300,7 +300,7 @@ subprojects {
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
         testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
         testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.2'
-        testImplementation 'org.mockito:mockito-junit-jupiter:3.12.4'
+        testImplementation 'org.mockito:mockito-junit-jupiter:4.0.0'
         testImplementation 'org.assertj:assertj-core:3.21.0'
 
     }
