@@ -27,7 +27,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SyncWorkflowImpl.class);
   private static final String VERSION_LABEL = "sync-workflow";
-  private static final int CURRENT_VERSION = 2;
+  private static final int CURRENT_VERSION = 1;
 
   private static final int SYNC_JOB_MAX_TIMEOUT_DAYS = new EnvConfigs().getSyncJobMaxTimeoutDays();
 

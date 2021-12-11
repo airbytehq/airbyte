@@ -62,6 +62,9 @@ public class MdcScope implements AutoCloseable {
       return this;
     }
 
+    // Use this to disable simple logging for things in an MdcScope.
+    // If you're using this, you're probably starting to use MdcScope outside of container labelling.
+    // If so, consider changing the defaults / builder / naming.
     public Builder setSimple(final boolean simple) {
       this.simple = simple;
 
