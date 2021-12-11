@@ -59,8 +59,8 @@ public class MsSqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
     AbstractSourcePerformanceTest.testArgs = Stream.of(
         Arguments.of("test1000tables240columns200recordsDb", "dbo", 200, 240, 1000),
         Arguments.of("test5000tables240columns200recordsDb", "dbo", 200, 240, 1000),
-        Arguments.of("newregular25tables50000records", "dbo", 50052, 8, 25),
-        Arguments.of("newsmall1000tableswith10000rows", "dbo", 10011, 8, 1000));
+        Arguments.of("newregular25tables50000records", "dbo", 50000, 8, 25),
+        Arguments.of("newsmall1000tableswith10000rows", "dbo", 10000, 8, 1000));
   }
 
 }
