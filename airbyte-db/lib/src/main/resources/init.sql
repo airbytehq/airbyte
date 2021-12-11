@@ -1,6 +1,6 @@
 ALTER SYSTEM
 SET
-max_connections = 200;
+max_connections = 150;
 
 CREATE
     DATABASE airbyte;
