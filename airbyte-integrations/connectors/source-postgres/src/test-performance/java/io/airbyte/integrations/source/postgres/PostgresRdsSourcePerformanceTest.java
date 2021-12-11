@@ -65,8 +65,8 @@ public class PostgresRdsSourcePerformanceTest extends AbstractSourcePerformanceT
     AbstractSourcePerformanceTest.testArgs = Stream.of(
         Arguments.of("test1000tables240columns200recordsDb", "test1000tables240columns200recordsDb", 200, 240, 1000),
         Arguments.of("test5000tables240columns200recordsDb", "test5000tables240columns200recordsDb", 200, 240, 1000),
-        Arguments.of("newregular25tables50000records", "newregular25tables50000records", 50011, 8, 25),
-        Arguments.of("newsmall1000tableswith10000rows", "newsmall1000tableswith10000rows", 10001, 8, 1000));
+        Arguments.of("newregular25tables50000records", "newregular25tables50000records", 50000, 8, 25),
+        Arguments.of("newsmall1000tableswith10000rows", "newsmall1000tableswith10000rows", 10000, 8, 1000));
   }
 
 }
