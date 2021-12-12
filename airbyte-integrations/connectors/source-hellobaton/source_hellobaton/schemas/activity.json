@@ -31,7 +31,7 @@
             "type": "string"
         },
         "meta": {
-            "type": "string"
+            "type": ["object", "null"]
         },
         "created": {
             "type": "string",
