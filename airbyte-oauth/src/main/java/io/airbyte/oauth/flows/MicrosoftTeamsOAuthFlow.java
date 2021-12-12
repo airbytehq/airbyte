@@ -21,6 +21,7 @@ import org.apache.http.client.utils.URIBuilder;
 
 public class MicrosoftTeamsOAuthFlow extends BaseOAuth2Flow {
 
+  private static final String fieldName = "tenant_id";
   private static String tenantId;
 
   public MicrosoftTeamsOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
@@ -47,7 +48,11 @@ public class MicrosoftTeamsOAuthFlow extends BaseOAuth2Flow {
                                     final JsonNode inputOAuthConfiguration)
       throws IOException {
 
-    tenantId = getConfigValueUnsafe(inputOAuthConfiguration, "tenant_id");
+    try {
+      tenantId = getConfigValueUnsafe(inputOAuthConfiguration, fieldName);
+    } catch (final IllegalArgumentException e) {
+      throw new IOException("Failed to format Consent URL for OAuth flow", e);
+    }
 
     try {
       return new URIBuilder()
@@ -105,6 +110,26 @@ public class MicrosoftTeamsOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
+  @Deprecated
+  public Map<String, Object> completeSourceOAuth(final UUID workspaceId,
+                                                 final UUID sourceDefinitionId,
+                                                 final Map<String, Object> queryParams,
+                                                 final String redirectUrl)
+      throws IOException {
+    throw new IOException("not supported");
+  }
+
+  @Override
+  @Deprecated
+  public Map<String, Object> completeDestinationOAuth(final UUID workspaceId,
+                                                      final UUID destinationDefinitionId,
+                                                      final Map<String, Object> queryParams,
+                                                      final String redirectUrl)
+      throws IOException {
+    throw new IOException("not supported");
+  }
+
+  @Override
   public Map<String, Object> completeSourceOAuth(final UUID workspaceId,
                                                  final UUID sourceDefinitionId,
                                                  final Map<String, Object> queryParams,
@@ -112,8 +137,27 @@ public class MicrosoftTeamsOAuthFlow extends BaseOAuth2Flow {
                                                  final JsonNode inputOAuthConfiguration,
                                                  final OAuthConfigSpecification oAuthConfigSpecification)
       throws IOException, ConfigNotFoundException, JsonValidationException {
-    tenantId = getConfigValueUnsafe(inputOAuthConfiguration, "tenant_id");
+    tenantId = null;
+    try {
+      tenantId = getConfigValueUnsafe(inputOAuthConfiguration, fieldName);
+    } catch (final IllegalArgumentException e) {}
     return super.completeSourceOAuth(workspaceId, sourceDefinitionId, queryParams, redirectUrl, inputOAuthConfiguration, oAuthConfigSpecification);
+  }
+
+  @Override
+  public Map<String, Object> completeDestinationOAuth(final UUID workspaceId,
+                                                      final UUID destinationDefinitionId,
+                                                      final Map<String, Object> queryParams,
+                                                      final String redirectUrl,
+                                                      final JsonNode inputOAuthConfiguration,
+                                                      final OAuthConfigSpecification oAuthConfigSpecification)
+      throws IOException, ConfigNotFoundException, JsonValidationException {
+    tenantId = null;
+    try {
+      tenantId = getConfigValueUnsafe(inputOAuthConfiguration, fieldName);
+    } catch (final IllegalArgumentException e) {}
+    return super.completeDestinationOAuth(workspaceId, destinationDefinitionId, queryParams, redirectUrl, inputOAuthConfiguration,
+        oAuthConfigSpecification);
   }
 
   /**
@@ -122,6 +166,9 @@ public class MicrosoftTeamsOAuthFlow extends BaseOAuth2Flow {
    */
   @Override
   protected String getAccessTokenUrl() {
+    if (tenantId == null) {
+      throw new IllegalArgumentException(String.format("Undefined parameter '%s' necessary for the OAuth Flow.", fieldName));
+    }
     return "https://login.microsoftonline.com/" + tenantId + "/oauth2/v2.0/token";
   }
 
