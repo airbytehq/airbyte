@@ -5,6 +5,6 @@ ENV APPLICATION airbyte-bootloader
 
 WORKDIR /app
 
-ADD bin/${APPLICATION}-0.33.10-alpha.tar /app
+ADD bin/${APPLICATION}-0.33.11-alpha.tar /app
 
 ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-0.33.3-alpha/bin/${APPLICATION}"]
