@@ -12,6 +12,7 @@ from datetime import datetime
 from io import TextIOWrapper
 from typing import Any, DefaultDict, Dict, Iterator, List, Mapping, Optional, Tuple
 
+from airbyte_cdk.logger import log_by_prefix
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteMessage,
@@ -23,7 +24,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from airbyte_cdk.logger import log_by_prefix
 
 _INCREMENTAL = "INCREMENTAL"
 _FULL_TABLE = "FULL_TABLE"

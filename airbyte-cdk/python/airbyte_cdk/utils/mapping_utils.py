@@ -3,7 +3,7 @@
 #
 
 from functools import reduce
-from typing import Any, List, Mapping, Optional, Iterable, Tuple
+from typing import Any, Iterable, List, Mapping, Optional, Tuple
 
 
 def all_key_pairs_dot_notation(dict_obj: Mapping) -> Mapping[str, Any]:

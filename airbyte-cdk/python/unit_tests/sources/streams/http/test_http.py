@@ -398,7 +398,7 @@ class CacheHttpStreamWithSlices(CacheHttpStream):
     paths = ["", "search"]
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f'{stream_slice["path"]}' if stream_slice else ''
+        return f'{stream_slice["path"]}' if stream_slice else ""
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         for path in self.paths:

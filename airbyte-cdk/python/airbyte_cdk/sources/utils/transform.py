@@ -4,7 +4,7 @@
 
 from distutils.util import strtobool
 from enum import Flag, auto
-from typing import Any, Callable, Dict, Optional, Mapping
+from typing import Any, Callable, Dict, Mapping, Optional
 
 from airbyte_cdk.logger import AirbyteLogger
 from jsonschema import Draft7Validator, validators
