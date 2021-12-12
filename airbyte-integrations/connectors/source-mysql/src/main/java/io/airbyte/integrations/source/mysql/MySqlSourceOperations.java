@@ -17,7 +17,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mysql.cj.MysqlType;
 import com.mysql.cj.jdbc.result.ResultSetMetaData;
 import com.mysql.cj.result.Field;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.SourceOperations;
 import io.airbyte.db.jdbc.AbstractJdbcCompatibleSourceOperations;
@@ -83,6 +82,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
       // weird to show a year as a double, we set yearIsDateType=true in the JDBC connection string,
       // and parse the returned year value as a string.
       // The case can be re-evaluated when JsonSchemaPrimitive supports integer.
+      // Issue: https://github.com/airbytehq/airbyte/issues/8722
       case YEAR -> {
         final String year = resultSet.getDate(colIndex).toString().split("-")[0];
         json.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> year));
@@ -95,9 +95,8 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
           putString(json, columnName, resultSet, colIndex);
         }
       }
-      case TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB, BINARY, VARBINARY -> putBinary(json, columnName, resultSet, colIndex);
+      case TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB, BINARY, VARBINARY, GEOMETRY -> putBinary(json, columnName, resultSet, colIndex);
       case TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT, JSON, ENUM, SET -> putString(json, columnName, resultSet, colIndex);
-      case GEOMETRY -> json.put(columnName, Jsons.serialize(resultSet.getObject(colIndex)));
       case NULL -> json.set(columnName, NullNode.instance);
       default -> putDefault(json, columnName, resultSet, colIndex);
     }
@@ -144,6 +143,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
    * {@link JsonSchemaPrimitive} for now. So it is fine. However, in the future, if we want to
    * separate these two types, we need to update the column metadata query for MySQL. See
    * https://dev.mysql.com/doc/refman/8.0/en/show-columns.html.
+   * Issue: https://github.com/airbytehq/airbyte/issues/8723
    */
   @Override
   public MysqlType getFieldType(final JsonNode field) {
@@ -183,8 +183,8 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
       TINYINT, TINYINT_UNSIGNED, SMALLINT, SMALLINT_UNSIGNED, INT, INT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED, BIGINT, BIGINT_UNSIGNED, FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED -> JsonSchemaPrimitive.NUMBER;
       case BOOLEAN -> JsonSchemaPrimitive.BOOLEAN;
       case NULL -> JsonSchemaPrimitive.NULL;
-      // BIT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in the upstream method
-      case BIT -> JsonSchemaPrimitive.STRING;
+      // BIT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in {@link getFieldType}
+      case BIT, TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB, BINARY, VARBINARY, GEOMETRY -> JsonSchemaPrimitive.STRING_BINARY;
       default -> JsonSchemaPrimitive.STRING;
     };
   }

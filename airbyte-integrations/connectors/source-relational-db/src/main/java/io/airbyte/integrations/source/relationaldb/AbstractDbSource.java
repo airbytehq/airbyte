@@ -329,7 +329,11 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           assertColumnsWithSameNameAreSame(t.getNameSpace(), t.getName(), t.getFields());
           final List<Field> fields = t.getFields()
               .stream()
-              .map(f -> Field.of(f.getName(), getType(f.getType())))
+              .map(f -> {
+                final JsonSchemaPrimitive jsonType = getType(f.getType());
+                LOGGER.info("Table {} column {} ({}) is converted to Json type {}", t.getName(), f.getName(), f.getType(), jsonType);
+                return Field.of(f.getName(), jsonType);
+              })
               .distinct()
               .collect(Collectors.toList());
           final String fullyQualifiedTableName = getFullyQualifiedTableName(t.getNameSpace(), t.getName());
@@ -365,9 +369,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    *         SELECT-ing the table with privileges. In some cases such SELECT doesn't require (e.g. in
    *         Oracle DB - the schema is the user, you cannot REVOKE a privilege on a table from its
    *         owner).
-   * @throws SQLException
    */
-  public <T> Set<T> getPrivilegesTableForCurrentUser(JdbcDatabase database, String schema) throws SQLException {
+  public <T> Set<T> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
     return Collections.emptySet();
   }
 

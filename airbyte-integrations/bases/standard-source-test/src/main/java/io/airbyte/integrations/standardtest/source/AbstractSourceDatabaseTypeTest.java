@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -101,6 +102,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
    * The test checks that connector can fetch prepared data without failure.
    */
   @Test
+  @SuppressWarnings("unchecked")
   public void testDataTypes() throws Exception {
     final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
     final List<AirbyteMessage> allMessages = runRead(catalog);
@@ -111,8 +113,9 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
     testDataHolders.forEach(testDataHolder -> {
       if (testCatalog()) {
         final AirbyteStream airbyteStream = streams.get(testDataHolder.getNameWithTestPrefix());
-        final String testColumnType = airbyteStream.getJsonSchema().get("properties").get(getTestColumnName()).get("type").asText();
-        assertEquals(testDataHolder.getAirbyteType().name().toLowerCase(), testColumnType,
+        final Map<String, String> jsonSchemaTypeMap = (Map<String, String>) Jsons.deserialize(
+            airbyteStream.getJsonSchema().get("properties").get(getTestColumnName()).toString(), Map.class);
+        assertEquals(testDataHolder.getAirbyteType().getJsonSchemaTypeMap(), jsonSchemaTypeMap,
             "Expected column type for " + testDataHolder.getNameWithTestPrefix());
       }
 
@@ -178,7 +181,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
    *
    * @return configured catalog
    */
-  private ConfiguredAirbyteCatalog getConfiguredCatalog() throws Exception {
+  private ConfiguredAirbyteCatalog getConfiguredCatalog() {
     return new ConfiguredAirbyteCatalog().withStreams(
         testDataHolders
             .stream()
