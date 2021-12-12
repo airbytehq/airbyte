@@ -6,7 +6,9 @@ package io.airbyte.integrations.standardtest.source.performancetest;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
+import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -34,8 +36,9 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractSourcePerformanceTest extends AbstractSourceBasePerformanceTest {
 
   protected static final Logger c = LoggerFactory.getLogger(AbstractSourcePerformanceTest.class);
-  protected static Stream testArgs;
+  protected static Stream<Arguments> testArgs;
   private static final String ID_COLUMN_NAME = "id";
+  protected JsonNode config;
 
   /**
    * Setup the test database. All tables and data described in the registered tests will be put there.
@@ -43,6 +46,14 @@ public abstract class AbstractSourcePerformanceTest extends AbstractSourceBasePe
    * @throws Exception - might throw any exception during initialization.
    */
   protected abstract void setupDatabase(String dbName) throws Exception;
+
+  @Override
+  protected JsonNode getConfig() {
+    return config;
+  }
+
+  @Override
+  protected void tearDown(final TestDestinationEnv testEnv) {}
 
   @ParameterizedTest
   @MethodSource("provideParameters")
@@ -71,8 +82,8 @@ public abstract class AbstractSourcePerformanceTest extends AbstractSourceBasePe
    *
    * 1st arg - a name of DB that will be used in jdbc connection string. 2nd arg - a schemaName that
    * will be ised as a NameSpace in Configured Airbyte Catalog. 3rd arg - a number of expected records
-   * retrieved in each stream. 4th arg - a number of columns in each stream\table that will be use for
-   * Airbyte Cataloq configuration 5th arg - a number of streams to read in configured airbyte
+   * retrieved in each stream. 4th arg - a number of columns in each stream\table that will be used
+   * for Airbyte Cataloq configuration 5th arg - a number of streams to read in configured airbyte
    * Catalog. Each stream\table in DB should be names like "test_0", "test_1",..., test_n.
    *
    * Example: Stream.of( Arguments.of("test1000tables240columns200recordsDb", "dbo", 200, 240, 1000),
