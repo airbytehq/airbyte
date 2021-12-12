@@ -176,6 +176,16 @@ spec:
             configMapKeyRef:
               name: airbyte-env
               key: GCS_LOG_BUCKET
+        - name: STATE_STORAGE_MINIO_BUCKET_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: STATE_STORAGE_MINIO_BUCKET_NAME
+        - name: STATE_STORAGE_MINIO_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: STATE_STORAGE_MINIO_ENDPOINT
         - name: INTERNAL_API_HOST
           valueFrom:
             configMapKeyRef:

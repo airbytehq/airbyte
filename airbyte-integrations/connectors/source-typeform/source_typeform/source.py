@@ -202,14 +202,30 @@ class SourceTypeform(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             form_ids = config.get("form_ids", []).copy()
-            auth = TokenAuthenticator(token=config["token"])
             # verify if form inputted by user is valid
-            for form in TrimForms(authenticator=auth, **config).read_records(sync_mode=SyncMode.full_refresh):
-                if form.get("id") in form_ids:
-                    form_ids.remove(form.get("id"))
+            try:
+                url = f"{TypeformStream.url_base}/me"
+                auth_headers = {"Authorization": f"Bearer {config['token']}"}
+                session = requests.get(url, headers=auth_headers)
+                session.raise_for_status()
+            except requests.exceptions.BaseHTTPError as e:
+                return False, f"Cannot authenticate, please verify token. Error: {e}"
             if form_ids:
-                return False, f"Cannot find forms with IDs: {form_ids}. Please make sure they are valid form IDs and try again."
-            return True, None
+                for form in form_ids:
+                    try:
+                        url = f"{TypeformStream.url_base}/forms/{form}"
+                        auth_headers = {"Authorization": f"Bearer {config['token']}"}
+                        response = requests.get(url, headers=auth_headers)
+                        response.raise_for_status()
+                    except requests.exceptions.BaseHTTPError as e:
+                        return (
+                            False,
+                            f"Cannot find forms with ID: {form}. Please make sure they are valid form IDs and try again. Error: {e}",
+                        )
+                return True, None
+            else:
+                return True, None
+
         except requests.exceptions.RequestException as e:
             return False, e
 

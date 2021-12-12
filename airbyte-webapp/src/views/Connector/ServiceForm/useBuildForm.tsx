@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useFormikContext } from "formik";
 import { JSONSchema7, JSONSchema7Definition } from "json-schema";
 import flatten from "flat";
-import merge from "lodash.merge";
+import merge from "lodash/merge";
 
 import { FormBlock, WidgetConfig, WidgetConfigMap } from "core/form/types";
 import { jsonSchemaToUiWidget } from "core/jsonSchema/schemaToUiWidget";
