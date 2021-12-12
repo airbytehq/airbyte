@@ -149,6 +149,7 @@ export_github_secrets
 
 
 # Please maintain this organisation and alphabetise.
+read_secrets destination-amazon-sqs "$DESTINATION_AMAZON_SQS_CREDS"
 read_secrets destination-bigquery "$BIGQUERY_INTEGRATION_TEST_CREDS" "credentials.json"
 read_secrets destination-bigquery-denormalized "$BIGQUERY_DENORMALIZED_INTEGRATION_TEST_CREDS" "credentials.json"
 read_secrets destination-databricks "$DESTINATION_DATABRICKS_CREDS"
@@ -220,9 +221,6 @@ read_secrets source-google-directory "$GOOGLE_DIRECTORY_TEST_CREDS"
 read_secrets source-google-directory "$GOOGLE_DIRECTORY_TEST_CREDS_OAUTH" "config_oauth.json"
 read_secrets source-google-search-console "$GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS"
 read_secrets source-google-search-console "$GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS_SRV_ACC" "service_account_config.json"
-read_secrets source-google-sheets "$GOOGLE_SHEETS_TESTS_CREDS"
-read_secrets source-google-sheets "$GOOGLE_SHEETS_TESTS_CREDS_SRV_ACC" "service_config.json"
-read_secrets source-google-sheets "$GOOGLE_SHEETS_TESTS_CREDS_OLD" "old_config.json"
 read_secrets source-google-workspace-admin-reports "$GOOGLE_WORKSPACE_ADMIN_REPORTS_TEST_CREDS"
 read_secrets source-greenhouse "$GREENHOUSE_TEST_CREDS"
 read_secrets source-greenhouse "$GREENHOUSE_TEST_CREDS_LIMITED" "config_users_only.json"

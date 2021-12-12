@@ -167,14 +167,20 @@ public class SchedulerApp {
 
   private void cleanupZombies(final JobPersistence jobPersistence, final JobNotifier jobNotifier) throws IOException {
     for (final Job zombieJob : jobPersistence.listJobsWithStatus(JobStatus.RUNNING)) {
-      jobNotifier.failJob("zombie job was cancelled", zombieJob);
+      jobNotifier.failJob("zombie job was failed", zombieJob);
+
+      final int currentAttemptNumber = zombieJob.getAttemptsCount() - 1;
+
       LOGGER.warn(
-          "zombie clean up - job was cancelled. job id: {}, type: {}, scope: {}",
+          "zombie clean up - job attempt was failed. job id: {}, attempt number: {}, type: {}, scope: {}",
           zombieJob.getId(),
+          currentAttemptNumber,
           zombieJob.getConfigType(),
           zombieJob.getScope());
 
-      jobPersistence.cancelJob(zombieJob.getId());
+      jobPersistence.failAttempt(
+          zombieJob.getId(),
+          currentAttemptNumber);
     }
   }
 
@@ -211,6 +217,7 @@ public class SchedulerApp {
     LOGGER.info("temporalHost = " + temporalHost);
 
     // Wait for the server to initialize the database and run migration
+    // This should be converted into check for the migration version. Everything else as per.
     waitForServer(configs);
     LOGGER.info("Creating Job DB connection pool...");
     final Database jobDatabase = new JobsDatabaseInstance(

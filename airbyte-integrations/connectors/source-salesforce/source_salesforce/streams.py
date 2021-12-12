@@ -206,9 +206,18 @@ class BulkSalesforceStream(SalesforceStream):
             raise Exception(f"Job for {self.name} stream using BULK API was failed.")
         return job_full_url
 
+    def filter_null_bytes(self, s: str):
+        """
+        https://github.com/airbytehq/airbyte/issues/8300
+        """
+        res = s.replace("\x00", "")
+        if len(res) < len(s):
+            self.logger.warning("Filter 'null' bytes from string, size reduced %d -> %d chars", len(s), len(res))
+        return res
+
     def download_data(self, url: str) -> Tuple[int, dict]:
         job_data = self._send_http_request("GET", f"{url}/results")
-        decoded_content = job_data.content.decode("utf-8")
+        decoded_content = self.filter_null_bytes(job_data.content.decode("utf-8"))
         csv_data = csv.reader(decoded_content.splitlines(), delimiter=",")
         for i, row in enumerate(csv_data):
             if i == 0:
