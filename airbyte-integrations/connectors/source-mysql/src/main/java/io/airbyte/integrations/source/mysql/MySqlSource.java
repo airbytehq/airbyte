@@ -11,6 +11,7 @@ import static java.util.stream.Collectors.toList;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import com.mysql.cj.MysqlType;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -29,7 +30,6 @@ import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
-import java.sql.JDBCType;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MySqlSource extends AbstractJdbcSource implements Source {
+public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSource.class);
 
@@ -131,6 +131,11 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
     // see MySqlJdbcStreamingQueryConfiguration for more context on why useCursorFetch=true is needed.
     jdbcUrl.append("?useCursorFetch=true");
     jdbcUrl.append("&zeroDateTimeBehavior=convertToNull");
+    // ensure the return tinyint(1) is boolean
+    jdbcUrl.append("&tinyInt1isBit=true");
+    // ensure the return year value is a Date; see the rationale
+    // in the setJsonField method in MySqlSourceOperations.java
+    jdbcUrl.append("&yearIsDateType=true");
     if (config.get("jdbc_url_params") != null && !config.get("jdbc_url_params").asText().isEmpty()) {
       jdbcUrl.append("&").append(config.get("jdbc_url_params").asText());
     }
@@ -166,7 +171,7 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
                                                                              final ConfiguredAirbyteCatalog catalog,
-                                                                             final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                                                             final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();

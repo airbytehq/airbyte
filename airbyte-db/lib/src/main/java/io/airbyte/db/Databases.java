@@ -132,7 +132,7 @@ public class Databases {
                                                 final String jdbcConnectionString,
                                                 final String driverClassName,
                                                 final String connectionProperties,
-                                                final JdbcSourceOperations sourceOperations) {
+                                                final JdbcCompatibleSourceOperations<?> sourceOperations) {
     final BasicDataSource connectionPool =
         createBasicDataSource(username, password, jdbcConnectionString, driverClassName, Optional.ofNullable(connectionProperties));
 
@@ -144,18 +144,8 @@ public class Databases {
                                                          final String jdbcConnectionString,
                                                          final String driverClassName,
                                                          final JdbcStreamingQueryConfiguration jdbcStreamingQuery,
-                                                         final String connectionProperties) {
-    return createStreamingJdbcDatabase(username, password, jdbcConnectionString, driverClassName, jdbcStreamingQuery, connectionProperties,
-        JdbcUtils.getDefaultSourceOperations());
-  }
-
-  public static JdbcDatabase createStreamingJdbcDatabase(final String username,
-                                                         final String password,
-                                                         final String jdbcConnectionString,
-                                                         final String driverClassName,
-                                                         final JdbcStreamingQueryConfiguration jdbcStreamingQuery,
                                                          final String connectionProperties,
-                                                         final JdbcSourceOperations sourceOperations) {
+                                                         final JdbcCompatibleSourceOperations<?> sourceOperations) {
     final BasicDataSource connectionPool =
         createBasicDataSource(username, password, jdbcConnectionString, driverClassName, Optional.ofNullable(connectionProperties));
 
