@@ -4,12 +4,18 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Flexport Spec",
     "type": "object",
-    "required": ["TODO"],
+    "required": ["api_key"],
     "additionalProperties": false,
     "properties": {
-      "TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.": {
+      "api_key": {
         "type": "string",
-        "description": "describe me"
+        "title": "API Key",
+        "airbyte_secret": true
+      },
+      "start_date": {
+        "title": "Start Date",
+        "type": "string",
+        "format": "date-time"
       }
     }
   }
