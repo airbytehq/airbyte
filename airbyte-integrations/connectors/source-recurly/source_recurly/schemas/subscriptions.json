@@ -36,7 +36,7 @@
           "type": "string"
         },
         "parent_account_id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "bill_to": {
           "type": "string"
@@ -70,10 +70,10 @@
           "type": "string"
         },
         "address": {
-          "type": "object"
+          "type": ["null", "object"]
         },
         "method": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "id": {
               "type": "string"
@@ -95,10 +95,10 @@
       }
     },
     "coupon_redemptions": {
-      "type": "array"
+      "type": ["null", "array"]
     },
     "pending_change": {
-      "type": "object"
+      "type": ["null", "object"]
     },
     "current_period_started_at": {
       "type": "string"
@@ -113,10 +113,10 @@
       "type": "string"
     },
     "trial_started_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "trial_ends_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "remaining_billing_cycles": {
       "type": "number"
@@ -131,10 +131,10 @@
       "type": "boolean"
     },
     "paused_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "remaining_pause_cycles": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "currency": {
       "type": "string"
@@ -167,13 +167,13 @@
       "type": "number"
     },
     "terms_and_conditions": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "customer_notes": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "expiration_reason": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "custom_fields": {
       "type": "array"
@@ -188,16 +188,16 @@
       "type": "string"
     },
     "canceled_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "expires_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "bank_account_authorized_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "billing_info_id": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

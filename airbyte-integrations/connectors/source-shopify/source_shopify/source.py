@@ -72,7 +72,6 @@ class ShopifyStream(HttpStream, ABC):
         """The name of the field in the response which contains the data"""
 
 
-# Basic incremental stream
 class IncrementalShopifyStream(ShopifyStream, ABC):
 
     # Setting the check point interval to the limit of the records output
@@ -103,7 +102,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         # Getting records >= state
         if stream_state:
             for record in records_slice:
-                if record.get(self.cursor_field) >= stream_state.get(self.cursor_field):
+                if record.get(self.cursor_field, "") >= stream_state.get(self.cursor_field):
                     yield record
         else:
             yield from records_slice
@@ -343,7 +342,6 @@ class Locations(ShopifyStream):
 class InventoryLevels(ChildSubstream):
     parent_stream_class: object = Locations
     slice_key = "location_id"
-    cursor_field = "updated_at"
 
     data_field = "inventory_levels"
 
@@ -359,10 +357,7 @@ class InventoryLevels(ChildSubstream):
             return record
 
         # associate the surrogate key
-        yield from map(
-            generate_key,
-            records_stream,
-        )
+        yield from map(generate_key, records_stream)
 
 
 class InventoryItems(ChildSubstream):
@@ -405,6 +400,19 @@ class Fulfillments(ChildSubstream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         order_id = stream_slice[self.slice_key]
         return f"orders/{order_id}/{self.data_field}.json"
+
+
+class Shop(ShopifyStream):
+    data_field = "shop"
+
+    @limiter.balance_rate_limit()
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        json_response = response.json()
+        record = json_response.get(self.data_field, []) if self.data_field is not None else json_response
+        return [record]
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
 
 
 class SourceShopify(AbstractSource):
@@ -452,4 +460,5 @@ class SourceShopify(AbstractSource):
             InventoryLevels(config),
             FulfillmentOrders(config),
             Fulfillments(config),
+            Shop(config),
         ]

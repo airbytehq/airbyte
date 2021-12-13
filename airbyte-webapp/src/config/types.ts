@@ -1,5 +1,6 @@
 import { SegmentAnalytics } from "core/analytics/types";
 import { UiConfig } from "./uiConfig";
+import { Feature } from "hooks/services/Feature";
 
 declare global {
   interface Window {
@@ -21,6 +22,7 @@ declare global {
 
 export type Config = {
   ui: UiConfig;
+  features: Feature[];
   segment: { token: string; enabled: boolean };
   apiUrl: string;
   oauthRedirectUrl: string;

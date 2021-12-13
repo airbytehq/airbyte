@@ -175,7 +175,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
   }
 
   private void initAndStartJdbcContainer() {
-    db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2017-latest")
+    db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-GA-ubuntu-16.04")
         .withNetwork(bastion.getNetWork())
         .acceptLicense();
     db.start();

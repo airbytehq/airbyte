@@ -44,7 +44,7 @@ class SourceSalesforce(AbstractSource):
             pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)
             streams_kwargs.update(dict(sf_api=sf_object, pk=pk, stream_name=stream_name, schema=json_schema, authenticator=authenticator))
             if replication_key and stream_name not in UNSUPPORTED_FILTERING_STREAMS:
-                streams.append(incremental(**streams_kwargs, replication_key=replication_key, start_date=config["start_date"]))
+                streams.append(incremental(**streams_kwargs, replication_key=replication_key, start_date=config.get("start_date")))
             else:
                 streams.append(full_refresh(**streams_kwargs))
 
