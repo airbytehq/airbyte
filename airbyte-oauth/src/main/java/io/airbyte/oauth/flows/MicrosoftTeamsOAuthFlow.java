@@ -113,7 +113,7 @@ public class MicrosoftTeamsOAuthFlow extends BaseOAuth2Flow {
                                                  final Map<String, Object> queryParams,
                                                  final String redirectUrl)
       throws IOException {
-    throw new IOException("not supported");
+    throw new IOException("Using the deprecated OAuth methods is not supported. This OAuth flow depends on values defined in connector configs");
   }
 
   @Override
@@ -123,7 +123,7 @@ public class MicrosoftTeamsOAuthFlow extends BaseOAuth2Flow {
                                                       final Map<String, Object> queryParams,
                                                       final String redirectUrl)
       throws IOException {
-    throw new IOException("not supported");
+    throw new IOException("Using the deprecated OAuth methods is not supported. This OAuth flow depends on values defined in connector configs");
   }
 
   /**
