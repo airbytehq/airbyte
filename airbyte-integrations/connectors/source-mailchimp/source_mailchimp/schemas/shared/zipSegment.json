@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "title": "Zip Code Location-Based Segment",
+  "description": "Segment by a specific US ZIP code.",
+  "required": ["field", "op", "value"],
+  "properties": {
+    "condition_type": {
+      "type": "string",
+      "x-value": "IPGeoZip",
+      "enum": ["IPGeoZip"]
+    },
+    "field": {
+      "type": "string",
+      "enum": ["ipgeo"],
+      "title": "Segment Field",
+      "description": "Segmenting subscribers who are within a specific location.",
+      "example": "ipgeo"
+    },
+    "op": {
+      "type": "string",
+      "enum": ["ipgeoiszip", "ipgeonotzip"],
+      "title": "Segment Operator",
+      "description": "Segment members who are/are not within a specific US zip code.",
+      "example": "ipgeonotzip"
+    },
+    "value": {
+      "type": "integer",
+      "title": "Segment Data",
+      "description": "The 5-digit zip code.",
+      "example": 30318
+    }
+  }
+}
