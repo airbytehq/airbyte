@@ -1,8 +1,8 @@
 import React from "react";
 import { render as rtlRender, RenderResult } from "@testing-library/react";
 import { ThemeProvider } from "styled-components";
-import { History, createMemoryHistory } from "history";
-import { Router } from "react-router-dom";
+import { History } from "history";
+import { BrowserRouter } from "react-router-dom";
 import { IntlProvider } from "react-intl";
 
 import en from "locales/en.json";
@@ -29,14 +29,7 @@ export function render(
         <IntlProvider locale="en" messages={en}>
           <ConfigServiceProvider defaultConfig={defaultConfig} providers={[]}>
             <FeatureService>
-              <Router
-                history={
-                  (renderOptions && renderOptions.history) ||
-                  createMemoryHistory()
-                }
-              >
-                {children}
-              </Router>
+              <BrowserRouter>{children}</BrowserRouter>
             </FeatureService>
           </ConfigServiceProvider>
         </IntlProvider>

@@ -4,7 +4,7 @@ import { useStatefulResource } from "@rest-hooks/legacy";
 
 import DestinationResource from "core/resources/Destination";
 import ConnectionResource, { Connection } from "core/resources/Connection";
-import { Routes } from "pages/routes";
+import { RoutePaths } from "pages/routes";
 import useRouter from "../useRouter";
 import DestinationDefinitionSpecificationResource from "core/resources/DestinationDefinitionSpecification";
 import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
@@ -287,7 +287,7 @@ const useDestination = (): DestinationService => {
       updateConnectionsStore({ connectionId: item.connectionId }, undefined)
     );
 
-    push(Routes.Destination);
+    push(RoutePaths.Destination);
   };
 
   return {

@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar } from "@fortawesome/free-solid-svg-icons";
 import { useIntercom } from "react-use-intercom";
 
-import { Routes } from "packages/cloud/routes";
+import { CloudRoutes } from "packages/cloud/cloudRoutes";
 
 import useWorkspace from "hooks/services/useWorkspace";
 import { Link } from "components";
@@ -108,8 +108,8 @@ const SideBar: React.FC = () => {
         <Link
           to={
             workspace.displaySetupWizard
-              ? Routes.Onboarding
-              : Routes.Connections
+              ? CloudRoutes.Onboarding
+              : CloudRoutes.Connections
           }
         >
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
@@ -122,7 +122,7 @@ const SideBar: React.FC = () => {
         <Menu>
           {workspace.displaySetupWizard ? (
             <li>
-              <MenuItem to={Routes.Onboarding} activeClassName="active">
+              <MenuItem to={CloudRoutes.Onboarding}>
                 <OnboardingIcon />
                 <Text>
                   <FormattedMessage id="sidebar.onboarding" />
@@ -131,7 +131,7 @@ const SideBar: React.FC = () => {
             </li>
           ) : null}
           <li>
-            <MenuItem to={Routes.Connections} activeClassName="active">
+            <MenuItem to={CloudRoutes.Connections}>
               <ConnectionsIcon />
               <Text>
                 <FormattedMessage id="sidebar.connections" />
@@ -139,7 +139,7 @@ const SideBar: React.FC = () => {
             </MenuItem>
           </li>
           <li>
-            <MenuItem to={Routes.Source} activeClassName="active">
+            <MenuItem to={CloudRoutes.Source}>
               <SourceIcon />
               <Text>
                 <FormattedMessage id="sidebar.sources" />
@@ -147,7 +147,7 @@ const SideBar: React.FC = () => {
             </MenuItem>
           </li>
           <li>
-            <MenuItem to={Routes.Destination} activeClassName="active">
+            <MenuItem to={CloudRoutes.Destination}>
               <DestinationIcon />
               <Text>
                 <FormattedMessage id="sidebar.destinations" />
@@ -158,7 +158,7 @@ const SideBar: React.FC = () => {
       </div>
       <Menu>
         <li>
-          <MenuItem to={Routes.Credits} activeClassName="active">
+          <MenuItem to={CloudRoutes.Credits}>
             <CreditsIcon icon={faStar} />
             <Text>
               <FormattedNumber value={cloudWorkspace.remainingCredits} />
@@ -197,11 +197,10 @@ const SideBar: React.FC = () => {
         </li>
         <li>
           <MenuItem
-            to={`${Routes.Settings}${Routes.Account}`}
-            activeClassName="active"
-            isActive={(_, location) =>
-              location.pathname.startsWith(Routes.Settings)
-            }
+            to={`${CloudRoutes.Settings}${CloudRoutes.Account}`}
+            // isActive={(_, location) =>
+            //   location.pathname.startsWith(CloudRoutes.Settings)
+            // }
           >
             <React.Suspense fallback={null}>
               <NotificationIndicator />

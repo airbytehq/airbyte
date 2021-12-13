@@ -10,7 +10,7 @@ import {
 import SettingsPage from "pages/SettingsPage";
 import ConfigurationsPage from "pages/SettingsPage/pages/ConfigurationsPage";
 import NotificationPage from "pages/SettingsPage/pages/NotificationPage";
-import { Routes } from "../routes";
+import { CloudRoutes } from "../cloudRoutes";
 import { AccountSettingsView } from "./users/AccountSettingsView";
 import { WorkspaceSettingsView } from "./workspaces/WorkspaceSettingsView";
 import { UsersSettingsView } from "./users/UsersSettingsView";
@@ -25,7 +25,7 @@ export const CloudSettingsPage: React.FC = () => {
           category: <FormattedMessage id="settings.userSettings" />,
           routes: [
             {
-              path: `${Routes.Settings}${Routes.Account}`,
+              path: `${CloudRoutes.Settings}${CloudRoutes.Account}`,
               name: <FormattedMessage id="settings.account" />,
               component: AccountSettingsView,
             },
@@ -35,34 +35,34 @@ export const CloudSettingsPage: React.FC = () => {
           category: <FormattedMessage id="settings.workspaceSettings" />,
           routes: [
             {
-              path: `${Routes.Settings}${Routes.Workspace}`,
+              path: `${CloudRoutes.Settings}${CloudRoutes.Workspace}`,
               name: <FormattedMessage id="settings.generalSettings" />,
               component: WorkspaceSettingsView,
             },
             {
-              path: `${Routes.Settings}${Routes.Source}`,
+              path: `${CloudRoutes.Settings}${CloudRoutes.Source}`,
               name: <FormattedMessage id="tables.sources" />,
               indicatorCount: countNewSourceVersion,
               component: SettingsSourcesPage,
             },
             {
-              path: `${Routes.Settings}${Routes.Destination}`,
+              path: `${CloudRoutes.Settings}${CloudRoutes.Destination}`,
               name: <FormattedMessage id="tables.destinations" />,
               indicatorCount: countNewDestinationVersion,
               component: SettingsDestinationPage,
             },
             {
-              path: `${Routes.Settings}${Routes.Configuration}`,
+              path: `${CloudRoutes.Settings}${CloudRoutes.Configuration}`,
               name: <FormattedMessage id="admin.configuration" />,
               component: ConfigurationsPage,
             },
             {
-              path: `${Routes.Settings}${Routes.AccessManagement}`,
+              path: `${CloudRoutes.Settings}${CloudRoutes.AccessManagement}`,
               name: <FormattedMessage id="settings.accessManagementSettings" />,
               component: UsersSettingsView,
             },
             {
-              path: `${Routes.Settings}${Routes.Notifications}`,
+              path: `${CloudRoutes.Settings}${CloudRoutes.Notifications}`,
               name: <FormattedMessage id="settings.notifications" />,
               component: NotificationPage,
             },

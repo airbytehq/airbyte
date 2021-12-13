@@ -3,8 +3,6 @@ import React from "react";
 import { ImplementationTable } from "components/EntityTable";
 import { getEntityTableData } from "components/EntityTable/utils";
 import { EntityTableDataItem } from "components/EntityTable/types";
-
-import { Routes } from "pages/routes";
 import useRouter from "hooks/useRouter";
 import { useDestinationDefinitionList } from "hooks/services/useDestinationDefinition";
 import { useConnectionList } from "hooks/services/useConnectionHook";
@@ -27,7 +25,7 @@ const DestinationsTable: React.FC<IProps> = ({ destinations }) => {
   );
 
   const clickRow = (destination: EntityTableDataItem) =>
-    push(`${Routes.Destination}/${destination.entityId}`);
+    push(`${destination.entityId}`);
 
   return (
     <ImplementationTable

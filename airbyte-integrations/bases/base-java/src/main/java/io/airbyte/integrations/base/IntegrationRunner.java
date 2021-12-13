@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Accepts EITHER a destination or a source. Routes commands from the commandline to the appropriate
+ * Accepts EITHER a destination or a source. RoutePaths commands from the commandline to the appropriate
  * methods on the integration. Keeps itself DRY for methods that are common between source and
  * destination.
  */

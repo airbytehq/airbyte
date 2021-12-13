@@ -16,7 +16,7 @@ import NotificationService from "hooks/services/Notification";
 import { AnalyticsProvider } from "views/common/AnalyticsProvider";
 import { FeatureService } from "hooks/services/Feature";
 import { ServicesProvider } from "core/servicesProvider";
-import { useApiServices } from "core/defaultServices";
+import { ApiServices } from "core/ApiServices";
 import {
   Config,
   ConfigServiceProvider,
@@ -59,30 +59,18 @@ const configProviders: ValueProvider<Config> = [
   windowConfigProvider,
 ];
 
-const ServiceOverrides: React.FC = React.memo(({ children }) => {
-  useApiServices();
-  return <>{children}</>;
-});
-
 const Services: React.FC = ({ children }) => (
-  <ConfigServiceProvider
-    defaultConfig={defaultConfig}
-    providers={configProviders}
-  >
-    <AnalyticsProvider>
-      <ApiErrorBoundary>
-        <WorkspaceServiceProvider>
-          <FeatureService>
-            <NotificationService>
-              <ServicesProvider>
-                <ServiceOverrides>{children}</ServiceOverrides>
-              </ServicesProvider>
-            </NotificationService>
-          </FeatureService>
-        </WorkspaceServiceProvider>
-      </ApiErrorBoundary>
-    </AnalyticsProvider>
-  </ConfigServiceProvider>
+  <AnalyticsProvider>
+    <ApiErrorBoundary>
+      <WorkspaceServiceProvider>
+        <FeatureService>
+          <NotificationService>
+            <ApiServices>{children}</ApiServices>
+          </NotificationService>
+        </FeatureService>
+      </WorkspaceServiceProvider>
+    </ApiErrorBoundary>
+  </AnalyticsProvider>
 );
 
 const App: React.FC = () => {
@@ -90,15 +78,22 @@ const App: React.FC = () => {
     <React.StrictMode>
       <StyleProvider>
         <I18NProvider>
-          <Router>
-            <StoreProvider>
+          <StoreProvider>
+            <ServicesProvider>
               <Suspense fallback={<LoadingPage />}>
-                <Services>
-                  <Routing />
-                </Services>
+                <ConfigServiceProvider
+                  defaultConfig={defaultConfig}
+                  providers={configProviders}
+                >
+                  <Router>
+                    <Services>
+                      <Routing />
+                    </Services>
+                  </Router>
+                </ConfigServiceProvider>
               </Suspense>
-            </StoreProvider>
-          </Router>
+            </ServicesProvider>
+          </StoreProvider>
         </I18NProvider>
       </StyleProvider>
     </React.StrictMode>

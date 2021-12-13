@@ -1,12 +1,12 @@
 import React from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
+import { FormattedMessage } from "react-intl";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
 import { Button } from "components";
-import { Routes } from "../../../routes";
-import { FormattedMessage } from "react-intl";
+import { CloudRoutes } from "../../../cloudRoutes";
 
 const Links = styled.div`
   width: 100%;
@@ -59,7 +59,11 @@ const Header: React.FC<HeaderProps> = ({ toLogin }) => {
             <FormattedMessage id="login.DontHaveAccount" />
           )}
         </TextBlock>
-        <Button secondary as={Link} to={toLogin ? Routes.Login : Routes.Signup}>
+        <Button
+          secondary
+          as={Link}
+          to={toLogin ? CloudRoutes.Login : CloudRoutes.Signup}
+        >
           {toLogin ? (
             <FormattedMessage id="login.login" />
           ) : (

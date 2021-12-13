@@ -1,14 +1,14 @@
 import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
-import { Redirect, Route, Switch } from "react-router";
+import { Navigate, Route, Routes } from "react-router-dom";
 
 import HeadTitle from "components/HeadTitle";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import SideMenu from "components/SideMenu";
 import LoadingPage from "components/LoadingPage";
 import { CategoryItem } from "components/SideMenu/SideMenu";
-import { Routes } from "packages/cloud/routes";
+import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import useRouter from "hooks/useRouter";
 import CreditsTitle from "./components/CreditsTitle";
 import RemainingCredits from "./components/RemainingCredits";
@@ -38,7 +38,7 @@ const CreditsPage: React.FC = () => {
     {
       routes: [
         {
-          path: `${Routes.Credits}`,
+          path: `${CloudRoutes.Credits}`,
           name: <FormattedMessage id="credits.creditUsage" />,
           component: CreditsUsagePage,
         },
@@ -63,25 +63,23 @@ const CreditsPage: React.FC = () => {
           />
           <MainView>
             <Suspense fallback={<LoadingPage />}>
-              <Switch>
+              <Routes>
                 {menuItems.flatMap((menuItem) =>
                   menuItem.routes.map((route) => (
-                    <Route
-                      key={`${route.path}`}
-                      path={`${route.path}`}
-                      component={route.component}
-                    />
+                    <Route key={`${route.path}`} path={`${route.path}`}>
+                      {route.component}
+                    </Route>
                   ))
                 )}
 
-                <Redirect
+                <Navigate
                   to={
                     firstRoute
                       ? `${menuItems?.[0].routes?.[0]?.path}`
-                      : Routes.Root
+                      : CloudRoutes.Root
                   }
                 />
-              </Switch>
+              </Routes>
             </Suspense>
           </MainView>
         </MainInfo>

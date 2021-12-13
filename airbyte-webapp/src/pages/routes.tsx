@@ -1,5 +1,5 @@
-import React, { Suspense, useEffect, useMemo } from "react";
-import { Redirect, Route, Switch } from "react-router-dom";
+import React, { useMemo } from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { useIntl } from "react-intl";
 
 import { useConfig } from "config";
@@ -10,7 +10,6 @@ import PreferencesPage from "./PreferencesPage";
 import OnboardingPage from "./OnboardingPage";
 import ConnectionPage from "./ConnectionPage";
 import SettingsPage from "./SettingsPage";
-import LoadingPage from "components/LoadingPage";
 import MainView from "views/layout/MainView";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 
@@ -22,31 +21,26 @@ import {
   useAnalyticsRegisterValues,
 } from "hooks/services/Analytics";
 import { Workspace } from "core/resources/Workspace";
-import {
-  useListWorkspaces,
-  useWorkspaceService,
-} from "../services/workspaces/WorkspacesService";
-import { OnboardingServiceProvider } from "../hooks/services/Onboarding";
-import useRouter from "../hooks/useRouter";
+import { useListWorkspaces } from "services/workspaces/WorkspacesService";
+import { OnboardingServiceProvider } from "hooks/services/Onboarding";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { useLocation } from "react-use";
 
-export enum Routes {
-  Preferences = "/preferences",
-  Onboarding = "/onboarding",
-
-  Connections = "/connections",
-  Destination = "/destination",
-  Source = "/source",
-  Connection = "/connection",
-  ConnectionNew = "/new-connection",
-  SourceNew = "/new-source",
-  DestinationNew = "/new-destination",
-  Settings = "/settings",
-  Configuration = "/configuration",
-  Notifications = "/notifications",
-  Metrics = "/metrics",
-  Account = "/account",
+export enum RoutePaths {
   AuthFlow = "/auth_flow",
   Root = "/",
+
+  Preferences = "preferences",
+  Onboarding = "onboarding",
+  Connections = "connections",
+  Destination = "destination",
+  Source = "source",
+  Settings = "settings",
+
+  Connection = "connection",
+  ConnectionNew = "new-connection",
+  SourceNew = "new-source",
+  DestinationNew = "new-destination",
 }
 
 function useDemo() {
@@ -78,91 +72,94 @@ const useAddAnalyticsContextForWorkspace = (workspace: Workspace): void => {
   useAnalyticsIdentifyUser(workspace.workspaceId);
 };
 
-const MainViewRoutes: React.FC<{ workspace: Workspace }> = ({ workspace }) => (
-  <MainView>
-    <Suspense fallback={<LoadingPage />}>
-      <Switch>
-        <Route path={Routes.AuthFlow}>
-          <CompleteOauthRequest />
-        </Route>
-        <Route path={Routes.Destination}>
-          <DestinationPage />
-        </Route>
-        <Route path={Routes.Source}>
-          <SourcesPage />
-        </Route>
-        <Route path={Routes.Connections}>
-          <ConnectionPage />
-        </Route>
-        <Route path={Routes.Settings}>
-          <SettingsPage />
-        </Route>
-        {workspace.displaySetupWizard && (
-          <Route path={Routes.Onboarding}>
-            <OnboardingPage />
-          </Route>
-        )}
-        <Redirect
-          to={
-            workspace.displaySetupWizard
-              ? Routes.Onboarding
-              : Routes.Connections
+const MainViewRoutes: React.FC<{ workspace: Workspace }> = ({ workspace }) => {
+  return (
+    <MainView>
+      <TrackPageAnalytics />
+      <Routes>
+        <Route
+          path={`/${RoutePaths.Destination}/*`}
+          element={<DestinationPage />}
+        />
+        <Route path={`/${RoutePaths.Source}/*`} element={<SourcesPage />} />
+        <Route
+          path={`/${RoutePaths.Connections}/*`}
+          element={<ConnectionPage />}
+        />
+        <Route path={`/${RoutePaths.Settings}/*`} element={<SettingsPage />} />
+        {workspace.displaySetupWizard ? (
+          <Route
+            path={`/${RoutePaths.Onboarding}/*`}
+            element={<OnboardingPage />}
+          />
+        ) : null}
+        <Route
+          element={
+            <Navigate
+              to={
+                workspace.displaySetupWizard
+                  ? RoutePaths.Onboarding
+                  : RoutePaths.Connections
+              }
+            />
           }
         />
-      </Switch>
-    </Suspense>
-  </MainView>
-);
-
-const PreferencesRoutes = () => (
-  <Switch>
-    <Route path={Routes.Preferences}>
-      <PreferencesPage />
-    </Route>
-    <Redirect to={Routes.Preferences} />
-  </Switch>
-);
-
-export const useAutoSelectFirstWorkspace = (): Workspace => {
-  const workspaces = useListWorkspaces();
-
-  const currentWorkspace = workspaces[0];
-
-  const { selectWorkspace } = useWorkspaceService();
-
-  const { pathname } = useRouter();
-  const currentPath = pathname.split("/");
-  const currentWorkspaceId =
-    currentPath[0] === "workspace" ? currentPath[1] : null;
-
-  console.log(currentWorkspaceId);
-
-  useEffect(() => selectWorkspace(currentWorkspace.workspaceId), [
-    currentWorkspace.workspaceId,
-  ]);
-
-  return workspaces[0];
+      </Routes>
+    </MainView>
+  );
 };
 
-export const Routing: React.FC = () => {
-  const workspace = useAutoSelectFirstWorkspace();
+const PreferencesRoutes = () => (
+  <Routes>
+    <Route path={RoutePaths.Preferences} element={<PreferencesPage />} />
+    <Route element={<Navigate to={RoutePaths.Preferences} />} />
+  </Routes>
+);
 
+export const AutoSelectFirstWorkspace: React.FC = () => {
+  const location = useLocation();
+  const workspaces = useListWorkspaces();
+  const currentWorkspace = workspaces[0];
+
+  return (
+    <Navigate
+      to={`/${currentWorkspace.workspaceId}${location.pathname}`}
+      replace={true}
+    />
+  );
+};
+
+const RoutingWithWorkspace: React.FC = () => {
+  const workspace = useCurrentWorkspace();
   useAddAnalyticsContextForWorkspace(workspace);
   useApiHealthPoll();
   useDemo();
 
   return (
-    <Suspense fallback={<LoadingPage />}>
-      <OnboardingServiceProvider>
-        {!workspace.initialSetupComplete ? (
-          <PreferencesRoutes />
-        ) : (
-          <>
-            <TrackPageAnalytics />
-            <MainViewRoutes workspace={workspace} />
-          </>
-        )}
-      </OnboardingServiceProvider>
-    </Suspense>
+    <OnboardingServiceProvider>
+      {workspace.initialSetupComplete ? (
+        <MainViewRoutes workspace={workspace} />
+      ) : (
+        <PreferencesRoutes />
+      )}
+    </OnboardingServiceProvider>
+  );
+};
+
+export const Routing: React.FC = () => {
+  // TODO: Remove this after it is verified there are no problems with current routing
+  const OldRoutes = useMemo(
+    () =>
+      Object.values(RoutePaths).map((r) => (
+        <Route path={`${r}/*`} key={r} element={<AutoSelectFirstWorkspace />} />
+      )),
+    []
+  );
+  return (
+    <Routes>
+      {OldRoutes}
+      <Route path={RoutePaths.AuthFlow} element={<CompleteOauthRequest />} />
+      <Route path="/:workspaceId/*" element={<RoutingWithWorkspace />} />
+    </Routes>
   );
 };

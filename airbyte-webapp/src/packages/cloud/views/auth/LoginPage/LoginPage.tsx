@@ -13,7 +13,7 @@ import {
 } from "packages/cloud/views/auth/components/FormComponents";
 import { FormTitle } from "packages/cloud/views/auth/components/FormTitle";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
-import { Routes } from "packages/cloud/routes";
+import { CloudRoutes } from "packages/cloud/cloudRoutes";
 
 const LoginPageValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
@@ -92,7 +92,7 @@ const LoginPage: React.FC = () => {
             </FieldItem>
             <BottomBlock>
               <>
-                <Link to={Routes.ResetPassword} $light>
+                <Link to={CloudRoutes.ResetPassword} $light>
                   <FormattedMessage id="login.forgotPassword" />
                 </Link>
                 <LoadingButton type="submit" isLoading={isSubmitting}>

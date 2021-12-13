@@ -1,12 +1,12 @@
-import React, { useContext, useMemo, useState } from "react";
+import React, { useContext, useMemo } from "react";
 import { useQueryClient } from "react-query";
 import { useResetter, useResource } from "rest-hooks";
 
 import WorkspaceResource, { Workspace } from "core/resources/Workspace";
-// import useRouter from "hooks/useRouter";
+import useRouter from "hooks/useRouter";
 
 type Context = {
-  currentWorkspaceId: string | null;
+  // currentWorkspaceId: string | null;
   selectWorkspace: (workspaceId: string | null) => void;
 };
 
@@ -17,21 +17,17 @@ export const WorkspaceServiceContext = React.createContext<Context | null>(
 export const WorkspaceServiceProvider: React.FC = ({ children }) => {
   const queryClient = useQueryClient();
   const resetCache = useResetter();
-  // const { push } = useRouter();
-  const [currentWorkspaceId, setCurrentWorkspaceId] = useState<string | null>(
-    null
-  );
+  const { push } = useRouter();
 
   const ctx = useMemo<Context>(
     () => ({
-      currentWorkspaceId: currentWorkspaceId,
       selectWorkspace: async (workspaceId) => {
-        setCurrentWorkspaceId(workspaceId);
+        push(workspaceId ?? "");
         await queryClient.resetQueries();
         resetCache();
       },
     }),
-    [currentWorkspaceId, currentWorkspaceId]
+    [push]
   );
 
   return (
@@ -53,14 +49,15 @@ export const useWorkspaceService = (): Context => {
 };
 
 export const useCurrentWorkspace = (): Workspace => {
-  const { currentWorkspaceId } = useWorkspaceService();
+  const { query } = useRouter();
+  const { workspaceId } = query as any;
 
   // @ts-ignore
   return useResource(
     WorkspaceResource.detailShape(),
-    currentWorkspaceId
+    workspaceId
       ? {
-          workspaceId: currentWorkspaceId,
+          workspaceId: workspaceId,
         }
       : undefined
   );

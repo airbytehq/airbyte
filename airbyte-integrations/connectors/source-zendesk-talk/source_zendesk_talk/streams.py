@@ -228,7 +228,7 @@ class IVRMenus(IVRs):
 
 
 class IVRRoutes(IVRs):
-    """IVR Routes
+    """IVR RoutePaths
     Docs: https://developer.zendesk.com/rest_api/docs/voice-api/ivr_routes#list-ivr-routes
     """
 

@@ -3,7 +3,7 @@ import { useFetcher, useResource } from "rest-hooks";
 import { useStatefulResource } from "@rest-hooks/legacy";
 
 import SourceResource from "core/resources/Source";
-import { Routes } from "pages/routes";
+import { RoutePaths } from "pages/routes";
 import ConnectionResource, { Connection } from "core/resources/Connection";
 import SourceDefinitionSpecificationResource from "core/resources/SourceDefinitionSpecification";
 import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
@@ -233,7 +233,7 @@ const useSource = (): SourceService => {
       updateConnectionsStore({ connectionId: item.connectionId }, undefined)
     );
 
-    push(Routes.Root);
+    push(RoutePaths.Source);
   };
 
   return {

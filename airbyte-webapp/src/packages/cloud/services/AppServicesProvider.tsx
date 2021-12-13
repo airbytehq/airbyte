@@ -7,7 +7,7 @@ import {
   useGetService,
   useInjectServices,
 } from "core/servicesProvider";
-import { useApiServices } from "core/defaultServices";
+import { ApiServices } from "core/ApiServices";
 import { FirebaseSdkProvider } from "./FirebaseSdkProvider";
 import { RequestAuthMiddleware } from "packages/cloud/lib/auth/RequestAuthMiddleware";
 import { useConfig } from "./config";
@@ -55,11 +55,14 @@ const ServiceOverrides: React.FC = React.memo(({ children }) => {
   );
 
   useInjectServices(inject);
-  useApiServices();
 
   const registeredMiddlewares = useGetService("DefaultRequestMiddlewares");
 
-  return registeredMiddlewares ? <>{children}</> : <LoadingPage />;
+  return (
+    <ApiServices>
+      {registeredMiddlewares ? <>{children}</> : <LoadingPage />}
+    </ApiServices>
+  );
 });
 
 export { AppServicesProvider };

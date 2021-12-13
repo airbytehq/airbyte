@@ -1,9 +1,9 @@
 import React, { Suspense, useMemo } from "react";
 import {
   BrowserRouter as Router,
-  Redirect,
+  Navigate,
   Route,
-  Switch,
+  Routes,
 } from "react-router-dom";
 
 import SourcesPage from "pages/SourcesPage";
@@ -20,7 +20,7 @@ import { useIntercom } from "packages/cloud/services/thirdParty/intercom/useInte
 
 import { useGetWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
 import {
-  useWorkspaceService,
+  useCurrentWorkspace,
   WorkspaceServiceProvider,
 } from "services/workspaces/WorkspacesService";
 import OnboardingPage from "pages/OnboardingPage";
@@ -39,7 +39,7 @@ import {
 import { CloudSettingsPage } from "./views/CloudSettingsPage";
 import { VerifyEmailAction } from "./views/FirebaseActionRoute";
 
-export enum Routes {
+export enum CloudRoutes {
   Preferences = "/preferences",
   Onboarding = "/onboarding",
 
@@ -90,38 +90,38 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
   );
   useAnalyticsRegisterValues(analyticsContext);
 
-  const mainRedirect = workspace.displaySetupWizard
-    ? Routes.Onboarding
-    : Routes.Connections;
+  const mainNavigate = workspace.displaySetupWizard
+    ? CloudRoutes.Onboarding
+    : CloudRoutes.Connections;
 
   return (
-    <Switch>
-      <Route path={Routes.Destination}>
+    <Routes>
+      <Route path={CloudRoutes.Destination}>
         <DestinationPage />
       </Route>
-      <Route path={Routes.Source}>
+      <Route path={CloudRoutes.Source}>
         <SourcesPage />
       </Route>
-      <Route path={Routes.Connections}>
+      <Route path={CloudRoutes.Connections}>
         <ConnectionPage />
       </Route>
-      <Route path={Routes.Settings}>
+      <Route path={CloudRoutes.Settings}>
         <Suspense fallback={LoadingPage}>
           <CloudSettingsPage />
         </Suspense>
       </Route>
-      <Route path={Routes.Credits}>
+      <Route path={CloudRoutes.Credits}>
         <CreditsPage />
       </Route>
       {workspace.displaySetupWizard && (
-        <Route exact path={Routes.Onboarding}>
+        <Route path={CloudRoutes.Onboarding}>
           <OnboardingServiceProvider>
             <OnboardingPage />
           </OnboardingServiceProvider>
         </Route>
       )}
-      <Redirect to={mainRedirect} />
-    </Switch>
+      <Navigate to={mainNavigate} />
+    </Routes>
   );
 };
 
@@ -129,30 +129,30 @@ const MainViewRoutes = () => {
   useApiHealthPoll();
   useIntercom();
 
-  const { currentWorkspaceId } = useWorkspaceService();
+  const { workspaceId } = useCurrentWorkspace();
 
   return (
-    <Switch>
-      <Route path={Routes.AuthFlow}>
+    <Routes>
+      <Route path={CloudRoutes.AuthFlow}>
         <CompleteOauthRequest />
       </Route>
       <Route>
-        {currentWorkspaceId ? (
+        {workspaceId ? (
           <MainView>
             <Suspense fallback={<LoadingPage />}>
-              <MainRoutes currentWorkspaceId={currentWorkspaceId} />
+              <MainRoutes currentWorkspaceId={workspaceId} />
             </Suspense>
           </MainView>
         ) : (
-          <Switch>
-            <Route exact path={Routes.SelectWorkspace}>
+          <Routes>
+            <Route path={CloudRoutes.SelectWorkspace}>
               <WorkspacesPage />
             </Route>
-            <Redirect to={Routes.SelectWorkspace} />
-          </Switch>
+            <Navigate to={CloudRoutes.SelectWorkspace} />
+          </Routes>
         )}
       </Route>
-    </Switch>
+    </Routes>
   );
 };
 
@@ -185,15 +185,15 @@ export const Routing: React.FC = () => {
               </WorkspaceServiceProvider>
             )}
             {user && !emailVerified && (
-              <Switch>
-                <Route path={Routes.FirebaseAction}>
+              <Routes>
+                <Route path={CloudRoutes.FirebaseAction}>
                   <VerifyEmailAction />
                 </Route>
-                <Route path={Routes.ConfirmVerifyEmail}>
+                <Route path={CloudRoutes.ConfirmVerifyEmail}>
                   <ConfirmEmailPage />
                 </Route>
-                <Redirect to={Routes.ConfirmVerifyEmail} />
-              </Switch>
+                <Navigate to={CloudRoutes.ConfirmVerifyEmail} />
+              </Routes>
             )}
             {!user && <Auth />}
           </>

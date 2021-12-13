@@ -13,6 +13,7 @@ import {
 } from "packages/cloud/services/workspaces/WorkspacesService";
 
 import ExitIcon from "./components/ExitIcon";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
 const BottomElement = styled.div`
   background: ${(props) => props.theme.greyColro0};
@@ -103,8 +104,9 @@ const WorkspacePopout: React.FC<{
   children: (props: { onOpen: () => void; value: any }) => React.ReactNode;
 }> = ({ children }) => {
   const { data: workspaces } = useListWorkspaces();
-  const { selectWorkspace, currentWorkspaceId } = useWorkspaceService();
-  const { data: workspace } = useGetWorkspace(currentWorkspaceId || "");
+  const { selectWorkspace } = useWorkspaceService();
+  const { workspaceId } = useCurrentWorkspace();
+  const { data: workspace } = useGetWorkspace(workspaceId || "");
 
   const options = useMemo(() => {
     return workspaces

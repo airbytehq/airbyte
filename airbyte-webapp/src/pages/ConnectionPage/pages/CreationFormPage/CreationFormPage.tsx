@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
-import { Routes } from "pages/routes";
+import { RoutePaths } from "pages/routes";
 import useRouter from "hooks/useRouter";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import PageTitle from "components/PageTitle";
@@ -24,10 +24,10 @@ import {
   DestinationDefinition,
   Source,
   SourceDefinition,
-} from "../../../../core/domain/connector";
+} from "core/domain/connector";
 
 type IProps = {
-  type: "source" | "destination" | "connection";
+  type?: "source" | "destination" | "connection";
 };
 
 export enum StepsTypes {
@@ -88,8 +88,18 @@ function usePreloadData(): {
   return { source, sourceDefinition, destination, destinationDefinition };
 }
 
-const CreationFormPage: React.FC<IProps> = ({ type }) => {
+const CreationFormPage: React.FC<IProps> = ({}) => {
   const { location, push } = useRouter();
+
+  const locationType = location.pathname.split("/")[2];
+
+  const type =
+    locationType === "connections"
+      ? "connection"
+      : locationType === "source"
+      ? "destination"
+      : "source";
+
   const hasConnectors =
     location.state?.sourceId && location.state?.destinationId;
   const [currentStep, setCurrentStep] = useState(
@@ -110,7 +120,7 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
   } = usePreloadData();
 
   const onSelectExistingSource = (id: string) => {
-    push({
+    push("", {
       state: {
         ...(location.state as Record<string, unknown>),
         sourceId: id,
@@ -121,10 +131,10 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
   };
 
   const onSelectExistingDestination = (id: string) => {
-    push({
+    push("", {
       state: {
         ...(location.state as Record<string, unknown>),
-        destinationId: id,
+        sourceId: id,
       },
     });
     setCurrentEntityStep(EntityStepsTypes.CONNECTION);
@@ -181,13 +191,13 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
     const afterSubmitConnection = () => {
       switch (type) {
         case "destination":
-          push(`${Routes.Source}/${source?.sourceId}`);
+          push(`../${source?.sourceId}`);
           break;
         case "source":
-          push(`${Routes.Destination}/${destination?.destinationId}`);
+          push(`../${destination?.destinationId}`);
           break;
         default:
-          push(`${Routes.Connections}`);
+          push(`../${RoutePaths.Connections}`);
           break;
       }
     };

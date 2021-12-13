@@ -1,13 +1,13 @@
 import React, { Suspense } from "react";
 import styled from "styled-components";
-import { Redirect, Route, Switch } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 
 import { LoadingPage } from "components";
 import useRouter from "hooks/useRouter";
 import FormContent from "./components/FormContent";
 import News from "./components/News";
 
-import { Routes } from "packages/cloud/routes";
+import { CloudRoutes } from "packages/cloud/cloudRoutes";
 
 import { LoginPage } from "./LoginPage";
 import { SignupPage } from "./SignupPage";
@@ -41,27 +41,27 @@ const Auth: React.FC = () => {
   const { pathname } = useRouter();
 
   return (
-    <Switch>
+    <Routes>
       <Route>
         <Content>
           <Part>
-            <FormContent toLogin={pathname === Routes.Signup}>
+            <FormContent toLogin={pathname === CloudRoutes.Signup}>
               <Suspense fallback={<LoadingPage />}>
-                <Switch>
-                  <Route path={Routes.Login}>
+                <Routes>
+                  <Route path={CloudRoutes.Login}>
                     <LoginPage />
                   </Route>
-                  <Route path={Routes.Signup}>
+                  <Route path={CloudRoutes.Signup}>
                     <SignupPage />
                   </Route>
-                  <Route path={Routes.ResetPassword}>
+                  <Route path={CloudRoutes.ResetPassword}>
                     <ResetPasswordPage />
                   </Route>
-                  <Route path={Routes.FirebaseAction}>
+                  <Route path={CloudRoutes.FirebaseAction}>
                     <ResetPasswordAction />
                   </Route>
-                  <Redirect to={Routes.Login} />
-                </Switch>
+                  <Navigate to={CloudRoutes.Login} />
+                </Routes>
               </Suspense>
             </FormContent>
           </Part>
@@ -70,7 +70,7 @@ const Auth: React.FC = () => {
           </NewsPart>
         </Content>
       </Route>
-    </Switch>
+    </Routes>
   );
 };
 
