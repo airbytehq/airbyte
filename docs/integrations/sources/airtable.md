@@ -30,4 +30,8 @@ Information about how to get credentials you may find [here](https://support.air
 Information about rate limits you may find [here](https://support.airtable.com/hc/en-us/articles/203313985-Public-REST-API).
 
 
-## CHANGELOG
+## Changelog
+
+| Version | Date | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| `0.1.1` | 2021-12-06 | [8425](https://github.com/airbytehq/airbyte/pull/8425) | Update title, description fields in spec |
