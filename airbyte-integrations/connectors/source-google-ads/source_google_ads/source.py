@@ -76,9 +76,7 @@ class SourceGoogleAds(AbstractSource):
                 query = query.get("query")
 
                 if is_manager_account and self.is_metrics_in_custom_query(query):
-                    raise Exception(
-                        f"Metrics are not available for manager account. Check fields in your custom query: {query}"
-                    )
+                    raise Exception(f"Metrics are not available for manager account. Check fields in your custom query: {query}")
                 if CustomQuery.cursor_field in query:
                     raise Exception(f"Custom query should not contain {CustomQuery.cursor_field}")
 
@@ -93,10 +91,7 @@ class SourceGoogleAds(AbstractSource):
         account_info = self.get_account_info(google_api)
         time_zone = self.get_time_zone(account_info)
         incremental_stream_config = dict(
-            api=google_api,
-            conversion_window_days=config["conversion_window_days"],
-            start_date=config["start_date"],
-            time_zone=time_zone
+            api=google_api, conversion_window_days=config["conversion_window_days"], start_date=config["start_date"], time_zone=time_zone
         )
 
         streams = [

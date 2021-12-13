@@ -78,10 +78,10 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
 
   private void initAndStartJdbcContainer() {
     db = new OracleContainer()
-            .withUsername("test")
-            .withPassword("oracle")
-            .usingSid()
-            .withNetwork(sshBastionContainer.getNetWork());;
+        .withUsername("test")
+        .withPassword("oracle")
+        .usingSid()
+        .withNetwork(sshBastionContainer.getNetWork());;
     db.start();
   }
 
