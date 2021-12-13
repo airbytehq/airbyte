@@ -17,8 +17,8 @@ data:
   DATABASE_USER: {{ include "airbyte.database.user" . }}
   DB_DOCKER_MOUNT: airbyte_db
   FULLSTORY: {{ ternary "enabled" "disabled" .Values.webapp.fullstory.enabled }}
-  GCS_LOG_BUCKET: ""
-  GOOGLE_APPLICATION_CREDENTIALS: ""
+  GCS_LOG_BUCKET: {{ .Values.logs.gcs.bucket | quote }}
+  GOOGLE_APPLICATION_CREDENTIALS: {{ .Values.logs.gcs.credentials | quote }}
   INTERNAL_API_HOST: {{ include "common.names.fullname" . }}-server:{{ .Values.server.service.port }}
   IS_DEMO: {{ ternary "true" "false" .Values.webapp.isDemo | quote }}
   JOB_POD_MAIN_CONTAINER_CPU_LIMIT: ""
