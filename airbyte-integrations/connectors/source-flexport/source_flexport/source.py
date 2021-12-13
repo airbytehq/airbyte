@@ -13,6 +13,9 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
+class FlexportError(Exception):
+    pass
+
 class FlexportStream(HttpStream, ABC):
     url_base = "https://api.flexport.com/"
     raise_on_http_errors = False
@@ -48,14 +51,17 @@ class FlexportStream(HttpStream, ABC):
         # https://apidocs.flexport.com/reference/response-layout
         json = response.json()
 
-        if response.status_code != requests.codes.OK:
-            try:
-                response.raise_for_status()
-            except Exception as exc:
-                error = json.get("error")
-                if error:
-                    raise Exception(f"{error['code']}: {error['message']}") from exc
-                raise exc
+        http_error = None
+        try:
+            response.raise_for_status()
+        except Exception as exc:
+            http_error = exc
+
+        error = json.get("error")
+        if error:
+            raise FlexportError(f"{error['code']}: {error['message']}") from http_error
+        elif http_error:
+            raise http_error
 
         yield from json["data"]["data"]
 
