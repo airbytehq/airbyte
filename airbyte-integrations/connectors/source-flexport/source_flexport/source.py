@@ -157,16 +157,20 @@ class Employees(IncrementalFlexportStream):
 # Source
 class SourceFlexport(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
+        headers = {"Authorization": f"Bearer {config['api_key']}"}
+        response = requests.get(f"{FlexportStream.url_base}network/companies?page=1&per=1", headers=headers)
 
-        See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
-        for an example.
+        try:
+            response.raise_for_status()
+        except Exception as exc:
+            try:
+                error = response.json()["errors"][0]
+                if error:
+                    return False, FlexportError(f"{error['code']}: {error['message']}")
+                return False, exc
+            except Exception:
+                return False, exc
 
-        :param config:  the user-input config object conforming to the connector's spec.json
-        :param logger:  logger object
-        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
-        """
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
