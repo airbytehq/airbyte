@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
-import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
@@ -17,13 +16,14 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.sql.JDBCType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CockroachDbSource extends AbstractJdbcSource {
+public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CockroachDbSource.class);
 
@@ -95,11 +95,6 @@ public class CockroachDbSource extends AbstractJdbcSource {
     LOGGER.info("starting source: {}", CockroachDbSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", CockroachDbSource.class);
-  }
-
-  @Override
-  protected JdbcSourceOperations getSourceOperations() {
-    return new CockroachJdbcSourceOperations();
   }
 
 }
