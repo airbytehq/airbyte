@@ -27,8 +27,7 @@ class MyhoursStream(HttpStream, ABC):
         return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        json = response.json()
-        for record in json:
+        for record in response.json():
             yield record
 
     def request_headers(
