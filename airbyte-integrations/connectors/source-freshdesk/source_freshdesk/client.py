@@ -5,7 +5,7 @@
 
 from typing import Any, Iterable, Mapping, Tuple
 
-from airbyte_cdk.models.airbyte_protocol import AirbyteStream
+from airbyte_cdk.models import AirbyteStream
 from airbyte_cdk.sources.deprecated.client import BaseClient
 
 from .api import (
