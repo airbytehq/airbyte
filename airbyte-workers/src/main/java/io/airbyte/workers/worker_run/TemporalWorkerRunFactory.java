@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.worker_run;
 
+import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
@@ -13,7 +14,9 @@ import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.scheduler.models.Job;
+import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
@@ -21,6 +24,7 @@ import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalClient.ManualSyncSubmissionResult;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.TemporalResponse;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -127,6 +131,10 @@ public class TemporalWorkerRunFactory {
     final JobStatus status = JobStatus.SUCCEEDED;
 
     return new OutputAndStatus<>(status, new JobOutput().withSync(null));
+  }
+
+  public void update(final ConnectionUpdate connectionUpdate) throws JsonValidationException, ConfigNotFoundException, IOException {
+    temporalClient.update(connectionUpdate);
   }
 
 }

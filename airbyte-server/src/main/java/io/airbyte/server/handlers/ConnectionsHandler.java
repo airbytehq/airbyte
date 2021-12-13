@@ -203,6 +203,13 @@ public class ConnectionsHandler {
 
   public ConnectionRead updateConnection(final ConnectionUpdate connectionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
+    if (featureFlags.usesNewScheduler()) {
+      connectionHelper.updateConnection(connectionUpdate);
+
+      temporalWorkerRunFactory.update(connectionUpdate);
+
+      return connectionHelper.buildConnectionRead(connectionUpdate.getConnectionId());
+    }
     return connectionHelper.updateConnection(connectionUpdate);
   }
 

@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
@@ -14,10 +15,12 @@ import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflow;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflow;
@@ -32,6 +35,7 @@ import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsResponse;
 import io.temporal.client.BatchRequest;
 import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -57,7 +61,9 @@ public class TemporalClient {
 
   // todo (cgardens) - there are two sources of truth on workspace root. we need to get this down to
   // one. either temporal decides and can report it or it is injected into temporal runs.
-  public TemporalClient(final WorkflowClient client, final Path workspaceRoot, final WorkflowServiceStubs workflowServiceStubs) {
+  public TemporalClient(final WorkflowClient client,
+                        final Path workspaceRoot,
+                        final WorkflowServiceStubs workflowServiceStubs) {
     this.client = client;
     this.workspaceRoot = workspaceRoot;
     this.service = workflowServiceStubs;
@@ -153,17 +159,15 @@ public class TemporalClient {
   }
 
   public void deleteConnection(final UUID connectionId) {
-    log.info("Manual sync request");
-    final List<WorkflowExecutionInfo> workflows = getExecutionsResponse("connection_updater_" + connectionId);
-
-    if (workflows.isEmpty()) {
-      throw new IllegalStateException("No running workflow for the connection {} while trying to delete it");
-    }
-
-    final ConnectionUpdaterWorkflow connectionUpdaterWorkflow =
-        getExistingWorkflow(ConnectionUpdaterWorkflow.class, "connection_updater_" + connectionId);
+    final ConnectionUpdaterWorkflow connectionUpdaterWorkflow = getConnectionUpdateWorkflow(connectionId);
 
     connectionUpdaterWorkflow.deleteConnection();
+  }
+
+  public void update(final ConnectionUpdate connectionUpdate) throws JsonValidationException, ConfigNotFoundException, IOException {
+    final ConnectionUpdaterWorkflow connectionUpdaterWorkflow = getConnectionUpdateWorkflow(connectionUpdate.getConnectionId());
+
+    connectionUpdaterWorkflow.connectionUpdated();
   }
 
   @Value
@@ -269,6 +273,19 @@ public class TemporalClient {
 
   private <T> T getExistingWorkflow(final Class<T> workflowClass, final String name) {
     return client.newWorkflowStub(workflowClass, name);
+  }
+
+  private ConnectionUpdaterWorkflow getConnectionUpdateWorkflow(final UUID connectionId) {
+    final List<WorkflowExecutionInfo> workflows = getExecutionsResponse("connection_updater_" + connectionId);
+
+    if (workflows.isEmpty()) {
+      throw new IllegalStateException("No running workflow for the connection {} while trying to delete it");
+    }
+
+    final ConnectionUpdaterWorkflow connectionUpdaterWorkflow =
+        getExistingWorkflow(ConnectionUpdaterWorkflow.class, "connection_updater_" + connectionId);
+
+    return connectionUpdaterWorkflow;
   }
 
   @VisibleForTesting

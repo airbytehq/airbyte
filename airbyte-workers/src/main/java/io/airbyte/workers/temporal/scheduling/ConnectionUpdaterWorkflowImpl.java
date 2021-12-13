@@ -45,6 +45,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
   private boolean isDeleted = false;
   private boolean skipScheduling = false;
   private boolean isCancel = false;
+  private boolean isUpdated = false;
 
   Optional<Long> maybeJobId = Optional.empty();
   Optional<Integer> maybeAttemptId = Optional.empty();
@@ -71,49 +72,51 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
         final ConfigFetchActivity.ScheduleRetrieverOutput scheduleRetrieverOutput = configFetchActivity.getPeriodicity(scheduleRetrieverInput);
         Workflow.await(scheduleRetrieverOutput.getPeriodicity(), () -> skipScheduling() || connectionUpdaterInput.isFromFailure());
 
-        // Job and attempt creation
-        maybeJobId = Optional.ofNullable(connectionUpdaterInput.getJobId()).or(() -> {
-          final JobCreationOutput jobCreationOutput = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(
-              connectionUpdaterInput.getConnectionId()));
-          return Optional.ofNullable(jobCreationOutput.getJobId());
-        });
+        if (!isUpdated) {
+          // Job and attempt creation
+          maybeJobId = Optional.ofNullable(connectionUpdaterInput.getJobId()).or(() -> {
+            final JobCreationOutput jobCreationOutput = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(
+                connectionUpdaterInput.getConnectionId()));
+            return Optional.ofNullable(jobCreationOutput.getJobId());
+          });
 
-        maybeAttemptId = Optional.ofNullable(connectionUpdaterInput.getAttemptId()).or(() -> maybeJobId.map(jobId -> {
-          final AttemptCreationOutput attemptCreationOutput = jobCreationAndStatusUpdateActivity.createNewAttempt(new AttemptCreationInput(
-              jobId));
-          return attemptCreationOutput.getAttemptId();
-        }));
+          maybeAttemptId = Optional.ofNullable(connectionUpdaterInput.getAttemptId()).or(() -> maybeJobId.map(jobId -> {
+            final AttemptCreationOutput attemptCreationOutput = jobCreationAndStatusUpdateActivity.createNewAttempt(new AttemptCreationInput(
+                jobId));
+            return attemptCreationOutput.getAttemptId();
+          }));
 
-        // Sync workflow
-        final SyncInput getSyncInputActivitySyncInput = new SyncInput(
-            maybeAttemptId.get(),
-            maybeJobId.get());
+          // Sync workflow
+          final SyncInput getSyncInputActivitySyncInput = new SyncInput(
+              maybeAttemptId.get(),
+              maybeJobId.get());
 
-        final SyncOutput syncWorkflowInputs = getSyncInputActivity.getSyncWorkflowInput(getSyncInputActivitySyncInput);
+          final SyncOutput syncWorkflowInputs = getSyncInputActivity.getSyncWorkflowInput(getSyncInputActivitySyncInput);
 
-        isRunning = true;
+          isRunning = true;
 
-        final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
-            ChildWorkflowOptions.newBuilder()
-                .setWorkflowId("sync_" + maybeJobId.get())
-                .setTaskQueue(TemporalJobType.SYNC.name())
-                // This will cancel the child workflow when the parent is terminated
-                .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_TERMINATE)
-                .build());
+          final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
+              ChildWorkflowOptions.newBuilder()
+                  .setWorkflowId("sync_" + maybeJobId.get())
+                  .setTaskQueue(TemporalJobType.SYNC.name())
+                  // This will cancel the child workflow when the parent is terminated
+                  .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_TERMINATE)
+                  .build());
 
-        final UUID connectionId = connectionUpdaterInput.getConnectionId();
+          final UUID connectionId = connectionUpdaterInput.getConnectionId();
 
-        log.error("Running for: " + connectionId);
-        try {
-          childSync.run(
-              syncWorkflowInputs.getJobRunConfig(),
-              syncWorkflowInputs.getSourceLauncherConfig(),
-              syncWorkflowInputs.getDestinationLauncherConfig(),
-              syncWorkflowInputs.getSyncInput(),
-              connectionId);
-        } catch (final ChildWorkflowFailure childWorkflowFailure) {
-          if (!(childWorkflowFailure.getCause() instanceof CanceledFailure)) {
-            throw childWorkflowFailure;
+          log.error("Running for: " + connectionId);
+          try {
+            childSync.run(
+                syncWorkflowInputs.getJobRunConfig(),
+                syncWorkflowInputs.getSourceLauncherConfig(),
+                syncWorkflowInputs.getDestinationLauncherConfig(),
+                syncWorkflowInputs.getSyncInput(),
+                connectionId);
+          } catch (final ChildWorkflowFailure childWorkflowFailure) {
+            if (!(childWorkflowFailure.getCause() instanceof CanceledFailure)) {
+              throw childWorkflowFailure;
+            }
           }
         }
       });
@@ -126,10 +129,11 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
         // https://github.com/temporalio/sdk-java/blob/master/temporal-sdk/src/main/java/io/temporal/workflow/CancellationScope.java#L72
         // The naming is very misleading, it is not a failure but the expected behavior...
       }
-      log.error("Is canceled: " + isCancel);
-      log.error("Is deleted: " + isDeleted);
 
-      if (isDeleted) {
+      if (isUpdated) {
+        log.error("A connection configuration has changed for the connection {}. The job will be restarted",
+            connectionUpdaterInput.getConnectionId());
+      } else if (isDeleted) {
         // Stop the runs
         final ConnectionDeletionInput connectionDeletionInput = new ConnectionDeletionInput(connectionUpdaterInput.getConnectionId());
         connectionDeletionActivity.deleteConnection(connectionDeletionInput);
@@ -208,6 +212,11 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
   }
 
   @Override
+  public void connectionUpdated() {
+    isUpdated = true;
+  }
+
+  @Override
   public WorkflowState getState() {
     return new WorkflowState(
         isRunning,
@@ -223,13 +232,14 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
   }
 
   private Boolean skipScheduling() {
-    return skipScheduling || isDeleted;
+    return skipScheduling || isDeleted || isUpdated;
   }
 
   private void resetState() {
     isRunning = false;
     isDeleted = false;
     skipScheduling = false;
+    isUpdated = false;
   }
 
 }
