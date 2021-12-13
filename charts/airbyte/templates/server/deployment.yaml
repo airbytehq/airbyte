@@ -92,7 +92,7 @@ spec:
               name: airbyte-env
               key: TEMPORAL_HOST
         - name: LOG_LEVEL
-          value: "{{ .Values.scheduler.log.level }}"
+          value: "{{ .Values.server.log.level }}"
         - name: JOB_POD_MAIN_CONTAINER_CPU_REQUEST
           valueFrom:
             configMapKeyRef:
