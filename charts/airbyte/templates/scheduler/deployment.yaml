@@ -151,9 +151,15 @@ spec:
               name: airbyte-env
               key: S3_LOG_BUCKET_REGION
         - name: AWS_ACCESS_KEY_ID
-          value: {{ .Values.minio.accessKey.password }}
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: AWS_ACCESS_KEY_ID
         - name: AWS_SECRET_ACCESS_KEY
-          value: {{ .Values.minio.secretKey.password }}
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: AWS_SECRET_ACCESS_KEY
         - name: S3_MINIO_ENDPOINT
           valueFrom:
             configMapKeyRef:
