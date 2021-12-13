@@ -4,7 +4,6 @@
 
 package io.airbyte.workers.temporal.scheduling;
 
-import io.airbyte.config.JobConfig;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
@@ -42,8 +41,9 @@ public class ConnectionUpdaterWorkflowTest {
   public void runSuccess(final TestWorkflowEnvironment testEnv, final Worker worker, final ConnectionUpdaterWorkflow workflow) {
     final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
         UUID.randomUUID(),
+        1L,
         1,
-        new JobConfig(),
+        false,
         1);
 
     Mockito.when(getSyncInputActivity.getSyncWorkflowInput(Mockito.any(SyncInput.class)))
