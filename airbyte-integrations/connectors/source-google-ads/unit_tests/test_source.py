@@ -21,7 +21,7 @@ def test_chunk_date_range():
 def test_streams_count(config):
     source = SourceGoogleAds()
     streams = source.streams(config)
-    expected_streams_number = 14
+    expected_streams_number = 16
     assert len(streams) == expected_streams_number
 
 

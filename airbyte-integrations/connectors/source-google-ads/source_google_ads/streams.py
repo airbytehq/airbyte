@@ -197,6 +197,18 @@ class UserLocationReport(IncrementalGoogleAdsStream):
     """
 
 
+class GeographicReport(IncrementalGoogleAdsStream):
+    """
+    UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v8/geographic_view
+    """
+
+
+class KeywordReport(IncrementalGoogleAdsStream):
+    """
+    UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v8/keyword_view
+    """
+
+
 class ClickView(IncrementalGoogleAdsStream):
     """
     ClickView stream: https://developers.google.com/google-ads/api/reference/rpc/v8/ClickView
