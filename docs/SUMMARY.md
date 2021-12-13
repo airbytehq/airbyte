@@ -159,6 +159,7 @@
     * [Amazon SQS](integrations/destinations/amazon-sqs.md)
     * [AzureBlobStorage](integrations/destinations/azureblobstorage.md)
     * [BigQuery](integrations/destinations/bigquery.md)
+    * [ClickHouse](integrations/destinations/clickhouse.md)
     * [Databricks](integrations/destinations/databricks.md)
     * [DynamoDB](integrations/destinations/dynamodb.md)
     * [Elasticsearch](integrations/destinations/elasticsearch.md)
