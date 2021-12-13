@@ -22,7 +22,6 @@ import org.apache.http.client.utils.URIBuilder;
 public class MicrosoftTeamsOAuthFlow extends BaseOAuth2Flow {
 
   private static final String fieldName = "tenant_id";
-  private static String tenantId;
 
   public MicrosoftTeamsOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
@@ -48,6 +47,7 @@ public class MicrosoftTeamsOAuthFlow extends BaseOAuth2Flow {
                                     final JsonNode inputOAuthConfiguration)
       throws IOException {
 
+    String tenantId;
     try {
       tenantId = getConfigValueUnsafe(inputOAuthConfiguration, fieldName);
     } catch (final IllegalArgumentException e) {
@@ -129,46 +129,13 @@ public class MicrosoftTeamsOAuthFlow extends BaseOAuth2Flow {
     throw new IOException("not supported");
   }
 
-  @Override
-  public Map<String, Object> completeSourceOAuth(final UUID workspaceId,
-                                                 final UUID sourceDefinitionId,
-                                                 final Map<String, Object> queryParams,
-                                                 final String redirectUrl,
-                                                 final JsonNode inputOAuthConfiguration,
-                                                 final OAuthConfigSpecification oAuthConfigSpecification)
-      throws IOException, ConfigNotFoundException, JsonValidationException {
-    tenantId = null;
-    try {
-      tenantId = getConfigValueUnsafe(inputOAuthConfiguration, fieldName);
-    } catch (final IllegalArgumentException e) {}
-    return super.completeSourceOAuth(workspaceId, sourceDefinitionId, queryParams, redirectUrl, inputOAuthConfiguration, oAuthConfigSpecification);
-  }
-
-  @Override
-  public Map<String, Object> completeDestinationOAuth(final UUID workspaceId,
-                                                      final UUID destinationDefinitionId,
-                                                      final Map<String, Object> queryParams,
-                                                      final String redirectUrl,
-                                                      final JsonNode inputOAuthConfiguration,
-                                                      final OAuthConfigSpecification oAuthConfigSpecification)
-      throws IOException, ConfigNotFoundException, JsonValidationException {
-    tenantId = null;
-    try {
-      tenantId = getConfigValueUnsafe(inputOAuthConfiguration, fieldName);
-    } catch (final IllegalArgumentException e) {}
-    return super.completeDestinationOAuth(workspaceId, destinationDefinitionId, queryParams, redirectUrl, inputOAuthConfiguration,
-        oAuthConfigSpecification);
-  }
-
   /**
    * Returns the URL where to retrieve the access token from.
    *
    */
   @Override
-  protected String getAccessTokenUrl() {
-    if (tenantId == null) {
-      throw new IllegalArgumentException(String.format("Undefined parameter '%s' necessary for the OAuth Flow.", fieldName));
-    }
+  protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
+    String tenantId = getConfigValueUnsafe(inputOAuthConfiguration, fieldName);
     return "https://login.microsoftonline.com/" + tenantId + "/oauth2/v2.0/token";
   }
 
