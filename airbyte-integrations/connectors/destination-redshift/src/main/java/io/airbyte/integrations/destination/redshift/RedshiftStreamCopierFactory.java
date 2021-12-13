@@ -17,14 +17,14 @@ public class RedshiftStreamCopierFactory extends S3StreamCopierFactory {
 
   @Override
   public StreamCopier create(final String stagingFolder,
-      final DestinationSyncMode syncMode,
-      final String schema,
-      final String streamName,
-      final AmazonS3 s3Client,
-      final JdbcDatabase db,
-      final S3DestinationConfig s3Config,
-      final ExtendedNameTransformer nameTransformer,
-      final SqlOperations sqlOperations)
+                             final DestinationSyncMode syncMode,
+                             final String schema,
+                             final String streamName,
+                             final AmazonS3 s3Client,
+                             final JdbcDatabase db,
+                             final S3DestinationConfig s3Config,
+                             final ExtendedNameTransformer nameTransformer,
+                             final SqlOperations sqlOperations)
       throws Exception {
     return new RedshiftStreamCopier(stagingFolder, syncMode, schema, streamName, s3Client, db, s3Config, nameTransformer, sqlOperations);
   }
