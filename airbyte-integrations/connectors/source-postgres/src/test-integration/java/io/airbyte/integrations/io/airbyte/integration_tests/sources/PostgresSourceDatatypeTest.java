@@ -165,8 +165,6 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
               .build());
     }
 
-    // BUG: The represented value is encoded by Base64
-    // https://github.com/airbytehq/airbyte/issues/7905
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("box")
@@ -175,13 +173,15 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("(15,18),(3,7)", "(0,0),(0,0)", null)
             .build());
 
-//    addDataTypeTestData(
-//        TestDataHolder.builder()
-//            .sourceType("bytea")
-//            .airbyteType(JsonSchemaPrimitive.STRING_BINARY)
-//            .addInsertValues("decode('1234', 'hex')")
-//            .addExpectedValues("EjQ=")
-//            .build());
+    // bytea stores variable length binary string
+    // https://www.postgresql.org/docs/14/datatype-binary.html
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("bytea")
+            .airbyteType(JsonSchemaPrimitive.STRING_BINARY)
+            .addInsertValues("null", "decode('1234', 'hex')", "'1234'")
+            .addExpectedValues(null, "\\x1234", "\\x31323334")
+            .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -198,15 +198,6 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'{asb123}'", "'{asb12}'")
             .addExpectedValues("{asb123}", "{asb12} ")
-            .build());
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("character_varying")
-            .fullSourceDataType("character varying(8)")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'{asb123}'", "'{asb12}'")
-            .addExpectedValues("{asb123}", "{asb12}")
             .build());
 
     addDataTypeTestData(
@@ -269,27 +260,6 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("1999-01-08", null, "199-10-10 BC")
             .build());
 
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("double_precision")
-            .fullSourceDataType("double precision")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("'123'", "'1234567890.1234567'", "null")
-            .addExpectedValues("123.0", "1.2345678901234567E9", null)
-            .build());
-
-    // Values "'-Infinity'", "'Infinity'", "'Nan'" will not be parsed due to:
-    // JdbcUtils -> setJsonField contains:
-    // case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i), Double::isFinite));
-    // https://github.com/airbytehq/airbyte/issues/7871
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("float")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("'123'", "'1234567890.1234567'", "null")
-            .addExpectedValues("123.0", "1.2345678901234567E9", null)
-            .build());
-
     for (final String fullSourceType : Set.of("double precision", "float", "float8")) {
       addDataTypeTestData(
           TestDataHolder.builder()
@@ -324,14 +294,6 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
               .addExpectedValues(null, "1001", "-2147483648", "2147483647")
               .build());
     }
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("integer")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("null", "-2147483648", "2147483647")
-            .addExpectedValues(null, "-2147483648", "2147483647")
-            .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -411,37 +373,13 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
                 Double.toString(-92233720368547758.08), Double.toString(92233720368547758.07))
             .build());
 
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("numeric")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("'99999'", "999999999999.9999999999", "10000000000000000000000000000000000000", "null")
-            .addExpectedValues("99999", "1.0E12", "1.0E37", null)
-            .build());
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("real")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'123'", "'1234567890.1234567'", "null")
-            .addExpectedValues("123.0", "1.23456794E9", null)
-            .build());
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("pg_lsn")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'7/A25801C8'::pg_lsn", "'0/0'::pg_lsn", "null")
-            .addExpectedValues("7/A25801C8", "0/0", null)
-            .build());
-
     for (final String type : Set.of("numeric", "decimal")) {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(type)
               .airbyteType(JsonSchemaPrimitive.NUMBER)
-              .addInsertValues("'99999'", "null", "'infinity'", "'-infinity'", "'Nan'")
-              .addExpectedValues("99999", null,
+              .addInsertValues("'99999'", "'1234567890.1234567'", "null", "'infinity'", "'-infinity'", "'Nan'")
+              .addExpectedValues("99999", "1.23456794E9", null,
                   String.valueOf(Double.POSITIVE_INFINITY),
                   String.valueOf(Double.NEGATIVE_INFINITY),
                   String.valueOf(Double.NaN))
@@ -454,6 +392,14 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'((3,7),(15,18))'", "'((0,0),(0,0))'", "null")
             .addExpectedValues("((3,7),(15,18))", "((0,0),(0,0))", null)
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("pg_lsn")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'7/A25801C8'::pg_lsn", "'0/0'::pg_lsn", "null")
+            .addExpectedValues("7/A25801C8", "0/0", null)
             .build());
 
     addDataTypeTestData(
@@ -565,8 +511,8 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("tsquery")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'fat & (rat | cat)'::tsquery")
-            .addExpectedValues("'fat' & ( 'rat' | 'cat' )")
+            .addInsertValues("null", "'fat & (rat | cat)'::tsquery", "'fat:ab & cat'::tsquery")
+            .addExpectedValues(null, "'fat' & ( 'rat' | 'cat' )", "'fat':AB & 'cat'")
             .build());
 
     addDataTypeTestData(
@@ -575,14 +521,6 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("to_tsvector('The quick brown fox jumped over the lazy dog.')")
             .addExpectedValues("'brown':3 'dog':9 'fox':4 'jump':5 'lazi':8 'quick':2")
-            .build());
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("tsquery")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("to_tsquery('fat & rat')", "to_tsquery('Fat:ab & Cats')", "null")
-            .addExpectedValues("'fat' & 'rat'", "'fat':AB & 'cat'", null)
             .build());
 
     addDataTypeTestData(
