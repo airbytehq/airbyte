@@ -163,5 +163,41 @@
       "oneOf": [{ "type": "string" }, { "type": "integer" }]
     },
     "avroFieldType": ["null", "string", "int"]
+  },
+  {
+    "fieldName": "logical_type_date_time",
+    "jsonFieldSchema": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "avroFieldType": [
+      "null",
+      { "type": "long", "logicalType": "timestamp-micros" },
+      "string"
+    ]
+  },
+  {
+    "fieldName": "logical_type_date",
+    "jsonFieldSchema": {
+      "type": "string",
+      "format": "date"
+    },
+    "avroFieldType": [
+      "null",
+      { "type": "int", "logicalType": "date" },
+      "string"
+    ]
+  },
+  {
+    "fieldName": "logical_type_time",
+    "jsonFieldSchema": {
+      "type": "string",
+      "format": "time"
+    },
+    "avroFieldType": [
+      "null",
+      { "type": "long", "logicalType": "time-micros" },
+      "string"
+    ]
   }
 ]
