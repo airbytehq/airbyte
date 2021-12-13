@@ -81,7 +81,7 @@ public abstract class S3StreamCopier implements StreamCopier {
     this.s3Config = s3Config;
 
     this.maxPartsPerFile = maxPartsPerFile;
-    this.partsAddedToCurrentFile = maxPartsPerFile - 1; // Force a new file on the first call to prepareStagingFile()
+    this.partsAddedToCurrentFile = -1; // Force a new file on the first call to prepareStagingFile()
   }
 
   /*
@@ -101,8 +101,7 @@ public abstract class S3StreamCopier implements StreamCopier {
             configuredAirbyteStream,
             uploadTime,
             DEFAULT_UPLOAD_THREADS,
-            DEFAULT_QUEUE_CAPACITY,
-            "arst" // TODO remove
+            DEFAULT_QUEUE_CAPACITY
         );
         currentFile = writer.getObjectKey();
         stagingWritersBySuffix.put(currentFile, writer);

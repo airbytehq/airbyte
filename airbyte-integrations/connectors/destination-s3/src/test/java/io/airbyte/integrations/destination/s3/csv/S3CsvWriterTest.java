@@ -1,7 +1,9 @@
 package io.airbyte.integrations.destination.s3.csv;
 
 import static java.util.Collections.singletonList;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
@@ -23,6 +25,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +39,11 @@ class S3CsvWriterTest {
   private static final int UPLOAD_THREADS = 8;
   private static final int QUEUE_CAPACITY = 9;
 
-  public static final String EXPECTED_OBJECT_KEY = "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000fake-suffix.csv";
+  // The full path would be something like "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000_e549e712-b89c-4272-9496-9690ba7f973e.csv"
+  // The namespace and stream have their hyphens replaced by underscores. Not super clear that that's actually required.
+  // 2021_12_09_1639077474000 is generated from the timestamp. It's followed by a random UUID, in case we need to create multiple files.
+  private static final String EXPECTED_OBJECT_BEGINNING = "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000";
+  private static final String EXPECTED_OBJECT_ENDING = ".csv";
 
   private S3CsvWriter writer;
 
@@ -102,8 +109,7 @@ class S3CsvWriterTest {
         configuredStream,
         UPLOAD_TIME,
         UPLOAD_THREADS,
-        QUEUE_CAPACITY,
-        "fake-suffix"
+        QUEUE_CAPACITY
     );
   }
 
@@ -116,9 +122,7 @@ class S3CsvWriterTest {
   public void generatesCorrectObjectKey_when_created() {
     final String objectKey = writer.getObjectKey();
 
-    // The namespace and stream have their hyphens replaced by underscores. Not super clear that that's actually required.
-    // 2021_12_09_1639077474000 is generated from the timestamp. The final _0 is hardcoded in BaseS3Writer; similarly unclear that it's required.
-    assertEquals(EXPECTED_OBJECT_KEY, objectKey);
+    checkObjectName(objectKey);
   }
 
   @Test
@@ -126,7 +130,7 @@ class S3CsvWriterTest {
     assertEquals(1, streamTransferManagerMockedConstruction.constructed().size());
 
     assertEquals("fake-bucket", streamTransferManagerConstructorArguments.get(0).bucket);
-    assertEquals(EXPECTED_OBJECT_KEY, streamTransferManagerConstructorArguments.get(0).object);
+    checkObjectName(streamTransferManagerConstructorArguments.get(0).object);
   }
 
   @Test
@@ -154,5 +158,20 @@ class S3CsvWriterTest {
     final List<StreamTransferManager> managers = streamTransferManagerMockedConstruction.constructed();
     final StreamTransferManager manager = managers.get(0);
     verify(manager).abort();
+  }
+
+  private static void checkObjectName(final String objectName) {
+    final String errorMessage = "Object was actually " + objectName;
+
+    assertTrue(objectName.startsWith(EXPECTED_OBJECT_BEGINNING), errorMessage);
+    assertTrue(objectName.endsWith(EXPECTED_OBJECT_ENDING), errorMessage);
+
+    // String the beginning and ending, which _should_ leave us with just a UUID
+    final String uuidMaybe = objectName
+        // "^" == start of string
+        .replaceFirst("^" + EXPECTED_OBJECT_BEGINNING + "_", "")
+        // "$" == end of string
+        .replaceFirst(EXPECTED_OBJECT_ENDING + "$", "");
+    assertDoesNotThrow(() -> UUID.fromString(uuidMaybe), errorMessage);
   }
 }

@@ -40,28 +40,7 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
                      final ConfiguredAirbyteStream configuredStream,
                      final Timestamp uploadTimestamp,
                      final int uploadThreads,
-                     final int queueCapacity,
-                     final String customSuffix)
-      throws IOException {
-    this(config, s3Client, configuredStream, uploadTimestamp, customSuffix);
-    this.uploadManager
-        .numUploadThreads(uploadThreads)
-        .queueCapacity(queueCapacity);
-  }
-
-  public S3CsvWriter(final S3DestinationConfig config,
-                     final AmazonS3 s3Client,
-                     final ConfiguredAirbyteStream configuredStream,
-                     final Timestamp uploadTimestamp)
-      throws IOException {
-    this(config, s3Client, configuredStream, uploadTimestamp, BaseS3Writer.DEFAULT_SUFFIX);
-  }
-
-  public S3CsvWriter(final S3DestinationConfig config,
-                     final AmazonS3 s3Client,
-                     final ConfiguredAirbyteStream configuredStream,
-                     final Timestamp uploadTimestamp,
-                     final String customFileSuffix)
+                     final int queueCapacity)
       throws IOException {
     super(config, s3Client, configuredStream);
 
@@ -69,19 +48,30 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
     this.csvSheetGenerator = CsvSheetGenerator.Factory.create(configuredStream.getStream().getJsonSchema(),
         formatConfig);
 
-    final String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, customFileSuffix, S3Format.CSV);
+    final String fileSuffix = "_" + UUID.randomUUID();
+    final String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, fileSuffix, S3Format.CSV);
     this.objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(),
         objectKey);
 
-    this.uploadManager = S3StreamTransferManagerHelper.getDefault(
-        config.getBucketName(), objectKey, s3Client, config.getFormatConfig().getPartSize());
+    this.uploadManager = S3StreamTransferManagerHelper.getDefault(config.getBucketName(), objectKey, s3Client, config.getFormatConfig().getPartSize())
+        .numUploadThreads(uploadThreads)
+        .queueCapacity(queueCapacity);
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
     this.csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8),
         CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
             .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0])));
+  }
+
+  public S3CsvWriter(final S3DestinationConfig config,
+                     final AmazonS3 s3Client,
+                     final ConfiguredAirbyteStream configuredStream,
+                     final Timestamp uploadTimestamp)
+      throws IOException {
+    this(config, s3Client, configuredStream, uploadTimestamp, S3StreamTransferManagerHelper.DEFAULT_UPLOAD_THREADS,
+        S3StreamTransferManagerHelper.DEFAULT_QUEUE_CAPACITY);
   }
 
   @Override
