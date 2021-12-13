@@ -21,7 +21,7 @@ class OktaStream(HttpStream, ABC):
     def __init__(self, url_base: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Inject custom url base to the stream
-        self._url_base = url_base
+        self._url_base = url_base.rstrip("/") + "/"
 
     @property
     def url_base(self) -> str:

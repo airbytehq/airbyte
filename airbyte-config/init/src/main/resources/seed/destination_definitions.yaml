@@ -4,6 +4,12 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/azureblobstorage
   icon: azureblobstorage.svg
+- name: Amazon SQS
+  destinationDefinitionId: 0eeee7fb-518f-4045-bacc-9619e31c43ea
+  dockerRepository: airbyte/destination-amazon-sqs
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/amazonsqs
+  icon: amazonsqs.svg
 - name: BigQuery
   destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   dockerRepository: airbyte/destination-bigquery
@@ -28,6 +34,11 @@
   dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/keen
   icon: chargify.svg
+- name: Clickhouse
+  destinationDefinitionId: ce0d828e-1dc4-496c-b122-2da42e637e48
+  dockerRepository: airbyte/destination-clickhouse
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/clickhouse
 - name: DynamoDB
   destinationDefinitionId: 8ccd8909-4e99-4141-b48d-4984b70b2d89
   dockerRepository: airbyte/destination-dynamodb
@@ -43,7 +54,7 @@
 - name: Google Cloud Storage (GCS)
   destinationDefinitionId: ca8f6566-e555-4b40-943a-545bf123117a
   dockerRepository: airbyte/destination-gcs
-  dockerImageTag: 0.1.14
+  dockerImageTag: 0.1.15
   documentationUrl: https://docs.airbyte.io/integrations/destinations/gcs
   icon: googlecloudstorage.svg
 - name: Google PubSub
@@ -85,7 +96,7 @@
 - name: MS SQL Server
   destinationDefinitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
   dockerRepository: airbyte/destination-mssql
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.12
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mssql
   icon: mssql.svg
 - name: MeiliSearch
@@ -103,7 +114,7 @@
 - name: MySQL
   destinationDefinitionId: ca81ee7c-3163-4246-af40-094cc31e5e42
   dockerRepository: airbyte/destination-mysql
-  dockerImageTag: 0.1.14
+  dockerImageTag: 0.1.15
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mysql
   icon: mysql.svg
 - name: Oracle
@@ -115,7 +126,7 @@
 - name: Postgres
   destinationDefinitionId: 25c5221d-dce2-4163-ade9-739ef790f503
   dockerRepository: airbyte/destination-postgres
-  dockerImageTag: 0.3.12
+  dockerImageTag: 0.3.13
   documentationUrl: https://docs.airbyte.io/integrations/destinations/postgres
   icon: postgresql.svg
 - name: Pulsar
@@ -123,6 +134,12 @@
   dockerRepository: airbyte/destination-pulsar
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/pulsar
+  icon: pulsar.svg
+- name: RabbitMQ
+  destinationDefinitionId: e06ad785-ad6f-4647-b2e8-3027a5c59454
+  dockerRepository: airbyte/destination-rabbitmq
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/rabbitmq
   icon: pulsar.svg
 - name: Redis
   destinationDefinitionId: d4d3fef9-e319-45c2-881a-bd02ce44cc9f
@@ -133,13 +150,13 @@
 - name: Redshift
   destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerRepository: airbyte/destination-redshift
-  dockerImageTag: 0.3.20
+  dockerImageTag: 0.3.21
   documentationUrl: https://docs.airbyte.io/integrations/destinations/redshift
   icon: redshift.svg
 - name: S3
   destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   dockerRepository: airbyte/destination-s3
-  dockerImageTag: 0.1.14
+  dockerImageTag: 0.1.16
   documentationUrl: https://docs.airbyte.io/integrations/destinations/s3
   icon: s3.svg
 - name: SFTP-JSON
@@ -151,12 +168,12 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.3.18
+  dockerImageTag: 0.3.20
   documentationUrl: https://docs.airbyte.io/integrations/destinations/snowflake
   icon: snowflake.svg
 - name: MariaDB ColumnStore
   destinationDefinitionId: 294a4790-429b-40ae-9516-49826b9702e1
   dockerRepository: airbyte/destination-mariadb-columnstore
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mariadb-columnstore
   icon: mariadb.svg
