@@ -75,11 +75,11 @@ public class AirbyteTestContainer {
     serviceLogConsumer(dockerComposeContainer, "init");
     serviceLogConsumer(dockerComposeContainer, "db");
     serviceLogConsumer(dockerComposeContainer, "seed");
-//    serviceLogConsumer(dockerComposeContainer, "scheduler");
+    // serviceLogConsumer(dockerComposeContainer, "scheduler");
     serviceLogConsumer(dockerComposeContainer, "server");
-//    serviceLogConsumer(dockerComposeContainer, "webapp");
-//    serviceLogConsumer(dockerComposeContainer, "worker");
-//    serviceLogConsumer(dockerComposeContainer, "airbyte-temporal");
+    // serviceLogConsumer(dockerComposeContainer, "webapp");
+    // serviceLogConsumer(dockerComposeContainer, "worker");
+    // serviceLogConsumer(dockerComposeContainer, "airbyte-temporal");
 
     dockerComposeContainer.start();
   }

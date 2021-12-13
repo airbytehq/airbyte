@@ -93,8 +93,6 @@ public class MigrationAcceptanceTest {
     runAirbyte(currentDockerComposeFile, envFileProperties, MigrationAcceptanceTest::assertHealthy, false);
   }
 
-
-
   private Properties overrideDirectoriesForTest(final Properties properties) {
     final Properties propertiesWithOverrides = new Properties(properties);
     propertiesWithOverrides.put("DATA_DOCKER_MOUNT", TEST_DATA_DOCKER_MOUNT);
