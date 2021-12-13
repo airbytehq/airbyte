@@ -38,20 +38,20 @@ class AirbyteEntrypoint:
 
     config: InputConfig
 
-    def _run_pytest(self, args: List[str]) -> bool:
+    def _run_pytest(self, args: List[str]) -> int:
         """"try to run the tool pytest into source folder"""
         args += "-r fEsx --capture=no -vv --log-level=WARNING --color=yes --force-sugar".split(" ")
-        return pytest.main(args) == 0
+        return pytest.main(args)
 
-    def run_integration_tests(self) -> bool:
+    def run_integration_tests(self) -> int:
         """"try to run integration tests into source folder"""
         return self._run_pytest([
-            "integration_tests",
+            str(self.config.source_dir / "integration_tests"),
             "-p", "source_acceptance_test.plugin",
             "--acceptance-test-config", str(self.config.source_dir)
         ])
 
-    def __run_in_docker(self) -> bool:
+    def __run_in_docker(self) -> int:
         """"try to run tests into a new docker container"""
         volumes = {
             "/var/run/docker.sock": {'bind': '/var/run/docker.sock', 'mode': 'rw'},
@@ -124,7 +124,7 @@ class AirbyteEntrypoint:
             return self.__run_in_docker()
 
         # start default logic
-        return 1 if self.run_integration_tests() else 0
+        return self.run_integration_tests()
 
 
 def main():
