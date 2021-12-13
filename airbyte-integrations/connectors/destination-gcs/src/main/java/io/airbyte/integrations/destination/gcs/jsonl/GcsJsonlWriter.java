@@ -48,7 +48,7 @@ public class GcsJsonlWriter extends BaseGcsWriter implements S3Writer {
     LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.getBucketName(), objectKey);
 
     this.uploadManager = S3StreamTransferManagerHelper.getDefault(
-        config.getBucketName(), objectKey, s3Client, config.getFormatConfig().getPartSize());
+        config.getBucketName(), objectKey, s3Client, config.getFormatConfig().partSize());
 
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);

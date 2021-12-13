@@ -62,12 +62,12 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
     final Configuration hadoopConfig = getHadoopConfig(config);
     this.parquetWriter = AvroParquetWriter.<GenericData.Record>builder(HadoopOutputFile.fromPath(path, hadoopConfig))
         .withSchema(schema)
-        .withCompressionCodec(formatConfig.getCompressionCodec())
-        .withRowGroupSize(formatConfig.getBlockSize())
-        .withMaxPaddingSize(formatConfig.getMaxPaddingSize())
-        .withPageSize(formatConfig.getPageSize())
-        .withDictionaryPageSize(formatConfig.getDictionaryPageSize())
-        .withDictionaryEncoding(formatConfig.isDictionaryEncoding())
+        .withCompressionCodec(formatConfig.compressionCodec())
+        .withRowGroupSize(formatConfig.blockSize())
+        .withMaxPaddingSize(formatConfig.maxPaddingSize())
+        .withPageSize(formatConfig.pageSize())
+        .withDictionaryPageSize(formatConfig.dictionaryPageSize())
+        .withDictionaryEncoding(formatConfig.dictionaryEncoding())
         .build();
     this.avroRecordFactory = new AvroRecordFactory(schema, converter);
     this.schema = schema;

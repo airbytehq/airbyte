@@ -30,10 +30,10 @@ public class S3FormatConfigsTest {
     final ObjectNode stubConfig = mapper.createObjectNode();
     stubConfig.set("format", stubFormatConfig);
     final S3FormatConfig formatConfig = S3FormatConfigs.getS3FormatConfig(stubConfig);
-    assertEquals(formatConfig.getFormat(), S3Format.CSV);
+    assertEquals(formatConfig.format(), S3Format.CSV);
     assertTrue(formatConfig instanceof S3CsvFormatConfig);
     final S3CsvFormatConfig csvFormatConfig = (S3CsvFormatConfig) formatConfig;
-    assertEquals(csvFormatConfig.getFlattening(), Flattening.ROOT_LEVEL);
+    assertEquals(csvFormatConfig.flattening(), Flattening.ROOT_LEVEL);
   }
 
 }

@@ -8,9 +8,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public interface S3FormatConfig {
 
-  S3Format getFormat();
+  S3Format format();
 
-  Long getPartSize();
+  Long partSize();
 
   static String withDefault(final JsonNode config, final String property, final String defaultValue) {
     final JsonNode value = config.get(property);

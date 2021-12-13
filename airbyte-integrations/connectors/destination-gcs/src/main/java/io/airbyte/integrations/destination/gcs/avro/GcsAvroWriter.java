@@ -54,7 +54,7 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer {
 
     this.avroRecordFactory = new AvroRecordFactory(schema, converter);
     this.uploadManager = S3StreamTransferManagerHelper.getDefault(
-        config.getBucketName(), objectKey, s3Client, config.getFormatConfig().getPartSize());
+        config.getBucketName(), objectKey, s3Client, config.getFormatConfig().partSize());
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
 
@@ -62,7 +62,7 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer {
     // The DataFileWriter always uses binary encoding.
     // If json encoding is needed in the future, use the GenericDatumWriter directly.
     this.dataFileWriter = new DataFileWriter<>(new GenericDatumWriter<Record>())
-        .setCodec(formatConfig.getCodecFactory())
+        .setCodec(formatConfig.codecFactory())
         .create(schema, outputStream);
   }
 

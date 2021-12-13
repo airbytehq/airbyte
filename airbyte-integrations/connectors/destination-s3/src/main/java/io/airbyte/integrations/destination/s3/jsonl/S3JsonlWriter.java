@@ -51,7 +51,7 @@ public class S3JsonlWriter extends BaseS3Writer implements S3Writer {
         objectKey);
 
     this.uploadManager = S3StreamTransferManagerHelper.getDefault(
-        config.bucketName(), objectKey, s3Client, config.formatConfig().getPartSize());
+        config.bucketName(), objectKey, s3Client, config.formatConfig().partSize());
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
     this.printWriter = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);

@@ -52,7 +52,7 @@ public class S3AvroWriter extends BaseS3Writer implements S3Writer {
 
     this.avroRecordFactory = new AvroRecordFactory(schema, converter);
     this.uploadManager = S3StreamTransferManagerHelper.getDefault(
-        config.bucketName(), objectKey, s3Client, config.formatConfig().getPartSize());
+        config.bucketName(), objectKey, s3Client, config.formatConfig().partSize());
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
 
@@ -60,7 +60,7 @@ public class S3AvroWriter extends BaseS3Writer implements S3Writer {
     // The DataFileWriter always uses binary encoding.
     // If json encoding is needed in the future, use the GenericDatumWriter directly.
     this.dataFileWriter = new DataFileWriter<>(new GenericDatumWriter<Record>())
-        .setCodec(formatConfig.getCodecFactory())
+        .setCodec(formatConfig.codecFactory())
         .create(schema, outputStream);
   }
 

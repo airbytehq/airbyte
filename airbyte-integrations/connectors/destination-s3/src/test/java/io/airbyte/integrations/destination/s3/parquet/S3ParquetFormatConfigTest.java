@@ -28,13 +28,13 @@ class S3ParquetFormatConfigTest {
     final S3ParquetFormatConfig config = new S3ParquetFormatConfig(formatConfig);
 
     // The constructor should automatically convert MB or KB to bytes.
-    assertEquals(1024 * 1024, config.getBlockSize());
-    assertEquals(1024 * 1024, config.getMaxPaddingSize());
-    assertEquals(1024, config.getPageSize());
-    assertEquals(1024, config.getDictionaryPageSize());
+    assertEquals(1024 * 1024, config.blockSize());
+    assertEquals(1024 * 1024, config.maxPaddingSize());
+    assertEquals(1024, config.pageSize());
+    assertEquals(1024, config.dictionaryPageSize());
 
-    assertEquals(CompressionCodecName.GZIP, config.getCompressionCodec());
-    assertFalse(config.isDictionaryEncoding());
+    assertEquals(CompressionCodecName.GZIP, config.compressionCodec());
+    assertFalse(config.dictionaryEncoding());
   }
 
 }

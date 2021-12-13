@@ -31,7 +31,7 @@ public class ProductionWriterFactory implements GcsWriterFactory {
                          final ConfiguredAirbyteStream configuredStream,
                          final Timestamp uploadTimestamp)
       throws Exception {
-    final S3Format format = config.getFormatConfig().getFormat();
+    final S3Format format = config.getFormatConfig().format();
 
     if (format == S3Format.AVRO || format == S3Format.PARQUET) {
       final AirbyteStream stream = configuredStream.getStream();

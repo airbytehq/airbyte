@@ -49,12 +49,12 @@ public class S3CsvFormatConfigTest {
     ConfigTestUtils.assertBaseConfig(s3DestinationConfig);
 
     final S3FormatConfig formatConfig = s3DestinationConfig.formatConfig();
-    assertEquals("CSV", formatConfig.getFormat().name());
-    assertEquals(6, formatConfig.getPartSize());
+    assertEquals("CSV", formatConfig.format().name());
+    assertEquals(6, formatConfig.partSize());
     // Assert that is set properly in config
     final StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
         s3DestinationConfig.bucketName(), "objectKey", null,
-        s3DestinationConfig.formatConfig().getPartSize());
+        s3DestinationConfig.formatConfig().partSize());
 
     final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * 6, partSizeBytes);
@@ -74,7 +74,7 @@ public class S3CsvFormatConfigTest {
 
     final StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
         s3DestinationConfig.bucketName(), "objectKey", null,
-        s3DestinationConfig.formatConfig().getPartSize());
+        s3DestinationConfig.formatConfig().partSize());
 
     final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * 5, partSizeBytes); // 5MB is a default value if nothing provided explicitly

@@ -34,13 +34,13 @@ public class GcsJsonlFormatConfigTest {
     ConfigTestUtils.assertBaseConfig(gcsDestinationConfig);
 
     final S3FormatConfig formatConfig = gcsDestinationConfig.getFormatConfig();
-    assertEquals("JSONL", formatConfig.getFormat().name());
-    assertEquals(6, formatConfig.getPartSize());
+    assertEquals("JSONL", formatConfig.format().name());
+    assertEquals(6, formatConfig.partSize());
 
     // Assert that is set properly in config
     final StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
         gcsDestinationConfig.getBucketName(), "objectKey", null,
-        gcsDestinationConfig.getFormatConfig().getPartSize());
+        gcsDestinationConfig.getFormatConfig().partSize());
 
     final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * 6, partSizeBytes);
@@ -59,7 +59,7 @@ public class GcsJsonlFormatConfigTest {
 
     final StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
         gcsDestinationConfig.getBucketName(), "objectKey", null,
-        gcsDestinationConfig.getFormatConfig().getPartSize());
+        gcsDestinationConfig.getFormatConfig().partSize());
 
     final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * 5, partSizeBytes); // 5MB is a default value if nothing provided explicitly

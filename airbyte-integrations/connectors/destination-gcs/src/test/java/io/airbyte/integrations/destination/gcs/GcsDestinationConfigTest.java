@@ -39,7 +39,7 @@ class GcsDestinationConfigTest {
     assertTrue(formatConfig instanceof S3AvroFormatConfig);
 
     final S3AvroFormatConfig avroFormatConfig = (S3AvroFormatConfig) formatConfig;
-    assertEquals("deflate-5", avroFormatConfig.getCodecFactory().toString());
+    assertEquals("deflate-5", avroFormatConfig.codecFactory().toString());
   }
 
 }

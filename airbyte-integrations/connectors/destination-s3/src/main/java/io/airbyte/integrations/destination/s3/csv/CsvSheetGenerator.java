@@ -11,8 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * This class takes case of the generation of the CSV data sheet, including the header row and the
- * data row.
+ * This class takes case of the generation of the CSV data sheet, including the header row and the data row.
  */
 public interface CsvSheetGenerator {
 
@@ -23,13 +22,13 @@ public interface CsvSheetGenerator {
   final class Factory {
 
     public static CsvSheetGenerator create(final JsonNode jsonSchema, final S3CsvFormatConfig formatConfig) {
-      if (formatConfig.getFlattening() == Flattening.NO) {
+      if (formatConfig.flattening() == Flattening.NO) {
         return new NoFlatteningSheetGenerator();
-      } else if (formatConfig.getFlattening() == Flattening.ROOT_LEVEL) {
+      } else if (formatConfig.flattening() == Flattening.ROOT_LEVEL) {
         return new RootLevelFlatteningSheetGenerator(jsonSchema);
       } else {
         throw new IllegalArgumentException(
-            "Unexpected flattening config: " + formatConfig.getFlattening());
+            "Unexpected flattening config: " + formatConfig.flattening());
       }
     }
 

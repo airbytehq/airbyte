@@ -114,12 +114,12 @@ class S3AvroFormatConfigTest {
     ConfigTestUtils.assertBaseConfig(s3DestinationConfig);
 
     final S3FormatConfig formatConfig = s3DestinationConfig.formatConfig();
-    assertEquals("AVRO", formatConfig.getFormat().name());
-    assertEquals(6, formatConfig.getPartSize());
+    assertEquals("AVRO", formatConfig.format().name());
+    assertEquals(6, formatConfig.partSize());
     // Assert that is set properly in config
     final StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
         s3DestinationConfig.bucketName(), "objectKey", null,
-        s3DestinationConfig.formatConfig().getPartSize());
+        s3DestinationConfig.formatConfig().partSize());
 
     final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * 6, partSizeBytes);
@@ -138,7 +138,7 @@ class S3AvroFormatConfigTest {
 
     final StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
         s3DestinationConfig.bucketName(), "objectKey", null,
-        s3DestinationConfig.formatConfig().getPartSize());
+        s3DestinationConfig.formatConfig().partSize());
 
     final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * 5, partSizeBytes); // 5MB is a default value if nothing provided explicitly

@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 
-public class S3CsvFormatConfig implements S3FormatConfig {
+public record S3CsvFormatConfig(Flattening flattening, Long partSize) implements S3FormatConfig {
 
   public enum Flattening {
 
@@ -41,33 +41,15 @@ public class S3CsvFormatConfig implements S3FormatConfig {
 
   }
 
-  private final Flattening flattening;
-  private final Long partSize;
-
   public S3CsvFormatConfig(final JsonNode formatConfig) {
-    this.flattening = Flattening.fromValue(formatConfig.get("flattening").asText());
-    this.partSize = formatConfig.get(PART_SIZE_MB_ARG_NAME) != null ? formatConfig.get(PART_SIZE_MB_ARG_NAME).asLong() : null;
+    this(
+        Flattening.fromValue(formatConfig.get("flattening").asText()),
+        formatConfig.get(PART_SIZE_MB_ARG_NAME) != null ? formatConfig.get(PART_SIZE_MB_ARG_NAME).asLong() : null
+    );
   }
 
   @Override
-  public S3Format getFormat() {
+  public S3Format format() {
     return S3Format.CSV;
   }
-
-  public Flattening getFlattening() {
-    return flattening;
-  }
-
-  public Long getPartSize() {
-    return partSize;
-  }
-
-  @Override
-  public String toString() {
-    return "S3CsvFormatConfig{" +
-        "flattening=" + flattening +
-        ", partSize=" + partSize +
-        '}';
-  }
-
 }
