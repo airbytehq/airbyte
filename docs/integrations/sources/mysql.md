@@ -182,7 +182,7 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
-| 0.4.14 | 2021-12-11 | [7970](https://github.com/airbytehq/airbyte/pull/7970) | Support all MySQL types |
+| 0.5.0   | 2021-12-11 | [7970](https://github.com/airbytehq/airbyte/pull/7970) | Support all MySQL types |
 | 0.4.13  | 2021-12-03 | [8335](https://github.com/airbytehq/airbyte/pull/8335) | Source-MySql: do not check cdc required param binlog_row_image for standard replication |
 | 0.4.12  | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key |
 | 0.4.11  | 2021-11-19 | [8047](https://github.com/airbytehq/airbyte/pull/8047) | Source MySQL: transform binary data base64 format |
