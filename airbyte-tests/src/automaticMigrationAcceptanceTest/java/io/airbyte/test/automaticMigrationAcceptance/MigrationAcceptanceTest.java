@@ -79,7 +79,7 @@ public class MigrationAcceptanceTest {
     // piggybacks off of whatever the existing .env file is, so override default filesystem values in to
     // point at test paths.
     final Properties envFileProperties = overrideDirectoriesForTest(MoreProperties.envFileToProperties(ENV_FILE));
-    runAirbyteAndWaitForUpgradeException(currentDockerComposeFile, envFileProperties);
+    runAirbyteAndWaitForUpgradeException(currentDockerComposeFile, envFileProperties); // 0.33.11-alpha
 
     LOGGER.info("======= after upgrade exception");
 
