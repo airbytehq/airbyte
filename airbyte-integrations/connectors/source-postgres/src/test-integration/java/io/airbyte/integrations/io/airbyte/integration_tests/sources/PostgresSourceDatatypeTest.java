@@ -58,7 +58,8 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       ctx.execute("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');");
       ctx.execute("CREATE TYPE inventory_item AS (name text, supplier_id integer, price numeric);");
       // In one of the test case, we have some money values with currency symbol. Postgres can only
-      // understand those money values if the symbol corresponds to the monetary locale setting. For example,
+      // understand those money values if the symbol corresponds to the monetary locale setting. For
+      // example,
       // if the locale is 'en_GB', '£100' is valid, but '$100' is not. So setting the monetary locate is
       // necessary here to make sure the unit test can pass, no matter what the locale the runner VM has.
       ctx.execute("SET lc_monetary TO 'en_US.utf8';");
