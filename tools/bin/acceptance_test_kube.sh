@@ -25,19 +25,6 @@ echo "Waiting for server and scheduler to be ready..."
 kubectl wait --for=condition=Available deployment/airbyte-server --timeout=300s || (kubectl describe pods && exit 1)
 kubectl wait --for=condition=Available deployment/airbyte-scheduler --timeout=300s || (kubectl describe pods && exit 1)
 
-echo "Checking if scheduler and server are being scheduled on separate nodes..."
-if [ -n "$IS_MINIKUBE" ]; then
-  SCHEDULER_NODE=$(kubectl get pod -o=custom-columns=NAME:.metadata.name,NODE:.spec.nodeName | grep scheduler | awk '{print $2}')
-  SERVER_NODE=$(kubectl get pod -o=custom-columns=NAME:.metadata.name,NODE:.spec.nodeName | grep server | awk '{print $2}')
-
-  if [ "$SCHEDULER_NODE" = "$SERVER_NODE" ]; then
-    echo "Scheduler and server were scheduled on the same node! This should not be the case for testing!"
-    exit 1
-  else
-    echo "Scheduler and server were scheduled on different nodes."
-  fi
-fi
-
 echo "Listing nodes scheduled for pods..."
 kubectl describe pods | grep "Name\|Node"
 
