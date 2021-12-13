@@ -65,21 +65,24 @@ public class BootloaderApp {
                 .getAndInitialize();
         final Database jobDatabase =
             new JobsDatabaseInstance(configs.getDatabaseUser(), configs.getDatabasePassword(), configs.getDatabaseUrl()).getAndInitialize()) {
-
-      final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
-      final ConfigRepository configRepository =
-          new ConfigRepository(configPersistence.withValidation(), null, Optional.empty(), Optional.empty());
-      createWorkspaceIfNoneExists(configRepository);
+      LOGGER.info("Created initial jobs and configs database...");
 
       final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
-      createDeploymentIfNoneExists(jobPersistence);
-      LOGGER.info("Set up job database and default deployment..");
-
       final AirbyteVersion currAirbyteVersion = configs.getAirbyteVersion();
       assertNonBreakingMigration(jobPersistence, currAirbyteVersion);
 
       runFlywayMigration(configs, configDatabase, jobDatabase);
       LOGGER.info("Ran Flyway migrations...");
+
+      final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
+      final ConfigRepository configRepository =
+          new ConfigRepository(configPersistence.withValidation(), null, Optional.empty(), Optional.empty());
+
+      createWorkspaceIfNoneExists(configRepository);
+      LOGGER.info("Default workspace created..");
+
+      createDeploymentIfNoneExists(jobPersistence);
+      LOGGER.info("Default deployment created..");
 
       jobPersistence.setVersion(currAirbyteVersion.serialize());
       LOGGER.info("Set version to {}", currAirbyteVersion);
