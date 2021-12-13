@@ -5,7 +5,8 @@
   "properties": {
     "_object": {
       "type": "string",
-      "description": "String representing the object's type. Always /api/refs/collection for this object."
+      "description": "String representing the object's type. Always /api/refs/collection for this object.",
+      "pattern": "^\/api\/refs\/collection$"
     },
     "link": {
       "type": "string",
