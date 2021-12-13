@@ -140,7 +140,7 @@ class SourceMyhours(AbstractSource):
             return None, e
 
     def check_connection(self, logger: AirbyteLogger, config) -> Tuple[bool, any]:
-        access_token = self.get_access_token(config)
+        token_value, token_exception = self.get_access_token(config)
         url = f"{url_base}/Clients"
         token_value = access_token[0]
         token_exception = access_token[1]
