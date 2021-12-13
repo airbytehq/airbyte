@@ -35,12 +35,12 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
   private final CSVPrinter csvPrinter;
   private final String objectKey;
 
-  public S3CsvWriter(final S3DestinationConfig config,
-                     final AmazonS3 s3Client,
-                     final ConfiguredAirbyteStream configuredStream,
-                     final Timestamp uploadTimestamp,
-                     final int uploadThreads,
-                     final int queueCapacity)
+  private S3CsvWriter(final S3DestinationConfig config,
+                      final AmazonS3 s3Client,
+                      final ConfiguredAirbyteStream configuredStream,
+                      final Timestamp uploadTimestamp,
+                      final int uploadThreads,
+                      final int queueCapacity)
       throws IOException {
     super(config, s3Client, configuredStream);
 
@@ -65,13 +65,43 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
             .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0])));
   }
 
-  public S3CsvWriter(final S3DestinationConfig config,
-                     final AmazonS3 s3Client,
-                     final ConfiguredAirbyteStream configuredStream,
-                     final Timestamp uploadTimestamp)
-      throws IOException {
-    this(config, s3Client, configuredStream, uploadTimestamp, S3StreamTransferManagerHelper.DEFAULT_UPLOAD_THREADS,
-        S3StreamTransferManagerHelper.DEFAULT_QUEUE_CAPACITY);
+  public static class Builder {
+
+    private final S3DestinationConfig config;
+    private final AmazonS3 s3Client;
+    private final ConfiguredAirbyteStream configuredStream;
+    private final Timestamp uploadTimestamp;
+    private int uploadThreads = S3StreamTransferManagerHelper.DEFAULT_UPLOAD_THREADS;
+    private int queueCapacity = S3StreamTransferManagerHelper.DEFAULT_QUEUE_CAPACITY;
+
+    public Builder(final S3DestinationConfig config,
+                   final AmazonS3 s3Client,
+                   final ConfiguredAirbyteStream configuredStream,
+                   final Timestamp uploadTimestamp) {
+      this.config = config;
+      this.s3Client = s3Client;
+      this.configuredStream = configuredStream;
+      this.uploadTimestamp = uploadTimestamp;
+    }
+
+    public Builder uploadThreads(final int uploadThreads) {
+      this.uploadThreads = uploadThreads;
+      return this;
+    }
+
+    public Builder queueCapacity(final int queueCapacity) {
+      this.queueCapacity = queueCapacity;
+      return this;
+    }
+
+    public S3CsvWriter build() throws IOException {
+      return new S3CsvWriter(config,
+          s3Client,
+          configuredStream,
+          uploadTimestamp,
+          uploadThreads,
+          queueCapacity);
+    }
   }
 
   @Override

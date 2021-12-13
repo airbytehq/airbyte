@@ -50,16 +50,8 @@ class S3CsvWriterTest {
   private MockedConstruction<StreamTransferManager> streamTransferManagerMockedConstruction;
   private List<StreamTransferManagerArguments> streamTransferManagerConstructorArguments;
 
-  // TODO when we're on java 17, this should be a record class
-  private static class StreamTransferManagerArguments {
+  private record StreamTransferManagerArguments(String bucket, String object) {
 
-    public final String bucket;
-    public final String object;
-
-    public StreamTransferManagerArguments(final String bucket, final String object) {
-      this.bucket = bucket;
-      this.object = object;
-    }
   }
 
   @BeforeEach
@@ -103,14 +95,14 @@ class S3CsvWriterTest {
         );
     final AmazonS3 s3Client = mock(AmazonS3Client.class);
 
-    writer = new S3CsvWriter(
+    writer = new S3CsvWriter.Builder(
         config,
         s3Client,
         configuredStream,
-        UPLOAD_TIME,
-        UPLOAD_THREADS,
-        QUEUE_CAPACITY
-    );
+        UPLOAD_TIME
+    ).uploadThreads(UPLOAD_THREADS)
+        .queueCapacity(QUEUE_CAPACITY)
+        .build();
   }
 
   @AfterEach
@@ -166,7 +158,7 @@ class S3CsvWriterTest {
     assertTrue(objectName.startsWith(EXPECTED_OBJECT_BEGINNING), errorMessage);
     assertTrue(objectName.endsWith(EXPECTED_OBJECT_ENDING), errorMessage);
 
-    // String the beginning and ending, which _should_ leave us with just a UUID
+    // Remove the beginning and ending, which _should_ leave us with just a UUID
     final String uuidMaybe = objectName
         // "^" == start of string
         .replaceFirst("^" + EXPECTED_OBJECT_BEGINNING + "_", "")

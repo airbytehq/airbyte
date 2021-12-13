@@ -32,9 +32,6 @@ public abstract class S3StreamCopier implements StreamCopier {
 
   private static final int DEFAULT_UPLOAD_THREADS = 10; // The S3 cli uses 10 threads by default.
   private static final int DEFAULT_QUEUE_CAPACITY = DEFAULT_UPLOAD_THREADS;
-  // 4 * 256MiB (see CopyConsumerFactory#MAX_BATCH_SIZE_BYTES) = 1GiB, which redshift wants
-  // https://docs.aws.amazon.com/redshift/latest/dg/t_loading-tables-from-s3.html "Split your load data files so that the files are about equal size, between 1 MB and 1 GB after compression"
-  public static final int MAX_PARTS_PER_FILE = 4;
 
   protected final AmazonS3 s3Client;
   protected final S3DestinationConfig s3Config;
@@ -57,6 +54,11 @@ public abstract class S3StreamCopier implements StreamCopier {
   private int partsAddedToCurrentFile;
   private String currentFile;
 
+  /**
+   * @param maxPartsPerFile The number of "chunks" of requests to add into each file. Each chunk can be up to 256 MiB (see
+   *                        CopyConsumerFactory#MAX_BATCH_SIZE_BYTES). For example, Redshift recommends at most 1 GiB per file, so you would want
+   *                        maxPartsPerFile = 4 (because 4 * 256MiB = 1 GiB).
+   */
   public S3StreamCopier(final String stagingFolder,
                         final String schema,
                         final AmazonS3 client,
@@ -81,7 +83,7 @@ public abstract class S3StreamCopier implements StreamCopier {
     this.s3Config = s3Config;
 
     this.maxPartsPerFile = maxPartsPerFile;
-    this.partsAddedToCurrentFile = -1; // Force a new file on the first call to prepareStagingFile()
+    this.partsAddedToCurrentFile = 0;
   }
 
   /*
@@ -90,25 +92,25 @@ public abstract class S3StreamCopier implements StreamCopier {
    */
   @Override
   public String prepareStagingFile() {
-    partsAddedToCurrentFile = (partsAddedToCurrentFile + 1) % maxPartsPerFile;
     if (partsAddedToCurrentFile == 0) {
       LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
 
       try {
-        final S3CsvWriter writer = new S3CsvWriter(
+        final S3CsvWriter writer = new S3CsvWriter.Builder(
             s3Config.cloneWithFormatConfig(new S3CsvFormatConfig(Flattening.NO, (long) s3Config.getPartSize())),
             s3Client,
             configuredAirbyteStream,
-            uploadTime,
-            DEFAULT_UPLOAD_THREADS,
-            DEFAULT_QUEUE_CAPACITY
-        );
+            uploadTime
+        ).uploadThreads(DEFAULT_UPLOAD_THREADS)
+            .queueCapacity(DEFAULT_QUEUE_CAPACITY)
+            .build();
         currentFile = writer.getObjectKey();
         stagingWritersBySuffix.put(currentFile, writer);
       } catch (final IOException e) {
         throw new RuntimeException(e);
       }
     }
+    partsAddedToCurrentFile = (partsAddedToCurrentFile + 1) % maxPartsPerFile;
     return currentFile;
   }
 
