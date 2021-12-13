@@ -266,7 +266,7 @@ New sources:
 * [**SAP Business One**](https://docs.airbyte.io/integrations/sources/sap-business-one)
 * [**Spree Commerce**](https://docs.airbyte.io/integrations/sources/spree-commerce)
 * [**Sugar CRM**](https://docs.airbyte.io/integrations/sources/sugar-crm)
-* [**Woo Commerce**](https://docs.airbyte.io/integrations/sources/woo-commerce)
+* [**WooCommerce**](https://docs.airbyte.io/integrations/sources/woocommerce)
 * [**Wordpress**](https://docs.airbyte.io/integrations/sources/wordpress)
 * [**Zencart**](https://docs.airbyte.io/integrations/sources/zencart)
 
