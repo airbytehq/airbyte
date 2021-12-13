@@ -18,18 +18,18 @@ services:
       - HACK_LOCAL_ROOT_PARENT=${HACK_LOCAL_ROOT_PARENT}
     volumes:
       - ${HACK_LOCAL_ROOT_PARENT}:/local_parent
-  bootloader:
-    image: airbyte/bootloader:${VERSION}
-    logging: *default-logging
-    container_name: airbyte-bootloader
-    environment:
-      - AIRBYTE_VERSION=${VERSION}
-      - DATABASE_USER=${DATABASE_USER}
-      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
-      - DATABASE_URL=${DATABASE_URL}
-      - CONFIG_DATABASE_USER=${CONFIG_DATABASE_USER:-}
-      - CONFIG_DATABASE_PASSWORD=${CONFIG_DATABASE_PASSWORD:-}
-      - CONFIG_DATABASE_URL=${CONFIG_DATABASE_URL:-}
+  #  bootloader:
+  #    image: airbyte/bootloader:${VERSION}
+  #    logging: *default-logging
+  #    container_name: airbyte-bootloader
+  #    environment:
+  #      - AIRBYTE_VERSION=${VERSION}
+  #      - DATABASE_USER=${DATABASE_USER}
+  #      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+  #      - DATABASE_URL=${DATABASE_URL}
+  #      - CONFIG_DATABASE_USER=${CONFIG_DATABASE_USER:-}
+  #      - CONFIG_DATABASE_PASSWORD=${CONFIG_DATABASE_PASSWORD:-}
+  #      - CONFIG_DATABASE_URL=${CONFIG_DATABASE_URL:-}
   db:
     image: airbyte/db:${VERSION}
     logging: *default-logging

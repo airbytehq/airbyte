@@ -131,6 +131,7 @@ public class BootloaderApp {
   private static void assertNonBreakingMigration(JobPersistence jobPersistence, AirbyteVersion airbyteVersion) throws IOException {
     // version in the database when the server main method is called. may be empty if this is the first
     // time the server is started.
+    LOGGER.info("Checking illegal upgrade..");
     final Optional<AirbyteVersion> initialAirbyteDatabaseVersion = jobPersistence.getVersion().map(AirbyteVersion::new);
     if (!isLegalUpgrade(initialAirbyteDatabaseVersion.orElse(null), airbyteVersion)) {
       final String attentionBanner = MoreResources.readResource("banner/attention-banner.txt");
