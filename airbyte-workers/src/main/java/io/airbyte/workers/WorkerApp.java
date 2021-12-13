@@ -4,6 +4,10 @@
 
 package io.airbyte.workers;
 
+import io.airbyte.analytics.TrackingClient;
+import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
@@ -17,10 +21,20 @@ import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import io.airbyte.scheduler.persistence.DefaultJobCreator;
+import io.airbyte.scheduler.persistence.DefaultJobPersistence;
+import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.scheduler.persistence.job_factory.DefaultSyncJobFactory;
+import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
+import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
+import io.airbyte.workers.helper.ConnectionHelper;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.process.WorkerHeartbeatServer;
+import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivityImpl;
@@ -28,7 +42,10 @@ import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflowImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogActivityImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflowImpl;
 import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterWorkflowImpl;
-import io.airbyte.workers.temporal.scheduling.activities.GetSyncInputActivityImpl;
+import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivityImpl;
+import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActivityImpl;
+import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivityImpl;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivityImpl;
 import io.airbyte.workers.temporal.spec.SpecActivityImpl;
 import io.airbyte.workers.temporal.spec.SpecWorkflowImpl;
 import io.airbyte.workers.temporal.sync.DbtTransformationActivityImpl;
@@ -36,6 +53,7 @@ import io.airbyte.workers.temporal.sync.NormalizationActivityImpl;
 import io.airbyte.workers.temporal.sync.PersistStateActivityImpl;
 import io.airbyte.workers.temporal.sync.ReplicationActivityImpl;
 import io.airbyte.workers.temporal.sync.SyncWorkflowImpl;
+import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
@@ -51,10 +69,12 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+@AllArgsConstructor
 public class WorkerApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerApp.class);
@@ -72,33 +92,11 @@ public class WorkerApp {
   private final String databasePassword;
   private final String databaseUrl;
   private final String airbyteVersion;
-
-  public WorkerApp(final Path workspaceRoot,
-                   final ProcessFactory processFactory,
-                   final SecretsHydrator secretsHydrator,
-                   final WorkflowServiceStubs temporalService,
-                   final MaxWorkersConfig maxWorkers,
-                   final ConfigRepository configRepository,
-                   final WorkerEnvironment workerEnvironment,
-                   final LogConfigs logConfigs,
-                   final String databaseUser,
-                   final String databasePassword,
-                   final String databaseUrl,
-                   final String airbyteVersion) {
-
-    this.workspaceRoot = workspaceRoot;
-    this.processFactory = processFactory;
-    this.secretsHydrator = secretsHydrator;
-    this.temporalService = temporalService;
-    this.maxWorkers = maxWorkers;
-    this.configRepository = configRepository;
-    this.workerEnvironment = workerEnvironment;
-    this.logConfigs = logConfigs;
-    this.databaseUser = databaseUser;
-    this.databasePassword = databasePassword;
-    this.databaseUrl = databaseUrl;
-    this.airbyteVersion = airbyteVersion;
-  }
+  private final SyncJobFactory jobFactory;
+  private final JobPersistence jobPersistence;
+  private final TemporalWorkerRunFactory temporalWorkerRunFactory;
+  private final Configs configs;
+  private final ConnectionHelper connectionHelper;
 
   public void start() {
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
@@ -149,9 +147,17 @@ public class WorkerApp {
     final Worker connectionUpdaterWorker =
         factory.newWorker(TemporalJobType.CONNECTION_UPDATER.toString(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     connectionUpdaterWorker.registerWorkflowImplementationTypes(ConnectionUpdaterWorkflowImpl.class);
-    connectionUpdaterWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
     connectionUpdaterWorker.registerActivitiesImplementations(
-        new GetSyncInputActivityImpl());
+        new GenerateInputActivityImpl(
+            jobPersistence),
+        new JobCreationAndStatusUpdateActivityImpl(
+            jobFactory,
+            jobPersistence,
+            temporalWorkerRunFactory,
+            workerEnvironment,
+            logConfigs),
+        new ConfigFetchActivityImpl(configRepository, jobPersistence, configs),
+        new ConnectionDeletionActivityImpl(connectionHelper));
 
     factory.start();
   }
@@ -208,19 +214,55 @@ public class WorkerApp {
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence);
 
+    final Database jobDatabase = new JobsDatabaseInstance(
+        configs.getDatabaseUser(),
+        configs.getDatabasePassword(),
+        configs.getDatabaseUrl())
+            .getInitialized();
+
+    final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
+    final TrackingClient trackingClient = TrackingClientSingleton.get();
+    final SyncJobFactory jobFactory = new DefaultSyncJobFactory(
+        new DefaultJobCreator(jobPersistence, configRepository),
+        configRepository,
+        new OAuthConfigSupplier(configRepository, trackingClient));
+
+    final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot);
+
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+
+    final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(
+        temporalClient,
+        workspaceRoot,
+        configs.getAirbyteVersionOrWarning(),
+        featureFlags);
+
+    final WorkspaceHelper workspaceHelper = new WorkspaceHelper(
+        configRepository,
+        jobPersistence);
+
+    final ConnectionHelper connectionHelper = new ConnectionHelper(
+        configRepository,
+        workspaceHelper);
+
     new WorkerApp(
         workspaceRoot,
         processFactory,
         secretsHydrator,
         temporalService,
-        configs.getMaxWorkers(),
         configRepository,
+        configs.getMaxWorkers(),
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
         configs.getDatabaseUrl(),
-        configs.getAirbyteVersionOrWarning()).start();
+        configs.getAirbyteVersionOrWarning(),
+        jobFactory,
+        jobPersistence,
+        temporalWorkerRunFactory,
+        configs,
+        connectionHelper).start();
   }
 
 }

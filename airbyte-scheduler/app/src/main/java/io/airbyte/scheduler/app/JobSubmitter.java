@@ -14,13 +14,13 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
-import io.airbyte.scheduler.app.worker_run.WorkerRun;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
+import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
+import io.airbyte.workers.worker_run.WorkerRun;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
@@ -116,6 +116,7 @@ public class JobSubmitter implements Runnable {
   @VisibleForTesting
   void submitJob(final Job job) {
 
+    // job.
     final WorkerRun workerRun = temporalWorkerRunFactory.create(job);
     // we need to know the attempt number before we begin the job lifecycle. thus we state what the
     // attempt number should be. if it is not, that the lifecycle will fail. this should not happen as

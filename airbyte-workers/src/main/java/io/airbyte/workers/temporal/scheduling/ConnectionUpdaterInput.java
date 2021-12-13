@@ -4,20 +4,25 @@
 
 package io.airbyte.workers.temporal.scheduling;
 
-import io.airbyte.config.JobConfig;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class ConnectionUpdaterInput {
 
+  @NonNull
   private UUID connectionId;
-  private long jobId;
-  private JobConfig jobConfig;
-  private int attemptId;
+  @Nullable
+  private Long jobId;
+  @Nullable
+  private Integer attemptId;
+  private boolean fromFailure;
+  private int attemptNumber;
 
 }

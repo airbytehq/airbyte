@@ -9,7 +9,9 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class EmptySyncWorkflow implements SyncWorkflow {
 
   @Override
@@ -18,7 +20,7 @@ public class EmptySyncWorkflow implements SyncWorkflow {
                                 final IntegrationLauncherConfig destinationLauncherConfig,
                                 final StandardSyncInput syncInput,
                                 final UUID connectionId) {
-    return null;
+    return new StandardSyncOutput();
   }
 
 }

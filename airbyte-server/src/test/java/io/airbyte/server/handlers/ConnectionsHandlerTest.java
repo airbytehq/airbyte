@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -30,6 +29,7 @@ import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DataType;
@@ -41,13 +41,18 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.helper.ConnectionHelper;
+import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -56,9 +61,14 @@ import java.util.function.Supplier;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class ConnectionsHandlerTest {
 
+  @Mock
   private ConfigRepository configRepository;
   private Supplier<UUID> uuidGenerator;
 
@@ -77,8 +87,23 @@ class ConnectionsHandlerTest {
   private UUID connectionId;
   private UUID operationId;
   private StandardSyncOperation standardSyncOperation;
+  @Mock
   private WorkspaceHelper workspaceHelper;
+  @Mock
   private TrackingClient trackingClient;
+  @Mock
+  private TemporalWorkerRunFactory temporalWorkflowHandler;
+  @Mock
+  private SyncJobFactory jobFactory;
+  @Mock
+  private JobPersistence jobPersistence;
+  @Mock
+  private LogConfigs logConfigs;
+  @Mock
+  private FeatureFlags featureFlags;
+
+  // TODO: bmoric move to a mock
+  private ConnectionHelper connectionHelper;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -130,11 +155,16 @@ class ConnectionsHandlerTest {
         .withOperationId(operationId)
         .withWorkspaceId(workspaceId);
 
-    configRepository = mock(ConfigRepository.class);
-    uuidGenerator = mock(Supplier.class);
-    workspaceHelper = mock(WorkspaceHelper.class);
-    trackingClient = mock(TrackingClient.class);
-    connectionsHandler = new ConnectionsHandler(configRepository, uuidGenerator, workspaceHelper, trackingClient);
+    connectionHelper = new ConnectionHelper(configRepository, workspaceHelper);
+
+    connectionsHandler = new ConnectionsHandler(
+        configRepository,
+        uuidGenerator,
+        workspaceHelper,
+        trackingClient,
+        temporalWorkflowHandler,
+        featureFlags,
+        connectionHelper);
 
     when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(deletedSourceId)).thenReturn(workspaceId);

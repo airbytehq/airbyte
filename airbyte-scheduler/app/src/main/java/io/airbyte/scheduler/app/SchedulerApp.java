@@ -14,6 +14,7 @@ import io.airbyte.api.client.invoker.ApiException;
 import io.airbyte.api.client.model.HealthCheckRead;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -29,7 +30,6 @@ import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.metrics.MetricSingleton;
-import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
@@ -38,6 +38,7 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.workers.temporal.TemporalClient;
+import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -124,6 +125,7 @@ public class SchedulerApp {
     final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now, jobNotifier, maxSyncJobAttempts);
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository, trackingClient);
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
     final JobSubmitter jobSubmitter = new JobSubmitter(
         workerThreadPool,
         jobPersistence,
@@ -137,34 +139,37 @@ public class SchedulerApp {
     // anymore.
     cleanupZombies(jobPersistence, jobNotifier);
 
-    scheduleJobsPool.scheduleWithFixedDelay(
-        () -> {
-          MDC.setContextMap(mdc);
-          jobRetrier.run();
-          jobScheduler.run();
-        },
-        0L,
-        SCHEDULING_DELAY.toSeconds(),
-        TimeUnit.SECONDS);
+    if (!featureFlags.usesNewScheduler()) {
+      LOGGER.error("Start running the old schedule ___________________");
+      scheduleJobsPool.scheduleWithFixedDelay(
+          () -> {
+            MDC.setContextMap(mdc);
+            jobRetrier.run();
+            jobScheduler.run();
+          },
+          0L,
+          SCHEDULING_DELAY.toSeconds(),
+          TimeUnit.SECONDS);
 
-    executeJobsPool.scheduleWithFixedDelay(
-        () -> {
-          MDC.setContextMap(mdc);
-          jobSubmitter.run();
-        },
-        0L,
-        SCHEDULING_DELAY.toSeconds(),
-        TimeUnit.SECONDS);
+      executeJobsPool.scheduleWithFixedDelay(
+          () -> {
+            MDC.setContextMap(mdc);
+            jobSubmitter.run();
+          },
+          0L,
+          SCHEDULING_DELAY.toSeconds(),
+          TimeUnit.SECONDS);
 
-    cleanupJobsPool.scheduleWithFixedDelay(
-        () -> {
-          MDC.setContextMap(mdc);
-          jobCleaner.run();
-          jobPersistence.purgeJobHistory();
-        },
-        CLEANING_DELAY.toSeconds(),
-        CLEANING_DELAY.toSeconds(),
-        TimeUnit.SECONDS);
+      cleanupJobsPool.scheduleWithFixedDelay(
+          () -> {
+            MDC.setContextMap(mdc);
+            jobCleaner.run();
+            jobPersistence.purgeJobHistory();
+          },
+          CLEANING_DELAY.toSeconds(),
+          CLEANING_DELAY.toSeconds(),
+          TimeUnit.SECONDS);
+    }
 
     Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofSeconds(GRACEFUL_SHUTDOWN_SECONDS), workerThreadPool,
         scheduleJobsPool, executeJobsPool, cleanupJobsPool));
