@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.43
+Fix logging of unhandled exceptions: print stacktrace. 
+
 ## 0.1.42
 Add base pydantic model for connector config and schemas.
 
