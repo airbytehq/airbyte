@@ -21,11 +21,22 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
+import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryDenormalizedRecordFormatter;
+import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
+import io.airbyte.integrations.destination.bigquery.formatter.GcsAvroBigQueryRecordFormatter;
+import io.airbyte.integrations.destination.bigquery.formatter.GcsCsvBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
+import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
+import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -54,15 +65,12 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
     return getNamingResolver().getIdentifier(streamName);
   }
 
-  protected AirbyteMessageConsumer getRecordConsumer(final BigQuery bigquery,
-                                                     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs,
-                                                     final ConfiguredAirbyteCatalog catalog,
-                                                     final Consumer<AirbyteMessage> outputRecordCollector,
-                                                     final boolean isGcsUploadingMode,
-                                                     final boolean isKeepFilesInGcs) {
-    return new BigQueryDenormalizedRecordConsumer(bigquery, writeConfigs, catalog, outputRecordCollector, getNamingResolver(),
-        fieldsContainRefDefinitionValue);
-  }
+  @Override
+  protected Map<UploaderType, BigQueryRecordFormatter> getFormatterMap() {
+    Map<UploaderType, BigQueryRecordFormatter> formatterMap = new HashMap<>();
+    formatterMap.put(UploaderType.STANDARD, new DefaultBigQueryDenormalizedRecordFormatter(getNamingResolver(), fieldsContainRefDefinitionValue));
+//    formatterMap.put(UploaderType.AVRO, new GcsAvroBigQueryRecordFormatter());
+    return formatterMap;  }
 
   @Override
   protected Schema getBigQuerySchema(final JsonNode jsonSchema) {

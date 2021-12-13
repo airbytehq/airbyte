@@ -2,6 +2,7 @@ package io.airbyte.integrations.destination.bigquery.uploader;
 
 import com.google.cloud.bigquery.*;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
+import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.writer.BigQueryTableWriter;
 import io.airbyte.protocol.models.AirbyteMessage;
 import org.slf4j.Logger;
@@ -13,8 +14,8 @@ public class BigQueryDirectUploader extends AbstractBigQueryUploader<BigQueryTab
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDirectUploader.class);
 
-    public BigQueryDirectUploader(TableId table, TableId tmpTable, BigQueryTableWriter writer, JobInfo.WriteDisposition syncMode, Schema schema, BigQuery bigQuery) {
-        super(table, tmpTable, writer, syncMode, schema, bigQuery);
+    public BigQueryDirectUploader(TableId table, TableId tmpTable, BigQueryTableWriter writer, JobInfo.WriteDisposition syncMode, Schema schema, BigQuery bigQuery, BigQueryRecordFormatter recordFormatter) {
+        super(table, tmpTable, writer, syncMode, schema, bigQuery, recordFormatter);
     }
 
     @Override

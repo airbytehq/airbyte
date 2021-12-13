@@ -91,6 +91,7 @@ public class DockerProcessFactory implements ProcessFactory {
               "run",
               "--rm",
               "--init",
+              //"-p 5005:5005",
               "-i",
               "-v",
               String.format("%s:%s", workspaceMountSource, DATA_MOUNT_DESTINATION),

@@ -10,6 +10,7 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.cloud.bigquery.*;
 import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
+import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsS3Helper;
 import io.airbyte.integrations.destination.gcs.writer.GscWriter;
@@ -35,8 +36,9 @@ public abstract class AbstractGscBigQueryUploader<T extends GscWriter> extends A
                               final Schema schema,
                               final GcsDestinationConfig gcsDestinationConfig,
                               final BigQuery bigQuery,
-                              final boolean isKeepFilesInGcs) {
-    super(table, tmpTable, writer, syncMode, schema, bigQuery);
+                              final boolean isKeepFilesInGcs,
+                              final BigQueryRecordFormatter recordFormatter) {
+    super(table, tmpTable, writer, syncMode, schema, bigQuery, recordFormatter);
     this.isKeepFilesInGcs = isKeepFilesInGcs;
     this.gcsDestinationConfig = gcsDestinationConfig;
   }

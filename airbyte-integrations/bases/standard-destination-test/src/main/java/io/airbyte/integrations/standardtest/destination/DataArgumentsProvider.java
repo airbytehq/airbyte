@@ -24,7 +24,7 @@ public class DataArgumentsProvider implements ArgumentsProvider {
   @Override
   public Stream<? extends Arguments> provideArguments(final ExtensionContext context) {
     return Stream.of(
-        Arguments.of(EXCHANGE_RATE_CONFIG.messageFile, EXCHANGE_RATE_CONFIG.catalogFile),
+//        Arguments.of(EXCHANGE_RATE_CONFIG.messageFile, EXCHANGE_RATE_CONFIG.catalogFile),
         Arguments.of(EDGE_CASE_CONFIG.messageFile, EDGE_CASE_CONFIG.catalogFile)
     // todo - need to use the new protocol to capture this.
     // Arguments.of("stripe_messages.txt", "stripe_schema.json")

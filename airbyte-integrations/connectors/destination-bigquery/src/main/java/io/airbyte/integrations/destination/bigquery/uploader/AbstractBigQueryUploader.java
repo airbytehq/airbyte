@@ -4,26 +4,20 @@
 
 package io.airbyte.integrations.destination.bigquery.uploader;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.*;
 import com.google.cloud.bigquery.JobInfo.WriteDisposition;
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
+import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.gcs.writer.CommonWriter;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -39,19 +33,22 @@ public abstract class AbstractBigQueryUploader<T extends CommonWriter> {
   protected final Schema schema;
   protected final T writer;
   protected final BigQuery bigQuery;
+  protected final BigQueryRecordFormatter recordFormatter;
 
   AbstractBigQueryUploader(final TableId table,
                            final TableId tmpTable,
                            final T writer,
                            final WriteDisposition syncMode,
                            final Schema schema,
-                           final BigQuery bigQuery) {
+                           final BigQuery bigQuery,
+                           final BigQueryRecordFormatter recordFormatter) {
     this.table = table;
     this.tmpTable = tmpTable;
     this.writer = writer;
     this.syncMode = syncMode;
     this.schema = schema;
     this.bigQuery = bigQuery;
+    this.recordFormatter = recordFormatter;
   }
   
   protected void postProcessAction(boolean hasFailed) throws Exception {
@@ -61,7 +58,7 @@ public abstract class AbstractBigQueryUploader<T extends CommonWriter> {
   public void upload(AirbyteMessage airbyteMessage) {
     try {
       LOGGER.info("Writing message record : " + airbyteMessage.getRecord());
-      writer.write((formatRecord(airbyteMessage.getRecord())));
+      writer.write((recordFormatter.formatRecord(schema, airbyteMessage.getRecord())));
     } catch (final IOException | RuntimeException e) {
       LOGGER.error("Got an error while writing message: {}", e.getMessage(), e);
       LOGGER.error(String.format(
@@ -71,18 +68,6 @@ public abstract class AbstractBigQueryUploader<T extends CommonWriter> {
       printHeapMemoryConsumption();
       throw new RuntimeException(e);
     }
-  }
-
-  protected JsonNode formatRecord(final AirbyteRecordMessage recordMessage) {
-    // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds then
-    // use BQ helpers to string-format correctly.
-    final long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
-    final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
-    final JsonNode formattedData = StandardNameTransformer.formatJsonPath(recordMessage.getData());
-    return Jsons.jsonNode(ImmutableMap.of(
-            JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(),
-            JavaBaseConstants.COLUMN_NAME_DATA, Jsons.serialize(formattedData),
-            JavaBaseConstants.COLUMN_NAME_EMITTED_AT, formattedEmittedAt));
   }
 
   public void close(boolean hasFailed, Consumer<AirbyteMessage> outputRecordCollector, AirbyteMessage lastStateMessage) {

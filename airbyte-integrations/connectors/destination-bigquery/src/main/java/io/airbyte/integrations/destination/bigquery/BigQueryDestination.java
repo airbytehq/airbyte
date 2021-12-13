@@ -31,10 +31,15 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
+import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
+import io.airbyte.integrations.destination.bigquery.formatter.GcsAvroBigQueryRecordFormatter;
+import io.airbyte.integrations.destination.bigquery.formatter.GcsCsvBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryDirectUploader;
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.GcsAvroBigQueryUploader;
+import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
 import io.airbyte.integrations.destination.bigquery.writer.BigQueryTableWriter;
 import io.airbyte.integrations.destination.gcs.GcsDestination;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
@@ -115,7 +120,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return namingResolver;
   }
 
-  private BigQuery getBigQuery(final JsonNode config) {
+  protected BigQuery getBigQuery(final JsonNode config) {
     final String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
 
     try {
@@ -169,10 +174,14 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException {
-    final BigQuery bigquery = getBigQuery(config);
-    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
+    return getRecordConsumer(getUploaderMap(config, catalog), outputRecordCollector);
+  }
 
-    // create tmp tables if not exist
+  protected Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> getUploaderMap(final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog) throws IOException {
+    final BigQuery bigquery = getBigQuery(config);
+
+    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
       final AirbyteStream stream = configStream.getStream();
       final String streamName = stream.getName();
@@ -180,9 +189,19 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       final String tmpTableName = namingResolver.getTmpTableName(streamName);
       final Schema schema = getBigQuerySchema(stream.getJsonSchema());
 
-      uploaderMap.put(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream), BigQueryUploaderFactory.getUploader(config, configStream, tableName, tmpTableName, bigquery, schema));
+      uploaderMap.put(
+          AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
+          BigQueryUploaderFactory.getUploader(config, configStream, tableName, tmpTableName, bigquery, schema, getFormatterMap()));
     }
-    return getRecordConsumer(uploaderMap, outputRecordCollector);
+    return uploaderMap;
+  }
+
+  protected Map<UploaderType, BigQueryRecordFormatter> getFormatterMap() {
+    Map<UploaderType, BigQueryRecordFormatter> formatterMap = new HashMap<>();
+    formatterMap.put(UploaderType.STANDARD, new DefaultBigQueryRecordFormatter());
+    formatterMap.put(UploaderType.CSV, new GcsCsvBigQueryRecordFormatter());
+    formatterMap.put(UploaderType.AVRO, new GcsAvroBigQueryRecordFormatter());
+    return formatterMap;
   }
 
   protected String getTargetTableName(final String streamName) {
