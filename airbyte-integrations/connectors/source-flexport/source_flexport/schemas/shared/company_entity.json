@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "_object": {
+      "type": "string",
+      "description": "String representing the object's type. Always /company_entity for this object."
+    },
+    "id": {
+      "type": "integer",
+      "description": "Unique identifier for the object."
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the company entity."
+    },
+    "mailing_address": {
+      "description": "Address of the company entity.",
+      "$ref": "address.json"
+    },
+    "ref": {
+      "type": "string",
+      "description": "Your reference for this company entity, as set in the Network tab."
+    },
+    "vat_numbers": {
+      "type": "array",
+      "description": "Array of VAT numbers of the company entity.",
+      "items": {
+        "$ref": "company_entity/vat_number.json"
+      }
+    }
+  }
+}

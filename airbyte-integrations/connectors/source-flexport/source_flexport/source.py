@@ -5,93 +5,68 @@
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from urllib.parse import parse_qsl, urlparse
 
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 class FlexportStream(HttpStream, ABC):
-    """
-    TODO remove this comment
-
-    This class represents a stream output by the connector.
-    This is an abstract base class meant to contain all the common functionality at the API level e.g: the API base URL, pagination strategy,
-    parsing responses etc..
-
-    Each stream should extend this class (or another abstract subclass of it) to specify behavior unique to that stream.
-
-    Typically for REST APIs each stream corresponds to a resource in the API. For example if the API
-    contains the endpoints
-        - GET v1/customers
-        - GET v1/employees
-
-    then you should have three classes:
-    `class FlexportStream(HttpStream, ABC)` which is the current class
-    `class Customers(FlexportStream)` contains behavior to pull data for customers using v1/customers
-    `class Employees(FlexportStream)` contains behavior to pull data for employees using v1/employees
-
-    If some streams implement incremental sync, it is typical to create another class
-    `class IncrementalFlexportStream((FlexportStream), ABC)` then have concrete stream implementations extend it. An example
-    is provided below.
-
-    See the reference docs for the full list of configurable options.
-    """
-
-    # TODO: Fill in the url base. Required.
-    url_base = "https://example-api.com/v1/"
+    url_base = "https://api.flexport.com/"
+    raise_on_http_errors = False
+    page_size = 500
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        TODO: Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
+        # https://apidocs.flexport.com/reference/pagination
+        # All list endpoints return paginated responses. The response object contains
+        # elements of the current page, and links to the previous and next pages.
+        data = response.json()["data"]
 
-        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
-        to most other methods in this class to help you form headers, request bodies, query params, etc..
+        if data["next"]:
+            url = urlparse(data["next"])
+            qs = dict(parse_qsl(url.query))
 
-        For example, if the API accepts a 'page' parameter to determine which page of the result to return, and a response from the API contains a
-        'page' number, then this method should probably return a dict {'page': response.json()['page'] + 1} to increment the page count by 1.
-        The request_params method should then read the input next_page_token and set the 'page' param to next_page_token['page'].
-
-        :param response: the most recent response from the API
-        :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
-                If there are no more pages in the result, return None.
-        """
-        return None
+            return {
+                "page": qs["page"],
+                "per": qs["per"],
+            }
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
-        Usually contains common params e.g. pagination size etc.
-        """
-        return {}
+        if next_page_token:
+            return next_page_token
+
+        return {
+            "page": 1,
+            "per": self.page_size,
+        }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
-        """
-        yield {}
+        # https://apidocs.flexport.com/reference/response-layout
+        json = response.json()
+
+        if response.status_code != requests.codes.OK:
+            try:
+                response.raise_for_status()
+            except Exception as exc:
+                error = json.get("error")
+                if error:
+                    raise Exception(f"{error['code']}: {error['message']}") from exc
+                raise exc
+
+        yield from json["data"]["data"]
 
 
-class Customers(FlexportStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "customer_id"
+class Companies(FlexportStream):
+    primary_key = "id"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
-        return "customers"
+        return "network/companies"
 
 
 # Basic incremental stream
@@ -182,6 +157,6 @@ class SourceFlexport(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = TokenAuthenticator(token=config["api_key"])
         return [
-            Customers(authenticator=auth),
+            Companies(authenticator=auth),
             Employees(authenticator=auth),
         ]
