@@ -75,9 +75,9 @@ class PostgresSourceSSLTest {
           .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name")))));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
-      createRecord(STREAM_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null), SCHEMA_NAME),
+      createRecord(STREAM_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", Double.POSITIVE_INFINITY), SCHEMA_NAME),
       createRecord(STREAM_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1), SCHEMA_NAME),
-      createRecord(STREAM_NAME, map("id", null, "name", "piccolo", "power", null), SCHEMA_NAME));
+      createRecord(STREAM_NAME, map("id", Double.NaN, "name", "piccolo", "power", Double.NEGATIVE_INFINITY), SCHEMA_NAME));
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
