@@ -75,6 +75,15 @@ class Companies(FlexportStream):
         return "network/companies"
 
 
+class Locations(FlexportStream):
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "network/locations"
+
+
 # Basic incremental stream
 class IncrementalFlexportStream(FlexportStream, ABC):
     """
@@ -164,5 +173,6 @@ class SourceFlexport(AbstractSource):
         auth = TokenAuthenticator(token=config["api_key"])
         return [
             Companies(authenticator=auth),
+            Locations(authenticator=auth),
             Employees(authenticator=auth),
         ]
