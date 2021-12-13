@@ -7,55 +7,59 @@ set -e
 # runs performance tests for an performance name
 
 connector="$1"
+separator="|"
 all_performance_tests=$(./gradlew performanceTest --dry-run | grep 'performanceTest SKIPPED' | cut -d: -f 4)
 run() {
-firstarg=""
-secondarg=""
-if [[ "$2" ]]; then
-  if [[ "$2" == *"cpulimit"* ]]; then
-    firstarg="-DcpuLimit=$(echo $2 | cut -d = -f 2)"
-  fi
-  if [[ "$2" == *"memorylimit"* ]]; then
-    firstarg="-DmemoryLimit=$(echo $2 | cut -d = -f 2)"
-  fi
+con=""
+cpulimit=""
+memorylimit=""
+tmp=${connector//"$separator"/$'\2'}
+IFS=$'\2' read -a arr <<< "$tmp"
+if [[ ${#array[@]} == 1 ]]; then
+    con="$connector"
+else
+  for substr in "${arr[@]}" ; do
+    echo "<$substr>"
+    if [[ "$substr" == *"cpulimit"* ]]; then
+      cpulimit="-DcpuLimit=$(echo $substr | cut -d = -f 2)"
+    fi
+    if [[ "$substr" == *"memorylimit"* ]]; then
+      memorylimit="-DmemoryLimit=$(echo $substr | cut -d = -f 2)"
+    fi
+    if [[ "$substr" == "all" || "$substr" == *"base-normalization"* || "$substr" == *"bases"* || "$substr" == *"connectors"* ]]; then
+      con="$substr"
+    fi
+  done
 fi
-if [[ "$3" ]]; then
-  if [[ "$3" == *"cpulimit"* ]]; then
-    secondarg="-DcpuLimit=$(echo $3 | cut -d = -f 2)"
-  fi
-  if [[ "$3" == *"memorylimit"* ]]; then
-    secondarg="-DmemoryLimit=$(echo $3 | cut -d = -f 2)"
-  fi
-fi
-if [[ "$connector" == "all" ]] ; then
+if [[ "$con" == "all" ]] ; then
   echo "Running: ./gradlew --no-daemon --scan performanceTest"
   ./gradlew --no-daemon --scan performanceTest
 else
-  if [[ "$connector" == *"base-normalization"* ]]; then
+  if [[ "$con" == *"base-normalization"* ]]; then
     selected_performance_test="base-normalization"
     performanceTestCommand="$(_to_gradle_path "airbyte-integrations/bases/base-normalization" performanceTest)"
     export SUB_BUILD="CONNECTORS_BASE"
     # avoid schema conflicts when multiple tests for normalization are run concurrently
     export RANDOM_TEST_SCHEMA="true"
     ./gradlew --no-daemon --scan airbyteDocker
-  elif [[ "$connector" == *"bases"* ]]; then
-    connector_name=$(echo $connector | cut -d / -f 2)
+  elif [[ "$con" == *"bases"* ]]; then
+    connector_name=$(echo $con | cut -d / -f 2)
     selected_performance_test=$(echo "$all_performance_tests" | grep "^$connector_name$" || echo "")
-    performanceTestCommand="$(_to_gradle_path "airbyte-integrations/$connector" performanceTest)"
+    performanceTestCommand="$(_to_gradle_path "airbyte-integrations/$con" performanceTest)"
     export SUB_BUILD="CONNECTORS_BASE"
-  elif [[ "$connector" == *"connectors"* ]]; then
-    connector_name=$(echo $connector | cut -d / -f 2)
+  elif [[ "$con" == *"connectors"* ]]; then
+    connector_name=$(echo $con | cut -d / -f 2)
     selected_performance_test=$(echo "$all_performance_tests" | grep "^$connector_name$" || echo "")
-    performanceTestCommand="$(_to_gradle_path "airbyte-integrations/$connector $firstarg $secondarg" performanceTest)"
+    performanceTestCommand="$(_to_gradle_path "airbyte-integrations/$con $firstarg $secondarg" performanceTest)"
   else
-    selected_performance_test=$(echo "$all_performance_tests" | grep "^$connector$" || echo "")
-    performanceTestCommand=":airbyte-integrations:connectors:$connector:performanceTest $firstarg $secondarg"
+    selected_performance_test=$(echo "$all_performance_tests" | grep "^$con$" || echo "")
+    performanceTestCommand=":airbyte-integrations:connectors:$con:performanceTest $firstarg $secondarg"
   fi
   if [ -n "$selected_performance_test" ] ; then
     echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand"
     ./gradlew --no-daemon --scan "$performanceTestCommand"
   else
-    echo "Connector '$connector' not found..."
+    echo "Connector '$con' not found..."
     return 1
   fi
 fi
