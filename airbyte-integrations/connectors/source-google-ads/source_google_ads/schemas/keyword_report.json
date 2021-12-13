@@ -10,7 +10,43 @@
     },
     "ad_group_criterion.type": {
       "type": ["null", "integer"],
-      "enum": ["AD_SCHEDULE","AGE_RANGE","APP_PAYMENT_MODEL","CARRIER","COMBINED_AUDIENCE","CONTENT_LABEL","CUSTOM_AFFINITY","CUSTOM_AUDIENCE","CUSTOM_INTENT","DEVICE","GENDER","INCOME_RANGE","IP_BLOCK","KEYWORD","KEYWORD_THEME","LANGUAGE","LISTING_GROUP","LISTING_SCOPE","LOCATION","LOCATION_GROUP","MOBILE_APPLICATION","MOBILE_APP_CATEGORY","MOBILE_DEVICE","OPERATING_SYSTEM_VERSION","PARENTAL_STATUS","PLACEMENT","PROXIMITY","TOPIC","UNKNOWN","UNSPECIFIED","USER_INTEREST","USER_LIST","WEBPAGE","YOUTUBE_CHANNEL","YOUTUBE_VIDEO"]
+      "enum": [
+        "AD_SCHEDULE",
+        "AGE_RANGE",
+        "APP_PAYMENT_MODEL",
+        "CARRIER",
+        "COMBINED_AUDIENCE",
+        "CONTENT_LABEL",
+        "CUSTOM_AFFINITY",
+        "CUSTOM_AUDIENCE",
+        "CUSTOM_INTENT",
+        "DEVICE",
+        "GENDER",
+        "INCOME_RANGE",
+        "IP_BLOCK",
+        "KEYWORD",
+        "KEYWORD_THEME",
+        "LANGUAGE",
+        "LISTING_GROUP",
+        "LISTING_SCOPE",
+        "LOCATION",
+        "LOCATION_GROUP",
+        "MOBILE_APPLICATION",
+        "MOBILE_APP_CATEGORY",
+        "MOBILE_DEVICE",
+        "OPERATING_SYSTEM_VERSION",
+        "PARENTAL_STATUS",
+        "PLACEMENT",
+        "PROXIMITY",
+        "TOPIC",
+        "UNKNOWN",
+        "UNSPECIFIED",
+        "USER_INTEREST",
+        "USER_LIST",
+        "WEBPAGE",
+        "YOUTUBE_CHANNEL",
+        "YOUTUBE_VIDEO"
+      ]
     },
     "ad_group_criterion.keyword.text": {
       "type": ["null", "string"]
@@ -20,7 +56,7 @@
     },
     "ad_group_criterion.keyword.match_type": {
       "type": ["null", "string"],
-      "enum": ["BROAD","EXACT","PHRASE","UNKNOWN","UNSPECIFIED"]
+      "enum": ["BROAD", "EXACT", "PHRASE", "UNKNOWN", "UNSPECIFIED"]
     },
     "metrics.historical_quality_score": {
       "type": ["null", "integer"]
@@ -29,8 +65,8 @@
       "type": ["null", "number"]
     },
     "segments.date": {
-        "type": ["null", "string"],
-        "format": "date"
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

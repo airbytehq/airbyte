@@ -10,17 +10,19 @@
     },
     "geographic_view.location_type": {
       "type": ["null", "string"],
-      "enum": ["AREA_OF_INTEREST",
-               "LOCATION_OF_PRESENCE",
-               "UNKNOWN",
-               "UNSPECIFIED"]
+      "enum": [
+        "AREA_OF_INTEREST",
+        "LOCATION_OF_PRESENCE",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "ad_group.id": {
       "type": ["null", "integer"]
     },
     "segments.date": {
-        "type": ["null", "string"],
-        "format": "date"
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

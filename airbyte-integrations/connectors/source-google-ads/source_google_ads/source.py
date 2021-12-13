@@ -110,14 +110,16 @@ class SourceGoogleAds(AbstractSource):
 
         # Metrics streams cannot be requested for a manager account.
         if not self.is_manager_account(account_info):
-            streams.extend([
-                UserLocationReport(**incremental_stream_config),
-                AccountPerformanceReport(**incremental_stream_config),
-                DisplayTopicsPerformanceReport(**incremental_stream_config),
-                DisplayKeywordPerformanceReport(**incremental_stream_config),
-                ShoppingPerformanceReport(**incremental_stream_config),
-                AdGroupAdReport(**incremental_stream_config),
-                GeographicReport(**incremental_stream_config),
-                KeywordReport(**incremental_stream_config)
-            ])
+            streams.extend(
+                [
+                    UserLocationReport(**incremental_stream_config),
+                    AccountPerformanceReport(**incremental_stream_config),
+                    DisplayTopicsPerformanceReport(**incremental_stream_config),
+                    DisplayKeywordPerformanceReport(**incremental_stream_config),
+                    ShoppingPerformanceReport(**incremental_stream_config),
+                    AdGroupAdReport(**incremental_stream_config),
+                    GeographicReport(**incremental_stream_config),
+                    KeywordReport(**incremental_stream_config),
+                ]
+            )
         return streams
