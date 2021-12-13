@@ -145,6 +145,10 @@ class AbstractSource(Source, ABC):
 
         logger.info(f"Read {record_counter} records from {stream_name} stream")
 
+    def iterate_over_slices(self, slices: Iterator[Optional[Mapping[str, Any]]]) -> Iterator[Mapping[str, Any]]:
+        """Wrapper to alter iteration over slices, by default will just return original slice iterator"""
+        return slices
+
     @staticmethod
     def _limit_reached(internal_config: InternalConfig, records_counter: int) -> bool:
         """
@@ -175,7 +179,7 @@ class AbstractSource(Source, ABC):
             cursor_field=configured_stream.cursor_field, sync_mode=SyncMode.incremental, stream_state=stream_state
         )
         total_records_counter = 0
-        for slice in slices:
+        for slice in self.iterate_over_slices(slices):
             records = stream_instance.read_records(
                 sync_mode=SyncMode.incremental,
                 stream_slice=slice,

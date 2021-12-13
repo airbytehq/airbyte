@@ -16,7 +16,7 @@ from airbyte_cdk.models import (
     OAuth2Specification,
     Status,
 )
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.async_source import AsyncSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
@@ -96,7 +96,7 @@ class ConnectorConfig(BaseModel):
     )
 
 
-class SourceFacebookMarketing(AbstractSource):
+class SourceFacebookMarketing(AsyncSource):
     def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
 
