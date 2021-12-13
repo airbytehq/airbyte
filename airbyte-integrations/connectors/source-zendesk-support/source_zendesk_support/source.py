@@ -18,6 +18,7 @@ from .streams import (
     Macros,
     Organizations,
     SatisfactionRatings,
+    Schedules,
     SlaPolicies,
     SourceZendeskException,
     Tags,
@@ -112,4 +113,5 @@ class SourceZendeskSupport(AbstractSource):
             Users(**args),
             Brands(**args),
             CustomRoles(**args),
+            Schedules(**args),
         ]

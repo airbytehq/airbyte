@@ -599,3 +599,10 @@ class Brands(FullRefreshStream):
 
 class CustomRoles(FullRefreshStream):
     """CustomRoles stream: https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles"""
+
+
+class Schedules(FullRefreshStream):
+    """Schedules stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules"""
+
+    def path(self, *args, **kwargs) -> str:
+        return "business_hours/schedules.json"
