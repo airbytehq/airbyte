@@ -58,10 +58,10 @@ const ConnectionPageTitle: React.FC<IProps> = ({
       id: "replication",
       name: <FormattedMessage id={"connection.replication"} />,
     },
-    {
-      id: "transformation",
-      name: <FormattedMessage id={"connectionForm.transformation.title"} />,
-    },
+    // {
+    //   id: "transformation",
+    //   name: <FormattedMessage id={"connectionForm.transformation.title"} />,
+    // },
     {
       id: "settings",
       name: <FormattedMessage id={"sources.settings"} />,
