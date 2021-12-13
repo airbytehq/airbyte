@@ -85,7 +85,7 @@ public class MigrationAcceptanceTest {
 
     // run "faux" major version bump version
     final File version32DockerComposeFile = MoreResources.readResourceAsFile("docker-compose-migration-test-0-32-0-alpha.yaml");
-//    LOGGER.info("===== version 32 docker compose file: {}", );
+    // LOGGER.info("===== version 32 docker compose file: {}", );
     final Properties version32EnvFileProperties = MoreProperties
         .envFileToProperties(MoreResources.readResourceAsFile("env-file-migration-test-0-32-0.env"));
     LOGGER.info("======= env file properties: {}", version32EnvFileProperties);
