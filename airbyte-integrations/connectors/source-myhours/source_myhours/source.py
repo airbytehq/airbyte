@@ -135,7 +135,7 @@ class SourceMyhours(AbstractSource):
             response = requests.post(url, headers=request_headers, data=payload)
             response.raise_for_status()
             json_response = response.json()
-            return json_response.get("accessToken", None), None if json_response is not None else None, None
+            return json_response["accessToken"], None
         except requests.exceptions.RequestException as e:
             return None, e
 
