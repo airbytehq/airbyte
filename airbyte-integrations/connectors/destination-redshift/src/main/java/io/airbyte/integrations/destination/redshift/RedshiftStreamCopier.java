@@ -11,10 +11,10 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
 import io.airbyte.integrations.destination.redshift.manifest.Entry;
 import io.airbyte.integrations.destination.redshift.manifest.Manifest;
+import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.util.Optional;
 import java.util.UUID;
@@ -36,7 +36,7 @@ public class RedshiftStreamCopier extends S3StreamCopier {
                               final String streamName,
                               final AmazonS3 client,
                               final JdbcDatabase db,
-                              final S3Config s3Config,
+                              final S3DestinationConfig s3Config,
                               final ExtendedNameTransformer nameTransformer,
                               final SqlOperations sqlOperations) {
     super(stagingFolder, destSyncMode, schema, streamName, Strings.addRandomSuffix("", "", FILE_PREFIX_LENGTH) + "_" + streamName,
@@ -60,7 +60,7 @@ public class RedshiftStreamCopier extends S3StreamCopier {
                                      final String s3FileLocation,
                                      final String schema,
                                      final String tableName,
-                                     final S3Config s3Config) {
+                                     final S3DestinationConfig s3Config) {
     throw new RuntimeException("Redshift Stream Copier should not copy individual files without use of a manifest");
   }
 
@@ -127,7 +127,7 @@ public class RedshiftStreamCopier extends S3StreamCopier {
         getFullS3Path(s3Config.getBucketName(), manifestPath),
         s3Config.getAccessKeyId(),
         s3Config.getSecretAccessKey(),
-        s3Config.getRegion());
+        s3Config.getBucketRegion());
 
     Exceptions.toRuntime(() -> db.execute(copyQuery));
   }

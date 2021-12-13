@@ -57,7 +57,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Iterable](sources/iterable.md) | Beta |
 | [Jira](sources/jira.md) | Certified |
 | [Klaviyo](sources/klaviyo.md) | Beta |
-| [Klaviyo](sources/kustomer.md) | Alpha |
+| [Kustomer](sources/kustomer.md) | Alpha |
 | [Lemlist](sources/lemlist.md) | Alpha |
 | [LinkedIn Ads](sources/linkedin-ads.md) | Beta |
 | [Linnworks](sources/linnworks.md) | Alpha |
@@ -134,6 +134,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 
 | Connector | Grade |
 | :--- | :--- |
+| [Amazon SQS](destinations/amazon-sqs.md) | Alpha |
 | [AzureBlobStorage](destinations/azureblobstorage.md) | Alpha |
 | [BigQuery](destinations/bigquery.md) | Certified |
 | [Chargify \(Keen\)](destinations/chargify.md) | Alpha |
@@ -156,6 +157,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Pulsar](destinations/pulsar.md) | Alpha |
 | [Redshift](destinations/redshift.md) | Certified |
 | [S3](destinations/s3.md) | Certified |
+| [SFTP JSON](./destinations/sftp-json.md)| Alpha |
 | [SQL Server \(MSSQL\)](destinations/mssql.md) | Alpha |
 | [Snowflake](destinations/snowflake.md) | Certified |
 | [Cassandra](destinations/cassandra.md) | Alpha |

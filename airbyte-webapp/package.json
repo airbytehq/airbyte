@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.32.6-alpha",
+  "version": "0.33.11-alpha",
   "private": true,
   "scripts": {
     "start": "react-scripts start",
@@ -24,9 +24,7 @@
     "firebase": "^9.0.1",
     "flat": "^5.0.2",
     "formik": "2.1.5",
-    "lodash.get": "^4.4.2",
-    "lodash.isequal": "^4.5.0",
-    "lodash.merge": "^4.6.2",
+    "lodash": "^4.17.21",
     "query-string": "^6.13.1",
     "react": "17.0.1",
     "react-dom": "17.0.1",
@@ -64,9 +62,7 @@
     "@types/flat": "^5.0.1",
     "@types/jest": "^24.0.0",
     "@types/json-schema": "^7.0.6",
-    "@types/lodash.get": "^4.4.6",
-    "@types/lodash.isequal": "^4.5.5",
-    "@types/lodash.merge": "^4.6.6",
+    "@types/lodash": "^4.14.178",
     "@types/node": "^12.0.0",
     "@types/query-string": "^6.3.0",
     "@types/react": "17.0.2",
@@ -89,6 +85,8 @@
     "prettier": "^2.2.1",
     "react-scripts": "4.0.2",
     "storybook-addon-styled-component-theme": "^2.0.0",
+    "tar": "^6.1.11",
+    "tmpl": "^1.0.5",
     "typescript": "4.2.4"
   },
   "husky": {

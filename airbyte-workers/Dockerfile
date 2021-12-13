@@ -1,4 +1,4 @@
-ARG JDK_VERSION=14.0.2
+ARG JDK_VERSION=17.0.1
 FROM openjdk:${JDK_VERSION}-slim AS worker
 
 ARG DOCKER_BUILD_ARCH=amd64
@@ -23,7 +23,7 @@ ENV APPLICATION airbyte-workers
 WORKDIR /app
 
 # Move worker app
-ADD bin/${APPLICATION}-0.32.6-alpha.tar /app
+ADD bin/${APPLICATION}-0.33.11-alpha.tar /app
 
 # wait for upstream dependencies to become available before starting server
-ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-0.32.6-alpha/bin/${APPLICATION}"]
+ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-0.33.11-alpha/bin/${APPLICATION}"]

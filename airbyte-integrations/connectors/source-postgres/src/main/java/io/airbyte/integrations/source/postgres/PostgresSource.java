@@ -6,10 +6,8 @@ package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
-import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import static org.jooq.tools.StringUtils.EMPTY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -19,8 +17,6 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcSourceOperations;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
@@ -48,22 +44,19 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PostgresSource extends AbstractJdbcSource implements Source {
+public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
   public static final String CDC_LSN = "_ab_cdc_lsn";
 
   static final String DRIVER_CLASS = "org.postgresql.Driver";
 
-  private final JdbcSourceOperations sourceOperations;
-
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new PostgresSource(), List.of("host"), List.of("port"));
   }
 
   PostgresSource() {
-    super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration());
-    this.sourceOperations = JdbcUtils.getDefaultSourceOperations();
+    super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration(), new PostgresSourceOperations());
   }
 
   @Override
@@ -235,19 +228,21 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(JdbcDatabase database, String schema) throws SQLException {
-    return database.bufferedResultSetQuery(
-        conn -> conn.getMetaData().getTablePrivileges(getCatalog(database), schema, null),
-        resultSet -> JdbcPrivilegeDto.builder()
-            .grantee(ofNullable(resultSet.getString(GRANTEE)).orElse(EMPTY))
-            // we need the schema as different schemas could have tables with the same names
-            .schemaName(ofNullable(resultSet.getString(JDBC_COLUMN_SCHEMA_NAME)).orElse(EMPTY))
-            .tableName(ofNullable(resultSet.getString(JDBC_COLUMN_TABLE_NAME)).orElse(EMPTY))
-            .privilege(ofNullable(resultSet.getString(PRIVILEGE)).orElse(EMPTY))
-            .build())
+  public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
+    return database.query(connection -> {
+      final PreparedStatement ps = connection.prepareStatement(
+          "SELECT DISTINCT table_catalog, table_schema, table_name, privilege_type\n"
+              + "FROM   information_schema.table_privileges\n"
+              + "WHERE  grantee = ? AND privilege_type = 'SELECT'");
+      ps.setString(1, database.getDatabaseConfig().get("username").asText());
+      return ps;
+    }, sourceOperations::rowToJson)
+        .collect(toSet())
         .stream()
-        .filter(jdbcPrivilegeDto -> jdbcPrivilegeDto.getGrantee().equals(database.getDatabaseConfig().get("username").asText())
-            && "SELECT".equals(jdbcPrivilegeDto.getPrivilege()))
+        .map(e -> JdbcPrivilegeDto.builder()
+            .schemaName(e.get("table_schema").asText())
+            .tableName(e.get("table_name").asText())
+            .build())
         .collect(toSet());
   }
 
