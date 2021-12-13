@@ -22,12 +22,12 @@ public abstract class S3StreamCopierFactory implements StreamCopierFactory<S3Des
    */
   @Override
   public StreamCopier create(final String configuredSchema,
-      final S3DestinationConfig s3Config,
-      final String stagingFolder,
-      final ConfiguredAirbyteStream configuredStream,
-      final ExtendedNameTransformer nameTransformer,
-      final JdbcDatabase db,
-      final SqlOperations sqlOperations) {
+                             final S3DestinationConfig s3Config,
+                             final String stagingFolder,
+                             final ConfiguredAirbyteStream configuredStream,
+                             final ExtendedNameTransformer nameTransformer,
+                             final JdbcDatabase db,
+                             final SqlOperations sqlOperations) {
     try {
       final AirbyteStream stream = configuredStream.getStream();
       final DestinationSyncMode syncMode = configuredStream.getDestinationSyncMode();
@@ -44,14 +44,14 @@ public abstract class S3StreamCopierFactory implements StreamCopierFactory<S3Des
    * For specific copier suppliers to implement.
    */
   public abstract StreamCopier create(String stagingFolder,
-      DestinationSyncMode syncMode,
-      String schema,
-      String streamName,
-      AmazonS3 s3Client,
-      JdbcDatabase db,
-      S3DestinationConfig s3Config,
-      ExtendedNameTransformer nameTransformer,
-      SqlOperations sqlOperations)
+                                      DestinationSyncMode syncMode,
+                                      String schema,
+                                      String streamName,
+                                      AmazonS3 s3Client,
+                                      JdbcDatabase db,
+                                      S3DestinationConfig s3Config,
+                                      ExtendedNameTransformer nameTransformer,
+                                      SqlOperations sqlOperations)
       throws Exception;
 
 }

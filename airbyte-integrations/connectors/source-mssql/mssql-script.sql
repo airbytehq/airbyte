@@ -1,139 +1,303 @@
-create procedure table_copy(@tablecount int)
-as
-begin
-set nocount on;
+CREATE
+    PROCEDURE table_copy(
+        @tablecount INT
+    ) AS BEGIN
+SET
+    nocount ON;
+    
+    DECLARE @v_max_table INT;
 
-DECLARE @v_max_table int;
-DECLARE @v_counter_table int;
+DECLARE @v_counter_table INT;
+
 DECLARE @tnamee VARCHAR(255);
-set @v_max_table = @tablecount;
-set @v_counter_table = 1;
+SET
+@v_max_table = @tablecount;
+SET
+@v_counter_table = 1;
 
-while @v_counter_table < @v_max_table begin
-set @tnamee = concat('SELECT * INTO test_', @v_counter_table, ' FROM test;');
-EXEC (@tnamee);
-set @v_counter_table = @v_counter_table + 1;
-end;
-
-end;
-go --
-
-create procedure insert_rows( @allrows int, @insertcount int, @value NVARCHAR(max))
-as
-begin
-set nocount on;
-
-DECLARE @dummyIpsum varchar(255)
-DECLARE @fieldText NVARCHAR(max)
-set @fieldText = @value
-DECLARE @vmax int;
-DECLARE @vmaxx int;
-DECLARE @vmaxoneinsert int;
-DECLARE @counter int;
-DECLARE @lastinsertcounter int;
-DECLARE @lastinsert int;
-DECLARE @fullloop int;
-DECLARE @fullloopcounter int;
-set @dummyIpsum = '''dummy_ipsum'''
-set @vmax = @allrows;
-set @vmaxx = @allrows;
-set @vmaxoneinsert = @insertcount;
-set @counter = 1;
-set @lastinsertcounter = 1;
-set @lastinsert = 0;
-set @fullloop = 0;
-set @fullloopcounter = 0;
-
-while @vmaxx <= @vmaxoneinsert begin
-	set @vmaxoneinsert = @vmaxx;
-	set @fullloop = @fullloop + 1;
-	set @vmaxx = @vmaxx + 1;
-end;
-
-while @vmax > @vmaxoneinsert begin
-	set @fullloop = @fullloop + 1;
-	set @vmax = @vmax - @vmaxoneinsert;
-	set @lastinsert = @vmax;
-end;
-
-DECLARE @insertTable NVARCHAR(MAX)
-set @insertTable = CONVERT(NVARCHAR(max), 'insert into test (varchar1, varchar2, varchar3, varchar4, varchar5, longblobfield, timestampfield) values (');
-while @counter < @vmaxoneinsert begin
-	set @insertTable = CONVERT(NVARCHAR(max), concat(@insertTable, @dummyIpsum, ', ', @dummyIpsum, ', ', @dummyIpsum, ', ', @dummyIpsum, ', ', @dummyIpsum, ', ', @fieldText, ', CURRENT_TIMESTAMP), ('));
-	set @counter = @counter + 1;
-end;
-set @insertTable = CONVERT(NVARCHAR(max), concat(@insertTable, @dummyIpsum, ', ', @dummyIpsum, ', ', @dummyIpsum, ', ', @dummyIpsum, ', ', @dummyIpsum, ', ', @fieldText, ', CURRENT_TIMESTAMP);'));
-
-while @vmax < 1 begin
-	set @fullloop = 0
-	set @vmax = 1
-end;
-
-while @fullloopcounter < @fullloop begin
-	EXEC (@insertTable);
-	set @fullloopcounter = @fullloopcounter + 1;
-end;
-
-DECLARE @insertTableLasted NVARCHAR(max);
-set @insertTableLasted = CONVERT(NVARCHAR(max), 'insert into test (varchar1, varchar2, varchar3, varchar4, varchar5, longblobfield, timestampfield) values (');
-while @lastinsertcounter < @lastinsert begin
-	set @insertTableLasted = CONVERT(NVARCHAR(max), concat(@insertTableLasted, @dummyIpsum, ', ', @dummyIpsum, ', ', @dummyIpsum, ', ', @dummyIpsum, ', ', @dummyIpsum, ', ', @fieldText, ', CURRENT_TIMESTAMP), ('));
-	set @lastinsertcounter = @lastinsertcounter + 1;
-end;
-
-set @insertTableLasted = CONVERT(NVARCHAR(max), concat(@insertTableLasted, @dummyIpsum, ', ', @dummyIpsum, ', ', @dummyIpsum, ', ', @dummyIpsum, ', ', @dummyIpsum, ', ', @fieldText, ', CURRENT_TIMESTAMP);'));
-
-while @lastinsert > 0 begin
-	EXEC (@insertTableLasted);
-	set @lastinsert = 0;
-end;
-
-end;
-go --
-
-create procedure table_create(@val int)
-as
-begin
-set nocount on;
-
--- SQLINES LICENSE FOR EVALUATION USE ONLY
-create table test
-(
-id int check (id > 0) not null identity primary key,
-varchar1 varchar(255),
-varchar2 varchar(255),
-varchar3 varchar(255),
-varchar4 varchar(255),
-varchar5 varchar(255),
-longblobfield nvarchar(max),
-timestampfield datetime2(0)
+while @v_counter_table < @v_max_table BEGIN
+SET
+@tnamee = concat(
+    'SELECT * INTO test_',
+    @v_counter_table,
+    ' FROM test;'
 );
 
-DECLARE @extraSmallText NVARCHAR(max);
-DECLARE @smallText NVARCHAR(max);
-DECLARE @regularText NVARCHAR(max);
-DECLARE @largeText NVARCHAR(max);
-set @extraSmallText = '''test weight 50b - 50b text, 50b text, 50b text'''
-set @smallText = CONCAT('''test weight 500b - ', REPLICATE('some text, some text, ', 20), '''')
-set @regularText = CONCAT('''test weight 10kb - ', REPLICATE('some text, some text, some text, some text, ', 295), 'some text''')
-set @largeText = CONCAT('''test weight 100kb - ', REPLICATE('some text, some text, some text, some text, ', 2225), 'some text''')
--- TODO: change the following @allrows to control the number of records with different sizes
--- number of 50B records
-EXEC insert_rows @allrows = 0, @insertcount = 998, @value = @extraSmallText
--- number of 500B records
-EXEC insert_rows @allrows = 0, @insertcount = 998, @value = @smallText
--- number of 10KB records
-EXEC insert_rows @allrows = 0, @insertcount = 998, @value = @regularText
--- number of 100KB records
-EXEC insert_rows @allrows = 0, @insertcount = 98, @value = @largeText
-end;
-go --
+EXEC(@tnamee);
+SET
+@v_counter_table = @v_counter_table + 1;
+END;
+END;
 
-EXEC table_create @val = 0
-drop procedure if exists insert_rows;
-drop procedure if exists table_create;
+GO --
+CREATE
+    PROCEDURE insert_rows(
+        @allrows INT,
+        @insertcount INT,
+        @value NVARCHAR(MAX)
+    ) AS BEGIN
+SET
+    nocount ON;
+    
+    DECLARE @dummyIpsum VARCHAR(255) DECLARE @fieldText NVARCHAR(MAX)
+SET
+    @fieldText = @value DECLARE @vmax INT;
+
+DECLARE @vmaxx INT;
+
+DECLARE @vmaxoneinsert INT;
+
+DECLARE @counter INT;
+
+DECLARE @lastinsertcounter INT;
+
+DECLARE @lastinsert INT;
+
+DECLARE @fullloop INT;
+
+DECLARE @fullloopcounter INT;
+SET
+@dummyIpsum = '''dummy_ipsum'''
+SET
+@vmax = @allrows;
+SET
+@vmaxx = @allrows;
+SET
+@vmaxoneinsert = @insertcount;
+SET
+@counter = 1;
+SET
+@lastinsertcounter = 1;
+SET
+@lastinsert = 0;
+SET
+@fullloop = 0;
+SET
+@fullloopcounter = 0;
+
+while @vmaxx <= @vmaxoneinsert BEGIN
+SET
+@vmaxoneinsert = @vmaxx;
+SET
+@fullloop = @fullloop + 1;
+SET
+@vmaxx = @vmaxx + 1;
+END;
+
+while @vmax > @vmaxoneinsert BEGIN
+SET
+@fullloop = @fullloop + 1;
+SET
+@vmax = @vmax - @vmaxoneinsert;
+SET
+@lastinsert = @vmax;
+END;
+
+DECLARE @insertTable NVARCHAR(MAX)
+SET
+@insertTable = CONVERT(
+    NVARCHAR(MAX),
+    'insert into test (varchar1, varchar2, varchar3, varchar4, varchar5, longblobfield, timestampfield) values ('
+);
+
+while @counter < @vmaxoneinsert BEGIN
+SET
+@insertTable = CONVERT(
+    NVARCHAR(MAX),
+    concat(
+        @insertTable,
+        @dummyIpsum,
+        ', ',
+        @dummyIpsum,
+        ', ',
+        @dummyIpsum,
+        ', ',
+        @dummyIpsum,
+        ', ',
+        @dummyIpsum,
+        ', ',
+        @fieldText,
+        ', CURRENT_TIMESTAMP), ('
+    )
+);
+SET
+@counter = @counter + 1;
+END;
+SET
+@insertTable = CONVERT(
+    NVARCHAR(MAX),
+    concat(
+        @insertTable,
+        @dummyIpsum,
+        ', ',
+        @dummyIpsum,
+        ', ',
+        @dummyIpsum,
+        ', ',
+        @dummyIpsum,
+        ', ',
+        @dummyIpsum,
+        ', ',
+        @fieldText,
+        ', CURRENT_TIMESTAMP);'
+    )
+);
+
+while @vmax < 1 BEGIN
+SET
+@fullloop = 0
+SET
+@vmax = 1
+END;
+
+while @fullloopcounter < @fullloop BEGIN EXEC(@insertTable);
+SET
+@fullloopcounter = @fullloopcounter + 1;
+END;
+
+DECLARE @insertTableLasted NVARCHAR(MAX);
+SET
+@insertTableLasted = CONVERT(
+    NVARCHAR(MAX),
+    'insert into test (varchar1, varchar2, varchar3, varchar4, varchar5, longblobfield, timestampfield) values ('
+);
+
+while @lastinsertcounter < @lastinsert BEGIN
+SET
+@insertTableLasted = CONVERT(
+    NVARCHAR(MAX),
+    concat(
+        @insertTableLasted,
+        @dummyIpsum,
+        ', ',
+        @dummyIpsum,
+        ', ',
+        @dummyIpsum,
+        ', ',
+        @dummyIpsum,
+        ', ',
+        @dummyIpsum,
+        ', ',
+        @fieldText,
+        ', CURRENT_TIMESTAMP), ('
+    )
+);
+SET
+@lastinsertcounter = @lastinsertcounter + 1;
+END;
+SET
+@insertTableLasted = CONVERT(
+    NVARCHAR(MAX),
+    concat(
+        @insertTableLasted,
+        @dummyIpsum,
+        ', ',
+        @dummyIpsum,
+        ', ',
+        @dummyIpsum,
+        ', ',
+        @dummyIpsum,
+        ', ',
+        @dummyIpsum,
+        ', ',
+        @fieldText,
+        ', CURRENT_TIMESTAMP);'
+    )
+);
+
+while @lastinsert > 0 BEGIN EXEC(@insertTableLasted);
+SET
+@lastinsert = 0;
+END;
+END;
+
+GO --
+CREATE
+    PROCEDURE table_create(
+        @val INT
+    ) AS BEGIN
+SET
+    nocount ON;
+    
+    -- SQLINES LICENSE FOR EVALUATION USE ONLY
+CREATE
+        TABLE
+            test(
+                id INT CHECK(
+                    id > 0
+                ) NOT NULL IDENTITY PRIMARY KEY,
+                varchar1 VARCHAR(255),
+                varchar2 VARCHAR(255),
+                varchar3 VARCHAR(255),
+                varchar4 VARCHAR(255),
+                varchar5 VARCHAR(255),
+                longblobfield nvarchar(MAX),
+                timestampfield datetime2(0)
+            );
+
+DECLARE @extraSmallText NVARCHAR(MAX);
+
+DECLARE @smallText NVARCHAR(MAX);
+
+DECLARE @regularText NVARCHAR(MAX);
+
+DECLARE @largeText NVARCHAR(MAX);
+SET
+@extraSmallText = '''test weight 50b - 50b text, 50b text, 50b text'''
+SET
+@smallText = CONCAT(
+    '''test weight 500b - ',
+    REPLICATE(
+        'some text, some text, ',
+        20
+    ),
+    ''''
+)
+SET
+@regularText = CONCAT(
+    '''test weight 10kb - ',
+    REPLICATE(
+        'some text, some text, some text, some text, ',
+        295
+    ),
+    'some text'''
+)
+SET
+@largeText = CONCAT(
+    '''test weight 100kb - ',
+    REPLICATE(
+        'some text, some text, some text, some text, ',
+        2225
+    ),
+    'some text'''
+) -- TODO: change the following @allrows to control the number of records with different sizes
+-- number of 50B records
+EXEC insert_rows @allrows = 0,
+@insertcount = 998,
+@value = @extraSmallText -- number of 500B records
+EXEC insert_rows @allrows = 0,
+@insertcount = 998,
+@value = @smallText -- number of 10KB records
+EXEC insert_rows @allrows = 0,
+@insertcount = 998,
+@value = @regularText -- number of 100KB records
+EXEC insert_rows @allrows = 0,
+@insertcount = 98,
+@value = @largeText
+END;
+
+GO --
+EXEC table_create @val = 0 DROP
+    PROCEDURE IF EXISTS insert_rows;
+
+DROP
+    PROCEDURE IF EXISTS table_create;
 
 -- TODO: change the value to control the number of tables
 EXEC table_copy @tablecount = 1;
-drop procedure if exists table_copy;
-exec sp_rename 'test', 'test_0';
+
+DROP
+    PROCEDURE IF EXISTS table_copy;
+
+EXEC sp_rename 'test',
+'test_0';

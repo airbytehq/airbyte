@@ -20,7 +20,12 @@
           {
             "type": "object",
             "title": "Authenticate via Microsoft (OAuth 2.0)",
-            "required": ["tenant_id", "client_id", "client_secret", "refresh_token"],
+            "required": [
+              "tenant_id",
+              "client_id",
+              "client_secret",
+              "refresh_token"
+            ],
             "additionalProperties": false,
             "properties": {
               "auth_type": {

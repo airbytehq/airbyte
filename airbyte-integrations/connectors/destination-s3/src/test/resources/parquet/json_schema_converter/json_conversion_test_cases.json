@@ -749,11 +749,7 @@
         },
         {
           "name": "date_field",
-          "type": [
-            "null",
-            { "type": "int", "logicalType": "date" },
-            "string"
-          ],
+          "type": ["null", { "type": "int", "logicalType": "date" }, "string"],
           "default": null
         },
         {

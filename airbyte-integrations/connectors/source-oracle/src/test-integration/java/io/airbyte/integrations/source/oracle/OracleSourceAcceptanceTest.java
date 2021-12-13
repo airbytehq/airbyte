@@ -35,9 +35,9 @@ public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     container = new OracleContainer()
-            .withUsername("test")
-            .withPassword("oracle")
-            .usingSid();
+        .withUsername("test")
+        .withPassword("oracle")
+        .usingSid();
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()

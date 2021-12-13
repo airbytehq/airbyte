@@ -1,134 +1,280 @@
-delimiter #
-create procedure table_copy(in tablecount int)
-begin
-
-set @v_max_table = tablecount;
-set @v_counter_table = 1;
+delimiter # CREATE
+    PROCEDURE table_copy(
+        IN tablecount INT
+    ) BEGIN
+SET
+    @v_max_table = tablecount;
+SET
+@v_counter_table = 1;
 
 while @v_counter_table < @v_max_table do
-set @tnamee = concat('create table IF NOT EXISTS test_', @v_counter_table, ' SELECT * FROM test;');
-PREPARE stmt from @tnamee;
+SET
+@tnamee = concat(
+    'create table IF NOT EXISTS test_',
+    @v_counter_table,
+    ' SELECT * FROM test;'
+);
+
+PREPARE stmt
+FROM
+@tnamee;
+
 EXECUTE stmt;
+
 DEALLOCATE PREPARE stmt;
-set @v_counter_table = @v_counter_table + 1;
-end while;
-commit;
+SET
+@v_counter_table = @v_counter_table + 1;
+END while;
 
-end #
+COMMIT;
+END # delimiter;
 
-delimiter ;
-
-delimiter #
-create procedure insert_rows(in allrows int, in insertcount int, in value longblob)
-begin
-
-set @dummyIpsum = '\'dummy_ipsum\'';
-set @fieldText = value;
-set @vmax = allrows;
-set @vmaxx = allrows;
-set @vmaxoneinsert = insertcount;
-set @counter = 1;
-set @lastinsertcounter = 1;
-set @lastinsert = 0;
-set @fullloop = 0;
-set @fullloopcounter = 0;
+delimiter # CREATE
+    PROCEDURE insert_rows(
+        IN allrows INT,
+        IN insertcount INT,
+        IN value longblob
+    ) BEGIN
+SET
+    @dummyIpsum = '\' dummy_ipsum\'';
+SET
+@fieldText = value;
+SET
+@vmax = allrows;
+SET
+@vmaxx = allrows;
+SET
+@vmaxoneinsert = insertcount;
+SET
+@counter = 1;
+SET
+@lastinsertcounter = 1;
+SET
+@lastinsert = 0;
+SET
+@fullloop = 0;
+SET
+@fullloopcounter = 0;
 
 while @vmaxx <= @vmaxoneinsert do
-	set @vmaxoneinsert = @vmaxx;
-	set @fullloop = @fullloop + 1;
-	set @vmaxx = @vmaxx + 1;
-end while;
-commit;
+SET
+@vmaxoneinsert = @vmaxx;
+SET
+@fullloop = @fullloop + 1;
+SET
+@vmaxx = @vmaxx + 1;
+END while;
+
+COMMIT;
 
 while @vmax > @vmaxoneinsert do
-	set @fullloop = @fullloop + 1;
-	set @vmax = @vmax - @vmaxoneinsert;
-	set @lastinsert = @vmax;
-end while;
-commit;
+SET
+@fullloop = @fullloop + 1;
+SET
+@vmax = @vmax - @vmaxoneinsert;
+SET
+@lastinsert = @vmax;
+END while;
 
-set @insertTable = concat('insert into test (varchar1, varchar2, varchar3, varchar4, varchar5, longblobfield, timestampfield) values (');
+COMMIT;
+SET
+@insertTable = concat('insert into test (varchar1, varchar2, varchar3, varchar4, varchar5, longblobfield, timestampfield) values (');
+
 while @counter < @vmaxoneinsert do
-	set @insertTable = concat(@insertTable, @dummyIpsum, ', ', @dummyIpsum, ', ', @dummyIpsum, ', ', @dummyIpsum, ', ', @dummyIpsum, ', ', @fieldText, ', CURRENT_TIMESTAMP), (');
-	set @counter = @counter + 1;
-end while;
-commit;
-set @insertTable = concat(@insertTable, @dummyIpsum, ', ', @dummyIpsum, ', ', @dummyIpsum, ', ', @dummyIpsum, ', ', @dummyIpsum, ', ', @fieldText, ', CURRENT_TIMESTAMP);');
+SET
+@insertTable = concat(
+    @insertTable,
+    @dummyIpsum,
+    ', ',
+    @dummyIpsum,
+    ', ',
+    @dummyIpsum,
+    ', ',
+    @dummyIpsum,
+    ', ',
+    @dummyIpsum,
+    ', ',
+    @fieldText,
+    ', CURRENT_TIMESTAMP), ('
+);
+SET
+@counter = @counter + 1;
+END while;
+
+COMMIT;
+SET
+@insertTable = concat(
+    @insertTable,
+    @dummyIpsum,
+    ', ',
+    @dummyIpsum,
+    ', ',
+    @dummyIpsum,
+    ', ',
+    @dummyIpsum,
+    ', ',
+    @dummyIpsum,
+    ', ',
+    @fieldText,
+    ', CURRENT_TIMESTAMP);'
+);
 
 while @vmax < 1 do
-	set @fullloop = 0;
-	set @vmax = 1;
-end while;
-commit;
+SET
+@fullloop = 0;
+SET
+@vmax = 1;
+END while;
 
-while @fullloopcounter < @fullloop do
-	PREPARE runinsert from @insertTable;
-	EXECUTE runinsert;
-	DEALLOCATE PREPARE runinsert;
-	set @fullloopcounter = @fullloopcounter + 1;
-end while;
-commit;
+COMMIT;
 
-set @insertTableLasted = concat('insert into test (varchar1, varchar2, varchar3, varchar4, varchar5, longblobfield, timestampfield) values (');
+while @fullloopcounter < @fullloop do PREPARE runinsert
+FROM
+@insertTable;
+
+EXECUTE runinsert;
+
+DEALLOCATE PREPARE runinsert;
+SET
+@fullloopcounter = @fullloopcounter + 1;
+END while;
+
+COMMIT;
+SET
+@insertTableLasted = concat('insert into test (varchar1, varchar2, varchar3, varchar4, varchar5, longblobfield, timestampfield) values (');
+
 while @lastinsertcounter < @lastinsert do
-	set @insertTableLasted = concat(@insertTableLasted, @dummyIpsum, ', ', @dummyIpsum, ', ', @dummyIpsum, ', ', @dummyIpsum, ', ', @dummyIpsum, ', ', @fieldText, ', CURRENT_TIMESTAMP), (');
-	set @lastinsertcounter = @lastinsertcounter + 1;
-end while;
-commit;
-set @insertTableLasted = concat(@insertTableLasted, @dummyIpsum, ', ', @dummyIpsum, ', ', @dummyIpsum, ', ', @dummyIpsum, ', ', @dummyIpsum, ', ', @fieldText, ', CURRENT_TIMESTAMP);');
+SET
+@insertTableLasted = concat(
+    @insertTableLasted,
+    @dummyIpsum,
+    ', ',
+    @dummyIpsum,
+    ', ',
+    @dummyIpsum,
+    ', ',
+    @dummyIpsum,
+    ', ',
+    @dummyIpsum,
+    ', ',
+    @fieldText,
+    ', CURRENT_TIMESTAMP), ('
+);
+SET
+@lastinsertcounter = @lastinsertcounter + 1;
+END while;
 
-while @lastinsert > 0 do
-	PREPARE runinsert from @insertTableLasted;
-	EXECUTE runinsert;
-	DEALLOCATE PREPARE runinsert;
-	set @lastinsert = 0;
-end while;
-commit;
+COMMIT;
+SET
+@insertTableLasted = concat(
+    @insertTableLasted,
+    @dummyIpsum,
+    ', ',
+    @dummyIpsum,
+    ', ',
+    @dummyIpsum,
+    ', ',
+    @dummyIpsum,
+    ', ',
+    @dummyIpsum,
+    ', ',
+    @fieldText,
+    ', CURRENT_TIMESTAMP);'
+);
 
-end #
+while @lastinsert > 0 do PREPARE runinsert
+FROM
+@insertTableLasted;
 
-delimiter ;
+EXECUTE runinsert;
 
-delimiter #
-create procedure table_create()
-begin
+DEALLOCATE PREPARE runinsert;
+SET
+@lastinsert = 0;
+END while;
 
-create table test
-(
-id int unsigned not null auto_increment primary key,
-varchar1 varchar(255),
-varchar2 varchar(255),
-varchar3 varchar(255),
-varchar4 varchar(255),
-varchar5 varchar(255),
-longblobfield longblob,
-timestampfield timestamp
-)
-engine=innodb;
+COMMIT;
+END # delimiter;
 
-set @extraSmallText = '\'test weight 50b - some text, some text, some text\'';
-set @smallText = CONCAT('\'test weight 500b - ', REPEAT('some text, some text, ', 20), '\'');
-set @regularText = CONCAT('\'test weight 10kb - ', REPEAT('some text, some text, ', 590), '\'');
-set @largeText = CONCAT('\'test weight 100kb - ', REPEAT('some text, some text, ', 4450), '\'');
+delimiter # CREATE
+    PROCEDURE table_create() BEGIN CREATE
+        TABLE
+            test(
+                id INT unsigned NOT NULL auto_increment PRIMARY KEY,
+                varchar1 VARCHAR(255),
+                varchar2 VARCHAR(255),
+                varchar3 VARCHAR(255),
+                varchar4 VARCHAR(255),
+                varchar5 VARCHAR(255),
+                longblobfield longblob,
+                timestampfield TIMESTAMP
+            ) engine = innodb;
+SET
+@extraSmallText = '\' test weight 50 b - SOME text,
+SOME text,
+SOME text\'';
+SET
+@smallText = CONCAT(
+    '\' test weight 500 b - ', REPEAT(' SOME text,
+    SOME text,
+    ', 20), ' \''
+);
+SET
+@regularText = CONCAT(
+    '\' test weight 10 kb - ', REPEAT(' SOME text,
+    SOME text,
+    ', 590), ' \''
+);
+SET
+@largeText = CONCAT(
+    '\' test weight 100 kb - ', REPEAT(' SOME text,
+    SOME text,
+    ', 4450), ' \''
+);
 
 -- TODO: change the following @allrows to control the number of records with different sizes
 -- number of 50B records
-call insert_rows(0, 5000000, @extraSmallText);
+CALL insert_rows(
+    0,
+    5000000,
+    @extraSmallText
+);
+
 -- number of 500B records
-call insert_rows(0, 50000, @smallText);
+CALL insert_rows(
+    0,
+    50000,
+    @smallText
+);
+
 -- number of 10KB records
-call insert_rows(0, 5000, @regularText);
+CALL insert_rows(
+    0,
+    5000,
+    @regularText
+);
+
 -- number of 100KB records
-call insert_rows(0, 50, @largeText);
-end #
+CALL insert_rows(
+    0,
+    50,
+    @largeText
+);
+END # delimiter;
 
-delimiter ;
+CALL table_create();
 
-call table_create();
-drop procedure if exists table_create;
-drop procedure if exists insert_rows;
+DROP
+    PROCEDURE IF EXISTS table_create;
+
+DROP
+    PROCEDURE IF EXISTS insert_rows;
 
 -- TODO: change the value to control the number of tables
-call table_copy(1);
-drop procedure if exists table_copy;
-ALTER TABLE test RENAME test_0;
+CALL table_copy(1);
+
+DROP
+    PROCEDURE IF EXISTS table_copy;
+
+ALTER TABLE
+    test RENAME test_0;
