@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import SideBar from "packages/cloud/views/layout/SideBar";
+import { LoadingPage } from "components";
 
 const MainContainer = styled.div`
   width: 100%;
@@ -20,7 +21,9 @@ const Content = styled.div`
 const MainView: React.FC = (props) => (
   <MainContainer>
     <SideBar />
-    <Content>{props.children}</Content>
+    <Content>
+      <React.Suspense fallback={LoadingPage}>{props.children}</React.Suspense>
+    </Content>
   </MainContainer>
 );
 

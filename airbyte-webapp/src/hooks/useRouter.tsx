@@ -36,7 +36,7 @@ function useRouter<T = any, P = any>(): {
     return {
       params,
       push: navigate,
-      replace: (...args) => navigate(...args),
+      replace: (path, state) => navigate(path, { ...state, replace: true }),
       pathname: location.pathname,
       query,
       location,

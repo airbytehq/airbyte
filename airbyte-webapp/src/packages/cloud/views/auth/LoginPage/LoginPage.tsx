@@ -14,6 +14,7 @@ import {
 import { FormTitle } from "packages/cloud/views/auth/components/FormTitle";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import useRouter from "hooks/useRouter";
 
 const LoginPageValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
@@ -23,6 +24,7 @@ const LoginPageValidationSchema = yup.object().shape({
 const LoginPage: React.FC = () => {
   const formatMessage = useIntl().formatMessage;
   const { login } = useAuthService();
+  const { location, replace } = useRouter();
 
   return (
     <div>
@@ -36,15 +38,17 @@ const LoginPage: React.FC = () => {
           password: "",
         }}
         validationSchema={LoginPageValidationSchema}
-        onSubmit={async (values, { setFieldError }) =>
-          login(values).catch((err) => {
-            if (err instanceof FieldError) {
-              setFieldError(err.field, err.message);
-            } else {
-              setFieldError("password", err.message);
-            }
-          })
-        }
+        onSubmit={async (values, { setFieldError }) => {
+          return login(values)
+            .then((_) => replace(location.state?.from ?? "/"))
+            .catch((err) => {
+              if (err instanceof FieldError) {
+                setFieldError(err.field, err.message);
+              } else {
+                setFieldError("password", err.message);
+              }
+            });
+        }}
         validateOnBlur
         validateOnChange={false}
       >

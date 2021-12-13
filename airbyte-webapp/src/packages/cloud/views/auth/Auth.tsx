@@ -38,7 +38,7 @@ const NewsPart = styled(Part)`
 `;
 
 const Auth: React.FC = () => {
-  const { pathname } = useRouter();
+  const { pathname, location } = useRouter();
 
   return (
     <Content>
@@ -56,7 +56,12 @@ const Auth: React.FC = () => {
                 path={CloudRoutes.FirebaseAction}
                 element={<ResetPasswordAction />}
               />
-              <Route path="*" element={<Navigate to={CloudRoutes.Login} />} />
+              <Route
+                path="*"
+                element={
+                  <Navigate to={CloudRoutes.Login} state={{ from: location }} />
+                }
+              />
             </Routes>
           </Suspense>
         </FormContent>
