@@ -134,7 +134,7 @@ class ConnectorRunner:
 
         exit_status = container.wait()
         if exit_status["StatusCode"]:
-            error = buffer.decode("utf-8") or exit_status["Error"]
+            error = buffer.decode("utf-8") if has_exception else exit_status["Error"]
             logging.error(f"Docker container was failed, "
                           f'code {exit_status["StatusCode"]}, error:\n{error}')
             if with_ext:
