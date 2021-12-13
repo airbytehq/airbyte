@@ -6,11 +6,8 @@ package io.airbyte.oauth.flows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuth2Flow;
-import io.airbyte.protocol.models.OAuthConfigSpecification;
-import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -47,7 +44,7 @@ public class MicrosoftTeamsOAuthFlow extends BaseOAuth2Flow {
                                     final JsonNode inputOAuthConfiguration)
       throws IOException {
 
-    String tenantId;
+    final String tenantId;
     try {
       tenantId = getConfigValueUnsafe(inputOAuthConfiguration, fieldName);
     } catch (final IllegalArgumentException e) {
@@ -135,7 +132,7 @@ public class MicrosoftTeamsOAuthFlow extends BaseOAuth2Flow {
    */
   @Override
   protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
-    String tenantId = getConfigValueUnsafe(inputOAuthConfiguration, fieldName);
+    final String tenantId = getConfigValueUnsafe(inputOAuthConfiguration, fieldName);
     return "https://login.microsoftonline.com/" + tenantId + "/oauth2/v2.0/token";
   }
 
