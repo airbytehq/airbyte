@@ -151,28 +151,25 @@ Create a default fully qualified minio name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
 {{- define "airbyte.minio.fullname" -}}
-{{- $name := default "minio" .Values.minio.nameOverride -}}
+{{- $name := default "minio" .Values.logs.minio.nameOverride -}}
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
 Add environment variables to configure minio
 */}}
-{{- define "airbyte.minio.host" -}}
-{{- ternary (include "airbyte.minio.fullname" .) .Values.externalMinio.host .Values.minio.enabled -}}
-{{- end -}}
-
-{{/*
-Add environment variables to configure minio
-*/}}
-{{- define "airbyte.minio.port" -}}
-{{- ternary "9000" .Values.externalMinio.port .Values.minio.enabled -}}
-{{- end -}}
-
 {{- define "airbyte.minio.endpoint" -}}
-{{- $host := (include "airbyte.minio.host" .) -}}
-{{- $port := (include "airbyte.minio.port" .) -}}
-{{- printf "http://%s:%s" $host $port -}}
+{{- if .Values.logs.minio.enabled -}}
+    {{- printf "http://%s:%s" (include "airbyte.minio.fullname" .) 9000 -}}
+{{- else if .Values.logs.externalMinio.enabled -}}
+    {{- printf "http://%s:%s" .Values.logs.externalMinio.host .Values.logs.externalMinio.port -}}
+{{- else -}}
+    {{- printf "" -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "airbyte.s3PathStyleAccess" -}}
+{{- ternary "true" "" (or .Values.logs.minio.enabled .Values.logs.externalMinio.enabled) -}}
 {{- end -}}
 
 {{/*
