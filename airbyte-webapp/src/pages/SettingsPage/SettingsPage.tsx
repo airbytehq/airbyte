@@ -120,7 +120,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
               )}
 
               <Route
-                index
+                path="*"
                 element={
                   <Navigate
                     to={

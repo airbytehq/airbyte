@@ -25,6 +25,7 @@ import ResourcesPopup, {
   Item,
   Icon,
 } from "views/layout/SideBar/components/ResourcesPopup";
+import { RoutePaths } from "pages/routes";
 
 const CreditsIcon = styled(FontAwesomeIcon)`
   font-size: 21px;
@@ -108,8 +109,8 @@ const SideBar: React.FC = () => {
         <Link
           to={
             workspace.displaySetupWizard
-              ? CloudRoutes.Onboarding
-              : CloudRoutes.Connections
+              ? RoutePaths.Onboarding
+              : RoutePaths.Connections
           }
         >
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
@@ -122,7 +123,7 @@ const SideBar: React.FC = () => {
         <Menu>
           {workspace.displaySetupWizard ? (
             <li>
-              <MenuItem to={CloudRoutes.Onboarding}>
+              <MenuItem to={RoutePaths.Onboarding}>
                 <OnboardingIcon />
                 <Text>
                   <FormattedMessage id="sidebar.onboarding" />
@@ -131,7 +132,7 @@ const SideBar: React.FC = () => {
             </li>
           ) : null}
           <li>
-            <MenuItem to={CloudRoutes.Connections}>
+            <MenuItem to={RoutePaths.Connections}>
               <ConnectionsIcon />
               <Text>
                 <FormattedMessage id="sidebar.connections" />
@@ -139,7 +140,7 @@ const SideBar: React.FC = () => {
             </MenuItem>
           </li>
           <li>
-            <MenuItem to={CloudRoutes.Source}>
+            <MenuItem to={RoutePaths.Source}>
               <SourceIcon />
               <Text>
                 <FormattedMessage id="sidebar.sources" />
@@ -147,7 +148,7 @@ const SideBar: React.FC = () => {
             </MenuItem>
           </li>
           <li>
-            <MenuItem to={CloudRoutes.Destination}>
+            <MenuItem to={RoutePaths.Destination}>
               <DestinationIcon />
               <Text>
                 <FormattedMessage id="sidebar.destinations" />
@@ -197,7 +198,7 @@ const SideBar: React.FC = () => {
         </li>
         <li>
           <MenuItem
-            to={`${CloudRoutes.Settings}${CloudRoutes.Account}`}
+            to={RoutePaths.Settings}
             // isActive={(_, location) =>
             //   location.pathname.startsWith(CloudRoutes.Settings)
             // }

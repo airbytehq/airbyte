@@ -38,7 +38,7 @@ const CreditsPage: React.FC = () => {
     {
       routes: [
         {
-          path: `${CloudRoutes.Credits}`,
+          path: ``,
           name: <FormattedMessage id="credits.creditUsage" />,
           component: CreditsUsagePage,
         },
@@ -65,18 +65,25 @@ const CreditsPage: React.FC = () => {
             <Suspense fallback={<LoadingPage />}>
               <Routes>
                 {menuItems.flatMap((menuItem) =>
-                  menuItem.routes.map((route) => (
-                    <Route key={`${route.path}`} path={`${route.path}`}>
-                      {route.component}
-                    </Route>
+                  menuItem.routes.map(({ path, component: Component }) => (
+                    <Route
+                      key={`${path}`}
+                      path={`${path}`}
+                      element={<Component />}
+                    />
                   ))
                 )}
 
-                <Navigate
-                  to={
-                    firstRoute
-                      ? `${menuItems?.[0].routes?.[0]?.path}`
-                      : CloudRoutes.Root
+                <Route
+                  path="*"
+                  element={
+                    <Navigate
+                      to={
+                        firstRoute
+                          ? `${menuItems?.[0].routes?.[0]?.path}`
+                          : CloudRoutes.Root
+                      }
+                    />
                   }
                 />
               </Routes>

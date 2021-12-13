@@ -41,36 +41,30 @@ const Auth: React.FC = () => {
   const { pathname } = useRouter();
 
   return (
-    <Routes>
-      <Route>
-        <Content>
-          <Part>
-            <FormContent toLogin={pathname === CloudRoutes.Signup}>
-              <Suspense fallback={<LoadingPage />}>
-                <Routes>
-                  <Route path={CloudRoutes.Login}>
-                    <LoginPage />
-                  </Route>
-                  <Route path={CloudRoutes.Signup}>
-                    <SignupPage />
-                  </Route>
-                  <Route path={CloudRoutes.ResetPassword}>
-                    <ResetPasswordPage />
-                  </Route>
-                  <Route path={CloudRoutes.FirebaseAction}>
-                    <ResetPasswordAction />
-                  </Route>
-                  <Navigate to={CloudRoutes.Login} />
-                </Routes>
-              </Suspense>
-            </FormContent>
-          </Part>
-          <NewsPart>
-            <News />
-          </NewsPart>
-        </Content>
-      </Route>
-    </Routes>
+    <Content>
+      <Part>
+        <FormContent toLogin={pathname === `${CloudRoutes.Signup}`}>
+          <Suspense fallback={<LoadingPage />}>
+            <Routes>
+              <Route path={CloudRoutes.Login} element={<LoginPage />} />
+              <Route path={CloudRoutes.Signup} element={<SignupPage />} />
+              <Route
+                path={CloudRoutes.ResetPassword}
+                element={<ResetPasswordPage />}
+              />
+              <Route
+                path={CloudRoutes.FirebaseAction}
+                element={<ResetPasswordAction />}
+              />
+              <Route path="*" element={<Navigate to={CloudRoutes.Login} />} />
+            </Routes>
+          </Suspense>
+        </FormContent>
+      </Part>
+      <NewsPart>
+        <News />
+      </NewsPart>
+    </Content>
   );
 };
 

@@ -6,8 +6,7 @@ import WorkspaceResource, { Workspace } from "core/resources/Workspace";
 import useRouter from "hooks/useRouter";
 
 type Context = {
-  // currentWorkspaceId: string | null;
-  selectWorkspace: (workspaceId: string | null) => void;
+  selectWorkspace: (workspaceId?: string | null) => void;
 };
 
 export const WorkspaceServiceContext = React.createContext<Context | null>(
@@ -22,7 +21,7 @@ export const WorkspaceServiceProvider: React.FC = ({ children }) => {
   const ctx = useMemo<Context>(
     () => ({
       selectWorkspace: async (workspaceId) => {
-        push(workspaceId ?? "");
+        push(workspaceId ?? "/");
         await queryClient.resetQueries();
         resetCache();
       },
@@ -49,8 +48,8 @@ export const useWorkspaceService = (): Context => {
 };
 
 export const useCurrentWorkspace = (): Workspace => {
-  const { query } = useRouter();
-  const { workspaceId } = query as any;
+  const { params } = useRouter<unknown, { workspaceId: string }>();
+  const { workspaceId } = params;
 
   // @ts-ignore
   return useResource(
@@ -59,7 +58,7 @@ export const useCurrentWorkspace = (): Workspace => {
       ? {
           workspaceId: workspaceId,
         }
-      : undefined
+      : null
   );
 };
 

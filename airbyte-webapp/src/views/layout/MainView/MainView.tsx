@@ -21,9 +21,9 @@ const Content = styled.div`
 const MainView: React.FC = (props) => (
   <MainContainer>
     <SideBar />
-    <Suspense fallback={<LoadingPage />}>
-      <Content>{props.children}</Content>
-    </Suspense>
+    <Content>
+      <Suspense fallback={<LoadingPage />}>{props.children}</Suspense>
+    </Content>
   </MainContainer>
 );
 
