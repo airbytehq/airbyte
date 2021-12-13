@@ -22,7 +22,7 @@ Add ignored fields for full refresh test (unit tests)
 Add ignored fields for full refresh test
 
 ## 0.1.25
-Fix incorrect nested strucutres compare.
+Fix incorrect nested structures compare.
 
 ## 0.1.24
 Improve message about errors in the stream's schema: https://github.com/airbytehq/airbyte/pull/6934
@@ -43,7 +43,7 @@ Add oauth init flow parameter verification for spec.
 Assert a non-empty overlap between the fields present in the record and the declared json schema.
 
 ## 0.1.18
-Fix checking date-time format againt nullable field.
+Fix checking date-time format against nullable field.
 
 ## 0.1.17
 Fix serialize function for acceptance-tests: https://github.com/airbytehq/airbyte/pull/5738
