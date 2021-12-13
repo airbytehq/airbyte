@@ -40,7 +40,7 @@
       },
       "insights_lookback_window": {
         "title": "Insights Lookback Window",
-        "description": "The number of days between when a user views or clicks an ad and takes an action.",
+        "description": "The attribution window for actions. That is, the maximum number of days allowed between when a user views or clicks an ad, and takes an action, to attribute their action to the ad.",
         "default": 28,
         "minimum": 0,
         "maximum": 28,
@@ -56,7 +56,7 @@
       },
       "custom_insights": {
         "title": "Custom Insights",
-        "description": "The list which contains insights entries, each entry must have the Name and can contains Fields, Breakdowns or Action Breakdowns.",
+        "description": "A list which contains insights entries, each entry must have the Name and can contains Fields, Breakdowns or Action Breakdowns.",
         "type": "array",
         "items": {
           "title": "InsightConfig",
@@ -87,7 +87,7 @@
             },
             "action_breakdowns": {
               "title": "Action Breakdowns",
-              "description": "A list of chosen  Action Breakdowns.",
+              "description": "A list of chosen Action Breakdowns.",
               "default": [],
               "type": "array",
               "items": {
