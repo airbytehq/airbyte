@@ -160,7 +160,7 @@ class SourceMyhours(AbstractSource):
         return False, "Token not found"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        access_token = self.get_access_token(config)
+        token_value, token_exception = self.get_access_token(config)
 
         auth = TokenAuthenticator(token=access_token[0])
         return [
