@@ -13,7 +13,7 @@
       "description": "Address line 1 (Street address/PO Box)."
     },
     "street_address2": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Address line 2 (Apartment/Suite/Unit/Building)."
     },
     "city": {
@@ -21,23 +21,23 @@
       "description": "City/Town."
     },
     "state": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "State/County/Province/Region."
     },
     "country": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Country."
     },
     "country_code": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Two-letter country code (ISO 3166-1 Alpha-2)."
     },
     "zip": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "ZIP or postal code."
     },
     "unlocode": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
     },
     "timezone": {
@@ -45,7 +45,7 @@
       "description": "Timezone for this address"
     },
     "ref": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Your reference for the address, as set in your network tab"
     }
   }

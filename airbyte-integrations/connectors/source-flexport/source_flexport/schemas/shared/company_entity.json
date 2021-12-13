@@ -18,7 +18,13 @@
     },
     "mailing_address": {
       "description": "Address of the company entity.",
-      "$ref": "address.json"
+      "oneOf": [
+        {
+          "type": "null"
+        }, {
+          "$ref": "address.json"
+        }
+      ]
     },
     "ref": {
       "type": "string",
