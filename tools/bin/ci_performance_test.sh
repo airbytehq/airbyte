@@ -50,10 +50,10 @@ else
   elif [[ "$con" == *"connectors"* ]]; then
     connector_name=$(echo $con | cut -d / -f 2)
     selected_performance_test=$(echo "$all_performance_tests" | grep "^$connector_name$" || echo "")
-    performanceTestCommand="$(_to_gradle_path "airbyte-integrations/$con $firstarg $secondarg" performanceTest)"
+    performanceTestCommand="$(_to_gradle_path "airbyte-integrations/$con $cpulimit $memorylimit" performanceTest)"
   else
     selected_performance_test=$(echo "$all_performance_tests" | grep "^$con$" || echo "")
-    performanceTestCommand=":airbyte-integrations:connectors:$con:performanceTest $firstarg $secondarg"
+    performanceTestCommand=":airbyte-integrations:connectors:$con:performanceTest $cpulimit $memorylimit"
   fi
   if [ -n "$selected_performance_test" ] ; then
     echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand"
