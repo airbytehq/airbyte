@@ -11,7 +11,8 @@ RUN apk --no-cache upgrade \
 
 COPY setup.py ./
 # install necessary packages to a temporary folder
-RUN pip install --prefix=/install .
+RUN python setup.py egg_info
+RUN pip install --prefix=/install -r *.egg-info/requires.txt
 
 # build a clean environment
 FROM base
@@ -29,14 +30,15 @@ ENV ACCEPTANCE_TEST_DOCKER_CONTAINER 1
 
 # copy payload code only
 COPY setup.py ./
-COPY scripts/ /scripts
+RUN cat setup.py
+# COPY scripts/ /scripts
 COPY pytest.ini ./
 COPY source_acceptance_test ./source_acceptance_test
-
+RUN pip install .
 
 LABEL io.airbyte.version=0.1.31
 LABEL io.airbyte.name=airbyte/source-acceptance-test
 
-ENTRYPOINT ["bash", "/scripts/entrypoint.sh"]
+ENTRYPOINT ["airbyte_tests"]
 
 # ENTRYPOINT ["python", "-m", "pytest", "-p", "source_acceptance_test.plugin"]

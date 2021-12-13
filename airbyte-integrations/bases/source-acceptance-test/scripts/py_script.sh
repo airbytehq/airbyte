@@ -8,7 +8,6 @@ shift
 CODE_FOLDER="/data/"
 CONNECTOR_FOLDER="${CODE_FOLDER}/code_folder"
 ACCEPTANCE_TESTS_FOLDER="${CODE_FOLDER}/source_acceptance_test"
-ls -hal ${ACCEPTANCE_TESTS_FOLDER}
 
 PY_ACCEPTANCE_FILE="${CONNECTOR_FOLDER}/integration_tests/acceptance.py"
 echo "try to find a acceptance file: ${PY_ACCEPTANCE_FILE}"

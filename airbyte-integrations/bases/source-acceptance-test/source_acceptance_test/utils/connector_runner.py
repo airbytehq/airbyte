@@ -9,11 +9,10 @@ import logging
 import re
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 from docker.errors import ContainerError
+from docker.models.containers import Container
 from pathlib import Path
 from pydantic import ValidationError
 from typing import Iterable, List, Mapping, Optional
-
-CONTAINER_PREFIX = "airbyte_tests_"
 
 
 class ConnectorRunner:
@@ -93,45 +92,58 @@ class ConnectorRunner:
     def run(self, cmd, config=None, state=None, catalog=None, **kwargs) -> Iterable[AirbyteMessage]:
         self._runs += 1
         volumes = self._prepare_volumes(config, state, catalog)
+        logging.debug(f"Docker run {self._image}: \n{cmd}\n"
+                      f"input: {self.input_folder}\noutput: {self.output_folder}")
 
-        logging.info(f"Docker run: \n{cmd}\n"
-                     f"input: {self.input_folder}\noutput: {self.output_folder}")
-
-        container = self._client.containers.create(
+        container = self._client.containers.run(
             image=self._image, command=cmd,
-            working_dir="/data",
+            working_dir="/data", volumes=volumes,
             auto_remove=True, detach=True,
-            **kwargs
+            **kwargs,
         )
 
-        for line in container.restart(
-                stdout=True, stderr=True,
-                stream=True, logs=True,
-                remove=True,
-        ):
-            line = line.strip().decode()
-            try:
-                message = AirbyteMessage.parse_raw(line)
-            except ValidationError as exc:
-                logging.warning("Unable to parse connector's output %s, error: %s", line, exc)
-                continue
+        with open(self.output_folder / "raw", "wb+") as f:
+            for line in self.read(container, command=cmd):
+                f.write(line.encode())
+                try:
+                    yield AirbyteMessage.parse_raw(line)
+                except ValidationError as exc:
+                    logging.warning("Unable to parse connector's output %s, error: %s", line, exc)
 
-            if message.type == Type.LOG and "Traceback (most recent call last)" in message.log.message:
-                logging.error(message.log.message.replace("\\\\n", "\n"))
+    @classmethod
+    def read(cls, container: Container, command: str = None, with_ext: bool = True) -> Iterable[str]:
+        buffer = b''
+        has_exception = False
+        for chunk in container.logs(
+                stdout=True, stderr=True,
+                stream=True, follow=True
+        ):
+            buffer += chunk
+            found = buffer.find(b"\n")
+            if found <= -1:
+                continue
+            line = buffer[:found].decode("utf-8")
+            if has_exception or "Traceback (most recent call last)" in line:
+                has_exception = True
             else:
-                yield message
+                yield line
+                buffer = buffer[found + 1:]
+        if not has_exception and buffer:
+            yield buffer.decode("utf-8")
 
         exit_status = container.wait()
         if exit_status["StatusCode"]:
-            logging.error(f"Docker container was failed with cmd: {cmd}, "
-                          f'code {exit_status["StatusCode"]}, error: {exit_status["Error"]}')
-            raise ContainerError(
-                container=container,
-                exit_status=exit_status["StatusCode"],
-                command=cmd,
-                image=self._image,
-                stderr=exit_status["Error"],
-            )
+            error = buffer.decode("utf-8") or exit_status["Error"]
+            logging.error(f"Docker container was failed, "
+                          f'code {exit_status["StatusCode"]}, error:\n{error}')
+            if with_ext:
+                raise ContainerError(
+                    container=container,
+                    exit_status=exit_status["StatusCode"],
+                    command=command,
+                    image=container.image,
+                    stderr=error,
+                )
 
     @property
     def env_variables(self):
