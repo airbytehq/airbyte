@@ -159,5 +159,5 @@ Token acquiring implemented by [instantiate](https://docs.microsoft.com/en-us/az
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :--- | :--- |
+| 0.2.4   | 2021-12-07 | [7807](https://github.com/airbytehq/airbyte/pull/7807) | Implement OAuth support |
 | 0.2.3   | 2021-12-06 | [8469](https://github.com/airbytehq/airbyte/pull/8469) | Migrate to the CDK |
-
