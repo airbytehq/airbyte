@@ -66,15 +66,15 @@ public abstract class S3StreamCopier implements StreamCopier {
   private final StagingFilenameGenerator filenameGenerator;
 
   public S3StreamCopier(final String stagingFolder,
-      final DestinationSyncMode destSyncMode,
-      final String schema,
-      final String streamName,
-      final String s3FileName,
-      final AmazonS3 client,
-      final JdbcDatabase db,
-      final S3DestinationConfig s3Config,
-      final ExtendedNameTransformer nameTransformer,
-      final SqlOperations sqlOperations) {
+                        final DestinationSyncMode destSyncMode,
+                        final String schema,
+                        final String streamName,
+                        final String s3FileName,
+                        final AmazonS3 client,
+                        final JdbcDatabase db,
+                        final S3DestinationConfig s3Config,
+                        final ExtendedNameTransformer nameTransformer,
+                        final SqlOperations sqlOperations) {
     this.destSyncMode = destSyncMode;
     this.schemaName = schema;
     this.streamName = streamName;
@@ -98,7 +98,7 @@ public abstract class S3StreamCopier implements StreamCopier {
     final var name = prepareS3StagingFile();
     if (!s3StagingFiles.contains(name)) {
       s3StagingFiles.add(name);
-      LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
+      LOGGER.info("S3 upload part size: {} MB", s3Config.partSize());
       // The stream transfer manager lets us greedily stream into S3. The native AWS SDK does not
       // have support for streaming multipart uploads;
       // The alternative is first writing the entire output to disk before loading into S3. This is not
@@ -106,10 +106,10 @@ public abstract class S3StreamCopier implements StreamCopier {
       // Data is chunked into parts. A part is sent off to a queue to be uploaded once it has reached it's
       // configured part size.
       // Memory consumption is queue capacity * part size = 10 * 10 = 100 MB at current configurations.
-      final var manager = new StreamTransferManager(s3Config.getBucketName(), name, s3Client)
+      final var manager = new StreamTransferManager(s3Config.bucketName(), name, s3Client)
           .numUploadThreads(DEFAULT_UPLOAD_THREADS)
           .queueCapacity(DEFAULT_QUEUE_CAPACITY)
-          .partSize(s3Config.getPartSize());
+          .partSize(s3Config.partSize());
       multipartUploadManagers.put(name, manager);
       final var outputStream = manager.getMultiPartOutputStreams().get(0);
       // We only need one output stream as we only have one input stream. This is reasonably performant.
@@ -160,7 +160,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   public void copyStagingFileToTemporaryTable() throws Exception {
     LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .", tmpTableName, streamName, schemaName);
     s3StagingFiles.forEach(s3StagingFile -> Exceptions.toRuntime(() -> {
-      copyS3CsvFileIntoTable(db, getFullS3Path(s3Config.getBucketName(), s3StagingFile), schemaName, tmpTableName, s3Config);
+      copyS3CsvFileIntoTable(db, getFullS3Path(s3Config.bucketName(), s3StagingFile), schemaName, tmpTableName, s3Config);
     }));
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
@@ -191,8 +191,8 @@ public abstract class S3StreamCopier implements StreamCopier {
   public void removeFileAndDropTmpTable() throws Exception {
     s3StagingFiles.forEach(s3StagingFile -> {
       LOGGER.info("Begin cleaning s3 staging file {}.", s3StagingFile);
-      if (s3Client.doesObjectExist(s3Config.getBucketName(), s3StagingFile)) {
-        s3Client.deleteObject(s3Config.getBucketName(), s3StagingFile);
+      if (s3Client.doesObjectExist(s3Config.bucketName(), s3StagingFile)) {
+        s3Client.deleteObject(s3Config.bucketName(), s3StagingFile);
       }
       LOGGER.info("S3 staging file {} cleaned.", s3StagingFile);
     });
@@ -224,10 +224,10 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   public abstract void copyS3CsvFileIntoTable(JdbcDatabase database,
-      String s3FileLocation,
-      String schema,
-      String tableName,
-      S3DestinationConfig s3Config)
+                                              String s3FileLocation,
+                                              String schema,
+                                              String tableName,
+                                              S3DestinationConfig s3Config)
       throws SQLException;
 
 }

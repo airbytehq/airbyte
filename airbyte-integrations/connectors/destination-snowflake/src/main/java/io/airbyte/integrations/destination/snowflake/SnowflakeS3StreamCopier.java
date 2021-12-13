@@ -22,14 +22,14 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier {
   private static final int FILE_PREFIX_LENGTH = 5;
 
   public SnowflakeS3StreamCopier(final String stagingFolder,
-      final DestinationSyncMode destSyncMode,
-      final String schema,
-      final String streamName,
-      final AmazonS3 client,
-      final JdbcDatabase db,
-      final S3DestinationConfig s3Config,
-      final ExtendedNameTransformer nameTransformer,
-      final SqlOperations sqlOperations) {
+                                 final DestinationSyncMode destSyncMode,
+                                 final String schema,
+                                 final String streamName,
+                                 final AmazonS3 client,
+                                 final JdbcDatabase db,
+                                 final S3DestinationConfig s3Config,
+                                 final ExtendedNameTransformer nameTransformer,
+                                 final SqlOperations sqlOperations) {
     super(stagingFolder, destSyncMode, schema, streamName, Strings.addRandomSuffix("", "", FILE_PREFIX_LENGTH) + "_" + streamName,
         client, db, s3Config, nameTransformer, sqlOperations);
   }
@@ -49,8 +49,8 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier {
         schema,
         tableName,
         s3FileLocation,
-        s3Config.getAccessKeyId(),
-        s3Config.getSecretAccessKey());
+        s3Config.accessKeyId(),
+        s3Config.secretAccessKey());
 
     database.execute(copyQuery);
   }

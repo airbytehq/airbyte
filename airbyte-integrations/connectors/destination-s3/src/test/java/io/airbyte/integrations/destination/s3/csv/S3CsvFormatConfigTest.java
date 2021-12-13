@@ -5,7 +5,8 @@
 package io.airbyte.integrations.destination.s3.csv;
 
 import static com.amazonaws.services.s3.internal.Constants.MB;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -47,13 +48,13 @@ public class S3CsvFormatConfigTest {
         .getS3DestinationConfig(config);
     ConfigTestUtils.assertBaseConfig(s3DestinationConfig);
 
-    final S3FormatConfig formatConfig = s3DestinationConfig.getFormatConfig();
+    final S3FormatConfig formatConfig = s3DestinationConfig.formatConfig();
     assertEquals("CSV", formatConfig.getFormat().name());
     assertEquals(6, formatConfig.getPartSize());
     // Assert that is set properly in config
     final StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
-        s3DestinationConfig.getBucketName(), "objectKey", null,
-        s3DestinationConfig.getFormatConfig().getPartSize());
+        s3DestinationConfig.bucketName(), "objectKey", null,
+        s3DestinationConfig.formatConfig().getPartSize());
 
     final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * 6, partSizeBytes);
@@ -72,8 +73,8 @@ public class S3CsvFormatConfigTest {
     ConfigTestUtils.assertBaseConfig(s3DestinationConfig);
 
     final StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
-        s3DestinationConfig.getBucketName(), "objectKey", null,
-        s3DestinationConfig.getFormatConfig().getPartSize());
+        s3DestinationConfig.bucketName(), "objectKey", null,
+        s3DestinationConfig.formatConfig().getPartSize());
 
     final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * 5, partSizeBytes); // 5MB is a default value if nothing provided explicitly

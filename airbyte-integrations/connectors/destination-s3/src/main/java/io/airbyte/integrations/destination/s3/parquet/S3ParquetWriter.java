@@ -51,14 +51,14 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
     this.outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.PARQUET);
     final String objectKey = String.join("/", outputPrefix, outputFilename);
 
-    LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(),
+    LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.bucketName(),
         objectKey);
 
     final URI uri = new URI(
-        String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename));
+        String.format("s3a://%s/%s/%s", config.bucketName(), outputPrefix, outputFilename));
     final Path path = new Path(uri);
 
-    final S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
+    final S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.formatConfig();
     final Configuration hadoopConfig = getHadoopConfig(config);
     this.parquetWriter = AvroParquetWriter.<GenericData.Record>builder(HadoopOutputFile.fromPath(path, hadoopConfig))
         .withSchema(schema)
@@ -75,12 +75,12 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
 
   public static Configuration getHadoopConfig(final S3DestinationConfig config) {
     final Configuration hadoopConfig = new Configuration();
-    hadoopConfig.set(Constants.ACCESS_KEY, config.getAccessKeyId());
-    hadoopConfig.set(Constants.SECRET_KEY, config.getSecretAccessKey());
-    if (config.getEndpoint().isEmpty()) {
-      hadoopConfig.set(Constants.ENDPOINT, String.format("s3.%s.amazonaws.com", config.getBucketRegion()));
+    hadoopConfig.set(Constants.ACCESS_KEY, config.accessKeyId());
+    hadoopConfig.set(Constants.SECRET_KEY, config.secretAccessKey());
+    if (config.endpoint().isEmpty()) {
+      hadoopConfig.set(Constants.ENDPOINT, String.format("s3.%s.amazonaws.com", config.bucketRegion()));
     } else {
-      hadoopConfig.set(Constants.ENDPOINT, config.getEndpoint());
+      hadoopConfig.set(Constants.ENDPOINT, config.endpoint());
       hadoopConfig.set(Constants.PATH_STYLE_ACCESS, "true");
     }
     hadoopConfig.set(Constants.AWS_CREDENTIALS_PROVIDER,

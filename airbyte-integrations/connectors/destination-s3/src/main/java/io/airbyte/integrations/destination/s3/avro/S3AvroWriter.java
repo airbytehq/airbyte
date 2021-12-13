@@ -47,16 +47,16 @@ public class S3AvroWriter extends BaseS3Writer implements S3Writer {
     final String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.AVRO);
     final String objectKey = String.join("/", outputPrefix, outputFilename);
 
-    LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(),
+    LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.bucketName(),
         objectKey);
 
     this.avroRecordFactory = new AvroRecordFactory(schema, converter);
     this.uploadManager = S3StreamTransferManagerHelper.getDefault(
-        config.getBucketName(), objectKey, s3Client, config.getFormatConfig().getPartSize());
+        config.bucketName(), objectKey, s3Client, config.formatConfig().getPartSize());
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
 
-    final S3AvroFormatConfig formatConfig = (S3AvroFormatConfig) config.getFormatConfig();
+    final S3AvroFormatConfig formatConfig = (S3AvroFormatConfig) config.formatConfig();
     // The DataFileWriter always uses binary encoding.
     // If json encoding is needed in the future, use the GenericDatumWriter directly.
     this.dataFileWriter = new DataFileWriter<>(new GenericDatumWriter<Record>())

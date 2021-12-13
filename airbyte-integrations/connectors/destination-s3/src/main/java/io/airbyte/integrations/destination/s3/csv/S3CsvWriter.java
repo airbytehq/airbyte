@@ -41,18 +41,18 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
       throws IOException {
     super(config, s3Client, configuredStream);
 
-    final S3CsvFormatConfig formatConfig = (S3CsvFormatConfig) config.getFormatConfig();
+    final S3CsvFormatConfig formatConfig = (S3CsvFormatConfig) config.formatConfig();
     this.csvSheetGenerator = CsvSheetGenerator.Factory.create(configuredStream.getStream().getJsonSchema(),
         formatConfig);
 
     final String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.CSV);
     final String objectKey = String.join("/", outputPrefix, outputFilename);
 
-    LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(),
+    LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.bucketName(),
         objectKey);
 
     this.uploadManager = S3StreamTransferManagerHelper.getDefault(
-        config.getBucketName(), objectKey, s3Client, config.getFormatConfig().getPartSize());
+        config.bucketName(), objectKey, s3Client, config.formatConfig().getPartSize());
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
     this.csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8),

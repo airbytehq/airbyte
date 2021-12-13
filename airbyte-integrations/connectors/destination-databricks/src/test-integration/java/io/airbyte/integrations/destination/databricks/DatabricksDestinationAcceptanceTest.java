@@ -104,7 +104,7 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
     this.configJson = configJson;
     this.databricksConfig = DatabricksDestinationConfig.get(configJson);
     this.s3Config = databricksConfig.getS3DestinationConfig();
-    LOGGER.info("Test full path: s3://{}/{}", s3Config.getBucketName(), s3Config.getBucketPath());
+    LOGGER.info("Test full path: s3://{}/{}", s3Config.bucketName(), s3Config.bucketPath());
 
     this.s3Client = s3Config.getS3Client();
   }
@@ -114,17 +114,17 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
     // clean up s3
     final List<KeyVersion> keysToDelete = new LinkedList<>();
     final List<S3ObjectSummary> objects = s3Client
-        .listObjects(s3Config.getBucketName(), s3Config.getBucketPath())
+        .listObjects(s3Config.bucketName(), s3Config.bucketPath())
         .getObjectSummaries();
     for (final S3ObjectSummary object : objects) {
       keysToDelete.add(new KeyVersion(object.getKey()));
     }
 
     if (keysToDelete.size() > 0) {
-      LOGGER.info("Tearing down test bucket path: {}/{}", s3Config.getBucketName(),
-          s3Config.getBucketPath());
+      LOGGER.info("Tearing down test bucket path: {}/{}", s3Config.bucketName(),
+          s3Config.bucketPath());
       final DeleteObjectsResult result = s3Client
-          .deleteObjects(new DeleteObjectsRequest(s3Config.getBucketName()).withKeys(keysToDelete));
+          .deleteObjects(new DeleteObjectsRequest(s3Config.bucketName()).withKeys(keysToDelete));
       LOGGER.info("Deleted {} file(s).", result.getDeletedObjects().size());
     }
 

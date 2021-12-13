@@ -51,7 +51,7 @@ public abstract class BaseS3Writer implements S3Writer {
     this.s3Client = s3Client;
     this.stream = configuredStream.getStream();
     this.syncMode = configuredStream.getDestinationSyncMode();
-    this.outputPrefix = S3OutputPathHelper.getOutputPrefix(config.getBucketPath(), stream);
+    this.outputPrefix = S3OutputPathHelper.getOutputPrefix(config.bucketPath(), stream);
   }
 
   public String getOutputPrefix() {
@@ -66,7 +66,7 @@ public abstract class BaseS3Writer implements S3Writer {
    */
   @Override
   public void initialize() {
-    final String bucket = config.getBucketName();
+    final String bucket = config.bucketName();
     if (!s3Client.doesBucketExistV2(bucket)) {
       LOGGER.info("Bucket {} does not exist; creating...", bucket);
       s3Client.createBucket(bucket);

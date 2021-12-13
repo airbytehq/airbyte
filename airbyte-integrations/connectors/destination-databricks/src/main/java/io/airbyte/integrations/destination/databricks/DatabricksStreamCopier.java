@@ -23,9 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This implementation is similar to
- * {@link io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier}. The difference is that
- * this implementation creates Parquet staging files, instead of CSV ones.
+ * This implementation is similar to {@link io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier}. The difference is that this
+ * implementation creates Parquet staging files, instead of CSV ones.
  * <p>
  * </p>
  * It does the following operations:
@@ -88,9 +87,9 @@ public class DatabricksStreamCopier implements StreamCopier {
     this.parquetWriter = (S3ParquetWriter) writerFactory.create(stagingS3Config, s3Client, configuredStream, uploadTime);
 
     this.tmpTableLocation = String.format("s3://%s/%s",
-        s3Config.getBucketName(), parquetWriter.getOutputPrefix());
+        s3Config.bucketName(), parquetWriter.getOutputPrefix());
     this.destTableLocation = String.format("s3://%s/%s/%s/%s",
-        s3Config.getBucketName(), s3Config.getBucketPath(), databricksConfig.getDatabaseSchema(), streamName);
+        s3Config.bucketName(), s3Config.bucketPath(), databricksConfig.getDatabaseSchema(), streamName);
 
     LOGGER.info("[Stream {}] Database schema: {}", streamName, schemaName);
     LOGGER.info("[Stream {}] Parquet schema: {}", streamName, parquetWriter.getSchema());
@@ -102,7 +101,7 @@ public class DatabricksStreamCopier implements StreamCopier {
 
   @Override
   public String prepareStagingFile() {
-    return String.join("/", s3Config.getBucketPath(), stagingFolder);
+    return String.join("/", s3Config.bucketPath(), stagingFolder);
   }
 
   @Override
@@ -188,22 +187,22 @@ public class DatabricksStreamCopier implements StreamCopier {
       sqlOperations.dropTableIfExists(database, schemaName, tmpTableName);
 
       LOGGER.info("[Stream {}] Deleting staging file: {}", streamName, parquetWriter.getOutputFilePath());
-      s3Client.deleteObject(s3Config.getBucketName(), parquetWriter.getOutputFilePath());
+      s3Client.deleteObject(s3Config.bucketName(), parquetWriter.getOutputFilePath());
     }
   }
 
   /**
-   * The staging data location is s3://<bucket-name>/<bucket-path>/<staging-folder>. This method
-   * creates an {@link S3DestinationConfig} whose bucket path is <bucket-path>/<staging-folder>.
+   * The staging data location is s3://<bucket-name>/<bucket-path>/<staging-folder>. This method creates an {@link S3DestinationConfig} whose bucket
+   * path is <bucket-path>/<staging-folder>.
    */
   static S3DestinationConfig getStagingS3DestinationConfig(final S3DestinationConfig config, final String stagingFolder) {
     return new S3DestinationConfig(
-        config.getEndpoint(),
-        config.getBucketName(),
-        String.join("/", config.getBucketPath(), stagingFolder),
-        config.getBucketRegion(),
-        config.getAccessKeyId(),
-        config.getSecretAccessKey(),
+        config.endpoint(),
+        config.bucketName(),
+        String.join("/", config.bucketPath(), stagingFolder),
+        config.bucketRegion(),
+        config.accessKeyId(),
+        config.secretAccessKey(),
         // use default parquet format config
         new S3ParquetFormatConfig(MAPPER.createObjectNode()));
   }

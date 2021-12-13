@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * When adding a new S3 destination acceptance test, extend this class and do the following:
  * <li>Implement {@link #getFormatConfig} that returns a {@link S3FormatConfig}</li>
  * <li>Implement {@link #retrieveRecords} that returns the Json records for the test</li>
- *
+ * <p>
  * Under the hood, a {@link S3DestinationConfig} is constructed as follows:
  * <li>Retrieve the secrets from "secrets/config.json"</li>
  * <li>Get the S3 bucket path from the constructor</li>
@@ -82,9 +82,9 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
    */
   protected List<S3ObjectSummary> getAllSyncedObjects(final String streamName, final String namespace) {
     final String outputPrefix = S3OutputPathHelper
-        .getOutputPrefix(config.getBucketPath(), namespace, streamName);
+        .getOutputPrefix(config.bucketPath(), namespace, streamName);
     final List<S3ObjectSummary> objectSummaries = s3Client
-        .listObjects(config.getBucketName(), outputPrefix)
+        .listObjects(config.bucketName(), outputPrefix)
         .getObjectSummaries()
         .stream()
         .filter(o -> o.getKey().contains(AvroConstants.NAME_TRANSFORMER.convertStreamName(streamName) + "/"))
@@ -117,7 +117,7 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
         .set("format", getFormatConfig());
     this.configJson = configJson;
     this.config = S3DestinationConfig.getS3DestinationConfig(configJson);
-    LOGGER.info("Test full path: {}/{}", config.getBucketName(), config.getBucketPath());
+    LOGGER.info("Test full path: {}/{}", config.bucketName(), config.bucketPath());
 
     this.s3Client = config.getS3Client();
   }
@@ -129,17 +129,17 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
   protected void tearDown(final TestDestinationEnv testEnv) {
     final List<KeyVersion> keysToDelete = new LinkedList<>();
     final List<S3ObjectSummary> objects = s3Client
-        .listObjects(config.getBucketName(), config.getBucketPath())
+        .listObjects(config.bucketName(), config.bucketPath())
         .getObjectSummaries();
     for (final S3ObjectSummary object : objects) {
       keysToDelete.add(new KeyVersion(object.getKey()));
     }
 
     if (keysToDelete.size() > 0) {
-      LOGGER.info("Tearing down test bucket path: {}/{}", config.getBucketName(),
-          config.getBucketPath());
+      LOGGER.info("Tearing down test bucket path: {}/{}", config.bucketName(),
+          config.bucketPath());
       final DeleteObjectsResult result = s3Client
-          .deleteObjects(new DeleteObjectsRequest(config.getBucketName()).withKeys(keysToDelete));
+          .deleteObjects(new DeleteObjectsRequest(config.bucketName()).withKeys(keysToDelete));
       LOGGER.info("Deleted {} file(s).", result.getDeletedObjects().size());
     }
   }

@@ -31,14 +31,14 @@ public class RedshiftStreamCopier extends S3StreamCopier {
   private String manifestFilePath = null;
 
   public RedshiftStreamCopier(final String stagingFolder,
-      final DestinationSyncMode destSyncMode,
-      final String schema,
-      final String streamName,
-      final AmazonS3 client,
-      final JdbcDatabase db,
-      final S3DestinationConfig s3Config,
-      final ExtendedNameTransformer nameTransformer,
-      final SqlOperations sqlOperations) {
+                              final DestinationSyncMode destSyncMode,
+                              final String schema,
+                              final String streamName,
+                              final AmazonS3 client,
+                              final JdbcDatabase db,
+                              final S3DestinationConfig s3Config,
+                              final ExtendedNameTransformer nameTransformer,
+                              final SqlOperations sqlOperations) {
     super(stagingFolder, destSyncMode, schema, streamName, Strings.addRandomSuffix("", "", FILE_PREFIX_LENGTH) + "_" + streamName,
         client, db, s3Config, nameTransformer, sqlOperations);
     objectMapper = new ObjectMapper();
@@ -69,16 +69,16 @@ public class RedshiftStreamCopier extends S3StreamCopier {
     super.removeFileAndDropTmpTable();
     if (manifestFilePath != null) {
       LOGGER.info("Begin cleaning s3 manifest file {}.", manifestFilePath);
-      if (s3Client.doesObjectExist(s3Config.getBucketName(), manifestFilePath)) {
-        s3Client.deleteObject(s3Config.getBucketName(), manifestFilePath);
+      if (s3Client.doesObjectExist(s3Config.bucketName(), manifestFilePath)) {
+        s3Client.deleteObject(s3Config.bucketName(), manifestFilePath);
       }
       LOGGER.info("S3 manifest file {} cleaned.", manifestFilePath);
     }
   }
 
   /**
-   * Creates the contents of a manifest file given the `s3StagingFiles`. There must be at least one
-   * entry in a manifest file otherwise it is not considered valid for the COPY command.
+   * Creates the contents of a manifest file given the `s3StagingFiles`. There must be at least one entry in a manifest file otherwise it is not
+   * considered valid for the COPY command.
    *
    * @return null if no stagingFiles exist otherwise the manifest body String
    */
@@ -88,7 +88,7 @@ public class RedshiftStreamCopier extends S3StreamCopier {
     }
 
     final var s3FileEntries = s3StagingFiles.stream()
-        .map(filePath -> new Entry(getFullS3Path(s3Config.getBucketName(), filePath)))
+        .map(filePath -> new Entry(getFullS3Path(s3Config.bucketName(), filePath)))
         .collect(Collectors.toList());
     final var manifest = new Manifest(s3FileEntries);
 
@@ -105,7 +105,7 @@ public class RedshiftStreamCopier extends S3StreamCopier {
     manifestFilePath =
         String.join("/", stagingFolder, schemaName, String.format("%s.manifest", UUID.randomUUID()));
 
-    s3Client.putObject(s3Config.getBucketName(), manifestFilePath, manifestContents);
+    s3Client.putObject(s3Config.bucketName(), manifestFilePath, manifestContents);
 
     return manifestFilePath;
   }
@@ -124,10 +124,10 @@ public class RedshiftStreamCopier extends S3StreamCopier {
             + "MANIFEST;",
         schemaName,
         tmpTableName,
-        getFullS3Path(s3Config.getBucketName(), manifestPath),
-        s3Config.getAccessKeyId(),
-        s3Config.getSecretAccessKey(),
-        s3Config.getBucketRegion());
+        getFullS3Path(s3Config.bucketName(), manifestPath),
+        s3Config.accessKeyId(),
+        s3Config.secretAccessKey(),
+        s3Config.bucketRegion());
 
     Exceptions.toRuntime(() -> db.execute(copyQuery));
   }

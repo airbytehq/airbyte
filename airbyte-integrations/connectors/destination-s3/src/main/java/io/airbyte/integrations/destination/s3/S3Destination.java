@@ -46,8 +46,8 @@ public class S3Destination extends BaseConnector implements Destination {
 
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
-      final ConfiguredAirbyteCatalog configuredCatalog,
-      final Consumer<AirbyteMessage> outputRecordCollector) {
+                                            final ConfiguredAirbyteCatalog configuredCatalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
     final S3WriterFactory formatterFactory = new ProductionWriterFactory();
     return new S3Consumer(S3DestinationConfig.getS3DestinationConfig(config), configuredCatalog, formatterFactory, outputRecordCollector);
   }
@@ -67,7 +67,7 @@ public class S3Destination extends BaseConnector implements Destination {
   }
 
   private static void attemptWriteAndDeleteS3Object(final S3DestinationConfig s3Config, final String outputTableName, final AmazonS3 s3) {
-    final var s3Bucket = s3Config.getBucketName();
+    final var s3Bucket = s3Config.bucketName();
 
     s3.putObject(s3Bucket, outputTableName, "check-content");
     s3.deleteObject(s3Bucket, outputTableName);
