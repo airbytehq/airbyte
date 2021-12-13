@@ -14,7 +14,7 @@
         "order": 0
       },
       "port": {
-        "description": "The port of the database.",
+        "description": "The port to connect to.",
         "title": "Port",
         "type": "integer",
         "minimum": 0,
