@@ -7,11 +7,11 @@ import importlib
 import json
 import os
 import pkgutil
-from typing import Any, ClassVar, Dict, Mapping, Tuple, List, Union, Optional, MutableMapping
+from typing import Any, ClassVar, Dict, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import jsonref
 from airbyte_cdk.models import ConnectorSpecification
-from jsonschema import validate, RefResolver
+from jsonschema import RefResolver, validate
 from jsonschema.exceptions import ValidationError
 from pydantic import BaseModel, Field
 
