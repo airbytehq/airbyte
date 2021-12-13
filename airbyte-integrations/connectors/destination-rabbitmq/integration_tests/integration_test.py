@@ -3,19 +3,23 @@
 #
 
 import json
-
-from airbyte_cdk.models.airbyte_protocol import (
-    AirbyteRecordMessage, AirbyteStateMessage, AirbyteStream, ConfiguredAirbyteCatalog, 
-    ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
-)
-from destination_rabbitmq.destination import DestinationRabbitmq, create_connection
 from unittest.mock import Mock
 
 from airbyte_cdk.models import AirbyteMessage, Status, Type
+from airbyte_cdk.models.airbyte_protocol import (
+    AirbyteRecordMessage,
+    AirbyteStateMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    SyncMode,
+)
+from destination_rabbitmq.destination import DestinationRabbitmq, create_connection
 
-TEST_STREAM = 'animals'
-TEST_NAMESPACE = 'test_namespace'
-TEST_MESSAGE = {'name': 'cat'}
+TEST_STREAM = "animals"
+TEST_NAMESPACE = "test_namespace"
+TEST_MESSAGE = {"name": "cat"}
 
 
 def _configured_catalog() -> ConfiguredAirbyteCatalog:
@@ -34,17 +38,13 @@ def consume(config):
 
     def assert_message(ch, method, properties, body):
         assert json.loads(body) == TEST_MESSAGE
-        assert properties.content_type == 'application/json'
-        assert properties.headers['stream'] == TEST_STREAM
-        assert properties.headers['namespace'] == TEST_NAMESPACE
-        assert 'emitted_at' in properties.headers
+        assert properties.content_type == "application/json"
+        assert properties.headers["stream"] == TEST_STREAM
+        assert properties.headers["namespace"] == TEST_NAMESPACE
+        assert "emitted_at" in properties.headers
         channel.stop_consuming()
 
-    channel.basic_consume(
-        queue=config['routing_key'],
-        on_message_callback=assert_message,
-        auto_ack=True
-    )
+    channel.basic_consume(queue=config["routing_key"], on_message_callback=assert_message, auto_ack=True)
     channel.start_consuming()
 
 
@@ -54,12 +54,14 @@ def _state() -> AirbyteMessage:
 
 def _record() -> AirbyteMessage:
     return AirbyteMessage(
-        type=Type.RECORD, record=AirbyteRecordMessage(
-            stream=TEST_STREAM, data=TEST_MESSAGE, emitted_at=0, namespace=TEST_NAMESPACE))
+        type=Type.RECORD, record=AirbyteRecordMessage(stream=TEST_STREAM, data=TEST_MESSAGE, emitted_at=0, namespace=TEST_NAMESPACE)
+    )
 
 
 def test_check_fails():
-    f = open('integration_tests/invalid_config.json',)
+    f = open(
+        "integration_tests/invalid_config.json",
+    )
     config = json.load(f)
     destination = DestinationRabbitmq()
     status = destination.check(logger=Mock(), config=config)
@@ -67,7 +69,9 @@ def test_check_fails():
 
 
 def test_check_succeeds():
-    f = open('secrets/config.json',)
+    f = open(
+        "secrets/config.json",
+    )
     config = json.load(f)
     destination = DestinationRabbitmq()
     status = destination.check(logger=Mock(), config=config)
@@ -75,7 +79,9 @@ def test_check_succeeds():
 
 
 def test_write():
-    f = open('secrets/config.json',)
+    f = open(
+        "secrets/config.json",
+    )
     config = json.load(f)
     messages = [_record(), _state()]
     destination = DestinationRabbitmq()
