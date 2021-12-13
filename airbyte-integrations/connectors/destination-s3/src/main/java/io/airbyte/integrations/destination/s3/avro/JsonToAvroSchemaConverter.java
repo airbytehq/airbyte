@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.s3.avro;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Preconditions;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import java.util.ArrayList;
@@ -193,8 +194,11 @@ public class JsonToAvroSchemaConverter {
         fieldSchema = Schema.createUnion(unionTypes);
       }
       case ARRAY -> {
-        final JsonNode items = fieldDefinition.get("items");
-        Preconditions.checkNotNull(items, "Array field %s misses the items property.", fieldName);
+        JsonNode items = fieldDefinition.get("items");
+        if (items == null) {
+          LOGGER.warn("Source connector provided schema for ARRAY with missed \"items\", will assume that it's a String type");
+          items = getTypeStringSchema();
+        }
 
         if (items.isObject()) {
           fieldSchema = Schema.createArray(getNullableFieldTypes(String.format("%s.items", fieldName), items));
@@ -264,6 +268,14 @@ public class JsonToAvroSchemaConverter {
       }
       return Schema.createUnion(nonNullFieldTypes);
     }
+  }
+
+  private static JsonNode getTypeStringSchema() {
+    return Jsons.deserialize("{\n"
+        + "    \"type\": [\n"
+        + "      \"string\"\n"
+        + "    ]\n"
+        + "  }");
   }
 
 }
