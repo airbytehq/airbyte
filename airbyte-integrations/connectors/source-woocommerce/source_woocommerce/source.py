@@ -5,9 +5,9 @@
 
 from abc import ABC
 from base64 import b64encode
+from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
-from datetime import datetime
 
 import requests
 from airbyte_cdk import AirbyteLogger
@@ -77,7 +77,7 @@ class IncrementalWoocommerceStream(WoocommerceStream, ABC):
     cursor_field = "date_modified"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        if(self.cursor_field == "date_modified" and datetime.now().isoformat() < current_stream_state.get(self.cursor_field, "")):
+        if self.cursor_field == "date_modified" and datetime.now().isoformat() < current_stream_state.get(self.cursor_field, ""):
             return {self.cursor_field: latest_record.get(self.cursor_field, "")}
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 

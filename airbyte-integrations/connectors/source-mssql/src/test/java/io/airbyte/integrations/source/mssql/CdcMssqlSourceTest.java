@@ -313,7 +313,10 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
             config.get("host").asText(),
             config.get("port").asInt(),
             dbName),
-        DRIVER_CLASS, new MssqlJdbcStreamingQueryConfiguration(), null);
+        DRIVER_CLASS,
+        new MssqlJdbcStreamingQueryConfiguration(),
+        null,
+        new MssqlSourceOperations());
     return MssqlCdcTargetPosition.getTargetPosition(jdbcDatabase, dbName);
   }
 
