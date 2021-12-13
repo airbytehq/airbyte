@@ -28,7 +28,7 @@ class AirbytePyEntrypoint(AirbyteEntrypoint):
 
     def run_unit_tests(self) -> bool:
         return self._run_pytest([
-            str(self.config.source_dir / "unit_tests"), Ж
+            "unit_tests",
         ])
 
     def main(self) -> int:
