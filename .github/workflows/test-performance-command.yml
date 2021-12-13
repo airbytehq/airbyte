@@ -44,7 +44,7 @@ jobs:
         id: regex
         uses: AsasInnab/regex-action@v1
         with:
-          regex_pattern: "^((connectors|bases)/)?[a-zA-Z0-9-_]+(\scpulimit=\d|\smemorylimit=\d{1,3}(MB|GB))?(\smemorylimit=\d{1,3}(MB|GB)|\scpulimit=\d)?$"
+          regex_pattern: "^((connectors|bases)/)?[a-zA-Z0-9-_]+(\\|cpulimit=\\d\\|memorylimit=\\d{1,3}(MB|GB))?(\\|memorylimit=\\d{1,3}(MB|GB)|\\|cpulimit=\\d)?$"
           regex_flags: "i" # required to be set for this plugin
           search_string: ${{ github.event.inputs.connector }}
       - name: Validate input workflow format
