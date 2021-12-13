@@ -9,20 +9,20 @@
     "properties": {
       "api_token": {
         "type": "string",
-    	"title": "API Token",
+        "title": "API Token",
         "description": "Dixa API Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/dixa\">docs</a> for more information on how to obtain this token.",
         "airbyte_secret": true
       },
       "start_date": {
         "type": "string",
-    	"title": "Start Date",
+        "title": "Start Date",
         "description": "Any data before this date will not be replicated.",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "examples": ["YYYY-MM-DD"]
       },
       "batch_size": {
         "type": "integer",
-    	"title": "Batch Size",
+        "title": "Batch Size",
         "description": "The number of days which will be batched in a single request. Maximum 31.",
         "pattern": "^[0-9]{1,2}$",
         "examples": [1, 31],
