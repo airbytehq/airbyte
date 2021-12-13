@@ -232,7 +232,8 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("<(5,7),10>", "<(0,0),0>", "<(-10,-4),10>", null)
             .build());
 
-    // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" so it cannot handle BC dates (e.g. 199-10-10 BC)
+    // DataTypeUtils#DATE_FORMAT is set as "yyyy-MM-dd'T'HH:mm:ss'Z'", so currently the Postgres source
+    // returns a date value as a datetime. It cannot handle BC dates (e.g. 199-10-10 BC).
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("date")
