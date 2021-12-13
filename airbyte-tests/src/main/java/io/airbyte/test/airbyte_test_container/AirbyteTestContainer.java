@@ -73,14 +73,14 @@ public class AirbyteTestContainer {
     final File cleanedDockerComposeFile = prepareDockerComposeFile(dockerComposeFile);
     dockerComposeContainer = new DockerComposeContainer(cleanedDockerComposeFile).withEnv(env);
     serviceLogConsumer(dockerComposeContainer, "init");
-    serviceLogConsumer(dockerComposeContainer, "bootloader");
+    // serviceLogConsumer(dockerComposeContainer, "bootloader");
     serviceLogConsumer(dockerComposeContainer, "db");
     serviceLogConsumer(dockerComposeContainer, "seed");
-    serviceLogConsumer(dockerComposeContainer, "scheduler");
+    // serviceLogConsumer(dockerComposeContainer, "scheduler");
     serviceLogConsumer(dockerComposeContainer, "server");
-    serviceLogConsumer(dockerComposeContainer, "webapp");
-    serviceLogConsumer(dockerComposeContainer, "worker");
-    serviceLogConsumer(dockerComposeContainer, "airbyte-temporal");
+    // serviceLogConsumer(dockerComposeContainer, "webapp");
+    // serviceLogConsumer(dockerComposeContainer, "worker");
+    // serviceLogConsumer(dockerComposeContainer, "airbyte-temporal");
 
     dockerComposeContainer.start();
   }
