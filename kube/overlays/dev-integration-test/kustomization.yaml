@@ -31,5 +31,4 @@ secretGenerator:
     env: .secrets
 
 patchesStrategicMerge:
-  - pod-antiaffinity.yaml
   - parallelize-worker.yaml
