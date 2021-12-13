@@ -33,7 +33,7 @@
       },
       "is_sandbox": {
         "title": "Sandbox",
-        "description": "Whether the app is in a Salesforce sandbox or not. If you do not know what this is, assume it as a false. We provide more info on this field in the <a href=\"https://docs.airbyte.io/integrations/destinations/salesforce#is_sandbox\">docs</a>.",
+        "description": "Whether the app is in a Salesforce sandbox or not. If you do not know what this is, assume it as a false. We provide more info on this field in the <a href=\"https://docs.airbyte.io/integrations/sources/salesforce#is_sandbox\">docs</a>.",
         "type": "boolean",
         "default": false
       },
@@ -46,7 +46,7 @@
       },
       "wait_timeout": {
         "title": "Response Waiting Time",
-        "description": "Maximum wait time of Safesforce responses in minutes. This option is used for the BULK mode only.",
+        "description": "Maximum wait time of Safesforce responses in minutes. This option is used for the BULK mode only.The default wait time of the Parent Batch in the Bulk Mode to wait for all the batches to finish processing is 20 minutes.",
         "type": "integer",
         "minimum": 5,
         "maximum": 60,
