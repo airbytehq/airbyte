@@ -100,16 +100,6 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   // See https://www.postgresql.org/docs/14/datatype.html
   @Override
   protected void initTests() {
-    // array
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("text")
-            .fullSourceDataType("text[]")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'{10000, 10000, 10000, 10000}'", "null")
-            .addExpectedValues("{10000,10000,10000,10000}", null)
-            .build());
-
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bigint")
@@ -144,14 +134,16 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("101")
             .build());
 
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("bit_varying")
-            .fullSourceDataType("BIT VARYING(5)")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("B'101'", "null")
-            .addExpectedValues("101", null)
-            .build());
+    for (final String type : Set.of("bit varying", "varbit")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType("bit_varying")
+              .fullSourceDataType("BIT VARYING(5)")
+              .airbyteType(JsonSchemaPrimitive.STRING)
+              .addInsertValues("B'101'", "null")
+              .addExpectedValues("101", null)
+              .build());
+    }
 
     for (final String type : Set.of("boolean", "bool")) {
       addDataTypeTestData(
@@ -181,31 +173,24 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues(null, "\\x1234", "\\x31323334", "\\x61626364", "\\xabcd")
             .build());
 
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("character")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'a'", "'*'", "null")
-            .addExpectedValues("a", "*", null)
-            .build());
+    for (final String type : Set.of("character", "char")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType(type)
+              .airbyteType(JsonSchemaPrimitive.STRING)
+              .addInsertValues("'a'", "'*'", "null")
+              .addExpectedValues("a", "*", null)
+              .build());
 
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("character")
-            .fullSourceDataType("character(8)")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'{asb123}'", "'{asb12}'")
-            .addExpectedValues("{asb123}", "{asb12} ")
-            .build());
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("varchar")
-            .fullSourceDataType("character varying(10)")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'{asb123}'", "'{asb12}'")
-            .addExpectedValues("{asb123}", "{asb12}")
-            .build());
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType(type)
+              .fullSourceDataType(type + "(8)")
+              .airbyteType(JsonSchemaPrimitive.STRING)
+              .addInsertValues("'{asb123}'", "'{asb12}'")
+              .addExpectedValues("{asb123}", "{asb12} ")
+              .build());
+    }
 
     for (final String type : Set.of("varchar", "text")) {
       addDataTypeTestData(
@@ -222,12 +207,10 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("varchar")
-            .fullSourceDataType("character(12)")
+            .fullSourceDataType("character varying(10)")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'a'", "'abc'", "'Миші йдуть;'", "'櫻花分店'",
-                "''", "null")
-            .addExpectedValues("a           ", "abc         ", "Миші йдуть; ", "櫻花分店        ",
-                "            ", null)
+            .addInsertValues("'{asb123}'", "'{asb12}'")
+            .addExpectedValues("{asb123}", "{asb12}")
             .build());
 
     addDataTypeTestData(
@@ -558,15 +541,6 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("happy", null)
             .build());
 
-    // composite type
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("inventory_item")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("ROW('fuzzy dice', 42, 1.99)", "null")
-            .addExpectedValues("(\"fuzzy dice\",42,1.99)", null)
-            .build());
-
     // range
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -574,6 +548,25 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'(2010-01-01 14:30, 2010-01-01 15:30)'", "null")
             .addExpectedValues("(\"2010-01-01 14:30:00\",\"2010-01-01 15:30:00\")", null)
+            .build());
+
+    // array
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("text")
+            .fullSourceDataType("text[]")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'{10001, 10002, 10003, 10004}'", "null")
+            .addExpectedValues("{10001,10002,10003,10004}", null)
+            .build());
+
+    // composite type
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("inventory_item")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("ROW('fuzzy dice', 42, 1.99)", "null")
+            .addExpectedValues("(\"fuzzy dice\",42,1.99)", null)
             .build());
   }
 
