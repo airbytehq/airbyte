@@ -26,7 +26,7 @@ class ConnectorConfig(BaseModel):
         description="The application secret as provided when registering the application with Lever.",
         airbyte_secret=True,
     )
-    refresh_token: str = Field(
+    access_token: str = Field(
         description="The refresh token your application will need to submit to get a new access token after it's expired.",
     )
     environment: str = Field(description="Sandbox or Production environment.", enum=["Sandbox", "Production"], default="Production")
@@ -36,6 +36,18 @@ class ConnectorConfig(BaseModel):
         examples=["2021-04-25T00:00:00Z"],
     )
 
+class LeverOAuthAuthenticator(Oauth2Authenticator):
+    def get_auth_header(self) -> Mapping[str, Any]:
+        return super().get_auth_header()
+
+    def __init__(self, config: ConnectorConfig):
+        self.client_id = config["credentials"]["client_id"],
+        self.client_secret = config["credentials"]["client_secret"],
+        self.access_token = config["credentials"]["access_token"],
+
+    def get_access_token(self):
+        return self.access_token
+
 
 class SourceLeverHiring(AbstractSource):
     URL_MAP_ACCORDING_ENVIRONMENT = {
@@ -44,22 +56,12 @@ class SourceLeverHiring(AbstractSource):
     }
 
     def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-        authenticator = Oauth2Authenticator(
-            token_refresh_endpoint=f"{self.URL_MAP_ACCORDING_ENVIRONMENT[config['environment']]['login']}oauth/token",
-            client_id=config["client_id"],
-            client_secret=config["client_secret"],
-            refresh_token=config["refresh_token"],
-        )
+        authenticator = LeverOAuthAuthenticator(config)
         _ = authenticator.get_auth_header()
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        authenticator = Oauth2Authenticator(
-            token_refresh_endpoint=f"{self.URL_MAP_ACCORDING_ENVIRONMENT[config['environment']]['login']}oauth/token",
-            client_id=config["client_id"],
-            client_secret=config["client_secret"],
-            refresh_token=config["refresh_token"],
-        )
+        authenticator = LeverOAuthAuthenticator(config)
         full_refresh_params = {"authenticator": authenticator, "base_url": self.URL_MAP_ACCORDING_ENVIRONMENT[config["environment"]]["api"]}
         stream_params_with_start_date = {**full_refresh_params, "start_date": config["start_date"]}
         return [
@@ -72,13 +74,15 @@ class SourceLeverHiring(AbstractSource):
             Users(**full_refresh_params),
         ]
 
-    def spec(self, *args, **kwargs) -> ConnectorSpecification:
+    def at__spec(self, *args, **kwargs) -> ConnectorSpecification:
         return ConnectorSpecification(
             documentationUrl="https://docs.airbyte.io/integrations/sources/lever-hiring",
             changelogUrl="https://docs.airbyte.io/integrations/sources/lever-hiring#changelog",
             connectionSpecification=ConnectorConfig.schema(),
             authSpecification=AuthSpecification(
                 auth_type="oauth2.0",
-                oauth2Specification=OAuth2Specification(oauthFlowInitParameters=[["client_id"], ["client_secret"], ["refresh_token"]]),
+                oauth2Specification=OAuth2Specification(
+                    rootObject=["credentials", "0"], oauthFlowInitParameters=[], oauthFlowOuputParameters=[["access_token"]]
+                ),
             ),
         )
