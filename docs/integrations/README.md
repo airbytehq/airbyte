@@ -155,6 +155,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Oracle](destinations/oracle.md) | Alpha |
 | [Postgres](destinations/postgres.md) | Certified |
 | [Pulsar](destinations/pulsar.md) | Alpha |
+| [RabbitMQ](destinations/rabbitmq.md) | Alpha |
 | [Redshift](destinations/redshift.md) | Certified |
 | [S3](destinations/s3.md) | Certified |
 | [SFTP JSON](./destinations/sftp-json.md)| Alpha |

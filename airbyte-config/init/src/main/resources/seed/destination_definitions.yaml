@@ -130,6 +130,12 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/pulsar
   icon: pulsar.svg
+- name: RabbitMQ
+  destinationDefinitionId: e06ad785-ad6f-4647-b2e8-3027a5c59454
+  dockerRepository: airbyte/destination-rabbitmq
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/rabbitmq
+  icon: pulsar.svg
 - name: Redis
   destinationDefinitionId: d4d3fef9-e319-45c2-881a-bd02ce44cc9f
   dockerRepository: airbyte/destination-redis
