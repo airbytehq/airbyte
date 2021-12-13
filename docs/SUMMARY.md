@@ -179,6 +179,7 @@
     * [Oracle DB](integrations/destinations/oracle.md)
     * [Postgres](integrations/destinations/postgres.md)
     * [Pulsar](integrations/destinations/pulsar.md)
+    * [RabbitMQ](integrations/destinations/rabbitmq.md)
     * [Redshift](integrations/destinations/redshift.md)
     * [S3](integrations/destinations/s3.md)
     * [SFTP JSON](integrations/destinations/sftp-json.md)

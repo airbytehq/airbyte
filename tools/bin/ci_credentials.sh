@@ -163,6 +163,7 @@ read_secrets destination-mongodb-strict-encrypt "$MONGODB_TEST_CREDS" "credentia
 read_secrets destination-mysql "$MYSQL_SSH_KEY_TEST_CREDS" "ssh-key-config.json"
 read_secrets destination-mysql "$MYSQL_SSH_PWD_TEST_CREDS" "ssh-pwd-config.json"
 read_secrets destination-pubsub "$DESTINATION_PUBSUB_TEST_CREDS" "credentials.json"
+read_secrets destination-rabbitmq "$DESTINATION_RABBITMQ_TEST_CREDS"
 read_secrets destination-redshift "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS"
 read_secrets destination-dynamodb "$DESTINATION_DYNAMODB_TEST_CREDS"
 read_secrets destination-oracle "$AWS_ORACLE_INTEGRATION_TEST_CREDS"
