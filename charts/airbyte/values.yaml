@@ -542,3 +542,10 @@ logs:
     enabled: false
     bucket: airbyte-dev-logs
     bucketRegion: ""
+ 
+  ## Google Cloud Storage (GCS) Log Location Configuration
+  ## @param gcs.bucket GCS bucket name
+  ## @param gcs.credentials The path the GCS creds are written to
+  gcs:
+    bucket: ""
+    credentials: ""
