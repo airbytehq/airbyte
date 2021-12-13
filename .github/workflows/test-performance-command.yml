@@ -44,7 +44,7 @@ jobs:
         id: regex
         uses: AsasInnab/regex-action@v1
         with:
-          regex_pattern: "^((connectors|bases)/)?[a-zA-Z0-9-_]+$"
+          regex_pattern: "^((connectors|bases)/)?[a-zA-Z0-9-_]+"
           regex_flags: "i" # required to be set for this plugin
           search_string: ${{ github.event.inputs.connector }}
       - name: Validate input workflow format
