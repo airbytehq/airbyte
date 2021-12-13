@@ -209,7 +209,7 @@ public class TestDataHolder {
   }
 
   public String getNameWithTestPrefix() {
-    return nameSpace + "_" + testNumber + "_" + sourceType;
+    return nameSpace + "_" + testNumber + "_" + sourceType.replaceAll("\\s", "_");
   }
 
   public String getCreateSqlQuery() {

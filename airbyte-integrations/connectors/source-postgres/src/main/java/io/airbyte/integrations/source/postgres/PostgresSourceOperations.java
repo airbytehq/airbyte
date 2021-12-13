@@ -17,6 +17,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import java.math.BigDecimal;
 import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -76,22 +77,28 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
     final String columnTypeName = metadata.getColumnTypeName(colIndex);
     final JDBCType columnType = safeGetJdbcType(metadata.getColumnType(colIndex));
 
-    // https://www.postgresql.org/docs/14/datatype.html
-    switch (columnType) {
-      case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
-      case TINYINT, SMALLINT -> putShortInt(json, columnName, resultSet, colIndex);
-      case INTEGER -> putInteger(json, columnName, resultSet, colIndex);
-      case BIGINT -> putBigInt(json, columnName, resultSet, colIndex);
-      case FLOAT, DOUBLE -> putDouble(json, columnName, resultSet, colIndex);
-      case REAL -> putFloat(json, columnName, resultSet, colIndex);
-      case NUMERIC, DECIMAL -> putBigDecimal(json, columnName, resultSet, colIndex);
-      // BIT is a bit string in Postgres, e.g. '0100'
-      case BIT, CHAR, VARCHAR, LONGVARCHAR -> putString(json, columnName, resultSet, colIndex);
-      case DATE -> putDate(json, columnName, resultSet, colIndex);
-      case TIME -> putTime(json, columnName, resultSet, colIndex);
-      case TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
-      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(json, columnName, resultSet, colIndex);
-      default -> putDefault(json, columnName, resultSet, colIndex);
+    if (columnTypeName.equalsIgnoreCase("bool") || columnTypeName.equalsIgnoreCase("boolean")) {
+      putBoolean(json, columnName, resultSet, colIndex);
+    } else if (columnTypeName.equalsIgnoreCase("bytea")) {
+      putString(json, columnName, resultSet, colIndex);
+    } else {
+      // https://www.postgresql.org/docs/14/datatype.html
+      switch (columnType) {
+        case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
+        case TINYINT, SMALLINT -> putShortInt(json, columnName, resultSet, colIndex);
+        case INTEGER -> putInteger(json, columnName, resultSet, colIndex);
+        case BIGINT -> putBigInt(json, columnName, resultSet, colIndex);
+        case FLOAT, DOUBLE -> putDouble(json, columnName, resultSet, colIndex);
+        case REAL -> putFloat(json, columnName, resultSet, colIndex);
+        case NUMERIC, DECIMAL -> putBigDecimal(json, columnName, resultSet, colIndex);
+        // BIT is a bit string in Postgres, e.g. '0100'
+        case BIT, CHAR, VARCHAR, LONGVARCHAR -> putString(json, columnName, resultSet, colIndex);
+        case DATE -> putDate(json, columnName, resultSet, colIndex);
+        case TIME -> putTime(json, columnName, resultSet, colIndex);
+        case TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
+        case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(json, columnName, resultSet, colIndex);
+        default -> putDefault(json, columnName, resultSet, colIndex);
+      }
     }
   }
 
@@ -100,16 +107,15 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
     try {
       final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText();
       // Postgres boolean is mapped to JDBCType.BIT, but should be BOOLEAN
-      if (typeName.equalsIgnoreCase("bool")) {
+      if (typeName.equalsIgnoreCase("bool") || typeName.equalsIgnoreCase("boolean")) {
         return JDBCType.BOOLEAN;
+      } else if (typeName.equalsIgnoreCase("bytea")) {
+        // BYTEA is variable length binary string with hex output format by default (e.g. "\x6b707a").
+        // It should not be converted to base64 binary string. So it is represented as JDBC VARCHAR.
+        // https://www.postgresql.org/docs/14/datatype-binary.html
+        return JDBCType.VARCHAR;
       }
 
-      final JDBCType jdbcType = JDBCType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
-      System.out.printf("getFieldType: %s (%d %s) -> %s\n",
-          typeName,
-          field.get(INTERNAL_COLUMN_TYPE).asInt(),
-          jdbcType.name(),
-          getJsonType(jdbcType));
       return JDBCType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
     } catch (final IllegalArgumentException ex) {
       LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
@@ -133,6 +139,31 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
 
   protected void putBoolean(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     node.put(columnName, resultSet.getString(index).equalsIgnoreCase("t"));
+  }
+
+  protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    node.put(columnName, resultSet.getString(index));
+  }
+
+  protected void putBigDecimal(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    final BigDecimal bigDecimal = DataTypeUtils.returnNullIfInvalid(() -> resultSet.getBigDecimal(index));
+    if (bigDecimal != null) {
+      node.put(columnName, bigDecimal);
+      return;
+    }
+
+    // ResultSet#getBigDecimal cannot handle Infinity, -Infinity, or NaN, and will throw exception,
+    // which becomes null. So we need to check these special values as string.
+    final String value = resultSet.getString(index);
+    if (value.equalsIgnoreCase("infinity")) {
+      node.put(columnName, Double.POSITIVE_INFINITY);
+    } else if (value.equalsIgnoreCase("-infinity")) {
+      node.put(columnName, Double.NEGATIVE_INFINITY);
+    } else if (value.equalsIgnoreCase("nan")) {
+      node.put(columnName, Double.NaN);
+    } else {
+      node.put(columnName, (BigDecimal) null);
+    }
   }
 
   @Override

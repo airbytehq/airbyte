@@ -24,8 +24,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private PostgreSQLContainer<?> container;
   private JsonNode config;
-  private static final Logger LOGGER = LoggerFactory
-      .getLogger(PostgresSourceDatatypeTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSourceDatatypeTest.class);
 
   @Override
   protected Database setupDatabase() throws SQLException {
@@ -43,7 +42,6 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         .put("ssl", false)
         .put("replication_method", replicationMethod)
         .build());
-    LOGGER.warn("PPP:config:" + config);
 
     final Database database = Databases.createDatabase(
         config.get("username").asText(),
@@ -178,9 +176,9 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bytea")
-            .airbyteType(JsonSchemaPrimitive.STRING_BINARY)
-            .addInsertValues("null", "decode('1234', 'hex')", "'1234'")
-            .addExpectedValues(null, "\\x1234", "\\x31323334")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("null", "decode('1234', 'hex')", "'1234'", "'abcd'", "'\\xabcd'")
+            .addExpectedValues(null, "\\x1234", "\\x31323334", "\\x61626364", "\\xabcd")
             .build());
 
     addDataTypeTestData(
@@ -203,11 +201,10 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("varchar")
-            .sourceType("character")
             .fullSourceDataType("character varying(10)")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'{asb123}'", "'{asb12}'")
-            .addExpectedValues("{asb123}", "{asb12} ")
+            .addExpectedValues("{asb123}", "{asb12}")
             .build());
 
     for (final String type : Set.of("varchar", "text")) {
@@ -257,20 +254,23 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("date")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'1999-01-08'", "null", "'199-10-10 BC'")
-            .addExpectedValues("1999-01-08", null, "199-10-10 BC")
+            .addExpectedValues("1999-01-08", null, "0199-10-10 BC")
             .build());
 
-    for (final String fullSourceType : Set.of("double precision", "float", "float8")) {
+    for (final String type : Set.of("double precision", "float", "float8")) {
       addDataTypeTestData(
           TestDataHolder.builder()
-              .sourceType("double")
-              .fullSourceDataType(fullSourceType)
+              .sourceType(type)
               .airbyteType(JsonSchemaPrimitive.NUMBER)
               .addInsertValues(
-                  "'123'", "'1234567890.1234567'", "null",
-                  "'infinity'", "'-infinity'", "'Nan'")
+                  "null", "'123'",
+                  "'1234567890.1234567'",
+                  "'infinity'",
+                  "'-infinity'",
+                  "'nan'")
               .addExpectedValues(
-                  "123.0", "1.2345678901234567E9", null,
+                  null, "123.0",
+                  "1.2345678901234567E9",
                   String.valueOf(Double.POSITIVE_INFINITY),
                   String.valueOf(Double.NEGATIVE_INFINITY),
                   String.valueOf(Double.NaN))
@@ -378,8 +378,15 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
           TestDataHolder.builder()
               .sourceType(type)
               .airbyteType(JsonSchemaPrimitive.NUMBER)
-              .addInsertValues("'99999'", "'1234567890.1234567'", "null", "'infinity'", "'-infinity'", "'Nan'")
-              .addExpectedValues("99999", "1.23456794E9", null,
+              .addInsertValues(
+                  "'123'", "null",
+                  "'1234567890.1234567'",
+                  "'infinity'",
+                  "'-infinity'",
+                  "'nan'")
+              .addExpectedValues(
+                  "123", null,
+                  "1.2345678901234567E9",
                   String.valueOf(Double.POSITIVE_INFINITY),
                   String.valueOf(Double.NEGATIVE_INFINITY),
                   String.valueOf(Double.NaN))
@@ -503,7 +510,8 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaPrimitive.STRING)
               .addInsertValues("TIMESTAMP '2004-10-19 10:23:54-08'", "null")
-              .addExpectedValues("2004-10-19T10:23:54Z-8", null)
+              // 2004-10-19T10:23:54Z-8 = 2004-10-19T17:23:54Z
+              .addExpectedValues("2004-10-19T17:23:54Z", null)
               .build());
     }
 
