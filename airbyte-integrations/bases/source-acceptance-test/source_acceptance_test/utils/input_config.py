@@ -55,33 +55,8 @@ class InputConfig(Namespace):
         return dir if (self.is_python and dir.is_dir()) else None
 
     @property
-    def py_unit_tests_dir(self) -> Optional[Path]:
-        dir = self.source_dir / "unit_tests"
-        return dir if (self.is_python and dir.is_dir()) else None
-
-    @property
-    def integration_tests_acceptance_py(self) -> Optional[Path]:
-        dir = self.py_unit_tests_dir
-        if not dir:
-            return None
-        file = self.py_unit_tests_dir / "acceptance.py"
-        return dir if (self.is_python and dir.is_dir()) else None
-
-    @property
-    def unit_tests(self) -> bool:
-        return self.args.all_tests or self.args.unit_tests
-
-    @property
-    def integration_tests(self) -> bool:
-        return self.args.all_tests or self.args.integration_tests
-
-    @property
-    def linter_tests(self) -> bool:
-        return self.args.all_tests or self.args.linter_tests
-
-    @property
-    def need_remote_container(self):
-        return self.unit_tests or self.integration_tests
+    def acceptance_tests(self) -> bool:
+        return self.args.acceptance_tests
 
     @classmethod
     def parse(cls) -> "InputConfig":
@@ -92,11 +67,7 @@ class InputConfig(Namespace):
                                 help='DEPRECATED: please use --source_folder')
         source_dir.add_argument('-d', '--source_dir', type=Path,
                                 help='folder with the file acceptance-test-config.yaml and all possible tests.')
-        parser.add_argument('--all-tests', '--all_tests', action='store_true',
-                            help="Try to run all possible exists tests")
-        parser.add_argument('--unit-tests', '--unit_tests', action='store_true', help="Try to run unit tests")
-        parser.add_argument('--integration-tests', '--integration_tests', action='store_true',
-                            help="Try to run integration tests")
-        parser.add_argument('--linter-tests', '--linter_tests', action='store_true',
-                            help="Try to run linter tests (flake8 etc)")
+        parser.add_argument('--acceptance-tests', '--acceptance_tests', action='store_true',
+                            help="Try to run all acceptance exists tests")
+
         return cls(*parser.parse_known_args())

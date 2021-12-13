@@ -20,7 +20,6 @@ MAIN_REQUIREMENTS = [
     "dpath~=2.0.1",
     "jsonschema~=3.2.0",
     "jsonref==0.2",
-    "flake8",
 ]
 
 setuptools.setup(

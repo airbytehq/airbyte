@@ -3,7 +3,6 @@
 #
 
 import docker
-import flake8
 import json
 import logging
 import pytest
@@ -13,7 +12,6 @@ import tempfile
 from dataclasses import dataclass
 from docker.client import DockerClient
 from docker.models.images import Image
-from flake8.main.cli import main as flake8_main
 from pathlib import Path
 from typing import List
 
@@ -40,18 +38,6 @@ class AirbyteEntrypoint:
 
     config: InputConfig
 
-    def run_flake8(self) -> bool:
-        """"try to run the tool flake8 into source folder"""
-        logger.info("try to run flake8....")
-        try:
-            flake8_main(["--exclude=.venv,models,.eggs",
-                         "--extend-ignore=E203,E231,E501,W503",
-                         str(self.config.source_dir)])
-        except SystemExit as err:
-            logger.warning(err.code)
-            return err.code == 0
-        return 0
-
     def _run_pytest(self, args: List[str]) -> bool:
         """"try to run the tool pytest into source folder"""
         args += "-r fEsx --capture=no -vv --log-level=WARNING --color=yes --force-sugar".split(" ")
@@ -77,7 +63,7 @@ class AirbyteEntrypoint:
             image = self.__build_py_test_image(client)
         else:
             raise Exception("don't support other language...")
-        cmd = " ".join(sys.argv[1:])
+        cmd = " ".join(sys.argv[1:]).replace("--acceptance-tests", "")
         working_dir = image.attrs["Config"]["WorkingDir"] or "/airbyte/integration_code"
         cmd = cmd.replace(str(self.config.source_dir), working_dir)
 
@@ -98,10 +84,9 @@ class AirbyteEntrypoint:
         shutil.copyfile(str(self.config.source_dir / "acceptance-test-config.yml"),
                         str(tmp_dir / "acceptance-test-config.yml"))
         shutil.copyfile(str(self.config.source_dir / "setup.py"), str(tmp_dir / "setup.py"))
-        if self.config.integration_tests and self.config.py_integration_tests_dir:
+        if self.config.acceptance_tests and self.config.py_integration_tests_dir:
             shutil.copytree(str(self.config.source_dir / "integration_tests"), str(tmp_dir / "integration_tests"))
-        if self.config.unit_tests and self.config.py_unit_tests_dir:
-            shutil.copytree(str(self.config.source_dir / "unit_tests"), str(tmp_dir / "unit_tests"))
+
         if (self.config.source_dir / "secrets").is_dir():
             shutil.copytree(str(self.config.source_dir / "secrets"), str(tmp_dir / "secrets"))
 
@@ -134,13 +119,8 @@ class AirbyteEntrypoint:
 
     def main(self) -> int:
         """Launch function"""
-        if self.config.linter_tests:
-            if not self.config.is_python:
-                logger.warning("flake8 is used for Python sources only")
-            elif not self.run_flake8():
-                return 1
 
-        if self.config.get_acceptance_test_config() and (self.config.integration_tests or self.config.unit_tests):
+        if self.config.get_acceptance_test_config() and self.config.acceptance_tests:
             return self.__run_in_docker()
 
         # start default logic
