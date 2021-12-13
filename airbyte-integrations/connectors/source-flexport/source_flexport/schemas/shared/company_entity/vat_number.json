@@ -5,7 +5,7 @@
   "properties": {
     "_object": {
       "type": "string",
-      "description": "String representing the object’s type. Always /company_entity/vat_number for this object."
+      "description": "String representing the object's type. Always /company_entity/vat_number for this object."
     },
     "country_code": {
       "type": "string",
