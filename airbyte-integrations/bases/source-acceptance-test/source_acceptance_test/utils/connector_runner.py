@@ -112,6 +112,7 @@ class ConnectorRunner:
 
     @classmethod
     def read(cls, container: Container, command: str = None, with_ext: bool = True) -> Iterable[str]:
+        """Reads connector's logs per line"""
         buffer = b''
         has_exception = False
         for chunk in container.logs(

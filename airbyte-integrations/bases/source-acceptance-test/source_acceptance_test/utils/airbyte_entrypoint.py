@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 import docker
 import flake8
 import json
@@ -50,7 +54,7 @@ class AirbyteEntrypoint:
 
     def _run_pytest(self, args: List[str]) -> bool:
         """"try to run the tool pytest into source folder"""
-        args += "-r a --capture=no -vv --log-level=WARNING --color=yes --force-sugar".split(" ")
+        args += "-r fEsx --capture=no -vv --log-level=WARNING --color=yes --force-sugar".split(" ")
         return pytest.main(args) == 0
 
     def run_integration_tests(self) -> bool:
