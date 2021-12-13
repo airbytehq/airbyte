@@ -81,6 +81,8 @@ public class MigrationAcceptanceTest {
     final Properties envFileProperties = overrideDirectoriesForTest(MoreProperties.envFileToProperties(ENV_FILE));
     runAirbyteAndWaitForUpgradeException(currentDockerComposeFile, envFileProperties);
 
+    LOGGER.info("===== after upgrade exception");
+
     // run "faux" major version bump version
     final File version32DockerComposeFile = MoreResources.readResourceAsFile("docker-compose-migration-test-0-32-0-alpha.yaml");
     final Properties version32EnvFileProperties = MoreProperties
