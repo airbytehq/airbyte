@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.rockset;
@@ -41,6 +21,7 @@ import com.rockset.client.model.DeleteDocumentsRequest;
 import com.rockset.client.model.DeleteDocumentsRequestData;
 import com.rockset.client.model.ErrorModel;
 import com.rockset.client.model.GetCollectionResponse;
+import com.rockset.client.model.ListCollectionsResponse;
 import com.rockset.client.model.QueryRequest;
 import com.rockset.client.model.QueryRequestSql;
 import com.rockset.client.model.QueryResponse;
@@ -53,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -60,17 +42,17 @@ public class RocksetUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RocksetUtils.class);
 
-    public static final String WORKSPACE_ID = "workspace";
+    public static final String ROCKSET_WORKSPACE_ID = "workspace";
     public static final String API_KEY_ID = "api_key";
     public static final String API_SERVER_ID = "api_server";
-    public static final String DEFAULT_API_SERVER = "https://api.rs2.usw2.rockset.com";
     public static final Duration DEFAULT_TIMEOUT = new Duration(20, TimeUnit.MINUTES);
     public static final Duration DEFAULT_POLL_INTERVAL = Duration.FIVE_SECONDS;
     private static final java.time.Duration DEFAULT_HTTP_CLIENT_TIMEOUT = java.time.Duration.ofMinutes(1L);
+    private static final String DEFAULT_ROCKSET_CLIENT_VERSION = "0.9.0";
 
     public static ApiClient apiClientFromConfig(JsonNode config) {
         final String apiKey = config.get(API_KEY_ID).asText();
-        final String apiServer = config.get(API_SERVER_ID).asText(DEFAULT_API_SERVER);
+        final String apiServer = config.get(API_SERVER_ID).asText();
         return apiClient(apiKey, apiServer);
     }
 
@@ -83,7 +65,7 @@ public class RocksetUtils {
 
         client.setApiKey(apiKey);
         client.setApiServer(apiServer);
-        client.setVersion("0.9.0");
+        client.setVersion(DEFAULT_ROCKSET_CLIENT_VERSION);
         return client;
     }
 
@@ -219,8 +201,20 @@ public class RocksetUtils {
         }
     }
 
+    private static boolean doesCollectionExist(ApiClient client, String workspace, String cname) throws Exception {
+        final ListCollectionsResponse collectionsResponse = new CollectionsApi(client).workspace(workspace);
+        return collectionsResponse
+                .getData()
+                .stream()
+                .anyMatch(coll -> coll.getName().equals(cname));
+    }
+
     public static void clearCollectionIfCollectionExists(ApiClient client, String workspace, String cname) {
         Exceptions.toRuntime(() -> {
+
+            if (!doesCollectionExist(client, workspace, cname)) {
+                return;
+            }
 
             final QueryRequest qr = new QueryRequest().sql(new QueryRequestSql().query(String.format("SELECT _id from %s.%s", workspace, cname)));
             try {
@@ -236,7 +230,25 @@ public class RocksetUtils {
                 LOGGER.error("Error while trying to clear a collection ", e);
             }
 
+            pollingConfig(workspace, cname)
+                    .until(() ->
+                            isCollectionEmpty(client, workspace, cname)
+                    );
+
         });
+    }
+
+    private static boolean isCollectionEmpty(ApiClient client, String workspace, String cname) {
+        return Exceptions.toRuntime(() -> {
+            final String elementCount = String.format("SELECT count(*) as numel from %s.%s", workspace, cname);
+
+            final QueryRequest qr = new QueryRequest().sql(new QueryRequestSql().query(elementCount));
+            final QueryResponse resp = new QueriesApi(client).query(qr);
+            Optional<Number> count = resp.getResults().stream().map(f -> (LinkedTreeMap<String, Object>) f).map(f -> f.get("numel")).map(f -> (Number) f).findFirst();
+            return count.filter(number -> number.intValue() == 0).isPresent();
+
+        });
+
     }
 
     private static Duration jitter(String... args) {
