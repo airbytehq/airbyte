@@ -232,13 +232,13 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("<(5,7),10>", "<(0,0),0>", "<(-10,-4),10>", null)
             .build());
 
-    // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" so it cannot handle BC dates
+    // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" so it cannot handle BC dates (e.g. 199-10-10 BC)
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("date")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'1999-01-08'", "null", "'199-10-10 BC'")
-            .addExpectedValues("1999-01-08", null, "0199-10-10 BC")
+            .addInsertValues("'1999-01-08'", "null")
+            .addExpectedValues("1999-01-08T00:00:00Z", null)
             .build());
 
     for (final String type : Set.of("double precision", "float", "float8")) {

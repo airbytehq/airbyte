@@ -143,10 +143,6 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
     node.put(columnName, resultSet.getString(index).equalsIgnoreCase("t"));
   }
 
-  protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, resultSet.getString(index));
-  }
-
   protected void putBigDecimal(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     final BigDecimal bigDecimal = DataTypeUtils.returnNullIfInvalid(() -> resultSet.getBigDecimal(index));
     if (bigDecimal != null) {
