@@ -47,7 +47,7 @@ public class OracleSourceNneAcceptanceTest extends OracleStrictEncryptSourceAcce
     final List<JsonNode> collect = database.query(network_service_banner).collect(Collectors.toList());
 
     assertTrue(collect.get(2).get("NETWORK_SERVICE_BANNER").asText()
-        .contains("Oracle Advanced Security: " + algorithm + " encryption"));
+            .contains(algorithm + " Encryption"));
   }
 
   @Test

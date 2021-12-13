@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import org.testcontainers.containers.Network;
-import org.testcontainers.containers.OracleContainer;
 
 public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -78,8 +77,11 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
   }
 
   private void initAndStartJdbcContainer() {
-    db = new OracleContainer("epiclabs/docker-oracle-xe-11g")
-        .withNetwork(sshBastionContainer.getNetWork());
+    db = new OracleContainer()
+            .withUsername("test")
+            .withPassword("oracle")
+            .usingSid()
+            .withNetwork(sshBastionContainer.getNetWork());;
     db.start();
   }
 
