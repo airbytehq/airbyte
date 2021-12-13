@@ -13,11 +13,12 @@ import { Routing } from "packages/cloud/routes";
 import LoadingPage from "components/LoadingPage";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 import NotificationServiceProvider from "hooks/services/Notification";
-import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
-import { Feature, FeatureItem, FeatureService } from "hooks/services/Feature";
+import { AnalyticsProvider } from "views/common/AnalyticsProvider";
+import { FeatureService } from "hooks/services/Feature";
 import { AuthenticationProvider } from "packages/cloud/services/auth/AuthService";
 import { AppServicesProvider } from "./services/AppServicesProvider";
-import { IntercomProvider } from "./services/IntercomProvider";
+import { IntercomProvider } from "./services/thirdParty/intercom/IntercomProvider";
+import { ConfigProvider } from "./services/ConfigProvider";
 
 const messages = Object.assign({}, en, cloudLocales);
 
@@ -42,12 +43,6 @@ const StoreProvider: React.FC = ({ children }) => (
   </CacheProvider>
 );
 
-const Features: Feature[] = [
-  {
-    id: FeatureItem.AllowOAuthConnector,
-  },
-];
-
 const App: React.FC = () => {
   return (
     <React.StrictMode>
@@ -55,21 +50,23 @@ const App: React.FC = () => {
         <I18NProvider>
           <StoreProvider>
             <Suspense fallback={<LoadingPage />}>
-              <ApiErrorBoundary>
-                <NotificationServiceProvider>
-                  <FeatureService features={Features}>
-                    <AppServicesProvider>
-                      <AuthenticationProvider>
-                        <IntercomProvider>
-                          <AnalyticsInitializer>
-                            <Routing />
-                          </AnalyticsInitializer>
-                        </IntercomProvider>
-                      </AuthenticationProvider>
-                    </AppServicesProvider>
-                  </FeatureService>
-                </NotificationServiceProvider>
-              </ApiErrorBoundary>
+              <ConfigProvider>
+                <AnalyticsProvider>
+                  <ApiErrorBoundary>
+                    <NotificationServiceProvider>
+                      <FeatureService>
+                        <AppServicesProvider>
+                          <AuthenticationProvider>
+                            <IntercomProvider>
+                              <Routing />
+                            </IntercomProvider>
+                          </AuthenticationProvider>
+                        </AppServicesProvider>
+                      </FeatureService>
+                    </NotificationServiceProvider>
+                  </ApiErrorBoundary>
+                </AnalyticsProvider>
+              </ConfigProvider>
             </Suspense>
           </StoreProvider>
         </I18NProvider>

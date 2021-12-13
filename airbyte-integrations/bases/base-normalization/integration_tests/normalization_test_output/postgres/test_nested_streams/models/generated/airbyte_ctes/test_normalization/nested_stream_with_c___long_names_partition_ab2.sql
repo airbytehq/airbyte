@@ -1,10 +1,10 @@
 {{ config(
-    indexes = [{'columns':['_airbyte_emitted_at'],'type':'hash'}],
-    unique_key = '_airbyte_ab_id',
+    indexes = [{'columns':['_airbyte_emitted_at'],'type':'btree'}],
     schema = "_airbyte_test_normalization",
     tags = [ "nested-intermediate" ]
 ) }}
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+-- depends_on: {{ ref('nested_stream_with_c___long_names_partition_ab1') }}
 select
     _airbyte_nested_stre__nto_long_names_hashid,
     double_array_data,

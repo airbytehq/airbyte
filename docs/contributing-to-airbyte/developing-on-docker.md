@@ -45,3 +45,31 @@ assemble.dependsOn(dockerBuildTask)
 ## Building the docker images
 
 The gradle task `generate-docker` allows to build all the docker images.
+
+## Handling the OSS version
+
+The docker images that are running using a jar need to the latest published OSS version on master. Here is how it is handle:
+
+### Existing modules
+
+The version should already be present. If a new version is published while a PR is open, it should generate a conflict, that will prevent you from 
+merging the review. There are scenarios where it is going to generate and error (The Dockerfile is moved for example), the way to avoid any issue 
+is to:
+- Check the `.env` file to make sure that the latest version align with the version in the PR
+- Merge the `master` branch in the PR and make sure that the build is working right before merging.
+
+If the version don't align, it will break the remote `master` build.
+
+The version will be automatically replace with new version when releasing the OSS version using the `.bumpversion.cfg`.
+
+### New module
+
+This is trickier than handling the version of an exiting module.
+First your docker file generating an image need to be added to the `.bumpversion.cfg`. For each and every version you want to build with, the 
+docker image will need to be manually tag and push until the PR is merge. The reason is that the build has a check to know if all the potential 
+docker images are present in the docker repository. It is done the following way:
+```shell
+docker tag 7d94ea2ad657 airbyte/temporal:0.30.35-alpha
+docker push airbyte/temporal:0.30.35-alpha
+```
+The image ID can be retrieved using `docker images` or the docker desktop UI.

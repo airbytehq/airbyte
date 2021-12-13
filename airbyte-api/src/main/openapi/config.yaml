@@ -182,6 +182,23 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/workspaces/tag_feedback_status_as_done:
+    post:
+      tags:
+        - workspace
+      summary: Update workspace feedback state
+      operationId: updateWorkspaceFeedback
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceGiveFeedback"
+        required: true
+      responses:
+        "204":
+          description: The feedback state has been properly updated
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
   /v1/notifications/try:
     post:
       tags:
@@ -877,6 +894,30 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/connections/list_all:
+    post:
+      tags:
+        - connection
+      summary: Returns all connections for a workspace, including deleted connections.
+      description: List connections for workspace, including deleted connections.
+      operationId: listAllConnectionsForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionReadList"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/connections/get:
     post:
       tags:
@@ -1311,7 +1352,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CompleteOauthResponse"
+                $ref: "#/components/schemas/CompleteOAuthResponse"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -1357,7 +1398,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CompleteOauthResponse"
+                $ref: "#/components/schemas/CompleteOAuthResponse"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -1389,8 +1430,31 @@ paths:
     post:
       tags:
         - web_backend
-      summary: Returns all connections for a workspace.
+      summary: Returns all non-deleted connections for a workspace.
       operationId: webBackendListConnectionsForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebBackendConnectionReadList"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/web_backend/connections/list_all:
+    post:
+      tags:
+        - web_backend
+      summary: Returns all connections for a workspace.
+      operationId: webBackendListAllConnectionsForWorkspace
       requestBody:
         content:
           application/json:
@@ -1492,48 +1556,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/WebBackendConnectionReadList"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-  /v1/web_backend/sources/create:
-    post:
-      tags:
-        - web_backend
-      summary: Create a source
-      operationId: webBackendCreateSource
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SourceCreate"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SourceRead"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-  /v1/web_backend/destinations/create:
-    post:
-      tags:
-        - web_backend
-      summary: Create a destination
-      operationId: webBackendCreateDestination
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/DestinationCreate"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DestinationRead"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
   /v1/jobs/list:
@@ -1882,6 +1904,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Notification"
+        firstCompletedSync:
+          type: boolean
+        feedbackDone:
+          type: boolean
     WorkspaceUpdate:
       type: object
       required:
@@ -1910,6 +1936,13 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Notification"
+    WorkspaceGiveFeedback:
+      type: object
+      required:
+        - workspaceId
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
     # SLUG
     SlugRequestBody:
       type: object
@@ -2066,6 +2099,8 @@ components:
           $ref: "#/components/schemas/SourceDefinitionSpecification"
         authSpecification:
           $ref: "#/components/schemas/SourceAuthSpecification"
+        advancedAuth:
+          $ref: "#/components/schemas/AdvancedAuth"
         jobInfo:
           $ref: "#/components/schemas/SynchronousJobRead"
     # SOURCE
@@ -2268,6 +2303,8 @@ components:
           $ref: "#/components/schemas/DestinationDefinitionSpecification"
         authSpecification:
           $ref: "#/components/schemas/DestinationAuthSpecification"
+        advancedAuth:
+          $ref: "#/components/schemas/AdvancedAuth"
         jobInfo:
           $ref: "#/components/schemas/SynchronousJobRead"
         supportedDestinationSyncModes:
@@ -3227,6 +3264,115 @@ components:
           items:
             $ref: "#/components/schemas/DbMigrationRead"
     # OAuth
+    OAuthConfiguration:
+      description: OAuth specific blob.
+    OAuthInputConfiguration:
+      description: The values required to configure OAuth flows.
+        The schema for this must match the `OAuthConfigSpecification.oauthUserInputFromConnectorConfigSpecification` schema.
+      $ref: "#/components/schemas/OAuthConfiguration"
+    AdvancedAuth:
+      type: object
+      properties:
+        authFlowType:
+          type: string
+          enum: ["oauth2.0", "oauth1.0"]
+        predicateKey:
+          description: Json Path to a field in the connectorSpecification that should exist for the advanced auth to be applicable.
+          type: array
+          items:
+            type: string
+        predicateValue:
+          description: Value of the predicate_key fields for the advanced auth to be applicable.
+          type: string
+        oauthConfigSpecification:
+          "$ref": "#/components/schemas/OAuthConfigSpecification"
+    OAuthConfigSpecification:
+      type: object
+      properties:
+        oauthUserInputFromConnectorConfigSpecification:
+          description: |-
+            OAuth specific blob. This is a Json Schema used to validate Json configurations used as input to OAuth.
+            Must be a valid non-nested JSON that refers to properties from ConnectorSpecification.connectionSpecification
+            using special annotation 'path_in_connector_config'.
+            These are input values the user is entering through the UI to authenticate to the connector, that might also shared
+            as inputs for syncing data via the connector.
+
+            Examples:
+
+            if no connector values is shared during oauth flow, oauth_user_input_from_connector_config_specification=[]
+            if connector values such as 'app_id' inside the top level are used to generate the API url for the oauth flow,
+              oauth_user_input_from_connector_config_specification={
+                app_id: {
+                  type: string
+                  path_in_connector_config: ['app_id']
+                }
+              }
+            if connector values such as 'info.app_id' nested inside another object are used to generate the API url for the oauth flow,
+              oauth_user_input_from_connector_config_specification={
+                app_id: {
+                  type: string
+                  path_in_connector_config: ['info', 'app_id']
+                }
+              }
+          $ref: "#/components/schemas/OAuthConfiguration"
+        completeOAuthOutputSpecification:
+          description: |-
+            OAuth specific blob. This is a Json Schema used to validate Json configurations produced by the OAuth flows as they are
+            returned by the distant OAuth APIs.
+            Must be a valid JSON describing the fields to merge back to `ConnectorSpecification.connectionSpecification`.
+            For each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it,
+
+            Examples:
+
+                complete_oauth_output_specification={
+                  refresh_token: {
+                    type: string,
+                    path_in_connector_config: ['credentials', 'refresh_token']
+                  }
+                }
+          $ref: "#/components/schemas/OAuthConfiguration"
+        completeOAuthServerInputSpecification:
+          description: |-
+            OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations.
+            Must be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the
+            server when completing an OAuth flow (typically exchanging an auth code for refresh token).
+
+            Examples:
+
+                complete_oauth_server_input_specification={
+                  client_id: {
+                    type: string
+                  },
+                  client_secret: {
+                    type: string
+                  }
+                }
+          $ref: "#/components/schemas/OAuthConfiguration"
+        completeOAuthServerOutputSpecification:
+          description: |-
+            OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations that
+            also need to be merged back into the connector configuration at runtime.
+            This is a subset configuration of `complete_oauth_server_input_specification` that filters fields out to retain only the ones that
+            are necessary for the connector to function with OAuth. (some fields could be used during oauth flows but not needed afterwards, therefore
+            they would be listed in the `complete_oauth_server_input_specification` but not `complete_oauth_server_output_specification`)
+            Must be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the
+            connector when using OAuth flow APIs.
+            These fields are to be merged back to `ConnectorSpecification.connectionSpecification`.
+            For each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it,
+
+            Examples:
+
+                  complete_oauth_server_output_specification={
+                    client_id: {
+                      type: string,
+                      path_in_connector_config: ['credentials', 'client_id']
+                    },
+                    client_secret: {
+                      type: string,
+                      path_in_connector_config: ['credentials', 'client_secret']
+                    }
+                  }
+          $ref: "#/components/schemas/OAuthConfiguration"
     SourceOauthConsentRequest:
       type: object
       required:
@@ -3241,6 +3387,8 @@ components:
         redirectUrl:
           description: The url to redirect to after getting the user consent
           type: string
+        oAuthInputConfiguration:
+          $ref: "#/components/schemas/OAuthInputConfiguration"
     DestinationOauthConsentRequest:
       type: object
       required:
@@ -3255,6 +3403,8 @@ components:
         redirectUrl:
           description: The url to redirect to after getting the user consent
           type: string
+        oAuthInputConfiguration:
+          $ref: "#/components/schemas/OAuthInputConfiguration"
     OAuthConsentRead:
       type: object
       required:
@@ -3279,6 +3429,8 @@ components:
           description: The query parameters present in the redirect URL after a user granted consent e.g auth code
           type: object
           additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
+        oAuthInputConfiguration:
+          $ref: "#/components/schemas/OAuthInputConfiguration"
     CompleteDestinationOAuthRequest:
       type: object
       required:
@@ -3296,7 +3448,9 @@ components:
           description: The query parameters present in the redirect URL after a user granted consent e.g auth code
           type: object
           additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
-    CompleteOauthResponse:
+        oAuthInputConfiguration:
+          $ref: "#/components/schemas/OAuthInputConfiguration"
+    CompleteOAuthResponse:
       type: object
       additionalProperties: true # Oauth parameters like refresh/access token etc.. will be different per API so we don't specify them in advance
     SetInstancewideSourceOauthParamsRequestBody:

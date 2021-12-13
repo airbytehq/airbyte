@@ -80,7 +80,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(AirbyteConfig configType, Class<T> clazz)
+  public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(final AirbyteConfig configType, final Class<T> clazz)
       throws JsonValidationException, IOException {
     throw new UnsupportedOperationException("File Persistence doesn't support metadata");
   }
@@ -89,6 +89,15 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   public <T> void writeConfig(final AirbyteConfig configType, final String configId, final T config) throws IOException {
     synchronized (lock) {
       writeConfigInternal(configType, configId, config);
+    }
+  }
+
+  @Override
+  public <T> void writeConfigs(final AirbyteConfig configType, final Map<String, T> configs) throws IOException {
+    synchronized (lock) {
+      for (final Map.Entry<String, T> config : configs.entrySet()) {
+        writeConfigInternal(configType, config.getKey(), config.getValue());
+      }
     }
   }
 

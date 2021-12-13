@@ -29,6 +29,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -90,6 +91,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     });
   }
 
+  public Set<String> getInUseConnectorDockerImageNames() throws IOException {
+    return database.transaction(this::getConnectorRepositoriesInUse);
+  }
+
   public ValidatingConfigPersistence withValidation() {
     return new ValidatingConfigPersistence(this);
   }
@@ -131,7 +136,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .orderBy(AIRBYTE_CONFIGS.CONFIG_TYPE, AIRBYTE_CONFIGS.CONFIG_ID)
         .fetch());
     return results.stream()
-        .map(record -> new ConfigWithMetadata<>(record.get(AIRBYTE_CONFIGS.CONFIG_ID),
+        .map(record -> new ConfigWithMetadata<>(
+            record.get(AIRBYTE_CONFIGS.CONFIG_ID),
             record.get(AIRBYTE_CONFIGS.CONFIG_TYPE),
             record.get(AIRBYTE_CONFIGS.CREATED_AT).toInstant(),
             record.get(AIRBYTE_CONFIGS.UPDATED_AT).toInstant(),
@@ -141,18 +147,32 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
   @Override
   public <T> void writeConfig(final AirbyteConfig configType, final String configId, final T config) throws IOException {
-    database.transaction(ctx -> {
-      final boolean isExistingConfig = ctx.fetchExists(select()
-          .from(AIRBYTE_CONFIGS)
-          .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(configType.name()), AIRBYTE_CONFIGS.CONFIG_ID.eq(configId)));
+    final Map<String, T> configIdToConfig = new HashMap<>() {
 
-      final OffsetDateTime timestamp = OffsetDateTime.now();
-
-      if (isExistingConfig) {
-        updateConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(config), configId);
-      } else {
-        insertConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(config), configType.getIdFieldName());
+      {
+        put(configId, config);
       }
+
+    };
+    writeConfigs(configType, configIdToConfig);
+  }
+
+  @Override
+  public <T> void writeConfigs(final AirbyteConfig configType, final Map<String, T> configs) throws IOException {
+    database.transaction(ctx -> {
+      final OffsetDateTime timestamp = OffsetDateTime.now();
+      configs.forEach((configId, config) -> {
+        final boolean isExistingConfig = ctx.fetchExists(select()
+            .from(AIRBYTE_CONFIGS)
+            .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(configType.name()), AIRBYTE_CONFIGS.CONFIG_ID.eq(configId)));
+
+        if (isExistingConfig) {
+          updateConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(config), configId);
+        } else {
+          insertConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(config),
+              configType.getIdFieldName());
+        }
+      });
 
       return null;
     });

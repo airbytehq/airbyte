@@ -6,7 +6,7 @@ import { Toggle } from "components";
 import { Connection } from "core/resources/Connection";
 import useConnection from "hooks/services/useConnectionHook";
 import { Status } from "components/EntityTable/types";
-import { useAnalytics } from "hooks/useAnalytics";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 
 const ToggleLabel = styled.label`
   text-transform: uppercase;
@@ -37,7 +37,7 @@ const EnabledControl: React.FC<IProps> = ({
   frequencyText,
 }) => {
   const { updateConnection } = useConnection();
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
 
   const onChangeStatus = async () => {
     await updateConnection({

@@ -23,6 +23,8 @@ public interface ConfigPersistence {
 
   <T> void writeConfig(AirbyteConfig configType, String configId, T config) throws JsonValidationException, IOException;
 
+  <T> void writeConfigs(AirbyteConfig configType, Map<String, T> configs) throws IOException, JsonValidationException;
+
   void deleteConfig(AirbyteConfig configType, String configId) throws ConfigNotFoundException, IOException;
 
   void replaceAllConfigs(Map<AirbyteConfig, Stream<?>> configs, boolean dryRun) throws IOException;

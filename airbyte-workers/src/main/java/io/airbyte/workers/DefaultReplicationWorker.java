@@ -12,10 +12,10 @@ import io.airbyte.config.State;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.workers.protocols.Destination;
-import io.airbyte.workers.protocols.Mapper;
-import io.airbyte.workers.protocols.MessageTracker;
-import io.airbyte.workers.protocols.Source;
+import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
+import io.airbyte.workers.protocols.airbyte.AirbyteMapper;
+import io.airbyte.workers.protocols.airbyte.AirbyteSource;
+import io.airbyte.workers.protocols.airbyte.MessageTracker;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
@@ -29,17 +29,34 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+/**
+ * This worker is the "data shovel" of ETL. It is responsible for moving data from the Source
+ * container to the Destination container. It manages the full lifecycle of this process. This
+ * includes:
+ * <ul>
+ * <li>Starting the Source and Destination containers</li>
+ * <li>Passing data from Source to Destination</li>
+ * <li>Executing any configured map-only operations (Mappers) in between the Source and
+ * Destination</li>
+ * <li>Collecting metadata about the data that is passing from Source to Destination</li>
+ * <li>Listening for state messages emitted from the Destination to keep track of what data has been
+ * replicated.</li>
+ * <li>Handling shutdown of the Source and Destination</li>
+ * <li>Handling failure cases and returning state for partially completed replications (so that the
+ * next replication can pick up where it left off instead of starting from the beginning)</li>
+ * </ul>
+ */
 public class DefaultReplicationWorker implements ReplicationWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultReplicationWorker.class);
 
   private final String jobId;
   private final int attempt;
-  private final Source<AirbyteMessage> source;
-  private final Mapper<AirbyteMessage> mapper;
-  private final Destination<AirbyteMessage> destination;
-  private final MessageTracker<AirbyteMessage> sourceMessageTracker;
-  private final MessageTracker<AirbyteMessage> destinationMessageTracker;
+  private final AirbyteSource source;
+  private final AirbyteMapper mapper;
+  private final AirbyteDestination destination;
+  private final MessageTracker sourceMessageTracker;
+  private final MessageTracker destinationMessageTracker;
 
   private final ExecutorService executors;
   private final AtomicBoolean cancelled;
@@ -47,11 +64,11 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
   public DefaultReplicationWorker(final String jobId,
                                   final int attempt,
-                                  final Source<AirbyteMessage> source,
-                                  final Mapper<AirbyteMessage> mapper,
-                                  final Destination<AirbyteMessage> destination,
-                                  final MessageTracker<AirbyteMessage> sourceMessageTracker,
-                                  final MessageTracker<AirbyteMessage> destinationMessageTracker) {
+                                  final AirbyteSource source,
+                                  final AirbyteMapper mapper,
+                                  final AirbyteDestination destination,
+                                  final MessageTracker sourceMessageTracker,
+                                  final MessageTracker destinationMessageTracker) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.source = source;
@@ -179,11 +196,11 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
   }
 
-  private static Runnable getReplicationRunnable(final Source<AirbyteMessage> source,
-                                                 final Destination<AirbyteMessage> destination,
+  private static Runnable getReplicationRunnable(final AirbyteSource source,
+                                                 final AirbyteDestination destination,
                                                  final AtomicBoolean cancelled,
-                                                 final Mapper<AirbyteMessage> mapper,
-                                                 final MessageTracker<AirbyteMessage> sourceMessageTracker,
+                                                 final AirbyteMapper mapper,
+                                                 final MessageTracker sourceMessageTracker,
                                                  final Map<String, String> mdc) {
     return () -> {
       MDC.setContextMap(mdc);
@@ -217,9 +234,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     };
   }
 
-  private static Runnable getDestinationOutputRunnable(final Destination<AirbyteMessage> destination,
+  private static Runnable getDestinationOutputRunnable(final AirbyteDestination destination,
                                                        final AtomicBoolean cancelled,
-                                                       final MessageTracker<AirbyteMessage> destinationMessageTracker,
+                                                       final MessageTracker destinationMessageTracker,
                                                        final Map<String, String> mdc) {
     return () -> {
       MDC.setContextMap(mdc);

@@ -18,7 +18,7 @@
     {%- if found_column -%}
         {{ return(false) }}
     {%- else -%}
-        {{ dbt_utils.log_info(target_table ~ "." ~ col_ab_id ~ " does not exist. The table needs to be rebuilt in full_refresh") }}
+        {{ dbt_utils.log_info(target_table ~ "." ~ col_ab_id ~ " does not exist yet. The table will be created or rebuilt with dbt.full_refresh") }}
         {{ return(true) }}
     {%- endif -%}
 {%- endmacro -%}

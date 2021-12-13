@@ -4,6 +4,7 @@
       (select * from(
             
 -- Final base SQL model
+-- depends_on: "AIRBYTE_DATABASE".TEST_NORMALIZATION."DEDUP_EXCHANGE_RATE_SCD"
 select
     _AIRBYTE_UNIQUE_KEY,
     ID,

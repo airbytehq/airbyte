@@ -13,7 +13,7 @@ import { DestinationDefinition } from "core/resources/DestinationDefinition";
 
 import TitlesBlock from "./TitlesBlock";
 import HighlightedText from "./HighlightedText";
-import { useAnalytics } from "hooks/useAnalytics";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 
 type IProps = {
   availableServices: DestinationDefinition[];
@@ -43,7 +43,7 @@ const DestinationStep: React.FC<IProps> = ({
     isLoading,
   } = useDestinationDefinitionSpecificationLoad(destinationDefinitionId);
 
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
 
   const onDropDownSelect = (destinationDefinition: string) => {
     const destinationConnector = availableServices.find(

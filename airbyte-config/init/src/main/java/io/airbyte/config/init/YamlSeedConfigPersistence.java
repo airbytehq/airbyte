@@ -120,13 +120,18 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(AirbyteConfig configType, Class<T> clazz)
+  public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(final AirbyteConfig configType, final Class<T> clazz)
       throws JsonValidationException, IOException {
     throw new UnsupportedOperationException("Yaml Seed Config doesn't support metadata");
   }
 
   @Override
   public <T> void writeConfig(final AirbyteConfig configType, final String configId, final T config) {
+    throw new UnsupportedOperationException("The seed config persistence is read only.");
+  }
+
+  @Override
+  public <T> void writeConfigs(final AirbyteConfig configType, final Map<String, T> configs) {
     throw new UnsupportedOperationException("The seed config persistence is read only.");
   }
 

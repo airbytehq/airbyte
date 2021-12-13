@@ -7,11 +7,13 @@ package io.airbyte.integrations.source.db2;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.Db2JdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.JDBCType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -20,16 +22,17 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Db2Source extends AbstractJdbcSource implements Source {
+public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Db2Source.class);
   public static final String DRIVER_CLASS = "com.ibm.db2.jcc.DB2Driver";
+  private static Db2SourceOperations operations;
 
   private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
   private static final String KEY_STORE_FILE_PATH = "clientkeystore.jks";
 
   public Db2Source() {
-    super(DRIVER_CLASS, new Db2JdbcStreamingQueryConfiguration());
+    super(DRIVER_CLASS, new Db2JdbcStreamingQueryConfiguration(), new Db2SourceOperations());
   }
 
   public static void main(final String[] args) throws Exception {
@@ -53,7 +56,7 @@ public class Db2Source extends AbstractJdbcSource implements Source {
         .build());
 
     // assume ssl if not explicitly mentioned.
-    var additionalParams = obtainConnectionOptions(config.get("encryption"));
+    final var additionalParams = obtainConnectionOptions(config.get("encryption"));
     if (!additionalParams.isEmpty()) {
       jdbcUrl.append(":").append(String.join(";", additionalParams));
       jdbcUrl.append(";");
@@ -77,15 +80,15 @@ public class Db2Source extends AbstractJdbcSource implements Source {
 
   /* Helpers */
 
-  private List<String> obtainConnectionOptions(JsonNode encryption) {
-    List<String> additionalParameters = new ArrayList<>();
+  private List<String> obtainConnectionOptions(final JsonNode encryption) {
+    final List<String> additionalParameters = new ArrayList<>();
     if (!encryption.isNull()) {
-      String encryptionMethod = encryption.get("encryption_method").asText();
+      final String encryptionMethod = encryption.get("encryption_method").asText();
       if ("encrypted_verify_certificate".equals(encryptionMethod)) {
-        var keyStorePassword = getKeyStorePassword(encryption.get("key_store_password"));
+        final var keyStorePassword = getKeyStorePassword(encryption.get("key_store_password"));
         try {
           convertAndImportCertificate(encryption.get("ssl_certificate").asText(), keyStorePassword);
-        } catch (IOException | InterruptedException e) {
+        } catch (final IOException | InterruptedException e) {
           throw new RuntimeException("Failed to import certificate into Java Keystore");
         }
         additionalParameters.add("sslConnection=true");
@@ -96,7 +99,7 @@ public class Db2Source extends AbstractJdbcSource implements Source {
     return additionalParameters;
   }
 
-  private static String getKeyStorePassword(JsonNode encryptionKeyStorePassword) {
+  private static String getKeyStorePassword(final JsonNode encryptionKeyStorePassword) {
     var keyStorePassword = KEY_STORE_PASS;
     if (!encryptionKeyStorePassword.isNull() || !encryptionKeyStorePassword.isEmpty()) {
       keyStorePassword = encryptionKeyStorePassword.asText();
@@ -104,10 +107,10 @@ public class Db2Source extends AbstractJdbcSource implements Source {
     return keyStorePassword;
   }
 
-  private static void convertAndImportCertificate(String certificate, String keyStorePassword)
+  private static void convertAndImportCertificate(final String certificate, final String keyStorePassword)
       throws IOException, InterruptedException {
-    Runtime run = Runtime.getRuntime();
-    try (PrintWriter out = new PrintWriter("certificate.pem")) {
+    final Runtime run = Runtime.getRuntime();
+    try (final PrintWriter out = new PrintWriter("certificate.pem")) {
       out.print(certificate);
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);
@@ -116,8 +119,8 @@ public class Db2Source extends AbstractJdbcSource implements Source {
         run);
   }
 
-  private static void runProcess(String cmd, Runtime run) throws IOException, InterruptedException {
-    Process pr = run.exec(cmd);
+  private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
+    final Process pr = run.exec(cmd);
     if (!pr.waitFor(30, TimeUnit.SECONDS)) {
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);

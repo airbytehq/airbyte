@@ -10,7 +10,7 @@ import { JobsLogItem } from "components/JobItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
-import { useAnalytics } from "hooks/useAnalytics";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 
 type IProps = {
   onSubmit: (values: {
@@ -35,7 +35,7 @@ const DestinationForm: React.FC<IProps> = ({
   afterSelectConnector,
 }) => {
   const { location } = useRouter();
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
 
   const [destinationDefinitionId, setDestinationDefinitionId] = useState(
     location.state?.destinationDefinitionId || ""

@@ -33,20 +33,17 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.SyncMode;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
 import org.assertj.core.util.Sets;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
@@ -284,8 +281,8 @@ class BigQueryDenormalizedDestinationTest {
     return resultSet;
   }
 
-  private JsonNode removeAirbyteMetadataFields(JsonNode record) {
-    for (String airbyteMetadataField : AIRBYTE_METADATA_FIELDS) {
+  private JsonNode removeAirbyteMetadataFields(final JsonNode record) {
+    for (final String airbyteMetadataField : AIRBYTE_METADATA_FIELDS) {
       ((ObjectNode) record).remove(airbyteMetadataField);
     }
     return record;
@@ -314,10 +311,11 @@ class BigQueryDenormalizedDestinationTest {
         arguments(getSchema(), MESSAGE_USERS2));
   }
 
-  private static AirbyteMessage createRecordMessage(String stream, JsonNode data) {
+  private static AirbyteMessage createRecordMessage(final String stream, final JsonNode data) {
     return new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(stream)
             .withData(data)
             .withEmittedAt(NOW.toEpochMilli()));
   }
+
 }

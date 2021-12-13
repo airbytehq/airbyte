@@ -7,12 +7,12 @@ import useRouter from "hooks/useRouter";
 import FormContent from "./components/FormContent";
 import News from "./components/News";
 
-import { FirebaseActionMode, Routes } from "packages/cloud/routes";
+import { Routes } from "packages/cloud/routes";
 
 import { LoginPage } from "./LoginPage";
 import { SignupPage } from "./SignupPage";
 import { ResetPasswordPage } from "./ResetPasswordPage";
-import { ResetPasswordConfirmPage } from "./ConfirmPasswordResetPage";
+import { ResetPasswordAction } from "packages/cloud/views/FirebaseActionRoute";
 
 const Content = styled.div`
   width: 100%;
@@ -37,15 +37,6 @@ const NewsPart = styled(Part)`
   justify-content: space-between;
 `;
 
-const FirebaseActionRoute: React.FC = () => {
-  const { query } = useRouter<{ mode: string }>();
-
-  if (query.mode === FirebaseActionMode.RESET_PASSWORD) {
-    return <ResetPasswordConfirmPage />;
-  }
-  return <LoadingPage />;
-};
-
 const Auth: React.FC = () => {
   const { pathname } = useRouter();
 
@@ -67,7 +58,7 @@ const Auth: React.FC = () => {
                     <ResetPasswordPage />
                   </Route>
                   <Route path={Routes.FirebaseAction}>
-                    <FirebaseActionRoute />
+                    <ResetPasswordAction />
                   </Route>
                   <Redirect to={Routes.Login} />
                 </Switch>

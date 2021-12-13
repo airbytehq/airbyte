@@ -38,8 +38,8 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedDestination.class);
 
+  public static final String NESTED_ARRAY_FIELD = "value";
   protected static final String PROPERTIES_FIELD = "properties";
-  protected static final String NESTED_ARRAY_FIELD = "value";
   private static final String TYPE_FIELD = "type";
   private static final String FORMAT_FIELD = "format";
   private static final String REF_DEFINITION_KEY = "$ref";
@@ -59,7 +59,8 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
                                                      final Consumer<AirbyteMessage> outputRecordCollector,
                                                      final boolean isGcsUploadingMode,
                                                      final boolean isKeepFilesInGcs) {
-    return new BigQueryDenormalizedRecordConsumer(bigquery, writeConfigs, catalog, outputRecordCollector, getNamingResolver(), fieldsContainRefDefinitionValue);
+    return new BigQueryDenormalizedRecordConsumer(bigquery, writeConfigs, catalog, outputRecordCollector, getNamingResolver(),
+        fieldsContainRefDefinitionValue);
   }
 
   @Override
@@ -83,19 +84,20 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
             .build())
         .collect(Collectors.toList());
     if (!fieldsContainRefDefinitionValue.isEmpty()) {
-      LOGGER.warn("Next fields contain \"$ref\" as Definition: {}. They are going to be saved as String Type column", fieldsContainRefDefinitionValue);
+      LOGGER.warn("Next fields contain \"$ref\" as Definition: {}. They are going to be saved as String Type column",
+          fieldsContainRefDefinitionValue);
     }
     return tmpFields;
   }
 
-    /**
+  /**
    * @param properties - JSON schema with properties
    *
-   * The method is responsible for population of fieldsContainRefDefinitionValue set with keys
-   * contain $ref definition
+   *        The method is responsible for population of fieldsContainRefDefinitionValue set with keys
+   *        contain $ref definition
    *
-   * Currently, AirByte doesn't support parsing value by $ref key definition.
-   * The issue to track this <a href="https://github.com/airbytehq/airbyte/issues/7725">7725</a>
+   *        Currently, AirByte doesn't support parsing value by $ref key definition. The issue to
+   *        track this <a href="https://github.com/airbytehq/airbyte/issues/7725">7725</a>
    */
   private Consumer<String> addToRefList(ObjectNode properties) {
     return key -> {

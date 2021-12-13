@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.e2e_test;
 
+import static java.lang.Thread.sleep;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableMap;
@@ -51,6 +53,8 @@ public class InfiniteFeedSource extends BaseConnector implements Source {
     final Predicate<Long> anotherRecordPredicate =
         config.has("max_records") ? recordNumber -> recordNumber < config.get("max_records").asLong() : recordNumber -> true;
 
+    final long sleepTime = config.has("message_interval") ? config.get("message_interval").asLong() : 3000L;
+
     final AtomicLong i = new AtomicLong();
 
     return AutoCloseableIterators.fromIterator(new AbstractIterator<>() {
@@ -58,6 +62,14 @@ public class InfiniteFeedSource extends BaseConnector implements Source {
       @Override
       protected AirbyteMessage computeNext() {
         if (anotherRecordPredicate.test(i.get())) {
+          if (i.get() != 0) {
+            try {
+              LOGGER.info("sleeping for {} ms", sleepTime);
+              sleep(sleepTime);
+            } catch (final InterruptedException e) {
+              throw new RuntimeException();
+            }
+          }
           i.incrementAndGet();
           LOGGER.info("source emitting record {}:", i.get());
           return new AirbyteMessage()

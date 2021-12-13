@@ -24,9 +24,11 @@ public class AvroRecordHelper {
 
   /**
    * Convert an Airbyte JsonNode from Avro / Parquet Record to a plain one.
+   * <ul>
    * <li>Remove the airbyte id and emission timestamp fields.</li>
-   * <li>Remove null fields that must exist in Parquet but does not in original Json.</li> This
-   * function mutates the input Json.
+   * <li>Remove null fields that must exist in Parquet but does not in original Json. This function
+   * mutates the input Json.</li>
+   * </ul>
    */
   public static JsonNode pruneAirbyteJson(final JsonNode input) {
     final ObjectNode output = (ObjectNode) input;
