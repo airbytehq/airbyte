@@ -57,13 +57,13 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       ctx.execute("CREATE SCHEMA TEST;");
       ctx.execute("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');");
       ctx.execute("CREATE TYPE inventory_item AS (name text, supplier_id integer, price numeric);");
-      /*
-       * In one of the test case, we have some money values with currency symbol. Postgres can only
-       * understand those money values if the symbol corresponds to the monetary locale setting. For example,
-       * if the locale is 'en_GB', '£100' is valid, but '$100' is not. So setting the monetary locate is
-       * necessary here to make sure the unit test can pass, no matter what the locale the runner VM has.
-       */
+      // In one of the test case, we have some money values with currency symbol. Postgres can only
+      // understand those money values if the symbol corresponds to the monetary locale setting. For example,
+      // if the locale is 'en_GB', '£100' is valid, but '$100' is not. So setting the monetary locate is
+      // necessary here to make sure the unit test can pass, no matter what the locale the runner VM has.
       ctx.execute("SET lc_monetary TO 'en_US.utf8';");
+      // Set up a fixed timezone here so that timetz and timestamptz always have the same time zone
+      // wherever the tests are running on.
       ctx.execute("SET TIMEZONE TO 'America/Los_Angeles'");
       return null;
     });
@@ -456,8 +456,9 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
               .sourceType("time")
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaPrimitive.STRING)
-              .addInsertValues("null")
-              .addNullExpectedValue()
+              // time column will ignore time zone
+              .addInsertValues("null", "'13:00:01'", "'13:00:02+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05Z+8'", "'13:00:06Z-8'")
+              .addExpectedValues(null, "13:00:01", "13:00:02", "13:00:03", "13:00:04", "13:00:05", "13:00:06")
               .build());
     }
 
@@ -468,8 +469,10 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
               .sourceType("timetz")
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaPrimitive.STRING)
-              .addInsertValues("null")
-              .addNullExpectedValue()
+              .addInsertValues("null", "'13:00:01'", "'13:00:02+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05Z+8'", "'13:00:06Z-8'")
+              // A time value without time zone will use the time zone set on the database, which is Z-8,
+              // so 13:00:01 is returned as 13:00:01-08.
+              .addExpectedValues(null, "13:00:01-08", "13:00:02+08", "13:00:03-08", "13:00:04+00", "13:00:05-08", "13:00:06+08")
               .build());
     }
 

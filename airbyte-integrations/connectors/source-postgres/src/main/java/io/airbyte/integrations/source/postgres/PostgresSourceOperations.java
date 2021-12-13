@@ -81,6 +81,8 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
       putBoolean(json, columnName, resultSet, colIndex);
     } else if (columnTypeName.equalsIgnoreCase("bytea")) {
       putString(json, columnName, resultSet, colIndex);
+    } else if (columnTypeName.equalsIgnoreCase("time") || columnTypeName.equalsIgnoreCase("timetz")) {
+      putString(json, columnName, resultSet, colIndex);
     } else {
       // https://www.postgresql.org/docs/14/datatype.html
       switch (columnType) {
