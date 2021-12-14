@@ -157,6 +157,7 @@ public class RocksetDestinationAcceptanceTest extends DestinationAcceptanceTest 
         final ApiClient client = RocksetUtils.apiClientFromConfig(config);
         final String workspace = config.get("workspace").asText();
         collectionsToDelete.stream().map(cn -> deleteCollection(client, workspace, cn)).collect(Collectors.toList()).forEach(CompletableFuture::join);
+        tearDownExec.shutdown();
 
     }
 
