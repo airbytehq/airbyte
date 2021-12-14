@@ -80,6 +80,21 @@ public class EnvConfigs implements Configs {
   private static final String SECRET_PERSISTENCE = "SECRET_PERSISTENCE";
   private static final String JOB_POD_MAIN_CONTAINER_IMAGE_PULL_SECRET = "JOB_POD_MAIN_CONTAINER_IMAGE_PULL_SECRET";
   private static final String PUBLISH_METRICS = "PUBLISH_METRICS";
+  private static final String CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION = "CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION";
+  private static final String CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS = "CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS";
+  private static final String JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION = "JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION";
+  private static final String JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS = "JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS";
+
+  private static final String STATE_STORAGE_S3_BUCKET_NAME = "STATE_STORAGE_S3_BUCKET_NAME";
+  private static final String STATE_STORAGE_S3_REGION = "STATE_STORAGE_S3_REGION";
+  private static final String STATE_STORAGE_S3_ACCESS_KEY = "STATE_STORAGE_S3_ACCESS_KEY";
+  private static final String STATE_STORAGE_S3_SECRET_ACCESS_KEY = "STATE_STORAGE_S3_SECRET_ACCESS_KEY";
+  private static final String STATE_STORAGE_MINIO_BUCKET_NAME = "STATE_STORAGE_MINIO_BUCKET_NAME";
+  private static final String STATE_STORAGE_MINIO_ENDPOINT = "STATE_STORAGE_MINIO_ENDPOINT";
+  private static final String STATE_STORAGE_MINIO_ACCESS_KEY = "STATE_STORAGE_MINIO_ACCESS_KEY";
+  private static final String STATE_STORAGE_MINIO_SECRET_ACCESS_KEY = "STATE_STORAGE_MINIO_SECRET_ACCESS_KEY";
+  private static final String STATE_STORAGE_GCS_BUCKET_NAME = "STATE_STORAGE_GCS_BUCKET_NAME";
+  private static final String STATE_STORAGE_GCS_APPLICATION_CREDENTIALS = "STATE_STORAGE_GCS_APPLICATION_CREDENTIALS";
 
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
@@ -95,6 +110,7 @@ public class EnvConfigs implements Configs {
   private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB = 5000;
+  private static final int DEFAULT_DATABASE_INTILIZATION_TIMEOUT_MS = 60 * 1000;
 
   public static final long DEFAULT_MAX_SPEC_WORKERS = 5;
   public static final long DEFAULT_MAX_CHECK_WORKERS = 5;
@@ -105,6 +121,7 @@ public class EnvConfigs implements Configs {
 
   private final Function<String, String> getEnv;
   private final LogConfigs logConfigs;
+  private final CloudStorageConfigs stateStorageCloudConfigs;
 
   public EnvConfigs() {
     this(System::getenv);
@@ -113,6 +130,7 @@ public class EnvConfigs implements Configs {
   EnvConfigs(final Function<String, String> getEnv) {
     this.getEnv = getEnv;
     this.logConfigs = new LogConfigs(getLogConfiguration().orElse(null));
+    this.stateStorageCloudConfigs = getStateStorageConfiguration().orElse(null);
   }
 
   private Optional<CloudStorageConfigs> getLogConfiguration() {
@@ -132,6 +150,28 @@ public class EnvConfigs implements Configs {
           getEnvOrDefault(LogClientSingleton.AWS_ACCESS_KEY_ID, ""),
           getEnvOrDefault(LogClientSingleton.AWS_SECRET_ACCESS_KEY, ""),
           getEnvOrDefault(LogClientSingleton.S3_LOG_BUCKET_REGION, ""))));
+    } else {
+      return Optional.empty();
+    }
+  }
+
+  private Optional<CloudStorageConfigs> getStateStorageConfiguration() {
+    if (getEnv(STATE_STORAGE_GCS_BUCKET_NAME) != null) {
+      return Optional.of(CloudStorageConfigs.gcs(new GcsConfig(
+          getEnvOrDefault(STATE_STORAGE_GCS_BUCKET_NAME, ""),
+          getEnvOrDefault(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, ""))));
+    } else if (getEnv(STATE_STORAGE_MINIO_ENDPOINT) != null) {
+      return Optional.of(CloudStorageConfigs.minio(new MinioConfig(
+          getEnvOrDefault(STATE_STORAGE_MINIO_BUCKET_NAME, ""),
+          getEnvOrDefault(LogClientSingleton.AWS_ACCESS_KEY_ID, ""),
+          getEnvOrDefault(LogClientSingleton.AWS_SECRET_ACCESS_KEY, ""),
+          getEnvOrDefault(STATE_STORAGE_MINIO_ENDPOINT, ""))));
+    } else if (getEnv(STATE_STORAGE_S3_REGION) != null) {
+      return Optional.of(CloudStorageConfigs.s3(new S3Config(
+          getEnvOrDefault(STATE_STORAGE_S3_BUCKET_NAME, ""),
+          getEnvOrDefault(LogClientSingleton.AWS_ACCESS_KEY_ID, ""),
+          getEnvOrDefault(LogClientSingleton.AWS_SECRET_ACCESS_KEY, ""),
+          getEnvOrDefault(STATE_STORAGE_S3_REGION, ""))));
     } else {
       return Optional.empty();
     }
@@ -241,6 +281,16 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public String getJobsDatabaseMinimumFlywayMigrationVersion() {
+    return getEnsureEnv(JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION);
+  }
+
+  @Override
+  public long getJobsDatabaseInitializationTimeoutMs() {
+    return getEnvOrDefault(JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS, DEFAULT_DATABASE_INTILIZATION_TIMEOUT_MS);
+  }
+
+  @Override
   public String getConfigDatabaseUser() {
     // Default to reuse the job database
     return getEnvOrDefault(CONFIG_DATABASE_USER, getDatabaseUser());
@@ -256,6 +306,16 @@ public class EnvConfigs implements Configs {
   public String getConfigDatabaseUrl() {
     // Default to reuse the job database
     return getEnvOrDefault(CONFIG_DATABASE_URL, getDatabaseUrl());
+  }
+
+  @Override
+  public String getConfigsDatabaseMinimumFlywayMigrationVersion() {
+    return getEnsureEnv(CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION);
+  }
+
+  @Override
+  public long getConfigsDatabaseInitializationTimeoutMs() {
+    return getEnvOrDefault(JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS, DEFAULT_DATABASE_INTILIZATION_TIMEOUT_MS);
   }
 
   @Override
@@ -420,8 +480,14 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(JOB_POD_MAIN_CONTAINER_MEMORY_LIMIT, DEFAULT_JOB_POD_MEMORY_REQUIREMENT);
   }
 
+  @Override
   public LogConfigs getLogConfigs() {
     return logConfigs;
+  }
+
+  @Override
+  public CloudStorageConfigs getStateStorageCloudConfigs() {
+    return stateStorageCloudConfigs;
   }
 
   @Override

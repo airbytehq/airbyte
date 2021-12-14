@@ -34,6 +34,7 @@ dependencies {
     implementation project(':airbyte-db:lib')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
+    implementation project(':airbyte-integrations:connectors:destination-s3')
     implementation project(':airbyte-protocol:models')
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
