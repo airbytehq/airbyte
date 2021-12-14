@@ -1,7 +1,7 @@
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 /*
-C'est
+This
  */
 buildscript {
     repositories {
