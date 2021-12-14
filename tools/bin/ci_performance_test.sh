@@ -9,6 +9,10 @@ set -e
 connector="$1" | xargs
 firstarg=""
 secondarg=""
+echo "3 ----------  $1--"
+echo "3 ----------  $connector--"
+echo "3 ----------  $2--"
+echo "3 ----------  $3--"
 if [[ "$2" ]]; then
   if [[ "$2" == *"cpulimit"* ]]; then
     firstarg="-DcpuLimit=$(echo $2 | cut -d = -f 2)"
@@ -48,14 +52,14 @@ else
     selected_performance_test=$(echo "$all_performance_tests" | grep "^$connector_name$" || echo "")
     performanceTestCommand="$(_to_gradle_path "airbyte-integrations/$connector $firstarg $secondargt" performanceTest)"
   else
-    echo "----------  $firstarg"
-    echo "----------  $secondarg"
+    echo "2 ----------  $firstarg"
+    echo "2 ----------  $secondarg"
     selected_performance_test=$(echo "$all_performance_tests" | grep "^$connector$" || echo "")
     performanceTestCommand=":airbyte-integrations:connectors:$connector:performanceTest $firstarg $secondarg"
   fi
   if [ -n "$selected_performance_test" ] ; then
-    echo "----------  $firstarg"
-    echo "----------  $secondarg"
+    echo "1 ----------  $firstarg"
+    echo "1 ----------  $secondarg"
     echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand"
     ./gradlew --no-daemon --scan "$performanceTestCommand"
   else
