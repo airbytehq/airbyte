@@ -6,7 +6,7 @@ set -e
 
 # runs performance tests for an performance name
 
-connector="$1" | xargs
+connector="$1"
 firstarg=""
 secondarg=""
 echo "3 ----------  $1--"
