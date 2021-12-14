@@ -15,6 +15,7 @@ import io.airbyte.oauth.flows.HarvestOAuthFlow;
 import io.airbyte.oauth.flows.HubspotOAuthFlow;
 import io.airbyte.oauth.flows.IntercomOAuthFlow;
 import io.airbyte.oauth.flows.LinkedinAdsOAuthFlow;
+import io.airbyte.oauth.flows.MicrosoftTeamsOAuthFlow;
 import io.airbyte.oauth.flows.PipeDriveOAuthFlow;
 import io.airbyte.oauth.flows.QuickbooksOAuthFlow;
 import io.airbyte.oauth.flows.RetentlyOAuthFlow;
@@ -52,6 +53,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-hubspot", new HubspotOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-intercom", new IntercomOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-instagram", new InstagramOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-microsoft-teams", new MicrosoftTeamsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-pipedrive", new PipeDriveOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-quickbooks", new QuickbooksOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-retently", new RetentlyOAuthFlow(configRepository, httpClient))
