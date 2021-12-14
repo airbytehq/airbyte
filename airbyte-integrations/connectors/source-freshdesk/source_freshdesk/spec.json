@@ -12,7 +12,7 @@
         "description": "Freshdesk domain",
         "title": "Domain",
         "examples": ["myaccount.freshdesk.com"],
-        "pattern": ["^[a-zA-Z0-9._-]*\\.freshdesk\\.com$"]
+        "pattern": "^[a-zA-Z0-9._-]*\\.freshdesk\\.com$"
       },
       "api_key": {
         "type": "string",
