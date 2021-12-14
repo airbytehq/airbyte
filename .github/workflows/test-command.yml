@@ -83,7 +83,6 @@ jobs:
           source venv/bin/activate
           ci_credentials ${{ github.event.inputs.connector }}
         env:
-          GITHUB_PROVIDED_SECRETS_JSON: ${{ toJson(secrets) }}
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
 
       - name: test ${{ github.event.inputs.connector }}

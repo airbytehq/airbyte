@@ -41,7 +41,8 @@ class SecretsLoader:
         """
         registers_filepath = self.get_github_registers_filepath()
         if not registers_filepath.exists():
-            return self.logger.critical(f"not found {registers_filepath} with GitHub registers")
+            # it is optional logic and we can skip sync if a GitHub secrets' register is not exist
+            return {}
 
         result = {}
         with open(registers_filepath, "r") as file:
