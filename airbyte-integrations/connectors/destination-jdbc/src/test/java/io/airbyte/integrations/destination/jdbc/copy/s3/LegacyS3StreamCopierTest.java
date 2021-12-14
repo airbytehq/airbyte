@@ -219,8 +219,10 @@ public class LegacyS3StreamCopierTest {
 
     // carriage returns are required b/c RFC4180 requires it :(
     assertEquals(
-        "f6767f7d-ce1e-45cc-92db-2ad3dfdd088e,\"{\"\"foo\"\":73}\",1969-12-31 16:00:01.234\r\n"
-            + "2b95a13f-d54f-4370-a712-1c7bf2716190,\"{\"\"bar\"\":84}\",1969-12-31 16:00:02.345\r\n",
+        """
+            f6767f7d-ce1e-45cc-92db-2ad3dfdd088e,"{""foo"":73}",1969-12-31 16:00:01.234\r
+            2b9 5a13f-d54f-4370-a712-1c7bf2716190,"{""bar"":84}",1969-12-31 16:00:02.345\r
+            """,
         outputStreams.get(0).toString(StandardCharsets.UTF_8));
     assertEquals("24eba873-de57-4901-9e1e-2393334320fb,\"{\"\"asd\"\":95}\",1969-12-31 16:00:03.456\r\n",
         outputStreams.get(1).toString(StandardCharsets.UTF_8));
