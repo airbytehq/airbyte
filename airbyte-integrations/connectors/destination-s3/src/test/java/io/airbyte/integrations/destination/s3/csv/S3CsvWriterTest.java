@@ -83,7 +83,7 @@ class S3CsvWriterTest {
   }
 
   @BeforeEach
-  public void setup() throws IOException {
+  public void setup() {
     streamTransferManagerConstructorArguments = new ArrayList<>();
     outputStreams = new ArrayList<>();
     // This is basically RETURNS_SELF, except with getMultiPartOutputStreams configured correctly.
