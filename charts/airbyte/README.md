@@ -38,6 +38,7 @@
 | `webapp.nodeSelector`        | Node labels for pod assignment                                   | `{}`             |
 | `webapp.tolerations`         | Tolerations for webapp pod assignment.                           | `[]`             |
 | `webapp.ingress.enabled`     | Set to true to enable ingress record generation                  | `false`          |
+| `webapp.ingress.hosts`       | Ingress Hosts configuration                                      | `[]`             |
 | `webapp.ingress.className`   | Specifies ingressClassName for clusters >= 1.18+                 | `""`             |
 | `webapp.ingress.annotations` | Ingress annotations done as key:value pairs                      | `{}`             |
 | `webapp.ingress.hosts`       | The list of hostnames to be covered with this ingress record.    | `[]`             |
