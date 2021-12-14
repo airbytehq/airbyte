@@ -39,8 +39,6 @@ jobs:
     needs: start-test-runner
     runs-on: ${{ needs.start-test-runner.outputs.label }}
     environment: more-secrets
-    variables:
-      variable_con: ${{ github.event.inputs.connector.split('|') }}
     steps:
       - name: Search for valid connector name format
         id: regex
@@ -54,5 +52,3 @@ jobs:
         run: echo "Variable -> ${{ steps.regex.outputs.first_match }} "
       - name: Test_2
         run: echo "Variable -> ${{ github.event.inputs.connector }} "
-      - name: Test_3
-        run: echo "Variable ->  $( variable_con.0 ) ==="
