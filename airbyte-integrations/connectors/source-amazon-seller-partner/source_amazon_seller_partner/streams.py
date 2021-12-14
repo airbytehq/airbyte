@@ -287,7 +287,8 @@ class ReportsAmazonSPStream(Stream, ABC):
         document_records = self.parse_document(document)
         yield from document_records
 
-    def parse_document(self, document):
+    @staticmethod
+    def parse_document(document):
         return csv.DictReader(StringIO(document), delimiter="\t")
 
     def report_options(self) -> Mapping[str, Any]:
@@ -392,7 +393,8 @@ class BrandAnalyticsSearchTermsReports(ReportsAmazonSPStream):
 
     name = "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT"
 
-    def parse_document(self, document):
+    @staticmethod
+    def parse_document(document):
         parsed = json_lib.loads(document)
         return parsed.get("dataByDepartmentAndSearchTerm", {})
 
