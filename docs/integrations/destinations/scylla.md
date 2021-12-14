@@ -44,3 +44,9 @@ and handle any amount of data from the connector.
 ### Setup guide
 
 ###### TODO: more info, screenshots?, etc...
+
+## CHANGELOG
+
+| Version | Date | Pull Request | Subject |
+|:--------| :--- | :--- | :--- |
+| 0.1.1 | 2021-12-14 | [8791](https://github.com/airbytehq/airbyte/pull/8791) | Update fields in destination-connectors specifications  |

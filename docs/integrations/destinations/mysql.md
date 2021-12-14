@@ -95,6 +95,7 @@ Using this feature requires additional configuration, when creating the destinat
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
+| 0.1.16  | 2021-12-14 | [8791](https://github.com/airbytehq/airbyte/pull/8791) | Update fields in destination-connectors specifications  |
 | 0.1.15  | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key  |
 | 0.1.14  | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count | 
 | 0.1.13  | 2021-09-28 | [\#6506](https://github.com/airbytehq/airbyte/pull/6506) | Added support for MySQL destination via TLS/SSL |

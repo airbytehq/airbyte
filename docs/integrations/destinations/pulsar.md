@@ -85,3 +85,9 @@ You should now have all the requirements needed to configure Pulsar as a destina
 * **Block if queue is full**
 
 More info about this can be found in the [Pulsar producer configs documentation site](https://pulsar.apache.org/docs/en/client-libraries-java/#producer).
+
+## CHANGELOG
+
+| Version | Date | Pull Request | Subject |
+|:--------| :--- | :--- | :--- |
+| 0.1.1 | 2021-12-14 | [8791](https://github.com/airbytehq/airbyte/pull/8791) | Update fields in destination-connectors specifications  |
