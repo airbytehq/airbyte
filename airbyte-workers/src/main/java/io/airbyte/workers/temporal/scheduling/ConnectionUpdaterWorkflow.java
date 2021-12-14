@@ -38,6 +38,7 @@ public interface ConnectionUpdaterWorkflow {
     private boolean isRunning;
     private boolean isDeleted;
     private boolean skipScheduling;
+    private boolean isUpdated;
 
   }
 

@@ -8,6 +8,7 @@ import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.exception.NonRetryableException;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverInput;
+import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverOutput;
 import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActivity;
 import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActivity.ConnectionDeletionInput;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity;
@@ -59,7 +60,8 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
 
   private CancellationScope syncWorkflowCancellationScope;
 
-  public ConnectionUpdaterWorkflowImpl() {}
+  public ConnectionUpdaterWorkflowImpl() {
+  }
 
   @Override
   public SyncResult run(final ConnectionUpdaterInput connectionUpdaterInput) throws NonRetryableException {
@@ -67,9 +69,9 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
 
       syncWorkflowCancellationScope = Workflow.newCancellationScope(() -> {
         // Scheduling
-        final ConfigFetchActivity.ScheduleRetrieverInput scheduleRetrieverInput = new ScheduleRetrieverInput(
+        final ScheduleRetrieverInput scheduleRetrieverInput = new ScheduleRetrieverInput(
             connectionUpdaterInput.getConnectionId());
-        final ConfigFetchActivity.ScheduleRetrieverOutput scheduleRetrieverOutput = configFetchActivity.getPeriodicity(scheduleRetrieverInput);
+        final ScheduleRetrieverOutput scheduleRetrieverOutput = configFetchActivity.getPeriodicity(scheduleRetrieverInput);
         Workflow.await(scheduleRetrieverOutput.getPeriodicity(), () -> skipScheduling() || connectionUpdaterInput.isFromFailure());
 
         if (!isUpdated) {
@@ -221,7 +223,8 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
     return new WorkflowState(
         isRunning,
         isDeleted,
-        skipScheduling);
+        skipScheduling,
+        isUpdated);
   }
 
   @Override
