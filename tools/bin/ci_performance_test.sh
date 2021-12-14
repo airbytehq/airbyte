@@ -15,7 +15,7 @@ if [[ "$2" ]]; then
     echo "3 ----------  $firstarg--"
   fi
   if [[ "$2" == *"memorylimit"* ]]; then
-    firstarg="-DmemoryLimit=$(echo $2" | cut -d = -f 2)"
+    firstarg="-DmemoryLimit=$(echo "$2" | cut -d = -f 2)"
   fi""
 fi
 if [[ "$3" ]]; then
