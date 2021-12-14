@@ -63,9 +63,6 @@ public class S3StreamCopierTest {
   private static final Timestamp UPLOAD_TIME = Timestamp.from(Instant.ofEpochMilli(1639077474000L));
   private static final int MAX_PARTS_PER_FILE = 42;
 
-  private static final String EXPECTED_FILENAME1 = "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000_fake-stream_00000.csv";
-  private static final String EXPECTED_FILENAME2 = "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000_fake-stream_00001.csv";
-
   private AmazonS3Client s3Client;
   private JdbcDatabase db;
   private SqlOperations sqlOperations;
@@ -106,6 +103,8 @@ public class S3StreamCopierTest {
     csvWriterMockedConstruction = mockConstruction(
         S3CsvWriter.class,
         (mock, context) -> {
+          doReturn(String.format("fakeOutputPath-%05d", csvWriterConstructorArguments.size())).when(mock).getObjectKey();
+
           // Mockito doesn't seem to provide an easy way to actually retrieve these arguments later on, so manually store them on construction.
           // _PowerMockito_ does, but I didn't want to set up that additional dependency.
           final List<?> arguments = context.arguments();
@@ -139,7 +138,7 @@ public class S3StreamCopierTest {
           final String schema,
           final String tableName,
           final S3DestinationConfig s3Config) {
-        throw new UnsupportedOperationException("not implemented");
+        throw new UnsupportedOperationException("fake object does not implement this method");
       }
     };
   }
@@ -151,11 +150,11 @@ public class S3StreamCopierTest {
 
   @Test
   public void createSequentialStagingFiles_when_multipleFilesRequested() {
-    // When we call prepareStagingFile() the first time, it should create exactly one upload manager. The next (MAX_PARTS_PER_FILE - 1) invocations
-    // should reuse that same upload manager.
+    // When we call prepareStagingFile() the first time, it should create exactly one S3CsvWriter. The next (MAX_PARTS_PER_FILE - 1) invocations
+    // should reuse that same writer.
     for (var i = 0; i < MAX_PARTS_PER_FILE; i++) {
       final String file = copier.prepareStagingFile();
-      assertEquals("fake-staging-folder/fake-schema/fake-stream_00000", file, "preparing file number " + i);
+      assertEquals("fakeOutputPath-00000", file, "preparing file number " + i);
       assertEquals(1, csvWriterMockedConstruction.constructed().size());
 
       final S3CsvWriterArguments args = csvWriterConstructorArguments.get(0);
@@ -166,9 +165,9 @@ public class S3StreamCopierTest {
       assertEquals(QUEUE_CAPACITY, args.queueCapacity);
     }
 
-    // Now that we've hit the MAX_PARTS_PER_FILE, we should start a new upload
+    // Now that we've hit the MAX_PARTS_PER_FILE, we should start a new writer
     final String secondFile = copier.prepareStagingFile();
-    assertEquals("fake-staging-folder/fake-schema/fake-stream_00001", secondFile);
+    assertEquals("fakeOutputPath-00001", secondFile);
     final List<S3CsvWriter> secondManagers = csvWriterMockedConstruction.constructed();
     assertEquals(2, secondManagers.size());
 
@@ -188,7 +187,7 @@ public class S3StreamCopierTest {
 
     final List<S3CsvWriter> managers = csvWriterMockedConstruction.constructed();
     final S3CsvWriter manager = managers.get(0);
-//    verify(manager).complete();
+    verify(manager).close(false);
   }
 
   @Test
@@ -199,16 +198,16 @@ public class S3StreamCopierTest {
 
     final List<S3CsvWriter> managers = csvWriterMockedConstruction.constructed();
     final S3CsvWriter manager = managers.get(0);
-//    verify(manager).abort();
+    verify(manager).close(true);
   }
 
   @Test
   public void deletesStagingFiles() throws Exception {
     copier.prepareStagingFile();
-    doReturn(true).when(s3Client).doesObjectExist("fake-bucket", EXPECTED_FILENAME1);
+    doReturn(true).when(s3Client).doesObjectExist("fake-bucket", "fakeOutputPath-00000");
 
     copier.removeFileAndDropTmpTable();
 
-    verify(s3Client).deleteObject("fake-bucket", EXPECTED_FILENAME1);
+    verify(s3Client).deleteObject("fake-bucket", "fakeOutputPath-00000");
   }
 }

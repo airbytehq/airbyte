@@ -12,6 +12,7 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.Objects;
 
 /**
  * An S3 configuration. Typical usage sets at most one of {@code bucketPath} (necessary for more delicate data syncing to S3) and {@code partSize}
@@ -157,5 +158,25 @@ public class S3DestinationConfig {
         this.partSize,
         formatConfig
     );
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    final S3DestinationConfig that = (S3DestinationConfig) o;
+    return Objects.equals(endpoint, that.endpoint) && Objects.equals(bucketName, that.bucketName) && Objects.equals(
+        bucketPath, that.bucketPath) && Objects.equals(bucketRegion, that.bucketRegion) && Objects.equals(accessKeyId,
+        that.accessKeyId) && Objects.equals(secretAccessKey, that.secretAccessKey) && Objects.equals(partSize, that.partSize)
+        && Objects.equals(formatConfig, that.formatConfig);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(endpoint, bucketName, bucketPath, bucketRegion, accessKeyId, secretAccessKey, partSize, formatConfig);
   }
 }

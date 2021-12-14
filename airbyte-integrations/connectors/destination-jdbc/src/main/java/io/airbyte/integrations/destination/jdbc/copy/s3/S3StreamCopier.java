@@ -97,6 +97,7 @@ public abstract class S3StreamCopier implements StreamCopier {
 
       try {
         final S3CsvWriter writer = new S3CsvWriter.Builder(
+            // TODO what does the Flattening parameter actually do?
             s3Config.cloneWithFormatConfig(new S3CsvFormatConfig(Flattening.NO, (long) s3Config.getPartSize())),
             s3Client,
             configuredAirbyteStream,

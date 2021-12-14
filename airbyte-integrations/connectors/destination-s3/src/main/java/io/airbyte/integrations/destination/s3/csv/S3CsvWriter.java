@@ -40,7 +40,8 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
                       final ConfiguredAirbyteStream configuredStream,
                       final Timestamp uploadTimestamp,
                       final int uploadThreads,
-                      final int queueCapacity)
+                      final int queueCapacity,
+                      final boolean writeHeader)
       throws IOException {
     super(config, s3Client, configuredStream);
 
@@ -60,9 +61,11 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
         .queueCapacity(queueCapacity);
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
-    this.csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8),
-        CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
-            .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0])));
+    CSVFormat csvSettings = CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL);
+    if (writeHeader) {
+      csvSettings = csvSettings.withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0]));
+    }
+    this.csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8), csvSettings);
   }
 
   public static class Builder {
@@ -73,6 +76,7 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
     private final Timestamp uploadTimestamp;
     private int uploadThreads = S3StreamTransferManagerHelper.DEFAULT_UPLOAD_THREADS;
     private int queueCapacity = S3StreamTransferManagerHelper.DEFAULT_QUEUE_CAPACITY;
+    private boolean withHeader = true;
 
     public Builder(final S3DestinationConfig config,
                    final AmazonS3 s3Client,
@@ -94,13 +98,20 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
       return this;
     }
 
+    public Builder withHeader(final boolean withHeader) {
+      this.withHeader = withHeader;
+      return this;
+    }
+
     public S3CsvWriter build() throws IOException {
       return new S3CsvWriter(config,
           s3Client,
           configuredStream,
           uploadTimestamp,
           uploadThreads,
-          queueCapacity);
+          queueCapacity,
+          withHeader
+      );
     }
   }
 

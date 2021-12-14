@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
+import java.util.Objects;
 
 public class S3CsvFormatConfig implements S3FormatConfig {
 
@@ -65,6 +66,7 @@ public class S3CsvFormatConfig implements S3FormatConfig {
     return flattening;
   }
 
+  @Override
   public Long getPartSize() {
     return partSize;
   }
@@ -77,4 +79,20 @@ public class S3CsvFormatConfig implements S3FormatConfig {
         '}';
   }
 
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    final S3CsvFormatConfig that = (S3CsvFormatConfig) o;
+    return flattening == that.flattening && Objects.equals(partSize, that.partSize);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(flattening, partSize);
+  }
 }
