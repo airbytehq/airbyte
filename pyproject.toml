@@ -20,13 +20,14 @@ allow_redefinition = true
 disallow_incomplete_defs = true
 disallow_untyped_defs = true
 no_implicit_reexport = true
+no_strict_optional = true
+strict_equality = true
 
 # Output
 pretty = true
 show_column_numbers = true
 show_error_codes = true
 show_error_context = true
-strict_equality = true
 
 # Warnings
 warn_redundant_casts = true
