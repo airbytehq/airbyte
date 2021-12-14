@@ -118,8 +118,9 @@ class TestConnection(BaseTest):
             with pytest.raises(ContainerError) as err:
                 docker_runner.call_check(config=connector_config)
 
+            stdout = err.value.container.logs(stderr=False).decode("utf-8")
             assert err.value.exit_status != 0, "Connector should exit with error code"
-            assert "Traceback" in err.value.stderr, "Connector should print exception"
+            assert "Traceback" in err.value.stderr or "Traceback" in stdout, "Connector should print exception"
 
 
 @pytest.mark.default_timeout(30)
