@@ -135,6 +135,48 @@ class DefaultReplicationWorkerTest {
   }
 
   @Test
+  void testSourceFails() throws Exception {
+    when(source.isFinished())
+        .thenReturn(false)
+        .thenReturn(false)
+        .thenReturn(false)
+        .thenThrow(new WorkerException("Source exited with non-zero exit code"));
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        sourceMessageTracker,
+        destinationMessageTracker);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+    assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
+  }
+
+  @Test
+  void testDestinationFails() throws Exception {
+    when(destination.isFinished())
+        .thenReturn(false)
+        .thenReturn(false)
+        .thenReturn(false)
+        .thenThrow(new WorkerException("Destination exited with non-zero exit code"));
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        sourceMessageTracker,
+        destinationMessageTracker);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+    assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
+  }
+
+  @Test
   void testLoggingInThreads() throws IOException, WorkerException {
     // set up the mdc so that actually log to a file, so that we can verify that file logging captures
     // threads.
@@ -176,7 +218,7 @@ class DefaultReplicationWorkerTest {
 
   @SuppressWarnings({"BusyWait"})
   @Test
-  void testCancellation() throws InterruptedException {
+  void testCancellation() throws InterruptedException, WorkerException {
     final AtomicReference<ReplicationOutput> output = new AtomicReference<>();
     when(source.isFinished()).thenReturn(false);
     when(destinationMessageTracker.getOutputState()).thenReturn(Optional.of(new State().withState(STATE_MESSAGE.getState().getData())));

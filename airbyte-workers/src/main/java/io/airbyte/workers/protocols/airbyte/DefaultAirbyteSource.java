@@ -85,7 +85,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   }
 
   @Override
-  public boolean isFinished() {
+  public boolean isFinished() throws WorkerException {
     Preconditions.checkState(sourceProcess != null);
     // As this check is done on every message read, it is important for this operation to be efficient.
     // Short circuit early to avoid checking the underlying process.
@@ -94,7 +94,16 @@ public class DefaultAirbyteSource implements AirbyteSource {
       return false;
     }
 
-    return !sourceProcess.isAlive() && !messageIterator.hasNext();
+    // Also short circuit here to avoid checking the exit value until the process has actually finished.
+    if (sourceProcess.isAlive()) {
+      return false;
+    }
+
+    final int exitValue = sourceProcess.exitValue();
+    if (exitValue != 0) {
+      throw new WorkerException("Source process exited with non-zero exit code " + sourceProcess.exitValue());
+    }
+    return true;
   }
 
   @Override

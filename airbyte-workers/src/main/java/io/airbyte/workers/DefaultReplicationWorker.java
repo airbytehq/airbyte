@@ -19,9 +19,9 @@ import io.airbyte.workers.protocols.airbyte.MessageTracker;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -119,26 +119,21 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         destination.start(destinationConfig, jobRoot);
         source.start(sourceConfig, jobRoot);
 
-        final Future<?> destinationOutputThreadFuture = executors.submit(getDestinationOutputRunnable(
-            destination,
-            cancelled,
-            destinationMessageTracker,
-            mdc));
+        final CompletableFuture<?> destinationOutputThreadFuture = CompletableFuture.runAsync(
+            getDestinationOutputRunnable(destination, cancelled, destinationMessageTracker, mdc),
+            executors);
 
-        final Future<?> replicationThreadFuture = executors.submit(getReplicationRunnable(
-            source,
-            destination,
-            cancelled,
-            mapper,
-            sourceMessageTracker,
-            mdc));
+        final CompletableFuture<?> replicationThreadFuture = CompletableFuture.runAsync(
+            getReplicationRunnable(source, destination, cancelled, mapper, sourceMessageTracker, mdc),
+            executors);
 
-        LOGGER.info("Waiting for source thread to join.");
-        replicationThreadFuture.get();
-        LOGGER.info("Source thread complete.");
-        LOGGER.info("Waiting for destination thread to join.");
-        destinationOutputThreadFuture.get();
-        LOGGER.info("Destination thread complete.");
+        LOGGER.info("Waiting for source and destination threads to complete!!");
+        // CompletableFuture#allOf waits until all futures finish before returning, even if one throws an
+        // exception. So in order to handle exceptions from a future immediately without needing to wait for
+        // the other future to finish, we first call CompletableFuture#anyOf.
+        CompletableFuture.anyOf(replicationThreadFuture, destinationOutputThreadFuture).get();
+        CompletableFuture.allOf(replicationThreadFuture, destinationOutputThreadFuture).get();
+        LOGGER.info("Source and destination threads complete.");
 
       } catch (final Exception e) {
         hasFailed.set(true);

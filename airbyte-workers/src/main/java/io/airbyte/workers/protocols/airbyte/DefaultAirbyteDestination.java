@@ -133,7 +133,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   }
 
   @Override
-  public boolean isFinished() {
+  public boolean isFinished() throws WorkerException {
     Preconditions.checkState(destinationProcess != null);
     // As this check is done on every message read, it is important for this operation to be efficient.
     // Short circuit early to avoid checking the underlying process.
@@ -142,7 +142,16 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
       return false;
     }
 
-    return !destinationProcess.isAlive();
+    // Also short circuit here to avoid checking the exit value until the process has actually finished.
+    if (destinationProcess.isAlive()) {
+      return false;
+    }
+
+    final int exitValue = destinationProcess.exitValue();
+    if (exitValue != 0) {
+      throw new WorkerException("Destination process exited with non-zero exit code " + destinationProcess.exitValue());
+    }
+    return true;
   }
 
   @Override
