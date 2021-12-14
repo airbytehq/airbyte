@@ -47,3 +47,9 @@ data from the connector.
 ### Setup guide
 
 ######TODO: more info, screenshots?, etc...
+
+## CHANGELOG
+
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.1 | 2021-12-14 | [\#8786](https://github.com/airbytehq/airbyte/pull/8786) | Update fields in destination-connectors specifications. |

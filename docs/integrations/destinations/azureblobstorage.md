@@ -136,5 +136,6 @@ They will be like this in the output file:
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.1 | 2021-12-14 | [\#8786](https://github.com/airbytehq/airbyte/pull/8786) | Update fields in destination-connectors specifications. |
 | 0.1.0 | 2021-08-30 | [\#5332](https://github.com/airbytehq/airbyte/pull/5332) | Initial release with JSONL and CSV output. |
 

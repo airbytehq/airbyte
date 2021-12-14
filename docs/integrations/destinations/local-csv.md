@@ -63,3 +63,8 @@ docker cp airbyte-scheduler:/tmp/airbyte_local/{destination_path}/{filename}.csv
 
 Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have to use similar step as above or refer to this [link](../../operator-guides/locating-files-local-destination.md) for an alternative approach.
 
+## CHANGELOG
+
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.2.9 | 2021-12-14 | [\#8786](https://github.com/airbytehq/airbyte/pull/8786) | Update fields in destination-connectors specifications. |
