@@ -111,6 +111,10 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         """
         return date.strftime("%Y-%m-%d")
 
+    @staticmethod
+    def to_iso_datetime_str(date: str) -> str:
+        return datetime.strptime(date, "%Y%m%d").strftime("%Y-%m-%d")
+
     def path(self, **kwargs) -> str:
         # need add './' for correct urllib.parse.urljoin work due to path contains ':'
         return "./reports:batchGet"
@@ -280,6 +284,15 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             return "date"
         return
 
+    def convert_to_type(self, header, value, data_type):
+        if data_type == "integer":
+            return int(value)
+        if data_type == "number":
+            return float(value)
+        if header == "ga:date":
+            return self.to_iso_datetime_str(value)
+        return value
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         Default response:
@@ -369,13 +382,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
 
                 for header, dimension in zip(dimension_headers, dimensions):
                     data_type = self.lookup_data_type("dimension", header)
-
-                    if data_type == "integer":
-                        value = int(dimension)
-                    elif data_type == "number":
-                        value = float(dimension)
-                    else:
-                        value = dimension
+                    value = self.convert_to_type(header, dimension, data_type)
 
                     record[header.replace("ga:", "ga_")] = value
 
@@ -383,11 +390,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                     for metric_header, value in zip(metric_headers, values.get("values")):
                         metric_name = metric_header.get("name")
                         metric_type = self.lookup_data_type("metric", metric_name)
-
-                        if metric_type == "integer":
-                            value = int(value)
-                        elif metric_type == "number":
-                            value = float(value)
+                        value = self.convert_to_type(metric_name, value, metric_type)
 
                         record[metric_name.replace("ga:", "ga_")] = value
 
