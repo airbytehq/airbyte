@@ -48,6 +48,8 @@ else
     selected_performance_test=$(echo "$all_performance_tests" | grep "^$connector_name$" || echo "")
     performanceTestCommand="$(_to_gradle_path "airbyte-integrations/$connector $firstarg $secondargt" performanceTest)"
   else
+    echo "----------  $firstarg"
+    echo "----------  $secondarg"
     selected_performance_test=$(echo "$all_performance_tests" | grep "^$connector$" || echo "")
     performanceTestCommand=":airbyte-integrations:connectors:$connector:performanceTest $firstarg $secondarg"
   fi
