@@ -23,7 +23,6 @@ class SecretsLoader:
     # base_folder: ClassVar[Path] = Path("/Users/pixel/Projects/Airbyte/repo/")
     base_folder: ClassVar[Path] = Path("/actions-runner/_work/airbyte/airbyte/")
 
-
     gsm_credentials: Mapping[str, Any]
     github_secrets: Mapping[str, str]
 
