@@ -86,10 +86,6 @@ public abstract class S3StreamCopier implements StreamCopier {
     this.partsAddedToCurrentFile = 0;
   }
 
-  /*
-   * old behavior: create s3://bucket/randomUuid/(namespace|schemaName)/generatedFilename
-   * S3CsvWriter: create s3://bucket/bucketPath(/namespace)?/streamName/time_generatedSuffix.csv
-   */
   @Override
   public String prepareStagingFile() {
     if (partsAddedToCurrentFile == 0) {
