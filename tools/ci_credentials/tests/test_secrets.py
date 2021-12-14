@@ -28,13 +28,13 @@ def temp_folder():
 @pytest.mark.parametrize(
     "connector_name,filename,expected_name",
     (
-            ("source-default", "config.json", "SECRET_SOURCE-DEFAULT_CREDS"),
-            ("source-custom-filename-1", "config_custom.json", "SECRET_SOURCE-CUSTOM-FILENAME-1_CUSTOM_CREDS"),
-            ("source-custom-filename-2", "auth.json", "SECRET_SOURCE-CUSTOM-FILENAME-2_AUTH_CREDS"),
+            ("source-default", "config.json", "SECRET_SOURCE-DEFAULT__CREDS"),
+            ("source-custom-filename-1", "config_custom.json", "SECRET_SOURCE-CUSTOM-FILENAME-1_CUSTOM__CREDS"),
+            ("source-custom-filename-2", "auth.json", "SECRET_SOURCE-CUSTOM-FILENAME-2_AUTH__CREDS"),
             ("source-custom-filename-3", "config_auth-test---___---config.json",
-             "SECRET_SOURCE-CUSTOM-FILENAME-3_AUTH-TEST_CREDS"),
+             "SECRET_SOURCE-CUSTOM-FILENAME-3_AUTH-TEST__CREDS"),
             ("source-custom-filename-4", "_____config_test---config.json",
-             "SECRET_SOURCE-CUSTOM-FILENAME-4_TEST_CREDS"),
+             "SECRET_SOURCE-CUSTOM-FILENAME-4_TEST__CREDS"),
     )
 )
 def test_secret_name_generation(connector_name, filename, expected_name):
