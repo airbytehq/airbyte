@@ -117,9 +117,9 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   @Override
-  public void write(final UUID id, final AirbyteRecordMessage recordMessage, final String suffix) throws Exception {
-    if (stagingWritersByFile.containsKey(suffix)) {
-      stagingWritersByFile.get(suffix).write(id, recordMessage);
+  public void write(final UUID id, final AirbyteRecordMessage recordMessage, final String filename) throws Exception {
+    if (stagingWritersByFile.containsKey(filename)) {
+      stagingWritersByFile.get(filename).write(id, recordMessage);
     }
   }
 
