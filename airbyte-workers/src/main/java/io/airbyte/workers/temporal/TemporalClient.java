@@ -145,7 +145,7 @@ public class TemporalClient {
     final ConnectionUpdaterWorkflow connectionUpdaterWorkflow = getWorkflowOptionsWithWorkflowId(ConnectionUpdaterWorkflow.class,
         TemporalJobType.CONNECTION_UPDATER, "connection_updater_" + connectionId);
     final BatchRequest signalRequest = client.newSignalWithStartRequest();
-    final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, null, null, false, 1);
+    final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, null, null, false, 1, false);
     signalRequest.add(connectionUpdaterWorkflow::run, input);
 
     final ExecutorService threadpool = Executors.newCachedThreadPool();
@@ -288,8 +288,7 @@ public class TemporalClient {
     return connectionUpdaterWorkflow;
   }
 
-  @VisibleForTesting
-  <T> TemporalResponse<T> execute(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
+  @VisibleForTesting <T> TemporalResponse<T> execute(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
     final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig);
     final Path logPath = WorkerUtils.getLogPath(jobRoot);
 

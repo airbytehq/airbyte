@@ -73,7 +73,8 @@ public class ConnectionUpdaterWorkflowTest {
         1L,
         1,
         false,
-        1);
+        1,
+        true);
 
     Mockito.when(mGenerateInputActivityImpl.getSyncWorkflowInput(Mockito.any(SyncInput.class)))
         .thenReturn(
@@ -84,9 +85,9 @@ public class ConnectionUpdaterWorkflowTest {
                 new StandardSyncInput()));
 
     final WorkflowExecution wfExecution = WorkflowClient.start(workflow::run, input);
-    testEnv.sleep(Duration.ofSeconds(90L));
+    testEnv.sleep(Duration.ofMinutes(1L));
     log.error("Test");
-    Mockito.verify(mConfigFetchActivity, Mockito.atLeast(2)).getPeriodicity(Mockito.any());
+    Mockito.verify(mConfigFetchActivity, Mockito.times(1)).getPeriodicity(Mockito.any());
   }
 
 }

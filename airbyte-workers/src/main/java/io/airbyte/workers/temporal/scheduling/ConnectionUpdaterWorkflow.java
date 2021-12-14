@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 public interface ConnectionUpdaterWorkflow {
 
   @WorkflowMethod
-  SyncResult run(ConnectionUpdaterInput connectionUpdaterInput);
+  WorkflowState run(ConnectionUpdaterInput connectionUpdaterInput);
 
   @SignalMethod
   void submitManualSync();

@@ -64,7 +64,8 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
   }
 
   @Override
-  public SyncResult run(final ConnectionUpdaterInput connectionUpdaterInput) throws NonRetryableException {
+  public WorkflowState run(final ConnectionUpdaterInput connectionUpdaterInput) throws NonRetryableException {
+    log.error("Starting a new WF");
     try {
 
       syncWorkflowCancellationScope = Workflow.newCancellationScope(() -> {
@@ -139,7 +140,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
         // Stop the runs
         final ConnectionDeletionInput connectionDeletionInput = new ConnectionDeletionInput(connectionUpdaterInput.getConnectionId());
         connectionDeletionActivity.deleteConnection(connectionDeletionInput);
-        return new SyncResult(true);
+        return getState();
       } else if (isCancel) {
         log.error("entering IsCancel");
         jobCreationAndStatusUpdateActivity.jobCancelled(new JobCancelledInput(
@@ -183,12 +184,13 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
       // Continue the workflow as new
       connectionUpdaterInput.setAttemptId(null);
       resetState();
-      if (!isDeleted) {
+      if (!isDeleted || connectionUpdaterInput.isTest()) {
+        log.error("Continue as new");
         Workflow.continueAsNew(connectionUpdaterInput);
       }
     }
     // This should not be reachable as we always continue as new even if there is a failure
-    return new SyncResult(true);
+    return getState();
   }
 
   @Override
