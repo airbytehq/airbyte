@@ -47,21 +47,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class contains an e2e test simulating what a user encounter when trying to upgrade Airybte.
- * <p>
- * Three invariants are tested:
- * <p>
- * - upgrading pass 0.32.0 without first upgrading to 0.32.0 should error.
- * <p>
- * - upgrading pass 0.32.0 without first upgrading to 0.32.0 should not put the db in a bad state.
- * <p>
- * - upgrading from 0.32.0 to the latest version should work.
- * <p>
- * This test runs on the current code version and expects local images with the `dev` tag to be
- * available. To do so, run SUB_BUILD=PLATFORM ./gradlew build.
- * <p>
- * When running this test consecutively locally, it might be necessary to run `docker volume prune`
- * to remove hanging volumes.
+ * In order to run this test from intellij, build the docker images via SUB_BUILD=PLATFORM ./gradlew
+ * composeBuild and set VERSION in .env to the pertinent version.
  */
 public class MigrationAcceptanceTest {
 
@@ -87,21 +74,15 @@ public class MigrationAcceptanceTest {
       healthCheck(getApiClient());
     });
 
-    LOGGER.info("Finish initial 0.17.0-alpha start..");
-
     // attempt to run from pre-version bump version to post-version bump version. expect failure.
     final File currentDockerComposeFile = MoreResources.readResourceAsFile("docker-compose.yaml");
     // piggybacks off of whatever the existing .env file is, so override default filesystem values in to
     // point at test paths.
     final Properties envFileProperties = overrideDirectoriesForTest(MoreProperties.envFileToProperties(ENV_FILE));
-    // use the dev version so the test is run on the current code version.
-    envFileProperties.setProperty("VERSION", "dev");
     runAirbyteAndWaitForUpgradeException(currentDockerComposeFile, envFileProperties);
-    LOGGER.info("Finished testing upgrade exception..");
 
     // run "faux" major version bump version
     final File version32DockerComposeFile = MoreResources.readResourceAsFile("docker-compose-migration-test-0-32-0-alpha.yaml");
-
     final Properties version32EnvFileProperties = MoreProperties
         .envFileToProperties(MoreResources.readResourceAsFile("env-file-migration-test-0-32-0.env"));
     runAirbyte(version32DockerComposeFile, version32EnvFileProperties, MigrationAcceptanceTest::assertHealthy);
@@ -148,7 +129,7 @@ public class MigrationAcceptanceTest {
     LOGGER.info("Start up Airbyte at version {}", env.get("VERSION"));
     final AirbyteTestContainer airbyteTestContainer = new AirbyteTestContainer.Builder(dockerComposeFile)
         .setEnv(env)
-        .setLogListener("bootloader", waitForLogLine.getListener("After that upgrade is complete, you may upgrade to version"))
+        .setLogListener("server", waitForLogLine.getListener("After that upgrade is complete, you may upgrade to version"))
         .build();
 
     airbyteTestContainer.startAsync();
