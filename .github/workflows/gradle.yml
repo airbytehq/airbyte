@@ -246,8 +246,8 @@ jobs:
         if: contains(github.ref, 'bump-version') || contains(github.ref, 'master')
         run: SUB_BUILD=PLATFORM ./gradlew slowIntegrationTest
 
-      #      - name: Test if Seed spec is updated
-      #        run: SUB_BUILD=PLATFORM ./gradlew format && git --no-pager diff && test -z "$(git --no-pager diff)"
+      - name: Test if Seed spec is updated
+        run: SUB_BUILD=PLATFORM ./gradlew format && git --no-pager diff && test -z "$(git --no-pager diff)"
 
       # todo (cgardens) - scope by platform.
       - name: Check documentation
@@ -262,7 +262,7 @@ jobs:
         run: ./tools/bin/acceptance_test.sh
 
       - name: Automatic Migration Acceptance Test
-        run: MIGRATION_TEST_VERSION=dev SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan -i
+        run: SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan -i
 
       - name: Slack Notification - Failure
         if: failure() && github.ref == 'refs/heads/master'
