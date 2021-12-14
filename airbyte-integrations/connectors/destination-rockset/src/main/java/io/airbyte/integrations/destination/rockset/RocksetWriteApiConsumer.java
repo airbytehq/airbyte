@@ -11,14 +11,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rockset.client.ApiClient;
 import com.rockset.client.api.DocumentsApi;
 import com.rockset.client.model.AddDocumentsRequest;
+import com.rockset.client.model.AddDocumentsResponse;
+import com.rockset.client.model.DocumentStatus;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.DestinationSyncMode;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -31,7 +41,9 @@ public class RocksetWriteApiConsumer implements AirbyteMessageConsumer {
     private static final Logger LOGGER = LoggerFactory.getLogger(RocksetWriteApiConsumer.class);
     private static final ObjectMapper mapper = new ObjectMapper();
     // IO bound tasks, use cached thread pool
-    private static final ExecutorService exec = Executors.newCachedThreadPool();
+    private final ExecutorService exec = Executors.newFixedThreadPool(5);
+
+    private final ScheduledExecutorService schedExec = Executors.newSingleThreadScheduledExecutor();
 
     private final String apiKey;
     private final String apiServer;
@@ -39,6 +51,10 @@ public class RocksetWriteApiConsumer implements AirbyteMessageConsumer {
 
     private final ConfiguredAirbyteCatalog catalog;
     private final Consumer<AirbyteMessage> outputRecordCollector;
+
+    // records to be sent per collection
+    private final Map<String, List<Object>> records;
+    private long lastSentDocumentMicroSeconds = 0L;
 
     private final RocksetSQLNameTransformer nameTransformer = new RocksetSQLNameTransformer();
 
@@ -51,6 +67,7 @@ public class RocksetWriteApiConsumer implements AirbyteMessageConsumer {
         this.apiKey = config.get(API_KEY_ID).asText();
         this.apiServer = config.get(API_SERVER_ID).asText();
         this.workspace = config.get(ROCKSET_WORKSPACE_ID).asText();
+        this.records = new HashMap<>();
 
         this.catalog = catalog;
         this.outputRecordCollector = outputRecordCollector;
@@ -60,7 +77,6 @@ public class RocksetWriteApiConsumer implements AirbyteMessageConsumer {
     public void start() throws Exception {
         this.client = RocksetUtils.apiClient(apiKey, apiServer);
         LOGGER.info("Creating workspace");
-
         RocksetUtils.createWorkspaceIfNotExists(client, workspace);
 
         CompletableFuture<?>[] overwrittenStreams = catalog.getStreams()
@@ -86,6 +102,9 @@ public class RocksetWriteApiConsumer implements AirbyteMessageConsumer {
 
         // Creating and readying many collections at once can be slow
         initStreams.get(30, TimeUnit.MINUTES);
+
+        // Schedule sending of records at a fixed rate
+        schedExec.scheduleAtFixedRate(this::sendBatches, 0L, 5L, TimeUnit.SECONDS);
     }
 
     @Override
@@ -93,11 +112,20 @@ public class RocksetWriteApiConsumer implements AirbyteMessageConsumer {
         if (message.getType() == AirbyteMessage.Type.RECORD) {
             String cname = nameTransformer.convertStreamName(message.getRecord().getStream());
 
-            AddDocumentsRequest req = new AddDocumentsRequest();
-            req.addDataItem(mapper.convertValue(message.getRecord().getData(), new TypeReference<>() {
-            }));
+            Map<String, Object> obj = mapper.convertValue(message.getRecord().getData(), new TypeReference<>() {
+            });
+            long current = ChronoUnit.MICROS.between(Instant.EPOCH, Instant.now());
 
-            new DocumentsApi(this.client).add(workspace, cname, req);
+            // ensure a monotonic timestamp on records at microsecond precision.
+            while (current <= lastSentDocumentMicroSeconds) {
+                current = ChronoUnit.MICROS.between(Instant.EPOCH, Instant.now());
+            }
+            lastSentDocumentMicroSeconds = current;
+
+            // microsecond precision
+            // See https://rockset.com/docs/special-fields/#the-_event_time-field
+            obj.put("_event_time", current);
+            addRequestToBatch(obj, cname);
         } else if (message.getType() == AirbyteMessage.Type.STATE) {
             this.outputRecordCollector.accept(message);
         }
@@ -106,6 +134,50 @@ public class RocksetWriteApiConsumer implements AirbyteMessageConsumer {
     @Override
     public void close() throws Exception {
         // Nothing to do
+        LOGGER.info("Shutting down!");
+        LOGGER.info("Sending final batch of records if any remain!");
+        sendBatches();
+        LOGGER.info("Final batch of records sent!");
+        LOGGER.info("Shutting down executors");
+        this.schedExec.shutdown();
+        exec.shutdown();
+        LOGGER.info("Executors shut down");
+    }
+
+    private void addRequestToBatch(Object document, String cname) {
+        synchronized (this.records) {
+            List<Object> collectionRecords = this.records.getOrDefault(cname, new ArrayList<>());
+            collectionRecords.add(document);
+            this.records.put(cname, collectionRecords);
+        }
+    }
+
+    private void sendBatches() {
+        List<Map.Entry<String, AddDocumentsRequest>> requests;
+        synchronized (this.records) {
+            requests = this.records.entrySet().stream().filter(e -> e.getValue().size() > 0)
+                    .map((e) -> {
+                                AddDocumentsRequest adr = new AddDocumentsRequest();
+                                e.getValue().forEach(adr::addDataItem);
+                                return Map.entry(e.getKey(), adr);
+                            }
+
+                    ).collect(Collectors.toList());
+            this.records.clear();
+        }
+        List<AddDocumentsResponse> responses;
+        responses = requests.stream().map((e) ->
+                Exceptions.toRuntime(() -> new DocumentsApi(client).add(workspace, e.getKey(), e.getValue()))
+        ).collect(Collectors.toList());
+
+
+        responses
+                .stream()
+                .flatMap(d -> d.getData().stream())
+                .collect(Collectors.groupingBy(DocumentStatus::getStatus))
+                .entrySet()
+                .stream()
+                .forEach((e) -> LOGGER.info("{} documents added with a status of {}", e.getValue().size(), e.getKey()));
     }
 
     private CompletableFuture<Void> emptyCollection(String cname) {
