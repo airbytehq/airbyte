@@ -161,7 +161,7 @@ class DefaultAirbyteSourceTest {
       }
     });
 
-    verify(process).exitValue();
+    verify(process, times(2)).exitValue();
   }
 
   @Test

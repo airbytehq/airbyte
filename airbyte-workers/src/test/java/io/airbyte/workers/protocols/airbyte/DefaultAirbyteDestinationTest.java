@@ -11,6 +11,7 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -150,7 +151,7 @@ class DefaultAirbyteDestinationTest {
       }
     });
 
-    verify(process).exitValue();
+    verify(process, times(2)).exitValue();
   }
 
   @Test
