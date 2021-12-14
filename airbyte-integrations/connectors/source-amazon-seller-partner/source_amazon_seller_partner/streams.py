@@ -410,7 +410,8 @@ class BrandAnalyticsSearchTermsReports(ReportsAmazonSPStream):
 
          return data
 
-    def _augmented_data(self, report_options) -> Mapping[str, Any]:
+    @staticmethod
+    def _augmented_data(report_options) -> Mapping[str, Any]:
         if report_options.get("reportPeriod") is None:
             return {}
         else:
