@@ -74,6 +74,8 @@ public class MigrationAcceptanceTest {
       healthCheck(getApiClient());
     });
 
+    LOGGER.info("======= after init 17 migration");
+
     // attempt to run from pre-version bump version to post-version bump version. expect failure.
     final File currentDockerComposeFile = MoreResources.readResourceAsFile("docker-compose.yaml");
     // piggybacks off of whatever the existing .env file is, so override default filesystem values in to
