@@ -19,23 +19,24 @@
         "title": "Endpoint Domain Name",
         "type": "string",
         "default": "blob.core.windows.net",
-        "description": "This is Azure Blob Storage endpoint domain name. Leave default value (or leave it empty if run container from command line) to use Microsoft native from example.",
+        "description": "The domain name of the Azure Blob Storage account endpoint. Leave default value (or leave it empty if run container from command line) to use Microsoft native from example.",
         "examples": ["blob.core.windows.net"]
       },
       "azure_blob_storage_container_name": {
-        "title": "Azure blob storage container (Bucket) Name",
+        "title": "Container (Bucket) Name",
         "type": "string",
-        "description": "The name of the Azure blob storage container. If not exists - will be created automatically. May be empty, then will be created automatically airbytecontainer+timestamp",
+        "description": "The name of the Azure Blob Storage container. If not exists - will be created automatically. If leave empty, then will be created automatically airbytecontainer+timestamp.",
         "examples": ["airbytetescontainername"]
       },
       "azure_blob_storage_account_name": {
-        "title": "Azure Blob Storage account name",
+        "title": "Account Name",
         "type": "string",
-        "description": "The account's name of the Azure Blob Storage.",
+        "description": "The name of the Azure Blob Storage.",
         "examples": ["airbyte5storage"]
       },
       "azure_blob_storage_account_key": {
-        "description": "The Azure blob storage account key.",
+	"title": "Account Key"
+        "description": "The Azure Blob Storage account key.",
         "airbyte_secret": true,
         "type": "string",
         "examples": [
@@ -45,7 +46,7 @@
       "format": {
         "title": "Output Format",
         "type": "object",
-        "description": "Output data format",
+        "description": "Output data format.",
         "oneOf": [
           {
             "title": "CSV: Comma-Separated Values",
@@ -58,14 +59,14 @@
               "flattening": {
                 "type": "string",
                 "title": "Normalization (Flattening)",
-                "description": "Whether the input json data should be normalized (flattened) in the output CSV. Please refer to docs for details.",
+                "description": "Whether the input json data should be normalized (flattened) in the output CSV. See the  <a href=\"https://docs.airbyte.io/integrations/destinations/azureblobstorage\">docs</a> for more information.",
                 "default": "No flattening",
                 "enum": ["No flattening", "Root level flattening"]
               }
             }
           },
           {
-            "title": "JSON Lines: newline-delimited JSON",
+            "title": "JSON Lines: Newline-Delimited JSON",
             "required": ["format_type"],
             "properties": {
               "format_type": {

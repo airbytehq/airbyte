@@ -13,33 +13,33 @@
     "properties": {
       "keyspace": {
         "title": "Keyspace",
-        "description": "Default Cassandra keyspace to create data in.",
+        "description": "The default Cassandra keyspace to create data in.",
         "type": "string",
         "order": 0
       },
       "username": {
         "title": "Username",
-        "description": "Username to use to access Cassandra.",
+        "description": "The username which is used to access the database.",
         "type": "string",
         "order": 1
       },
       "password": {
         "title": "Password",
-        "description": "Password associated with Cassandra.",
+        "description": "The password associated with this username.",
         "type": "string",
         "airbyte_secret": true,
         "order": 2
       },
       "address": {
         "title": "Address",
-        "description": "Address to connect to.",
+        "description": "The IP address or hostname that other Cassandra nodes use to connect to this node.",
         "type": "string",
         "examples": ["localhost,127.0.0.1"],
         "order": 3
       },
       "port": {
         "title": "Port",
-        "description": "Port of Cassandra.",
+        "description": "The port for the cluster communication.",
         "type": "integer",
         "minimum": 0,
         "maximum": 65536,
@@ -48,13 +48,13 @@
       },
       "datacenter": {
         "title": "Datacenter",
-        "description": "Datacenter of the cassandra cluster.",
+        "description": "The data centre for the cluster.",
         "type": "string",
         "default": "datacenter1",
         "order": 5
       },
       "replication": {
-        "title": "Replication factor",
+        "title": "Replication Factor",
         "type": "integer",
         "description": "Indicates to how many nodes the data should be replicated to.",
         "default": 1,

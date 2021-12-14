@@ -12,8 +12,8 @@
     "additionalProperties": true,
     "properties": {
       "big_query_client_buffer_size_mb": {
-        "title": "Google BigQuery client chunk size",
-        "description": "Google BigQuery client's chunk(buffer) size (MIN=1, MAX = 15) for each table. The default 15MiB value is used if not set explicitly. It's recommended to decrease value for big data sets migration for less HEAP memory consumption and avoiding crashes. For more details refer to https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html",
+        "title": "Google BigQuery Client Chunk Size",
+        "description": "Google BigQuery client's chunk (buffer) size (MIN=1, MAX = 15) for each table. The default 15MiB value is used if not set explicitly. It's recommended to decrease value for big data sets migration for less HEAP memory consumption and avoiding crashes. See the <a href=\"https://docs.airbyte.io/integrations/destinations/bigquery\">docs</a> for more information.",
         "type": "integer",
         "minimum": 1,
         "maximum": 15,
@@ -69,13 +69,13 @@
       },
       "credentials_json": {
         "type": "string",
-        "description": "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.io/integrations/destinations/bigquery\">docs</a> if you need help generating this key. Default credentials will be used if this field is left empty.",
+        "description": "The contents of the JSON service account key. See the <a href=\"https://docs.airbyte.io/integrations/destinations/bigquery\">docs</a> for more information on how to obtain this key. Default credentials will be used if this field is left empty.",
         "title": "Credentials JSON",
         "airbyte_secret": true
       },
       "transformation_priority": {
         "type": "string",
-        "description": "When running custom transformations or Basic normalization, running queries on interactive mode can hit BQ limits, choosing batch will solve those limitss.",
+        "description": "When running custom transformations or Basic normalization, running queries on interactive mode can hit BQ limits, choosing batch will solve those limits.",
         "title": "Transformation Query Run Type",
         "default": "interactive",
         "enum": ["interactive", "batch"]
@@ -109,6 +109,7 @@
             ],
             "properties": {
               "method": {
+		"title": "Method",
                 "type": "string",
                 "const": "GCS Staging"
               },
@@ -119,14 +120,16 @@
                 "examples": ["airbyte_sync"]
               },
               "gcs_bucket_path": {
+		"title": "GCS Bucket Path",
                 "description": "Directory under the GCS bucket where data will be written.",
                 "type": "string",
                 "examples": ["data_sync/test"]
               },
               "keep_files_in_gcs-bucket": {
+		"title": "Keep Files in GCS Bucket",
                 "type": "string",
                 "description": "This upload method is supposed to temporary store records in GCS bucket. What do you want to do with data in GCS bucket when migration has finished?",
-                "title": "GCS tmp files afterward processing",
+                "title": "GCS tmp Files Afterward Processing",
                 "default": "Delete all tmp files from GCS",
                 "enum": [
                   "Delete all tmp files from GCS",
@@ -138,7 +141,7 @@
                 "type": "object",
                 "oneOf": [
                   {
-                    "title": "HMAC key",
+                    "title": "HMAC Key",
                     "required": [
                       "credential_type",
                       "hmac_key_access_id",
@@ -146,6 +149,7 @@
                     ],
                     "properties": {
                       "credential_type": {
+			"title": "Credential Type",
                         "type": "string",
                         "const": "HMAC_KEY"
                       },

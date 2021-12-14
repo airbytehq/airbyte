@@ -24,13 +24,13 @@
         "examples": ["http://localhost:9000"]
       },
       "dynamodb_table_name": {
-        "title": "DynamoDB Table Name",
+        "title": "Table Name",
         "type": "string",
         "description": "The name of the DynamoDB table.",
         "examples": ["airbyte_sync"]
       },
       "dynamodb_region": {
-        "title": "DynamoDB Region",
+        "title": "Region",
         "type": "string",
         "default": "",
         "description": "The region of the DynamoDB.",
@@ -65,15 +65,15 @@
       },
       "access_key_id": {
         "type": "string",
-        "description": "The access key id to access the DynamoDB. Airbyte requires Read and Write permissions to the DynamoDB.",
-        "title": "DynamoDB Key Id",
+        "description": "DynamoDB Access Key. See the <a href=\"https://docs.airbyte.io/integrations/destinations/dynamodb\">docs</a> for more information on how to obtain this key. Airbyte requires Read and Write permissions to the DynamoDB.",
+        "title": "Key ID",
         "airbyte_secret": true,
         "examples": ["A012345678910EXAMPLE"]
       },
       "secret_access_key": {
         "type": "string",
-        "description": "The corresponding secret to the access key id.",
-        "title": "DynamoDB Access Key",
+        "description": "The corresponding key to the above Key ID.",
+        "title": "Access Key",
         "airbyte_secret": true,
         "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"]
       }

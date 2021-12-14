@@ -18,7 +18,7 @@
       },
       "credentials_json": {
         "type": "string",
-        "description": "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.io/integrations/destinations/firestore\">docs</a> if you need help generating this key. Default credentials will be used if this field is left empty.",
+        "description": "The contents of the JSON service account key. See the <a href=\"https://docs.airbyte.io/integrations/destinations/firestore\">docs</a> for more information on how to obtain this key. Default credentials will be used if this field is left empty.",
         "title": "Credentials JSON",
         "airbyte_secret": true
       }
