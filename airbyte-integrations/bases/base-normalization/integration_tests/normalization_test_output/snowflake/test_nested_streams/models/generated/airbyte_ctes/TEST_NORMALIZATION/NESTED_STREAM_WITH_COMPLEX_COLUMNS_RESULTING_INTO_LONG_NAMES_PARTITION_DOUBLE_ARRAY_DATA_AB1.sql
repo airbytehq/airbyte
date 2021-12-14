@@ -5,7 +5,7 @@
 ) }}
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
 -- depends_on: {{ ref('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION') }}
-{{ unnest_cte('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION', 'PARTITION', 'DOUBLE_ARRAY_DATA') }}
+{{ unnest_cte(ref('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION'), 'PARTITION', 'DOUBLE_ARRAY_DATA') }}
 select
     _AIRBYTE_PARTITION_HASHID,
     {{ json_extract_scalar(unnested_column_value('DOUBLE_ARRAY_DATA'), ['id'], ['id']) }} as ID,

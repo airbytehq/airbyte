@@ -44,7 +44,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PostgresSource extends AbstractJdbcSource implements Source {
+public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
   public static final String CDC_LSN = "_ab_cdc_lsn";
@@ -228,15 +228,15 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(JdbcDatabase database, String schema) throws SQLException {
+  public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
     return database.query(connection -> {
-          final PreparedStatement ps = connection.prepareStatement(
-              "SELECT DISTINCT table_catalog, table_schema, table_name, privilege_type\n"
-                  + "FROM   information_schema.table_privileges\n"
-                  + "WHERE  grantee = ? AND privilege_type = 'SELECT'");
-          ps.setString(1, database.getDatabaseConfig().get("username").asText());
-          return ps;
-        }, sourceOperations::rowToJson)
+      final PreparedStatement ps = connection.prepareStatement(
+          "SELECT DISTINCT table_catalog, table_schema, table_name, privilege_type\n"
+              + "FROM   information_schema.table_privileges\n"
+              + "WHERE  grantee = ? AND privilege_type = 'SELECT'");
+      ps.setString(1, database.getDatabaseConfig().get("username").asText());
+      return ps;
+    }, sourceOperations::rowToJson)
         .collect(toSet())
         .stream()
         .map(e -> JdbcPrivilegeDto.builder()

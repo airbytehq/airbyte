@@ -1,0 +1,96 @@
+import { setIn, useFormikContext } from "formik";
+import merge from "lodash/merge";
+import pick from "lodash/pick";
+import get from "lodash/get";
+import isEmpty from "lodash/isEmpty";
+
+import { ConnectorDefinitionSpecification } from "core/domain/connector";
+import { useRunOauthFlow } from "hooks/services/useConnectorAuth";
+import {
+  makeConnectionConfigurationPath,
+  serverProvidedOauthPaths,
+} from "../../../utils";
+import { ServiceFormValues } from "../../../types";
+
+function useFormikOauthAdapter(
+  connector: ConnectorDefinitionSpecification
+): {
+  loading: boolean;
+  done?: boolean;
+  run: () => Promise<void>;
+} {
+  const {
+    values,
+    setValues,
+    errors,
+    setFieldTouched,
+  } = useFormikContext<ServiceFormValues>();
+
+  const onDone = (completeOauthResponse: Record<string, unknown>) => {
+    let newValues: ServiceFormValues;
+
+    if (connector.advancedAuth) {
+      const oauthPaths = serverProvidedOauthPaths(connector);
+
+      newValues = Object.entries(oauthPaths).reduce(
+        (acc, [key, { path_in_connector_config }]) =>
+          setIn(
+            acc,
+            makeConnectionConfigurationPath(path_in_connector_config),
+            completeOauthResponse[key]
+          ),
+        values
+      );
+    } else {
+      newValues = merge(values, {
+        connectionConfiguration: completeOauthResponse,
+      });
+    }
+
+    setValues(newValues);
+  };
+
+  const { run, loading, done } = useRunOauthFlow(connector, onDone);
+
+  return {
+    loading,
+    done,
+    run: async () => {
+      const oauthInputProperties =
+        connector?.advancedAuth?.oauthConfigSpecification
+          ?.oauthUserInputFromConnectorConfigSpecification?.properties ?? {};
+
+      if (!isEmpty(oauthInputProperties)) {
+        const oauthInputFields =
+          Object.values(oauthInputProperties)?.map((property) =>
+            makeConnectionConfigurationPath(property.path_in_connector_config)
+          ) ?? [];
+
+        oauthInputFields.forEach((path) => setFieldTouched(path, true, true));
+
+        const oAuthErrors = pick(errors, oauthInputFields);
+
+        if (!isEmpty(oAuthErrors)) {
+          return;
+        }
+      }
+
+      const oauthInputParams = Object.entries(oauthInputProperties).reduce(
+        (acc, property) => {
+          acc[property[0]] = get(
+            values,
+            makeConnectionConfigurationPath(
+              property[1].path_in_connector_config
+            )
+          );
+          return acc;
+        },
+        {} as Record<string, unknown>
+      );
+
+      await run(oauthInputParams);
+    },
+  };
+}
+
+export { useFormikOauthAdapter };
