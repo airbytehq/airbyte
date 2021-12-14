@@ -9,8 +9,8 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
+import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.sql.SQLException;
 import org.slf4j.Logger;
@@ -27,7 +27,7 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier {
                                  final String streamName,
                                  final AmazonS3 client,
                                  final JdbcDatabase db,
-                                 final S3Config s3Config,
+                                 final S3DestinationConfig s3Config,
                                  final ExtendedNameTransformer nameTransformer,
                                  final SqlOperations sqlOperations) {
     super(stagingFolder, destSyncMode, schema, streamName, Strings.addRandomSuffix("", "", FILE_PREFIX_LENGTH) + "_" + streamName,
@@ -40,7 +40,7 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier {
                                      final String s3FileLocation,
                                      final String schema,
                                      final String tableName,
-                                     final S3Config s3Config)
+                                     final S3DestinationConfig s3Config)
       throws SQLException {
     final var copyQuery = String.format(
         "COPY INTO %s.%s FROM '%s' "

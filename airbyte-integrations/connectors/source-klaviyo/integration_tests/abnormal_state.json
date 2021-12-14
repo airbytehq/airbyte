@@ -1,5 +1,8 @@
 {
   "events": {
     "timestamp": 9621295127
+  },
+  "global_exclusions": {
+    "timestamp": "2120-10-10T00:00:00Z"
   }
 }

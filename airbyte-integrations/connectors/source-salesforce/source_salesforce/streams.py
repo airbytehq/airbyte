@@ -206,9 +206,18 @@ class BulkSalesforceStream(SalesforceStream):
             raise Exception(f"Job for {self.name} stream using BULK API was failed.")
         return job_full_url
 
+    def filter_null_bytes(self, s: str):
+        """
+        https://github.com/airbytehq/airbyte/issues/8300
+        """
+        res = s.replace("\x00", "")
+        if len(res) < len(s):
+            self.logger.warning("Filter 'null' bytes from string, size reduced %d -> %d chars", len(s), len(res))
+        return res
+
     def download_data(self, url: str) -> Tuple[int, dict]:
         job_data = self._send_http_request("GET", f"{url}/results")
-        decoded_content = job_data.content.decode("utf-8")
+        decoded_content = self.filter_null_bytes(job_data.content.decode("utf-8"))
         csv_data = csv.reader(decoded_content.splitlines(), delimiter=",")
         for i, row in enumerate(csv_data):
             if i == 0:
@@ -263,10 +272,16 @@ class BulkSalesforceStream(SalesforceStream):
 class IncrementalSalesforceStream(SalesforceStream, ABC):
     state_checkpoint_interval = 500
 
-    def __init__(self, replication_key: str, start_date: str, **kwargs):
+    def __init__(self, replication_key: str, start_date: Optional[str], **kwargs):
         super().__init__(**kwargs)
         self.replication_key = replication_key
-        self.start_date = start_date
+        self.start_date = self.format_start_date(start_date)
+
+    @staticmethod
+    def format_start_date(start_date: Optional[str]) -> Optional[str]:
+        """Transform the format `2021-07-25` into the format `2021-07-25T00:00:00Z`"""
+        if start_date:
+            return pendulum.parse(start_date).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     def next_page_token(self, response: requests.Response) -> str:
         response_data = response.json()
@@ -289,7 +304,9 @@ class IncrementalSalesforceStream(SalesforceStream, ABC):
         stream_date = stream_state.get(self.cursor_field)
         start_date = next_page_token or stream_date or self.start_date
 
-        query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} WHERE {self.cursor_field} >= {start_date} "
+        query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
+        if start_date:
+            query += f"WHERE {self.cursor_field} >= {start_date} "
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
             query += f"ORDER BY {self.cursor_field} ASC LIMIT {self.page_size}"
         return {"q": query}
