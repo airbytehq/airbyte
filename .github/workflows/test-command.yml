@@ -87,6 +87,8 @@ jobs:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
 
       - name: test ${{ github.event.inputs.connector }}
+        run: |
+          ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
         id: test
         env:
           ACTION_RUN_ID: ${{github.run_id}}
