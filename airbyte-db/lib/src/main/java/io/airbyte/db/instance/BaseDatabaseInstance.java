@@ -19,9 +19,6 @@ import org.slf4j.LoggerFactory;
 
 public abstract class BaseDatabaseInstance implements DatabaseInstance {
 
-  // Public so classes consuming the getInitialized method have a sense of the time taken.
-  public static final long DEFAULT_CONNECTION_TIMEOUT_MS = 30 * 1000;
-
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseDatabaseInstance.class);
 
   protected final String username;
@@ -59,12 +56,11 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
 
   @Override
   public boolean isInitialized() throws IOException {
-    final Database database = Databases.createPostgresDatabaseWithRetryTimeout(
+    final Database database = Databases.createPostgresDatabaseWithRetry(
         username,
         password,
         connectionString,
-        isDatabaseConnected(databaseName),
-        DEFAULT_CONNECTION_TIMEOUT_MS);
+        isDatabaseConnected(databaseName));
     return new ExceptionWrappingDatabase(database).transaction(ctx -> tableNames.stream().allMatch(tableName -> hasTable(ctx, tableName)));
   }
 

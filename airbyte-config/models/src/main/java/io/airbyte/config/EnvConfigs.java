@@ -80,10 +80,6 @@ public class EnvConfigs implements Configs {
   private static final String SECRET_PERSISTENCE = "SECRET_PERSISTENCE";
   private static final String JOB_POD_MAIN_CONTAINER_IMAGE_PULL_SECRET = "JOB_POD_MAIN_CONTAINER_IMAGE_PULL_SECRET";
   private static final String PUBLISH_METRICS = "PUBLISH_METRICS";
-  private static final String CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION = "CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION";
-  private static final String CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS = "CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS";
-  private static final String JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION = "JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION";
-  private static final String JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS = "JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS";
 
   private static final String STATE_STORAGE_S3_BUCKET_NAME = "STATE_STORAGE_S3_BUCKET_NAME";
   private static final String STATE_STORAGE_S3_REGION = "STATE_STORAGE_S3_REGION";
@@ -110,7 +106,6 @@ public class EnvConfigs implements Configs {
   private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB = 5000;
-  private static final int DEFAULT_DATABASE_INTILIZATION_TIMEOUT_MS = 60 * 1000;
 
   public static final long DEFAULT_MAX_SPEC_WORKERS = 5;
   public static final long DEFAULT_MAX_CHECK_WORKERS = 5;
@@ -281,16 +276,6 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public String getJobsDatabaseMinimumFlywayMigrationVersion() {
-    return getEnsureEnv(JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION);
-  }
-
-  @Override
-  public long getJobsDatabaseInitializationTimeoutMs() {
-    return getEnvOrDefault(JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS, DEFAULT_DATABASE_INTILIZATION_TIMEOUT_MS);
-  }
-
-  @Override
   public String getConfigDatabaseUser() {
     // Default to reuse the job database
     return getEnvOrDefault(CONFIG_DATABASE_USER, getDatabaseUser());
@@ -306,16 +291,6 @@ public class EnvConfigs implements Configs {
   public String getConfigDatabaseUrl() {
     // Default to reuse the job database
     return getEnvOrDefault(CONFIG_DATABASE_URL, getDatabaseUrl());
-  }
-
-  @Override
-  public String getConfigsDatabaseMinimumFlywayMigrationVersion() {
-    return getEnsureEnv(CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION);
-  }
-
-  @Override
-  public long getConfigsDatabaseInitializationTimeoutMs() {
-    return getEnvOrDefault(JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS, DEFAULT_DATABASE_INTILIZATION_TIMEOUT_MS);
   }
 
   @Override

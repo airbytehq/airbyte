@@ -57,39 +57,37 @@ public class BootloaderApp {
   }
 
   public void load() throws Exception {
-    LOGGER.info("Setting up config database and default workspace..");
+    final Database configDatabase = new ConfigsDatabaseInstance(
+        configs.getConfigDatabaseUser(),
+        configs.getConfigDatabasePassword(),
+        configs.getConfigDatabaseUrl())
+            .getAndInitialize();
+    final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
+    final ConfigRepository configRepository =
+        new ConfigRepository(configPersistence.withValidation(), null, Optional.empty(), Optional.empty());
+    createWorkspaceIfNoneExists(configRepository);
+    LOGGER.info("Set up config database and default workspace..");
 
-    try (
-        final Database configDatabase =
-            new ConfigsDatabaseInstance(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(), configs.getConfigDatabaseUrl())
-                .getAndInitialize();
-        final Database jobDatabase =
-            new JobsDatabaseInstance(configs.getDatabaseUser(), configs.getDatabasePassword(), configs.getDatabaseUrl()).getAndInitialize()) {
-      LOGGER.info("Created initial jobs and configs database...");
+    final Database jobDatabase = new JobsDatabaseInstance(
+        configs.getDatabaseUser(),
+        configs.getDatabasePassword(),
+        configs.getDatabaseUrl())
+            .getAndInitialize();
+    final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
+    createDeploymentIfNoneExists(jobPersistence);
+    LOGGER.info("Set up job database and default deployment..");
 
-      final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
-      final AirbyteVersion currAirbyteVersion = configs.getAirbyteVersion();
-      assertNonBreakingMigration(jobPersistence, currAirbyteVersion);
+    final AirbyteVersion currAirbyteVersion = configs.getAirbyteVersion();
+    assertNonBreakingMigration(jobPersistence, currAirbyteVersion);
 
-      runFlywayMigration(configs, configDatabase, jobDatabase);
-      LOGGER.info("Ran Flyway migrations...");
+    runFlywayMigration(configs, configDatabase, jobDatabase);
+    LOGGER.info("Ran Flyway migrations...");
 
-      final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
-      final ConfigRepository configRepository =
-          new ConfigRepository(configPersistence.withValidation(), null, Optional.empty(), Optional.empty());
+    jobPersistence.setVersion(currAirbyteVersion.serialize());
+    LOGGER.info("Set version to {}", currAirbyteVersion);
 
-      createWorkspaceIfNoneExists(configRepository);
-      LOGGER.info("Default workspace created..");
-
-      createDeploymentIfNoneExists(jobPersistence);
-      LOGGER.info("Default deployment created..");
-
-      jobPersistence.setVersion(currAirbyteVersion.serialize());
-      LOGGER.info("Set version to {}", currAirbyteVersion);
-
-      configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
-      LOGGER.info("Loaded seed data...");
-    }
+    configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
+    LOGGER.info("Loaded seed data...");
 
     LOGGER.info("Finished bootstrapping Airbyte environment..");
   }
@@ -131,7 +129,6 @@ public class BootloaderApp {
   private static void assertNonBreakingMigration(JobPersistence jobPersistence, AirbyteVersion airbyteVersion) throws IOException {
     // version in the database when the server main method is called. may be empty if this is the first
     // time the server is started.
-    LOGGER.info("Checking illegal upgrade..");
     final Optional<AirbyteVersion> initialAirbyteDatabaseVersion = jobPersistence.getVersion().map(AirbyteVersion::new);
     if (!isLegalUpgrade(initialAirbyteDatabaseVersion.orElse(null), airbyteVersion)) {
       final String attentionBanner = MoreResources.readResource("banner/attention-banner.txt");
@@ -151,14 +148,10 @@ public class BootloaderApp {
   static boolean isLegalUpgrade(final AirbyteVersion airbyteDatabaseVersion, final AirbyteVersion airbyteVersion) {
     // means there was no previous version so upgrade even needs to happen. always legal.
     if (airbyteDatabaseVersion == null) {
-      LOGGER.info("No previous Airbyte Version set..");
       return true;
     }
 
-    LOGGER.info("Current Airbyte version: {}", airbyteDatabaseVersion);
-    LOGGER.info("Future Airbyte version: {}", airbyteVersion);
-    final var futureVersionIsAfterVersionBreak = airbyteVersion.greaterThan(VERSION_BREAK) || airbyteVersion.isDev();
-    final var isUpgradingThroughVersionBreak = airbyteDatabaseVersion.lessThan(VERSION_BREAK) && futureVersionIsAfterVersionBreak;
+    final var isUpgradingThroughVersionBreak = airbyteDatabaseVersion.lessThan(VERSION_BREAK) && airbyteVersion.greaterThan(VERSION_BREAK);
     return !isUpgradingThroughVersionBreak;
   }
 

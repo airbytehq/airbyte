@@ -72,12 +72,14 @@ public class AirbyteTestContainer {
   public void startAsync() throws IOException, InterruptedException {
     final File cleanedDockerComposeFile = prepareDockerComposeFile(dockerComposeFile);
     dockerComposeContainer = new DockerComposeContainer(cleanedDockerComposeFile).withEnv(env);
-    // Only expose logs related to db migrations.
     serviceLogConsumer(dockerComposeContainer, "init");
-    serviceLogConsumer(dockerComposeContainer, "bootloader");
     serviceLogConsumer(dockerComposeContainer, "db");
     serviceLogConsumer(dockerComposeContainer, "seed");
+    serviceLogConsumer(dockerComposeContainer, "scheduler");
     serviceLogConsumer(dockerComposeContainer, "server");
+    serviceLogConsumer(dockerComposeContainer, "webapp");
+    serviceLogConsumer(dockerComposeContainer, "worker");
+    serviceLogConsumer(dockerComposeContainer, "airbyte-temporal");
 
     dockerComposeContainer.start();
   }
