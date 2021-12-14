@@ -108,7 +108,7 @@ public abstract class AbstractBigQueryUploader<T extends CommonWriter> {
     try {
       // clean up tmp tables;
       LOGGER.info("Removing tmp tables...");
-      //bigQuery.delete(tmpTable);
+      bigQuery.delete(tmpTable);
       LOGGER.info("Finishing destination process...completed");
     } catch (Exception e) {
       LOGGER.error("Fail to tmp table drop table: " + e.getMessage());
