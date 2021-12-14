@@ -41,6 +41,8 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.getJobErrorMessage;
+
 public class BigQueryUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUtils.class);
@@ -282,9 +284,10 @@ public class BigQueryUtils {
         LOGGER.info("Waiting for job finish {}. Status: {}", job, job.getStatus());
         job.waitFor();
         LOGGER.info("Job finish {} with status {}", job, job.getStatus());
-      } catch (RuntimeException e) {
-        // @TODO Maria, please put your error logging here :)
-        throw e;
+      } catch (final BigQueryException e) {
+        String errorMessage = getJobErrorMessage(e.getErrors(), job);
+        LOGGER.error(errorMessage);
+        throw new BigQueryException(e.getCode(), errorMessage, e);
       }
     }
   }
