@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.util.Date;
 import lombok.val;
 import org.flywaydb.core.api.MigrationInfo;
@@ -20,6 +21,25 @@ import org.junit.jupiter.api.Test;
 public class MinimumFlywayMigrationVersionCheckTest {
 
   private static final long DEFAULT_TIMEOUT_MS = 10 * 1000;
+
+  @Test
+  void testDatabaseNotSetupFails() throws IOException {
+    val database = mock(DatabaseInstance.class);
+    when(database.isInitialized()).thenThrow(new IOException()).thenReturn(false);
+
+    assertThrows(RuntimeException.class ,() -> MinimumFlywayMigrationVersionCheck.assertDatabase(database, DEFAULT_TIMEOUT_MS));
+  }
+
+  @Test
+  void testDatabaseSetupSucceeds() throws IOException {
+    val database = mock(DatabaseInstance.class);
+    when(database.isInitialized())
+        .thenReturn(false)
+        .thenReturn(false)
+        .thenReturn(true);
+
+    assertDoesNotThrow(() -> MinimumFlywayMigrationVersionCheck.assertDatabase(database, DEFAULT_TIMEOUT_MS));
+  }
 
   @Test
   void testMatchesMinimum() {
