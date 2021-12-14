@@ -21,7 +21,7 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
-import io.airbyte.config.helpers.LogConfiguration;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.Job;
@@ -74,7 +74,7 @@ class JobConverterTest {
 
   @BeforeEach
   public void setUp() {
-    jobConverter = new JobConverter(WorkerEnvironment.DOCKER, LogConfiguration.EMPTY);
+    jobConverter = new JobConverter(WorkerEnvironment.DOCKER, LogConfigs.EMPTY);
     job = mock(Job.class);
     final Attempt attempt = mock(Attempt.class);
     when(job.getId()).thenReturn(JOB_ID);

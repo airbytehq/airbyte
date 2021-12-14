@@ -2,8 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from abc import ABC, abstractmethod
-from typing import Any, List, Mapping
+from abc import ABC
 
 import pytest
 from airbyte_cdk import AirbyteLogger
@@ -18,7 +17,6 @@ class AbstractTestParser(ABC):
     def _get_readmode(self, test_name, test_file):
         self.logger.info(f"testing {test_name}() with {test_file.get('test_alias', test_file['filepath'].split('/')[-1])} ...")
         return "rb" if test_file["AbstractFileParser"].is_binary else "r"
-
 
     def test_get_inferred_schema(self, test_file):
         with smart_open(test_file["filepath"], self._get_readmode("get_inferred_schema", test_file)) as f:
