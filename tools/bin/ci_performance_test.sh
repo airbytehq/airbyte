@@ -12,7 +12,6 @@ secondarg=""
 if [[ "$2" ]]; then
   if [[ "$2" == *"cpulimit"* ]]; then
     firstarg="-DcpuLimit=$(echo $2 | cut -d / -f 2)"
-    echo "3 ----------  $3--"
   fi
   if [[ "$2" == *"memorylimit"* ]]; then
     firstarg="-DmemoryLimit=$(echo $2 | cut -d / -f 2)"
@@ -49,7 +48,7 @@ else
   elif [[ "$connector" == *"connectors"* ]]; then
     connector_name=$(echo $connector | cut -d / -f 2)
     selected_performance_test=$(echo "$all_performance_tests" | grep "^$connector_name$" || echo "")
-    performanceTestCommand="$(_to_gradle_path "airbyte-integrations/$connector $firstarg $secondargt" performanceTest)"
+    performanceTestCommand="$(_to_gradle_path "airbyte-integrations/$connector" performanceTest " " $firstarg " " $secondargt)"
   else
     echo "2 ----------  $firstarg"
     echo "2 ----------  $secondarg"
