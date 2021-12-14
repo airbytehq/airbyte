@@ -21,16 +21,70 @@
       "type": "string"
     },
     "layout": {
-      "type": ["object", "null"]
+      "type": [
+        "object",
+        "null"
+      ]
     },
     "sorting": {
-      "type": ["string", "null"]
+      "type": "object",
+      "properties": {
+        "ignore_last": {
+          "type": "boolean"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
     },
     "required": {
-      "type": ["string", "null"]
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
     },
     "validation": {
-      "type": ["string", "null"]
+      "type": "object",
+      "properties": {
+        "max": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "min": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "sum": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "sum_text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "text": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
     },
     "forced_ranking": {
       "type": "boolean"

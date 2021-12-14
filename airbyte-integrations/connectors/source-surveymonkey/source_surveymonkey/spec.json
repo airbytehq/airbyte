@@ -30,7 +30,7 @@
           "type": "string",
           "pattern": "^[0-9]{8,9}$"
         },
-        "title": "Trello survey IDs",
+        "title": "Survey Monkey survey IDs",
         "description": "IDs of the surveys from which you'd like to replicate data. If left empty, data from all boards to which you have access will be replicated."
       }
     }
