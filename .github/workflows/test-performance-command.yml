@@ -47,6 +47,10 @@ jobs:
           regex_pattern: "^((connectors|bases)/)?[a-zA-Z0-9-_]+(\\|cpulimit=\\d\\|memorylimit=\\d{1,3}(MB|GB))?(\\|memorylimit=\\d{1,3}(MB|GB)|\\|cpulimit=\\d)?$"
           regex_flags: "i" # required to be set for this plugin
           search_string: ${{ github.event.inputs.connector }}
+      - name: Test_1
+        run: echo "Variable -> steps.regex.outputs.first_match"
+      - name: Test_2
+        run: echo "Variable -> github.event.inputs.connector"
       - name: Validate input workflow format
         if: steps.regex.outputs.first_match != github.event.inputs.connector
         run: echo "The connector provided has an invalid format!" && exit 1
