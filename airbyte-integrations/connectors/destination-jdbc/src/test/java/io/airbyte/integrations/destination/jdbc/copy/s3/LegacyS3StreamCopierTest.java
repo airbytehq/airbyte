@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.jdbc.copy.s3;
 
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -28,12 +29,15 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * IF YOU'RE SEEING WEIRD BEHAVIOR INVOLVING MOCKED OBJECTS: double-check the mockConstruction() call in setup(). You might need to update the methods
@@ -44,6 +48,8 @@ import org.mockito.MockedConstruction;
  * Does not verify SQL operations, as they're fairly transparent.
  */
 public class LegacyS3StreamCopierTest {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(LegacyS3StreamCopierTest.class);
 
   private static final int PART_SIZE = 5;
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -250,6 +256,15 @@ public class LegacyS3StreamCopierTest {
     copier.copyStagingFileToTemporaryTable();
 
     assertEquals(2, copyArguments.size(), "Number of invocations was actually " + copyArguments.size() + ". Arguments were " + copyArguments);
-    // TODO assert value of arguments
+
+    // S3StreamCopier operates on these from a HashMap, so need to sort them in order to assert in a sane way.
+    final List<CopyArguments> sortedArgs = copyArguments.stream().sorted(Comparator.comparing(arg -> arg.s3FileLocation)).toList();
+    for (int i = 0; i < sortedArgs.size(); i++) {
+      LOGGER.info("Checking arguments for index {}", i);
+      final CopyArguments args = sortedArgs.get(i);
+      assertEquals(String.format("s3://fake-bucket/fake-staging-folder/fake-schema/fake-stream_%05d", i), args.s3FileLocation);
+      assertEquals("fake-schema", args.schema);
+      assertTrue(args.tableName.endsWith("fake_stream"), "Table name was actually " + args.tableName);
+    }
   }
 }

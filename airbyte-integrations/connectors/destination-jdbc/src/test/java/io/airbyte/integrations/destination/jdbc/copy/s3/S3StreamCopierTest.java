@@ -28,14 +28,19 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import org.apache.commons.csv.CSVFormat;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class S3StreamCopierTest {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(S3StreamCopierTest.class);
 
   private static final int PART_SIZE = 5;
   private static final S3DestinationConfig S3_CONFIG = new S3DestinationConfig(
@@ -103,6 +108,7 @@ public class S3StreamCopierTest {
     csvWriterMockedConstruction = mockConstruction(
         S3CsvWriter.class,
         (mock, context) -> {
+          // Normally, the S3CsvWriter would return a path that ends in a UUID, but this mock will generate an int ID to make our asserts easier.
           doReturn(String.format("fakeOutputPath-%05d", csvWriterConstructorArguments.size())).when(mock).getObjectKey();
 
           // Mockito doesn't seem to provide an easy way to actually retrieve these arguments later on, so manually store them on construction.
@@ -226,6 +232,15 @@ public class S3StreamCopierTest {
     copier.copyStagingFileToTemporaryTable();
 
     assertEquals(2, copyArguments.size(), "Number of invocations was actually " + copyArguments.size() + ". Arguments were " + copyArguments);
-    // TODO assert value of arguments
+
+    // S3StreamCopier operates on these from a HashMap, so need to sort them in order to assert in a sane way.
+    final List<CopyArguments> sortedArgs = copyArguments.stream().sorted(Comparator.comparing(arg -> arg.s3FileLocation)).toList();
+    for (int i = 0; i < sortedArgs.size(); i++) {
+      LOGGER.info("Checking arguments for index {}", i);
+      final CopyArguments args = sortedArgs.get(i);
+      assertEquals(String.format("s3://fake-bucket/fakeOutputPath-%05d", i), args.s3FileLocation);
+      assertEquals("fake-schema", args.schema);
+      assertTrue(args.tableName.endsWith("fake_stream"), "Table name was actually " + args.tableName);
+    }
   }
 }
