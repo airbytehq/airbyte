@@ -229,23 +229,23 @@ jobs:
           org.gradle.vfs.watch=false
           EOF
 
-      - name: Format
+      #      - name: Format
       #        run: SUB_BUILD=PLATFORM ./gradlew format --scan --info --stacktrace
 
       - name: Ensure no file change
         run: git --no-pager diff && test -z "$(git --no-pager diff)"
 
       - name: Build
-        run: |
+      #        run: |
       #          SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
-      - name: Integration test
+      #      - name: Integration test
       #        run: SUB_BUILD=PLATFORM ./gradlew newIntegrationTest
 
       - name: Slow integration test
         if: contains(github.ref, 'bump-version') || contains(github.ref, 'master')
         run: SUB_BUILD=PLATFORM ./gradlew slowIntegrationTest
 
-      - name: Test if Seed spec is updated
+      #      - name: Test if Seed spec is updated
       #        run: SUB_BUILD=PLATFORM ./gradlew format && git --no-pager diff && test -z "$(git --no-pager diff)"
 
       # todo (cgardens) - scope by platform.
