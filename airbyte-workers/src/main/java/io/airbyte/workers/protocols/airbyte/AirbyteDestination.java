@@ -57,7 +57,7 @@ public interface AirbyteDestination extends CheckedConsumer<AirbyteMessage, Exce
    * been emitted or because the Destination container has exited.
    *
    * @return true, if no more data will be emitted. otherwise, false.
-   * @throws WorkerException if the Source exited with a non-zero exit code.
+   * @throws WorkerException if the Destination exited with a non-zero exit code.
    */
   boolean isFinished() throws WorkerException;
 
