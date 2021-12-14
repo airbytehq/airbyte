@@ -14,6 +14,8 @@ on:
         required: false
 
 jobs:
+  variables:
+    variable_con: ${{ github.event.inputs.connector.split('|') }}
   start-test-runner:
     name: Start Build EC2 Runner
     timeout-minutes: 10
@@ -39,8 +41,6 @@ jobs:
     needs: start-test-runner
     runs-on: ${{ needs.start-test-runner.outputs.label }}
     environment: more-secrets
-    variables:
-      variable_con: ${{ github.event.inputs.connector.split('|') }}
     steps:
       - name: Search for valid connector name format
         id: regex
