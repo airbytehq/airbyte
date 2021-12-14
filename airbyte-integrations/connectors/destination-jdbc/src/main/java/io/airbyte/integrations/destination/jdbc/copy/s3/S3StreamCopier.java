@@ -47,7 +47,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   private final ConfiguredAirbyteStream configuredAirbyteStream;
   private final Timestamp uploadTime;
   protected final String stagingFolder;
-  private final Map<String, S3Writer> stagingWritersByFile = new HashMap<>();
+  protected final Map<String, S3Writer> stagingWritersByFile = new HashMap<>();
 
 
   // The number of batches of records that will be inserted into each file.

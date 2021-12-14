@@ -11,35 +11,58 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.copy.s3.LegacyS3StreamCopier;
+import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
 import io.airbyte.integrations.destination.redshift.manifest.Entry;
 import io.airbyte.integrations.destination.redshift.manifest.Manifest;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
-import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RedshiftStreamCopier extends LegacyS3StreamCopier {
+public class RedshiftStreamCopier extends S3StreamCopier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftStreamCopier.class);
-  private static final int FILE_PREFIX_LENGTH = 5;
+  // From https://docs.aws.amazon.com/redshift/latest/dg/t_loading-tables-from-s3.html
+  // "Split your load data files so that the files are about equal size, between 1 MB and 1 GB after compression"
+  public static final int MAX_PARTS_PER_FILE = 4;
 
   private final ObjectMapper objectMapper;
   private String manifestFilePath = null;
 
   public RedshiftStreamCopier(final String stagingFolder,
-                              final DestinationSyncMode destSyncMode,
                               final String schema,
-                              final String streamName,
                               final AmazonS3 client,
                               final JdbcDatabase db,
                               final S3DestinationConfig s3Config,
                               final ExtendedNameTransformer nameTransformer,
-                              final SqlOperations sqlOperations) {
-    super(stagingFolder, destSyncMode, schema, streamName, client, db, s3Config, nameTransformer, sqlOperations);
+                              final SqlOperations sqlOperations,
+                              final ConfiguredAirbyteStream configuredAirbyteStream) {
+    this(
+        stagingFolder,
+        schema, client, db,
+        s3Config, nameTransformer,
+        sqlOperations,
+        Timestamp.from(Instant.now()),
+        configuredAirbyteStream
+    );
+  }
+
+  @VisibleForTesting
+  RedshiftStreamCopier(final String stagingFolder,
+                       final String schema,
+                       final AmazonS3 client,
+                       final JdbcDatabase db,
+                       final S3DestinationConfig s3Config,
+                       final ExtendedNameTransformer nameTransformer,
+                       final SqlOperations sqlOperations,
+                       final Timestamp uploadTime,
+                       final ConfiguredAirbyteStream configuredAirbyteStream) {
+    super(stagingFolder, schema, client, db, s3Config, nameTransformer, sqlOperations, configuredAirbyteStream, uploadTime, MAX_PARTS_PER_FILE);
     objectMapper = new ObjectMapper();
   }
 
@@ -86,11 +109,11 @@ public class RedshiftStreamCopier extends LegacyS3StreamCopier {
    * @return null if no stagingFiles exist otherwise the manifest body String
    */
   private String createManifest() {
-    if (s3StagingFiles.isEmpty()) {
+    if (stagingWritersByFile.isEmpty()) {
       return null;
     }
 
-    final var s3FileEntries = s3StagingFiles.stream()
+    final var s3FileEntries = stagingWritersByFile.keySet().stream()
         .map(filePath -> new Entry(getFullS3Path(s3Config.getBucketName(), filePath)))
         .collect(Collectors.toList());
     final var manifest = new Manifest(s3FileEntries);

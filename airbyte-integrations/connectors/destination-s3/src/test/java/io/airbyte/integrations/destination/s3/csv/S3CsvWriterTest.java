@@ -70,7 +70,7 @@ class S3CsvWriterTest {
   // The full path would be something like "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000_e549e712-b89c-4272-9496-9690ba7f973e.csv"
   // The namespace and stream have their hyphens replaced by underscores. Not super clear that that's actually required.
   // 2021_12_09_1639077474000 is generated from the timestamp. It's followed by a random UUID, in case we need to create multiple files.
-  private static final String EXPECTED_OBJECT_BEGINNING = "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000";
+  private static final String EXPECTED_OBJECT_BEGINNING = "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000_";
   private static final String EXPECTED_OBJECT_ENDING = ".csv";
 
   private AmazonS3 s3Client;
@@ -282,7 +282,7 @@ class S3CsvWriterTest {
     // Remove the beginning and ending, which _should_ leave us with just a UUID
     final String uuidMaybe = objectName
         // "^" == start of string
-        .replaceFirst("^" + EXPECTED_OBJECT_BEGINNING + "_", "")
+        .replaceFirst("^" + EXPECTED_OBJECT_BEGINNING, "")
         // "$" == end of string
         .replaceFirst(EXPECTED_OBJECT_ENDING + "$", "");
     assertDoesNotThrow(() -> UUID.fromString(uuidMaybe), errorMessage);

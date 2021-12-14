@@ -1,7 +1,10 @@
 package io.airbyte.integrations.destination.redshift;
 
 import static java.util.Collections.singletonList;
+import static java.util.Comparator.comparing;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -16,16 +19,23 @@ import static org.mockito.Mockito.verify;
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -34,11 +44,24 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class RedshiftStreamCopierTest {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftStreamCopierTest.class);
+
   private static final int PART_SIZE = 5;
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+  // The full path would be something like "fake-namespace/fake_stream/2021_12_09_1639077474000_e549e712-b89c-4272-9496-9690ba7f973e.csv"
+  // The namespace and stream have their hyphens replaced by underscores. Not super clear that that's actually required.
+  // 2021_12_09_1639077474000 is generated from the timestamp. It's followed by a random UUID, in case we need to create multiple files.
+  private static final String EXPECTED_OBJECT_BEGINNING = "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000_";
+  private static final String EXPECTED_OBJECT_ENDING = ".csv";
+
+  // equivalent to Thu, 09 Dec 2021 19:17:54 GMT
+  private static final Timestamp UPLOAD_TIME = Timestamp.from(Instant.ofEpochMilli(1639077474000L));
 
   private AmazonS3Client s3Client;
   private JdbcDatabase db;
@@ -64,6 +87,7 @@ class RedshiftStreamCopierTest {
           doReturn(mock).when(mock).numUploadThreads(anyInt());
           doReturn(mock).when(mock).queueCapacity(anyInt());
           doReturn(mock).when(mock).partSize(anyLong());
+          doReturn(mock).when(mock).numStreams(anyInt());
 
           // We can't write a fake MultiPartOutputStream, because it doesn't have a public constructor.
           // So instead, we'll build a mock that captures its data into a ByteArrayOutputStream.
@@ -89,15 +113,13 @@ class RedshiftStreamCopierTest {
     copier = new RedshiftStreamCopier(
         // In reality, this is normally a UUID - see CopyConsumerFactory#createWriteConfigs
         "fake-staging-folder",
-        DestinationSyncMode.OVERWRITE,
         "fake-schema",
-        "fake-stream",
         s3Client,
         db,
         new S3DestinationConfig(
             "fake-endpoint",
             "fake-bucket",
-            null,
+            "fake-bucketPath",
             "fake-region",
             "fake-access-key-id",
             "fake-secret-access-key",
@@ -105,7 +127,14 @@ class RedshiftStreamCopierTest {
             null
         ),
         new ExtendedNameTransformer(),
-        sqlOperations
+        sqlOperations,
+        UPLOAD_TIME,
+        new ConfiguredAirbyteStream()
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(new AirbyteStream()
+                .withName("fake-stream")
+                .withNamespace("fake-namespace")
+            )
     );
   }
 
@@ -120,7 +149,7 @@ class RedshiftStreamCopierTest {
     // should reuse that same upload manager.
     for (var i = 0; i < RedshiftStreamCopier.MAX_PARTS_PER_FILE; i++) {
       final String file = copier.prepareStagingFile();
-      assertEquals("fake-staging-folder/fake-schema/fake-stream_00000", file, "preparing file number " + i);
+      checkObjectName(file);
       final List<StreamTransferManager> firstManagers = streamTransferManagerMockedConstruction.constructed();
       final StreamTransferManager firstManager = firstManagers.get(0);
       verify(firstManager).partSize(PART_SIZE);
@@ -129,7 +158,7 @@ class RedshiftStreamCopierTest {
 
     // Now that we've hit the MAX_PARTS_PER_FILE, we should start a new upload
     final String secondFile = copier.prepareStagingFile();
-    assertEquals("fake-staging-folder/fake-schema/fake-stream_00001", secondFile);
+    checkObjectName(secondFile);
     final List<StreamTransferManager> secondManagers = streamTransferManagerMockedConstruction.constructed();
     final StreamTransferManager secondManager = secondManagers.get(1);
     verify(secondManager).partSize(PART_SIZE);
@@ -214,9 +243,12 @@ class RedshiftStreamCopierTest {
   @Test
   public void copiesCorrectFilesToTable() throws SQLException {
     // Generate two files
-    for (int i = 0; i < RedshiftStreamCopier.MAX_PARTS_PER_FILE + 1; i++) {
+    final String file1 = copier.prepareStagingFile();
+    for (int i = 0; i < RedshiftStreamCopier.MAX_PARTS_PER_FILE - 1; i++) {
       copier.prepareStagingFile();
     }
+    final String file2 = copier.prepareStagingFile();
+    final List<String> expectedFiles = List.of(file1, file2).stream().sorted().toList();
 
     copier.copyStagingFileToTemporaryTable();
 
@@ -232,7 +264,27 @@ class RedshiftStreamCopierTest {
 
           return startsCorrectly && endsCorrectly;
         }),
-        eq("{\"entries\":[{\"url\":\"s3://fake-bucket/fake-staging-folder/fake-schema/fake-stream_00001\",\"mandatory\":true},{\"url\":\"s3://fake-bucket/fake-staging-folder/fake-schema/fake-stream_00000\",\"mandatory\":true}]}")
+        (String) argThat(manifestStr -> {
+          try {
+            final JsonNode manifest = OBJECT_MAPPER.readTree((String) manifestStr);
+            final List<JsonNode> entries = Lists.newArrayList(manifest.get("entries").elements()).stream()
+                .sorted(comparing(entry -> entry.get("url").asText())).toList();
+
+            boolean entriesAreCorrect = true;
+            for (int i = 0; i < 2; i++) {
+              final String expectedFilename = expectedFiles.get(i);
+              final JsonNode manifestEntry = entries.get(i);
+              entriesAreCorrect &= isManifestEntryCorrect(manifestEntry, expectedFilename);
+              if (!entriesAreCorrect) {
+                LOGGER.error("Invalid entry: {}", manifestEntry);
+              }
+            }
+
+            return entriesAreCorrect && entries.size() == 2;
+          } catch (final JsonProcessingException e) {
+            throw new RuntimeException(e);
+          }
+        })
     );
 
     verify(db).execute(String.format(
@@ -245,5 +297,29 @@ class RedshiftStreamCopierTest {
         copier.getTmpTableName(),
         manifestUuid.get()
     ));
+  }
+
+  private static String checkObjectName(final String objectName) {
+    final String errorMessage = "Object was actually " + objectName;
+
+    assertTrue(objectName.startsWith(EXPECTED_OBJECT_BEGINNING), errorMessage);
+    assertTrue(objectName.endsWith(EXPECTED_OBJECT_ENDING), errorMessage);
+
+    // Remove the beginning and ending, which _should_ leave us with just a UUID
+    final String uuidMaybe = objectName
+        // "^" == start of string
+        .replaceFirst("^" + EXPECTED_OBJECT_BEGINNING, "")
+        // "$" == end of string
+        .replaceFirst(EXPECTED_OBJECT_ENDING + "$", "");
+    assertDoesNotThrow(() -> UUID.fromString(uuidMaybe), errorMessage + "; supposed UUID was " + uuidMaybe);
+
+    return uuidMaybe;
+  }
+
+  private static boolean isManifestEntryCorrect(final JsonNode entry, final String expectedFilename) {
+    final String url = entry.get("url").asText();
+    final boolean mandatory = entry.get("mandatory").asBoolean();
+
+    return ("s3://fake-bucket/" + expectedFilename).equals(url) && mandatory;
   }
 }

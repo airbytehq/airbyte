@@ -9,7 +9,6 @@ import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.DestinationSyncMode;
 
 public abstract class S3StreamCopierFactory implements StreamCopierFactory<S3DestinationConfig> {
 
@@ -18,19 +17,18 @@ public abstract class S3StreamCopierFactory implements StreamCopierFactory<S3Des
    */
   @Override
   public StreamCopier create(final String configuredSchema,
-      final S3DestinationConfig s3Config,
-      final String stagingFolder,
-      final ConfiguredAirbyteStream configuredStream,
-      final ExtendedNameTransformer nameTransformer,
-      final JdbcDatabase db,
-      final SqlOperations sqlOperations) {
+                             final S3DestinationConfig s3Config,
+                             final String stagingFolder,
+                             final ConfiguredAirbyteStream configuredStream,
+                             final ExtendedNameTransformer nameTransformer,
+                             final JdbcDatabase db,
+                             final SqlOperations sqlOperations) {
     try {
       final AirbyteStream stream = configuredStream.getStream();
-      final DestinationSyncMode syncMode = configuredStream.getDestinationSyncMode();
       final String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
       final AmazonS3 s3Client = s3Config.getS3Client();
 
-      return create(stagingFolder, syncMode, schema, stream.getName(), s3Client, db, s3Config, nameTransformer, sqlOperations);
+      return create(stagingFolder, schema, s3Client, db, s3Config, nameTransformer, sqlOperations, configuredStream);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
@@ -39,14 +37,13 @@ public abstract class S3StreamCopierFactory implements StreamCopierFactory<S3Des
   /**
    * For specific copier suppliers to implement.
    */
-  public abstract StreamCopier create(String stagingFolder,
-      DestinationSyncMode syncMode,
-      String schema,
-      String streamName,
-      AmazonS3 s3Client,
-      JdbcDatabase db,
-      S3DestinationConfig s3Config,
-      ExtendedNameTransformer nameTransformer,
-      SqlOperations sqlOperations)
-      throws Exception;
+  protected abstract StreamCopier create(String stagingFolder,
+                                         String schema,
+                                         AmazonS3 s3Client,
+                                         JdbcDatabase db,
+                                         S3DestinationConfig s3Config,
+                                         ExtendedNameTransformer nameTransformer,
+                                         SqlOperations sqlOperations,
+                                         ConfiguredAirbyteStream configuredStream
+  ) throws Exception;
 }
