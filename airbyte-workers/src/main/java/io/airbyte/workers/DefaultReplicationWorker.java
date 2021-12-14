@@ -127,11 +127,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             getReplicationRunnable(source, destination, cancelled, mapper, sourceMessageTracker, mdc),
             executors);
 
-        LOGGER.info("Waiting for source and destination threads to complete!!");
+        LOGGER.info("Waiting for source and destination threads to complete.");
         // CompletableFuture#allOf waits until all futures finish before returning, even if one throws an
         // exception. So in order to handle exceptions from a future immediately without needing to wait for
         // the other future to finish, we first call CompletableFuture#anyOf.
         CompletableFuture.anyOf(replicationThreadFuture, destinationOutputThreadFuture).get();
+        LOGGER.info("One of source or destination thread complete. Waiting on the other.");
         CompletableFuture.allOf(replicationThreadFuture, destinationOutputThreadFuture).get();
         LOGGER.info("Source and destination threads complete.");
 
