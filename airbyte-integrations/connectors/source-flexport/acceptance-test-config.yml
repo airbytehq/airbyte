@@ -18,6 +18,9 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog_locations.json"
       empty_streams: []
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog_products.json"
+      empty_streams: []
   # incremental:
   #   - config_path: "secrets/config.json"
   #     configured_catalog_path: "integration_tests/configured_catalog.json"
@@ -27,3 +30,5 @@ tests:
       configured_catalog_path: "integration_tests/configured_catalog_companies.json"
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog_locations.json"
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog_products.json"
