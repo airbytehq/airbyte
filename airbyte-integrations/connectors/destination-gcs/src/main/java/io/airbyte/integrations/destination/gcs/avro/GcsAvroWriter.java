@@ -16,6 +16,7 @@ import io.airbyte.integrations.destination.gcs.writer.CommonWriter;
 import io.airbyte.integrations.destination.gcs.writer.GscWriter;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.AvroRecordFactory;
+import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
 import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
 import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
@@ -67,7 +68,8 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer, GscWriter,
 
     this.schema = (airbyteSchema == null ?
         GcsUtils.getDefaultAvroSchema(stream.getName(), stream.getNamespace(), true) :
-        GcsUtils.getAvroSchema(stream.getJsonSchema(), nameTransformer, stream.getName(), stream.getNamespace(), true));
+        new JsonToAvroSchemaConverter().getAvroSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace(), true)
+    );
 
     final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.AVRO);
     final String objectKey = String.join("/", outputPrefix, outputFilename);

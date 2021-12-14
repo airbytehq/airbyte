@@ -106,7 +106,6 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   }
 
   private static Builder getField(final BigQuerySQLNameTransformer namingResolver, final String key, final JsonNode fieldDefinition) {
-
     final String fieldName = namingResolver.getIdentifier(key);
     final Builder builder = Field.newBuilder(fieldName, StandardSQLTypeName.STRING);
     final List<JsonSchemaType> fieldTypes = getTypes(fieldName, fieldDefinition.get(TYPE_FIELD));

@@ -33,6 +33,8 @@ import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.integrations.destination.gcs.GcsS3Helper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -46,7 +48,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.SyncMode;
 import java.io.ByteArrayInputStream;
-//import io.airbyte.integrations.destination.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -157,9 +158,9 @@ class BigQueryDenormalizedGscDestinationTest {
         .put(BIG_QUERY_CLIENT_CHUNK_SIZE, 10)
         .build());
 
-//    final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
-//            .getGcsDestinationConfig(BigQueryUtils.getGcsJsonNodeConfig(config));
-//    this.s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
+    final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
+            .getGcsDestinationConfig(BigQueryUtils.getGcsJsonNodeConfig(config));
+    this.s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
 
     tornDown = false;
     Runtime.getRuntime()
