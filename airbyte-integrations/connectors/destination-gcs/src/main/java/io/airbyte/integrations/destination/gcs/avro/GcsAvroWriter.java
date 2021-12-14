@@ -8,14 +8,13 @@ import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.util.GcsUtils;
 import io.airbyte.integrations.destination.gcs.writer.BaseGcsWriter;
 import io.airbyte.integrations.destination.gcs.writer.CommonWriter;
 import io.airbyte.integrations.destination.gcs.writer.GscWriter;
 import io.airbyte.integrations.destination.s3.S3Format;
-import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.integrations.destination.s3.avro.AvroRecordFactory;
 import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
 import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
@@ -26,9 +25,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.UUID;
 
-import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
-import org.apache.avro.SchemaBuilder;
 import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericData.Record;
@@ -36,8 +33,6 @@ import org.apache.avro.generic.GenericDatumWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
-
-import javax.annotation.Nullable;
 
 public class GcsAvroWriter extends BaseGcsWriter implements S3Writer, GscWriter, CommonWriter {
 
@@ -57,7 +52,7 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer, GscWriter,
       final ConfiguredAirbyteStream configuredStream,
       final Timestamp uploadTimestamp,
       final JsonAvroConverter converter) throws IOException {
-    this(config, s3Client, configuredStream, uploadTimestamp, converter, null);
+    this(config, s3Client, configuredStream, uploadTimestamp, converter, null, null);
   }
 
   public GcsAvroWriter(final GcsDestinationConfig config,
@@ -65,13 +60,14 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer, GscWriter,
                        final ConfiguredAirbyteStream configuredStream,
                        final Timestamp uploadTimestamp,
                        final JsonAvroConverter converter,
-                       final JsonNode airbyteSchema)
+                       final JsonNode airbyteSchema,
+                       final StandardNameTransformer nameTransformer)
       throws IOException {
     super(config, s3Client, configuredStream);
 
     this.schema = (airbyteSchema == null ?
         GcsUtils.getDefaultAvroSchema(stream.getName(), stream.getNamespace(), true) :
-        GcsUtils.getAvroSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace(), true));
+        GcsUtils.getAvroSchema(stream.getJsonSchema(), nameTransformer, stream.getName(), stream.getNamespace(), true));
 
     final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.AVRO);
     final String objectKey = String.join("/", outputPrefix, outputFilename);

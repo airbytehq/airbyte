@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import java.util.HashMap;
 import java.util.List;
@@ -55,7 +56,7 @@ public class GcsUtils {
     return assembler.endRecord();
   }
 
-  public static Schema getAvroSchema(JsonNode airbyteSchema, String name, @Nullable final String namespace, final boolean appendAirbyteFields) {
+  public static Schema getAvroSchema(JsonNode airbyteSchema, StandardNameTransformer nameTransformer, String name, @Nullable final String namespace, final boolean appendAirbyteFields) {
     final String stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(name);
     SchemaBuilder.RecordBuilder<Schema> builder = SchemaBuilder.record(stdName);
 
@@ -69,7 +70,7 @@ public class GcsUtils {
     Jsons.keys(properties).forEach(fieldName -> {
       JsonNode fieldType = properties.get(fieldName);
       Schema.Type avroType = getAvroType(fieldType);
-      assembler.name(fieldName).type().optional().type(avroType.getName());
+      assembler.name(nameTransformer.getIdentifier(fieldName)).type().optional().type(avroType.getName());
     });
 
     if (appendAirbyteFields)
@@ -117,7 +118,7 @@ public class GcsUtils {
   private static Map<String, Type> getTypeMap() {
     Map<String, Type> map = new HashMap<>();
     map.put("string", Type.STRING);
-    map.put("number", Type.FLOAT);
+    map.put("number", Type.DOUBLE);
     map.put("integer", Type.INT);
     map.put("object", Type.RECORD);
     map.put("array", Type.ARRAY);

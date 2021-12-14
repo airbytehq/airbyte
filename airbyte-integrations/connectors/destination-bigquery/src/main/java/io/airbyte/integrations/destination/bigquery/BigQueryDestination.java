@@ -6,24 +6,18 @@ package io.airbyte.integrations.destination.bigquery;
 
 import static java.util.Objects.isNull;
 
-import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Field;
-import com.google.cloud.bigquery.FormatOptions;
 import com.google.cloud.bigquery.Job;
-import com.google.cloud.bigquery.JobId;
-import com.google.cloud.bigquery.JobInfo.CreateDisposition;
-import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
-import com.google.cloud.bigquery.TableDataWriteChannel;
-import com.google.cloud.bigquery.TableId;
-import com.google.cloud.bigquery.WriteChannelConfiguration;
 import com.google.common.base.Charsets;
+import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -36,30 +30,20 @@ import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRec
 import io.airbyte.integrations.destination.bigquery.formatter.GcsAvroBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.GcsCsvBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
-import io.airbyte.integrations.destination.bigquery.uploader.BigQueryDirectUploader;
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
-import io.airbyte.integrations.destination.bigquery.uploader.GcsAvroBigQueryUploader;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
-import io.airbyte.integrations.destination.bigquery.writer.BigQueryTableWriter;
+import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;
 import io.airbyte.integrations.destination.gcs.GcsDestination;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.integrations.destination.gcs.GcsS3Helper;
-import io.airbyte.integrations.destination.gcs.avro.GcsAvroWriter;
-import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
@@ -73,6 +57,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
       Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP),
       Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING));
+
+  protected static final ObjectMapper MAPPER = MoreMappers.initMapper();
 
   private final BigQuerySQLNameTransformer namingResolver;
 
@@ -185,15 +171,27 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
       final AirbyteStream stream = configStream.getStream();
       final String streamName = stream.getName();
-      final String tableName = getTargetTableName(streamName);
-      final String tmpTableName = namingResolver.getTmpTableName(streamName);
-      final Schema schema = getBigQuerySchema(stream.getJsonSchema());
+      UploaderConfig uploaderConfig = UploaderConfig
+          .builder()
+          .bigQuery(bigquery)
+          .configStream(configStream)
+          .config(config)
+          .formatterMap(getFormatterMap())
+          .tmpTableName(namingResolver.getTmpTableName(streamName))
+          .targetTableName(getTargetTableName(streamName))
+          .schema(getBigQuerySchema(stream.getJsonSchema()))
+          .isDefaultAirbyteTmpSchema(isDefaultAirbyteTmpTableSchema())
+          .build();
 
       uploaderMap.put(
           AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
-          BigQueryUploaderFactory.getUploader(config, configStream, tableName, tmpTableName, bigquery, schema, getFormatterMap()));
+          BigQueryUploaderFactory.getUploader(uploaderConfig));
     }
     return uploaderMap;
+  }
+
+  protected boolean isDefaultAirbyteTmpTableSchema() {
+    return true;
   }
 
   protected Map<UploaderType, BigQueryRecordFormatter> getFormatterMap() {
