@@ -74,7 +74,7 @@ public class MigrationAcceptanceTest {
       healthCheck(getApiClient());
     });
 
-    LOGGER.info("======= after init 17 migration");
+    LOGGER.info("Finish initial 0.17.0-alpha start..");
 
     // attempt to run from pre-version bump version to post-version bump version. expect failure.
     final File currentDockerComposeFile = MoreResources.readResourceAsFile("docker-compose.yaml");
@@ -82,17 +82,14 @@ public class MigrationAcceptanceTest {
     // point at test paths.
     final Properties envFileProperties = overrideDirectoriesForTest(MoreProperties.envFileToProperties(ENV_FILE));
     envFileProperties.setProperty("VERSION", "dev");
-    LOGGER.info("========= property: {}", envFileProperties.getProperty("VERSION"));
-    runAirbyteAndWaitForUpgradeException(currentDockerComposeFile, envFileProperties); // 0.33.11-alpha
-
-    LOGGER.info("======= after upgrade exception");
+    runAirbyteAndWaitForUpgradeException(currentDockerComposeFile, envFileProperties);
+    LOGGER.info("Finished testing upgrade exception..");
 
     // run "faux" major version bump version
     final File version32DockerComposeFile = MoreResources.readResourceAsFile("docker-compose-migration-test-0-32-0-alpha.yaml");
-    // LOGGER.info("===== version 32 docker compose file: {}", );
+
     final Properties version32EnvFileProperties = MoreProperties
         .envFileToProperties(MoreResources.readResourceAsFile("env-file-migration-test-0-32-0.env"));
-    LOGGER.info("======= env file properties: {}", version32EnvFileProperties);
     runAirbyte(version32DockerComposeFile, version32EnvFileProperties, MigrationAcceptanceTest::assertHealthy);
 
     // run from last major version bump to current version.

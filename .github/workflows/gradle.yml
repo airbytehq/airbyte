@@ -229,8 +229,8 @@ jobs:
           org.gradle.vfs.watch=false
           EOF
 
-      #      - name: Format
-      #        run: SUB_BUILD=PLATFORM ./gradlew format --scan --info --stacktrace
+      - name: Format
+        run: SUB_BUILD=PLATFORM ./gradlew format --scan --info --stacktrace
 
       - name: Ensure no file change
         run: git --no-pager diff && test -z "$(git --no-pager diff)"
@@ -238,8 +238,9 @@ jobs:
       - name: Build
         run: |
           SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
-      #      - name: Integration test
-      #        run: SUB_BUILD=PLATFORM ./gradlew newIntegrationTest
+
+      - name: Integration test
+        run: SUB_BUILD=PLATFORM ./gradlew newIntegrationTest
 
       - name: Slow integration test
         if: contains(github.ref, 'bump-version') || contains(github.ref, 'master')
@@ -257,8 +258,8 @@ jobs:
       #      - name: Get Docker Space
       #        run: docker run --rm busybox df -h
 
-      #      - name: Run End-to-End Acceptance Tests
-      #        run: ./tools/bin/acceptance_test.sh
+      - name: Run End-to-End Acceptance Tests
+        run: ./tools/bin/acceptance_test.sh
 
       - name: Automatic Migration Acceptance Test
         run: MIGRATION_TEST_VERSION=dev SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan -i
