@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
+import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 
 import { Button } from "components";
 import ContentCard from "components/ContentCard";
@@ -51,7 +51,6 @@ const Title = styled.div`
 `;
 
 const Message = styled.div`
-  margin: -5px 0 13px;
   font-weight: 500;
   font-size: 12px;
   line-height: 15px;
@@ -147,8 +146,8 @@ const ReplicationView: React.FC<IProps> = ({
   const renderUpdateSchemaButton = () => {
     if (!activeUpdatingSchemaMode) {
       return (
-        <Button onClick={onEnterRefreshCatalogMode} type="button">
-          <TryArrow icon={faRedoAlt} />
+        <Button onClick={onEnterRefreshCatalogMode} type="button" secondary>
+          <TryArrow icon={faSyncAlt} />
           <FormattedMessage id="connection.updateSchema" />
         </Button>
       );

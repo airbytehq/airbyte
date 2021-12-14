@@ -1,8 +1,6 @@
 import React from "react";
 import { useIntl } from "react-intl";
 import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
 
 import { Input } from "components";
 
@@ -11,20 +9,11 @@ type SearchProps = {
 };
 
 const SearchInput = styled(Input)`
-  padding: 3px 10px 3px 24px;
-`;
-
-const SearchIcon = styled(FontAwesomeIcon)`
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  font-size: 14px;
-  color: ${({ theme }) => theme.greyColor40};
+  padding: 10px 8px 9px;
 `;
 
 const SearchContent = styled.div`
   position: relative;
-  max-width: 270px;
   width: 100%;
 
   &:before {
@@ -37,7 +26,6 @@ const Search: React.FC<SearchProps> = ({ onSearch }) => {
 
   return (
     <SearchContent>
-      <SearchIcon icon={faSearch} />
       <SearchInput
         placeholder={formatMessage({
           id: `form.nameSearch`,

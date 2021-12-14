@@ -10,7 +10,6 @@ import { CheckBox, LabeledRadioButton } from "components";
 import { Cell, Header } from "components/SimpleTableComponents";
 import CatalogTree from "views/Connection/CatalogTree";
 import Search from "./Search";
-import SectionTitle from "./SectionTitle";
 import { naturalComparatorBy } from "utils/objects";
 import { SyncCatalogFilters } from "./SyncCatalogFilters";
 
@@ -29,11 +28,6 @@ const SchemaHeader = styled(Header)`
   margin-bottom: 5px;
 `;
 
-const SchemaTitle = styled(SectionTitle)`
-  display: inline-block;
-  margin: 0 11px 13px 0;
-`;
-
 const SelectAll = styled.div`
   margin: 0 9px 0 30px;
 `;
@@ -44,14 +38,24 @@ const NamespaceTitleCell = styled(Cell).attrs(() => ({ lighter: true }))`
   align-items: center;
 `;
 
-const SearchContent = styled.div`
+const FiltersContent = styled.div`
+  margin: 6px 0 21px;
   display: flex;
-  flex-direction: row;
-  align-items: center;
 `;
 
 const RadioButtonControl = styled(LabeledRadioButton)`
   margin: 0 0 0 5px;
+`;
+
+const HeaderBlock = styled.div`
+  margin: 10px 0 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 17px;
 `;
 
 type SchemaViewProps = {
@@ -129,14 +133,12 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
 
   return (
     <>
-      <div>
-        <SchemaTitle>
-          <FormattedMessage id="form.dataSync" />
-        </SchemaTitle>
+      <HeaderBlock>
+        <FormattedMessage id="form.dataSync" />
         {additionalControl}
-      </div>
-      <SearchContent>
-        <Search onSearch={setSearchString} />
+      </HeaderBlock>
+      <Search onSearch={setSearchString} />
+      <FiltersContent>
         <RadioButtonControl
           onChange={(value) => {
             setFilterMode(value.target.value as SyncCatalogFilters);
@@ -164,7 +166,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
           checked={filterMode === SyncCatalogFilters.NotSelected}
           label={<FormattedMessage id="form.notSelected" />}
         />
-      </SearchContent>
+      </FiltersContent>
       <SchemaHeader>
         <NamespaceTitleCell flex={1.5}>
           <SelectAll>
