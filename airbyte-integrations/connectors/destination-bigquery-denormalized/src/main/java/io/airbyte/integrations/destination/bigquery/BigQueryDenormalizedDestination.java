@@ -25,6 +25,7 @@ import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordForm
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryDenormalizedRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.GcsAvroBigQueryRecordFormatter;
+import io.airbyte.integrations.destination.bigquery.formatter.GcsBigQueryDenormalizedRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.GcsCsvBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
@@ -69,7 +70,7 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   protected Map<UploaderType, BigQueryRecordFormatter> getFormatterMap() {
     Map<UploaderType, BigQueryRecordFormatter> formatterMap = new HashMap<>();
     formatterMap.put(UploaderType.STANDARD, new DefaultBigQueryDenormalizedRecordFormatter(getNamingResolver(), fieldsContainRefDefinitionValue));
-//    formatterMap.put(UploaderType.AVRO, new GcsAvroBigQueryRecordFormatter());
+    formatterMap.put(UploaderType.AVRO, new GcsBigQueryDenormalizedRecordFormatter(getNamingResolver(), fieldsContainRefDefinitionValue));
     return formatterMap;  }
 
   @Override
@@ -81,6 +82,7 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
     if (fieldList.stream().noneMatch(f -> f.getName().equals(JavaBaseConstants.COLUMN_NAME_EMITTED_AT))) {
       fieldList.add(Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
     }
+    LOGGER.info("Airbyte Schema is transformed from {} to {}.", jsonSchema, fieldList);
     return com.google.cloud.bigquery.Schema.of(fieldList);
   }
 

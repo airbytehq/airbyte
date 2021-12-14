@@ -42,8 +42,6 @@ public class DefaultBigQueryDenormalizedRecordFormatter implements BigQueryRecor
     public JsonNode formatRecord(final Schema schema, final AirbyteRecordMessage recordMessage) {
         // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds then
         // use BQ helpers to string-format correctly.
-        final long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
-        final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
         Preconditions.checkArgument(recordMessage.getData().isObject());
         final ObjectNode data = (ObjectNode) formatData(schema.getFields(), recordMessage.getData());
         // replace ObjectNode with TextNode for fields with $ref definition key
@@ -55,10 +53,17 @@ public class DefaultBigQueryDenormalizedRecordFormatter implements BigQueryRecor
                 }
             });
         }
-        data.put(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString());
-        data.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, formattedEmittedAt);
+        addAirbyteColumns(data, recordMessage);
 
         return data;
+    }
+
+    protected void addAirbyteColumns(ObjectNode data, final AirbyteRecordMessage recordMessage) {
+        final long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
+        final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
+
+        data.put(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString());
+        data.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, formattedEmittedAt);
     }
 
     protected JsonNode formatData(final FieldList fields, final JsonNode root) {

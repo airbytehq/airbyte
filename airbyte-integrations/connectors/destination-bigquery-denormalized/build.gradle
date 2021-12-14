@@ -15,13 +15,14 @@ dependencies {
 
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-integrations:bases:base-java')
+    implementation project(':airbyte-integrations:connectors:destination-gcs')
     implementation project(':airbyte-integrations:connectors:destination-bigquery')
     implementation project(':airbyte-protocol:models')
 
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-gcs')
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-bigquery')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-bigquery-denormalized')
-
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }

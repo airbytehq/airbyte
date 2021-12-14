@@ -10,6 +10,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.integrations.destination.gcs.util.GcsUtils;
 import io.airbyte.integrations.destination.gcs.writer.BaseGcsWriter;
 import io.airbyte.integrations.destination.gcs.writer.CommonWriter;
 import io.airbyte.integrations.destination.gcs.writer.GscWriter;
@@ -47,44 +48,30 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer, GscWriter,
   private final MultiPartOutputStream outputStream;
   private final DataFileWriter<GenericData.Record> dataFileWriter;
   private final String gcsFileLocation;
+  private final Schema schema;
 
-  private Schema getLocalSchema(final JsonNode jsonSchema,
-                                final String name,
-                                @Nullable final String namespace,
-                                final boolean appendAirbyteFields) {
-    final String stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(name);
-    SchemaBuilder.RecordBuilder<Schema> builder = SchemaBuilder.record(stdName);
 
-    if (namespace != null) {
-      builder = builder.namespace(namespace);
-    }
 
-    SchemaBuilder.FieldAssembler<Schema> assembler = builder.fields();
-
-    Schema TIMESTAMP_MILLIS_SCHEMA = LogicalTypes.timestampMillis()
-            .addToSchema(Schema.create(Schema.Type.LONG));
-    Schema UUID_SCHEMA = LogicalTypes.uuid()
-            .addToSchema(Schema.create(Schema.Type.STRING));
-
-    if (appendAirbyteFields) {
-      assembler = assembler.name(JavaBaseConstants.COLUMN_NAME_AB_ID).type(UUID_SCHEMA).noDefault();
-      assembler = assembler.name(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
-              .type(TIMESTAMP_MILLIS_SCHEMA).noDefault();
-    }
-    assembler = assembler.name(JavaBaseConstants.COLUMN_NAME_DATA).type().stringType().noDefault();
-
-    return assembler.endRecord();
+  public GcsAvroWriter(final GcsDestinationConfig config,
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream,
+      final Timestamp uploadTimestamp,
+      final JsonAvroConverter converter) throws IOException {
+    this(config, s3Client, configuredStream, uploadTimestamp, converter, null);
   }
 
   public GcsAvroWriter(final GcsDestinationConfig config,
                        final AmazonS3 s3Client,
                        final ConfiguredAirbyteStream configuredStream,
                        final Timestamp uploadTimestamp,
-                       final JsonAvroConverter converter)
+                       final JsonAvroConverter converter,
+                       final JsonNode airbyteSchema)
       throws IOException {
     super(config, s3Client, configuredStream);
 
-    final Schema schema = getLocalSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace(), true);
+    this.schema = (airbyteSchema == null ?
+        GcsUtils.getDefaultAvroSchema(stream.getName(), stream.getNamespace(), true) :
+        GcsUtils.getAvroSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace(), true));
 
     final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.AVRO);
     final String objectKey = String.join("/", outputPrefix, outputFilename);
@@ -93,7 +80,7 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer, GscWriter,
     LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
         objectKey);
 
-    this.avroRecordFactory = new AvroRecordFactory(schema, converter);
+    this.avroRecordFactory = new AvroRecordFactory(this.schema, converter);
     this.uploadManager = S3StreamTransferManagerHelper.getDefault(
         config.getBucketName(), objectKey, s3Client, config.getFormatConfig().getPartSize());
     // We only need one output stream as we only have one input stream. This is reasonably performant.
@@ -104,7 +91,7 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer, GscWriter,
     // If json encoding is needed in the future, use the GenericDatumWriter directly.
     this.dataFileWriter = new DataFileWriter<>(new GenericDatumWriter<Record>())
         .setCodec(formatConfig.getCodecFactory())
-        .create(schema, outputStream);
+        .create(this.schema, outputStream);
   }
 
   @Override

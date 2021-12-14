@@ -73,7 +73,7 @@ public class BigQueryUploaderFactory {
     final GcsDestinationConfig gcsDestinationConfig =
         GcsDestinationConfig.getGcsDestinationConfig(
             BigQueryUtils.getGcsAvroJsonNodeConfig(config));
-    final GcsAvroWriter gcsCsvWriter = initGcsWriter(gcsDestinationConfig, configStream);
+    final GcsAvroWriter gcsCsvWriter = initGcsWriter(gcsDestinationConfig, configStream, configStream.getStream().getJsonSchema());
     gcsCsvWriter.initialize();
 
     return new GcsAvroBigQueryUploader(
@@ -90,7 +90,8 @@ public class BigQueryUploaderFactory {
 
   private static GcsAvroWriter initGcsWriter(
       final GcsDestinationConfig gcsDestinationConfig,
-      final ConfiguredAirbyteStream configuredStream)
+      final ConfiguredAirbyteStream configuredStream,
+      final JsonNode bigQuerySchema)
       throws IOException {
     final Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
@@ -100,7 +101,9 @@ public class BigQueryUploaderFactory {
         s3Client,
         configuredStream,
         uploadTimestamp,
-        AvroConstants.JSON_CONVERTER);
+        AvroConstants.JSON_CONVERTER,
+        bigQuerySchema
+        );
     //    return new GcsCsvWriter(gcsDestinationConfig, s3Client, configuredStream,
     // uploadTimestamp);
   }
