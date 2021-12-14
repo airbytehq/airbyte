@@ -20,7 +20,9 @@ class SecretsLoader:
     """
     """
     logger: ClassVar[Logger] = Logger()
-    base_folder: ClassVar[Path] = Path("/Users/pixel/Projects/Airbyte/repo/")
+    # base_folder: ClassVar[Path] = Path("/Users/pixel/Projects/Airbyte/repo/")
+    base_folder: ClassVar[Path] = Path("/actions-runner/_work/airbyte/airbyte/")
+
 
     gsm_credentials: Mapping[str, Any]
     github_secrets: Mapping[str, str]
@@ -30,6 +32,7 @@ class SecretsLoader:
 
     @classmethod
     def get_github_registers_filepath(cls) -> Path:
+
         return cls.base_folder / "tools/bin/ci_credentials.sh"
 
     def __read_github_registers_file(self) -> Mapping[Tuple[str, str], str]:
