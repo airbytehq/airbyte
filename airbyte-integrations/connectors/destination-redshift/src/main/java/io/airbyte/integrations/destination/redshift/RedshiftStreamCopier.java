@@ -31,14 +31,14 @@ public class RedshiftStreamCopier extends S3StreamCopier {
   private String manifestFilePath = null;
 
   public RedshiftStreamCopier(final String stagingFolder,
-      final DestinationSyncMode destSyncMode,
-      final String schema,
-      final String streamName,
-      final AmazonS3 client,
-      final JdbcDatabase db,
-      final S3DestinationConfig s3Config,
-      final ExtendedNameTransformer nameTransformer,
-      final SqlOperations sqlOperations) {
+                              final DestinationSyncMode destSyncMode,
+                              final String schema,
+                              final String streamName,
+                              final AmazonS3 client,
+                              final JdbcDatabase db,
+                              final S3DestinationConfig s3Config,
+                              final ExtendedNameTransformer nameTransformer,
+                              final SqlOperations sqlOperations) {
     super(stagingFolder, destSyncMode, schema, streamName, Strings.addRandomSuffix("", "", FILE_PREFIX_LENGTH) + "_" + streamName,
         client, db, s3Config, nameTransformer, sqlOperations);
     objectMapper = new ObjectMapper();
@@ -56,11 +56,11 @@ public class RedshiftStreamCopier extends S3StreamCopier {
 
   @Override
   public void copyS3CsvFileIntoTable(
-      final JdbcDatabase database,
-      final String s3FileLocation,
-      final String schema,
-      final String tableName,
-      final S3DestinationConfig s3Config) {
+                                     final JdbcDatabase database,
+                                     final String s3FileLocation,
+                                     final String schema,
+                                     final String tableName,
+                                     final S3DestinationConfig s3Config) {
     throw new RuntimeException("Redshift Stream Copier should not copy individual files without use of a manifest");
   }
 
