@@ -39,8 +39,6 @@ jobs:
     needs: start-test-runner
     runs-on: ${{ needs.start-test-runner.outputs.label }}
     environment: more-secrets
-    vars:
-      variable_con: {{ github.event.inputs.connector.split('|') }}
     steps:
       - name: Search for valid connector name format
         id: regex
@@ -55,7 +53,7 @@ jobs:
       - name: Test_2
         run: echo "Variable -> ${{ github.event.inputs.connector }} "
       - name: Test_3
-        run: echo "Variable ->  $( variable_con.0 ) ==="
+        run: echo "Variable ->  $( github.event.inputs.connector ) +++"
       - name: Validate input workflow format
         if: steps.regex.outputs.first_match != github.event.inputs.connector
         run: echo "The connector provided has an invalid format!" && exit 1
