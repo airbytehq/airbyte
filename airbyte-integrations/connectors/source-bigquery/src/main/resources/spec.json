@@ -18,7 +18,7 @@
       },
       "dataset_id": {
         "type": "string",
-        "description": "The schema name if only one schema is interested. Dramatically boost source discover operation.",
+        "description": "The dataset ID to search for tables and views. If you are only loading data from one dataset, setting this option could result in much faster schema discovery.",
         "title": "Default Dataset ID"
       },
       "credentials_json": {
