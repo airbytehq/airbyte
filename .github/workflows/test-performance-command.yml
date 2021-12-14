@@ -53,7 +53,7 @@ jobs:
       - name: Test_2
         run: echo "Variable -> ${{ github.event.inputs.connector }} "
       - name: Test_3
-        run: echo "Variable ->  $( github.event.inputs.connector.split('\|').0 ) ---"
+        run: echo "Variable ->  $( github.event.inputs.connector.split('--').0 ) !!"
       - name: Validate input workflow format
         if: steps.regex.outputs.first_match != github.event.inputs.connector
         run: echo "The connector provided has an invalid format!" && exit 1
