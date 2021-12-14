@@ -6,9 +6,7 @@ set -e
 
 # runs performance tests for an performance name
 
-connector="$1"
-all_performance_tests=$(./gradlew performanceTest --dry-run | grep 'performanceTest SKIPPED' | cut -d: -f 4)
-run() {
+connector="$1" | xargs
 firstarg=""
 secondarg=""
 if [[ "$2" ]]; then
@@ -27,6 +25,8 @@ if [[ "$3" ]]; then
     secondarg="-DmemoryLimit=$(echo $3 | cut -d = -f 2)"
   fi
 fi
+all_performance_tests=$(./gradlew performanceTest --dry-run | grep 'performanceTest SKIPPED' | cut -d: -f 4)
+run() {
 if [[ "$connector" == "all" ]] ; then
   echo "Running: ./gradlew --no-daemon --scan performanceTest"
   ./gradlew --no-daemon --scan performanceTest
@@ -54,10 +54,12 @@ else
     performanceTestCommand=":airbyte-integrations:connectors:$connector:performanceTest $firstarg $secondarg"
   fi
   if [ -n "$selected_performance_test" ] ; then
+    echo "----------  $firstarg"
+    echo "----------  $secondarg"
     echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand"
     ./gradlew --no-daemon --scan "$performanceTestCommand"
   else
-    echo "Connector '$con' not found..."
+    echo "Connector '$connector' not found..."
     return 1
   fi
 fi
