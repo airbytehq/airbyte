@@ -151,10 +151,14 @@ public class BootloaderApp {
   static boolean isLegalUpgrade(final AirbyteVersion airbyteDatabaseVersion, final AirbyteVersion airbyteVersion) {
     // means there was no previous version so upgrade even needs to happen. always legal.
     if (airbyteDatabaseVersion == null) {
+      LOGGER.info("No previous Airbyte Version set..");
       return true;
     }
 
-    final var isUpgradingThroughVersionBreak = airbyteDatabaseVersion.lessThan(VERSION_BREAK) && airbyteVersion.greaterThan(VERSION_BREAK);
+    LOGGER.info("Current Airbyte version: {}", airbyteDatabaseVersion);
+    LOGGER.info("Future Airbyte version: {}", airbyteVersion);
+    final var futureVersionIsAfterVersionBreak = airbyteVersion.greaterThan(VERSION_BREAK) || airbyteVersion.isDev();
+    final var isUpgradingThroughVersionBreak = airbyteDatabaseVersion.lessThan(VERSION_BREAK) && futureVersionIsAfterVersionBreak;
     return !isUpgradingThroughVersionBreak;
   }
 

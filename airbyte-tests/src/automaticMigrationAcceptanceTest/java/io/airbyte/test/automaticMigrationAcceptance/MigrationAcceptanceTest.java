@@ -81,6 +81,8 @@ public class MigrationAcceptanceTest {
     // piggybacks off of whatever the existing .env file is, so override default filesystem values in to
     // point at test paths.
     final Properties envFileProperties = overrideDirectoriesForTest(MoreProperties.envFileToProperties(ENV_FILE));
+    envFileProperties.setProperty("VERSION", "dev");
+    LOGGER.info("========= property: {}", envFileProperties.getProperty("VERSION"));
     runAirbyteAndWaitForUpgradeException(currentDockerComposeFile, envFileProperties); // 0.33.11-alpha
 
     LOGGER.info("======= after upgrade exception");
@@ -135,7 +137,7 @@ public class MigrationAcceptanceTest {
     LOGGER.info("Start up Airbyte at version {}", env.get("VERSION"));
     final AirbyteTestContainer airbyteTestContainer = new AirbyteTestContainer.Builder(dockerComposeFile)
         .setEnv(env)
-        .setLogListener("server", waitForLogLine.getListener("After that upgrade is complete, you may upgrade to version"))
+        .setLogListener("bootloader", waitForLogLine.getListener("After that upgrade is complete, you may upgrade to version"))
         .build();
 
     airbyteTestContainer.startAsync();
