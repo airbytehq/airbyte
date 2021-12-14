@@ -149,6 +149,7 @@ export_github_secrets
 
 
 # Please maintain this organisation and alphabetise.
+read_secrets destination-amazon-sqs "$DESTINATION_AMAZON_SQS_CREDS"
 read_secrets destination-bigquery "$BIGQUERY_INTEGRATION_TEST_CREDS" "credentials.json"
 read_secrets destination-bigquery-denormalized "$BIGQUERY_DENORMALIZED_INTEGRATION_TEST_CREDS" "credentials.json"
 read_secrets destination-databricks "$DESTINATION_DATABRICKS_CREDS"
@@ -162,6 +163,7 @@ read_secrets destination-mongodb-strict-encrypt "$MONGODB_TEST_CREDS" "credentia
 read_secrets destination-mysql "$MYSQL_SSH_KEY_TEST_CREDS" "ssh-key-config.json"
 read_secrets destination-mysql "$MYSQL_SSH_PWD_TEST_CREDS" "ssh-pwd-config.json"
 read_secrets destination-pubsub "$DESTINATION_PUBSUB_TEST_CREDS" "credentials.json"
+read_secrets destination-rabbitmq "$DESTINATION_RABBITMQ_TEST_CREDS"
 read_secrets destination-redshift "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS"
 read_secrets destination-dynamodb "$DESTINATION_DYNAMODB_TEST_CREDS"
 read_secrets destination-oracle "$AWS_ORACLE_INTEGRATION_TEST_CREDS"
@@ -235,7 +237,6 @@ read_secrets source-looker "$LOOKER_INTEGRATION_TEST_CREDS"
 read_secrets source-linnworks "$SOURCE_LINNWORKS_TEST_CREDS"
 read_secrets source-mailchimp "$MAILCHIMP_TEST_CREDS"
 read_secrets source-marketo "$SOURCE_MARKETO_TEST_CREDS"
-read_secrets source-microsoft-teams "$MICROSOFT_TEAMS_TEST_CREDS"
 read_secrets source-mixpanel "$MIXPANEL_INTEGRATION_TEST_CREDS"
 read_secrets source-monday "$SOURCE_MONDAY_TEST_CREDS"
 read_secrets source-mongodb-strict-encrypt "$MONGODB_TEST_CREDS" "credentials.json"
