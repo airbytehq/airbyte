@@ -143,16 +143,6 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: GCS_LOG_BUCKET
-            - name: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
-              valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
-                  key: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
-            - name: JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
-              valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
-                  key: JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
           ports:
             - containerPort: 8001
           volumeMounts:
