@@ -67,7 +67,7 @@ public abstract class GoogleOAuthFlow extends BaseOAuth2Flow {
   protected abstract String getScope();
 
   @Override
-  protected String getAccessTokenUrl() {
+  protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
     return ACCESS_TOKEN_URL;
   }
 

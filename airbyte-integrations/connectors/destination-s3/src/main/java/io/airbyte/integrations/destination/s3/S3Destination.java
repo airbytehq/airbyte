@@ -46,14 +46,15 @@ public class S3Destination extends BaseConnector implements Destination {
 
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
-      final ConfiguredAirbyteCatalog configuredCatalog,
-      final Consumer<AirbyteMessage> outputRecordCollector) {
+                                            final ConfiguredAirbyteCatalog configuredCatalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
     final S3WriterFactory formatterFactory = new ProductionWriterFactory();
     return new S3Consumer(S3DestinationConfig.getS3DestinationConfig(config), configuredCatalog, formatterFactory, outputRecordCollector);
   }
 
   /**
-   * Note that this method completely ignores s3Config.getBucketPath(), in favor of the bucketPath parameter.
+   * Note that this method completely ignores s3Config.getBucketPath(), in favor of the bucketPath
+   * parameter.
    */
   public static void attemptS3WriteAndDelete(final S3DestinationConfig s3Config, final String bucketPath) {
     attemptS3WriteAndDelete(s3Config, bucketPath, s3Config.getS3Client());
@@ -72,4 +73,5 @@ public class S3Destination extends BaseConnector implements Destination {
     s3.putObject(s3Bucket, outputTableName, "check-content");
     s3.deleteObject(s3Bucket, outputTableName);
   }
+
 }
