@@ -1,23 +1,20 @@
 import os
 import shutil
-import time
+import tempfile
 from glob import glob
 from itertools import zip_longest
 from multiprocessing import Pool
-from subprocess import Popen, PIPE
-from typing import List, Tuple, Set, Dict
-from uuid import uuid4
+from subprocess import PIPE, Popen
+from typing import Dict, List, Sequence, Set, Tuple
 
+import invoke
 from invoke import task
-
 
 ROOT_PROJECT_DIR: str = os.path.abspath(os.path.curdir)
 
 CONFIG_FILE: str = os.path.join(ROOT_PROJECT_DIR, "pyproject.toml")
 
-CONNECTORS_DIR: str = os.path.join(
-    ROOT_PROJECT_DIR, "airbyte-integrations", "connectors"
-)
+CONNECTORS_DIR: str = os.path.join(ROOT_PROJECT_DIR, "airbyte-integrations", "connectors")
 
 MYPY_VERSION: str = "0.910"
 
@@ -40,7 +37,11 @@ def get_connectors_names() -> Set[str]:
     names = set()
     for name in glob("source-*"):
         if os.path.exists(os.path.join(name, "setup.py")):
-            names.add(name.split("source-", 1)[1].rstrip())
+
+            # FIXME: resolve the problem with this kind of connectors:
+            if not name.endswith("-singer"):
+
+                names.add(name.split("source-", 1)[1].rstrip())
     os.chdir(cur_dir)
     return names
 
@@ -48,14 +49,14 @@ def get_connectors_names() -> Set[str]:
 CONNECTORS_NAMES = get_connectors_names()
 
 
-def run_task(args) -> Tuple[bool, str]:
+def run_task(args: Sequence[str]) -> Tuple[int, str, str]:
     connector_name, task_name = args
     source_dir = f"source_{connector_name.replace('-', '_')}"
     os.chdir(os.path.join(CONNECTORS_DIR, f"source-{connector_name}"))
 
     runner = Popen("bash", shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
-    venv_name = str(uuid4())
+    venv_name = tempfile.mkdtemp(dir=os.curdir)
     commands = [
         f"virtualenv {venv_name}",
         f"source {os.path.join(venv_name, 'bin', 'activate')}",
@@ -68,24 +69,33 @@ def run_task(args) -> Tuple[bool, str]:
     runner.stdin.flush()
     out, err = runner.communicate()
     shutil.rmtree(venv_name)
-    return (False, err.decode()) if runner.returncode else (True, out.decode())
+    return runner.returncode, out.decode(), err.decode()
 
 
-def apply_task_for_connectors(connectors_names: str, task_name: str):
-    connectors = connectors_names.split(',') if connectors_names else CONNECTORS_NAMES
+def apply_task_for_connectors(connectors_names: str, task_name: str) -> int:
+    connectors = connectors_names.split(",") if connectors_names else CONNECTORS_NAMES
 
     connectors = set(connectors) & CONNECTORS_NAMES
 
+    exit_code: int = 0
+
     with Pool() as pool:
-        for result in pool.imap_unordered(run_task, zip_longest(connectors, [], fillvalue=task_name)):  # TODO: handle differently depending on the first value
+        for result in pool.imap_unordered(run_task, zip_longest(connectors, [], fillvalue=task_name)):
             print(result[1])
+            print()
+            print(result[2])
+
+            if result[0]:
+                exit_code = 1
+
+    return exit_code
 
 
 @task
-def mypy(ctx, connectors=None):
-    apply_task_for_connectors(connectors, "mypy")
+def mypy(ctx, connectors=None):  # type: ignore[no-untyped-def]
+    raise invoke.Exit(code=apply_task_for_connectors(connectors, "mypy"))
 
 
 @task
-def test(ctx, connectors=None):
-    apply_task_for_connectors(connectors, "test")
+def test(ctx, connectors=None):  # type: ignore[no-untyped-def]
+    raise invoke.Exit(code=apply_task_for_connectors(connectors, "test"))
