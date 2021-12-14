@@ -38,11 +38,12 @@ public interface CancellationHandler {
     @Override
     public void checkAndHandleCancellation(final Runnable onCancellationCallback) {
       try {
-        // Heartbeat is somewhat misleading here. What it does is check the current Temporal activity's
-        // context and
-        // throw an exception if the sync has been cancelled or timed out. The input to this heartbeat
-        // function
-        // is available as a field in thrown ActivityCompletionExceptions, which we aren't using for now.
+        /*
+         * Heartbeat is somewhat misleading here. What it does is check the current Temporal activity's
+         * context and throw an exception if the sync has been cancelled or timed out. The input to this
+         * heartbeat function is available as a field in thrown ActivityCompletionExceptions, which we
+         * aren't using for now.
+         */
         context.heartbeat(null);
       } catch (final ActivityCompletionException e) {
         onCancellationCallback.run();

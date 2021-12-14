@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "title": "Ecommerce Category Segment",
+  "description": "Segment by purchases in specific items or categories.",
+  "properties": {
+    "condition_type": {
+      "type": "string",
+      "x-value": "EcommCategory",
+      "enum": ["EcommCategory"]
+    },
+    "field": {
+      "type": "string",
+      "enum": ["ecomm_cat", "ecomm_prod"],
+      "title": "Segment Field",
+      "description": "Segment by purchases in specific items or categories.",
+      "example": "ecomm_cat"
+    },
+    "op": {
+      "type": "string",
+      "enum": ["is", "not", "contains", "notcontain", "starts", "ends"],
+      "title": "Segment Operator",
+      "description": "A member who has purchased from a category/specific item that is/is not a specific name, where the category/item name contains/doesn't contain a specific phrase or string, or a category/item name that starts/ends with a string.",
+      "example": "is"
+    },
+    "value": {
+      "type": "string",
+      "title": "Segment Data",
+      "description": "The ecommerce category/item information.",
+      "example": "Product"
+    }
+  }
+}

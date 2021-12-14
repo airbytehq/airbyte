@@ -153,9 +153,15 @@ spec:
               name: airbyte-env
               key: S3_LOG_BUCKET_REGION
         - name: AWS_ACCESS_KEY_ID
-          value: {{ .Values.minio.accessKey.password }}
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: AWS_ACCESS_KEY_ID
         - name: AWS_SECRET_ACCESS_KEY
-          value: {{ .Values.minio.secretKey.password }}
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: AWS_SECRET_ACCESS_KEY
         - name: S3_MINIO_ENDPOINT
           valueFrom:
             configMapKeyRef:
@@ -176,6 +182,16 @@ spec:
             configMapKeyRef:
               name: airbyte-env
               key: GCS_LOG_BUCKET
+        - name: STATE_STORAGE_MINIO_BUCKET_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: STATE_STORAGE_MINIO_BUCKET_NAME
+        - name: STATE_STORAGE_MINIO_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: STATE_STORAGE_MINIO_ENDPOINT
         - name: INTERNAL_API_HOST
           valueFrom:
             configMapKeyRef:

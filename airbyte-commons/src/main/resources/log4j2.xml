@@ -102,7 +102,7 @@
                       s3Bucket="${s3-bucket}" s3Path="app-logging${ctx:cloud_workspace_app_root}" s3Region="${s3-region}"
                       s3AwsKey="${s3-aws-key}" s3AwsSecret="${s3-aws-secret}"
                       s3ServiceEndpoint="${s3-minio-endpoint}" s3PathStyleAccess="${s3-path-style-access}"
-                      gcpStorageBucket="${gcp-storage-bucket}" gcpStorageBlobNamePrefix="app-logging${ctx:cloud_workspace_app_root}">
+                      gcpStorageBucket="${gcs-log-bucket}" gcpStorageBlobNamePrefix="app-logging${ctx:cloud_workspace_app_root}">
                         <PatternLayout pattern="${cloud-worker-file-pattern}"/>
                     </Log4j2Appender>
                 </Route>
