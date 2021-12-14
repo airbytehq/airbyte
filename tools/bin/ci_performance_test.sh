@@ -9,17 +9,14 @@ set -e
 connector="$1"
 firstarg=""
 secondarg=""
-echo "3 ----------  $1--"
-echo "3 ----------  $connector--"
-echo "3 ----------  $2--"
-echo "3 ----------  $3--"
 if [[ "$2" ]]; then
   if [[ "$2" == *"cpulimit"* ]]; then
-    firstarg="-DcpuLimit=$(echo $2 | cut -d = -f 2)"
+    firstarg="-DcpuLimit=$(echo "$2" | cut -d = -f 2)"
+    echo "3 ----------  $firstarg--"
   fi
   if [[ "$2" == *"memorylimit"* ]]; then
-    firstarg="-DmemoryLimit=$(echo $2 | cut -d = -f 2)"
-  fi
+    firstarg="-DmemoryLimit=$(echo $2" | cut -d = -f 2)"
+  fi""
 fi
 if [[ "$3" ]]; then
   if [[ "$3" == *"cpulimit"* ]]; then
@@ -29,6 +26,8 @@ if [[ "$3" ]]; then
     secondarg="-DmemoryLimit=$(echo $3 | cut -d = -f 2)"
   fi
 fi
+echo "31 ----------  $firstarg--"
+echo "31 ----------  $secondarg--"
 all_performance_tests=$(./gradlew performanceTest --dry-run | grep 'performanceTest SKIPPED' | cut -d: -f 4)
 run() {
 if [[ "$connector" == "all" ]] ; then
