@@ -47,8 +47,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * In order to run this test from intellij, build the docker images via SUB_BUILD=PLATFORM ./gradlew
- * composeBuild and set VERSION in .env to the pertinent version.
+ * This class contains an e2e test simulating what a user encounter when trying to upgrade Airybte.
+ * <p>
+ * Three invariants are tested:
+ * <p>
+ * - upgrading pass 0.32.0 without first upgrading to 0.32.0 should error.
+ * <p>
+ * - upgrading pass 0.32.0 without first upgrading to 0.32.0 should not put the db in a bad state.
+ * <p>
+ * - upgrading from 0.32.0 to the latest version should work.
+ * <p>
+ * This test runs on the current code version and expects local images with the `dev` tag to be
+ * available. To do so, run SUB_BUILD=PLATFORM ./gradlew build.
  */
 public class MigrationAcceptanceTest {
 
@@ -81,6 +91,7 @@ public class MigrationAcceptanceTest {
     // piggybacks off of whatever the existing .env file is, so override default filesystem values in to
     // point at test paths.
     final Properties envFileProperties = overrideDirectoriesForTest(MoreProperties.envFileToProperties(ENV_FILE));
+    // use the dev version so the test is run on the current code version.
     envFileProperties.setProperty("VERSION", "dev");
     runAirbyteAndWaitForUpgradeException(currentDockerComposeFile, envFileProperties);
     LOGGER.info("Finished testing upgrade exception..");

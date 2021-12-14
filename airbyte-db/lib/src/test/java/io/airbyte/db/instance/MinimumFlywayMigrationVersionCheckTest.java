@@ -67,6 +67,9 @@ public class MinimumFlywayMigrationVersionCheckTest {
     assertThrows(RuntimeException.class, () -> MinimumFlywayMigrationVersionCheck.assertMigrations(migrator, minVersion, DEFAULT_TIMEOUT_MS));
   }
 
+  /**
+   * For testing purposes.
+   */
   private static class StubMigrationInfo implements MigrationInfo {
 
     private final String version;
