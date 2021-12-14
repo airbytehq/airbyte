@@ -56,6 +56,16 @@ public class LegacyS3StreamCopierTest {
   private MockedConstruction<StreamTransferManager> streamTransferManagerMockedConstruction;
   private List<ByteArrayOutputStream> outputStreams;
 
+  private List<CopyArguments> copyArguments;
+
+  private record CopyArguments(JdbcDatabase database,
+                               String s3FileLocation,
+                               String schema,
+                               String tableName,
+                               S3DestinationConfig s3Config) {
+
+  }
+
   @BeforeEach
   public void setup() {
     s3Client = mock(AmazonS3Client.class);
@@ -63,6 +73,8 @@ public class LegacyS3StreamCopierTest {
     sqlOperations = mock(SqlOperations.class);
 
     outputStreams = new ArrayList<>();
+    copyArguments = new ArrayList<>();
+
     // This is basically RETURNS_SELF, except with getMultiPartOutputStreams configured correctly.
     // Other non-void methods (e.g. toString()) will return null.
     streamTransferManagerMockedConstruction = mockConstruction(
@@ -121,7 +133,7 @@ public class LegacyS3StreamCopierTest {
           final String schema,
           final String tableName,
           final S3DestinationConfig s3Config) {
-        throw new UnsupportedOperationException("not implemented");
+        copyArguments.add(new CopyArguments(database, s3FileLocation, schema, tableName, s3Config));
       }
     };
   }
@@ -221,10 +233,23 @@ public class LegacyS3StreamCopierTest {
     assertEquals(
         """
             f6767f7d-ce1e-45cc-92db-2ad3dfdd088e,"{""foo"":73}",1969-12-31 16:00:01.234\r
-            2b9 5a13f-d54f-4370-a712-1c7bf2716190,"{""bar"":84}",1969-12-31 16:00:02.345\r
+            2b95a13f-d54f-4370-a712-1c7bf2716190,"{""bar"":84}",1969-12-31 16:00:02.345\r
             """,
         outputStreams.get(0).toString(StandardCharsets.UTF_8));
     assertEquals("24eba873-de57-4901-9e1e-2393334320fb,\"{\"\"asd\"\":95}\",1969-12-31 16:00:03.456\r\n",
         outputStreams.get(1).toString(StandardCharsets.UTF_8));
+  }
+
+  @Test
+  public void copiesCorrectFilesToTable() throws Exception {
+    // Generate two files
+    for (int i = 0; i < LegacyS3StreamCopier.MAX_PARTS_PER_FILE + 1; i++) {
+      copier.prepareStagingFile();
+    }
+
+    copier.copyStagingFileToTemporaryTable();
+
+    assertEquals(2, copyArguments.size(), "Number of invocations was actually " + copyArguments.size() + ". Arguments were " + copyArguments);
+    // TODO assert value of arguments
   }
 }

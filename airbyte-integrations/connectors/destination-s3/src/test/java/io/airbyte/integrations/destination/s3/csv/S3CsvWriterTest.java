@@ -33,6 +33,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.apache.commons.csv.CSVFormat;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -237,6 +238,37 @@ class S3CsvWriterTest {
         """
             "f6767f7d-ce1e-45cc-92db-2ad3dfdd088e","1234","{""foo"":73}"\r
             "2b95a13f-d54f-4370-a712-1c7bf2716190","2345","{""bar"":84}"\r
+            """,
+        outputStreams.get(0).toString(StandardCharsets.UTF_8));
+  }
+
+  @Test
+  public void writesContentsCorrectly_when_stagingDatabaseConfig() throws IOException {
+    final S3CsvWriter writer = writer()
+        .withHeader(false)
+        .csvSettings(CSVFormat.DEFAULT)
+        .csvSheetGenerator(new StagingDatabaseCsvSheetGenerator())
+        .build();
+
+    writer.write(
+        UUID.fromString("f6767f7d-ce1e-45cc-92db-2ad3dfdd088e"),
+        new AirbyteRecordMessage()
+            .withData(OBJECT_MAPPER.readTree("{\"foo\": 73}"))
+            .withEmittedAt(1234L)
+    );
+    writer.write(
+        UUID.fromString("2b95a13f-d54f-4370-a712-1c7bf2716190"),
+        new AirbyteRecordMessage()
+            .withData(OBJECT_MAPPER.readTree("{\"bar\": 84}"))
+            .withEmittedAt(2345L)
+    );
+    writer.close(false);
+
+    // carriage returns are required b/c RFC4180 requires it :(
+    assertEquals(
+        """
+            f6767f7d-ce1e-45cc-92db-2ad3dfdd088e,"{""foo"":73}",1969-12-31 16:00:01.234\r
+            2b95a13f-d54f-4370-a712-1c7bf2716190,"{""bar"":84}",1969-12-31 16:00:02.345\r
             """,
         outputStreams.get(0).toString(StandardCharsets.UTF_8));
   }

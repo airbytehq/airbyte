@@ -1,0 +1,36 @@
+package io.airbyte.integrations.destination.s3.csv;
+
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * A CsvSheetGenerator that produces data in the format expected by JdbcSqlOperations. See JdbcSqlOperations#createTableQuery.
+ */
+public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
+
+  /**
+   * This method is implemented for clarity, but not actually used. S3StreamCopier disables headers on S3CsvWriter.
+   */
+  @Override
+  public List<String> getHeaderRow() {
+    return List.of(
+        JavaBaseConstants.COLUMN_NAME_AB_ID,
+        JavaBaseConstants.COLUMN_NAME_DATA,
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT
+    );
+  }
+
+  @Override
+  public List<Object> getDataRow(final UUID id, final AirbyteRecordMessage recordMessage) {
+    return List.of(
+        id,
+        Jsons.serialize(recordMessage.getData()),
+        Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt()))
+    );
+  }
+}

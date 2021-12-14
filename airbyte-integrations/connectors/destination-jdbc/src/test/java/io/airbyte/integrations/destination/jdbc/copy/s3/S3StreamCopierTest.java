@@ -5,6 +5,8 @@
 package io.airbyte.integrations.destination.jdbc.copy.s3;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
@@ -15,9 +17,11 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.integrations.destination.s3.csv.CsvSheetGenerator;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
+import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -25,23 +29,16 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.csv.CSVFormat;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 
-/**
- * IF YOU'RE SEEING WEIRD BEHAVIOR INVOLVING MOCKED OBJECTS: double-check the mockConstruction() call in setup(). You might need to update the methods
- * being mocked.
- * <p>
- * Tests to help define what the legacy S3 stream copier did.
- * <p>
- * Does not verify SQL operations, as they're fairly transparent.
- */
 public class S3StreamCopierTest {
 
   private static final int PART_SIZE = 5;
-  public static final S3DestinationConfig S3_CONFIG = new S3DestinationConfig(
+  private static final S3DestinationConfig S3_CONFIG = new S3DestinationConfig(
       "fake-endpoint",
       "fake-bucket",
       "fake-bucketPath",
@@ -51,7 +48,7 @@ public class S3StreamCopierTest {
       PART_SIZE,
       null
   );
-  public static final ConfiguredAirbyteStream CONFIGURED_STREAM = new ConfiguredAirbyteStream()
+  private static final ConfiguredAirbyteStream CONFIGURED_STREAM = new ConfiguredAirbyteStream()
       .withDestinationSyncMode(DestinationSyncMode.APPEND)
       .withStream(new AirbyteStream()
           .withName("fake-stream")
@@ -71,11 +68,24 @@ public class S3StreamCopierTest {
   private MockedConstruction<S3CsvWriter> csvWriterMockedConstruction;
   private List<S3CsvWriterArguments> csvWriterConstructorArguments;
 
+  private List<CopyArguments> copyArguments;
+
   private record S3CsvWriterArguments(S3DestinationConfig config,
                                       ConfiguredAirbyteStream stream,
                                       Timestamp uploadTime,
                                       int uploadThreads,
-                                      int queueCapacity) {
+                                      int queueCapacity,
+                                      boolean writeHeader,
+                                      CSVFormat csvSettings,
+                                      CsvSheetGenerator csvSheetGenerator) {
+
+  }
+
+  private record CopyArguments(JdbcDatabase database,
+                               String s3FileLocation,
+                               String schema,
+                               String tableName,
+                               S3DestinationConfig s3Config) {
 
   }
 
@@ -86,6 +96,8 @@ public class S3StreamCopierTest {
     sqlOperations = mock(SqlOperations.class);
 
     csvWriterConstructorArguments = new ArrayList<>();
+    copyArguments = new ArrayList<>();
+
     // This is basically RETURNS_SELF, except with getMultiPartOutputStreams configured correctly.
     // Other non-void methods (e.g. toString()) will return null.
     csvWriterMockedConstruction = mockConstruction(
@@ -101,7 +113,10 @@ public class S3StreamCopierTest {
               (ConfiguredAirbyteStream) arguments.get(2),
               (Timestamp) arguments.get(3),
               (int) arguments.get(4),
-              (int) arguments.get(5)
+              (int) arguments.get(5),
+              (boolean) arguments.get(6),
+              (CSVFormat) arguments.get(7),
+              (CsvSheetGenerator) arguments.get(8)
           ));
         }
     );
@@ -126,7 +141,7 @@ public class S3StreamCopierTest {
           final String schema,
           final String tableName,
           final S3DestinationConfig s3Config) {
-        throw new UnsupportedOperationException("fake object does not implement this method");
+        copyArguments.add(new CopyArguments(database, s3FileLocation, schema, tableName, s3Config));
       }
     };
   }
@@ -144,13 +159,7 @@ public class S3StreamCopierTest {
       final String file = copier.prepareStagingFile();
       assertEquals("fakeOutputPath-00000", file, "preparing file number " + i);
       assertEquals(1, csvWriterMockedConstruction.constructed().size());
-
-      final S3CsvWriterArguments args = csvWriterConstructorArguments.get(0);
-      assertEquals(S3_CONFIG.cloneWithFormatConfig(new S3CsvFormatConfig(Flattening.NO, (long) PART_SIZE)), args.config);
-      assertEquals(CONFIGURED_STREAM, args.stream);
-      assertEquals(UPLOAD_TIME, args.uploadTime);
-      assertEquals(UPLOAD_THREADS, args.uploadThreads);
-      assertEquals(QUEUE_CAPACITY, args.queueCapacity);
+      checkCsvWriterArgs(csvWriterConstructorArguments.get(0));
     }
 
     // Now that we've hit the MAX_PARTS_PER_FILE, we should start a new writer
@@ -158,13 +167,21 @@ public class S3StreamCopierTest {
     assertEquals("fakeOutputPath-00001", secondFile);
     final List<S3CsvWriter> secondManagers = csvWriterMockedConstruction.constructed();
     assertEquals(2, secondManagers.size());
+    checkCsvWriterArgs(csvWriterConstructorArguments.get(1));
+  }
 
-    final S3CsvWriterArguments args = csvWriterConstructorArguments.get(1);
+  private void checkCsvWriterArgs(final S3CsvWriterArguments args) {
     assertEquals(S3_CONFIG.cloneWithFormatConfig(new S3CsvFormatConfig(Flattening.NO, (long) PART_SIZE)), args.config);
     assertEquals(CONFIGURED_STREAM, args.stream);
     assertEquals(UPLOAD_TIME, args.uploadTime);
     assertEquals(UPLOAD_THREADS, args.uploadThreads);
     assertEquals(QUEUE_CAPACITY, args.queueCapacity);
+    assertFalse(args.writeHeader);
+    assertEquals(CSVFormat.DEFAULT, args.csvSettings);
+    assertTrue(
+        args.csvSheetGenerator instanceof StagingDatabaseCsvSheetGenerator,
+        "Sheet generator was actually a " + args.csvSheetGenerator.getClass()
+    );
   }
 
   @Test
@@ -197,5 +214,18 @@ public class S3StreamCopierTest {
     copier.removeFileAndDropTmpTable();
 
     verify(s3Client).deleteObject("fake-bucket", "fakeOutputPath-00000");
+  }
+
+  @Test
+  public void copiesCorrectFilesToTable() throws Exception {
+    // Generate two files
+    for (int i = 0; i < MAX_PARTS_PER_FILE + 1; i++) {
+      copier.prepareStagingFile();
+    }
+
+    copier.copyStagingFileToTemporaryTable();
+
+    assertEquals(2, copyArguments.size(), "Number of invocations was actually " + copyArguments.size() + ". Arguments were " + copyArguments);
+    // TODO assert value of arguments
   }
 }

@@ -41,13 +41,13 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
                       final Timestamp uploadTimestamp,
                       final int uploadThreads,
                       final int queueCapacity,
-                      final boolean writeHeader)
+                      final boolean writeHeader,
+                      CSVFormat csvSettings,
+                      final CsvSheetGenerator csvSheetGenerator)
       throws IOException {
     super(config, s3Client, configuredStream);
 
-    final S3CsvFormatConfig formatConfig = (S3CsvFormatConfig) config.getFormatConfig();
-    this.csvSheetGenerator = CsvSheetGenerator.Factory.create(configuredStream.getStream().getJsonSchema(),
-        formatConfig);
+    this.csvSheetGenerator = csvSheetGenerator;
 
     final String fileSuffix = "_" + UUID.randomUUID();
     final String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, fileSuffix, S3Format.CSV);
@@ -61,7 +61,6 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
         .queueCapacity(queueCapacity);
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
-    CSVFormat csvSettings = CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL);
     if (writeHeader) {
       csvSettings = csvSettings.withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0]));
     }
@@ -77,6 +76,8 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
     private int uploadThreads = S3StreamTransferManagerHelper.DEFAULT_UPLOAD_THREADS;
     private int queueCapacity = S3StreamTransferManagerHelper.DEFAULT_QUEUE_CAPACITY;
     private boolean withHeader = true;
+    private CSVFormat csvSettings = CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL);
+    private CsvSheetGenerator csvSheetGenerator;
 
     public Builder(final S3DestinationConfig config,
                    final AmazonS3 s3Client,
@@ -103,14 +104,30 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
       return this;
     }
 
+    public Builder csvSettings(final CSVFormat csvSettings) {
+      this.csvSettings = csvSettings;
+      return this;
+    }
+
+    public Builder csvSheetGenerator(final CsvSheetGenerator csvSheetGenerator) {
+      this.csvSheetGenerator = csvSheetGenerator;
+      return this;
+    }
+
     public S3CsvWriter build() throws IOException {
+      if (csvSheetGenerator == null) {
+        final S3CsvFormatConfig formatConfig = (S3CsvFormatConfig) config.getFormatConfig();
+        csvSheetGenerator = CsvSheetGenerator.Factory.create(configuredStream.getStream().getJsonSchema(), formatConfig);
+      }
       return new S3CsvWriter(config,
           s3Client,
           configuredStream,
           uploadTimestamp,
           uploadThreads,
           queueCapacity,
-          withHeader
+          withHeader,
+          csvSettings,
+          csvSheetGenerator
       );
     }
   }
