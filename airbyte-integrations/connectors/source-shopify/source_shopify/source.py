@@ -63,9 +63,14 @@ class ShopifyStream(HttpStream, ABC):
         # transform method was implemented according to issue 4841
         # Shopify API returns price fields as a string and it should be converted to number
         # this solution designed to convert string into number, but in future can be modified for general purpose
-        for record in records:
-            yield self._transformer.transform(record)
-
+        if isinstance(records, dict):
+            # for cases when we have a single record as dict
+            yield self._transformer.transform(records)
+        else:
+            # for other cases
+            for record in records:
+                yield self._transformer.transform(record)
+            
     @property
     @abstractmethod
     def data_field(self) -> str:
@@ -143,12 +148,15 @@ class ChildSubstream(IncrementalShopifyStream):
     ::  @ slice_key - defines the name of the property in stream slices dict.
     ::  @ nested_record - the name of the field inside of parent stream record. Default is `id`.
     ::  @ nested_record_field_name - the name of the field inside of nested_record.
+    ::  @ nested_substream - the name of the nested entity inside of parent stream, helps to reduce the number of 
+          API Calls, if present, see `OrderRefunds` stream for more.
     """
 
     parent_stream_class: object = None
     slice_key: str = None
     nested_record: str = "id"
     nested_record_field_name: str = None
+    nested_substream = None
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {"limit": self.limit}
@@ -166,7 +174,14 @@ class ChildSubstream(IncrementalShopifyStream):
         parent_stream = self.parent_stream_class(self.config)
         parent_stream_state = stream_state_cache.cached_state.get(parent_stream.name)
         for record in parent_stream.read_records(stream_state=parent_stream_state, **kwargs):
-            yield {self.slice_key: record[self.nested_record]}
+            # to limit the number of API Calls and reduce the time of data fetch,
+            # we can pull the ready data for child_substream, if nested data is present,
+            # and corresponds to the data of child_substream we need.
+            if self.nested_substream:
+                if record.get(self.nested_substream):
+                    yield {self.slice_key: record[self.nested_record]}
+            else:
+                yield {self.slice_key: record[self.nested_record]}
 
     def read_records(
         self,
@@ -271,6 +286,8 @@ class OrderRefunds(ChildSubstream):
 
     data_field = "refunds"
     cursor_field = "created_at"
+    # we pull out the records that we already know has the refunds data from Orders object
+    nested_substream = "refunds"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         order_id = stream_slice["order_id"]
@@ -414,12 +431,6 @@ class Fulfillments(ChildSubstream):
 class Shop(ShopifyStream):
     data_field = "shop"
 
-    @limiter.balance_rate_limit()
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        json_response = response.json()
-        record = json_response.get(self.data_field, []) if self.data_field is not None else json_response
-        return [record]
-
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
 
@@ -430,14 +441,13 @@ class SourceShopify(AbstractSource):
         """
         Testing connection availability for the connector.
         """
-        auth = ShopifyAuthenticator(config).get_auth_header()
-        api_version = "2021-07"  # Latest Stable Release
-        url = f"https://{config['shop']}.myshopify.com/admin/api/{api_version}/shop.json"
-
+        config["authenticator"] = ShopifyAuthenticator(config)
         try:
-            session = requests.get(url, headers=auth)
-            session.raise_for_status()
-            return True, None
+            responce = list(Shop(config).read_records(sync_mode=None))
+            # check for the shop_id is present in the responce
+            shop_id = responce[0].get("id")
+            if shop_id is not None:
+                return True, None
         except requests.exceptions.RequestException as e:
             return False, e
 
