@@ -11,19 +11,19 @@ firstarg=""
 secondarg=""
 if [[ "$2" ]]; then
   if [[ "$2" == *"cpulimit"* ]]; then
-    firstarg="-DcpuLimit=$(echo "$2" | cut -d = -f 2)"
+    firstarg="-DcpuLimit=$2"
     echo "3 ----------  $3--"
   fi
   if [[ "$2" == *"memorylimit"* ]]; then
-    firstarg="-DmemoryLimit=$(echo $2 | cut -d = -f 2)"
+    firstarg="-DmemoryLimit=$2"
   fi
 fi
 if [[ "$3" ]]; then
   if [[ "$3" == *"cpulimit"* ]]; then
-    secondarg="-DcpuLimit=$(echo $3 | cut -d = -f 2)"
+    secondarg="-DcpuLimit=$3"
   fi
   if [[ "$3" == *"memorylimit"* ]]; then
-    secondarg="-DmemoryLimit=$(echo $3 | cut -d = -f 2)"
+    secondarg="-DmemoryLimit=$3"
   fi
 fi
 echo "3 ----------  $firstarg--"
