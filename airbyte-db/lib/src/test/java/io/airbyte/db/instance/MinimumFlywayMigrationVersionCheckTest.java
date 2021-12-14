@@ -27,7 +27,7 @@ public class MinimumFlywayMigrationVersionCheckTest {
     val database = mock(DatabaseInstance.class);
     when(database.isInitialized()).thenThrow(new IOException()).thenReturn(false);
 
-    assertThrows(RuntimeException.class ,() -> MinimumFlywayMigrationVersionCheck.assertDatabase(database, DEFAULT_TIMEOUT_MS));
+    assertThrows(RuntimeException.class, () -> MinimumFlywayMigrationVersionCheck.assertDatabase(database, DEFAULT_TIMEOUT_MS));
   }
 
   @Test
