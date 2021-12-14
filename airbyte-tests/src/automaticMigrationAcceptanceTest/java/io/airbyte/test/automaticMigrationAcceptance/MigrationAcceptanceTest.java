@@ -59,6 +59,9 @@ import org.slf4j.LoggerFactory;
  * <p>
  * This test runs on the current code version and expects local images with the `dev` tag to be
  * available. To do so, run SUB_BUILD=PLATFORM ./gradlew build.
+ * <p>
+ * When running this test consecutively locally, it might be necessary to run `docker volume prune`
+ * to remove hanging volumes.
  */
 public class MigrationAcceptanceTest {
 
