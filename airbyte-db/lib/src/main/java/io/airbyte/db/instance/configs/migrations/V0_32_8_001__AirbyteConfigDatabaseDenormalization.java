@@ -200,7 +200,8 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
           .set(documentationUrl, standardSourceDefinition.getDocumentationUrl())
           .set(icon, standardSourceDefinition.getIcon())
           .set(actorType, ActorType.source)
-          .set(sourceType, Enums.toEnum(standardSourceDefinition.getSourceType().value(), SourceType.class).orElseThrow())
+          .set(sourceType, standardSourceDefinition.getSourceType() == null ? null
+              : Enums.toEnum(standardSourceDefinition.getSourceType().value(), SourceType.class).orElseThrow())
           .set(spec, JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getSpec())))
           .set(createdAt, OffsetDateTime.ofInstant(configWithMetadata.getCreatedAt(), ZoneOffset.UTC))
           .set(updatedAt, OffsetDateTime.ofInstant(configWithMetadata.getUpdatedAt(), ZoneOffset.UTC))
@@ -412,7 +413,8 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
           .set(id, standardSyncOperation.getOperationId())
           .set(workspaceId, standardSyncOperation.getWorkspaceId())
           .set(name, standardSyncOperation.getName())
-          .set(operatorType, Enums.toEnum(standardSyncOperation.getOperatorType().value(), OperatorType.class).orElseThrow())
+          .set(operatorType, standardSyncOperation.getOperatorType() == null ? null
+              : Enums.toEnum(standardSyncOperation.getOperatorType().value(), OperatorType.class).orElseThrow())
           .set(operatorNormalization, JSONB.valueOf(Jsons.serialize(standardSyncOperation.getOperatorNormalization())))
           .set(operatorDbt, JSONB.valueOf(Jsons.serialize(standardSyncOperation.getOperatorDbt())))
           .set(tombstone, standardSyncOperation.getTombstone())
@@ -498,14 +500,15 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
       final StandardSync standardSync = configWithMetadata.getConfig();
       ctx.insertInto(DSL.table("connection"))
           .set(id, standardSync.getConnectionId())
-          .set(namespaceDefinition, Enums.toEnum(standardSync.getNamespaceDefinition().value(), NamespaceDefinitionType.class).orElseThrow())
+          .set(namespaceDefinition, standardSync.getNamespaceDefinition() == null ? null
+              : Enums.toEnum(standardSync.getNamespaceDefinition().value(), NamespaceDefinitionType.class).orElseThrow())
           .set(namespaceFormat, standardSync.getNamespaceFormat())
           .set(prefix, standardSync.getPrefix())
           .set(sourceId, standardSync.getSourceId())
           .set(destinationId, standardSync.getDestinationId())
           .set(name, standardSync.getName())
           .set(catalog, JSONB.valueOf(Jsons.serialize(standardSync.getCatalog())))
-          .set(status, Enums.toEnum(standardSync.getStatus().value(), StatusType.class).orElseThrow())
+          .set(status, standardSync.getStatus() == null ? null : Enums.toEnum(standardSync.getStatus().value(), StatusType.class).orElseThrow())
           .set(schedule, JSONB.valueOf(Jsons.serialize(standardSync.getSchedule())))
           .set(manual, standardSync.getManual())
           .set(resourceRequirements, JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
