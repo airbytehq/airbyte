@@ -132,11 +132,14 @@ class Surveys(IncrementalSurveymonkeyStream):
         return "surveys"
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        survey_ids = params.get("survey_ids", [])
         result = super().parse_response(response=response, stream_state=stream_state, **kwargs)
         for record in result:
-            substream = SurveyDetails(survey_id=record["id"], start_date=self._start_date, authenticator=self.authenticator)
-            child_record = substream.read_records(sync_mode=SyncMode.full_refresh)
-            yield from child_record
+            if not survey_ids or record["id"] in survey_ids:
+                substream = SurveyDetails(survey_id=record["id"], start_date=self._start_date, authenticator=self.authenticator)
+                child_record = substream.read_records(sync_mode=SyncMode.full_refresh)
+                yield from child_record
 
 
 class SurveyDetails(SurveymonkeyStream):
