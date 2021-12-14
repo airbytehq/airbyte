@@ -25,7 +25,6 @@
   dockerImageTag: 0.2.5
   sourceType: api
 - name: Amazon SQS
-  documentationUrl: https://docs.airbyte.io/integrations/sources/amazon-seller-partner
   dockerRepository: airbyte/source-amazon-sqs
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/amazon-sqs
