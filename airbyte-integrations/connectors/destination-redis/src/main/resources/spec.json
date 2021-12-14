@@ -13,14 +13,14 @@
     "properties": {
       "host": {
         "title": "Host",
-        "description": "Redis host to connect to.",
+        "description": "The host of the Redis server.",
         "type": "string",
         "examples": ["localhost,127.0.0.1"],
         "order": 1
       },
       "port": {
         "title": "Port",
-        "description": "Port of Redis.",
+        "description": "The port of the Redis server.",
         "type": "integer",
         "minimum": 0,
         "maximum": 65536,
@@ -29,22 +29,22 @@
       },
       "username": {
         "title": "Username",
-        "description": "Username associated with Redis.",
+        "description": "The username which is used to access the Redis server.",
         "type": "string",
         "order": 3
       },
       "password": {
         "title": "Password",
-        "description": "Password associated with Redis.",
+        "description": "The password associated with this username.",
         "type": "string",
         "airbyte_secret": true,
         "order": 4
       },
       "cache_type": {
-        "title": "Cache type",
+        "title": "Cache Type",
         "type": "string",
         "default": "hash",
-        "description": "Redis cache type to store data in.",
+        "description": "Redis cache/data type to use when storing the incoming messages, i.e hash, set, list, stream etc.",
         "enum": ["hash"],
         "order": 5
       }

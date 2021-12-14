@@ -22,22 +22,23 @@
         "title": "Endpoint",
         "type": "string",
         "default": "",
-        "description": "This is your S3 endpoint url.(if you are working with AWS S3, just leave empty).",
+        "description": "URL to S3, if using AWS S3 just leave blank.",
         "examples": ["http://localhost:9000"]
       },
       "s3_bucket_name": {
-        "title": "S3 Bucket Name",
+        "title": "Bucket Name",
         "type": "string",
-        "description": "The name of the S3 bucket.",
+        "description": "The name of the S3 bucket o sync data into.",
         "examples": ["airbyte_sync"]
       },
       "s3_bucket_path": {
-        "description": "Directory under the S3 bucket where data will be written.",
+	"title": "Bucket Path",
+        "description": "The subdirectory under the S3 bucket to sync the data into.",
         "type": "string",
         "examples": ["data_sync/test"]
       },
       "s3_bucket_region": {
-        "title": "S3 Bucket Region",
+        "title": "Bucket Region",
         "type": "string",
         "default": "",
         "description": "The region of the S3 bucket.",
@@ -72,22 +73,22 @@
       },
       "access_key_id": {
         "type": "string",
-        "description": "The access key id to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket.",
-        "title": "S3 Key Id",
+        "description": "The Access Key ID granting allow one to access the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket. See the <a href=\"https://docs.airbyte.io/integrations/destinations/s3\">docs</a> for more information on how to obtain this key.",
+        "title": "Key ID",
         "airbyte_secret": true,
         "examples": ["A012345678910EXAMPLE"]
       },
       "secret_access_key": {
         "type": "string",
-        "description": "The corresponding secret to the access key id.",
-        "title": "S3 Access Key",
+        "description": "The corresponding secret to the above Access Key ID.",
+        "title": "Access Key",
         "airbyte_secret": true,
         "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"]
       },
       "format": {
         "title": "Output Format",
         "type": "object",
-        "description": "Output data format",
+        "description": "Output data format.",
         "oneOf": [
           {
             "title": "Avro: Apache Avro",
@@ -104,7 +105,7 @@
                 "type": "object",
                 "oneOf": [
                   {
-                    "title": "no compression",
+                    "title": "No Compression",
                     "required": ["codec"],
                     "properties": {
                       "codec": {
@@ -124,7 +125,7 @@
                         "default": "Deflate"
                       },
                       "compression_level": {
-                        "title": "Deflate level",
+                        "title": "Deflate Level",
                         "description": "0: no compression & fastest, 9: best compression & slowest.",
                         "type": "integer",
                         "default": 0,
@@ -134,7 +135,7 @@
                     }
                   },
                   {
-                    "title": "bzip2",
+                    "title": "BZIP2",
                     "required": ["codec"],
                     "properties": {
                       "codec": {
@@ -145,7 +146,7 @@
                     }
                   },
                   {
-                    "title": "xz",
+                    "title": "XZ",
                     "required": ["codec", "compression_level"],
                     "properties": {
                       "codec": {
@@ -154,7 +155,7 @@
                         "default": "xz"
                       },
                       "compression_level": {
-                        "title": "Compression level",
+                        "title": "Compression Level",
                         "description": "See <a href=\"https://commons.apache.org/proper/commons-compress/apidocs/org/apache/commons/compress/compressors/xz/XZCompressorOutputStream.html#XZCompressorOutputStream-java.io.OutputStream-int-\">here</a> for details.",
                         "type": "integer",
                         "default": 6,
@@ -164,7 +165,7 @@
                     }
                   },
                   {
-                    "title": "zstandard",
+                    "title": "Zstandard",
                     "required": ["codec", "compression_level"],
                     "properties": {
                       "codec": {
@@ -173,7 +174,7 @@
                         "default": "zstandard"
                       },
                       "compression_level": {
-                        "title": "Compression level",
+                        "title": "Compression Level",
                         "description": "Negative levels are 'fast' modes akin to lz4 or snappy, levels above 9 are generally for archival purposes, and levels above 18 use a lot of memory.",
                         "type": "integer",
                         "default": 3,
@@ -181,7 +182,7 @@
                         "maximum": 22
                       },
                       "include_checksum": {
-                        "title": "Include checksum",
+                        "title": "Include Checksum",
                         "description": "If true, include a checksum with each data block.",
                         "type": "boolean",
                         "default": false
@@ -189,7 +190,7 @@
                     }
                   },
                   {
-                    "title": "snappy",
+                    "title": "Snappy",
                     "required": ["codec"],
                     "properties": {
                       "codec": {
@@ -202,7 +203,7 @@
                 ]
               },
               "part_size_mb": {
-                "title": "Block Size (MB) for Amazon S3 multipart upload",
+                "title": "Block Size (MB) for Amazon S3 Multipart Upload",
                 "description": "This is the size of a \"Part\" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes9 more memory. Allowed values: min=5MB, max=525MB Default: 5MB.",
                 "type": "integer",
                 "default": 5,
@@ -227,7 +228,7 @@
                 "enum": ["No flattening", "Root level flattening"]
               },
               "part_size_mb": {
-                "title": "Block Size (MB) for Amazon S3 multipart upload",
+                "title": "Block Size (MB) for Amazon S3 Multipart Upload",
                 "description": "This is the size of a \"Part\" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes9 more memory. Allowed values: min=5MB, max=525MB Default: 5MB.",
                 "type": "integer",
                 "default": 5,
@@ -236,7 +237,7 @@
             }
           },
           {
-            "title": "JSON Lines: newline-delimited JSON",
+            "title": "JSON Lines: Newline-Delimited JSON",
             "required": ["format_type"],
             "properties": {
               "format_type": {
@@ -245,7 +246,7 @@
                 "default": "JSONL"
               },
               "part_size_mb": {
-                "title": "Block Size (MB) for Amazon S3 multipart upload",
+                "title": "Block Size (MB) for Amazon S3 Multipart Upload",
                 "description": "This is the size of a \"Part\" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes9 more memory. Allowed values: min=5MB, max=525MB Default: 5MB.",
                 "type": "integer",
                 "default": 5,
@@ -279,7 +280,7 @@
               },
               "block_size_mb": {
                 "title": "Block Size (Row Group Size) (MB)",
-                "description": "This is the size of a row group being buffered in memory. It limits the memory usage when writing. Larger values will improve the IO when reading, but consume more memory when writing. Default: 128 MB.",
+                "description": "The size of a row group being buffered in memory. It limits the memory usage when writing. Larger values will improve the IO when reading, but consume more memory when writing. Default: 128 MB.",
                 "type": "integer",
                 "default": 128,
                 "examples": [128]

@@ -13,32 +13,32 @@
     "properties": {
       "keyspace": {
         "title": "Keyspace",
-        "description": "Default Scylla keyspace to create data in.",
+        "description": "The default keyspace to use when writing data.",
         "type": "string",
         "order": 0
       },
       "username": {
         "title": "Username",
-        "description": "Username to use to access Scylla.",
+        "description": "The username which is used to access the database.",
         "type": "string",
         "order": 1
       },
       "password": {
         "title": "Password",
-        "description": "Password associated with Scylla.",
+        "description": "The password associated with this username.",
         "type": "string",
         "airbyte_secret": true,
         "order": 2
       },
       "address": {
         "title": "Address",
-        "description": "Address to connect to.",
+        "description": "The cluster address.",
         "type": "string",
         "order": 3
       },
       "port": {
         "title": "Port",
-        "description": "Port of Scylla.",
+        "description": "The port of the database.",
         "type": "integer",
         "minimum": 0,
         "maximum": 65536,
@@ -46,7 +46,7 @@
         "order": 4
       },
       "replication": {
-        "title": "Replication factor",
+        "title": "Replication Factor",
         "type": "integer",
         "description": "Indicates to how many nodes the data should be replicated to.",
         "default": 1,

@@ -12,12 +12,12 @@
     "additionalProperties": true,
     "properties": {
       "host": {
-        "description": "Host Endpoint of the Redshift Cluster (must include the cluster-id, region and end with .redshift.amazonaws.com)",
+        "description": "The host endpoint of the Redshift cluster (must include the cluster-id, region and end with .redshift.amazonaws.com)",
         "type": "string",
         "title": "Host"
       },
       "port": {
-        "description": "Port of the database.",
+        "description": "The port of the database.",
         "type": "integer",
         "minimum": 0,
         "maximum": 65536,
@@ -26,18 +26,18 @@
         "title": "Port"
       },
       "username": {
-        "description": "Username to use to access the database.",
+        "description": "The username which is used to access the database.",
         "type": "string",
         "title": "Username"
       },
       "password": {
-        "description": "Password associated with the username.",
+        "description": "The password associated with this username.",
         "type": "string",
         "airbyte_secret": true,
         "title": "Password"
       },
       "database": {
-        "description": "Name of the database.",
+        "description": "The name of the database.",
         "type": "string",
         "title": "Database"
       },
@@ -88,13 +88,13 @@
       },
       "access_key_id": {
         "type": "string",
-        "description": "The Access Key Id granting allow one to access the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket.",
-        "title": "S3 Key Id",
+        "description": "The Access Key ID granting allow one to access the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket. See the <a href=\"https://docs.airbyte.io/integrations/destinations/redshift\">docs</a> for more information on how to obtain this key.",
+        "title": "S3 Key ID",
         "airbyte_secret": true
       },
       "secret_access_key": {
         "type": "string",
-        "description": "The corresponding secret to the above access key id.",
+        "description": "The corresponding secret to the above Access Key ID.",
         "title": "S3 Access Key",
         "airbyte_secret": true
       },
