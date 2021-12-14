@@ -521,8 +521,6 @@ class SourceGoogleAnalyticsV4(AbstractSource):
         config["authenticator"] = authenticator
         config["metrics"] = ["ga:14dayUsers"]
         config["dimensions"] = ["ga:date"]
-        if "window_in_days" not in config:
-            config["window_in_days"] = 90
 
         try:
             # test the eligibility of custom_reports input
