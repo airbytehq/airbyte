@@ -262,7 +262,7 @@ jobs:
         run: ./tools/bin/acceptance_test.sh
 
       - name: Automatic Migration Acceptance Test
-        run: MIGRATION_TEST_VERSION=$(grep VERSION .env | tr  -d "VERSION=") SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan -i
+        run: SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan -i
 
       - name: Slack Notification - Failure
         if: failure() && github.ref == 'refs/heads/master'
