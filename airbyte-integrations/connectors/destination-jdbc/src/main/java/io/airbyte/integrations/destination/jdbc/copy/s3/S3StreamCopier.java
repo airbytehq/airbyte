@@ -11,7 +11,6 @@ import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
-import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
 import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
@@ -95,8 +94,8 @@ public abstract class S3StreamCopier implements StreamCopier {
 
       try {
         final S3CsvWriter writer = new S3CsvWriter.Builder(
-            // Flattening.NO because we want to just write the JSON blob directly into the table
-            s3Config.cloneWithFormatConfig(new S3CsvFormatConfig(Flattening.NO, (long) s3Config.getPartSize())),
+            // The Flattening value is actually ignored, because we pass an explicit CsvSheetGenerator. So just pass in null.
+            s3Config.cloneWithFormatConfig(new S3CsvFormatConfig(null, (long) s3Config.getPartSize())),
             s3Client,
             configuredAirbyteStream,
             uploadTime

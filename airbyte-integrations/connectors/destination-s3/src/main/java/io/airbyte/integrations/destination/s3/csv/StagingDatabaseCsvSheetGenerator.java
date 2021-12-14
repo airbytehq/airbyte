@@ -10,6 +10,9 @@ import java.util.UUID;
 
 /**
  * A CsvSheetGenerator that produces data in the format expected by JdbcSqlOperations. See JdbcSqlOperations#createTableQuery.
+ * <p>
+ * This intentionally does not extend {@link BaseSheetGenerator}, because it needs the columns in a different order (ABID, JSON, timestamp) vs (ABID,
+ * timestamp, JSON)
  */
 public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
 

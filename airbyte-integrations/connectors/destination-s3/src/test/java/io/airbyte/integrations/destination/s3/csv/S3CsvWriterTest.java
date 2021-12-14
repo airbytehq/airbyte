@@ -244,7 +244,23 @@ class S3CsvWriterTest {
 
   @Test
   public void writesContentsCorrectly_when_stagingDatabaseConfig() throws IOException {
-    final S3CsvWriter writer = writer()
+    final S3CsvWriter writer = new Builder(
+        new S3DestinationConfig(
+            "fake-endpoint",
+            "fake-bucket",
+            "fake-bucketPath",
+            "fake-region",
+            "fake-access-key-id",
+            "fake-secret-access-key",
+            // The part size is configured in the format config. This field is only used by S3StreamCopier.
+            null,
+            new S3CsvFormatConfig(null, (long) PART_SIZE)
+        ),
+        s3Client,
+        CONFIGURED_STREAM,
+        UPLOAD_TIME
+    ).uploadThreads(UPLOAD_THREADS)
+        .queueCapacity(QUEUE_CAPACITY)
         .withHeader(false)
         .csvSettings(CSVFormat.DEFAULT)
         .csvSheetGenerator(new StagingDatabaseCsvSheetGenerator())
