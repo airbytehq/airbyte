@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.redshift;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
@@ -71,6 +72,11 @@ public class RedshiftStreamCopier extends LegacyS3StreamCopier {
       }
       LOGGER.info("S3 manifest file {} cleaned.", manifestFilePath);
     }
+  }
+
+  @VisibleForTesting
+  String getTmpTableName() {
+    return tmpTableName;
   }
 
   /**
