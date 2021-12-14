@@ -71,24 +71,12 @@ public class S3StreamCopierTest {
   private MockedConstruction<S3CsvWriter> csvWriterMockedConstruction;
   private List<S3CsvWriterArguments> csvWriterConstructorArguments;
 
-  // TODO when we're on java 17, this should be a record class
-  private static class S3CsvWriterArguments {
+  private record S3CsvWriterArguments(S3DestinationConfig config,
+                                      ConfiguredAirbyteStream stream,
+                                      Timestamp uploadTime,
+                                      int uploadThreads,
+                                      int queueCapacity) {
 
-    public final S3DestinationConfig config;
-    public final ConfiguredAirbyteStream stream;
-    public final Timestamp uploadTime;
-    public final int uploadThreads;
-    public final int queueCapacity;
-
-    public S3CsvWriterArguments(final S3DestinationConfig config, final ConfiguredAirbyteStream stream, final Timestamp uploadTime,
-                                final int uploadThreads,
-                                final int queueCapacity) {
-      this.config = config;
-      this.stream = stream;
-      this.uploadTime = uploadTime;
-      this.uploadThreads = uploadThreads;
-      this.queueCapacity = queueCapacity;
-    }
   }
 
   @BeforeEach
