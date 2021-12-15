@@ -242,6 +242,10 @@ class S3CsvWriterTest {
         outputStreams.get(0).toString(StandardCharsets.UTF_8));
   }
 
+  /**
+   * This test verifies that the S3StreamCopier usecase works. Specifically, the withHeader, csvSettings, and csvSheetGenerator options were all added
+   * solely to support S3StreamCopier; we want to verify that it outputs the exact same data as the previous implementation.
+   */
   @Test
   public void writesContentsCorrectly_when_stagingDatabaseConfig() throws IOException {
     final S3CsvWriter writer = new Builder(
