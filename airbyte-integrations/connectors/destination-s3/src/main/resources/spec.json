@@ -28,7 +28,7 @@
       "s3_bucket_name": {
         "title": "Bucket Name",
         "type": "string",
-        "description": "The name of the S3 bucket to sync data into.",
+        "description": "The name of the S3 bucket to sync the data into.",
         "examples": ["airbyte_sync"]
       },
       "s3_bucket_path": {
@@ -101,7 +101,7 @@
               },
               "compression_codec": {
                 "title": "Compression Codec",
-                "description": "The compression algorithm used to compress data. Default to no compression.",
+                "description": "The compression algorithm used to compress the data. Default to no compression.",
                 "type": "object",
                 "oneOf": [
                   {
@@ -223,7 +223,7 @@
               "flattening": {
                 "type": "string",
                 "title": "Normalization (Flattening)",
-                "description": "Whether the input json data should be normalized (flattened) in the output CSV. Please refer to docs for details.",
+                "description": "Whether the input json data should be normalized (flattened) in the output CSV. See the <a href=\"https://docs.airbyte.io/integrations/destinations/s3\">docs</a> for more information.",
                 "default": "No flattening",
                 "enum": ["No flattening", "Root level flattening"]
               },
@@ -265,7 +265,7 @@
               },
               "compression_codec": {
                 "title": "Compression Codec",
-                "description": "The compression algorithm used to compress data pages.",
+                "description": "The compression algorithm used to compress the data pages.",
                 "type": "string",
                 "enum": [
                   "UNCOMPRESSED",
