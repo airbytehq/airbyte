@@ -55,12 +55,12 @@ else
     if [[ "$firstarg" ]]; then
       if [[ "$secondarg" ]]; then
         echo "2 ========= cpu -> $firstarg"
-        echo "2========= memory -> $secondarg"
-        echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand $firstarg $secondargt"
-        ./gradlew --no-daemon --scan "$performanceTestCommand" "$firstarg" "$secondargt"
+        echo "2 ======== memory -> $secondarg"
+        echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand $firstarg $secondarg"
+        ./gradlew --no-daemon --scan "$performanceTestCommand" "$firstarg" "$secondarg"
       else
         echo "1 ========= cpu -> $firstarg"
-        echo "1========= memory -> $secondarg"
+        echo "1 ======== memory -> $secondarg"
         echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand $firstarg"
         ./gradlew --no-daemon --scan "$performanceTestCommand" "$firstarg"
       fi
