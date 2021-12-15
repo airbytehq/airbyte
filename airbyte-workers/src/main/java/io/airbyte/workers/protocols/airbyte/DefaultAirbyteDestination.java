@@ -134,7 +134,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   }
 
   @Override
-  public boolean isFinished() throws WorkerException {
+  public boolean isFinished() {
     Preconditions.checkState(destinationProcess != null);
     // As this check is done on every message read, it is important for this operation to be efficient.
     // Short circuit early to avoid checking the underlying process.
