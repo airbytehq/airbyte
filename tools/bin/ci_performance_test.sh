@@ -47,16 +47,11 @@ else
     connector_name=$(echo $connector | cut -d / -f 2)
     selected_performance_test=$(echo "$all_performance_tests" | grep "^$connector_name$" || echo "")
     performanceTestCommand="$(_to_gradle_path "airbyte-integrations/$connector" performanceTest) $firstarg $secondargt"
-    echo "4 ----------  $performanceTestCommand"
   else
-    echo "2 ----------  $firstarg"
-    echo "2 ----------  $secondarg"
     selected_performance_test=$(echo "$all_performance_tests" | grep "^$connector$" || echo "")
     performanceTestCommand=":airbyte-integrations:connectors:$connector:performanceTest $firstarg $secondarg"
   fi
   if [ -n "$selected_performance_test" ] ; then
-    echo "1 ----------  $firstarg"
-    echo "1 ----------  $secondarg"
     echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand"
     ./gradlew --no-daemon --scan "$performanceTestCommand"
   else
