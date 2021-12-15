@@ -48,6 +48,9 @@ import org.slf4j.LoggerFactory;
  * Tests to help define what the legacy S3 stream copier did.
  * <p>
  * Does not verify SQL operations, as they're fairly transparent.
+ * <p>
+ * A lot of this code is duplicated in other places (S3StreamCopierTest, S3CsvWriterTest, RedshiftStreamCopierTest). This is intentional, as
+ * eventually we'd like to delete the LegacyS3StreamCopier along with this file.
  */
 public class LegacyS3StreamCopierTest {
 
