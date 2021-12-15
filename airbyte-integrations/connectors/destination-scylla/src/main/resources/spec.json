@@ -13,7 +13,7 @@
     "properties": {
       "keyspace": {
         "title": "Keyspace",
-        "description": "The default keyspace to use when writing data.",
+        "description": "The default keyspace to use when writing the data.",
         "type": "string",
         "order": 0
       },
