@@ -46,8 +46,8 @@ public abstract class BaseS3Writer implements S3Writer {
   protected final String outputPrefix;
 
   protected BaseS3Writer(final S3DestinationConfig config,
-      final AmazonS3 s3Client,
-      final ConfiguredAirbyteStream configuredStream) {
+                         final AmazonS3 s3Client,
+                         final ConfiguredAirbyteStream configuredStream) {
     this.config = config;
     this.s3Client = s3Client;
     this.stream = configuredStream.getStream();
@@ -124,11 +124,19 @@ public abstract class BaseS3Writer implements S3Writer {
     // Do nothing by default
   }
 
-  // Filename: <upload-date>_<upload-millis>_0.<format-extension>
+  /**
+   * @return A string in the format "{upload-date}_{upload-millis}_0.{format-extension}". For example, "2021_12_09_1639077474000_0.csv"
+   */
   public static String getOutputFilename(final Timestamp timestamp, final S3Format format) {
     return getOutputFilename(timestamp, DEFAULT_SUFFIX, format);
   }
 
+  /**
+   * @param customSuffix A string to append to the filename. Commonly used to distinguish multiple part files within a single upload. You probably
+   *                     want to use strings with a leading underscore (i.e. prefer "_0" to "0").
+   * @return A string in the format "{upload-date}_{upload-millis}_{suffix}.{format-extension}". For example,
+   * "2021_12_09_1639077474000_customSuffix.csv"
+   */
   public static String getOutputFilename(final Timestamp timestamp, final String customSuffix, final S3Format format) {
     final DateFormat formatter = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
