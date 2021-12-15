@@ -147,10 +147,4 @@ public abstract class BaseS3Writer implements S3Writer {
         customSuffix,
         format.getFileExtension());
   }
-
-  @Override
-  public String getObjectPath() {
-    // TODO
-    throw new UnsupportedOperationException("not yet implemented");
-  }
 }

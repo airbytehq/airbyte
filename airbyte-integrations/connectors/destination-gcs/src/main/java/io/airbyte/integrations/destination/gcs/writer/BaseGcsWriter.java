@@ -139,10 +139,4 @@ public abstract class BaseGcsWriter implements S3Writer {
         timestamp.getTime(),
         format.getFileExtension());
   }
-
-  @Override
-  public String getObjectPath() {
-    // TODO
-    throw new UnsupportedOperationException("not yet implemented");
-  }
 }
