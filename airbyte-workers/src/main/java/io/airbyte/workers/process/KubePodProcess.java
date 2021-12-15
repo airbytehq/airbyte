@@ -520,7 +520,7 @@ public class KubePodProcess extends Process {
   private void close() {
     // short-circuit if close was already called, so we don't re-offer ports multiple times
     // since the offer call is non-atomic
-    if(closed) {
+    if (closed) {
       return;
     } else {
       closed = true;
