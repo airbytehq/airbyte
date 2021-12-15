@@ -2,7 +2,7 @@ import base64
 import json
 from json.decoder import JSONDecodeError
 from typing import Mapping, Any, Tuple, ClassVar
-
+from pathlib import Path
 from ci_common_utils import GoogleApi
 from ci_common_utils import Logger
 
@@ -16,6 +16,7 @@ class SecretsLoader:
     """
     """
     logger: ClassVar[Logger] = Logger()
+    base_folder = Path("/actions-runner/_work/airbyte/airbyte")
 
     def __init__(self, connector_name: str, gsm_credentials: Mapping[str, Any]):
         self.gsm_credentials = gsm_credentials
