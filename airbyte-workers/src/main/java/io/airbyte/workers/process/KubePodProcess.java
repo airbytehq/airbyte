@@ -119,6 +119,7 @@ public class KubePodProcess extends Process {
   private final AtomicBoolean wasKilled = new AtomicBoolean(false);
 
   private final OutputStream stdin;
+  private boolean closed = false;
   private InputStream stdout;
   private InputStream stderr;
   private Integer returnCode = null;
@@ -517,6 +518,14 @@ public class KubePodProcess extends Process {
    * implementation with OS processes and resources, which are automatically reaped by the OS.
    */
   private void close() {
+    // short-circuit if close was already called, so we don't re-offer ports multiple times
+    // since the offer call is non-atomic
+    if(closed) {
+      return;
+    } else {
+      closed = true;
+    }
+
     if (this.stdin != null) {
       Exceptions.swallow(this.stdin::close);
     }
