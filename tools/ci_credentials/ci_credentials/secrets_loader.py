@@ -13,8 +13,8 @@ GSM_SCOPES = ("https://www.googleapis.com/auth/cloud-platform",)
 
 
 class SecretsLoader:
-    """
-    """
+    """Loading and saving all requested secrets into connector folders"""
+
     logger: ClassVar[Logger] = Logger()
     base_folder = Path("/actions-runner/_work/airbyte/airbyte")
 
@@ -149,6 +149,7 @@ class SecretsLoader:
         return {k: v[1] for k, v in secrets.items()}
 
     def write_to_storage(self, secrets: Mapping[Tuple[str, str], str]) -> int:
+        """Tries to save target secrets to the airbyte-integrations/connectors|bases/{connector_name}/secrets folder"""
         if not secrets:
             return 1
         for (connector_name, filename), secret_value in secrets.items():
