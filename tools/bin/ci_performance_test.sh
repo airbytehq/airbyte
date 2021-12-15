@@ -54,13 +54,21 @@ else
     performanceTestCommand=":airbyte-integrations:connectors:$connector:performanceTest"
   fi
   if [ -n "$selected_performance_test" ] ; then
-    if [[ "$2" && "$3" ]]; then
-      echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand $firstarg $secondargt"
-      ./gradlew --no-daemon --scan "$performanceTestCommand" "$firstarg" "$secondargt"
-    elif [[ "$2" ]]; then
-      echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand $firstarg"
-      ./gradlew --no-daemon --scan "$performanceTestCommand" "$firstarg"
+    if [[ "$2" ]]; then
+      if [[ "$3" ]]; then
+        echo "2 ========= cpu -> $firstarg"
+        echo "2========= memory -> $secondarg"
+        echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand $firstarg $secondargt"
+        ./gradlew --no-daemon --scan "$performanceTestCommand" "$firstarg" "$secondargt"
+      else
+        echo "1 ========= cpu -> $firstarg"
+        echo "1========= memory -> $secondarg"
+        echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand $firstarg"
+        ./gradlew --no-daemon --scan "$performanceTestCommand" "$firstarg"
+      fi
     else
+      echo "0 ========= cpu -> $firstarg"
+      echo "0 ========= memory -> $secondarg"
       echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand"
       ./gradlew --no-daemon --scan "$performanceTestCommand"
     fi
