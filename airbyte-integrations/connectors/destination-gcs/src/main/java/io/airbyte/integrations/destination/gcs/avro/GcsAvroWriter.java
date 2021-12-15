@@ -46,8 +46,6 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer, GscWriter,
   private final String gcsFileLocation;
   private final Schema schema;
 
-
-
   public GcsAvroWriter(final GcsDestinationConfig config,
       final AmazonS3 s3Client,
       final ConfiguredAirbyteStream configuredStream,
@@ -100,7 +98,6 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer, GscWriter,
   @Override
   public void write(JsonNode formattedData) throws IOException {
     GenericData.Record record = avroRecordFactory.getAvroRecord(formattedData);
-    LOGGER.info("Writing into file record: " + record);
     dataFileWriter.append(record);
   }
 
