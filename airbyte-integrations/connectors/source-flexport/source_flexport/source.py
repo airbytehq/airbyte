@@ -19,6 +19,7 @@ class FlexportError(Exception):
 class FlexportStream(HttpStream, ABC):
     url_base = "https://api.flexport.com/"
     raise_on_http_errors = False
+    primary_key = "id"
     page_size = 500
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -67,8 +68,6 @@ class FlexportStream(HttpStream, ABC):
 
 
 class Companies(FlexportStream):
-    primary_key = "id"
-
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
@@ -76,8 +75,6 @@ class Companies(FlexportStream):
 
 
 class Locations(FlexportStream):
-    primary_key = "id"
-
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
@@ -85,8 +82,6 @@ class Locations(FlexportStream):
 
 
 class Products(FlexportStream):
-    primary_key = "id"
-
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
