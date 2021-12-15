@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal.scheduling;
 
+import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.temporal.workflow.QueryMethod;
 import io.temporal.workflow.SignalMethod;
 import io.temporal.workflow.WorkflowInterface;
@@ -16,7 +17,7 @@ import lombok.NoArgsConstructor;
 public interface ConnectionUpdaterWorkflow {
 
   @WorkflowMethod
-  WorkflowState run(ConnectionUpdaterInput connectionUpdaterInput);
+  void run(ConnectionUpdaterInput connectionUpdaterInput);
 
   @SignalMethod
   void submitManualSync();
@@ -29,18 +30,6 @@ public interface ConnectionUpdaterWorkflow {
 
   @SignalMethod
   void connectionUpdated();
-
-  @Data
-  @NoArgsConstructor
-  @AllArgsConstructor
-  class WorkflowState {
-
-    private boolean isRunning;
-    private boolean isDeleted;
-    private boolean skipScheduling;
-    private boolean isUpdated;
-
-  }
 
   @QueryMethod
   WorkflowState getState();

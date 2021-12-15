@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal.scheduling;
 
+import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import lombok.AllArgsConstructor;
@@ -24,5 +25,7 @@ public class ConnectionUpdaterInput {
   private Integer attemptId;
   private boolean fromFailure;
   private int attemptNumber;
-  private boolean isTest;
+  @Nullable
+  private WorkflowState workflowState;
+
 }

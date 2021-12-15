@@ -14,13 +14,19 @@ import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.S
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.SyncOutput;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivityImpl;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptCreationOutput;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCreationOutput;
+import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
+import io.airbyte.workers.temporal.scheduling.state.listener.TestStateListener;
+import io.airbyte.workers.temporal.scheduling.state.listener.WorkflowStateChangedListener.ChangedStateEvent;
 import io.airbyte.workers.temporal.sync.EmptySyncWorkflow;
-import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowOptions;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.testing.TestWorkflowExtension;
 import io.temporal.worker.Worker;
 import java.time.Duration;
+import java.util.Queue;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,8 +55,15 @@ public class ConnectionUpdaterWorkflowTest {
 
     Mockito.when(mConfigFetchActivity.getPeriodicity(Mockito.any()))
         .thenReturn(new ScheduleRetrieverOutput(
-            Duration.ofMinutes(1l)
-        ));
+            Duration.ofMinutes(1l)));
+
+    Mockito.when(mJobCreationAndStatusUpdateActivity.createNewJob(Mockito.any()))
+        .thenReturn(new JobCreationOutput(
+            1L));
+
+    Mockito.when(mJobCreationAndStatusUpdateActivity.createNewAttempt(Mockito.any()))
+        .thenReturn(new AttemptCreationOutput(
+            1));
   }
 
   @RegisterExtension
@@ -61,20 +74,34 @@ public class ConnectionUpdaterWorkflowTest {
               mConfigFetchActivity,
               mConnectionDeletionActivity,
               mGenerateInputActivityImpl,
-              mJobCreationAndStatusUpdateActivity
-          )
+              mJobCreationAndStatusUpdateActivity)
           .build();
 
   @Test
-  public void runSuccess(final TestWorkflowEnvironment testEnv, final Worker worker, final ConnectionUpdaterWorkflow workflow)
+  public void runSuccess(final TestWorkflowEnvironment testEnv, final WorkflowClient workflowClient, final Worker worker)
       throws InterruptedException {
+    /*
+     * worker.registerActivitiesImplementations( mConfigFetchActivity, mConnectionDeletionActivity,
+     * mGenerateInputActivityImpl, mJobCreationAndStatusUpdateActivity ); testEnv.start();
+     */
+    final UUID testId = UUID.randomUUID();
+    final TestStateListener testStateListener = new TestStateListener();
+    final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
+
+    final ConnectionUpdaterWorkflow workflow = workflowClient
+        .newWorkflowStub(
+            ConnectionUpdaterWorkflow.class,
+            WorkflowOptions.newBuilder()
+                .setTaskQueue(worker.getTaskQueue())
+                .build());
+
     final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
         UUID.randomUUID(),
         1L,
         1,
         false,
         1,
-        true);
+        workflowState);
 
     Mockito.when(mGenerateInputActivityImpl.getSyncWorkflowInput(Mockito.any(SyncInput.class)))
         .thenReturn(
@@ -84,10 +111,12 @@ public class ConnectionUpdaterWorkflowTest {
                 new IntegrationLauncherConfig(),
                 new StandardSyncInput()));
 
-    final WorkflowExecution wfExecution = WorkflowClient.start(workflow::run, input);
-    testEnv.sleep(Duration.ofMinutes(1L));
+    WorkflowClient.start(workflow::run, input);
+    testEnv.sleep(Duration.ofSeconds(66L));
     log.error("Test");
-    Mockito.verify(mConfigFetchActivity, Mockito.times(1)).getPeriodicity(Mockito.any());
+    final Queue<ChangedStateEvent> events = testStateListener.events(testId);
+    Mockito.verify(mConfigFetchActivity, Mockito.times(2)).getPeriodicity(Mockito.any());
+    testEnv.shutdown();
   }
 
 }

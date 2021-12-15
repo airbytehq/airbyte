@@ -20,6 +20,8 @@ public class EmptySyncWorkflow implements SyncWorkflow {
                                 final IntegrationLauncherConfig destinationLauncherConfig,
                                 final StandardSyncInput syncInput,
                                 final UUID connectionId) {
+    log.error("running sync");
+
     return new StandardSyncOutput();
   }
 
