@@ -46,23 +46,9 @@ class AirbytePerformanceTestJavaPlugin implements Plugin<Project> {
         }
 
         // make sure we create the performanceTest task once in case a standard source test was already initialized
-
-        var b = false
-
-        project.getProperties().keySet().forEach(a -> {
-            project.logger.info('== -- {}', a)
-            if(a.contains('performanceTest')) {
-                b = true
-            }
-        })
-
-        if(!b) {
+        if(!project.hasProperty('performanceTest')) {
             project.task('performanceTest')
         }
-
-//        if(!project.hasProperty('performanceTest')) {
-//            project.task('performanceTest')
-//        }
 
         project.performanceTest.dependsOn(project.performanceTestJava)
     }
