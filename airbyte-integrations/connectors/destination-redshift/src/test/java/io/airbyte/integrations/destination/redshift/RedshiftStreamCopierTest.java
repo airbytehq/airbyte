@@ -101,10 +101,10 @@ class RedshiftStreamCopierTest {
     verify(s3Client).putObject(
         eq("fake-bucket"),
         argThat(path -> {
-          final boolean startsCorrectly = path.startsWith("fake-staging-folder/fake-schema/");
+          final boolean startsCorrectly = path.startsWith("fake-bucketPath/fake-staging-folder/fake-schema/");
           final boolean endsCorrectly = path.endsWith(".manifest");
           // Make sure that we have a valid UUID
-          manifestUuid.set(path.replaceFirst("^fake-staging-folder/fake-schema/", "").replaceFirst(".manifest$", ""));
+          manifestUuid.set(path.replaceFirst("^fake-bucketPath/fake-staging-folder/fake-schema/", "").replaceFirst(".manifest$", ""));
           UUID.fromString(manifestUuid.get());
 
           return startsCorrectly && endsCorrectly;
@@ -134,7 +134,7 @@ class RedshiftStreamCopierTest {
 
     verify(db).execute(String.format(
         """
-            COPY fake-schema.%s FROM 's3://fake-bucket/fake-staging-folder/fake-schema/%s.manifest'
+            COPY fake-schema.%s FROM 's3://fake-bucket/fake-bucketPath/fake-staging-folder/fake-schema/%s.manifest'
             CREDENTIALS 'aws_access_key_id=fake-access-key-id;aws_secret_access_key=fake-secret-access-key'
             CSV REGION 'fake-region' TIMEFORMAT 'auto'
             STATUPDATE OFF

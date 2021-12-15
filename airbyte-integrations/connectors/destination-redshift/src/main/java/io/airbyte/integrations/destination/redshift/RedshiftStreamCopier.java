@@ -129,7 +129,7 @@ public class RedshiftStreamCopier extends S3StreamCopier {
    */
   private String putManifest(final String manifestContents) {
     manifestFilePath =
-        String.join("/", stagingFolder, schemaName, String.format("%s.manifest", UUID.randomUUID()));
+        String.join("/", s3Config.getBucketPath(), stagingFolder, schemaName, String.format("%s.manifest", UUID.randomUUID()));
 
     s3Client.putObject(s3Config.getBucketName(), manifestFilePath, manifestContents);
 
