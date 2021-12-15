@@ -34,6 +34,11 @@
   dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/keen
   icon: chargify.svg
+- name: Clickhouse
+  destinationDefinitionId: ce0d828e-1dc4-496c-b122-2da42e637e48
+  dockerRepository: airbyte/destination-clickhouse
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/clickhouse
 - name: DynamoDB
   destinationDefinitionId: 8ccd8909-4e99-4141-b48d-4984b70b2d89
   dockerRepository: airbyte/destination-dynamodb
@@ -130,6 +135,12 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/pulsar
   icon: pulsar.svg
+- name: RabbitMQ
+  destinationDefinitionId: e06ad785-ad6f-4647-b2e8-3027a5c59454
+  dockerRepository: airbyte/destination-rabbitmq
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/rabbitmq
+  icon: pulsar.svg
 - name: Redis
   destinationDefinitionId: d4d3fef9-e319-45c2-881a-bd02ce44cc9f
   dockerRepository: airbyte/destination-redis
@@ -139,13 +150,13 @@
 - name: Redshift
   destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerRepository: airbyte/destination-redshift
-  dockerImageTag: 0.3.20
+  dockerImageTag: 0.3.21
   documentationUrl: https://docs.airbyte.io/integrations/destinations/redshift
   icon: redshift.svg
 - name: S3
   destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   dockerRepository: airbyte/destination-s3
-  dockerImageTag: 0.1.15
+  dockerImageTag: 0.1.16
   documentationUrl: https://docs.airbyte.io/integrations/destinations/s3
   icon: s3.svg
 - name: SFTP-JSON
@@ -157,7 +168,7 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.3.19
+  dockerImageTag: 0.3.20
   documentationUrl: https://docs.airbyte.io/integrations/destinations/snowflake
   icon: snowflake.svg
 - name: MariaDB ColumnStore
