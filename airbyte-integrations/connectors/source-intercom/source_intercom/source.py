@@ -2,7 +2,6 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import time
 from abc import ABC
 from datetime import datetime
 from enum import Enum
@@ -20,9 +19,6 @@ from requests.auth import AuthBase
 
 class IntercomStream(HttpStream, ABC):
     url_base = "https://api.intercom.io/"
-
-    # https://developers.intercom.com/intercom-api-reference/reference#rate-limiting
-    queries_per_minute = 1000  # 1000 queries per minute == 16.67 req per sec
 
     primary_key = "id"
     data_fields = ["data"]
@@ -91,10 +87,6 @@ class IntercomStream(HttpStream, ABC):
             yield data
         else:
             yield from data
-
-        # This is probably overkill because the request itself likely took more
-        # than the rate limit, but keep it just to be safe.
-        time.sleep(60.0 / self.queries_per_minute)
 
 
 class IncrementalIntercomStream(IntercomStream, ABC):
