@@ -77,7 +77,7 @@ class TimeLogs(MyhoursStream):
         self.batch_size = batch_size
 
         if self.start_date > pendulum.now():
-            self.logger.log(logging.WARN, f'Stream {self.name}: start_date "{start_date.isoformat()}" should be before today.')
+            self.logger.warn(f'Stream {self.name}: start_date "{start_date.isoformat()}" should be before today.')
 
         super().__init__(authenticator=authenticator)
 
