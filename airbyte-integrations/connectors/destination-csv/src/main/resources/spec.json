@@ -13,7 +13,7 @@
     "properties": {
       "destination_path": {
 	"title": "Destination Path",
-        "description": "Path to the directory where csv files will be written. The destination uses the local mount \"/local\" and any data files will be placed inside that local mount. See the  <a href=\"https://docs.airbyte.io/integrations/destinations/local-csv\">docs</a>" for more information.",
+        "description": "Path to the directory where csv files will be written. The destination uses the local mount \"/local\" and any data files will be placed inside that local mount. See the  <a href=\"https://docs.airbyte.io/integrations/destinations/local-csv\">docs</a> for more information.",
         "type": "string",
         "examples": ["/local"]
       }
