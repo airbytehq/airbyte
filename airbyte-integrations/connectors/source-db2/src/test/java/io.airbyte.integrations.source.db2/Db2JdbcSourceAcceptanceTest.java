@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import java.sql.JDBCType;
 import java.util.Collections;
 import java.util.Set;
 import org.junit.jupiter.api.AfterAll;
@@ -118,7 +119,7 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  public AbstractJdbcSource getJdbcSource() {
+  public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new Db2Source();
   }
 
