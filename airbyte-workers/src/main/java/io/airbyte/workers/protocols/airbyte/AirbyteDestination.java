@@ -58,7 +58,7 @@ public interface AirbyteDestination extends CheckedConsumer<AirbyteMessage, Exce
    *
    * @return true, if no more data will be emitted. otherwise, false.
    */
-  boolean isFinished() throws WorkerException;
+  boolean isFinished();
 
   /**
    * Gets the exit value of the destination process. This should only be called after the destination
