@@ -93,13 +93,21 @@ public class JsonToAvroSchemaConverter {
     return standardizedNames;
   }
 
+  public Schema getAvroSchema(final JsonNode jsonSchema,
+      final String name,
+      @Nullable final String namespace,
+      final boolean appendAirbyteFields) {
+    return getAvroSchema(jsonSchema, name, namespace, appendAirbyteFields, true);
+  }
+
   /**
    * @return - Avro schema based on the input {@code jsonSchema}.
    */
   public Schema getAvroSchema(final JsonNode jsonSchema,
                               final String name,
                               @Nullable final String namespace,
-                              final boolean appendAirbyteFields) {
+                              final boolean appendAirbyteFields,
+                              final boolean appendExtraProps) {
     final String stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(name);
     RecordBuilder<Schema> builder = SchemaBuilder.record(stdName);
     if (!stdName.equals(name)) {
@@ -154,9 +162,11 @@ public class JsonToAvroSchemaConverter {
           .withDefault(null);
     }
 
-    // support additional properties in one field
-    assembler = assembler.name(AvroConstants.AVRO_EXTRA_PROPS_FIELD)
-        .type(AdditionalPropertyField.FIELD_SCHEMA).withDefault(null);
+    if (appendExtraProps) {
+      // support additional properties in one field
+      assembler = assembler.name(AvroConstants.AVRO_EXTRA_PROPS_FIELD)
+          .type(AdditionalPropertyField.FIELD_SCHEMA).withDefault(null);
+    }
 
     return assembler.endRecord();
   }
@@ -257,11 +267,12 @@ public class JsonToAvroSchemaConverter {
       // Logical types are converted to a union of logical type itself and string. The purpose is to
       // default the logical type field to a string, if the value of the logical type field is invalid and
       // cannot be properly processed.
-      if ((nonNullFieldTypes
-          .stream().anyMatch(schema -> schema.getLogicalType() != null)) &&
-          (!nonNullFieldTypes.contains(STRING_SCHEMA))) {
-        nonNullFieldTypes.add(STRING_SCHEMA);
-      }
+      //@TODO
+//      if ((nonNullFieldTypes
+//          .stream().anyMatch(schema -> schema.getLogicalType() != null)) &&
+//          (!nonNullFieldTypes.contains(STRING_SCHEMA))) {
+//        nonNullFieldTypes.add(STRING_SCHEMA);
+//      }
       return Schema.createUnion(nonNullFieldTypes);
     }
   }

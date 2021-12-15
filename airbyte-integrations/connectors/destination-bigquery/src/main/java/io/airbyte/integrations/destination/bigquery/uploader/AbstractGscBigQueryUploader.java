@@ -33,12 +33,11 @@ public abstract class AbstractGscBigQueryUploader<T extends GscWriter> extends A
                               final TableId tmpTable,
                               final T writer,
                               final WriteDisposition syncMode,
-                              final Schema schema,
                               final GcsDestinationConfig gcsDestinationConfig,
                               final BigQuery bigQuery,
                               final boolean isKeepFilesInGcs,
                               final BigQueryRecordFormatter recordFormatter) {
-    super(table, tmpTable, writer, syncMode, schema, bigQuery, recordFormatter);
+    super(table, tmpTable, writer, syncMode, bigQuery, recordFormatter);
     this.isKeepFilesInGcs = isKeepFilesInGcs;
     this.gcsDestinationConfig = gcsDestinationConfig;
   }
@@ -64,7 +63,7 @@ public abstract class AbstractGscBigQueryUploader<T extends GscWriter> extends A
       // Initialize client that will be used to send requests. This client only needs to be created
       // once, and can be reused for multiple requests.
       LOGGER.info(String.format("Started copying data from %s GCS "+getFileTypeName()+" file to %s tmp BigQuery table with schema: \n %s",
-              fileLocation, tmpTable, schema));
+              fileLocation, tmpTable, recordFormatter.getBigQuerySchema()));
 
       LoadJobConfiguration configuration = getLoadConfiguration();
 

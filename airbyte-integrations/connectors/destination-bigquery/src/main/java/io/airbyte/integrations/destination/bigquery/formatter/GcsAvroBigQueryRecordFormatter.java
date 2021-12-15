@@ -11,10 +11,14 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class GcsAvroBigQueryRecordFormatter implements BigQueryRecordFormatter {
+public class GcsAvroBigQueryRecordFormatter extends DefaultBigQueryRecordFormatter {
+
+    public GcsAvroBigQueryRecordFormatter(JsonNode jsonSchema, StandardNameTransformer namingResolver) {
+        super(jsonSchema, namingResolver);
+    }
 
     @Override
-    public JsonNode formatRecord(final Schema schema, final AirbyteRecordMessage recordMessage) {
+    public JsonNode formatRecord(AirbyteRecordMessage recordMessage) {
         final long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
         final JsonNode formattedData = StandardNameTransformer.formatJsonPath(recordMessage.getData());
         return Jsons.jsonNode(ImmutableMap.of(

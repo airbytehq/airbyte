@@ -12,10 +12,14 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class GcsCsvBigQueryRecordFormatter implements BigQueryRecordFormatter {
+public class GcsCsvBigQueryRecordFormatter extends DefaultBigQueryRecordFormatter {
+
+    public GcsCsvBigQueryRecordFormatter(JsonNode jsonSchema, StandardNameTransformer namingResolver) {
+        super(jsonSchema, namingResolver);
+    }
 
     @Override
-    public JsonNode formatRecord(final Schema schema, final AirbyteRecordMessage recordMessage) {
+    public JsonNode formatRecord(AirbyteRecordMessage recordMessage) {
         final long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
         final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
         final JsonNode formattedData = StandardNameTransformer.formatJsonPath(recordMessage.getData());

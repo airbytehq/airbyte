@@ -14,8 +14,8 @@ public class BigQueryDirectUploader extends AbstractBigQueryUploader<BigQueryTab
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDirectUploader.class);
 
-    public BigQueryDirectUploader(TableId table, TableId tmpTable, BigQueryTableWriter writer, JobInfo.WriteDisposition syncMode, Schema schema, BigQuery bigQuery, BigQueryRecordFormatter recordFormatter) {
-        super(table, tmpTable, writer, syncMode, schema, bigQuery, recordFormatter);
+    public BigQueryDirectUploader(TableId table, TableId tmpTable, BigQueryTableWriter writer, JobInfo.WriteDisposition syncMode, BigQuery bigQuery, BigQueryRecordFormatter recordFormatter) {
+        super(table, tmpTable, writer, syncMode, bigQuery, recordFormatter);
     }
 
     @Override

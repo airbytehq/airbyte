@@ -8,7 +8,6 @@ import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.util.GcsUtils;
 import io.airbyte.integrations.destination.gcs.writer.BaseGcsWriter;
@@ -44,14 +43,13 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer, GscWriter,
   private final MultiPartOutputStream outputStream;
   private final DataFileWriter<GenericData.Record> dataFileWriter;
   private final String gcsFileLocation;
-  private final Schema schema;
 
   public GcsAvroWriter(final GcsDestinationConfig config,
       final AmazonS3 s3Client,
       final ConfiguredAirbyteStream configuredStream,
       final Timestamp uploadTimestamp,
       final JsonAvroConverter converter) throws IOException {
-    this(config, s3Client, configuredStream, uploadTimestamp, converter, null, null);
+    this(config, s3Client, configuredStream, uploadTimestamp, converter, null);
   }
 
   public GcsAvroWriter(final GcsDestinationConfig config,
@@ -59,14 +57,14 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer, GscWriter,
                        final ConfiguredAirbyteStream configuredStream,
                        final Timestamp uploadTimestamp,
                        final JsonAvroConverter converter,
-                       final JsonNode airbyteSchema,
-                       final StandardNameTransformer nameTransformer)
+                       final JsonNode airbyteSchema)
       throws IOException {
     super(config, s3Client, configuredStream);
 
-    this.schema = (airbyteSchema == null ?
+    Schema schema = (airbyteSchema == null ?
         GcsUtils.getDefaultAvroSchema(stream.getName(), stream.getNamespace(), true) :
-        new JsonToAvroSchemaConverter().getAvroSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace(), true)
+        new JsonToAvroSchemaConverter().getAvroSchema(stream.getJsonSchema(), stream.getName(),
+            stream.getNamespace(), true, false)
     );
 
     final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.AVRO);
@@ -76,7 +74,7 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer, GscWriter,
     LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
         objectKey);
 
-    this.avroRecordFactory = new AvroRecordFactory(this.schema, converter);
+    this.avroRecordFactory = new AvroRecordFactory(schema, converter);
     this.uploadManager = S3StreamTransferManagerHelper.getDefault(
         config.getBucketName(), objectKey, s3Client, config.getFormatConfig().getPartSize());
     // We only need one output stream as we only have one input stream. This is reasonably performant.
@@ -87,7 +85,7 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer, GscWriter,
     // If json encoding is needed in the future, use the GenericDatumWriter directly.
     this.dataFileWriter = new DataFileWriter<>(new GenericDatumWriter<Record>())
         .setCodec(formatConfig.getCodecFactory())
-        .create(this.schema, outputStream);
+        .create(schema, outputStream);
   }
 
   @Override

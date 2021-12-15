@@ -18,8 +18,8 @@ import static com.amazonaws.util.StringUtils.UTF8;
 
 public class GcsCsvBigQueryUploader extends AbstractGscBigQueryUploader<GcsCsvWriter> {
 
-    public GcsCsvBigQueryUploader(TableId table, TableId tmpTable, GcsCsvWriter writer, JobInfo.WriteDisposition syncMode, Schema schema, GcsDestinationConfig gcsDestinationConfig, BigQuery bigQuery, boolean isKeepFilesInGcs, BigQueryRecordFormatter recordFormatter) {
-        super(table, tmpTable, writer, syncMode, schema, gcsDestinationConfig, bigQuery, isKeepFilesInGcs, recordFormatter);
+    public GcsCsvBigQueryUploader(TableId table, TableId tmpTable, GcsCsvWriter writer, JobInfo.WriteDisposition syncMode, GcsDestinationConfig gcsDestinationConfig, BigQuery bigQuery, boolean isKeepFilesInGcs, BigQueryRecordFormatter recordFormatter) {
+        super(table, tmpTable, writer, syncMode, gcsDestinationConfig, bigQuery, isKeepFilesInGcs, recordFormatter);
     }
 
     @Override
@@ -28,7 +28,7 @@ public class GcsCsvBigQueryUploader extends AbstractGscBigQueryUploader<GcsCsvWr
 
         return LoadJobConfiguration.builder(tmpTable, writer.getFileLocation())
                 .setFormatOptions(csvOptions)
-                .setSchema(schema)
+                .setSchema(recordFormatter.getBigQuerySchema())
                 .setWriteDisposition(syncMode)
                 .build();
     }

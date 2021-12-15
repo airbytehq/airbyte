@@ -30,7 +30,6 @@ public abstract class AbstractBigQueryUploader<T extends CommonWriter> {
   protected final TableId table;
   protected final TableId tmpTable;
   protected final WriteDisposition syncMode;
-  protected final Schema schema;
   protected final T writer;
   protected final BigQuery bigQuery;
   protected final BigQueryRecordFormatter recordFormatter;
@@ -39,14 +38,12 @@ public abstract class AbstractBigQueryUploader<T extends CommonWriter> {
                            final TableId tmpTable,
                            final T writer,
                            final WriteDisposition syncMode,
-                           final Schema schema,
                            final BigQuery bigQuery,
                            final BigQueryRecordFormatter recordFormatter) {
     this.table = table;
     this.tmpTable = tmpTable;
     this.writer = writer;
     this.syncMode = syncMode;
-    this.schema = schema;
     this.bigQuery = bigQuery;
     this.recordFormatter = recordFormatter;
   }
@@ -57,7 +54,7 @@ public abstract class AbstractBigQueryUploader<T extends CommonWriter> {
 
   public void upload(AirbyteMessage airbyteMessage) {
     try {
-      writer.write((recordFormatter.formatRecord(schema, airbyteMessage.getRecord())));
+      writer.write((recordFormatter.formatRecord(airbyteMessage.getRecord())));
     } catch (final IOException | RuntimeException e) {
       LOGGER.error("Got an error while writing message: {}", e.getMessage(), e);
       LOGGER.error(String.format(
@@ -144,7 +141,7 @@ public abstract class AbstractBigQueryUploader<T extends CommonWriter> {
           // https://cloud.google.com/bigquery/docs/creating-partitioned-tables#create_a_partitioned_table_from_a_query_result
           final QueryJobConfiguration partitionQuery = QueryJobConfiguration
                   .newBuilder(
-                          getCreatePartitionedTableFromSelectQuery(schema, bigQuery.getOptions().getProjectId(), destinationTableId,
+                          getCreatePartitionedTableFromSelectQuery(recordFormatter.getBigQuerySchema(), bigQuery.getOptions().getProjectId(), destinationTableId,
                                   tmpPartitionTable))
                   .setUseLegacySql(false)
                   .build();

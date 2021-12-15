@@ -53,13 +53,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestination.class);
 
-  private static final com.google.cloud.bigquery.Schema SCHEMA = com.google.cloud.bigquery.Schema.of(
-      Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
-      Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP),
-      Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING));
-
-  protected static final ObjectMapper MAPPER = MoreMappers.initMapper();
-
   private final BigQuerySQLNameTransformer namingResolver;
 
   public BigQueryDestination() {
@@ -176,10 +169,9 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .bigQuery(bigquery)
           .configStream(configStream)
           .config(config)
-          .formatterMap(getFormatterMap())
+          .formatterMap(getFormatterMap(stream.getJsonSchema()))
           .tmpTableName(namingResolver.getTmpTableName(streamName))
           .targetTableName(getTargetTableName(streamName))
-          .schema(getBigQuerySchema(stream.getJsonSchema()))
           .isDefaultAirbyteTmpSchema(isDefaultAirbyteTmpTableSchema())
           .build();
 
@@ -194,11 +186,11 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return true;
   }
 
-  protected Map<UploaderType, BigQueryRecordFormatter> getFormatterMap() {
+  protected Map<UploaderType, BigQueryRecordFormatter> getFormatterMap(JsonNode jsonSchema) {
     Map<UploaderType, BigQueryRecordFormatter> formatterMap = new HashMap<>();
-    formatterMap.put(UploaderType.STANDARD, new DefaultBigQueryRecordFormatter());
-    formatterMap.put(UploaderType.CSV, new GcsCsvBigQueryRecordFormatter());
-    formatterMap.put(UploaderType.AVRO, new GcsAvroBigQueryRecordFormatter());
+    formatterMap.put(UploaderType.STANDARD, new DefaultBigQueryRecordFormatter(jsonSchema, getNamingResolver()));
+    formatterMap.put(UploaderType.CSV, new GcsCsvBigQueryRecordFormatter(jsonSchema, getNamingResolver()));
+    formatterMap.put(UploaderType.AVRO, new GcsAvroBigQueryRecordFormatter(jsonSchema, getNamingResolver()));
     return formatterMap;
   }
 
@@ -209,10 +201,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   protected AirbyteMessageConsumer getRecordConsumer(final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs,
                                                      final Consumer<AirbyteMessage> outputRecordCollector) {
     return new BigQueryRecordConsumer(writeConfigs, outputRecordCollector);
-  }
-
-  protected Schema getBigQuerySchema(final JsonNode jsonSchema) {
-    return SCHEMA;
   }
 
   public static void main(final String[] args) throws Exception {

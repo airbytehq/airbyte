@@ -19,7 +19,6 @@ public class UploaderConfig {
   private String targetTableName;
   private String tmpTableName;
   private BigQuery bigQuery;
-  private Schema schema;
   private Map<UploaderType, BigQueryRecordFormatter> formatterMap;
   private boolean isDefaultAirbyteTmpSchema;
 
