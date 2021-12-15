@@ -12,6 +12,12 @@ on:
       comment-id:
         description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
+      cpulimit:
+        description: "Container CPU limit"
+        required: false
+      memorylimit:
+        description: "Memory CPU limit"
+        required: false
 
 jobs:
   start-test-runner:
@@ -70,7 +76,7 @@ jobs:
           GITHUB_PROVIDED_SECRETS_JSON: ${{ toJson(secrets) }}
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       - run: |
-          ./tools/bin/ci_performance_test.sh ${{ github.event.inputs.connector }}
+          ./tools/bin/ci_performance_test.sh ${{ github.event.inputs.connector }} ${{ github.event.inputs.cpulimit }} ${{ github.event.inputs.memorylimit }}
         name: test_performance ${{ github.event.inputs.connector }}
         id: test_performance
         env:

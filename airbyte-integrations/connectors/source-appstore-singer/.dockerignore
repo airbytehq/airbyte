@@ -1,6 +1,6 @@
 *
 !Dockerfile
-!Dockerfile.test
+!main.py
 !source_appstore_singer
 !setup.py
 !secrets
