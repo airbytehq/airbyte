@@ -18,8 +18,8 @@ TEST_REQUIREMENTS = [
 setup(
     name="source_flexport",
     description="Source implementation for Flexport.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
+    author="Labanoras Tech",
+    author_email="jv@labanoras.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
