@@ -210,7 +210,7 @@ class DefaultReplicationWorkerTest {
 
   @SuppressWarnings({"BusyWait"})
   @Test
-  void testCancellation() throws InterruptedException, WorkerException {
+  void testCancellation() throws InterruptedException {
     final AtomicReference<ReplicationOutput> output = new AtomicReference<>();
     when(source.isFinished()).thenReturn(false);
     when(destinationMessageTracker.getOutputState()).thenReturn(Optional.of(new State().withState(STATE_MESSAGE.getState().getData())));
