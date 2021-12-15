@@ -482,7 +482,6 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
         def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
             if original_value and "format" in field_schema and field_schema["format"] == "date":
                 date_format = self.region_date_formats[self.marketplace_ids[0]]
-                print(date_format)
                 transformed_value = pendulum.from_format(original_value, date_format).to_date_string()
                 return transformed_value
 
