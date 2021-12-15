@@ -46,7 +46,13 @@ else
   elif [[ "$connector" == *"connectors"* ]]; then
     connector_name=$(echo $connector | cut -d / -f 2)
     selected_performance_test=$(echo "$all_performance_tests" | grep "^$connector_name$" || echo "")
-    performanceTestCommand="$(_to_gradle_path "airbyte-integrations/$connector" performanceTest) $firstarg $secondargt"
+    if [[ "$2" && "$3" ]]; then
+      performanceTestCommand="$(_to_gradle_path "airbyte-integrations/$connector" performanceTest) $firstarg $secondargt"
+    elif [[ "$2" ]]; then
+      performanceTestCommand="$(_to_gradle_path "airbyte-integrations/$connector" performanceTest) $firstarg"
+    else
+      performanceTestCommand="$(_to_gradle_path "airbyte-integrations/$connector" performanceTest)"
+    fi
   else
     selected_performance_test=$(echo "$all_performance_tests" | grep "^$connector$" || echo "")
     performanceTestCommand=":airbyte-integrations:connectors:$connector:performanceTest $firstarg $secondarg"
