@@ -10,6 +10,10 @@ To build a new connector in Java or Python, we provide templates so you don't ne
 
 You can build a connector very quickly in Python with the [Airbyte CDK](cdk-python/), which generates 75% of the code required for you.
 
+## C#/.NET Connector-Development Kit \(CDK\)
+
+You can build a connector very quickly in C# .NET with the [Airbyte Dotnet CDK](cdk-dotnet/), which generates 75% of the code required for you.
+
 ## TS/JS Connector-Development Kit \(Faros AI Airbyte CDK\)
 
 You can build a connector in TypeScript/JavaScript with the [Faros AI CDK](https://github.com/airbytehq/airbyte/tree/01b905a38385ca514c2d9c07cc44a8f9a48ce762/docs/connector-development/cdk-faros-js/README.md), which generates and boostraps most of the code required for HTTP Airbyte sources.
@@ -134,7 +138,8 @@ In order to run integration tests in CI, you'll often need to inject credentials
 2. **Add the GSM secret's labels**:
     * `connector` (required) -- unique connector's name or set of connectors' names with '_' as delimiter i.e.: `connector=source-s3`, `connector=destination-snowflake`
     * `filename` (optional) -- custom target secret file. Unfortunately Google doesn't use '.' into labels' values and so Airbyte CI scripts will add '.json' to the end automatically. By default secrets will be saved to `./secrets/config.json` i.e: `filename=config_auth` => `secrets/config_auth.json`
-3. That should be it.
+3. **Save a necessary JSON value** [Example](https://user-images.githubusercontent.com/11213273/146040653-4a76c371-a00e-41fe-8300-cbd411f10b2e.png).
+4. That should be it.
 
 #### Access CI secrets on GSM
 Access to GSM storage is limited to Airbyte employees. To give an employee permissions to the project:
@@ -144,9 +149,4 @@ Access to GSM storage is limited to Airbyte employees. To give an employee permi
 - select the role `Development_CI_Secrets`
 3. Save
 
-#### How to migrate to the new secrets' logic:
-1. Create all necessary secrets according to the instructions above
-2. Remove all lines with old connector's Github secrets from this file: tools/bin/ci_credentials.sh
-3. Remove all old secrets from Github repository secrets.
-4. That should be it.
 
