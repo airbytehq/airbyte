@@ -446,6 +446,12 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/lever-onesignal
   icon: onesignal.svg
   sourceType: api
+- name: OpenWeather
+  sourceDefinitionId: d8540a80-6120-485d-b7d6-272bca477d9b
+  dockerRepository: airbyte/source-openweather
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/openweather
+  sourceType: api
 - name: Oracle DB
   sourceDefinitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
   dockerRepository: airbyte/source-oracle
