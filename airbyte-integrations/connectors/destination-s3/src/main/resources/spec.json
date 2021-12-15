@@ -22,13 +22,13 @@
         "title": "Endpoint",
         "type": "string",
         "default": "",
-        "description": "URL to S3, if using AWS S3 just leave blank.",
+        "description": "URL to S3 (if using AWS S3 just leave blank).",
         "examples": ["http://localhost:9000"]
       },
       "s3_bucket_name": {
         "title": "Bucket Name",
         "type": "string",
-        "description": "The name of the S3 bucket o sync data into.",
+        "description": "The name of the S3 bucket to sync data into.",
         "examples": ["airbyte_sync"]
       },
       "s3_bucket_path": {
@@ -135,7 +135,7 @@
                     }
                   },
                   {
-                    "title": "BZIP2",
+                    "title": "bzip2",
                     "required": ["codec"],
                     "properties": {
                       "codec": {
@@ -146,7 +146,7 @@
                     }
                   },
                   {
-                    "title": "XZ",
+                    "title": "xz",
                     "required": ["codec", "compression_level"],
                     "properties": {
                       "codec": {
@@ -165,7 +165,7 @@
                     }
                   },
                   {
-                    "title": "Zstandard",
+                    "title": "zstandard",
                     "required": ["codec", "compression_level"],
                     "properties": {
                       "codec": {
@@ -190,7 +190,7 @@
                     }
                   },
                   {
-                    "title": "Snappy",
+                    "title": "snappy",
                     "required": ["codec"],
                     "properties": {
                       "codec": {
