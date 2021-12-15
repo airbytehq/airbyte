@@ -8,8 +8,9 @@ import { JobsLogItem } from "components/JobItem";
 import DeleteBlock from "components/DeleteBlock";
 
 import ServiceForm from "views/Connector/ServiceForm";
-import DestinationDefinitionSpecificationResource from "core/resources/DestinationDefinitionSpecification";
-import useDestination from "hooks/services/useDestinationHook";
+import useDestination, {
+  useDestinationDefinitionSpecificationLoadAsync,
+} from "hooks/services/useDestinationHook";
 import { Connection } from "core/resources/Connection";
 import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
@@ -39,11 +40,8 @@ const DestinationsSettings: React.FC<IProps> = ({
     response: JobInfo;
   } | null>(null);
 
-  const destinationSpecification = useResource(
-    DestinationDefinitionSpecificationResource.detailShape(),
-    {
-      destinationDefinitionId: currentDestination.destinationDefinitionId,
-    }
+  const destinationSpecification = useDestinationDefinitionSpecificationLoadAsync(
+    currentDestination.destinationDefinitionId
   );
 
   const destinationDefinition = useResource(

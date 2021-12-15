@@ -20,11 +20,11 @@ import {
   useAnalyticsIdentifyUser,
   useAnalyticsRegisterValues,
 } from "hooks/services/Analytics";
-import { Workspace } from "core/resources/Workspace";
 import { useListWorkspaces } from "services/workspaces/WorkspacesService";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useLocation } from "react-use";
+import { Workspace } from "core/domain/workspace/Workspace";
 
 export enum RoutePaths {
   AuthFlow = "/auth_flow",

@@ -37,14 +37,14 @@ type SettingsPageProps = {
   pageConfig?: PageConfig;
 };
 
-export enum SettingsRoute {
-  Destination = "destination",
-  Source = "source",
-  Configuration = "configuration",
-  Notifications = "notifications",
-  Metrics = "metrics",
-  Account = "account",
-}
+export const SettingsRoute = {
+  Account: "account",
+  Destination: "destination",
+  Source: "source",
+  Configuration: "configuration",
+  Notifications: "notifications",
+  Metrics: "metrics",
+} as const;
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   const { push, pathname } = useRouter();
@@ -128,6 +128,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
                         ? `${menuItems?.[0].routes?.[0]?.path}`
                         : RoutePaths.Root
                     }
+                    replace
                   />
                 }
               />

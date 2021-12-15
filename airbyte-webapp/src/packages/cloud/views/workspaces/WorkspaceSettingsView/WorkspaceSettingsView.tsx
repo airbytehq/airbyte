@@ -36,7 +36,7 @@ const Buttons = styled.div`
 export const WorkspaceSettingsView: React.FC = () => {
   const formatMessage = useIntl().formatMessage;
 
-  const { selectWorkspace } = useWorkspaceService();
+  const { exitWorkspace } = useWorkspaceService();
   const workspace = useCurrentWorkspace();
   const removeWorkspace = useRemoveWorkspace();
   const updateWorkspace = useUpdateWorkspace();
@@ -47,7 +47,7 @@ export const WorkspaceSettingsView: React.FC = () => {
         title={
           <Header>
             <FormattedMessage id="settings.generalSettings" />
-            <Button type="button" onClick={() => selectWorkspace()}>
+            <Button type="button" onClick={exitWorkspace}>
               <FormattedMessage id="settings.generalSettings.changeWorkspace" />
             </Button>
           </Header>

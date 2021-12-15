@@ -1,7 +1,13 @@
 import React from "react";
 import styled from "styled-components";
-import SideBar from "packages/cloud/views/layout/SideBar";
+import { Outlet } from "react-router-dom";
+
 import { LoadingPage } from "components";
+
+import SideBar from "packages/cloud/views/layout/SideBar";
+import { ErrorBoundary } from "./ErrorBoundary";
+import { NotFoundView } from "views/common/StartOverErrorView";
+import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 
 const MainContainer = styled.div`
   width: 100%;
@@ -18,12 +24,18 @@ const Content = styled.div`
   height: 100%;
 `;
 
-const MainView: React.FC = (props) => (
+const MainView: React.FC = ({ children }) => (
   <MainContainer>
-    <SideBar />
-    <Content>
-      <React.Suspense fallback={LoadingPage}>{props.children}</React.Suspense>
-    </Content>
+    <ErrorBoundary errorComponent={<NotFoundView />}>
+      <SideBar />
+      <Content>
+        <ResourceNotFoundErrorBoundary errorComponent={<NotFoundView />}>
+          <React.Suspense fallback={LoadingPage}>
+            {children ?? <Outlet />}
+          </React.Suspense>
+        </ResourceNotFoundErrorBoundary>
+      </Content>
+    </ErrorBoundary>
   </MainContainer>
 );
 

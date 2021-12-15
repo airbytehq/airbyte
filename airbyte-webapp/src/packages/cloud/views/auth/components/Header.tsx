@@ -53,22 +53,16 @@ const Header: React.FC<HeaderProps> = ({ toLogin }) => {
       </BackLink>
       <FormLink>
         <TextBlock>
-          {toLogin ? (
-            <FormattedMessage id="login.haveAccount" />
-          ) : (
-            <FormattedMessage id="login.DontHaveAccount" />
-          )}
+          <FormattedMessage
+            id={toLogin ? "login.haveAccount" : "login.DontHaveAccount"}
+          />
         </TextBlock>
         <Button
           secondary
           as={Link}
           to={toLogin ? CloudRoutes.Login : CloudRoutes.Signup}
         >
-          {toLogin ? (
-            <FormattedMessage id="login.login" />
-          ) : (
-            <FormattedMessage id="login.signup" />
-          )}
+          <FormattedMessage id={toLogin ? "login.login" : "login.signup"} />
         </Button>
       </FormLink>
     </Links>

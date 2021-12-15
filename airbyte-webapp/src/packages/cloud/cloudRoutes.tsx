@@ -17,8 +17,6 @@ import { useApiHealthPoll } from "hooks/services/Health";
 import { Auth } from "packages/cloud/views/auth";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom/useIntercom";
-
-import { useGetWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
 import {
   useCurrentWorkspace,
   WorkspaceServiceProvider,
@@ -35,7 +33,7 @@ import {
   useAnalyticsIdentifyUser,
   useAnalyticsRegisterValues,
 } from "hooks/services/Analytics/useAnalyticsService";
-import { CloudSettingsPage } from "./views/CloudSettingsPage";
+import { CloudSettingsPage } from "./views/settings/CloudSettingsPage";
 import { VerifyEmailAction } from "./views/FirebaseActionRoute";
 import { RoutePaths } from "pages/routes";
 import useRouter from "hooks/useRouter";
@@ -63,8 +61,6 @@ export const CloudRoutes = {
 
 const MainRoutes: React.FC = () => {
   const workspace = useCurrentWorkspace();
-
-  useGetWorkspace(workspace.workspaceId);
 
   const analyticsContext = useMemo(
     () => ({
@@ -141,7 +137,10 @@ const MainViewRoutes = () => {
           </MainView>
         }
       />
-      <Route path="*" element={<Navigate to={CloudRoutes.SelectWorkspace} />} />
+      <Route
+        path="*"
+        element={<Navigate to={CloudRoutes.SelectWorkspace} replace />}
+      />
     </Routes>
   );
 };
@@ -163,34 +162,34 @@ export const Routing: React.FC = () => {
   useAnalyticsRegisterValues(analyticsContext);
   useAnalyticsIdentifyUser(user?.userId);
 
+  if (!inited) {
+    return <LoadingPage />;
+  }
+
   return (
     <Router>
       <WorkspaceServiceProvider>
         <TrackPageAnalytics />
         <Suspense fallback={<LoadingPage />}>
-          {inited ? (
-            <>
-              {!user && <Auth />}
-              {user && emailVerified && <MainViewRoutes />}
-              {user && !emailVerified && (
-                <Routes>
-                  <Route
-                    path={CloudRoutes.FirebaseAction}
-                    element={<VerifyEmailAction />}
-                  />
-                  <Route
-                    path={CloudRoutes.ConfirmVerifyEmail}
-                    element={<ConfirmEmailPage />}
-                  />
-                  <Route
-                    path="*"
-                    element={<Navigate to={CloudRoutes.ConfirmVerifyEmail} />}
-                  />
-                </Routes>
-              )}
-            </>
-          ) : (
-            <LoadingPage />
+          {!user && <Auth />}
+          {user && emailVerified && <MainViewRoutes />}
+          {user && !emailVerified && (
+            <Routes>
+              <Route
+                path={CloudRoutes.FirebaseAction}
+                element={<VerifyEmailAction />}
+              />
+              <Route
+                path={CloudRoutes.ConfirmVerifyEmail}
+                element={<ConfirmEmailPage />}
+              />
+              <Route
+                path="*"
+                element={
+                  <Navigate to={CloudRoutes.ConfirmVerifyEmail} replace />
+                }
+              />
+            </Routes>
           )}
         </Suspense>
       </WorkspaceServiceProvider>

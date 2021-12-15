@@ -18,7 +18,7 @@ import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import { IDataItem } from "components/base/DropDown/components/Option";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { Destination, Source } from "../../core/domain/connector";
+import { Destination, Source } from "core/domain/connector";
 
 const SkipButton = styled.div`
   margin-top: 6px;

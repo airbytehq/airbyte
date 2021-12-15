@@ -4,7 +4,7 @@ import CreateConnectionContent from "components/CreateConnectionContent";
 import TitlesBlock from "./TitlesBlock";
 import { FormattedMessage } from "react-intl";
 import HighlightedText from "./HighlightedText";
-import { Destination, Source } from "../../../core/domain/connector";
+import { Destination, Source } from "core/domain/connector";
 
 type IProps = {
   errorStatus?: number;

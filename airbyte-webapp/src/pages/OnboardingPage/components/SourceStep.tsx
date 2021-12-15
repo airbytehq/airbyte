@@ -14,7 +14,7 @@ import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import HighlightedText from "./HighlightedText";
 import TitlesBlock from "./TitlesBlock";
-import { SourceDefinition } from "../../../core/domain/connector";
+import { SourceDefinition } from "core/domain/connector";
 
 type IProps = {
   onSubmit: (values: {

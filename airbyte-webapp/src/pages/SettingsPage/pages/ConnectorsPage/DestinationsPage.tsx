@@ -8,7 +8,7 @@ import { DestinationResource } from "core/resources/Destination";
 import useConnector from "hooks/services/useConnector";
 import ConnectorsView from "./components/ConnectorsView";
 import useWorkspace from "hooks/services/useWorkspace";
-import { DestinationDefinition } from "../../../../core/domain/connector";
+import { DestinationDefinition } from "core/domain/connector";
 
 const DestinationsPage: React.FC = () => {
   const { workspace } = useWorkspace();

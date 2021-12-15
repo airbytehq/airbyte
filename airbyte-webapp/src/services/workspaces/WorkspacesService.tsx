@@ -1,32 +1,50 @@
-import React, { useContext, useMemo } from "react";
+import React, { useCallback, useContext, useMemo } from "react";
 import { useQueryClient } from "react-query";
 import { useResetter, useResource } from "rest-hooks";
 
-import WorkspaceResource, { Workspace } from "core/resources/Workspace";
+import WorkspaceResource from "core/resources/Workspace";
 import useRouter from "hooks/useRouter";
+import { Workspace } from "core/domain/workspace/Workspace";
 
 type Context = {
-  selectWorkspace: (workspaceId?: string | null) => void;
+  selectWorkspace: (workspaceId?: string | null | Workspace) => void;
+  exitWorkspace: () => void;
 };
 
 export const WorkspaceServiceContext = React.createContext<Context | null>(
   null
 );
 
-export const WorkspaceServiceProvider: React.FC = ({ children }) => {
+const useSelectWorkspace = (): ((
+  workspace?: string | null | Workspace
+) => void) => {
   const queryClient = useQueryClient();
   const resetCache = useResetter();
   const { push } = useRouter();
 
+  return useCallback(
+    async (workspace) => {
+      if (typeof workspace === "object") {
+        push(workspace?.workspaceId ?? "/");
+      } else {
+        push(workspace ?? "/");
+      }
+      await queryClient.resetQueries();
+      resetCache();
+    },
+    [push, queryClient, resetCache]
+  );
+};
+
+export const WorkspaceServiceProvider: React.FC = ({ children }) => {
+  const selectWorkspace = useSelectWorkspace();
+
   const ctx = useMemo<Context>(
     () => ({
-      selectWorkspace: async (workspaceId) => {
-        push(workspaceId ?? "/");
-        await queryClient.resetQueries();
-        resetCache();
-      },
+      selectWorkspace,
+      exitWorkspace: () => selectWorkspace(""),
     }),
-    [push]
+    [selectWorkspace]
   );
 
   return (
@@ -51,15 +69,9 @@ export const useCurrentWorkspace = (): Workspace => {
   const { params } = useRouter<unknown, { workspaceId: string }>();
   const { workspaceId } = params;
 
-  // @ts-ignore
-  return useResource(
-    WorkspaceResource.detailShape(),
-    workspaceId
-      ? {
-          workspaceId: workspaceId,
-        }
-      : null
-  );
+  return useResource(WorkspaceResource.detailShape(), {
+    workspaceId: workspaceId,
+  });
 };
 
 export const useListWorkspaces = (): Workspace[] => {

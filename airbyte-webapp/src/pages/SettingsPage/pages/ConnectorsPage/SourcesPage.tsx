@@ -8,7 +8,7 @@ import useConnector from "hooks/services/useConnector";
 import ConnectorsView from "./components/ConnectorsView";
 import { useSourceDefinitionList } from "hooks/services/useSourceDefinition";
 import { useSourceList } from "hooks/services/useSourceHook";
-import { SourceDefinition } from "../../../../core/domain/connector";
+import { SourceDefinition } from "core/domain/connector";
 
 const SourcesPage: React.FC = () => {
   const [isUpdateSuccess, setIsUpdateSucces] = useState(false);

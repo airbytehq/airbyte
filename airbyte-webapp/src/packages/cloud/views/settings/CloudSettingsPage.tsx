@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
-import useConnector from "hooks/services/useConnector";
-import { PageConfig } from "pages/SettingsPage/SettingsPage";
+// import useConnector from "hooks/services/useConnector";
+import { PageConfig, SettingsRoute } from "pages/SettingsPage/SettingsPage";
 import {
   DestinationsPage as SettingsDestinationPage,
   SourcesPage as SettingsSourcesPage,
@@ -10,21 +10,24 @@ import {
 import SettingsPage from "pages/SettingsPage";
 import ConfigurationsPage from "pages/SettingsPage/pages/ConfigurationsPage";
 import NotificationPage from "pages/SettingsPage/pages/NotificationPage";
-import { AccountSettingsView } from "./users/AccountSettingsView";
-import { WorkspaceSettingsView } from "./workspaces/WorkspaceSettingsView";
-import { UsersSettingsView } from "./users/UsersSettingsView";
-import { RoutePaths } from "pages/routes";
+import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView";
+import { WorkspaceSettingsView } from "packages/cloud/views/workspaces/WorkspaceSettingsView";
+import { UsersSettingsView } from "packages/cloud/views/users/UsersSettingsView";
 
 const CloudSettingsRoutes = {
-  Configuration: "configuration",
-  AccessManagement: "access-management",
-  Notifications: "notifications",
+  Configuration: SettingsRoute.Configuration,
+  Notifications: SettingsRoute.Notifications,
+  Account: SettingsRoute.Account,
+  Source: SettingsRoute.Source,
+  Destination: SettingsRoute.Destination,
+
   Workspace: "workspaces",
-  Account: "account",
-};
+  AccessManagement: "access-management",
+} as const;
 
 export const CloudSettingsPage: React.FC = () => {
-  const { countNewSourceVersion, countNewDestinationVersion } = useConnector();
+  // TODO: uncomment when supported in cloud
+  // const { countNewSourceVersion, countNewDestinationVersion } = useConnector();
 
   const pageConfig = useMemo<PageConfig>(
     () => ({
@@ -33,7 +36,7 @@ export const CloudSettingsPage: React.FC = () => {
           category: <FormattedMessage id="settings.userSettings" />,
           routes: [
             {
-              path: `${CloudSettingsRoutes.Account}`,
+              path: CloudSettingsRoutes.Account,
               name: <FormattedMessage id="settings.account" />,
               component: AccountSettingsView,
             },
@@ -43,34 +46,34 @@ export const CloudSettingsPage: React.FC = () => {
           category: <FormattedMessage id="settings.workspaceSettings" />,
           routes: [
             {
-              path: `${CloudSettingsRoutes.Workspace}`,
+              path: CloudSettingsRoutes.Workspace,
               name: <FormattedMessage id="settings.generalSettings" />,
               component: WorkspaceSettingsView,
             },
             {
-              path: `${RoutePaths.Source}`,
+              path: CloudSettingsRoutes.Source,
               name: <FormattedMessage id="tables.sources" />,
-              indicatorCount: countNewSourceVersion,
+              // indicatorCount: countNewSourceVersion,
               component: SettingsSourcesPage,
             },
             {
-              path: `${RoutePaths.Destination}`,
+              path: CloudSettingsRoutes.Destination,
               name: <FormattedMessage id="tables.destinations" />,
-              indicatorCount: countNewDestinationVersion,
+              // indicatorCount: countNewDestinationVersion,
               component: SettingsDestinationPage,
             },
             {
-              path: `${CloudSettingsRoutes.Configuration}`,
+              path: CloudSettingsRoutes.Configuration,
               name: <FormattedMessage id="admin.configuration" />,
               component: ConfigurationsPage,
             },
             {
-              path: `${CloudSettingsRoutes.AccessManagement}`,
+              path: CloudSettingsRoutes.AccessManagement,
               name: <FormattedMessage id="settings.accessManagementSettings" />,
               component: UsersSettingsView,
             },
             {
-              path: `${CloudSettingsRoutes.Notifications}`,
+              path: CloudSettingsRoutes.Notifications,
               name: <FormattedMessage id="settings.notifications" />,
               component: NotificationPage,
             },
@@ -78,7 +81,7 @@ export const CloudSettingsPage: React.FC = () => {
         },
       ],
     }),
-    [countNewSourceVersion, countNewDestinationVersion]
+    []
   );
 
   return <SettingsPage pageConfig={pageConfig} />;

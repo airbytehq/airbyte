@@ -8,7 +8,7 @@ import { useIntercom } from "react-use-intercom";
 
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { Link } from "components";
 import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";
 
@@ -19,13 +19,17 @@ import OnboardingIcon from "views/layout/SideBar/components/OnboardingIcon";
 import ChatIcon from "views/layout/SideBar/components/ChatIcon";
 import SettingsIcon from "views/layout/SideBar/components/SettingsIcon";
 import SourceIcon from "views/layout/SideBar/components/SourceIcon";
-import { useGetWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
+import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
 import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
 import ResourcesPopup, {
-  Item,
   Icon,
+  Item,
 } from "views/layout/SideBar/components/ResourcesPopup";
 import { RoutePaths } from "pages/routes";
+import {
+  FeatureItem,
+  WithFeature,
+} from "../../../../../hooks/services/Feature";
 
 const CreditsIcon = styled(FontAwesomeIcon)`
   font-size: 21px;
@@ -98,8 +102,8 @@ const WorkspaceButton = styled.div`
 `;
 
 const SideBar: React.FC = () => {
-  const { workspace } = useWorkspace();
-  const { data: cloudWorkspace } = useGetWorkspace(workspace.workspaceId);
+  const workspace = useCurrentWorkspace();
+  const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
   const { show } = useIntercom();
   const handleChatUs = () => show();
 
@@ -197,15 +201,12 @@ const SideBar: React.FC = () => {
           </ResourcesPopup>
         </li>
         <li>
-          <MenuItem
-            to={RoutePaths.Settings}
-            // isActive={(_, location) =>
-            //   location.pathname.startsWith(CloudRoutes.Settings)
-            // }
-          >
-            <React.Suspense fallback={null}>
-              <NotificationIndicator />
-            </React.Suspense>
+          <MenuItem to={RoutePaths.Settings}>
+            <WithFeature featureId={FeatureItem.AllowUpdateConnectors}>
+              <React.Suspense fallback={null}>
+                <NotificationIndicator />
+              </React.Suspense>
+            </WithFeature>
             <SettingsIcon />
             <Text>
               <FormattedMessage id="sidebar.settings" />

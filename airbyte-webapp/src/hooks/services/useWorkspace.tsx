@@ -1,6 +1,6 @@
 import { useFetcher } from "rest-hooks";
 
-import WorkspaceResource, { Workspace } from "core/resources/Workspace";
+import WorkspaceResource from "core/resources/Workspace";
 import NotificationsResource, {
   Notifications,
 } from "core/resources/Notifications";
@@ -8,6 +8,7 @@ import NotificationsResource, {
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { Destination, Source } from "core/domain/connector";
+import { Workspace } from "core/domain/workspace/Workspace";
 
 export type WebhookPayload = {
   webhook: string;

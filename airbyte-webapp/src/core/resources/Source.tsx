@@ -1,7 +1,7 @@
 import { MutateShape, ReadShape, Resource, SchemaDetail } from "rest-hooks";
 import BaseResource from "./BaseResource";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { Source } from "../domain/connector";
+import { Source } from "core/domain/connector";
 
 export class SourceResource extends BaseResource implements Source {
   readonly sourceId: string = "";

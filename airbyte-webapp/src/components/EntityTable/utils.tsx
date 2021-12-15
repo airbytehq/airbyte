@@ -10,7 +10,7 @@ import {
   DestinationDefinition,
   Source,
   SourceDefinition,
-} from "../../core/domain/connector";
+} from "core/domain/connector";
 
 // TODO: types in next methods look a bit ugly
 export function getEntityTableData<
