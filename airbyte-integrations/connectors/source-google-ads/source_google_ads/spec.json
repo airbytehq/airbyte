@@ -20,18 +20,18 @@
           "developer_token": {
             "type": "string",
             "title": "Developer Token",
-            "description": "Developer token granted by Google to use their APIs. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\">docs</a>",
+            "description": "Developer token granted by Google to use their APIs. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-ads#setup-guide\">docs</a>",
             "airbyte_secret": true
           },
           "client_id": {
             "type": "string",
             "title": "Client Id",
-            "description": "Google client id. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\">docs</a>"
+            "description": "Google client id. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-ads#setup-guide\">docs</a>"
           },
           "client_secret": {
             "type": "string",
             "title": "Client Secret",
-            "description": "Google client secret. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\">docs</a>",
+            "description": "Google client secret. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-ads#setup-guide\">docs</a>",
             "airbyte_secret": true
           },
           "access_token": {
@@ -43,7 +43,7 @@
           "refresh_token": {
             "type": "string",
             "title": "Refresh Token",
-            "description": "Refresh token generated using developer_token, oauth_client_id, and oauth_client_secret. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\">docs</a>",
+            "description": "Refresh token generated using developer_token, oauth_client_id, and oauth_client_secret. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-ads#setup-guide\">docs</a>",
             "airbyte_secret": true
           }
         }
@@ -51,7 +51,7 @@
       "customer_id": {
         "title": "Customer Id",
         "type": "string",
-        "description": "Customer id must be specified  as a 10-digit number without dashes. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\">docs</a>"
+        "description": "Customer id must be specified  as a 10-digit number without dashes. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-ads#setup-guide\">docs</a>"
       },
       "login_customer_id": {
         "type": "string",
