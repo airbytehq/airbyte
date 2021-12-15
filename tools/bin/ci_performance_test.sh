@@ -7,8 +7,6 @@ set -e
 # runs performance tests for an performance name
 
 connector="$1"
-firstarg=""
-secondarg=""
 if [[ "$2" ]]; then
   if [[ "$2" == *"cpulimit"* ]]; then
     firstarg="-DcpuLimit=$(echo $2 | cut -d / -f 2)"
@@ -54,8 +52,8 @@ else
     performanceTestCommand=":airbyte-integrations:connectors:$connector:performanceTest"
   fi
   if [ -n "$selected_performance_test" ] ; then
-    if [[ "$2" ]]; then
-      if [[ "$3" ]]; then
+    if [[ "$firstarg" ]]; then
+      if [[ "$secondarg" ]]; then
         echo "2 ========= cpu -> $firstarg"
         echo "2========= memory -> $secondarg"
         echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand $firstarg $secondargt"
