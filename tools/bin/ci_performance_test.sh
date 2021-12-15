@@ -25,6 +25,8 @@ if [[ "$3" ]]; then
     secondarg="-DmemoryLimit=$(echo $3 | cut -d / -f 2)"
   fi
 fi
+echo "========= cpu -> $firstarg"
+echo "========= memory -> $secondarg"
 all_performance_tests=$(./gradlew performanceTest --dry-run | grep 'performanceTest SKIPPED' | cut -d: -f 4)
 run() {
 if [[ "$connector" == "all" ]] ; then
@@ -46,26 +48,22 @@ else
   elif [[ "$connector" == *"connectors"* ]]; then
     connector_name=$(echo $connector | cut -d / -f 2)
     selected_performance_test=$(echo "$all_performance_tests" | grep "^$connector_name$" || echo "")
-    if [[ "$2" && "$3" ]]; then
-      performanceTestCommand="$(_to_gradle_path "airbyte-integrations/$connector" performanceTest) $firstarg $secondargt"
-    elif [[ "$2" ]]; then
-      performanceTestCommand="$(_to_gradle_path "airbyte-integrations/$connector" performanceTest) $firstarg"
-    else
-      performanceTestCommand="$(_to_gradle_path "airbyte-integrations/$connector" performanceTest)"
-    fi
+    performanceTestCommand="$(_to_gradle_path "airbyte-integrations/$connector" performanceTest)"
   else
     selected_performance_test=$(echo "$all_performance_tests" | grep "^$connector$" || echo "")
-    if [[ "$2" && "$3" ]]; then
-      performanceTestCommand=":airbyte-integrations:connectors:$connector:performanceTest $firstarg $secondarg"
-    elif [[ "$2" ]]; then
-      performanceTestCommand=":airbyte-integrations:connectors:$connector:performanceTest $firstarg"
-    else
-      performanceTestCommand=":airbyte-integrations:connectors:$connector:performanceTest"
-    fi
+    performanceTestCommand=":airbyte-integrations:connectors:$connector:performanceTest"
   fi
   if [ -n "$selected_performance_test" ] ; then
-    echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand"
-    ./gradlew --no-daemon --scan "$performanceTestCommand"
+    if [[ "$2" && "$3" ]]; then
+      echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand $firstarg $secondargt"
+      ./gradlew --no-daemon --scan "$performanceTestCommand" "$firstarg" "$secondargt"
+    elif [[ "$2" ]]; then
+      echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand $firstarg"
+      ./gradlew --no-daemon --scan "$performanceTestCommand" "$firstarg"
+    else
+      echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand"
+      ./gradlew --no-daemon --scan "$performanceTestCommand"
+    fi
   else
     echo "Connector '$connector' not found..."
     return 1
