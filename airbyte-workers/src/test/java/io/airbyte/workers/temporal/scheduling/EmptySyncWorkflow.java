@@ -1,17 +1,14 @@
-/*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
- */
-
-package io.airbyte.workers.temporal.sync;
+package io.airbyte.workers.temporal.scheduling;
 
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import java.util.UUID;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+
+
 public class EmptySyncWorkflow implements SyncWorkflow {
 
   @Override
@@ -20,9 +17,7 @@ public class EmptySyncWorkflow implements SyncWorkflow {
                                 final IntegrationLauncherConfig destinationLauncherConfig,
                                 final StandardSyncInput syncInput,
                                 final UUID connectionId) {
-    log.error("running sync");
 
     return new StandardSyncOutput();
   }
-
 }

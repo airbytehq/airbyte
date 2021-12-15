@@ -55,7 +55,7 @@ public class WorkflowState {
   public void setUpdated(final boolean updated) {
     final ChangedStateEvent event = new ChangedStateEvent(
         StateField.UPDATED,
-        skipScheduling);
+        updated);
     stateChangedListener.addEvent(id, event);
     this.updated = updated;
   }
@@ -63,7 +63,7 @@ public class WorkflowState {
   public void setCancelled(final boolean cancelled) {
     final ChangedStateEvent event = new ChangedStateEvent(
         StateField.CANCELLED,
-        skipScheduling);
+        cancelled);
     stateChangedListener.addEvent(id, event);
     this.cancelled = cancelled;
   }

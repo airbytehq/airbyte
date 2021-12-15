@@ -69,7 +69,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
         workflowState = connectionUpdaterInput.getWorkflowState();
       }
       try {
-        Workflow.newCancellationScope(() -> {
+        syncWorkflowCancellationScope = Workflow.newCancellationScope(() -> {
           // Scheduling
           final ScheduleRetrieverInput scheduleRetrieverInput = new ScheduleRetrieverInput(
               connectionUpdaterInput.getConnectionId());
@@ -77,9 +77,8 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
           log.error("Await for: " + scheduleRetrieverOutput.getPeriodicity().toString());
           Workflow.await(scheduleRetrieverOutput.getPeriodicity(), () -> skipScheduling() || connectionUpdaterInput.isFromFailure());
 
-          if (!workflowState.isUpdated()) {
+          if (!workflowState.isUpdated() && !workflowState.isDeleted()) {
             // Job and attempt creation
-            log.error("running ________");
             maybeJobId = Optional.ofNullable(connectionUpdaterInput.getJobId()).or(() -> {
               final JobCreationOutput jobCreationOutput = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(
                   connectionUpdaterInput.getConnectionId()));
@@ -104,14 +103,13 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
             final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
                 ChildWorkflowOptions.newBuilder()
                     .setWorkflowId("sync_" + maybeJobId.get())
-                    .setTaskQueue(TemporalJobType.SYNC.name())
+                    .setTaskQueue(TemporalJobType.CONNECTION_UPDATER.name())
                     // This will cancel the child workflow when the parent is terminated
                     .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_TERMINATE)
                     .build());
 
             final UUID connectionId = connectionUpdaterInput.getConnectionId();
 
-            log.error("Running for: " + connectionId);
             try {
               childSync.run(
                   syncWorkflowInputs.getJobRunConfig(),
@@ -119,23 +117,20 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
                   syncWorkflowInputs.getDestinationLauncherConfig(),
                   syncWorkflowInputs.getSyncInput(),
                   connectionId);
-              log.error("finished " + connectionId);
             } catch (final ChildWorkflowFailure childWorkflowFailure) {
               if (!(childWorkflowFailure.getCause() instanceof CanceledFailure)) {
                 throw childWorkflowFailure;
               }
             }
           }
-        }).run();
-        log.error("Runs");
+        });
+        syncWorkflowCancellationScope.run();
       } catch (final CanceledFailure cf) {
-        log.error("echo", cf);
         // When a scope is cancelled temporal will thow a CanceledFailure as you can see here:
         // https://github.com/temporalio/sdk-java/blob/master/temporal-sdk/src/main/java/io/temporal/workflow/CancellationScope.java#L72
         // The naming is very misleading, it is not a failure but the expected behavior...
       }
 
-      log.error("Done");
       if (workflowState.isUpdated()) {
         log.error("A connection configuration has changed for the connection {}. The job will be restarted",
             connectionUpdaterInput.getConnectionId());
@@ -145,11 +140,9 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
         connectionDeletionActivity.deleteConnection(connectionDeletionInput);
         return;
       } else if (workflowState.isCancelled()) {
-        log.error("entering IsCancel");
         jobCreationAndStatusUpdateActivity.jobCancelled(new JobCancelledInput(
             maybeJobId.get()));
       } else {
-        log.error("Job Success");
         // report success
         jobCreationAndStatusUpdateActivity.jobSuccess(new JobSuccessInput(
             maybeJobId.get(),
@@ -161,7 +154,6 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
       }
       continueAsNew(connectionUpdaterInput);
     } catch (final Exception e) {
-      // TODO: Do we need to stop retrying at some points
       log.error("The connection update workflow has failed, will create a new attempt.", e);
 
       jobCreationAndStatusUpdateActivity.attemptFailure(new AttemptFailureInput(
@@ -186,10 +178,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
         connectionUpdaterInput.setFromFailure(false);
       }
       continueAsNew(connectionUpdaterInput);
-    }/* catch (final Throwable e) {
-      log.info("internal temporal error", e);
-      throw e;
-    }*/
+    }
   }
 
   @Override
@@ -204,6 +193,10 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
 
   @Override
   public void cancelJob() {
+    if (!workflowState.isRunning()) {
+      log.info("Can't cancel a non-running sync");
+      return;
+    }
     workflowState.setCancelled(true);
     syncWorkflowCancellationScope.cancel();
   }
