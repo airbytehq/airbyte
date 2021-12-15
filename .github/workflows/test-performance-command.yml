@@ -83,7 +83,7 @@ jobs:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       - run: |
           ./tools/bin/ci_performance_test.sh ${{ github.event.inputs.connector }} ${{ github.event.inputs.cpulimit }} ${{ github.event.inputs.memorylimit }}
-        name: test_performance ${{ github.event.inputs.connector }}
+        name: test_performance ${{ github.event.inputs.connector }} ${{ github.event.inputs.cpulimit }} ${{ github.event.inputs.memorylimit }}
         id: test_performance
         env:
           ACTION_RUN_ID: ${{github.run_id}}
