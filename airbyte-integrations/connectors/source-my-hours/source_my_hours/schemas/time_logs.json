@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "logId": {
-      "type": ["null", "number"]
+      "type": ["number"]
     },
     "userId": {
       "type": ["null", "number"]

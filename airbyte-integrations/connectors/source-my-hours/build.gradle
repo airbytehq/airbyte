@@ -5,5 +5,5 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_myhours'
+    moduleDirectory 'source_my_hours'
 }

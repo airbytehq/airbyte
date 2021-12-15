@@ -3,6 +3,6 @@
 #
 
 
-from .source import SourceMyhours
+from .source import SourceMyHours
 
-__all__ = ["SourceMyhours"]
+__all__ = ["SourceMyHours"]

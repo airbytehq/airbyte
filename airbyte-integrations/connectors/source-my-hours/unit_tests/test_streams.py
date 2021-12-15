@@ -7,26 +7,27 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-from source_myhours.source import MyhoursStream, TimeLogs
+from source_my_hours.constants import REQUEST_HEADERS
+from source_my_hours.source import MyHoursStream, TimeLogs
 
 
 @pytest.fixture
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
-    mocker.patch.object(MyhoursStream, "path", "v0/example_endpoint")
-    mocker.patch.object(MyhoursStream, "primary_key", "test_primary_key")
-    mocker.patch.object(MyhoursStream, "__abstractmethods__", set())
+    mocker.patch.object(MyHoursStream, "path", "v0/example_endpoint")
+    mocker.patch.object(MyHoursStream, "primary_key", "test_primary_key")
+    mocker.patch.object(MyHoursStream, "__abstractmethods__", set())
 
 
 def test_request_params(patch_base_class):
-    stream = MyhoursStream()
+    stream = MyHoursStream()
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
     expected_params = {}
     assert stream.request_params(**inputs) == expected_params
 
 
 def test_next_page_token(patch_base_class):
-    stream = MyhoursStream()
+    stream = MyHoursStream()
     inputs = {"response": MagicMock()}
     expected_token = None
     assert stream.next_page_token(**inputs) == expected_token
@@ -42,7 +43,7 @@ def test_time_logs_next_page_token(patch_base_class):
 
 
 def test_parse_response(patch_base_class, requests_mock):
-    stream = MyhoursStream()
+    stream = MyHoursStream()
     requests_mock.get("https://dummy", json=[{"name": "test"}])
     resp = requests.get("https://dummy")
     inputs = {"response": resp}
@@ -51,14 +52,14 @@ def test_parse_response(patch_base_class, requests_mock):
 
 
 def test_request_headers(patch_base_class):
-    stream = MyhoursStream()
+    stream = MyHoursStream()
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_headers = {"accept": "application/json", "api-version": "1.0", "Content-Type": "application/json"}
+    expected_headers = REQUEST_HEADERS
     assert stream.request_headers(**inputs) == expected_headers
 
 
 def test_http_method(patch_base_class):
-    stream = MyhoursStream()
+    stream = MyHoursStream()
     expected_method = "GET"
     assert stream.http_method == expected_method
 
@@ -75,12 +76,12 @@ def test_http_method(patch_base_class):
 def test_should_retry(patch_base_class, http_status, should_retry):
     response_mock = MagicMock()
     response_mock.status_code = http_status
-    stream = MyhoursStream()
+    stream = MyHoursStream()
     assert stream.should_retry(response_mock) == should_retry
 
 
 def test_backoff_time(patch_base_class):
     response_mock = MagicMock()
-    stream = MyhoursStream()
+    stream = MyHoursStream()
     expected_backoff_time = None
     assert stream.backoff_time(response_mock) == expected_backoff_time

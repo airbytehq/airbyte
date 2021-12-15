@@ -2,8 +2,6 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-
-import json
 import logging
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
@@ -16,12 +14,13 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from source_my_hours.auth import MyHoursAuthenticator
 
-from .constants import request_headers, url_base
+from .constants import REQUEST_HEADERS, URL_BASE
 
 
-class MyhoursStream(HttpStream, ABC):
-    url_base = url_base + "/"
+class MyHoursStream(HttpStream, ABC):
+    url_base = URL_BASE + "/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -33,10 +32,10 @@ class MyhoursStream(HttpStream, ABC):
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
-        return request_headers
+        return REQUEST_HEADERS
 
 
-class Clients(MyhoursStream):
+class Clients(MyHoursStream):
     primary_key = "id"
 
     def path(
@@ -45,7 +44,7 @@ class Clients(MyhoursStream):
         return "Clients"
 
 
-class Projects(MyhoursStream):
+class Projects(MyHoursStream):
     primary_key = "id"
 
     def path(
@@ -54,7 +53,7 @@ class Projects(MyhoursStream):
         return "Projects/getAll"
 
 
-class Tags(MyhoursStream):
+class Tags(MyHoursStream):
     primary_key = "id"
 
     def path(
@@ -63,7 +62,7 @@ class Tags(MyhoursStream):
         return "Tags"
 
 
-class TimeLogs(MyhoursStream):
+class TimeLogs(MyHoursStream):
     primary_key = "logId"
 
     def __init__(
@@ -73,13 +72,13 @@ class TimeLogs(MyhoursStream):
         batch_size: int,
         **kwargs,
     ):
+        super().__init__(authenticator=authenticator)
+
         self.start_date = pendulum.parse(start_date)
         self.batch_size = batch_size
 
         if self.start_date > pendulum.now():
             self.logger.log(logging.WARN, f'Stream {self.name}: start_date "{start_date.isoformat()}" should be before today.')
-
-        super().__init__(authenticator=authenticator)
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -113,7 +112,7 @@ class TimeLogs(MyhoursStream):
         return next_page_token
 
 
-class Users(MyhoursStream):
+class Users(MyHoursStream):
     primary_key = "id"
 
     def path(
@@ -123,45 +122,23 @@ class Users(MyhoursStream):
 
 
 # Source
-class SourceMyhours(AbstractSource):
-    def get_access_token(self, config) -> Tuple[str, any]:
-        email = config["email"]
-        password = config["password"]
-        url = f"{url_base}/tokens/login"
+class SourceMyHours(AbstractSource):
+    def check_connection(self, logger: AirbyteLogger, config) -> Tuple[bool, any]:
+        url = f"{URL_BASE}/Clients"
 
         try:
-            payload = json.dumps({"grantType": "password", "email": email, "password": password, "clientId": "api"})
-            response = requests.post(url, headers=request_headers, data=payload)
+            authenticator = self._make_authenticator(config)
+            headers = authenticator.get_auth_header()
+            headers.update(REQUEST_HEADERS)
+
+            response = requests.get(url, headers=headers)
             response.raise_for_status()
-            json_response = response.json()
-            return json_response["accessToken"], None
-        except requests.exceptions.RequestException as e:
-            return None, e
-
-    def check_connection(self, logger: AirbyteLogger, config) -> Tuple[bool, any]:
-        token_value, token_exception = self.get_access_token(config)
-        url = f"{url_base}/Clients"
-        token_value = access_token[0]
-        token_exception = access_token[1]
-
-        if token_exception:
-            return False, token_exception
-
-        if token_value:
-            headers = TokenAuthenticator(token=token_value).get_auth_header()
-            headers.update(request_headers)
-            try:
-                response = requests.get(url, headers=headers)
-                response.raise_for_status()
-                return True, None
-            except requests.exceptions.RequestException as e:
-                return False, e
-        return False, "Token not found"
+            return True, None
+        except Exception as e:
+            return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        token_value, token_exception = self.get_access_token(config)
-
-        auth = TokenAuthenticator(token=access_token[0])
+        auth = self._make_authenticator(config)
         return [
             Clients(authenticator=auth),
             Projects(authenticator=auth),
@@ -169,3 +146,7 @@ class SourceMyhours(AbstractSource):
             TimeLogs(authenticator=auth, start_date=config["start_date"], batch_size=config["logs_batch_size"]),
             Users(authenticator=auth),
         ]
+
+    @staticmethod
+    def _make_authenticator(config) -> MyHoursAuthenticator:
+        return MyHoursAuthenticator(config["email"], config["password"])

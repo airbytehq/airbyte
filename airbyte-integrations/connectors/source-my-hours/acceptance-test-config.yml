@@ -1,9 +1,9 @@
 # See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
-connector_image: airbyte/source-myhours:dev
+connector_image: airbyte/source-my-hours:dev
 tests:
   spec:
-    - spec_path: "source_myhours/spec.json"
+    - spec_path: "source_my_hours/spec.json"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"

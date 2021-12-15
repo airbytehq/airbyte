@@ -14,11 +14,12 @@ TEST_REQUIREMENTS = [
     "pytest-mock~=3.6.1",
     "source-acceptance-test",
     "requests_mock==1.8.0",
+    "responses~=0.16.0",
 ]
 
 setup(
-    name="source_myhours",
-    description="Source implementation for Myhours.",
+    name="source_my_hours",
+    description="Source implementation for My Hours.",
     author="Wisse Jelgersma",
     author_email="wisse@vrowl.nl",
     packages=find_packages(),

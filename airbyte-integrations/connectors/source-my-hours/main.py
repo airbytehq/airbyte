@@ -6,8 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_myhours import SourceMyhours
+from source_my_hours import SourceMyHours
 
 if __name__ == "__main__":
-    source = SourceMyhours()
+    source = SourceMyHours()
     launch(source, sys.argv[1:])
