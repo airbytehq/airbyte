@@ -25,8 +25,6 @@ if [[ "$3" ]]; then
     secondarg="-DmemoryLimit=$(echo $3 | cut -d / -f 2)"
   fi
 fi
-echo "3 ----------  $firstarg--"
-echo "3 ----------  $secondarg--"
 all_performance_tests=$(./gradlew performanceTest --dry-run | grep 'performanceTest SKIPPED' | cut -d: -f 4)
 run() {
 if [[ "$connector" == "all" ]] ; then
