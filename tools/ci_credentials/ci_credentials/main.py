@@ -8,7 +8,6 @@ from . import SecretsLoader
 
 logger = Logger()
 
-ENV_GITHUB_PROVIDED_SECRETS_JSON = "GITHUB_PROVIDED_SECRETS_JSON"
 ENV_GCP_GSM_CREDENTIALS = "GCP_GSM_CREDENTIALS"
 
 
@@ -23,11 +22,7 @@ def main() -> int:
     if connector_name == "all":
         # if needed to load all secrets
         connector_name = None
-    # parse GITHUB_PROVIDED_SECRETS_JSON
-    try:
-        github_secrets = json.loads(os.getenv(ENV_GITHUB_PROVIDED_SECRETS_JSON) or "{}")
-    except JSONDecodeError as e:
-        return logger.error(f"incorrect GITHUB_PROVIDED_SECRETS_JSON value, error: {e}")
+
     # parse GCP_GSM_CREDENTIALS
     try:
         gsm_credentials = json.loads(os.getenv(ENV_GCP_GSM_CREDENTIALS) or "{}")
@@ -40,9 +35,8 @@ def main() -> int:
     loader = SecretsLoader(
         connector_name=connector_name,
         gsm_credentials=gsm_credentials,
-        github_secrets=github_secrets
     )
-    return loader.write(loader.read())
+    return loader.write_to_storage(loader.read_from_gsm())
 
 
 if __name__ == '__main__':

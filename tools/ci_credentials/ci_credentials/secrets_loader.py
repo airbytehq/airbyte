@@ -1,9 +1,6 @@
 import base64
 import json
-import re
-from dataclasses import dataclass
 from json.decoder import JSONDecodeError
-from pathlib import Path
 from typing import Mapping, Any, Tuple, ClassVar
 
 from ci_common_utils import GoogleApi
@@ -15,64 +12,15 @@ DEFAULT_SECRET_FILE_WITH_EXT = DEFAULT_SECRET_FILE + ".json"
 GSM_SCOPES = ("https://www.googleapis.com/auth/cloud-platform",)
 
 
-@dataclass
 class SecretsLoader:
     """
     """
     logger: ClassVar[Logger] = Logger()
-    # base_folder: ClassVar[Path] = Path("/Users/pixel/Projects/Airbyte/repo/")
-    base_folder: ClassVar[Path] = Path("/actions-runner/_work/airbyte/airbyte/")
 
-    gsm_credentials: Mapping[str, Any]
-    github_secrets: Mapping[str, str]
-
-    connector_name: str = None
-    _api: GoogleApi = None
-
-    @classmethod
-    def get_github_registers_filepath(cls) -> Path:
-
-        return cls.base_folder / "tools/bin/ci_credentials.sh"
-
-    def __read_github_registers_file(self) -> Mapping[Tuple[str, str], str]:
-        """
-            This function is used as workaround  for migration script.
-            And it should be remove after final migration
-        """
-        registers_filepath = self.get_github_registers_filepath()
-        if not registers_filepath.exists():
-            # it is optional logic and we can skip sync if a GitHub secrets' register is not exist
-            return {}
-
-        result = {}
-        with open(registers_filepath, "r") as file:
-            for line in file:
-                line = re.sub(r"\s+", " ", line).strip()
-                if not line.startswith("read_secrets"):
-                    continue
-                parts = line.split(" ")
-                if len(parts) not in [3, 4]:
-                    self.logger.warning(f"incorrect register line: {line}")
-                    continue
-                elif len(parts) == 3:
-                    parts.append(DEFAULT_SECRET_FILE_WITH_EXT)
-                _, connector_name, env_name, config_file = parts
-                if self.connector_name and self.connector_name != connector_name:
-                    continue
-                env_name = env_name.strip("\"")[1:]
-                config_file = config_file.strip("\"")
-
-                self.logger.info(f"found register GitHub value: {connector_name}({env_name}) => {config_file}")
-
-                secret = self.github_secrets.get(env_name)
-                if not secret:
-                    self.logger.warning(
-                        f"secret key {env_name} of the connector {connector_name} was registered "
-                        f"but it is not present into GitHub")
-                    continue
-
-                result[(connector_name, config_file)] = secret
-        return result
+    def __init__(self, connector_name: str, gsm_credentials: Mapping[str, Any]):
+        self.gsm_credentials = gsm_credentials
+        self.connector_name = connector_name
+        self._api = None
 
     @property
     def api(self) -> GoogleApi:
@@ -95,10 +43,8 @@ class SecretsLoader:
             }
             if next_token:
                 params["pageToken"] = next_token
-            data, err = self.api.get(url, params=params)
-            if err:
-                return self.logger.critical(f"Google list error: {err}")
 
+            data = self.api.get(url, params=params)
             for secret_info in data.get("secrets") or []:
                 secret_name = secret_info["name"]
                 connector_name = secret_info.get("labels", {}).get("connector")
@@ -120,9 +66,7 @@ class SecretsLoader:
                 self.logger.info(f"found GSM secret: {log_name} = > {filename}")
                 secret_url = f"https://secretmanager.googleapis.com/v1/{secret_name}/versions/latest:access"
 
-                data, err = self.api.get(secret_url)
-                if err:
-                    return self.logger.critical(f"Google secret's error {secret_url} => {err}")
+                data = self.api.get(secret_url)
                 secret_value = data.get("payload", {}).get("data")
                 if not secret_value:
                     self.logger.warning(f"{log_name} has empty value")
@@ -140,8 +84,8 @@ class SecretsLoader:
                 break
         return secrets
 
-    @classmethod
-    def generate_secret_name(cls, connector_name: str, filename: str) -> str:
+    @staticmethod
+    def generate_secret_name(connector_name: str, filename: str) -> str:
         """
            Generates an unique GSM secret name.
            Format of secret name: SECRET_<CAPITAL_CONNECTOR_NAME>_<OPTIONAL_UNIQUE_FILENAME_PART>__CREDS
@@ -177,10 +121,7 @@ class SecretsLoader:
             "replication": {"automatic": {}},
         }
         url = f"https://secretmanager.googleapis.com/v1/projects/{self.api.project_id}/secrets"
-        data, err = self.api.post(url, json=body, params=params)
-        if err:
-            self.logger.error(f"Can't create the new secret: {secret_name}, error: {err}")
-            return False
+        data = self.api.post(url, json=body, params=params)
 
         # try to create a new version
         secret_name = data["name"]
@@ -189,29 +130,13 @@ class SecretsLoader:
         body = {
             "payload": {"data": base64.b64encode(secret_value.encode()).decode("utf-8")}
         }
-        _, err = self.api.post(secret_url, json=body)
-        if err:
-            self.logger.error(f"Can't add the new version: {secret_name}, error: {err}")
-        return err is None
+        self.api.post(secret_url, json=body)
+        return True
 
-    def read(self) -> int:
+    def read_from_gsm(self) -> int:
         """Reads all necessary secrets from different sources"""
-        github_map = self.__read_github_registers_file()
         secrets = self.__load_gsm_secrets()
 
-        # migrate secrets to GSM
-        for connector_name_and_file in github_map:
-            if connector_name_and_file not in secrets:
-                self.logger.info(f"secret for {connector_name_and_file} is saved into GitHub only. "
-                                 "Let's try to move it to GSM")
-                if not self.create_secret(*connector_name_and_file,
-                                          secret_value=github_map[connector_name_and_file]):
-                    return self.logger.critical(f"can't create a secret for {connector_name_and_file}")
-
-        # print summary register info
-        for k in github_map:
-            if k not in secrets:
-                secrets[k] = ("GitHub", github_map[k])
         for k in secrets:
             if not isinstance(secrets[k], tuple):
                 secrets[k] = ("GSM", secrets[k])
@@ -222,7 +147,7 @@ class SecretsLoader:
             return self.logger.critical(f"not found any secrets of the connector '{self.connector_name}'")
         return {k: v[1] for k, v in secrets.items()}
 
-    def write(self, secrets: Mapping[Tuple[str, str], str]) -> int:
+    def write_to_storage(self, secrets: Mapping[Tuple[str, str], str]) -> int:
         if not secrets:
             return 1
         for (connector_name, filename), secret_value in secrets.items():

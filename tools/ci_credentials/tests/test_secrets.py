@@ -8,13 +8,12 @@ from unittest.mock import patch
 
 import pytest
 import requests_mock
-from ci_credentials.main import ENV_GITHUB_PROVIDED_SECRETS_JSON, ENV_GCP_GSM_CREDENTIALS
+from ci_credentials.main import ENV_GCP_GSM_CREDENTIALS
 from ci_credentials.main import main
 
 from ci_credentials import SecretsLoader
 
 HERE = Path(__file__).resolve().parent
-TEST_CI_GITHUB_REGISTERS = HERE / "simple_ci_github_registers.sh"
 TEST_CONNECTOR_NAME = "source-test"
 TEMP_FOLDER = Path(tempfile.mkdtemp())
 
@@ -49,7 +48,6 @@ def read_last_log_message(capfd):
 
 def test_main(capfd, monkeypatch):
     # without parameters and envs
-    monkeypatch.delenv(ENV_GITHUB_PROVIDED_SECRETS_JSON, raising=False)
     monkeypatch.delenv(ENV_GCP_GSM_CREDENTIALS, raising=False)
     monkeypatch.setattr("sys.argv", [None, TEST_CONNECTOR_NAME, "fake_arg"])
     assert main() == 1
@@ -70,22 +68,16 @@ def test_main(capfd, monkeypatch):
     assert main() == 1
     assert "GCP_GSM_CREDENTIALS shouldn't be empty!" in read_last_log_message(capfd)
 
-    # incorrect GITHUB_PROVIDED_SECRETS_JSON
-    monkeypatch.setenv(ENV_GITHUB_PROVIDED_SECRETS_JSON, "non-json")
-    assert main() == 1
-    assert "incorrect GITHUB_PROVIDED_SECRETS_JSON value" in read_last_log_message(capfd)
-
     # successful result
     monkeypatch.setenv(ENV_GCP_GSM_CREDENTIALS, '{"test": "test"}')
-    monkeypatch.setenv(ENV_GITHUB_PROVIDED_SECRETS_JSON, "{}")
 
-    monkeypatch.setattr(SecretsLoader, "read", lambda *args, **kwargs: {})
-    monkeypatch.setattr(SecretsLoader, "write", lambda *args, **kwargs: 0)
+    monkeypatch.setattr(SecretsLoader, "read_from_gsm", lambda *args, **kwargs: {})
+    monkeypatch.setattr(SecretsLoader, "write_to_storage", lambda *args, **kwargs: 0)
     assert main() == 0
 
 
 @pytest.mark.parametrize(
-    "connector_name,gsm_secrets,github_secrets,expected_secrets",
+    "connector_name,gsm_secrets,expected_secrets",
     (
             (
                     "source-gsm-only",
@@ -93,65 +85,18 @@ def test_main(capfd, monkeypatch):
                         "config": {"test_key": "test_value"},
                         "config_oauth": {"test_key_1": "test_key_2"},
                     },
-                    {},
                     [
                         ("config.json", {"test_key": "test_value"}),
                         ("config_oauth.json", {"test_key_1": "test_key_2"}),
                     ]
             ),
-            (
-                    "source-trello",
-                    {
-                        "credentials": {"source_1": "gsm"},
-                        "auth": {"source_2": "gsm"},
-                    },
-                    {
-
-                        "SOURCE_TRELLO_TEST_CREDS": '{"source_1": "github"}',
-                        "SOURCE_TRELLO_AUTH_CREDS": '{"source_2": "github"}',
-                    },
-                    [
-                        ("credentials.json", {"source_1": "gsm"}),
-                        ("auth.json", {"source_2": "gsm"}),
-                    ]
-            ),
-            (
-                    "source-trello",
-                    {
-                        "credentials": {"source_1": "gsm"},
-                    },
-                    {
-
-                        "SOURCE_TRELLO_TEST_CREDS": '{"source_1": "github"}',
-                        "SOURCE_TRELLO_AUTH_CREDS": '{"source_2": "github"}',
-                    },
-                    [
-                        ("credentials.json", {"source_1": "gsm"}),
-                        ("auth.json", {"source_2": "github"}),
-                    ]
-            ),
-            (
-                    "source-trello",
-                    {},
-                    {
-
-                        "SOURCE_TRELLO_TEST_CREDS": '{"source_1": "github"}',
-                        "SOURCE_TRELLO_AUTH_CREDS": '{"source_2": "github"}',
-                    },
-                    [
-                        ("credentials.json", {"source_1": "github"}),
-                        ("auth.json", {"source_2": "github"}),
-                    ]
-            ),
-
     ),
-    ids=["gsm_only", "gsm_with_github", "mix_gsm_github", "github_only"]
+    ids=["gsm_only", ]
 
 )
 @patch('ci_common_utils.GoogleApi.get_access_token', lambda *args: ("fake_token", None))
 @patch('ci_common_utils.GoogleApi.project_id', "fake_id")
-@patch('ci_credentials.SecretsLoader.get_github_registers_filepath', lambda *args: TEST_CI_GITHUB_REGISTERS)
-def test_read(connector_name, gsm_secrets, github_secrets, expected_secrets):
+def test_read(connector_name, gsm_secrets, expected_secrets):
     matcher_gsm_list = re.compile("https://secretmanager.googleapis.com/v1/projects/.+/secrets")
     secrets_list = {"secrets": [{
         "name": f"projects/<fake_id>/secrets/SECRET_{connector_name.upper()}_{i}_CREDS",
@@ -166,14 +111,14 @@ def test_read(connector_name, gsm_secrets, github_secrets, expected_secrets):
     } for v in gsm_secrets.values()]
 
     matcher_version = re.compile("https://secretmanager.googleapis.com/v1/.+:addVersion")
-    loader = SecretsLoader(connector_name=connector_name, gsm_credentials={}, github_secrets=github_secrets)
+    loader = SecretsLoader(connector_name=connector_name, gsm_credentials={})
     with requests_mock.Mocker() as m:
         m.get(matcher_gsm_list, json=secrets_list)
         m.post(matcher_gsm_list, json={"name": "<fake_name>"})
         m.post(matcher_version, json={})
         m.get(matcher_secret, secrets_response_list)
 
-        secrets = [(*k, v.replace(" ", "")) for k, v in loader.read().items()]
+        secrets = [(*k, v.replace(" ", "")) for k, v in loader.read_from_gsm().items()]
         expected_secrets = [(connector_name, k[0], json.dumps(k[1]).replace(" ", "")) for k in expected_secrets]
         # raise Exception("%s => %s" % (secrets, expected_secrets))
         # raise Exception(set(secrets).symmetric_difference(set(expected_secrets)))
@@ -197,9 +142,9 @@ def test_read(connector_name, gsm_secrets, github_secrets, expected_secrets):
     ids=["single", "multi", "base-normalization"],
 )
 def test_write(connector_name, secrets, expected_files):
-    loader = SecretsLoader(connector_name=connector_name, gsm_credentials={}, github_secrets={})
+    loader = SecretsLoader(connector_name=connector_name, gsm_credentials={})
     loader.base_folder = TEMP_FOLDER
-    loader.write({(connector_name, k): v for k, v in secrets.items()})
+    loader.write_to_storage({(connector_name, k): v for k, v in secrets.items()})
     for expected_file in expected_files:
         target_file = TEMP_FOLDER / expected_file
         assert target_file.exists()

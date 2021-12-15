@@ -1,6 +1,6 @@
 import time
 from dataclasses import dataclass
-from typing import Mapping, Any, List, ClassVar, Tuple, Optional
+from typing import Mapping, Any, List, ClassVar
 
 import jwt
 import requests
@@ -21,11 +21,9 @@ class GoogleApi:
     scopes: List[str]
     _access_token: str = None
 
-    def get(self, url: str, params: Mapping = None) -> Tuple[Mapping[str, Any], Optional[str]]:
+    def get(self, url: str, params: Mapping = None) -> Mapping[str, Any]:
         """Sends a GET request"""
-        token, err = self.get_access_token()
-        if err:
-            return None, err
+        token = self.get_access_token()
         headers = {
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
@@ -34,13 +32,12 @@ class GoogleApi:
         # Making a get request
         response = requests.get(url, headers=headers, params=params)
         response.raise_for_status()
-        return response.json(), None
+        return response.json()
 
-    def post(self, url: str, json: Mapping = None, params: Mapping = None) -> Tuple[Mapping[str, Any], Optional[str]]:
+    def post(self, url: str, json: Mapping = None, params: Mapping = None) -> Mapping[str, Any]:
         """Sends a POST request"""
-        token, err = self.get_access_token()
-        if err:
-            return None, err
+        token = self.get_access_token()
+
         headers = {
             "Authorization": f"Bearer {token}",
             "X-Goog-User-Project": self.project_id
@@ -52,7 +49,7 @@ class GoogleApi:
         except Exception:
             self.logger.error(f"error body: {response.text}")
             raise
-        return response.json(), None
+        return response.json()
 
     @property
     def token_uri(self):
@@ -63,7 +60,7 @@ class GoogleApi:
         return self.config["project_id"]
 
     def __generate_jwt(self) -> str:
-        """Generate JWT token by a service account json file and scopes"""
+        """Generates JWT token by a service account json file and scopes"""
         now = int(time.time())
         claim = {
             "iat": now,
@@ -74,7 +71,7 @@ class GoogleApi:
         }
         return jwt.encode(claim, self.config["private_key"].encode(), algorithm="RS256")
 
-    def get_access_token(self):
+    def get_access_token(self) -> str:
         """Generates an access token by a service account json file and scopes"""
 
         if self._access_token is None:
@@ -88,4 +85,4 @@ class GoogleApi:
             "assertion": jwt,
             "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
         })
-        return resp.json()["access_token"], None
+        return resp.json()["access_token"]
