@@ -17,13 +17,14 @@ import io.airbyte.protocol.models.AirbyteMessage;
  * to.
  *
  * Lifecycle:
+ * <ul>
  * <li>1. Instantiate consumer.</li>
  * <li>2. start() to initialize any resources that need to be created BEFORE the consumer consumes
  * any messages.</li>
  * <li>3. Consumes ALL records via {@link AirbyteMessageConsumer#accept(AirbyteMessage)}</li>
  * <li>4. Always (on success or failure) finalize by calling
  * {@link AirbyteMessageConsumer#close()}</li>
- *
+ * </ul>
  * We encourage implementing this interface using the {@link FailureTrackingAirbyteMessageConsumer}
  * class.
  */

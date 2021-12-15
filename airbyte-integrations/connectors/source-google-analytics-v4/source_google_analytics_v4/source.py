@@ -91,7 +91,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
     def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
         self.start_date = config["start_date"]
-        self.window_in_days = config["window_in_days"]
+        self.window_in_days = config.get("window_in_days", 90)
         self.view_id = config["view_id"]
         self.metrics = config["metrics"]
         self.dimensions = config["dimensions"]
@@ -112,12 +112,27 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         return date.strftime("%Y-%m-%d")
 
     def path(self, **kwargs) -> str:
-        return "reports:batchGet"
+        # need add './' for correct urllib.parse.urljoin work due to path contains ':'
+        return "./reports:batchGet"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = response.json().get("nextPageToken")
         if next_page:
             return {"pageToken": next_page}
+
+    def should_retry(self, response: requests.Response) -> bool:
+        """When the connector gets a custom report which has unknown metric(s) or dimension(s)
+        and API returns an error with 400 code, the connector ignores an error with 400 code
+        to finish successfully sync and inform the user about an error in logs with an error message."""
+
+        if response.status_code == 400:
+            self.logger.info(f"{response.json()['error']['message']}")
+            self.raise_on_http_errors = False
+
+        return super().should_retry(response)
+
+    def raise_on_http_errors(self) -> bool:
+        return True
 
     def request_body_json(
         self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
@@ -203,6 +218,8 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         date_slices = []
         while start_date <= end_date:
             end_date_slice = start_date.add(days=self.window_in_days)
+            # limit the slice range with end_date
+            end_date_slice = min(end_date_slice, end_date)
             date_slices.append({"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date_slice)})
             # add 1 day for start next slice from next day and not duplicate data from previous slice end date.
             start_date = end_date_slice.add(days=1)
@@ -447,6 +464,20 @@ class TestStreamConnection(GoogleAnalyticsV4Stream):
     Because of the nature of the connector, the streams are created dynamicaly.
     We declare the static stream like this to be able to test out the prmissions to read the particular view_id."""
 
+    page_size = 1
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """For test reading pagination is not required"""
+        return None
+
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        Override this method to fetch records from start_date up to now for testing case
+        """
+        start_date = pendulum.parse(self.start_date).date()
+        end_date = pendulum.now().date()
+        return [{"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date)}]
+
 
 class SourceGoogleAnalyticsV4(AbstractSource):
     """Google Analytics lets you analyze data about customer engagement with your website or application."""
@@ -478,19 +509,20 @@ class SourceGoogleAnalyticsV4(AbstractSource):
         config["metrics"] = ["ga:14dayUsers"]
         config["dimensions"] = ["ga:date"]
 
-        # Produce only one date-slice to check the reading permissions
-        first_stream_slice = TestStreamConnection(config).stream_slices(stream_state=None)[0]
-
         try:
             # test the eligibility of custom_reports input
             custom_reports = config.get("custom_reports")
             if custom_reports:
                 json.loads(custom_reports)
 
-            # test the reading operation
-            read_check = list(TestStreamConnection(config).read_records(sync_mode=None, stream_slice=first_stream_slice))
+            # Read records to check the reading permissions
+            read_check = list(TestStreamConnection(config).read_records(sync_mode=None))
             if read_check:
                 return True, None
+            return (
+                False,
+                f"Please check the permissions for the requested view_id: {config['view_id']}. Cannot retrieve data from that view ID.",
+            )
 
         except ValueError as e:
             return False, f"Invalid custom reports json structure. {e}"

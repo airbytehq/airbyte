@@ -2,28 +2,15 @@ version: 2
 
 models:
   - name: exchange_rate
+    tests:
+      - dbt_utils.expression_is_true:
+          expression: "\"column`_'with\"\"_quotes\" is not null"
     columns:
       - name: '"HKD@spéçiäl & characters"'
         # description: check special charactesrs
         #  Use special characters in column names and make sure they are correctly parsed in the JSON blob and populated
         tests:
           - not_null
-    tests:
-      - dbt_utils.equality:
-          # description: check_streams_are_equal
-          #  In this integration test, we are sending the same records to both streams
-          #  exchange_rate and dedup_exchange_rate.
-          #  The SCD table of dedup_exchange_rate in append_dedup mode should therefore mirror
-          #  the final table with append or overwrite mode from exchange_rate.
-          compare_model: ref('dedup_exchange_rate_scd')
-          compare_columns:
-            - id
-            - currency
-            - date
-            - timestamp_col
-            - '"HKD@spéçiäl & characters"'
-            - NZD
-            - USD
 
   - name: dedup_exchange_rate
     tests:
@@ -36,6 +23,7 @@ models:
             - NZD
 
   - name: renamed_dedup_cdc_excluded
+# TODO: create/fix github issue in dbt-core/adapters repository to handle schema changes (outside airbyte's control)
 # Disabling because incremental dbt is not handling quotes well atm (dbt 0.21.0)
 #    tests:
 #      - dbt_utils.expression_is_true:

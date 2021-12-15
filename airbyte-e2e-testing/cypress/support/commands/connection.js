@@ -1,9 +1,4 @@
 Cypress.Commands.add("createTestConnection", (sourceName, destinationName) => {
-  cy.intercept("/api/v1/sources/check_connection").as("checkConnectionSource");
-  cy.intercept("/api/v1/destinations/check_connection").as(
-    "checkConnectionDestination"
-  );
-
   cy.intercept("/api/v1/sources/discover_schema").as("discoverSchema");
   cy.intercept("/api/v1/web_backend/connections/create").as("createConnection");
 
@@ -13,8 +8,6 @@ Cypress.Commands.add("createTestConnection", (sourceName, destinationName) => {
 
   cy.get("div[data-testid='select-source']").click();
   cy.get("div").contains(sourceName).click();
-  cy.wait("@checkConnectionSource");
-  cy.wait("@checkConnectionDestination");
 
   cy.wait("@discoverSchema");
 

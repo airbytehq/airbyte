@@ -1,0 +1,30 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Linnworks Spec",
+    "type": "object",
+    "required": ["application_id", "application_secret", "token", "start_date"],
+    "additionalProperties": false,
+    "properties": {
+      "application_id": {
+        "title": "Application ID",
+        "type": "string"
+      },
+      "application_secret": {
+        "title": "Application secret",
+        "type": "string",
+        "airbyte_secret": true
+      },
+      "token": {
+        "title": "Token",
+        "type": "string"
+      },
+      "start_date": {
+        "title": "Start date",
+        "type": "string",
+        "format": "date-time"
+      }
+    }
+  }
+}

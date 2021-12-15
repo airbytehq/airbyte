@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
@@ -15,15 +16,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.jooq.JSONFormat;
-import org.jooq.JSONFormat.RecordFormat;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 // todo (cgardens) - DRY this up with PostgresDestinationAcceptanceTest
 public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationAcceptanceTest {
-
-  private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
   private PostgreSQLContainer<?> db;
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
@@ -117,7 +114,7 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
             ctx -> ctx
                 .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
                 .stream()
-                .map(r -> r.formatJSON(JSON_FORMAT))
+                .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
                 .map(Jsons::deserialize)
                 .collect(Collectors.toList()));
   }

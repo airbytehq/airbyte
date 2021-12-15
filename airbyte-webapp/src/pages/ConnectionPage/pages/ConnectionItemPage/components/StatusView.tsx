@@ -17,7 +17,7 @@ import useConnection from "hooks/services/useConnectionHook";
 import useLoadingState from "hooks/useLoadingState";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import { SourceDefinition } from "core/resources/SourceDefinition";
-import { useAnalytics } from "hooks/useAnalytics";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 
 type IProps = {
   connection: Connection;
@@ -61,7 +61,7 @@ const StatusView: React.FC<IProps> = ({
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { isLoading, showFeedback, startAction } = useLoadingState();
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
   const { jobs } = useResource(JobResource.listShape(), {
     configId: connection.connectionId,
     configTypes: ["sync", "reset_connection"],

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -e # tells bash, in a script, to exit whenever anything returns a non-zero return value.
 
 function echo2() {
   echo >&2 "$@"
@@ -9,6 +9,12 @@ function echo2() {
 function error() {
   echo2 "$@"
   exit 1
+}
+
+function config_cleanup() {
+  # Remove config file as it might still contain sensitive credentials  (for example,
+  # injected OAuth Parameters should not be visible to custom docker images running custom transformation operations)
+  rm -f "${CONFIG_FILE}"
 }
 
 PROJECT_DIR=$(pwd)
@@ -27,17 +33,23 @@ function configuredbt() {
     # as the base folder for dbt workspace
     cp -r /airbyte/normalization_code/dbt-template/* "${PROJECT_DIR}"
     echo "Running: transform-config --config ${CONFIG_FILE} --integration-type ${INTEGRATION_TYPE} --out ${PROJECT_DIR}"
+    set +e # allow script to continue running even if next commands fail to run properly
     # Generate a profiles.yml file for the selected destination/integration type
     transform-config --config "${CONFIG_FILE}" --integration-type "${INTEGRATION_TYPE}" --out "${PROJECT_DIR}"
-    # Remove config file as it might still contain sensitive credentials  (for example,
-    # injected OAuth Parameters should not be visible to custom docker images running custom transformation operations)
-    rm "${CONFIG_FILE}"
     if [[ -n "${CATALOG_FILE}" ]]; then
       # If catalog file is provided, generate normalization models, otherwise skip it
       echo "Running: transform-catalog --integration-type ${INTEGRATION_TYPE} --profile-config-dir ${PROJECT_DIR} --catalog ${CATALOG_FILE} --out ${PROJECT_DIR}/models/generated/ --json-column _airbyte_data"
       transform-catalog --integration-type "${INTEGRATION_TYPE}" --profile-config-dir "${PROJECT_DIR}" --catalog "${CATALOG_FILE}" --out "${PROJECT_DIR}/models/generated/" --json-column "_airbyte_data"
+      TRANSFORM_EXIT_CODE=$?
+      if [ ${TRANSFORM_EXIT_CODE} -ne 0 ]; then
+        echo -e "\nShowing destination_catalog.json to diagnose/debug errors (${TRANSFORM_EXIT_CODE}):\n"
+        cat "${CATALOG_FILE}" | jq
+        exit ${TRANSFORM_EXIT_CODE}
+      fi
     fi
+    set -e # tells bash, in a script, to exit whenever anything returns a non-zero return value.
   else
+    trap config_cleanup EXIT
     # Use git repository as a base workspace folder for dbt projects
     if [[ -d git_repo ]]; then
       rm -rf git_repo
@@ -58,9 +70,7 @@ function configuredbt() {
     # Generate a profiles.yml file for the selected destination/integration type
     echo "Running: transform-config --config ${CONFIG_FILE} --integration-type ${INTEGRATION_TYPE} --out ${PROJECT_DIR}"
     transform-config --config "${CONFIG_FILE}" --integration-type "${INTEGRATION_TYPE}" --out "${PROJECT_DIR}"
-    # Remove config file as it might still contain sensitive credentials  (for example,
-    # injected OAuth Parameters should not be visible to custom docker images running custom transformation operations)
-    rm "${CONFIG_FILE}"
+    config_cleanup
   fi
 }
 
@@ -103,9 +113,22 @@ function main() {
     . /airbyte/sshtunneling.sh
     openssh "${PROJECT_DIR}/ssh.json"
     trap 'closessh' EXIT
+    set +e # allow script to continue running even if next commands fail to run properly
     # Run dbt to compile and execute the generated normalization models
     dbt run --profiles-dir "${PROJECT_DIR}" --project-dir "${PROJECT_DIR}"
+    DBT_EXIT_CODE=$?
+    if [ ${DBT_EXIT_CODE} -ne 0 ]; then
+      echo -e "\nDiagnosing dbt debug to check if destination is available for dbt and well configured (${DBT_EXIT_CODE}):\n"
+      dbt debug --profiles-dir "${PROJECT_DIR}" --project-dir "${PROJECT_DIR}"
+      DBT_DEBUG_EXIT_CODE=$?
+      if [ ${DBT_DEBUG_EXIT_CODE} -eq 0 ]; then
+        # dbt debug is successful, so the error must be somewhere else...
+        echo -e "\nForward dbt output logs to diagnose/debug errors (${DBT_DEBUG_EXIT_CODE}):\n"
+        cat "${PROJECT_DIR}/../logs/dbt.log"
+      fi
+    fi
     closessh
+    exit ${DBT_EXIT_CODE}
     ;;
   configure-dbt)
     configuredbt
