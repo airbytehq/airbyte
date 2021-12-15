@@ -4,7 +4,6 @@
 
 package io.airbyte.config.persistence;
 
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -20,11 +19,7 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.StandardWorkspace;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance2;
-import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
-import io.airbyte.db.instance.development.DevDatabaseMigrator;
-import io.airbyte.db.instance.development.MigrationDevHelper;
+import io.airbyte.db.instance.configs.DeprecatedConfigsDatabaseInstance;
 import java.util.Collections;
 import java.util.UUID;
 import org.jooq.DSLContext;
@@ -38,23 +33,18 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 /**
- * Unit test for the {@link DatabaseConfigPersistence2#loadData} method.
+ * Unit test for the {@link DeprecatedDatabaseConfigPersistence#loadData} method.
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class DatabaseConfigPersistence2LoadDataTest extends BaseDatabaseConfigPersistence2Test {
+public class DeprecatedDatabaseConfigPersistenceLoadDataTest extends BaseDeprecatedDatabaseConfigPersistenceTest {
 
   private final ConfigPersistence seedPersistence = mock(ConfigPersistence.class);
 
   @BeforeAll
   public static void setup() throws Exception {
-    database = new ConfigsDatabaseInstance2(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-    configPersistence = spy(new DatabaseConfigPersistence2(database));
-    final ConfigsDatabaseMigrator configsDatabaseMigrator =
-        new ConfigsDatabaseMigrator(database, DatabaseConfigPersistence2LoadDataTest.class.getName());
-    final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
-    MigrationDevHelper.runLastMigration(devDatabaseMigrator);
-    database.query(ctx -> ctx
-        .execute("TRUNCATE TABLE state, connection_operation, connection, operation, actor_oauth_parameter, actor, actor_definition, workspace"));
+    database = new DeprecatedConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    configPersistence = spy(new DeprecatedDatabaseConfigPersistence(database));
+    database.query(ctx -> ctx.execute("TRUNCATE TABLE airbyte_configs"));
   }
 
   @AfterAll
@@ -80,7 +70,7 @@ public class DatabaseConfigPersistence2LoadDataTest extends BaseDatabaseConfigPe
     configPersistence.loadData(seedPersistence);
 
     // the new destination is added
-    assertRecordCount(3, ACTOR_DEFINITION);
+    assertRecordCount(3);
     assertHasDestination(DESTINATION_SNOWFLAKE);
 
     verify(configPersistence, times(1)).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
@@ -101,20 +91,10 @@ public class DatabaseConfigPersistence2LoadDataTest extends BaseDatabaseConfigPe
     // create connections to mark the source and destination as in use
     final DestinationConnection s3Connection = new DestinationConnection()
         .withDestinationId(UUID.randomUUID())
-        .withWorkspaceId(UUID.randomUUID())
-        .withName("s3Connection")
         .withDestinationDefinitionId(destinationS3V2.getDestinationDefinitionId());
-    final StandardWorkspace standardWorkspace = new StandardWorkspace()
-        .withWorkspaceId(s3Connection.getWorkspaceId())
-        .withName("workspace")
-        .withSlug("slug")
-        .withInitialSetupComplete(true);
-    configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, standardWorkspace.getWorkspaceId().toString(), standardWorkspace);
     configPersistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, s3Connection.getDestinationId().toString(), s3Connection);
     final SourceConnection githubConnection = new SourceConnection()
         .withSourceId(UUID.randomUUID())
-        .withWorkspaceId(standardWorkspace.getWorkspaceId())
-        .withName("githubConnection")
         .withSourceDefinitionId(sourceGithubV2.getSourceDefinitionId());
     configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, githubConnection.getSourceId().toString(), githubConnection);
 

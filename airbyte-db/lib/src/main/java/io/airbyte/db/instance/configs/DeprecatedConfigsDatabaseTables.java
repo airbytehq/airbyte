@@ -8,16 +8,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public enum ConfigsDatabase2Tables {
+public enum DeprecatedConfigsDatabaseTables {
 
-  WORKSPACE,
-  ACTOR_DEFINITION,
-  ACTOR,
-  ACTOR_OAUTH_PARAMETER,
-  OPERATION,
-  CONNECTION,
-  CONNECTION_OPERATION,
-  STATE;
+  AIRBYTE_CONFIGS;
 
   public String getTableName() {
     return name().toLowerCase();
@@ -27,7 +20,7 @@ public enum ConfigsDatabase2Tables {
    * @return table names in lower case
    */
   public static Set<String> getTableNames() {
-    return Stream.of(ConfigsDatabase2Tables.values()).map(ConfigsDatabase2Tables::getTableName).collect(Collectors.toSet());
+    return Stream.of(DeprecatedConfigsDatabaseTables.values()).map(DeprecatedConfigsDatabaseTables::getTableName).collect(Collectors.toSet());
   }
 
 }

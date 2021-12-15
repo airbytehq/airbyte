@@ -4,20 +4,17 @@
 
 package io.airbyte.config.persistence;
 
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.persistence.DatabaseConfigPersistence2.ConnectorInfo;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance2;
-import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
-import io.airbyte.db.instance.development.DevDatabaseMigrator;
-import io.airbyte.db.instance.development.MigrationDevHelper;
+import io.airbyte.config.persistence.DeprecatedDatabaseConfigPersistence.ConnectorInfo;
+import io.airbyte.db.instance.configs.DeprecatedConfigsDatabaseInstance;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -30,20 +27,17 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit test for the {@link DatabaseConfigPersistence2#updateConnectorDefinitions} method.
+ * Unit test for the {@link DeprecatedDatabaseConfigPersistence#updateConnectorDefinitions} method.
  */
-public class DatabaseConfigPersistence2UpdateConnectorDefinitionsTest extends BaseDatabaseConfigPersistence2Test {
+public class DeprecatedDatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends BaseDeprecatedDatabaseConfigPersistenceTest {
 
   private static final JsonNode SOURCE_GITHUB_JSON = Jsons.jsonNode(SOURCE_GITHUB);
+  private static final OffsetDateTime TIMESTAMP = OffsetDateTime.now();
 
   @BeforeAll
   public static void setup() throws Exception {
-    database = new ConfigsDatabaseInstance2(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-    configPersistence = new DatabaseConfigPersistence2(database);
-    final ConfigsDatabaseMigrator configsDatabaseMigrator =
-        new ConfigsDatabaseMigrator(database, DatabaseConfigPersistence2LoadDataTest.class.getName());
-    final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
-    MigrationDevHelper.runLastMigration(devDatabaseMigrator);
+    database = new DeprecatedConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    configPersistence = new DeprecatedDatabaseConfigPersistence(database);
   }
 
   @AfterAll
@@ -53,8 +47,7 @@ public class DatabaseConfigPersistence2UpdateConnectorDefinitionsTest extends Ba
 
   @BeforeEach
   public void resetDatabase() throws SQLException {
-    database.query(ctx -> ctx
-        .execute("TRUNCATE TABLE state, connection_operation, connection, operation, actor_oauth_parameter, actor, actor_definition, workspace"));
+    database.transaction(ctx -> ctx.truncateTable("airbyte_configs").execute());
   }
 
   @Test
@@ -157,6 +150,7 @@ public class DatabaseConfigPersistence2UpdateConnectorDefinitionsTest extends Ba
       try {
         configPersistence.updateConnectorDefinitions(
             ctx,
+            TIMESTAMP,
             ConfigSchema.STANDARD_SOURCE_DEFINITION,
             latestSources,
             sourceRepositoriesInUse,
@@ -167,7 +161,7 @@ public class DatabaseConfigPersistence2UpdateConnectorDefinitionsTest extends Ba
       return null;
     });
 
-    assertRecordCount(expectedUpdatedSources.size(), ACTOR_DEFINITION);
+    assertRecordCount(expectedUpdatedSources.size());
     for (final StandardSourceDefinition source : expectedUpdatedSources) {
       assertHasSource(source);
     }

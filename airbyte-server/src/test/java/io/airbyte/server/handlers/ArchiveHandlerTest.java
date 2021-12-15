@@ -272,7 +272,7 @@ public class ArchiveHandlerTest {
     assertSameConfigDump(secondWorkspaceDump, configRepository.dumpConfigs());
   }
 
-  private void setupWorkspaceData(final UUID workspaceId) throws IOException {
+  private void setupWorkspaceData(final UUID workspaceId) throws IOException, JsonValidationException {
     configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), new StandardWorkspace()
         .withWorkspaceId(workspaceId)
         .withName("test-workspace")

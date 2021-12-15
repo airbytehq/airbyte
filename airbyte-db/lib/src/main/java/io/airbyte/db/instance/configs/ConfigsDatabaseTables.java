@@ -10,7 +10,14 @@ import java.util.stream.Stream;
 
 public enum ConfigsDatabaseTables {
 
-  AIRBYTE_CONFIGS;
+  WORKSPACE,
+  ACTOR_DEFINITION,
+  ACTOR,
+  ACTOR_OAUTH_PARAMETER,
+  OPERATION,
+  CONNECTION,
+  CONNECTION_OPERATION,
+  STATE;
 
   public String getTableName() {
     return name().toLowerCase();
