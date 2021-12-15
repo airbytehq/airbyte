@@ -6,8 +6,7 @@
 import docker
 import json
 import logging
-import re
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 from docker.errors import ContainerError
 from docker.models.containers import Container
 from pathlib import Path

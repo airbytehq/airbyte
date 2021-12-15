@@ -30,11 +30,4 @@ setuptools.setup(
     url="https://github.com/airbytehq/airbyte",
     packages=setuptools.find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    entry_points={
-        'console_scripts': [
-            'airbyte_tests=source_acceptance_test.utils.airbyte_entrypoint:main',
-            'airbyte_py_tests=source_acceptance_test.utils.airbyte_py_entrypoint:main'
-        ],
-    }
-
 )
