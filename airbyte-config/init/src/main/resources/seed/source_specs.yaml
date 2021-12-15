@@ -153,7 +153,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-seller-partner:0.2.5"
+- dockerImage: "airbyte/source-amazon-seller-partner:0.2.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/amazon-seller-partner"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/amazon-seller-partner"
