@@ -818,7 +818,7 @@
       ]
     },
     "avroObject": {
-      "identifier": ["151", "152", "true", "{\"id\": 153}"],
+      "identifier": ["151", "152", "true", "{\"id\":153}"],
       "_airbyte_additional_properties": null
     }
   }
