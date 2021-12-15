@@ -12,6 +12,12 @@ on:
       comment-id:
         description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
+      cpulimit:
+        description: "Container CPU limit"
+        required: false
+      memorylimit:
+        description: "Memory CPU limit"
+        required: false
 
 jobs:
   start-test-runner:
@@ -39,23 +45,14 @@ jobs:
     needs: start-test-runner
     runs-on: ${{ needs.start-test-runner.outputs.label }}
     environment: more-secrets
-    variables:
-      variable_con: ${{ github.event.inputs.connector.split('|') }}
     steps:
       - name: Search for valid connector name format
         id: regex
         uses: AsasInnab/regex-action@v1
         with:
-#          regex_pattern: "^((connectors|bases)/)?[a-zA-Z0-9-_]+(\\|cpulimit=\\d\\|memorylimit=\\d{1,3}(MB|GB))?(\\|memorylimit=\\d{1,3}(MB|GB)|\\|cpulimit=\\d)?$"
           regex_pattern: "^((connectors|bases)/)?[a-zA-Z0-9-_]+$"
           regex_flags: "i" # required to be set for this plugin
           search_string: ${{ github.event.inputs.connector }}
-      - name: Test_1
-        run: echo "Variable -> ${{ steps.regex.outputs.first_match }} "
-      - name: Test_2
-        run: echo "Variable -> ${{ github.event.inputs.connector }} "
-      - name: Test_3
-        run: echo "Variable ->  $( variable_con.0 ) ==="
       - name: Validate input workflow format
         if: steps.regex.outputs.first_match != github.event.inputs.connector
         run: echo "The connector provided has an invalid format!" && exit 1
@@ -79,7 +76,7 @@ jobs:
           GITHUB_PROVIDED_SECRETS_JSON: ${{ toJson(secrets) }}
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       - run: |
-          ./tools/bin/ci_performance_test.sh ${{ github.event.inputs.connector }}
+          ./tools/bin/ci_performance_test.sh ${{ github.event.inputs.connector }} ${{ github.event.inputs.cpulimit }} ${{ github.event.inputs.memorylimit }}
         name: test_performance ${{ github.event.inputs.connector }}
         id: test_performance
         env:
