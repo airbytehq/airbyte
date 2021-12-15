@@ -171,7 +171,7 @@ read_secrets destination-s3 "$DESTINATION_S3_INTEGRATION_TEST_CREDS"
 read_secrets destination-azure-blob-storage "$DESTINATION_AZURE_BLOB_CREDS"
 #read_secrets destination-snowflake "$SNOWFLAKE_GCS_COPY_INTEGRATION_TEST_CREDS" "copy_gcs_config.json"
 #read_secrets destination-snowflake "$SNOWFLAKE_S3_COPY_INTEGRATION_TEST_CREDS" "copy_s3_config.json"
-read_secrets destination-snowflake "$SNOWFLAKE_INTEGRATION_TEST_CREDS" "insert_config.json"
+#read_secrets destination-snowflake "$SNOWFLAKE_INTEGRATION_TEST_CREDS" "insert_config.json"
 
 read_secrets base-normalization "$BIGQUERY_INTEGRATION_TEST_CREDS" "bigquery.json"
 read_secrets base-normalization "$SNOWFLAKE_INTEGRATION_TEST_CREDS" "snowflake.json"
