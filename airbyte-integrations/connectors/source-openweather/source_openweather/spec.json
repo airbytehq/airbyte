@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Open Weather Spec",
     "type": "object",
-    "required": ["appid","lat", "lon"],
+    "required": ["appid", "lat", "lon"],
     "additionalProperties": false,
     "properties": {
       "lat": {
@@ -79,7 +79,7 @@
           "sl",
           "sp",
           "es",
-          "sr",  
+          "sr",
           "th",
           "tr",
           "ua",
@@ -89,7 +89,7 @@
           "zh_tw",
           "zu"
         ],
-        "examples": ["en", "fr", "pt_br", "uk", "zh_cn", "zh_tw"] 
+        "examples": ["en", "fr", "pt_br", "uk", "zh_cn", "zh_tw"]
       }
     }
   }
