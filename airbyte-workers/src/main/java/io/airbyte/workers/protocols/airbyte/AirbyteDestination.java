@@ -57,9 +57,17 @@ public interface AirbyteDestination extends CheckedConsumer<AirbyteMessage, Exce
    * been emitted or because the Destination container has exited.
    *
    * @return true, if no more data will be emitted. otherwise, false.
-   * @throws WorkerException if the Destination exited with a non-zero exit code.
    */
   boolean isFinished() throws WorkerException;
+
+  /**
+   * Gets the exit value of the destination process. This should only be called after the destination
+   * process has finished.
+   *
+   * @return exit code of the destination process
+   * @throws IllegalStateException if the destination process has not exited
+   */
+  int getExitValue();
 
   /**
    * Attempts to read an AirbyteMessage from the Destination.

@@ -143,21 +143,13 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
       return false;
     }
 
-    // Also short circuit here to avoid checking the exit value until the process has actually finished.
-    if (destinationProcess.isAlive()) {
-      return false;
-    }
-
-    final int exitValue = getExitValue();
-    if (exitValue != 0) {
-      throw new WorkerException("Destination process exited with non-zero exit code " + exitValue);
-    }
-    return true;
+    return !destinationProcess.isAlive();
   }
 
-  private int getExitValue() {
-    Preconditions.checkState(destinationProcess != null);
-    Preconditions.checkState(!destinationProcess.isAlive());
+  @Override
+  public int getExitValue() {
+    Preconditions.checkState(destinationProcess != null, "Destination process is null, cannot retrieve exit value.");
+    Preconditions.checkState(!destinationProcess.isAlive(), "Destination process is still alive, cannot retrieve exit value.");
 
     if (exitValue == null) {
       exitValue = destinationProcess.exitValue();

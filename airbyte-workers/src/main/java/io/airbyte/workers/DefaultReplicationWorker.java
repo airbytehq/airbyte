@@ -218,6 +218,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           }
         }
         destination.notifyEndOfStream();
+        if (!cancelled.get() && source.getExitValue() != 0) {
+          throw new RuntimeException("Source process exited with non-zero exit code " + source.getExitValue());
+        }
       } catch (final Exception e) {
         if (!cancelled.get()) {
           // Although this thread is closed first, it races with the source's closure and can attempt one
@@ -244,6 +247,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             LOGGER.info("state in DefaultReplicationWorker from Destination: {}", messageOptional.get());
             destinationMessageTracker.accept(messageOptional.get());
           }
+        }
+        if (!cancelled.get() && destination.getExitValue() != 0) {
+          throw new RuntimeException("Destination process exited with non-zero exit code " + destination.getExitValue());
         }
       } catch (final Exception e) {
         if (!cancelled.get()) {

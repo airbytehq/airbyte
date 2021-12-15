@@ -6,7 +6,6 @@ package io.airbyte.workers.protocols.airbyte;
 
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.workers.WorkerException;
 import java.nio.file.Path;
 import java.util.Optional;
 
@@ -31,9 +30,17 @@ public interface AirbyteSource extends AutoCloseable {
    * emitted or because the Source container has exited.
    *
    * @return true, if no more data will be emitted. otherwise, false.
-   * @throws WorkerException if the Source exited with a non-zero exit code.
    */
-  boolean isFinished() throws WorkerException;
+  boolean isFinished();
+
+  /**
+   * Gets the exit value of the source process. This should only be called after the source process
+   * has finished.
+   *
+   * @return exit code of the source process
+   * @throws IllegalStateException if the source process has not exited
+   */
+  int getExitValue();
 
   /**
    * Attempts to read an AirbyteMessage from the Source.

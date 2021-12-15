@@ -161,7 +161,7 @@ class DefaultAirbyteSourceTest {
       }
     });
 
-    verify(process, times(2)).exitValue();
+    verify(process).exitValue();
   }
 
   @Test
@@ -203,6 +203,20 @@ class DefaultAirbyteSourceTest {
     when(process.exitValue()).thenReturn(1);
 
     Assertions.assertThrows(WorkerException.class, tap::close);
+  }
+
+  @Test
+  public void testGetExitValue() throws Exception {
+    final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
+    source.start(SOURCE_CONFIG, jobRoot);
+
+    when(process.isAlive()).thenReturn(false);
+    when(process.exitValue()).thenReturn(2);
+
+    assertEquals(2, source.getExitValue());
+    // call a second time to verify that exit value is cached
+    assertEquals(2, source.getExitValue());
+    verify(process, times(1)).exitValue();
   }
 
 }
