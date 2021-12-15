@@ -10,8 +10,8 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.config.TolerationPOJO;
 import io.airbyte.config.WorkerDestinationConfig;
-import io.airbyte.config.WorkerPodToleration;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.scheduler.models.JobRunConfig;
@@ -33,10 +33,13 @@ public class WorkerUtils {
   private static final Configs CONFIGS = new EnvConfigs();
 
   public static final ResourceRequirements DEFAULT_RESOURCE_REQUIREMENTS = initResourceRequirements();
-  public static final List<WorkerPodToleration> DEFAULT_WORKER_POD_TOLERATIONS = CONFIGS.getWorkerPodTolerations();
-  public static final Map<String, String> DEFAULT_WORKER_POD_NODE_SELECTORS = CONFIGS.getWorkerNodeSelectors();
-  public static final String DEFAULT_JOBS_IMAGE_PULL_SECRET = CONFIGS.getJobsImagePullSecret();
-  public static final String DEFAULT_JOB_IMAGE_PULL_POLICY = CONFIGS.getJobImagePullPolicy();
+  public static final List<TolerationPOJO> DEFAULT_JOB_POD_TOLERATIONS = CONFIGS.getJobPodTolerations();
+  public static final Map<String, String> DEFAULT_JOB_POD_NODE_SELECTORS = CONFIGS.getJobPodNodeSelectors();
+  public static final String DEFAULT_JOB_POD_MAIN_CONTAINER_IMAGE_PULL_SECRET = CONFIGS.getJobPodMainContainerImagePullSecret();
+  public static final String DEFAULT_JOB_POD_MAIN_CONTAINER_IMAGE_PULL_POLICY = CONFIGS.getJobPodMainContainerImagePullPolicy();
+  public static final String JOB_POD_SOCAT_IMAGE = CONFIGS.getJobPodSocatImage();
+  public static final String JOB_POD_BUSYBOX_IMAGE = CONFIGS.getJobPodBusyboxImage();
+  public static final String JOB_POD_CURL_IMAGE = CONFIGS.getJobPodCurlImage();
 
   public static void gentleClose(final Process process, final long timeout, final TimeUnit timeUnit) {
     if (process == null) {
@@ -56,7 +59,7 @@ public class WorkerUtils {
     }
 
     if (process.isAlive()) {
-      forceShutdown(process, Duration.of(1, ChronoUnit.MINUTES));
+      closeProcess(process, Duration.of(1, ChronoUnit.MINUTES));
     }
   }
 
@@ -87,7 +90,7 @@ public class WorkerUtils {
         gracefulShutdownDuration,
         checkHeartbeatDuration,
         forcedShutdownDuration,
-        WorkerUtils::forceShutdown);
+        WorkerUtils::closeProcess);
   }
 
   @VisibleForTesting
@@ -131,28 +134,15 @@ public class WorkerUtils {
     }
   }
 
-  @VisibleForTesting
-  static void forceShutdown(final Process process, final Duration lastChanceDuration) {
-    LOGGER.warn("Process is taking too long to finish. Killing it");
-    process.destroy();
-    try {
-      process.waitFor(lastChanceDuration.toMillis(), TimeUnit.MILLISECONDS);
-    } catch (final InterruptedException e) {
-      LOGGER.error("Exception while while killing the process", e);
-    }
-    if (process.isAlive()) {
-      LOGGER.error("Couldn't kill the process. You might have a zombie process.");
-    }
-  }
-
-  public static void closeProcess(final Process process, final int duration, final TimeUnit timeUnit) {
+  public static void closeProcess(final Process process, final Duration lastChanceDuration) {
     if (process == null) {
       return;
     }
     try {
       process.destroy();
-      process.waitFor(duration, timeUnit);
+      process.waitFor(lastChanceDuration.toMillis(), TimeUnit.MILLISECONDS);
       if (process.isAlive()) {
+        LOGGER.warn("Process is still alive after calling destroy. Attempting to destroy forcibly...");
         process.destroyForcibly();
       }
     } catch (final InterruptedException e) {
@@ -169,7 +159,7 @@ public class WorkerUtils {
   }
 
   public static void cancelProcess(final Process process) {
-    closeProcess(process, 10, TimeUnit.SECONDS);
+    closeProcess(process, Duration.of(10, ChronoUnit.SECONDS));
   }
 
   /**
@@ -216,10 +206,10 @@ public class WorkerUtils {
 
   private static ResourceRequirements initResourceRequirements() {
     return new ResourceRequirements()
-        .withCpuRequest(CONFIGS.getCpuRequest())
-        .withCpuLimit(CONFIGS.getCpuLimit())
-        .withMemoryRequest(CONFIGS.getMemoryRequest())
-        .withMemoryLimit(CONFIGS.getMemoryLimit());
+        .withCpuRequest(CONFIGS.getJobPodMainContainerCpuRequest())
+        .withCpuLimit(CONFIGS.getJobPodMainContainerCpuLimit())
+        .withMemoryRequest(CONFIGS.getJobPodMainContainerMemoryRequest())
+        .withMemoryLimit(CONFIGS.getJobPodMainContainerMemoryLimit());
   }
 
 }

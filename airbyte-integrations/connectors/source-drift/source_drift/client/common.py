@@ -74,7 +74,7 @@ def next_url_paginator(request, start_index: int = None, per_page: int = 100, pa
 
 
 def exception_from_code(code: int, message: str) -> Exception:
-    """ Map response code to exception class"""
+    """Map response code to exception class"""
     mapping = {
         400: ValidationError,
         401: AuthError,
@@ -91,7 +91,7 @@ def exception_from_code(code: int, message: str) -> Exception:
 
 
 def _parsed_response(func):
-    """ Decorator to check response status and parse its body"""
+    """Decorator to check response status and parse its body"""
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):

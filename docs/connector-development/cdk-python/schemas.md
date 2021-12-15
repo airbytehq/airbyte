@@ -113,9 +113,9 @@ In this case custom transformation will be applied after default type transforma
 
 ### Performance consideration
 
-Transofrming each object on the fly would add some time for each object processing. This time is depends on object/schema complexitiy and hardware configuration.
+Transforming each object on the fly would add some time for each object processing. This time is depends on object/schema complexitiy and hardware configuration.
 
-There is some performance benchmark we've done with ads\_insights facebook schema \(it is complex schema with objects nested inside arrays ob object and a lot of references\) and example object. Here is average transform time per single object, seconds:
+There are some performance benchmarks we've done with ads\_insights facebook schema \(it is complex schema with objects nested inside arrays ob object and a lot of references\) and example object. Here is the average transform time per single object, seconds:
 
 ```text
 regular transform:
@@ -131,5 +131,5 @@ just traverse/validate through json schema and object fields:
 0.0006139181846665452
 ```
 
-On my PC \(AMD Ryzen 7 5800X\) it took 0.8 milliseconds per one object. As you can see most time \(~ 75%\) is taken by jsonschema traverse/validation routine and very little \(less than 10 %\) by actual converting. Processing time can be reduced by skipping jsonschema type checking but it would be no warnings about possible object jsonschema inconsistency.
+On my PC \(AMD Ryzen 7 5800X\) it took 0.8 milliseconds per object. As you can see most time \(~ 75%\) is taken by jsonschema traverse/validation routine and very little \(less than 10 %\) by actual converting. Processing time can be reduced by skipping jsonschema type checking but it would be no warnings about possible object jsonschema inconsistency.
 

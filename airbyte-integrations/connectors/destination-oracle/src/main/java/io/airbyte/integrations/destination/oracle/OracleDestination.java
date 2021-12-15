@@ -49,6 +49,10 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
     System.setProperty("oracle.jdbc.timezoneAsRegion", "false");
   }
 
+  public static Destination sshWrappedDestination() {
+    return new SshWrappedDestination(new OracleDestination(), List.of("host"), List.of("port"));
+  }
+
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
     final List<String> additionalParameters = new ArrayList<>();
@@ -128,8 +132,7 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   }
 
   public static void main(final String[] args) throws Exception {
-    final Destination destination = new SshWrappedDestination(new OracleDestination(), HOST_KEY,
-        PORT_KEY);
+    final Destination destination = sshWrappedDestination();
     LOGGER.info("starting destination: {}", OracleDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", OracleDestination.class);

@@ -22,14 +22,16 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.TestConfigHelpers;
-import io.airbyte.workers.temporal.SyncWorkflow.DbtTransformationActivity;
-import io.airbyte.workers.temporal.SyncWorkflow.DbtTransformationActivityImpl;
-import io.airbyte.workers.temporal.SyncWorkflow.NormalizationActivity;
-import io.airbyte.workers.temporal.SyncWorkflow.NormalizationActivityImpl;
-import io.airbyte.workers.temporal.SyncWorkflow.PersistStateActivity;
-import io.airbyte.workers.temporal.SyncWorkflow.PersistStateActivityImpl;
-import io.airbyte.workers.temporal.SyncWorkflow.ReplicationActivity;
-import io.airbyte.workers.temporal.SyncWorkflow.ReplicationActivityImpl;
+import io.airbyte.workers.temporal.sync.DbtTransformationActivity;
+import io.airbyte.workers.temporal.sync.DbtTransformationActivityImpl;
+import io.airbyte.workers.temporal.sync.NormalizationActivity;
+import io.airbyte.workers.temporal.sync.NormalizationActivityImpl;
+import io.airbyte.workers.temporal.sync.PersistStateActivity;
+import io.airbyte.workers.temporal.sync.PersistStateActivityImpl;
+import io.airbyte.workers.temporal.sync.ReplicationActivity;
+import io.airbyte.workers.temporal.sync.ReplicationActivityImpl;
+import io.airbyte.workers.temporal.sync.SyncWorkflow;
+import io.airbyte.workers.temporal.sync.SyncWorkflowImpl;
 import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.workflowservice.v1.RequestCancelWorkflowExecutionRequest;
 import io.temporal.api.workflowservice.v1.WorkflowServiceGrpc.WorkflowServiceBlockingStub;
@@ -84,7 +86,7 @@ class SyncWorkflowTest {
   public void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
     worker = testEnv.newWorker(TASK_QUEUE);
-    worker.registerWorkflowImplementationTypes(SyncWorkflow.WorkflowImpl.class);
+    worker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
 
     client = testEnv.getWorkflowClient();
 

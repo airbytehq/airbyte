@@ -1,0 +1,30 @@
+{
+  "type": ["null", "object", "array"],
+  "properties": {
+    "quantity": {
+      "type": ["null", "number"]
+    },
+    "discountedPrice": {
+      "type": ["null", "object"],
+      "properties": {
+        "value": {
+          "$ref": "money.json"
+        },
+        "includedDiscounts": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "discount": {
+                "$ref": "reference.json"
+              },
+              "discountedAmount": {
+                "$ref": "money.json"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

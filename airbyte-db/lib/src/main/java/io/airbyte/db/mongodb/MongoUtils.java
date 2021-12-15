@@ -12,12 +12,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.api.client.util.DateTime;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -44,8 +46,10 @@ public class MongoUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoUtils.class);
 
-  private static final int DISCOVERY_BATCH_SIZE = 10000;
+  private static final String MISSING_TYPE = "missing";
+  private static final String NULL_TYPE = "null";
   private static final String AIRBYTE_SUFFIX = "_aibyte_transform";
+  private static final int DISCOVER_LIMIT = 10000;
 
   public static JsonSchemaPrimitive getType(final BsonType dataType) {
     return switch (dataType) {
@@ -71,7 +75,7 @@ public class MongoUtils {
         case INT64 -> new BsonInt64(Long.parseLong(value));
         case DOUBLE -> new BsonDouble(Double.parseDouble(value));
         case DECIMAL128 -> Decimal128.parse(value);
-        case TIMESTAMP -> new BsonTimestamp(Long.parseLong(value));
+        case TIMESTAMP -> new BsonTimestamp(new DateTime(value).getValue());
         case DATE_TIME -> new BsonDateTime(new DateTime(value).getValue());
         case OBJECT_ID -> new ObjectId(value);
         case SYMBOL -> new Symbol(value);
@@ -89,7 +93,7 @@ public class MongoUtils {
     try (final BsonReader reader = new BsonDocumentReader(bsonDocument)) {
       readDocument(reader, objectNode, columnNames);
     } catch (final Exception e) {
-      LOGGER.error("Exception while parsing BsonDocument: ", e.getMessage());
+      LOGGER.error("Exception while parsing BsonDocument: {}", e.getMessage());
       throw new RuntimeException(e);
     }
   }
@@ -116,7 +120,12 @@ public class MongoUtils {
 
   private static void transformToStringIfMarked(final ObjectNode jsonNodes, final List<String> columnNames, final String fieldName) {
     if (columnNames.contains(fieldName + AIRBYTE_SUFFIX)) {
-      jsonNodes.put(fieldName, jsonNodes.get(fieldName).asText());
+      JsonNode data = jsonNodes.get(fieldName);
+      if (data != null) {
+        jsonNodes.put(fieldName, data.asText());
+      } else {
+        LOGGER.debug("WARNING Field list out of sync, Document doesn't contain field: {}", fieldName);
+      }
     }
   }
 
@@ -152,8 +161,8 @@ public class MongoUtils {
       case INT64 -> o.put(fieldName, reader.readInt64());
       case DOUBLE -> o.put(fieldName, reader.readDouble());
       case DECIMAL128 -> o.put(fieldName, toDouble(reader.readDecimal128()));
-      case TIMESTAMP -> o.put(fieldName, DataTypeUtils.toISO8601String(reader.readTimestamp().getValue()));
-      case DATE_TIME -> o.put(fieldName, DataTypeUtils.toISO8601String(reader.readDateTime()));
+      case TIMESTAMP -> o.put(fieldName, DataTypeUtils.toISO8601StringWithMilliseconds(reader.readTimestamp().getValue()));
+      case DATE_TIME -> o.put(fieldName, DataTypeUtils.toISO8601StringWithMilliseconds(reader.readDateTime()));
       case BINARY -> o.put(fieldName, toByteArray(reader.readBinaryData()));
       case SYMBOL -> o.put(fieldName, reader.readSymbol());
       case STRING -> o.put(fieldName, reader.readString());
@@ -174,34 +183,89 @@ public class MongoUtils {
    * @return map of unique fields and its type
    */
   public static Map<String, BsonType> getUniqueFields(final MongoCollection<Document> collection) {
-    final Map<String, BsonType> uniqueFields = new HashMap<>();
-    try (final MongoCursor<Document> cursor = collection.find().batchSize(DISCOVERY_BATCH_SIZE).iterator()) {
-      while (cursor.hasNext()) {
-        final BsonDocument document = toBsonDocument(cursor.next());
-        try (final BsonReader reader = new BsonDocumentReader(document)) {
-          reader.readStartDocument();
-          while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
-            final var fieldName = reader.readName();
-            final var fieldType = reader.getCurrentBsonType();
-            reader.skipValue();
-            if (uniqueFields.containsKey(fieldName) && fieldType.compareTo(uniqueFields.get(fieldName)) != 0) {
-              uniqueFields.replace(fieldName + AIRBYTE_SUFFIX, BsonType.STRING);
-            } else {
-              uniqueFields.put(fieldName, fieldType);
-            }
-          }
-          reader.readEndDocument();
-        }
+
+    Map<String, BsonType> result = new HashMap<>();
+    var allkeys = getFieldsName(collection);
+    allkeys.forEach(key -> {
+      var types = getTypes(collection, key);
+      addUniqueType(result, key, types);
+    });
+    return result;
+  }
+
+  private static List<String> getFieldsName(MongoCollection<Document> collection) {
+    AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
+        new Document("$limit", DISCOVER_LIMIT),
+        new Document("$project", new Document("arrayofkeyvalue", new Document("$objectToArray", "$$ROOT"))),
+        new Document("$unwind", "$arrayofkeyvalue"),
+        new Document("$group", new Document("_id", null).append("allkeys", new Document("$addToSet", "$arrayofkeyvalue.k")))));
+    if (output.cursor().hasNext()) {
+      return (List) output.cursor().next().get("allkeys");
+    } else {
+      return Collections.emptyList();
+    }
+  }
+
+  private static ArrayList<String> getTypes(MongoCollection<Document> collection, String name) {
+    var fieldName = "$" + name;
+    AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
+        new Document("$limit", DISCOVER_LIMIT),
+        new Document("$project", new Document("_id", 0).append("fieldType", new Document("$type", fieldName))),
+        new Document("$group", new Document("_id", new Document("fieldType", "$fieldType"))
+            .append("count", new Document("$sum", 1)))));
+    var listOfTypes = new ArrayList<String>();
+    var cursor = output.cursor();
+    while (cursor.hasNext()) {
+      var type = ((Document) cursor.next().get("_id")).get("fieldType").toString();
+      if (!type.equals(MISSING_TYPE) && !type.equals(NULL_TYPE)) {
+        listOfTypes.add(type);
       }
     }
-    return uniqueFields;
+    if (listOfTypes.isEmpty()) {
+      listOfTypes.add(NULL_TYPE);
+    }
+    return listOfTypes;
+  }
+
+  private static void addUniqueType(Map<String, BsonType> map,
+                                    String fieldName,
+                                    List<String> types) {
+    if (types.size() != 1) {
+      map.put(fieldName + AIRBYTE_SUFFIX, BsonType.STRING);
+    } else {
+      var type = types.get(0);
+      map.put(fieldName, getBsonTypeByTypeAlias(type));
+    }
+  }
+
+  private static BsonType getBsonTypeByTypeAlias(String typeAlias) {
+    return switch (typeAlias) {
+      case "double" -> BsonType.DOUBLE;
+      case "string" -> BsonType.STRING;
+      case "objectId" -> BsonType.OBJECT_ID;
+      case "array" -> BsonType.ARRAY;
+      case "binData" -> BsonType.BINARY;
+      case "bool" -> BsonType.BOOLEAN;
+      case "date" -> BsonType.DATE_TIME;
+      case "null" -> BsonType.NULL;
+      case "regex" -> BsonType.REGULAR_EXPRESSION;
+      case "dbPointer" -> BsonType.DB_POINTER;
+      case "javascript" -> BsonType.JAVASCRIPT;
+      case "symbol" -> BsonType.SYMBOL;
+      case "javascriptWithScope" -> BsonType.JAVASCRIPT_WITH_SCOPE;
+      case "int" -> BsonType.INT32;
+      case "timestamp" -> BsonType.TIMESTAMP;
+      case "long" -> BsonType.INT64;
+      case "decimal" -> BsonType.DECIMAL128;
+      default -> BsonType.STRING;
+    };
   }
 
   private static BsonDocument toBsonDocument(final Document document) {
     try {
       return document.toBsonDocument();
     } catch (final Exception e) {
-      LOGGER.error("Exception while converting Document to BsonDocument: ", e.getMessage());
+      LOGGER.error("Exception while converting Document to BsonDocument: {}", e.getMessage());
       throw new RuntimeException(e);
     }
   }

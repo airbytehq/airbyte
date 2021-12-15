@@ -7,7 +7,7 @@ package io.airbyte.workers.process;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
-import io.airbyte.config.WorkerPodToleration;
+import io.airbyte.config.TolerationPOJO;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
@@ -58,6 +58,7 @@ import org.slf4j.MDC;
  * stderr streams and copy configuration files over.
  *
  * This is made possible by:
+ * <ul>
  * <li>1) An init container that creates 3 named pipes corresponding to stdin, stdout and std err on
  * a shared volume.</li>
  * <li>2) Config files (e.g. config.json, catalog.json etc) are copied from the parent process into
@@ -76,7 +77,7 @@ import org.slf4j.MDC;
  * handling.</li>
  * <li>8) A heartbeat sidecar checks if the worker that launched the pod is still alive. If not, the
  * pod will fail.</li>
- *
+ * </ul>
  * The docker image used for this pod process must expose a AIRBYTE_ENTRYPOINT which contains the
  * entrypoint we will wrap when creating the main container in the pod.
  *
@@ -90,6 +91,9 @@ public class KubePodProcess extends Process {
 
   private static final String INIT_CONTAINER_NAME = "init";
   private static final Long STATUS_CHECK_INTERVAL_MS = 30 * 1000L;
+  private static final String DEFAULT_MEMORY_LIMIT = "25Mi";
+  private static final ResourceRequirements DEFAULT_SIDECAR_RESOURCES = new ResourceRequirements()
+      .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_LIMIT);
 
   private static final String PIPES_DIR = "/pipes";
   private static final String STDIN_PIPE_FILE = PIPES_DIR + "/stdin";
@@ -134,7 +138,9 @@ public class KubePodProcess extends Process {
     return pod.getStatus().getPodIP();
   }
 
-  private static Container getInit(final boolean usesStdin, final List<VolumeMount> mainVolumeMounts) {
+  private static Container getInit(final boolean usesStdin,
+                                   final List<VolumeMount> mainVolumeMounts,
+                                   final String busyboxImage) {
     var initEntrypointStr = String.format("mkfifo %s && mkfifo %s", STDOUT_PIPE_FILE, STDERR_PIPE_FILE);
 
     if (usesStdin) {
@@ -145,7 +151,7 @@ public class KubePodProcess extends Process {
 
     return new ContainerBuilder()
         .withName(INIT_CONTAINER_NAME)
-        .withImage("busybox:1.28")
+        .withImage(busyboxImage)
         .withWorkingDir(CONFIG_DIR)
         .withCommand("sh", "-c", initEntrypointStr)
         .withVolumeMounts(mainVolumeMounts)
@@ -232,7 +238,7 @@ public class KubePodProcess extends Process {
     LOGGER.info("Init container ready..");
   }
 
-  private Toleration[] buildPodTolerations(final List<WorkerPodToleration> tolerations) {
+  private Toleration[] buildPodTolerations(final List<TolerationPOJO> tolerations) {
     if (tolerations == null || tolerations.isEmpty()) {
       return null;
     }
@@ -260,9 +266,12 @@ public class KubePodProcess extends Process {
                         final String entrypointOverride,
                         final ResourceRequirements resourceRequirements,
                         final String imagePullSecret,
-                        final List<WorkerPodToleration> tolerations,
+                        final List<TolerationPOJO> tolerations,
                         final Map<String, String> nodeSelectors,
                         final Map<String, String> labels,
+                        final String socatImage,
+                        final String busyboxImage,
+                        final String curlImage,
                         final String... args)
       throws IOException, InterruptedException {
     this.fabricClient = fabricClient;
@@ -312,7 +321,7 @@ public class KubePodProcess extends Process {
         .withMountPath(TERMINATION_DIR)
         .build();
 
-    final Container init = getInit(usesStdin, List.of(pipeVolumeMount, configVolumeMount));
+    final Container init = getInit(usesStdin, List.of(pipeVolumeMount, configVolumeMount), busyboxImage);
     final Container main = getMain(
         image,
         imagePullPolicy,
@@ -322,25 +331,29 @@ public class KubePodProcess extends Process {
         resourceRequirements,
         args);
 
+    final io.fabric8.kubernetes.api.model.ResourceRequirements sidecarResources = getResourceRequirementsBuilder(DEFAULT_SIDECAR_RESOURCES).build();
     final Container remoteStdin = new ContainerBuilder()
         .withName("remote-stdin")
-        .withImage("alpine/socat:1.7.4.1-r1")
-        .withCommand("sh", "-c", "socat -d -d -d TCP-L:9001 STDOUT > " + STDIN_PIPE_FILE)
+        .withImage(socatImage)
+        .withCommand("sh", "-c", "socat -d TCP-L:9001 STDOUT > " + STDIN_PIPE_FILE)
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
+        .withResources(sidecarResources)
         .build();
 
     final Container relayStdout = new ContainerBuilder()
         .withName("relay-stdout")
-        .withImage("alpine/socat:1.7.4.1-r1")
-        .withCommand("sh", "-c", String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDOUT_PIPE_FILE, processRunnerHost, stdoutLocalPort))
+        .withImage(socatImage)
+        .withCommand("sh", "-c", String.format("cat %s | socat -d - TCP:%s:%s", STDOUT_PIPE_FILE, processRunnerHost, stdoutLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
+        .withResources(sidecarResources)
         .build();
 
     final Container relayStderr = new ContainerBuilder()
         .withName("relay-stderr")
-        .withImage("alpine/socat:1.7.4.1-r1")
-        .withCommand("sh", "-c", String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDERR_PIPE_FILE, processRunnerHost, stderrLocalPort))
+        .withImage(socatImage)
+        .withCommand("sh", "-c", String.format("cat %s | socat -d - TCP:%s:%s", STDERR_PIPE_FILE, processRunnerHost, stderrLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
+        .withResources(sidecarResources)
         .build();
 
     // communicates via a file if it isn't able to reach the heartbeating server and succeeds if the
@@ -352,10 +365,11 @@ public class KubePodProcess extends Process {
 
     final Container callHeartbeatServer = new ContainerBuilder()
         .withName("call-heartbeat-server")
-        .withImage("curlimages/curl:7.77.0")
+        .withImage(curlImage)
         .withCommand("sh")
         .withArgs("-c", heartbeatCommand)
         .withVolumeMounts(terminationVolumeMount)
+        .withResources(sidecarResources)
         .build();
 
     final List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr, callHeartbeatServer)

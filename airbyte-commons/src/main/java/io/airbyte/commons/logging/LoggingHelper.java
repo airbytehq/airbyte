@@ -4,6 +4,8 @@
 
 package io.airbyte.commons.logging;
 
+import com.google.common.annotations.VisibleForTesting;
+
 public class LoggingHelper {
 
   public enum Color {
@@ -31,7 +33,8 @@ public class LoggingHelper {
 
   public static final String LOG_SOURCE_MDC_KEY = "log_source";
 
-  private static final String RESET = "\u001B[0m";
+  @VisibleForTesting
+  public static final String RESET = "\u001B[0m";
 
   public static String applyColor(final Color color, final String msg) {
     return color.getCode() + msg + RESET;

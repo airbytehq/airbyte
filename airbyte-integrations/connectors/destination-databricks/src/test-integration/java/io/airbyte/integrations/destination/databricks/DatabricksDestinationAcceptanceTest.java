@@ -18,6 +18,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
@@ -31,8 +32,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.jooq.JSONFormat;
-import org.jooq.JSONFormat.RecordFormat;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +40,6 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabricksDestinationAcceptanceTest.class);
   private static final String SECRETS_CONFIG_JSON = "secrets/config.json";
-  private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
   private final ExtendedNameTransformer nameTransformer = new DatabricksNameTransformer();
   private JsonNode configJson;
@@ -85,7 +83,7 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
         .orderBy(field(JavaBaseConstants.COLUMN_NAME_EMITTED_AT).asc())
         .fetch().stream()
         .map(record -> {
-          final JsonNode json = Jsons.deserialize(record.formatJSON(JSON_FORMAT));
+          final JsonNode json = Jsons.deserialize(record.formatJSON(JdbcUtils.getDefaultJSONFormat()));
           final JsonNode jsonWithOriginalFields = nameUpdater.getJsonWithOriginalFieldNames(json);
           return AvroRecordHelper.pruneAirbyteJson(jsonWithOriginalFields);
         })

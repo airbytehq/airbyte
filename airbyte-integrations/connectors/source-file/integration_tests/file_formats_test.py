@@ -6,7 +6,7 @@
 from pathlib import Path
 
 import pytest
-from base_python import AirbyteLogger
+from airbyte_cdk import AirbyteLogger
 from source_file import SourceFile
 from source_file.client import Client
 

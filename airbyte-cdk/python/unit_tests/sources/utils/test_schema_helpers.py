@@ -58,7 +58,7 @@ def spec_object():
 def test_check_config_against_spec_or_exit_does_not_print_schema(capsys, spec_object):
     config = {"super_secret_token": "really_a_secret"}
     with pytest_raises(Exception) as ex_info:
-        check_config_against_spec_or_exit(config, spec_object, logger)
+        check_config_against_spec_or_exit(config, spec_object)
         exc = ex_info.value
         traceback.print_exception(type(exc), exc, exc.__traceback__)
         out, err = capsys.readouterr()
@@ -67,7 +67,7 @@ def test_check_config_against_spec_or_exit_does_not_print_schema(capsys, spec_ob
 
 def test_should_not_fail_validation_for_valid_config(spec_object):
     config = {"api_token": "something"}
-    check_config_against_spec_or_exit(config, spec_object, logger)
+    check_config_against_spec_or_exit(config, spec_object)
     assert True, "should pass validation with valid config"
 
 
@@ -96,9 +96,8 @@ class TestResourceSchemaLoader:
             "properties": {
                 "str": {"type": "string"},
                 "int": {"type": "integer"},
-                "obj": {"$ref": "#/definitions/shared_schema_"},
+                "obj": {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}},
             },
-            "definitions": {"shared_schema_": {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}}},
         }
 
         partial_schema = {
@@ -123,10 +122,9 @@ class TestResourceSchemaLoader:
             "properties": {
                 "str": {"type": "string"},
                 "int": {"type": "integer"},
-                "one_of": {"oneOf": [{"type": "string"}, {"$ref": "#/definitions/shared_schema_type_one"}]},
-                "obj": {"$ref": "#/definitions/shared_schema_type_one"},
+                "one_of": {"oneOf": [{"type": "string"}, {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}}]},
+                "obj": {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}},
             },
-            "definitions": {"shared_schema_type_one": {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}}},
         }
         partial_schema = {
             "type": ["null", "object"],
