@@ -6,7 +6,9 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_flexport.source import FlexportStream
+import requests
+from requests.exceptions import HTTPError
+from source_flexport.source import FlexportStream, FlexportError
 
 
 @pytest.fixture
@@ -17,67 +19,67 @@ def patch_base_class(mocker):
     mocker.patch.object(FlexportStream, "__abstractmethods__", set())
 
 
-def test_request_params(patch_base_class):
+@pytest.mark.parametrize(
+    ("next_page_token", "expected"),
+    [
+        (None, {"page": 1, "per": FlexportStream.page_size}),
+        ({"page": 2, "per": 50}, {"page": 2, "per": 50}),
+    ],
+)
+def test_request_params(patch_base_class, next_page_token, expected):
     stream = FlexportStream()
-    # TODO: replace this with your input parameters
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request parameters
-    expected_params = {}
-    assert stream.request_params(**inputs) == expected_params
-
-
-def test_next_page_token(patch_base_class):
-    stream = FlexportStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected next page token
-    expected_token = None
-    assert stream.next_page_token(**inputs) == expected_token
-
-
-def test_parse_response(patch_base_class):
-    stream = FlexportStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected parced object
-    expected_parsed_object = {}
-    assert next(stream.parse_response(**inputs)) == expected_parsed_object
-
-
-def test_request_headers(patch_base_class):
-    stream = FlexportStream()
-    # TODO: replace this with your input parameters
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request headers
-    expected_headers = {}
-    assert stream.request_headers(**inputs) == expected_headers
-
-
-def test_http_method(patch_base_class):
-    stream = FlexportStream()
-    # TODO: replace this with your expected http request method
-    expected_method = "GET"
-    assert stream.http_method == expected_method
+    assert stream.request_params(None, next_page_token=next_page_token) == expected
 
 
 @pytest.mark.parametrize(
-    ("http_status", "should_retry"),
+    ("response", "expected"),
     [
-        (HTTPStatus.OK, False),
-        (HTTPStatus.BAD_REQUEST, False),
-        (HTTPStatus.TOO_MANY_REQUESTS, True),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, True),
+        ({"data": {"next": None}}, None),
+        ({"data": {"next": "/endpoint"}}, KeyError("page")),
+        ({"data": {"next": "/endpoint?page=2"}}, KeyError("per")),
+        ({"data": {"next": "/endpoint?page=2&per=42"}}, {"page": "2", "per": "42"}),
     ],
 )
-def test_should_retry(patch_base_class, http_status, should_retry):
-    response_mock = MagicMock()
-    response_mock.status_code = http_status
+def test_next_page_token(patch_base_class, requests_mock, response, expected):
+    url = "http://dummy"
+    requests_mock.get(url, json=response)
+    response = requests.get(url)
+
     stream = FlexportStream()
-    assert stream.should_retry(response_mock) == should_retry
+
+    if isinstance(expected, Exception):
+        with pytest.raises(type(expected), match=str(expected)):
+           stream.next_page_token(response)
+    else:
+        assert stream.next_page_token(response) == expected
 
 
-def test_backoff_time(patch_base_class):
-    response_mock = MagicMock()
+@pytest.mark.parametrize(
+    ("status_code", "response", "expected"),
+    [
+        (400, None, Exception()),
+        (401, "string_response", AttributeError("'str' object has no attribute 'get'")),
+        (200, {"error": "unexpected_error_type"}, FlexportError("Unexpected error: unexpected_error_type")),
+        (402, {"error": "unexpected_error_type"}, HTTPError("402 Client Error")),
+        (200, {"error": {"code": "error_code", "message": "Error message"}}, FlexportError("error_code: Error message")),
+        (403, {"error": {"code": "error_code", "message": "Error message"}}, FlexportError("error_code: Error message")),
+        (200, None, Exception()),
+        (200, "string_response", AttributeError("'str' object has no attribute 'get'")),
+        (200, {"data": "unexpected_data_type"}, TypeError("string indices must be integers")),
+        (200, {"data": {"data": None}}, TypeError("'NoneType' object is not iterable")),
+        (200, {"data": {"data": "hello"}}, ["h", "e", "l", "l", "o"]),
+        (200, {"data": {"data": ["record_1", "record_2"]}}, ["record_1", "record_2"]),
+    ],
+)
+def test_parse_response(patch_base_class, requests_mock, status_code, response, expected):
+    url = "http://dummy"
+    requests_mock.get(url, status_code=status_code, json=response)
+    response = requests.get(url)
+
     stream = FlexportStream()
-    expected_backoff_time = None
-    assert stream.backoff_time(response_mock) == expected_backoff_time
+
+    if isinstance(expected, Exception):
+        with pytest.raises(type(expected), match=str(expected)):
+           list(stream.parse_response(response))
+    else:
+        assert list(stream.parse_response(response)) == expected
