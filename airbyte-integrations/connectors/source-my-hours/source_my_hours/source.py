@@ -78,7 +78,7 @@ class TimeLogs(MyHoursStream):
         self.batch_size = batch_size
 
         if self.start_date > pendulum.now():
-            self.logger.log(logging.WARN, f'Stream {self.name}: start_date "{start_date.isoformat()}" should be before today.')
+            self.logger.warn(f'Stream {self.name}: start_date "{start_date.isoformat()}" should be before today.')
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
