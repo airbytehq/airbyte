@@ -28,7 +28,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
 
   @Override
   protected Database setupDatabase() throws SQLException {
-    container = new CockroachContainer("cockroachdb/cockroach");
+    container = new CockroachContainer("cockroachdb/cockroach:v20.2.18");
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()

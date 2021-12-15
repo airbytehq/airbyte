@@ -90,9 +90,11 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
 
     final MongoCollection<Document> collection = database.createCollection(COLLECTION_NAME);
     final var doc1 = new Document("id", "0001").append("name", "Test")
-        .append("test", 10).append("test_array", new BsonArray(List.of(new BsonString("test"), new BsonString("mongo"))));
-    final var doc2 = new Document("id", "0002").append("name", "Mongo").append("test", "test_value");
-    final var doc3 = new Document("id", "0003").append("name", "Source").append("test", null);
+        .append("test", 10).append("test_array", new BsonArray(List.of(new BsonString("test"), new BsonString("mongo"))))
+        .append("double_test", 100.12).append("int_test", 100);
+    final var doc2 = new Document("id", "0002").append("name", "Mongo").append("test", "test_value").append("int_test", 201);
+    final var doc3 = new Document("id", "0003").append("name", "Source").append("test", null)
+        .append("double_test", 212.11).append("int_test", 302);
 
     collection.insertMany(List.of(doc1, doc2, doc3));
   }
@@ -122,7 +124,10 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
                 Field.of("id", JsonSchemaPrimitive.STRING),
                 Field.of("name", JsonSchemaPrimitive.STRING),
                 Field.of("test", JsonSchemaPrimitive.STRING),
-                Field.of("test_array", JsonSchemaPrimitive.ARRAY))
+                Field.of("test_array", JsonSchemaPrimitive.ARRAY),
+                Field.of("empty_test", JsonSchemaPrimitive.STRING),
+                Field.of("double_test", JsonSchemaPrimitive.NUMBER),
+                Field.of("int_test", JsonSchemaPrimitive.NUMBER))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
                 .withDefaultCursorField(List.of("_id")))));
   }

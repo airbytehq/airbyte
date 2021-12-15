@@ -182,6 +182,23 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/workspaces/tag_feedback_status_as_done:
+    post:
+      tags:
+        - workspace
+      summary: Update workspace feedback state
+      operationId: updateWorkspaceFeedback
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceGiveFeedback"
+        required: true
+      responses:
+        "204":
+          description: The feedback state has been properly updated
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
   /v1/notifications/try:
     post:
       tags:
@@ -1919,6 +1936,13 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Notification"
+    WorkspaceGiveFeedback:
+      type: object
+      required:
+        - workspaceId
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
     # SLUG
     SlugRequestBody:
       type: object
