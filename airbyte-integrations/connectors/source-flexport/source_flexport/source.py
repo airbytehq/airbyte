@@ -60,8 +60,13 @@ class FlexportStream(HttpStream, ABC):
 
         error = json.get("error")
         if error:
-            raise FlexportError(f"{error['code']}: {error['message']}") from http_error
-        elif http_error:
+            if "code" in error and "message" in error:
+                raise FlexportError(f"{error['code']}: {error['message']}") from http_error
+
+            if not http_error:
+                raise FlexportError(f"Unexpected error: {error}")
+
+        if http_error:
             raise http_error
 
         yield from json["data"]["data"]
