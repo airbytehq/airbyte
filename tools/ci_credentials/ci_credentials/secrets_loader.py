@@ -145,7 +145,8 @@ class SecretsLoader:
             self.logger.info(f"Register the file {k[1]}({k[0]}) from {source}")
 
         if not len(secrets):
-            return self.logger.critical(f"not found any secrets of the connector '{self.connector_name}'")
+            self.logger.warning(f"not found any secrets of the connector '{self.connector_name}'")
+            return {}
         return {k: v[1] for k, v in secrets.items()}
 
     def write_to_storage(self, secrets: Mapping[Tuple[str, str], str]) -> int:
