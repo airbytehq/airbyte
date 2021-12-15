@@ -258,6 +258,7 @@ font-style: italic;
   <h4><a href="#DestinationDefinition">DestinationDefinition</a></h4>
   <ul>
   <li><a href="#createDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/create</code></a></li>
+  <li><a href="#deleteDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/delete</code></a></li>
   <li><a href="#getDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/get</code></a></li>
   <li><a href="#listDestinationDefinitions"><code><span class="http-method">post</span> /v1/destination_definitions/list</code></a></li>
   <li><a href="#listLatestDestinationDefinitions"><code><span class="http-method">post</span> /v1/destination_definitions/list_latest</code></a></li>
@@ -328,6 +329,7 @@ font-style: italic;
   <h4><a href="#SourceDefinition">SourceDefinition</a></h4>
   <ul>
   <li><a href="#createSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/create</code></a></li>
+  <li><a href="#deleteSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/delete</code></a></li>
   <li><a href="#getSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/get</code></a></li>
   <li><a href="#listLatestSourceDefinitions"><code><span class="http-method">post</span> /v1/source_definitions/list_latest</code></a></li>
   <li><a href="#listSourceDefinitions"><code><span class="http-method">post</span> /v1/source_definitions/list</code></a></li>
@@ -2405,6 +2407,54 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#DestinationDefinitionRead">DestinationDefinitionRead</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="deleteDestinationDefinition"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_definitions/delete</code></pre></div>
+    <div class="method-summary">Delete a destination definition (<span class="nickname">deleteDestinationDefinition</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">DestinationDefinitionIdRequestBody <a href="#DestinationDefinitionIdRequestBody">DestinationDefinitionIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">204</h4>
+    The resource was deleted successfully.
+        <a href="#"></a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
     Input failed validation
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
@@ -4840,6 +4890,54 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="deleteSourceDefinition"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/delete</code></pre></div>
+    <div class="method-summary">Delete a source definition (<span class="nickname">deleteSourceDefinition</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourceDefinitionIdRequestBody <a href="#SourceDefinitionIdRequestBody">SourceDefinitionIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">204</h4>
+    The resource was deleted successfully.
+        <a href="#"></a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
     Input failed validation
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>

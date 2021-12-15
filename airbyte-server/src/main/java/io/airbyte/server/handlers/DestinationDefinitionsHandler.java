@@ -12,6 +12,7 @@ import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
+import io.airbyte.api.model.DestinationRead;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -42,21 +43,25 @@ public class DestinationDefinitionsHandler {
   private final Supplier<UUID> uuidSupplier;
   private final SynchronousSchedulerClient schedulerSynchronousClient;
   private final AirbyteGithubStore githubStore;
+  private final DestinationHandler destinationHandler;
 
   public DestinationDefinitionsHandler(final ConfigRepository configRepository,
-                                       final SynchronousSchedulerClient schedulerSynchronousClient) {
-    this(configRepository, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production());
+                                       final SynchronousSchedulerClient schedulerSynchronousClient,
+                                       final DestinationHandler destinationHandler) {
+    this(configRepository, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production(), destinationHandler);
   }
 
   @VisibleForTesting
   public DestinationDefinitionsHandler(final ConfigRepository configRepository,
                                        final Supplier<UUID> uuidSupplier,
                                        final SynchronousSchedulerClient schedulerSynchronousClient,
-                                       final AirbyteGithubStore githubStore) {
+                                       final AirbyteGithubStore githubStore,
+                                       final DestinationHandler destinationHandler) {
     this.configRepository = configRepository;
     this.uuidSupplier = uuidSupplier;
     this.schedulerSynchronousClient = schedulerSynchronousClient;
     this.githubStore = githubStore;
+    this.destinationHandler = destinationHandler;
   }
 
   @VisibleForTesting
@@ -150,6 +155,23 @@ public class DestinationDefinitionsHandler {
 
     configRepository.writeStandardDestinationDefinition(newDestination);
     return buildDestinationDefinitionRead(newDestination);
+  }
+
+  public void deleteDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    // "delete" all destinations associated with the destination definition as well. This will cascade to connections that depend on any deleted
+    // destinations. Delete destinations first in case a failure occurs mid-operation.
+
+    final StandardDestinationDefinition persistedDestinationDefinition =
+        configRepository.getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
+
+    for (final DestinationRead destinationRead : destinationHandler.listDestinationsForDestinationDefinition(destinationDefinitionIdRequestBody)
+        .getDestinations()) {
+      destinationHandler.deleteDestination(destinationRead);
+    }
+
+    persistedDestinationDefinition.withTombstone(true);
+    configRepository.writeStandardDestinationDefinition(persistedDestinationDefinition);
   }
 
   private ConnectorSpecification getSpecForImage(final String dockerRepository, final String imageTag) throws IOException {
