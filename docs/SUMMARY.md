@@ -182,6 +182,7 @@
     * [Pulsar](integrations/destinations/pulsar.md)
     * [RabbitMQ](integrations/destinations/rabbitmq.md)
     * [Redshift](integrations/destinations/redshift.md)
+    * [Rockset](integrations/destinations/rockset.md)
     * [S3](integrations/destinations/s3.md)
     * [SFTP JSON](integrations/destinations/sftp-json.md)
     * [Snowflake](integrations/destinations/snowflake.md)
