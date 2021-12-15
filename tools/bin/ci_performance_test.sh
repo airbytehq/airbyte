@@ -23,8 +23,6 @@ if [[ "$3" ]]; then
     secondarg="-DmemoryLimit=$(echo $3 | cut -d / -f 2)"
   fi
 fi
-echo "========= cpu -> $firstarg"
-echo "========= memory -> $secondarg"
 all_performance_tests=$(./gradlew performanceTest --dry-run | grep 'performanceTest SKIPPED' | cut -d: -f 4)
 run() {
 if [[ "$connector" == "all" ]] ; then
@@ -54,19 +52,13 @@ else
   if [ -n "$selected_performance_test" ] ; then
     if [[ "$firstarg" ]]; then
       if [[ "$secondarg" ]]; then
-        echo "2 ========= cpu -> $firstarg"
-        echo "2 ======== memory -> $secondarg"
         echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand $firstarg $secondarg"
         ./gradlew --no-daemon --scan "$performanceTestCommand" "$firstarg" "$secondarg"
       else
-        echo "1 ========= cpu -> $firstarg"
-        echo "1 ======== memory -> $secondarg"
         echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand $firstarg"
         ./gradlew --no-daemon --scan "$performanceTestCommand" "$firstarg"
       fi
     else
-      echo "0 ========= cpu -> $firstarg"
-      echo "0 ========= memory -> $secondarg"
       echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand"
       ./gradlew --no-daemon --scan "$performanceTestCommand"
     fi
