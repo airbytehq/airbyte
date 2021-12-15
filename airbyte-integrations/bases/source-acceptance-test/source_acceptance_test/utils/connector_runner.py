@@ -3,15 +3,16 @@
 #
 
 
-import docker
 import json
 import logging
+from pathlib import Path
+from typing import Iterable, List, Mapping, Optional
+
+import docker
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 from docker.errors import ContainerError
 from docker.models.containers import Container
-from pathlib import Path
 from pydantic import ValidationError
-from typing import Iterable, List, Mapping, Optional
 
 
 class ConnectorRunner:
@@ -34,8 +35,7 @@ class ConnectorRunner:
     def input_folder(self) -> Path:
         return self._volume_base / f"run_{self._runs}" / "input"
 
-    def _prepare_volumes(self, config: Optional[Mapping], state: Optional[Mapping],
-                         catalog: Optional[ConfiguredAirbyteCatalog]):
+    def _prepare_volumes(self, config: Optional[Mapping], state: Optional[Mapping], catalog: Optional[ConfiguredAirbyteCatalog]):
         self.input_folder.mkdir(parents=True)
         self.output_folder.mkdir(parents=True)
 
@@ -91,13 +91,15 @@ class ConnectorRunner:
     def run(self, cmd, config=None, state=None, catalog=None, **kwargs) -> Iterable[AirbyteMessage]:
         self._runs += 1
         volumes = self._prepare_volumes(config, state, catalog)
-        logging.debug(f"Docker run {self._image}: \n{cmd}\n"
-                      f"input: {self.input_folder}\noutput: {self.output_folder}")
+        logging.debug(f"Docker run {self._image}: \n{cmd}\n" f"input: {self.input_folder}\noutput: {self.output_folder}")
 
         container = self._client.containers.run(
-            image=self._image, command=cmd,
-            working_dir="/data", volumes=volumes,
-            auto_remove=True, detach=True,
+            image=self._image,
+            command=cmd,
+            working_dir="/data",
+            volumes=volumes,
+            auto_remove=True,
+            detach=True,
             **kwargs,
         )
 
@@ -112,12 +114,9 @@ class ConnectorRunner:
     @classmethod
     def read(cls, container: Container, command: str = None, with_ext: bool = True) -> Iterable[str]:
         """Reads connector's logs per line"""
-        buffer = b''
+        buffer = b""
         has_exception = False
-        for chunk in container.logs(
-                stdout=True, stderr=True,
-                stream=True, follow=True
-        ):
+        for chunk in container.logs(stdout=True, stderr=True, stream=True, follow=True):
             buffer += chunk
             found = buffer.find(b"\n")
             if found <= -1:
@@ -127,15 +126,14 @@ class ConnectorRunner:
                 has_exception = True
             else:
                 yield line
-                buffer = buffer[found + 1:]
+                buffer = buffer[found + 1 :]
         if not has_exception and buffer:
             yield buffer.decode("utf-8")
 
         exit_status = container.wait()
         if exit_status["StatusCode"]:
             error = buffer.decode("utf-8") if has_exception else exit_status["Error"]
-            logging.error(f"Docker container was failed, "
-                          f'code {exit_status["StatusCode"]}, error:\n{error}')
+            logging.error(f"Docker container was failed, " f'code {exit_status["StatusCode"]}, error:\n{error}')
             if with_ext:
                 raise ContainerError(
                     container=container,

@@ -29,16 +29,10 @@ RUN apk --no-cache add bash
 ENV ACCEPTANCE_TEST_DOCKER_CONTAINER 1
 
 # copy payload code only
-COPY setup.py ./
-RUN cat setup.py
-# COPY scripts/ /scripts
 COPY pytest.ini ./
 COPY source_acceptance_test ./source_acceptance_test
-RUN pip install .
 
-LABEL io.airbyte.version=0.1.32
+LABEL io.airbyte.version=0.1.33
 LABEL io.airbyte.name=airbyte/source-acceptance-test
 
-ENTRYPOINT ["airbyte_tests"]
-
-# ENTRYPOINT ["python", "-m", "pytest", "-p", "source_acceptance_test.plugin"]
+ENTRYPOINT ["python", "-m", "pytest", "-p", "source_acceptance_test.plugin"]
