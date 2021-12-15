@@ -91,13 +91,13 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
     final Field<UUID> customerId = DSL.field("customer_id", SQLDataType.UUID.nullable(true));
     final Field<String> email = DSL.field("email", SQLDataType.VARCHAR(256).nullable(true));
     final Field<Boolean> anonymousDataCollection = DSL.field("anonymous_data_collection", SQLDataType.BOOLEAN.nullable(true));
-    final Field<Boolean> news = DSL.field("news", SQLDataType.BOOLEAN.nullable(true));
-    final Field<Boolean> securityUpdates = DSL.field("security_updates", SQLDataType.BOOLEAN.nullable(true));
+    final Field<Boolean> sendNewsletter = DSL.field("send_newsletter", SQLDataType.BOOLEAN.nullable(true));
+    final Field<Boolean> sendSecurityUpdates = DSL.field("send_security_updates", SQLDataType.BOOLEAN.nullable(true));
     final Field<Boolean> displaySetupWizard = DSL.field("display_setup_wizard", SQLDataType.BOOLEAN.nullable(true));
     final Field<Boolean> tombstone = DSL.field("tombstone", SQLDataType.BOOLEAN.nullable(true));
     final Field<JSONB> notifications = DSL.field("notifications", SQLDataType.JSONB.nullable(true));
-    final Field<Boolean> firstCompletedSync = DSL.field("first_completed_sync", SQLDataType.BOOLEAN.nullable(true));
-    final Field<Boolean> feedbackDone = DSL.field("feedback_done", SQLDataType.BOOLEAN.nullable(true));
+    final Field<Boolean> firstSyncComplete = DSL.field("first_sync_complete", SQLDataType.BOOLEAN.nullable(true));
+    final Field<Boolean> feedbackComplete = DSL.field("feedback_complete", SQLDataType.BOOLEAN.nullable(true));
     final Field<OffsetDateTime> createdAt = DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false));
     final Field<OffsetDateTime> updatedAt = DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false));
 
@@ -116,13 +116,13 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
         .withCustomerId(workspace.get(customerId))
         .withEmail(workspace.get(email))
         .withAnonymousDataCollection(workspace.get(anonymousDataCollection))
-        .withNews(workspace.get(news))
-        .withSecurityUpdates(workspace.get(securityUpdates))
+        .withNews(workspace.get(sendNewsletter))
+        .withSecurityUpdates(workspace.get(sendSecurityUpdates))
         .withDisplaySetupWizard(workspace.get(displaySetupWizard))
         .withTombstone(workspace.get(tombstone))
         .withNotifications(notificationList)
-        .withFirstCompletedSync(workspace.get(firstCompletedSync))
-        .withFeedbackDone(workspace.get(feedbackDone));
+        .withFirstCompletedSync(workspace.get(firstSyncComplete))
+        .withFeedbackDone(workspace.get(feedbackComplete));
     Assertions.assertEquals(standardWorkspace(), workspaceFromNewTable);
     Assertions.assertEquals(now(), workspace.get(createdAt).toInstant());
     Assertions.assertEquals(now(), workspace.get(updatedAt).toInstant());

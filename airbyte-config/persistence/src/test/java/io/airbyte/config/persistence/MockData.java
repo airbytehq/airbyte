@@ -2,16 +2,10 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.db.instance.configs.migrations;
+package io.airbyte.config.persistence;
 
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.table;
-
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.AirbyteConfig;
-import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
@@ -47,20 +41,12 @@ import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import java.net.URI;
 import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import javax.annotation.Nullable;
-import org.jooq.DSLContext;
-import org.jooq.Field;
-import org.jooq.JSONB;
-import org.jooq.Record;
-import org.jooq.Table;
 
-public class SetupForNormalizedTablesTest {
+public class MockData {
 
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final UUID WORKSPACE_CUSTOMER_ID = UUID.randomUUID();
@@ -82,77 +68,7 @@ public class SetupForNormalizedTablesTest {
   private static final UUID SOURCE_OAUTH_PARAMETER_ID_2 = UUID.randomUUID();
   private static final UUID DESTINATION_OAUTH_PARAMETER_ID_1 = UUID.randomUUID();
   private static final UUID DESTINATION_OAUTH_PARAMETER_ID_2 = UUID.randomUUID();
-  private static final Table<Record> AIRBYTE_CONFIGS = table("airbyte_configs");
-  private static final Field<String> CONFIG_ID = field("config_id", String.class);
-  private static final Field<String> CONFIG_TYPE = field("config_type", String.class);
-  private static final Field<JSONB> CONFIG_BLOB = field("config_blob", JSONB.class);
-  private static final Field<OffsetDateTime> CREATED_AT = field("created_at", OffsetDateTime.class);
-  private static final Field<OffsetDateTime> UPDATED_AT = field("updated_at", OffsetDateTime.class);
   private static final Instant NOW = Instant.parse("2021-12-15T20:30:40.00Z");
-
-  public static void setup(final DSLContext context) {
-    createConfigInOldTable(context, standardWorkspace(), ConfigSchema.STANDARD_WORKSPACE);
-
-    for (final StandardSourceDefinition standardSourceDefinition : standardSourceDefinitions()) {
-      createConfigInOldTable(context, standardSourceDefinition, ConfigSchema.STANDARD_SOURCE_DEFINITION);
-    }
-
-    for (final StandardDestinationDefinition standardDestinationDefinition : standardDestinationDefinitions()) {
-      createConfigInOldTable(context, standardDestinationDefinition, ConfigSchema.STANDARD_DESTINATION_DEFINITION);
-    }
-
-    for (final SourceConnection sourceConnection : sourceConnections()) {
-      createConfigInOldTable(context, sourceConnection, ConfigSchema.SOURCE_CONNECTION);
-    }
-
-    for (final DestinationConnection destinationConnection : destinationConnections()) {
-      createConfigInOldTable(context, destinationConnection, ConfigSchema.DESTINATION_CONNECTION);
-    }
-
-    for (final SourceOAuthParameter sourceOAuthParameter : sourceOauthParameters()) {
-      createConfigInOldTable(context, sourceOAuthParameter, ConfigSchema.SOURCE_OAUTH_PARAM);
-    }
-
-    for (final DestinationOAuthParameter destinationOAuthParameter : destinationOauthParameters()) {
-      createConfigInOldTable(context, destinationOAuthParameter, ConfigSchema.DESTINATION_OAUTH_PARAM);
-    }
-
-    for (final StandardSyncOperation standardSyncOperation : standardSyncOperations()) {
-      createConfigInOldTable(context, standardSyncOperation, ConfigSchema.STANDARD_SYNC_OPERATION);
-    }
-
-    for (final StandardSync standardSync : standardSyncs()) {
-      createConfigInOldTable(context, standardSync, ConfigSchema.STANDARD_SYNC);
-    }
-    for (final StandardSyncState standardSyncState : standardSyncStates()) {
-      createConfigInOldTable(context, standardSyncState, ConfigSchema.STANDARD_SYNC_STATE);
-    }
-  }
-
-  private static <T> void createConfigInOldTable(final DSLContext context, final T config, final AirbyteConfig configType) {
-    insertConfigRecord(
-        context,
-        configType.name(),
-        Jsons.jsonNode(config),
-        configType.getIdFieldName());
-  }
-
-  private static void insertConfigRecord(
-                                         final DSLContext context,
-                                         final String configType,
-                                         final JsonNode configJson,
-                                         @Nullable final String idFieldName) {
-    final String configId = idFieldName == null ? UUID.randomUUID().toString() : configJson.get(idFieldName).asText();
-    context.insertInto(AIRBYTE_CONFIGS)
-        .set(CONFIG_ID, configId)
-        .set(CONFIG_TYPE, configType)
-        .set(CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(configJson)))
-        .set(CREATED_AT, OffsetDateTime.ofInstant(NOW, ZoneOffset.UTC))
-        .set(UPDATED_AT, OffsetDateTime.ofInstant(NOW, ZoneOffset.UTC))
-        .onConflict(CONFIG_TYPE, CONFIG_ID)
-        .doNothing()
-        .execute();
-  }
 
   public static StandardWorkspace standardWorkspace() {
     final Notification notification = new Notification()

@@ -62,6 +62,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -71,6 +72,7 @@ import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Record1;
 import org.jooq.Result;
+import org.jooq.SelectJoinStep;
 import org.jooq.TableField;
 import org.jooq.impl.TableImpl;
 import org.slf4j.Logger;
@@ -118,110 +120,65 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   private StandardWorkspace getStandardWorkspace(final String configId) throws IOException, ConfigNotFoundException {
-    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
-        .from(WORKSPACE)
-        .where(WORKSPACE.ID.eq(UUID.fromString(configId)))
-        .fetch());
-
+    final List<ConfigWithMetadata<StandardWorkspace>> result = listStandardWorkspaceWithMetadata(Optional.of(UUID.fromString(configId)));
     validate(configId, result, ConfigSchema.STANDARD_WORKSPACE);
-    final Record record = result.get(0);
-
-    final List<Notification> notificationList = new ArrayList<>();
-    final List fetchedNotifications = Jsons.deserialize(record.get(WORKSPACE.NOTIFICATIONS).data(), List.class);
-    for (Object notification : fetchedNotifications) {
-      notificationList.add(Jsons.convertValue(notification, Notification.class));
-    }
-    return buildStandardWorkspace(record, notificationList);
+    return result.get(0).getConfig();
   }
 
   private StandardSourceDefinition getStandardSourceDefinition(final String configId) throws IOException, ConfigNotFoundException {
-    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
-        .from(ACTOR_DEFINITION)
-        .where(ACTOR_DEFINITION.ACTOR_TYPE.eq(ActorType.source), ACTOR_DEFINITION.ID.eq(UUID.fromString(configId)))
-        .fetch());
-
+    final List<ConfigWithMetadata<StandardSourceDefinition>> result =
+        listStandardSourceDefinitionWithMetadata(Optional.of(UUID.fromString(configId)));
     validate(configId, result, ConfigSchema.STANDARD_SOURCE_DEFINITION);
-    return buildStandardSourceDefinition(result.get(0));
+    return result.get(0).getConfig();
   }
 
   private StandardDestinationDefinition getStandardDestinationDefinition(final String configId) throws IOException, ConfigNotFoundException {
-    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
-        .from(ACTOR_DEFINITION)
-        .where(ACTOR_DEFINITION.ACTOR_TYPE.eq(ActorType.destination), ACTOR_DEFINITION.ID.eq(UUID.fromString(configId)))
-        .fetch());
-
+    final List<ConfigWithMetadata<StandardDestinationDefinition>> result =
+        listStandardDestinationDefinitionWithMetadata(Optional.of(UUID.fromString(configId)));
     validate(configId, result, ConfigSchema.STANDARD_DESTINATION_DEFINITION);
-    return buildStandardDestinationDefinition(result.get(0));
+    return result.get(0).getConfig();
   }
 
   private SourceConnection getSourceConnection(String configId) throws IOException, ConfigNotFoundException {
-    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
-        .from(ACTOR)
-        .where(ACTOR.ACTOR_TYPE.eq(ActorType.source), ACTOR.ID.eq(UUID.fromString(configId)))
-        .fetch());
-
+    final List<ConfigWithMetadata<SourceConnection>> result = listSourceConnectionWithMetadata(Optional.of(UUID.fromString(configId)));
     validate(configId, result, ConfigSchema.SOURCE_CONNECTION);
-    return buildSourceConnection(result.get(0));
+    return result.get(0).getConfig();
   }
 
   private DestinationConnection getDestinationConnection(final String configId) throws IOException, ConfigNotFoundException {
-    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
-        .from(ACTOR)
-        .where(ACTOR.ACTOR_TYPE.eq(ActorType.destination), ACTOR.ID.eq(UUID.fromString(configId)))
-        .fetch());
-
+    final List<ConfigWithMetadata<DestinationConnection>> result = listDestinationConnectionWithMetadata(Optional.of(UUID.fromString(configId)));
     validate(configId, result, ConfigSchema.DESTINATION_CONNECTION);
-    return buildDestinationConnection(result.get(0));
+    return result.get(0).getConfig();
   }
 
   private SourceOAuthParameter getSourceOauthParam(final String configId) throws IOException, ConfigNotFoundException {
-    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
-        .from(ACTOR_OAUTH_PARAMETER)
-        .where(ACTOR_OAUTH_PARAMETER.ACTOR_TYPE.eq(ActorType.source), ACTOR_OAUTH_PARAMETER.ID.eq(UUID.fromString(configId)))
-        .fetch());
-
+    final List<ConfigWithMetadata<SourceOAuthParameter>> result = listSourceOauthParamWithMetadata(Optional.of(UUID.fromString(configId)));
     validate(configId, result, ConfigSchema.SOURCE_OAUTH_PARAM);
-    return buildSourceOAuthParameter(result.get(0));
+    return result.get(0).getConfig();
   }
 
   private DestinationOAuthParameter getDestinationOauthParam(final String configId) throws IOException, ConfigNotFoundException {
-    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
-        .from(ACTOR_OAUTH_PARAMETER)
-        .where(ACTOR_OAUTH_PARAMETER.ACTOR_TYPE.eq(ActorType.destination), ACTOR_OAUTH_PARAMETER.ID.eq(UUID.fromString(configId)))
-        .fetch());
-
+    final List<ConfigWithMetadata<DestinationOAuthParameter>> result = listDestinationOauthParamWithMetadata(Optional.of(UUID.fromString(configId)));
     validate(configId, result, ConfigSchema.DESTINATION_OAUTH_PARAM);
-    return buildDestinationOAuthParameter(result.get(0));
+    return result.get(0).getConfig();
   }
 
   private StandardSyncOperation getStandardSyncOperation(final String configId) throws IOException, ConfigNotFoundException {
-    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
-        .from(OPERATION)
-        .where(OPERATION.ID.eq(UUID.fromString(configId)))
-        .fetch());
-
+    final List<ConfigWithMetadata<StandardSyncOperation>> result = listStandardSyncOperationWithMetadata(Optional.of(UUID.fromString(configId)));
     validate(configId, result, ConfigSchema.STANDARD_SYNC_OPERATION);
-    return buildStandardSyncOperation(result.get(0));
+    return result.get(0).getConfig();
   }
 
   private StandardSync getStandardSync(final String configId) throws IOException, ConfigNotFoundException {
-    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
-        .from(CONNECTION)
-        .where(CONNECTION.ID.eq(UUID.fromString(configId)))
-        .fetch());
-
+    final List<ConfigWithMetadata<StandardSync>> result = listStandardSyncWithMetadata(Optional.of(UUID.fromString(configId)));
     validate(configId, result, ConfigSchema.STANDARD_SYNC);
-    return buildStandardSync(result.get(0));
+    return result.get(0).getConfig();
   }
 
   private StandardSyncState getStandardSyncState(final String configId) throws IOException, ConfigNotFoundException {
-    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
-        .from(STATE)
-        .where(STATE.CONNECTION_ID.eq(UUID.fromString(configId)))
-        .fetch());
-
+    final List<ConfigWithMetadata<StandardSyncState>> result = listStandardSyncStateWithMetadata(Optional.of(UUID.fromString(configId)));
     validate(configId, result, ConfigSchema.STANDARD_SYNC_STATE);
-    return buildStandardSyncState(result.get(0));
+    return result.get(0).getConfig();
   }
 
   private List<UUID> connectionOperationIds(final UUID connectionId) throws IOException {
@@ -238,7 +195,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     return ids;
   }
 
-  private void validate(final String configId, final Result<Record> result, final AirbyteConfig airbyteConfig) throws ConfigNotFoundException {
+  private <T> void validate(final String configId, final List<ConfigWithMetadata<T>> result, final AirbyteConfig airbyteConfig)
+      throws ConfigNotFoundException {
     if (result.isEmpty()) {
       throw new ConfigNotFoundException(airbyteConfig, configId);
     } else if (result.size() > 1) {
@@ -284,9 +242,17 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   private List<ConfigWithMetadata<StandardWorkspace>> listStandardWorkspaceWithMetadata() throws IOException {
-    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
-        .from(WORKSPACE)
-        .fetch());
+    return listStandardWorkspaceWithMetadata(Optional.empty());
+  }
+
+  private List<ConfigWithMetadata<StandardWorkspace>> listStandardWorkspaceWithMetadata(final Optional<UUID> configId) throws IOException {
+    final Result<Record> result = database.query(ctx -> {
+      final SelectJoinStep<Record> query = ctx.select(asterisk()).from(WORKSPACE);
+      if (configId.isPresent()) {
+        return query.where(WORKSPACE.ID.eq(configId.get())).fetch();
+      }
+      return query.fetch();
+    });
 
     final List<ConfigWithMetadata<StandardWorkspace>> standardWorkspaces = new ArrayList<>();
     for (final Record record : result) {
@@ -315,20 +281,28 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .withCustomerId(record.get(WORKSPACE.CUSTOMER_ID))
         .withEmail(record.get(WORKSPACE.EMAIL))
         .withAnonymousDataCollection(record.get(WORKSPACE.ANONYMOUS_DATA_COLLECTION))
-        .withNews(record.get(WORKSPACE.NEWS))
-        .withSecurityUpdates(record.get(WORKSPACE.SECURITY_UPDATES))
+        .withNews(record.get(WORKSPACE.SEND_NEWSLETTER))
+        .withSecurityUpdates(record.get(WORKSPACE.SEND_SECURITY_UPDATES))
         .withDisplaySetupWizard(record.get(WORKSPACE.DISPLAY_SETUP_WIZARD))
         .withTombstone(record.get(WORKSPACE.TOMBSTONE))
         .withNotifications(notificationList)
-        .withFirstCompletedSync(record.get(WORKSPACE.FIRST_COMPLETED_SYNC))
-        .withFeedbackDone(record.get(WORKSPACE.FEEDBACK_DONE));
+        .withFirstCompletedSync(record.get(WORKSPACE.FIRST_SYNC_COMPLETE))
+        .withFeedbackDone(record.get(WORKSPACE.FEEDBACK_COMPLETE));
   }
 
   private List<ConfigWithMetadata<StandardSourceDefinition>> listStandardSourceDefinitionWithMetadata() throws IOException {
-    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
-        .from(ACTOR_DEFINITION)
-        .where(ACTOR_DEFINITION.ACTOR_TYPE.eq(ActorType.source))
-        .fetch());
+    return listStandardSourceDefinitionWithMetadata(Optional.empty());
+  }
+
+  private List<ConfigWithMetadata<StandardSourceDefinition>> listStandardSourceDefinitionWithMetadata(final Optional<UUID> configId)
+      throws IOException {
+    final Result<Record> result = database.query(ctx -> {
+      final SelectJoinStep<Record> query = ctx.select(asterisk()).from(ACTOR_DEFINITION);
+      if (configId.isPresent()) {
+        return query.where(ACTOR_DEFINITION.ACTOR_TYPE.eq(ActorType.source), ACTOR_DEFINITION.ID.eq(configId.get())).fetch();
+      }
+      return query.where(ACTOR_DEFINITION.ACTOR_TYPE.eq(ActorType.source)).fetch();
+    });
 
     final List<ConfigWithMetadata<StandardSourceDefinition>> standardSourceDefinitions = new ArrayList<>();
 
@@ -358,10 +332,18 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   private List<ConfigWithMetadata<StandardDestinationDefinition>> listStandardDestinationDefinitionWithMetadata() throws IOException {
-    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
-        .from(ACTOR_DEFINITION)
-        .where(ACTOR_DEFINITION.ACTOR_TYPE.eq(ActorType.destination))
-        .fetch());
+    return listStandardDestinationDefinitionWithMetadata(Optional.empty());
+  }
+
+  private List<ConfigWithMetadata<StandardDestinationDefinition>> listStandardDestinationDefinitionWithMetadata(final Optional<UUID> configId)
+      throws IOException {
+    final Result<Record> result = database.query(ctx -> {
+      final SelectJoinStep<Record> query = ctx.select(asterisk()).from(ACTOR_DEFINITION);
+      if (configId.isPresent()) {
+        return query.where(ACTOR_DEFINITION.ACTOR_TYPE.eq(ActorType.destination), ACTOR_DEFINITION.ID.eq(configId.get())).fetch();
+      }
+      return query.where(ACTOR_DEFINITION.ACTOR_TYPE.eq(ActorType.destination)).fetch();
+    });
 
     final List<ConfigWithMetadata<StandardDestinationDefinition>> standardDestinationDefinitions = new ArrayList<>();
 
@@ -389,10 +371,17 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   private List<ConfigWithMetadata<SourceConnection>> listSourceConnectionWithMetadata() throws IOException {
-    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
-        .from(ACTOR)
-        .where(ACTOR.ACTOR_TYPE.eq(ActorType.source))
-        .fetch());
+    return listSourceConnectionWithMetadata(Optional.empty());
+  }
+
+  private List<ConfigWithMetadata<SourceConnection>> listSourceConnectionWithMetadata(final Optional<UUID> configId) throws IOException {
+    final Result<Record> result = database.query(ctx -> {
+      final SelectJoinStep<Record> query = ctx.select(asterisk()).from(ACTOR);
+      if (configId.isPresent()) {
+        return query.where(ACTOR.ACTOR_TYPE.eq(ActorType.source), ACTOR.ID.eq(configId.get())).fetch();
+      }
+      return query.where(ACTOR.ACTOR_TYPE.eq(ActorType.source)).fetch();
+    });
 
     final List<ConfigWithMetadata<SourceConnection>> sourceConnections = new ArrayList<>();
     for (final Record record : result) {
@@ -418,10 +407,17 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   private List<ConfigWithMetadata<DestinationConnection>> listDestinationConnectionWithMetadata() throws IOException {
-    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
-        .from(ACTOR)
-        .where(ACTOR.ACTOR_TYPE.eq(ActorType.destination))
-        .fetch());
+    return listDestinationConnectionWithMetadata(Optional.empty());
+  }
+
+  private List<ConfigWithMetadata<DestinationConnection>> listDestinationConnectionWithMetadata(final Optional<UUID> configId) throws IOException {
+    final Result<Record> result = database.query(ctx -> {
+      final SelectJoinStep<Record> query = ctx.select(asterisk()).from(ACTOR);
+      if (configId.isPresent()) {
+        return query.where(ACTOR.ACTOR_TYPE.eq(ActorType.destination), ACTOR.ID.eq(configId.get())).fetch();
+      }
+      return query.where(ACTOR.ACTOR_TYPE.eq(ActorType.destination)).fetch();
+    });
 
     final List<ConfigWithMetadata<DestinationConnection>> destinationConnections = new ArrayList<>();
     for (final Record record : result) {
@@ -447,10 +443,17 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   private List<ConfigWithMetadata<SourceOAuthParameter>> listSourceOauthParamWithMetadata() throws IOException {
-    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
-        .from(ACTOR_OAUTH_PARAMETER)
-        .where(ACTOR_OAUTH_PARAMETER.ACTOR_TYPE.eq(ActorType.source))
-        .fetch());
+    return listSourceOauthParamWithMetadata(Optional.empty());
+  }
+
+  private List<ConfigWithMetadata<SourceOAuthParameter>> listSourceOauthParamWithMetadata(final Optional<UUID> configId) throws IOException {
+    final Result<Record> result = database.query(ctx -> {
+      final SelectJoinStep<Record> query = ctx.select(asterisk()).from(ACTOR_OAUTH_PARAMETER);
+      if (configId.isPresent()) {
+        return query.where(ACTOR_OAUTH_PARAMETER.ACTOR_TYPE.eq(ActorType.source), ACTOR_OAUTH_PARAMETER.ID.eq(configId.get())).fetch();
+      }
+      return query.where(ACTOR_OAUTH_PARAMETER.ACTOR_TYPE.eq(ActorType.source)).fetch();
+    });
 
     final List<ConfigWithMetadata<SourceOAuthParameter>> sourceOAuthParameters = new ArrayList<>();
     for (final Record record : result) {
@@ -474,10 +477,18 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   private List<ConfigWithMetadata<DestinationOAuthParameter>> listDestinationOauthParamWithMetadata() throws IOException {
-    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
-        .from(ACTOR_OAUTH_PARAMETER)
-        .where(ACTOR_OAUTH_PARAMETER.ACTOR_TYPE.eq(ActorType.destination))
-        .fetch());
+    return listDestinationOauthParamWithMetadata(Optional.empty());
+  }
+
+  private List<ConfigWithMetadata<DestinationOAuthParameter>> listDestinationOauthParamWithMetadata(final Optional<UUID> configId)
+      throws IOException {
+    final Result<Record> result = database.query(ctx -> {
+      final SelectJoinStep<Record> query = ctx.select(asterisk()).from(ACTOR_OAUTH_PARAMETER);
+      if (configId.isPresent()) {
+        return query.where(ACTOR_OAUTH_PARAMETER.ACTOR_TYPE.eq(ActorType.destination), ACTOR_OAUTH_PARAMETER.ID.eq(configId.get())).fetch();
+      }
+      return query.where(ACTOR_OAUTH_PARAMETER.ACTOR_TYPE.eq(ActorType.destination)).fetch();
+    });
 
     final List<ConfigWithMetadata<DestinationOAuthParameter>> destinationOAuthParameters = new ArrayList<>();
     for (final Record record : result) {
@@ -501,9 +512,17 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   private List<ConfigWithMetadata<StandardSyncOperation>> listStandardSyncOperationWithMetadata() throws IOException {
-    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
-        .from(OPERATION)
-        .fetch());
+    return listStandardSyncOperationWithMetadata(Optional.empty());
+  }
+
+  private List<ConfigWithMetadata<StandardSyncOperation>> listStandardSyncOperationWithMetadata(final Optional<UUID> configId) throws IOException {
+    final Result<Record> result = database.query(ctx -> {
+      final SelectJoinStep<Record> query = ctx.select(asterisk()).from(OPERATION);
+      if (configId.isPresent()) {
+        return query.where(OPERATION.ID.eq(configId.get())).fetch();
+      }
+      return query.fetch();
+    });
 
     final List<ConfigWithMetadata<StandardSyncOperation>> standardSyncOperations = new ArrayList<>();
     for (final Record record : result) {
@@ -530,9 +549,17 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   private List<ConfigWithMetadata<StandardSync>> listStandardSyncWithMetadata() throws IOException {
-    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
-        .from(CONNECTION)
-        .fetch());
+    return listStandardSyncWithMetadata(Optional.empty());
+  }
+
+  private List<ConfigWithMetadata<StandardSync>> listStandardSyncWithMetadata(final Optional<UUID> configId) throws IOException {
+    final Result<Record> result = database.query(ctx -> {
+      final SelectJoinStep<Record> query = ctx.select(asterisk()).from(CONNECTION);
+      if (configId.isPresent()) {
+        return query.where(CONNECTION.ID.eq(configId.get())).fetch();
+      }
+      return query.fetch();
+    });
 
     final List<ConfigWithMetadata<StandardSync>> standardSyncs = new ArrayList<>();
     for (final Record record : result) {
@@ -568,9 +595,17 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   private List<ConfigWithMetadata<StandardSyncState>> listStandardSyncStateWithMetadata() throws IOException {
-    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
-        .from(STATE)
-        .fetch());
+    return listStandardSyncStateWithMetadata(Optional.empty());
+  }
+
+  private List<ConfigWithMetadata<StandardSyncState>> listStandardSyncStateWithMetadata(final Optional<UUID> configId) throws IOException {
+    final Result<Record> result = database.query(ctx -> {
+      final SelectJoinStep<Record> query = ctx.select(asterisk()).from(STATE);
+      if (configId.isPresent()) {
+        return query.where(STATE.CONNECTION_ID.eq(configId.get())).fetch();
+      }
+      return query.fetch();
+    });
     final List<ConfigWithMetadata<StandardSyncState>> standardSyncStates = new ArrayList<>();
     for (final Record record : result) {
       final StandardSyncState standardSyncState = buildStandardSyncState(record);
@@ -640,13 +675,13 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(WORKSPACE.EMAIL, standardWorkspace.getEmail())
             .set(WORKSPACE.INITIAL_SETUP_COMPLETE, standardWorkspace.getInitialSetupComplete())
             .set(WORKSPACE.ANONYMOUS_DATA_COLLECTION, standardWorkspace.getAnonymousDataCollection())
-            .set(WORKSPACE.NEWS, standardWorkspace.getNews())
-            .set(WORKSPACE.SECURITY_UPDATES, standardWorkspace.getSecurityUpdates())
+            .set(WORKSPACE.SEND_NEWSLETTER, standardWorkspace.getNews())
+            .set(WORKSPACE.SEND_SECURITY_UPDATES, standardWorkspace.getSecurityUpdates())
             .set(WORKSPACE.DISPLAY_SETUP_WIZARD, standardWorkspace.getDisplaySetupWizard())
             .set(WORKSPACE.TOMBSTONE, standardWorkspace.getTombstone() != null && standardWorkspace.getTombstone())
             .set(WORKSPACE.NOTIFICATIONS, JSONB.valueOf(Jsons.serialize(standardWorkspace.getNotifications())))
-            .set(WORKSPACE.FIRST_COMPLETED_SYNC, standardWorkspace.getFirstCompletedSync())
-            .set(WORKSPACE.FEEDBACK_DONE, standardWorkspace.getFeedbackDone())
+            .set(WORKSPACE.FIRST_SYNC_COMPLETE, standardWorkspace.getFirstCompletedSync())
+            .set(WORKSPACE.FEEDBACK_COMPLETE, standardWorkspace.getFeedbackDone())
             .set(WORKSPACE.UPDATED_AT, timestamp)
             .where(WORKSPACE.ID.eq(standardWorkspace.getWorkspaceId()))
             .execute();
@@ -659,13 +694,13 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(WORKSPACE.EMAIL, standardWorkspace.getEmail())
             .set(WORKSPACE.INITIAL_SETUP_COMPLETE, standardWorkspace.getInitialSetupComplete())
             .set(WORKSPACE.ANONYMOUS_DATA_COLLECTION, standardWorkspace.getAnonymousDataCollection())
-            .set(WORKSPACE.NEWS, standardWorkspace.getNews())
-            .set(WORKSPACE.SECURITY_UPDATES, standardWorkspace.getSecurityUpdates())
+            .set(WORKSPACE.SEND_NEWSLETTER, standardWorkspace.getNews())
+            .set(WORKSPACE.SEND_SECURITY_UPDATES, standardWorkspace.getSecurityUpdates())
             .set(WORKSPACE.DISPLAY_SETUP_WIZARD, standardWorkspace.getDisplaySetupWizard())
             .set(WORKSPACE.TOMBSTONE, standardWorkspace.getTombstone() != null && standardWorkspace.getTombstone())
             .set(WORKSPACE.NOTIFICATIONS, JSONB.valueOf(Jsons.serialize(standardWorkspace.getNotifications())))
-            .set(WORKSPACE.FIRST_COMPLETED_SYNC, standardWorkspace.getFirstCompletedSync())
-            .set(WORKSPACE.FEEDBACK_DONE, standardWorkspace.getFeedbackDone())
+            .set(WORKSPACE.FIRST_SYNC_COMPLETE, standardWorkspace.getFirstCompletedSync())
+            .set(WORKSPACE.FEEDBACK_COMPLETE, standardWorkspace.getFeedbackDone())
             .set(WORKSPACE.CREATED_AT, timestamp)
             .set(WORKSPACE.UPDATED_AT, timestamp)
             .execute();

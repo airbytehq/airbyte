@@ -98,7 +98,13 @@ public class FlywayDatabaseMigrator implements DatabaseMigrator {
 
   @Override
   public String dumpSchema() throws IOException {
-    return new ExceptionWrappingDatabase(database).query(ctx -> ctx.meta().ddl().queryStream()
+    final String disclaimer =
+        """
+        // The content of the file is just to have a basic idea of the current state of the database and is not fully accurate.\040
+        // It is also not used by any piece of code to generate anything.\040
+        // It doesn't contain the enums created in the database and the default values might also be buggy.\s
+        """;
+    return disclaimer + '\n' + new ExceptionWrappingDatabase(database).query(ctx -> ctx.meta().ddl().queryStream()
         .map(query -> query.toString() + ";")
         .filter(statement -> !statement.startsWith("create schema"))
         .collect(Collectors.joining("\n")));

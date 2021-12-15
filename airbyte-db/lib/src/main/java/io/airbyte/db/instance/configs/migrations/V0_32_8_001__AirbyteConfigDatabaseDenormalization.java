@@ -93,13 +93,13 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     final Field<UUID> customerId = DSL.field("customer_id", SQLDataType.UUID.nullable(true));
     final Field<String> email = DSL.field("email", SQLDataType.VARCHAR(256).nullable(true));
     final Field<Boolean> anonymousDataCollection = DSL.field("anonymous_data_collection", SQLDataType.BOOLEAN.nullable(true));
-    final Field<Boolean> news = DSL.field("news", SQLDataType.BOOLEAN.nullable(true));
-    final Field<Boolean> securityUpdates = DSL.field("security_updates", SQLDataType.BOOLEAN.nullable(true));
+    final Field<Boolean> sendNewsletter = DSL.field("send_newsletter", SQLDataType.BOOLEAN.nullable(true));
+    final Field<Boolean> sendSecurityUpdates = DSL.field("send_security_updates", SQLDataType.BOOLEAN.nullable(true));
     final Field<Boolean> displaySetupWizard = DSL.field("display_setup_wizard", SQLDataType.BOOLEAN.nullable(true));
     final Field<Boolean> tombstone = DSL.field("tombstone", SQLDataType.BOOLEAN.nullable(false).defaultValue(false));
     final Field<JSONB> notifications = DSL.field("notifications", SQLDataType.JSONB.nullable(true));
-    final Field<Boolean> firstCompletedSync = DSL.field("first_completed_sync", SQLDataType.BOOLEAN.nullable(true));
-    final Field<Boolean> feedbackDone = DSL.field("feedback_done", SQLDataType.BOOLEAN.nullable(true));
+    final Field<Boolean> firstSyncComplete = DSL.field("first_sync_complete", SQLDataType.BOOLEAN.nullable(true));
+    final Field<Boolean> feedbackComplete = DSL.field("feedback_complete", SQLDataType.BOOLEAN.nullable(true));
     final Field<OffsetDateTime> createdAt =
         DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
     final Field<OffsetDateTime> updatedAt =
@@ -113,13 +113,13 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
             email,
             initialSetupComplete,
             anonymousDataCollection,
-            news,
-            securityUpdates,
+            sendNewsletter,
+            sendSecurityUpdates,
             displaySetupWizard,
             tombstone,
             notifications,
-            firstCompletedSync,
-            feedbackDone,
+            firstSyncComplete,
+            feedbackComplete,
             createdAt,
             updatedAt)
         .constraints(primaryKey(id))
@@ -139,13 +139,13 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
           .set(email, standardWorkspace.getEmail())
           .set(initialSetupComplete, standardWorkspace.getInitialSetupComplete())
           .set(anonymousDataCollection, standardWorkspace.getAnonymousDataCollection())
-          .set(news, standardWorkspace.getNews())
-          .set(securityUpdates, standardWorkspace.getSecurityUpdates())
+          .set(sendNewsletter, standardWorkspace.getNews())
+          .set(sendSecurityUpdates, standardWorkspace.getSecurityUpdates())
           .set(displaySetupWizard, standardWorkspace.getDisplaySetupWizard())
           .set(tombstone, standardWorkspace.getTombstone())
           .set(notifications, JSONB.valueOf(Jsons.serialize(standardWorkspace.getNotifications())))
-          .set(firstCompletedSync, standardWorkspace.getFirstCompletedSync())
-          .set(feedbackDone, standardWorkspace.getFeedbackDone())
+          .set(firstSyncComplete, standardWorkspace.getFirstCompletedSync())
+          .set(feedbackComplete, standardWorkspace.getFeedbackDone())
           .set(createdAt, OffsetDateTime.ofInstant(configWithMetadata.getCreatedAt(), ZoneOffset.UTC))
           .set(updatedAt, OffsetDateTime.ofInstant(configWithMetadata.getUpdatedAt(), ZoneOffset.UTC))
           .execute();
@@ -256,8 +256,8 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
             createdAt,
             updatedAt)
         .constraints(primaryKey(id),
-            foreignKey(workspaceId).references("workspace", "id"),
-            foreignKey(actorDefinitionId).references("actor_definition", "id"))
+            foreignKey(workspaceId).references("workspace", "id").onDeleteCascade(),
+            foreignKey(actorDefinitionId).references("actor_definition", "id").onDeleteCascade())
         .execute();
     ctx.createIndex("actor_actor_definition_id_idx").on("actor", "actor_definition_id").execute();
 
@@ -326,8 +326,8 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
             createdAt,
             updatedAt)
         .constraints(primaryKey(id),
-            foreignKey(workspaceId).references("workspace", "id"),
-            foreignKey(actorDefinitionId).references("actor_definition", "id"))
+            foreignKey(workspaceId).references("workspace", "id").onDeleteCascade(),
+            foreignKey(actorDefinitionId).references("actor_definition", "id").onDeleteCascade())
         .execute();
 
     LOGGER.info("actor_oauth_parameter table created");
@@ -397,7 +397,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
             createdAt,
             updatedAt)
         .constraints(primaryKey(id),
-            foreignKey(workspaceId).references("workspace", "id"))
+            foreignKey(workspaceId).references("workspace", "id").onDeleteCascade())
         .execute();
 
     LOGGER.info("operation table created");
@@ -442,8 +442,8 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
             createdAt,
             updatedAt)
         .constraints(primaryKey(id, connectionId, operationId),
-            foreignKey(connectionId).references("connection", "id"),
-            foreignKey(operationId).references("operation", "id"))
+            foreignKey(connectionId).references("connection", "id").onDeleteCascade(),
+            foreignKey(operationId).references("operation", "id").onDeleteCascade())
         .execute();
     LOGGER.info("connection_operation table created");
   }
@@ -483,8 +483,8 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
             createdAt,
             updatedAt)
         .constraints(primaryKey(id),
-            foreignKey(sourceId).references("actor", "id"),
-            foreignKey(destinationId).references("actor", "id"))
+            foreignKey(sourceId).references("actor", "id").onDeleteCascade(),
+            foreignKey(destinationId).references("actor", "id").onDeleteCascade())
         .execute();
     ctx.createIndex("connection_source_id_idx").on("connection", "source_id").execute();
     ctx.createIndex("connection_destination_id_idx").on("connection", "destination_id").execute();
@@ -537,7 +537,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
             createdAt,
             updatedAt)
         .constraints(primaryKey(id, connectionId),
-            foreignKey(connectionId).references("connection", "id"))
+            foreignKey(connectionId).references("connection", "id").onDeleteCascade())
         .execute();
 
     LOGGER.info("state table created");

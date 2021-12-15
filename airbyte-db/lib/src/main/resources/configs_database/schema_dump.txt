@@ -1,3 +1,7 @@
+// The content of the file is just to have a basic idea of the current state of the database and is not fully accurate. 
+// It is also not used by any piece of code to generate anything. 
+// It doesn't contain the enums created in the database and the default values might also be buggy. 
+
 create table "public"."actor"(
   "id" uuid not null,
   "workspace_id" uuid not null,
@@ -125,13 +129,13 @@ create table "public"."workspace"(
   "email" varchar(256) null,
   "initial_setup_complete" bool not null,
   "anonymous_data_collection" bool null,
-  "news" bool null,
-  "security_updates" bool null,
+  "send_newsletter" bool null,
+  "send_security_updates" bool null,
   "display_setup_wizard" bool null,
   "tombstone" bool not null default false,
   "notifications" jsonb null,
-  "first_completed_sync" bool null,
-  "feedback_done" bool null,
+  "first_sync_complete" bool null,
+  "feedback_complete" bool null,
   "created_at" timestamptz(35) not null default null,
   "updated_at" timestamptz(35) not null default null,
   constraint "workspace_pkey"
