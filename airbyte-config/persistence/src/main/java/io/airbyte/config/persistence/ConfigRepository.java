@@ -117,24 +117,34 @@ public class ConfigRepository {
     persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
   }
 
-  public StandardSourceDefinition getStandardSourceDefinition(final UUID sourceDefinitionId)
+  public StandardSourceDefinition getStandardSourceDefinition(final UUID sourceDefinitionId, final boolean includeTombstone)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionId.toString(), StandardSourceDefinition.class);
+
+    final StandardSourceDefinition sourceDefinition = persistence.getConfig(
+        ConfigSchema.STANDARD_SOURCE_DEFINITION,
+        sourceDefinitionId.toString(),
+        StandardSourceDefinition.class);
+
+    if (!MoreBooleans.isTruthy(sourceDefinition.getTombstone()) || includeTombstone) {
+      return sourceDefinition;
+    }
+
+    throw new ConfigNotFoundException(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionId.toString());
   }
 
-  public StandardSourceDefinition getSourceDefinitionFromSource(final UUID sourceId) {
+  public StandardSourceDefinition getSourceDefinitionFromSource(final UUID sourceId, final boolean includeTombstone) {
     try {
       final SourceConnection source = getSourceConnection(sourceId);
-      return getStandardSourceDefinition(source.getSourceDefinitionId());
+      return getStandardSourceDefinition(source.getSourceDefinitionId(), includeTombstone);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  public StandardSourceDefinition getSourceDefinitionFromConnection(final UUID connectionId) {
+  public StandardSourceDefinition getSourceDefinitionFromConnection(final UUID connectionId, final boolean includeTombstone) {
     try {
       final StandardSync sync = getStandardSync(connectionId);
-      return getSourceDefinitionFromSource(sync.getSourceId());
+      return getSourceDefinitionFromSource(sync.getSourceId(), includeTombstone);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
@@ -150,8 +160,16 @@ public class ConfigRepository {
     }
   }
 
-  public List<StandardSourceDefinition> listStandardSourceDefinitions() throws JsonValidationException, IOException {
-    return persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
+  public List<StandardSourceDefinition> listStandardSourceDefinitions(final boolean includeTombstone) throws JsonValidationException, IOException {
+    final List<StandardSourceDefinition> sourceDefinitions = new ArrayList<>();
+    for (final StandardSourceDefinition sourceDefinition : persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION,
+        StandardSourceDefinition.class)) {
+      if (!MoreBooleans.isTruthy(sourceDefinition.getTombstone()) || includeTombstone) {
+        sourceDefinitions.add(sourceDefinition);
+      }
+    }
+
+    return sourceDefinitions;
   }
 
   public void writeStandardSourceDefinition(final StandardSourceDefinition sourceDefinition) throws JsonValidationException, IOException {

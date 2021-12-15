@@ -6,6 +6,7 @@ package io.airbyte.scheduler.persistence;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -77,9 +78,9 @@ class JobNotifierTest {
         .withDockerRepository(TEST_DOCKER_REPO)
         .withDockerImageTag(TEST_DOCKER_TAG)
         .withDestinationDefinitionId(UUID.randomUUID());
-    when(configRepository.getSourceDefinitionFromConnection(any())).thenReturn(sourceDefinition);
+    when(configRepository.getSourceDefinitionFromConnection(any(), eq(false))).thenReturn(sourceDefinition);
     when(configRepository.getDestinationDefinitionFromConnection(any())).thenReturn(destinationDefinition);
-    when(configRepository.getStandardSourceDefinition(any())).thenReturn(sourceDefinition);
+    when(configRepository.getStandardSourceDefinition(any(), eq(false))).thenReturn(sourceDefinition);
     when(configRepository.getStandardDestinationDefinition(any())).thenReturn(destinationDefinition);
     when(configRepository.getStandardWorkspace(WORKSPACE_ID, true)).thenReturn(getWorkspace());
     when(workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(job.getId())).thenReturn(WORKSPACE_ID);

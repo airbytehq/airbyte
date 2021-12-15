@@ -180,7 +180,7 @@ public class ConfigDumpExporter {
       if (!sourceDefinitionMap.containsKey(sourceConnection.getSourceDefinitionId())) {
         sourceDefinitionMap
             .put(sourceConnection.getSourceDefinitionId(),
-                configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId()));
+                configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId(), false));
       }
     }
     return sourceDefinitionMap.values();

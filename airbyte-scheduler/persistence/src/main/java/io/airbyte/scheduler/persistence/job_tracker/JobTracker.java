@@ -118,7 +118,7 @@ public class JobTracker {
       Preconditions.checkArgument(allowedJob, "Job type " + configType + " is not allowed!");
       final long jobId = job.getId();
       final UUID connectionId = UUID.fromString(job.getScope());
-      final UUID sourceDefinitionId = configRepository.getSourceDefinitionFromConnection(connectionId).getSourceDefinitionId();
+      final UUID sourceDefinitionId = configRepository.getSourceDefinitionFromConnection(connectionId, false).getSourceDefinitionId();
       final UUID destinationDefinitionId = configRepository.getDestinationDefinitionFromConnection(connectionId).getDestinationDefinitionId();
 
       final Map<String, Object> jobMetadata = generateJobMetadata(String.valueOf(jobId), configType, job.getAttemptsCount());
@@ -246,7 +246,7 @@ public class JobTracker {
 
   private ImmutableMap<String, Object> generateSourceDefinitionMetadata(final UUID sourceDefinitionId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
+    final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId, false);
     return TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
   }
 

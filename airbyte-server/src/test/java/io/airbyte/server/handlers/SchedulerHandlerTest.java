@@ -163,7 +163,7 @@ class SchedulerHandlerTest {
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
     final SourceIdRequestBody request = new SourceIdRequestBody().sourceId(source.getSourceId());
 
-    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId(), false))
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
@@ -188,7 +188,7 @@ class SchedulerHandlerTest {
         .sourceDefinitionId(source.getSourceDefinitionId())
         .connectionConfiguration(source.getConfiguration());
 
-    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId(), false))
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
@@ -216,7 +216,7 @@ class SchedulerHandlerTest {
         .withDockerImageTag(DESTINATION_DOCKER_TAG)
         .withSourceDefinitionId(source.getSourceDefinitionId())
         .withSpec(CONNECTOR_SPECIFICATION);
-    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId(), false))
         .thenReturn(sourceDefinition);
     when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
     when(configurationUpdate.source(source.getSourceId(), source.getName(), sourceUpdate.getConnectionConfiguration())).thenReturn(source);
@@ -245,12 +245,12 @@ class SchedulerHandlerTest {
         .withDockerImageTag(SOURCE_DOCKER_TAG)
         .withSourceDefinitionId(sourceDefinitionIdRequestBody.getSourceDefinitionId())
         .withSpec(CONNECTOR_SPECIFICATION);
-    when(configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId()))
+    when(configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId(), false))
         .thenReturn(sourceDefinition);
 
     final SourceDefinitionSpecificationRead response = schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdRequestBody);
 
-    verify(configRepository).getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId());
+    verify(configRepository).getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId(), false);
     assertEquals(CONNECTOR_SPECIFICATION.getConnectionSpecification(), response.getConnectionSpecification());
   }
 
@@ -363,7 +363,7 @@ class SchedulerHandlerTest {
     when(discoverResponse.getMetadata()).thenReturn(metadata);
     when(metadata.isSucceeded()).thenReturn(true);
 
-    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId(), false))
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
@@ -386,7 +386,7 @@ class SchedulerHandlerTest {
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
     final SourceIdRequestBody request = new SourceIdRequestBody().sourceId(source.getSourceId());
 
-    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId(), false))
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
@@ -423,7 +423,7 @@ class SchedulerHandlerTest {
         .sourceDefinitionId(source.getSourceDefinitionId())
         .connectionConfiguration(source.getConfiguration());
 
-    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId(), false))
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
@@ -452,7 +452,7 @@ class SchedulerHandlerTest {
         .sourceDefinitionId(source.getSourceDefinitionId())
         .connectionConfiguration(source.getConfiguration());
 
-    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId(), false))
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
@@ -483,7 +483,7 @@ class SchedulerHandlerTest {
     final UUID operationId = standardSync.getOperationIds().get(0);
     final List<StandardSyncOperation> operations = getOperations(standardSync);
 
-    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId(), false))
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
@@ -523,7 +523,7 @@ class SchedulerHandlerTest {
     final UUID operationId = standardSync.getOperationIds().get(0);
     final List<StandardSyncOperation> operations = getOperations(standardSync);
 
-    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId(), false))
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)

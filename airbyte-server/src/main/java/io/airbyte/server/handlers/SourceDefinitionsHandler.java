@@ -72,7 +72,7 @@ public class SourceDefinitionsHandler {
   }
 
   public SourceDefinitionReadList listSourceDefinitions() throws IOException, JsonValidationException {
-    return toSourceDefinitionReadList(configRepository.listStandardSourceDefinitions());
+    return toSourceDefinitionReadList(configRepository.listStandardSourceDefinitions(false));
   }
 
   private static SourceDefinitionReadList toSourceDefinitionReadList(final List<StandardSourceDefinition> defs) {
@@ -96,7 +96,7 @@ public class SourceDefinitionsHandler {
 
   public SourceDefinitionRead getSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    return buildSourceDefinitionRead(configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId()));
+    return buildSourceDefinitionRead(configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId(), false));
   }
 
   public SourceDefinitionRead createSourceDefinition(final SourceDefinitionCreate sourceDefinitionCreate)
@@ -121,7 +121,7 @@ public class SourceDefinitionsHandler {
   public SourceDefinitionRead updateSourceDefinition(final SourceDefinitionUpdate sourceDefinitionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition currentSourceDefinition =
-        configRepository.getStandardSourceDefinition(sourceDefinitionUpdate.getSourceDefinitionId());
+        configRepository.getStandardSourceDefinition(sourceDefinitionUpdate.getSourceDefinitionId(), false);
 
     // specs are re-fetched from the container if the image tag has changed, or if the tag is "dev",
     // to allow for easier iteration of dev images

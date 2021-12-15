@@ -186,7 +186,7 @@ public class SourceHandler {
   private SourceRead buildSourceRead(final UUID sourceId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // read configuration from db
-    final StandardSourceDefinition sourceDef = configRepository.getSourceDefinitionFromSource(sourceId);
+    final StandardSourceDefinition sourceDef = configRepository.getSourceDefinitionFromSource(sourceId, false);
     final ConnectorSpecification spec = sourceDef.getSpec();
     return buildSourceRead(sourceId, spec);
   }
@@ -196,7 +196,7 @@ public class SourceHandler {
     // read configuration from db
     final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
     final StandardSourceDefinition standardSourceDefinition = configRepository
-        .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
+        .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId(), false);
     final JsonNode sanitizedConfig = secretsProcessor.maskSecrets(
         sourceConnection.getConfiguration(), spec.getConnectionSpecification());
     sourceConnection.setConfiguration(sanitizedConfig);
@@ -216,7 +216,7 @@ public class SourceHandler {
 
   private ConnectorSpecification getSpecFromSourceDefinitionId(final UUID sourceDefId)
       throws IOException, JsonValidationException, ConfigNotFoundException {
-    final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceDefId);
+    final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceDefId, false);
     return sourceDef.getSpec();
   }
 

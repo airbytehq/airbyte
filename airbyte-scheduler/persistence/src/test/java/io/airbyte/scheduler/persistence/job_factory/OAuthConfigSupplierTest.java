@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -137,7 +138,7 @@ public class OAuthConfigSupplierTest {
     final JsonNode config = generateJsonConfig();
     final UUID workspaceId = UUID.randomUUID();
     final Map<String, Object> oauthParameters = generateOAuthParameters();
-    when(configRepository.getStandardSourceDefinition(any()))
+    when(configRepository.getStandardSourceDefinition(any(), eq(false)))
         .thenReturn(new StandardSourceDefinition()
             .withSourceDefinitionId(sourceDefinitionId)
             .withName("test")
@@ -219,7 +220,7 @@ public class OAuthConfigSupplierTest {
   }
 
   private void setupStandardDefinitionMock(final AdvancedAuth advancedAuth) throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configRepository.getStandardSourceDefinition(any())).thenReturn(new StandardSourceDefinition()
+    when(configRepository.getStandardSourceDefinition(any(), eq(false))).thenReturn(new StandardSourceDefinition()
         .withSourceDefinitionId(sourceDefinitionId)
         .withName("test")
         .withDockerImageTag("dev")

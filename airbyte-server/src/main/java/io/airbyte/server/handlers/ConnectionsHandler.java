@@ -180,7 +180,7 @@ public class ConnectionsHandler {
 
     final UUID connectionId = standardSync.getConnectionId();
     final StandardSourceDefinition sourceDefinition = configRepository
-        .getSourceDefinitionFromConnection(connectionId);
+        .getSourceDefinitionFromConnection(connectionId, false);
     final StandardDestinationDefinition destinationDefinition = configRepository
         .getDestinationDefinitionFromConnection(connectionId);
 
@@ -306,7 +306,7 @@ public class ConnectionsHandler {
 
     final SourceConnection sourceConnection = configRepository.getSourceConnection(connectionRead.getSourceId());
     final StandardSourceDefinition sourceDefinition =
-        configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
+        configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId(), false);
     final SourceRead sourceRead = SourceHandler.toSourceRead(sourceConnection, sourceDefinition);
 
     final DestinationConnection destinationConnection = configRepository.getDestinationConnection(connectionRead.getDestinationId());

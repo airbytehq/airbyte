@@ -56,7 +56,7 @@ public class JobNotifier {
   private void notifyJob(final String reason, final String action, final Job job) {
     final UUID connectionId = UUID.fromString(job.getScope());
     try {
-      final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId);
+      final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId, false);
       final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
       final Instant jobStartedDate = Instant.ofEpochSecond(job.getStartedAtInSecond().orElse(job.getCreatedAtInSecond()));
       final DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).withZone(ZoneId.systemDefault());

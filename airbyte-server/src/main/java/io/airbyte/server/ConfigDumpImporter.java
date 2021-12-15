@@ -355,7 +355,7 @@ public class ConfigDumpImporter {
               // make sure connector definition exists
               try {
                 final StandardSourceDefinition sourceDefinition =
-                    configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
+                    configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId(), false);
                 if (sourceDefinition == null) {
                   return;
                 }
@@ -463,7 +463,7 @@ public class ConfigDumpImporter {
     importIntoWorkspace(
         ConfigSchema.STANDARD_SOURCE_DEFINITION,
         configs.map(c -> (StandardSourceDefinition) c),
-        configRepository::listStandardSourceDefinitions,
+        () -> configRepository.listStandardSourceDefinitions(false),
         (config) -> true,
         (config, id) -> {
           if (id.equals(config.getSourceDefinitionId())) {
