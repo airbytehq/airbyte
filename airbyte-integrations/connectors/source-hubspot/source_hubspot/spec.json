@@ -5,7 +5,7 @@
     "title": "HubSpot Source Spec",
     "type": "object",
     "required": ["start_date", "credentials"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "start_date": {
         "type": "string",
