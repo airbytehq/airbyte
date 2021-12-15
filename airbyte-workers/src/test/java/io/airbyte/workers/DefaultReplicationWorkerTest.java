@@ -135,12 +135,8 @@ class DefaultReplicationWorkerTest {
   }
 
   @Test
-  void testSourceFails() throws Exception {
-    when(source.isFinished())
-        .thenReturn(false)
-        .thenReturn(false)
-        .thenReturn(false)
-        .thenThrow(new WorkerException("Source exited with non-zero exit code"));
+  void testSourceNonZeroExitValue() throws Exception {
+    when(source.getExitValue()).thenReturn(1);
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -156,12 +152,8 @@ class DefaultReplicationWorkerTest {
   }
 
   @Test
-  void testDestinationFails() throws Exception {
-    when(destination.isFinished())
-        .thenReturn(false)
-        .thenReturn(false)
-        .thenReturn(false)
-        .thenThrow(new WorkerException("Destination exited with non-zero exit code"));
+  void testDestinationNonZeroExitValue() throws Exception {
+    when(destination.getExitValue()).thenReturn(1);
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
