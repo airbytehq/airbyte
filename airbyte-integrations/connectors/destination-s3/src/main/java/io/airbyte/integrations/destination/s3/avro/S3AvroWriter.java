@@ -36,11 +36,11 @@ public class S3AvroWriter extends BaseS3Writer implements S3Writer {
   private final DataFileWriter<GenericData.Record> dataFileWriter;
 
   public S3AvroWriter(final S3DestinationConfig config,
-      final AmazonS3 s3Client,
-      final ConfiguredAirbyteStream configuredStream,
-      final Timestamp uploadTimestamp,
-      final Schema schema,
-      final JsonAvroConverter converter)
+                      final AmazonS3 s3Client,
+                      final ConfiguredAirbyteStream configuredStream,
+                      final Timestamp uploadTimestamp,
+                      final Schema schema,
+                      final JsonAvroConverter converter)
       throws IOException {
     super(config, s3Client, configuredStream);
 
@@ -84,7 +84,7 @@ public class S3AvroWriter extends BaseS3Writer implements S3Writer {
   }
 
   @Override
-  public String getObjectKey() {
+  public String getObjectPath() {
     // TODO
     throw new UnsupportedOperationException("not yet implemented");
   }

@@ -145,7 +145,7 @@ class S3CsvWriterTest {
   public void generatesCorrectObjectKey_when_created() throws IOException {
     final S3CsvWriter writer = writer().build();
 
-    final String objectKey = writer.getObjectKey();
+    final String objectKey = writer.getObjectPath();
 
     checkObjectName(objectKey);
   }

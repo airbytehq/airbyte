@@ -44,8 +44,8 @@ public abstract class BaseGcsWriter implements S3Writer {
   protected final String outputPrefix;
 
   protected BaseGcsWriter(final GcsDestinationConfig config,
-      final AmazonS3 s3Client,
-      final ConfiguredAirbyteStream configuredStream) {
+                          final AmazonS3 s3Client,
+                          final ConfiguredAirbyteStream configuredStream) {
     this.config = config;
     this.s3Client = s3Client;
     this.stream = configuredStream.getStream();
@@ -141,7 +141,7 @@ public abstract class BaseGcsWriter implements S3Writer {
   }
 
   @Override
-  public String getObjectKey() {
+  public String getObjectPath() {
     // TODO
     throw new UnsupportedOperationException("not yet implemented");
   }

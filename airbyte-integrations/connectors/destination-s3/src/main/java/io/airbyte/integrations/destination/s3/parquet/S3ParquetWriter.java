@@ -40,11 +40,11 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
   private final String outputFilename;
 
   public S3ParquetWriter(final S3DestinationConfig config,
-      final AmazonS3 s3Client,
-      final ConfiguredAirbyteStream configuredStream,
-      final Timestamp uploadTimestamp,
-      final Schema schema,
-      final JsonAvroConverter converter)
+                         final AmazonS3 s3Client,
+                         final ConfiguredAirbyteStream configuredStream,
+                         final Timestamp uploadTimestamp,
+                         final Schema schema,
+                         final JsonAvroConverter converter)
       throws URISyntaxException, IOException {
     super(config, s3Client, configuredStream);
 
@@ -119,7 +119,7 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
   }
 
   @Override
-  public String getObjectKey() {
+  public String getObjectPath() {
     // TODO
     throw new UnsupportedOperationException("not yet implemented");
   }

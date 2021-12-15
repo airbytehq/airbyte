@@ -149,7 +149,7 @@ public abstract class BaseS3Writer implements S3Writer {
   }
 
   @Override
-  public String getObjectKey() {
+  public String getObjectPath() {
     // TODO
     throw new UnsupportedOperationException("not yet implemented");
   }

@@ -43,11 +43,11 @@ public class GcsParquetWriter extends BaseGcsWriter implements S3Writer {
   private final AvroRecordFactory avroRecordFactory;
 
   public GcsParquetWriter(final GcsDestinationConfig config,
-      final AmazonS3 s3Client,
-      final ConfiguredAirbyteStream configuredStream,
-      final Timestamp uploadTimestamp,
-      final Schema schema,
-      final JsonAvroConverter converter)
+                          final AmazonS3 s3Client,
+                          final ConfiguredAirbyteStream configuredStream,
+                          final Timestamp uploadTimestamp,
+                          final Schema schema,
+                          final JsonAvroConverter converter)
       throws URISyntaxException, IOException {
     super(config, s3Client, configuredStream);
 
@@ -110,7 +110,7 @@ public class GcsParquetWriter extends BaseGcsWriter implements S3Writer {
   }
 
   @Override
-  public String getObjectKey() {
+  public String getObjectPath() {
     // TODO
     throw new UnsupportedOperationException("not yet implemented");
   }
