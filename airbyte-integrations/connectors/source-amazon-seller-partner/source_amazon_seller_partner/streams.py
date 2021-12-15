@@ -53,7 +53,7 @@ class AmazonSPStream(HttpStream, ABC):
 
         self._url_base = url_base.rstrip("/") + "/"
         self._replication_start_date = replication_start_date
-        self.marketplace_ids = marketplace_ids        
+        self.marketplace_ids = marketplace_ids
         self._session.auth = aws_signature
 
     @property
