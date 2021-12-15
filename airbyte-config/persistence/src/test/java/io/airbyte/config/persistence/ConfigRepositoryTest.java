@@ -5,6 +5,7 @@
 package io.airbyte.config.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -29,11 +30,13 @@ import io.airbyte.config.persistence.split_secrets.MemorySecretPersistence;
 import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayNameGenerator.Standard;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -41,6 +44,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 class ConfigRepositoryTest {
 
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
+  private static final UUID SOURCE_DEFINITION_ID = UUID.randomUUID();
 
   private ConfigPersistence configPersistence;
   private ConfigRepository configRepository;
@@ -136,6 +140,130 @@ class ConfigRepositoryTest {
     verify(configPersistence, times(1)).writeConfig(ConfigSchema.STANDARD_SYNC_STATE, connectionId.toString(), connectionState1);
     configRepository.updateConnectionState(connectionId, state2);
     verify(configPersistence, times(1)).writeConfig(ConfigSchema.STANDARD_SYNC_STATE, connectionId.toString(), connectionState2);
+  }
+
+  @Test
+  void testSourceDefinitionWithNullTombstone() throws JsonValidationException, ConfigNotFoundException, IOException {
+    assertReturnsSourceDefinition(new StandardSourceDefinition().withSourceDefinitionId(SOURCE_DEFINITION_ID));
+  }
+
+  @Test
+  void testSourceDefinitionWithTrueTombstone() throws JsonValidationException, ConfigNotFoundException, IOException {
+    assertReturnsSourceDefinition(new StandardSourceDefinition().withSourceDefinitionId(SOURCE_DEFINITION_ID).withTombstone(true));
+  }
+
+  @Test
+  void testSourceDefinitionWithFalseTombstone() throws JsonValidationException, ConfigNotFoundException, IOException {
+    assertReturnsSourceDefinition(new StandardSourceDefinition().withSourceDefinitionId(SOURCE_DEFINITION_ID).withTombstone(false));
+  }
+
+  @Test
+  void testThrowsConfigNotFound_whenIncludeTombstoneFalse() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardSourceDefinition tombstonedSourceDefinition =
+        new StandardSourceDefinition().withSourceDefinitionId(SOURCE_DEFINITION_ID).withTombstone(true);
+
+    when(configPersistence.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, SOURCE_DEFINITION_ID.toString(), StandardSourceDefinition.class))
+        .thenReturn(tombstonedSourceDefinition);
+
+    final ConfigNotFoundException exception = assertThrows(ConfigNotFoundException.class, () -> {
+      configRepository.getStandardSourceDefinition(SOURCE_DEFINITION_ID, false);
+    });
+
+    assertEquals(ConfigSchema.STANDARD_SOURCE_DEFINITION.toString(), exception.getType());
+    assertEquals(SOURCE_DEFINITION_ID.toString(), exception.getConfigId());
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  void testSourceDefinitionFromSource(final boolean isTombstone) throws JsonValidationException, ConfigNotFoundException, IOException {
+    final UUID sourceId = UUID.randomUUID();
+
+    final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
+        .withSourceDefinitionId(SOURCE_DEFINITION_ID)
+        .withTombstone(isTombstone);
+
+    final SourceConnection source = new SourceConnection()
+        .withSourceId(sourceId)
+        .withSourceDefinitionId(SOURCE_DEFINITION_ID)
+        .withTombstone(isTombstone);
+
+    doReturn(sourceDefinition)
+        .when(configRepository)
+        .getStandardSourceDefinition(SOURCE_DEFINITION_ID, isTombstone);
+    doReturn(source)
+        .when(configRepository)
+        .getSourceConnection(sourceId);
+
+    configRepository.getSourceDefinitionFromSource(sourceId, isTombstone);
+
+    verify(configRepository).getStandardSourceDefinition(SOURCE_DEFINITION_ID, isTombstone);
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  void testSourceDefinitionsFromConnection(final boolean isTombstone) throws JsonValidationException, ConfigNotFoundException, IOException {
+    final UUID sourceId = UUID.randomUUID();
+    final UUID connectionId = UUID.randomUUID();
+
+    final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
+        .withSourceDefinitionId(SOURCE_DEFINITION_ID)
+        .withTombstone(isTombstone);
+
+    final SourceConnection source = new SourceConnection()
+        .withSourceId(sourceId)
+        .withSourceDefinitionId(SOURCE_DEFINITION_ID)
+        .withTombstone(isTombstone);
+
+    final StandardSync connection = new StandardSync()
+        .withSourceId(sourceId)
+        .withConnectionId(connectionId);
+
+    doReturn(sourceDefinition)
+        .when(configRepository)
+        .getStandardSourceDefinition(SOURCE_DEFINITION_ID, isTombstone);
+    doReturn(source)
+        .when(configRepository)
+        .getSourceConnection(sourceId);
+    doReturn(connection)
+        .when(configRepository)
+        .getStandardSync(connectionId);
+
+    configRepository.getSourceDefinitionFromSource(sourceId, isTombstone);
+
+    verify(configRepository).getStandardSourceDefinition(SOURCE_DEFINITION_ID, isTombstone);
+  }
+
+  void assertReturnsSourceDefinition(final StandardSourceDefinition sourceDefinition)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    when(configPersistence.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, SOURCE_DEFINITION_ID.toString(), StandardSourceDefinition.class))
+        .thenReturn(sourceDefinition);
+
+    assertEquals(sourceDefinition, configRepository.getStandardSourceDefinition(SOURCE_DEFINITION_ID, true));
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {0, 1, 2, 10})
+  void testListStandardSourceDefinitions_handlesTombstoneSourceDefinitions(final int numSourceDefinitions)
+      throws JsonValidationException, IOException {
+    final List<StandardSourceDefinition> allSourceDefinitions = new ArrayList<>();
+    final List<StandardSourceDefinition> notTombstoneSourceDefinitions = new ArrayList<>();
+    for (int i = 0; i < numSourceDefinitions; i++) {
+      final boolean isTombstone = i % 2 == 0; // every other is tombstone
+      final StandardSourceDefinition sourceDefinition =
+          new StandardSourceDefinition().withSourceDefinitionId(UUID.randomUUID()).withTombstone(isTombstone);
+      allSourceDefinitions.add(sourceDefinition);
+      if (!isTombstone) {
+        notTombstoneSourceDefinitions.add(sourceDefinition);
+      }
+    }
+    when(configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class))
+        .thenReturn(allSourceDefinitions);
+
+    final List<StandardSourceDefinition> returnedSourceDefinitionsWithoutTombstone = configRepository.listStandardSourceDefinitions(false);
+    assertEquals(notTombstoneSourceDefinitions, returnedSourceDefinitionsWithoutTombstone);
+
+    final List<StandardSourceDefinition> returnedSourceDefinitionsWithTombstone = configRepository.listStandardSourceDefinitions(true);
+    assertEquals(allSourceDefinitions, returnedSourceDefinitionsWithTombstone);
   }
 
   @Test
