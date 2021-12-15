@@ -55,7 +55,13 @@ else
     fi
   else
     selected_performance_test=$(echo "$all_performance_tests" | grep "^$connector$" || echo "")
-    performanceTestCommand=":airbyte-integrations:connectors:$connector:performanceTest $firstarg $secondarg"
+    if [[ "$2" && "$3" ]]; then
+      performanceTestCommand=":airbyte-integrations:connectors:$connector:performanceTest $firstarg $secondarg"
+    elif [[ "$2" ]]; then
+      performanceTestCommand=":airbyte-integrations:connectors:$connector:performanceTest $firstarg"
+    else
+      performanceTestCommand=":airbyte-integrations:connectors:$connector:performanceTest"
+    fi
   fi
   if [ -n "$selected_performance_test" ] ; then
     echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand"
