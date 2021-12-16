@@ -21,7 +21,7 @@ fi
 
 docker login -u airbytebot -p "${DOCKER_PASSWORD}"
 
-PREV_VERSION=$(grep VERSION .env | cut -d"=" -f2)
+PREV_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
 
 [[ -z "$PART_TO_BUMP" ]] && echo "Usage ./tools/bin/release_version.sh (major|minor|patch)" && exit 1
 
