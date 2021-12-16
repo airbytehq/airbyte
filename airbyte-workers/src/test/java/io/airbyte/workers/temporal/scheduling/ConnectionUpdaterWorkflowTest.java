@@ -17,11 +17,12 @@ import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivityIm
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptCreationOutput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCreationOutput;
-import io.airbyte.workers.temporal.scheduling.activities.SleepingSyncWorkflow;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.airbyte.workers.temporal.scheduling.state.listener.TestStateListener;
 import io.airbyte.workers.temporal.scheduling.state.listener.WorkflowStateChangedListener.ChangedStateEvent;
 import io.airbyte.workers.temporal.scheduling.state.listener.WorkflowStateChangedListener.StateField;
+import io.airbyte.workers.temporal.scheduling.testsyncworkflow.EmptySyncWorkflow;
+import io.airbyte.workers.temporal.scheduling.testsyncworkflow.SleepingSyncWorkflow;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.testing.TestWorkflowEnvironment;
@@ -59,7 +60,7 @@ public class ConnectionUpdaterWorkflowTest {
     Mockito.reset(mGenerateInputActivityImpl);
     Mockito.reset(mJobCreationAndStatusUpdateActivity);
 
-    Mockito.when(mConfigFetchActivity.getPeriodicity(Mockito.any()))
+    Mockito.when(mConfigFetchActivity.getTimeToWait(Mockito.any()))
         .thenReturn(new ScheduleRetrieverOutput(
             Duration.ofMinutes(1l)));
 
@@ -127,7 +128,7 @@ public class ConnectionUpdaterWorkflowTest {
 
       WorkflowClient.start(workflow::run, input);
       testEnv.sleep(Duration.ofSeconds(122L));
-      Mockito.verify(mConfigFetchActivity, Mockito.atLeast(2)).getPeriodicity(Mockito.any());
+      Mockito.verify(mConfigFetchActivity, Mockito.atLeast(2)).getTimeToWait(Mockito.any());
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
       Assertions.assertThat(events)
@@ -204,9 +205,9 @@ public class ConnectionUpdaterWorkflowTest {
 
       Assertions.assertThat(events)
           .filteredOn(
-              changedStateEvent ->
-                  (changedStateEvent.getField() != StateField.RUNNING && changedStateEvent.getField() != StateField.SKIPPED_SCHEDULING)
-                      && changedStateEvent.isValue())
+              changedStateEvent -> (changedStateEvent.getField() != StateField.RUNNING
+                  && changedStateEvent.getField() != StateField.SKIPPED_SCHEDULING)
+                  && changedStateEvent.isValue())
           .isEmpty();
 
       testEnv.shutdown();
@@ -332,6 +333,7 @@ public class ConnectionUpdaterWorkflowTest {
 
       testEnv.shutdown();
     }
+
   }
 
   @Nested
@@ -357,6 +359,35 @@ public class ConnectionUpdaterWorkflowTest {
               WorkflowOptions.newBuilder()
                   .setTaskQueue(TemporalJobType.CONNECTION_UPDATER.name())
                   .build());
+    }
+
+    @Test
+    @DisplayName("Test workflow which recieved a manual while running does nothing")
+    public void manualRun() {
+
+      final UUID testId = UUID.randomUUID();
+      final TestStateListener testStateListener = new TestStateListener();
+      final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
+
+      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
+          UUID.randomUUID(),
+          1L,
+          1,
+          false,
+          1,
+          workflowState);
+
+      WorkflowClient.start(workflow::run, input);
+      testEnv.sleep(Duration.ofSeconds(61L));
+      workflow.submitManualSync();
+
+      final Queue<ChangedStateEvent> events = testStateListener.events(testId);
+
+      Assertions.assertThat(events)
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.SKIPPED_SCHEDULING && changedStateEvent.isValue())
+          .isEmpty();
+
+      testEnv.shutdown();
     }
 
     @Test
@@ -391,6 +422,7 @@ public class ConnectionUpdaterWorkflowTest {
 
       testEnv.shutdown();
     }
+
   }
 
 }

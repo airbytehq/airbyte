@@ -1,4 +1,8 @@
-package io.airbyte.workers.temporal.scheduling.activities;
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
+package io.airbyte.workers.temporal.scheduling.testsyncworkflow;
 
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
@@ -22,4 +26,5 @@ public class SleepingSyncWorkflow implements SyncWorkflow {
 
     return new StandardSyncOutput();
   }
+
 }

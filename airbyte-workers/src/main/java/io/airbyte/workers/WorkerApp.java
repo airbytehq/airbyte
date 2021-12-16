@@ -66,6 +66,7 @@ import io.temporal.worker.WorkerOptions;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
@@ -133,20 +134,26 @@ public class WorkerApp {
             new DiscoverCatalogActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser,
                 databasePassword, databaseUrl, airbyteVersion));
 
+    final ReplicationActivityImpl replicationActivity = new ReplicationActivityImpl(processFactory, secretsHydrator, workspaceRoot,
+        workerEnvironment, logConfigs,
+        databaseUser,
+        databasePassword, databaseUrl, airbyteVersion);
+    final NormalizationActivityImpl normalizationActivity = new NormalizationActivityImpl(processFactory, secretsHydrator, workspaceRoot,
+        workerEnvironment, logConfigs,
+        databaseUser,
+        databasePassword, databaseUrl, airbyteVersion);
+    final DbtTransformationActivityImpl dbtTransformationActivity =
+        new DbtTransformationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment,
+            logConfigs, databaseUser,
+            databasePassword, databaseUrl, airbyteVersion);
+    final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(workspaceRoot, configRepository);
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
-    syncWorker.registerActivitiesImplementations(
-        new ReplicationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser,
-            databasePassword, databaseUrl, airbyteVersion),
-        new NormalizationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser,
-            databasePassword, databaseUrl, airbyteVersion),
-        new DbtTransformationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser,
-            databasePassword, databaseUrl, airbyteVersion),
-        new PersistStateActivityImpl(workspaceRoot, configRepository));
+    syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
 
     final Worker connectionUpdaterWorker =
         factory.newWorker(TemporalJobType.CONNECTION_UPDATER.toString(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
-    connectionUpdaterWorker.registerWorkflowImplementationTypes(ConnectionUpdaterWorkflowImpl.class);
+    connectionUpdaterWorker.registerWorkflowImplementationTypes(ConnectionUpdaterWorkflowImpl.class, SyncWorkflowImpl.class);
     connectionUpdaterWorker.registerActivitiesImplementations(
         new GenerateInputActivityImpl(
             jobPersistence),
@@ -156,8 +163,12 @@ public class WorkerApp {
             temporalWorkerRunFactory,
             workerEnvironment,
             logConfigs),
-        new ConfigFetchActivityImpl(configRepository, jobPersistence, configs),
-        new ConnectionDeletionActivityImpl(connectionHelper));
+        new ConfigFetchActivityImpl(configRepository, jobPersistence, configs, () -> Instant.now().getEpochSecond()),
+        new ConnectionDeletionActivityImpl(connectionHelper),
+        replicationActivity,
+        normalizationActivity,
+        dbtTransformationActivity,
+        persistStateActivity);
 
     factory.start();
   }
@@ -208,7 +219,7 @@ public class WorkerApp {
         configs.getConfigDatabaseUser(),
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
-            .getInitialized();
+        .getInitialized();
     final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).withValidation();
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
@@ -218,7 +229,7 @@ public class WorkerApp {
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
         configs.getDatabaseUrl())
-            .getInitialized();
+        .getInitialized();
 
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
     final TrackingClient trackingClient = TrackingClientSingleton.get();

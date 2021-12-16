@@ -15,8 +15,8 @@ import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.exception.NonRetryableException;
 import java.io.IOException;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Optional;
+import java.util.function.Supplier;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,15 +24,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ConfigFetchActivityImpl implements ConfigFetchActivity {
 
-  private ConfigRepository configPersistence;
+  private ConfigRepository configRepository;
   private JobPersistence jobPersistence;
   private Configs configs;
+  private Supplier<Long> currentSecondsSupplier;
 
   @Override
-  public ScheduleRetrieverOutput getPeriodicity(final ScheduleRetrieverInput input) {
+  public ScheduleRetrieverOutput getTimeToWait(final ScheduleRetrieverInput input) {
     try {
       final Optional<Job> previousJobOptional = jobPersistence.getLastReplicationJob(input.getConnectionId());
-      final StandardSync standardSync = configPersistence.getStandardSync(input.getConnectionId());
+      final StandardSync standardSync = configRepository.getStandardSync(input.getConnectionId());
 
       if (previousJobOptional.isEmpty() && standardSync.getSchedule() != null) {
         // Non-manual syncs don't wait for their first run
@@ -45,12 +46,11 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
 
       final Job previousJob = previousJobOptional.get();
       final long prevRunStart = previousJob.getStartedAtInSecond().orElse(previousJob.getCreatedAtInSecond());
-      log.error("Standard sync = " + standardSync + ", schedule = " + standardSync.getSchedule());
 
       final long nextRunStart = prevRunStart + ScheduleHelpers.getIntervalInSecond(standardSync.getSchedule());
 
       final Duration timeToWait = Duration.ofSeconds(
-          Math.max(0, nextRunStart - Instant.now().getEpochSecond()));
+          Math.max(0, nextRunStart - currentSecondsSupplier.get()));
 
       return new ScheduleRetrieverOutput(timeToWait);
     } catch (final IOException | JsonValidationException | ConfigNotFoundException e) {

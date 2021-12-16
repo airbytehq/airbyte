@@ -29,12 +29,12 @@ public interface ConfigFetchActivity {
   @AllArgsConstructor
   class ScheduleRetrieverOutput {
 
-    private Duration periodicity;
+    private Duration timeToWait;
 
   }
 
   @ActivityMethod
-  ScheduleRetrieverOutput getPeriodicity(ScheduleRetrieverInput input);
+  ScheduleRetrieverOutput getTimeToWait(ScheduleRetrieverInput input);
 
   @Data
   @NoArgsConstructor

@@ -73,9 +73,9 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
           // Scheduling
           final ScheduleRetrieverInput scheduleRetrieverInput = new ScheduleRetrieverInput(
               connectionUpdaterInput.getConnectionId());
-          final ScheduleRetrieverOutput scheduleRetrieverOutput = configFetchActivity.getPeriodicity(scheduleRetrieverInput);
-          log.error("Await for: " + scheduleRetrieverOutput.getPeriodicity().toString());
-          Workflow.await(scheduleRetrieverOutput.getPeriodicity(), () -> skipScheduling() || connectionUpdaterInput.isFromFailure());
+          final ScheduleRetrieverOutput scheduleRetrieverOutput = configFetchActivity.getTimeToWait(scheduleRetrieverInput);
+          log.error("Await for: " + scheduleRetrieverOutput.getTimeToWait().toString());
+          Workflow.await(scheduleRetrieverOutput.getTimeToWait(), () -> skipScheduling() || connectionUpdaterInput.isFromFailure());
 
           if (!workflowState.isUpdated() && !workflowState.isDeleted()) {
             // Job and attempt creation
