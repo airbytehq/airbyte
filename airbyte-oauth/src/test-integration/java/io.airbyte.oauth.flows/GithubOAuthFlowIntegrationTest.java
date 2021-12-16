@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 public class GithubOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
 
   protected static final Path CREDENTIALS_PATH = Path.of("secrets/github.json");
-  protected static final String REDIRECT_URL = "http://localhost:8000/oauth_flow";
+  protected static final String REDIRECT_URL = "http://localhost:8000/auth_flow";
   protected static final int SERVER_LISTENING_PORT = 8000;
 
   @Override
