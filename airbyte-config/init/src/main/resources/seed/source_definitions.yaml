@@ -24,12 +24,13 @@
   dockerRepository: airbyte/source-amazon-seller-partner
   dockerImageTag: 0.2.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/amazon-seller-partner
+  icon: amazonsellerpartner.svg
   sourceType: api
 - name: Amazon SQS
+  sourceDefinitionId: 983fd355-6bf3-4709-91b5-37afa391eeb6
   dockerRepository: airbyte/source-amazon-sqs
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/amazon-sqs
-  icon: amazonsellerpartner.svg
   sourceType: api
 - name: Amplitude
   sourceDefinitionId: fa9f58c6-2d03-4237-aaa4-07d75e0c1396
@@ -339,8 +340,8 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/klaviyo
   icon: klaviyo.svg
   sourceType: api
-- sourceDefinitionId: 789f8e7a-2d28-11ec-8d3d-0242ac130003
-  name: Lemlist
+- name: Lemlist
+  sourceDefinitionId: 789f8e7a-2d28-11ec-8d3d-0242ac130003
   dockerRepository: airbyte/source-lemlist
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/source-lemlist
