@@ -45,6 +45,8 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
             maxHeapSize = '3g'
 
             mustRunAfter project.test
+
+            jvmArgs = ["--add-opens=java.base/java.nio=ALL-UNNAMED"]
         }
 
         // make sure we create the integrationTest task once in case a standard source test was already initialized
