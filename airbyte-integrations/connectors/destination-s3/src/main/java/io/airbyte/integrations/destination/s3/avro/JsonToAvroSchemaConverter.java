@@ -208,7 +208,7 @@ public class JsonToAvroSchemaConverter {
         Preconditions.checkNotNull(items, "Array field %s misses the items property.", fieldName);
 
         if (items.isObject()) {
-          fieldSchema = Schema.createArray(getNullableFieldTypes(String.format("%s.items", fieldName), items));
+          fieldSchema = Schema.createArray(getNullableFieldTypes(fieldName, items));
         } else if (items.isArray()) {
           final List<Schema> arrayElementTypes = getSchemasFromTypes(fieldName, (ArrayNode) items);
           arrayElementTypes.add(0, NULL_SCHEMA);

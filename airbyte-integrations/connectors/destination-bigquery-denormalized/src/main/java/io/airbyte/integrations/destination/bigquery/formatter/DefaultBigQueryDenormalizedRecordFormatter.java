@@ -1,6 +1,7 @@
 package io.airbyte.integrations.destination.bigquery.formatter;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.Field.Builder;
@@ -37,9 +38,10 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
 
     private final Set<String> invalidKeys = new HashSet<>();
 
-    public static final String NESTED_ARRAY_FIELD = "value";
+    public static final String NESTED_ARRAY_FIELD = "big_query_array";
     protected static final String PROPERTIES_FIELD = "properties";
     private static final String TYPE_FIELD = "type";
+    private static final String ARRAY_ITEMS_FIELD = "items";
     private static final String FORMAT_FIELD = "format";
     private static final String REF_DEFINITION_KEY = "$ref";
 
@@ -47,6 +49,53 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
 
     public DefaultBigQueryDenormalizedRecordFormatter(JsonNode jsonSchema, StandardNameTransformer namingResolver) {
         super(jsonSchema, namingResolver);
+    }
+
+    @Override
+    protected JsonNode formatJsonSchema(JsonNode jsonSchema) {
+        populateEmptyArrays(jsonSchema);
+        surroundArraysByObjects(jsonSchema);
+        return jsonSchema;
+    }
+
+    private List<JsonNode> findArrays(JsonNode node) {
+        if (node != null) {
+            return node.findParents(TYPE_FIELD).stream()
+                .filter(
+                    jsonNode -> {
+                        ArrayNode typeNode = (ArrayNode) jsonNode.get(TYPE_FIELD);
+                        for (JsonNode arrayTypeNode : typeNode) {
+                            if (arrayTypeNode.isTextual() && arrayTypeNode.textValue().equals("array"))
+                                return true;
+                        }
+                        return false;
+                    }).collect(Collectors.toList());
+            } else {
+            return Collections.emptyList();
+            }
+    }
+
+    private void populateEmptyArrays(JsonNode node) {
+        findArrays(node).forEach(jsonNode -> {
+            if (!jsonNode.has(ARRAY_ITEMS_FIELD)) {
+                ObjectNode nodeToChange = (ObjectNode) jsonNode;
+                nodeToChange.putObject(ARRAY_ITEMS_FIELD).putArray(TYPE_FIELD).add("string");
+            }
+        });
+    }
+
+    private void surroundArraysByObjects(JsonNode node) {
+        findArrays(node).forEach(
+                jsonNode -> {
+                    JsonNode arrayNode = jsonNode.deepCopy();
+
+                    ObjectNode newNode = (ObjectNode) jsonNode;
+                    newNode.removeAll();
+                    newNode.putArray(TYPE_FIELD).add("object");
+                    newNode.putObject(PROPERTIES_FIELD).set(NESTED_ARRAY_FIELD, arrayNode);
+
+                    surroundArraysByObjects(arrayNode.get(ARRAY_ITEMS_FIELD));
+                });
     }
 
     @Override
@@ -208,11 +257,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
                             // (https://github.com/airbytehq/airbyte/issues/5486)
                             items = getTypeStringSchema();
                         }
-                        final Builder subField = getField(namingResolver, fieldName, items).setMode(Mode.REPEATED);
-                        // "Array of Array of" (nested arrays) are not permitted by BigQuery ("Array of Record of Array of"
-                        // is)
-                        // Turn all "Array of" into "Array of Record of" instead
-                        return builder.setType(StandardSQLTypeName.STRUCT, subField.setName(NESTED_ARRAY_FIELD).build());
+                        return getField(namingResolver, fieldName, items).setMode(Mode.REPEATED);
                     }
                     case OBJECT -> {
                         final JsonNode properties;

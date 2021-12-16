@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryDenormalizedRecordFormatter.NESTED_ARRAY_FIELD;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getData;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getDataWithEmptyObjectAndArray;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getDataWithFormats;
@@ -60,7 +61,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.assertj.core.util.Sets;
-import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -335,7 +335,7 @@ class BigQueryDenormalizedGscDestinationTest {
       if (jsonNode.isArray()) {
         jsonNode.forEach(arrayNodeValue -> resultSet.add(arrayNodeValue.textValue()));
       } else if (jsonNode.isObject()) {
-        resultSet.addAll(extractJsonValues(jsonNode, "value"));
+        resultSet.addAll(extractJsonValues(jsonNode, NESTED_ARRAY_FIELD));
       } else {
         resultSet.add(jsonNode.textValue());
       }

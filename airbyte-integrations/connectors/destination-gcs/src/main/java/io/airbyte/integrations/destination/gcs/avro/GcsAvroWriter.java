@@ -63,10 +63,9 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer, GscWriter,
 
     Schema schema = (airbyteSchema == null ?
         GcsUtils.getDefaultAvroSchema(stream.getName(), stream.getNamespace(), true) :
-        new JsonToAvroSchemaConverter().getAvroSchema(stream.getJsonSchema(), stream.getName(),
+        new JsonToAvroSchemaConverter().getAvroSchema(airbyteSchema, stream.getName(),
             stream.getNamespace(), true, false)
     );
-
     final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.AVRO);
     final String objectKey = String.join("/", outputPrefix, outputFilename);
     gcsFileLocation = String.format("gs://%s/%s", config.getBucketName(), objectKey);

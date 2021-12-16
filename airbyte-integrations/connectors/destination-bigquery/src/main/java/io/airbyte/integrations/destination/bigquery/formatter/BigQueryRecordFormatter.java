@@ -13,7 +13,7 @@ public abstract class BigQueryRecordFormatter {
 
     public BigQueryRecordFormatter(JsonNode jsonSchema, StandardNameTransformer namingResolver) {
         this.namingResolver = namingResolver;
-        this.jsonSchema = formatJsonSchema(jsonSchema);
+        this.jsonSchema = formatJsonSchema(jsonSchema.deepCopy());
     }
 
     protected JsonNode formatJsonSchema(JsonNode jsonSchema) {

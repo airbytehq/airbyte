@@ -29,7 +29,7 @@ public class GcsBigQueryDenormalizedRecordFormatter extends DefaultBigQueryDenor
     // Add string type for Refs
     // Avro header convertor requires types for all fields
     textJson = textJson.replace("{\"$ref\":\"", "{\"type\":[\"string\"], \"$ref\":\"");
-    return Jsons.deserialize(textJson);
+    return super.formatJsonSchema(Jsons.deserialize(textJson));
   }
 
   @Override

@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryDenormalizedRecordFormatter.NESTED_ARRAY_FIELD;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
@@ -295,7 +296,7 @@ class BigQueryDenormalizedDestinationTest {
       if (jsonNode.isArray()) {
         jsonNode.forEach(arrayNodeValue -> resultSet.add(arrayNodeValue.textValue()));
       } else if (jsonNode.isObject()) {
-        resultSet.addAll(extractJsonValues(jsonNode, "value"));
+        resultSet.addAll(extractJsonValues(jsonNode, NESTED_ARRAY_FIELD));
       } else {
         resultSet.add(jsonNode.textValue());
       }
