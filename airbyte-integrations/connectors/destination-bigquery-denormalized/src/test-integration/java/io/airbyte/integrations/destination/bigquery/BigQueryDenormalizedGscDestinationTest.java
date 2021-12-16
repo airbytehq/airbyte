@@ -266,12 +266,12 @@ class BigQueryDenormalizedGscDestinationTest {
 
     // Bigquery's datetime type accepts multiple input format but always outputs the same, so we can't
     // expect to receive the value we sent.
-    assertEquals(extractJsonValues(resultJson, "updated_at"), Set.of("2021-10-11T06:36:53"));
+    assertEquals(extractJsonValues(resultJson, "updated_at"), Set.of("2021-10-11T06:36:53Z"));
 
     final Schema expectedSchema = Schema.of(
         Field.of("name", StandardSQLTypeName.STRING),
         Field.of("date_of_birth", StandardSQLTypeName.DATE),
-        Field.of("updated_at", StandardSQLTypeName.DATETIME),
+        Field.of("updated_at", StandardSQLTypeName.TIMESTAMP),
         Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
         Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
 

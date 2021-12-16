@@ -2,6 +2,7 @@ FROM airbyte/integration-base-java:dev
 
 WORKDIR /airbyte
 
+ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
 ENV APPLICATION destination-bigquery-denormalized
 
 COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar

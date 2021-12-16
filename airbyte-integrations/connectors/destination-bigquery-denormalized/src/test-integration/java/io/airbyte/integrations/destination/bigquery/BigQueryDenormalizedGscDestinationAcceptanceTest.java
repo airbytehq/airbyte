@@ -61,7 +61,6 @@ public class BigQueryDenormalizedGscDestinationAcceptanceTest extends Destinatio
   private static final List<String> AIRBYTE_COLUMNS = List.of(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
 
   private BigQuery bigquery;
-  private Dataset dataset;
   private boolean tornDown;
   private JsonNode config;
   private final StandardNameTransformer namingResolver = new StandardNameTransformer();
@@ -224,7 +223,7 @@ public class BigQueryDenormalizedGscDestinationAcceptanceTest extends Destinatio
 
     final DatasetInfo datasetInfo =
         DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).setLocation(config.get(CONFIG_DATASET_LOCATION).asText()).build();
-    dataset = bigquery.create(datasetInfo);
+    bigquery.create(datasetInfo);
 
     tornDown = false;
     Runtime.getRuntime()
