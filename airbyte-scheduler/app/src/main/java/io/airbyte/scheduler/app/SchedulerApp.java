@@ -57,7 +57,7 @@ import org.slf4j.MDC;
  * The SchedulerApp is responsible for finding new scheduled jobs that need to be run and to launch
  * them. The current implementation uses two thread pools to do so. One pool is responsible for all
  * job launching operations. The other pool is responsible for clean up operations.
- *
+ * <p>
  * Operations can have thread pools under the hood. An important thread pool to note is that the job
  * submitter thread pool. This pool does the work of submitting jobs to temporal - the size of this
  * pool determines the number of concurrent jobs that can be run. This is controlled via the
@@ -124,7 +124,7 @@ public class SchedulerApp {
         jobPersistence,
         temporalWorkerRunFactory,
         new JobTracker(configRepository, jobPersistence, trackingClient),
-        jobNotifier, workerEnvironment, logConfigs);
+        jobNotifier, workerEnvironment, logConfigs, configRepository);
 
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
@@ -167,8 +167,20 @@ public class SchedulerApp {
 
   private void cleanupZombies(final JobPersistence jobPersistence, final JobNotifier jobNotifier) throws IOException {
     for (final Job zombieJob : jobPersistence.listJobsWithStatus(JobStatus.RUNNING)) {
-      jobNotifier.failJob("zombie job was cancelled", zombieJob);
-      jobPersistence.cancelJob(zombieJob.getId());
+      jobNotifier.failJob("zombie job was failed", zombieJob);
+
+      final int currentAttemptNumber = zombieJob.getAttemptsCount() - 1;
+
+      LOGGER.warn(
+          "zombie clean up - job attempt was failed. job id: {}, attempt number: {}, type: {}, scope: {}",
+          zombieJob.getId(),
+          currentAttemptNumber,
+          zombieJob.getConfigType(),
+          zombieJob.getScope());
+
+      jobPersistence.failAttempt(
+          zombieJob.getId(),
+          currentAttemptNumber);
     }
   }
 
@@ -205,6 +217,7 @@ public class SchedulerApp {
     LOGGER.info("temporalHost = " + temporalHost);
 
     // Wait for the server to initialize the database and run migration
+    // This should be converted into check for the migration version. Everything else as per.
     waitForServer(configs);
     LOGGER.info("Creating Job DB connection pool...");
     final Database jobDatabase = new JobsDatabaseInstance(
@@ -258,7 +271,7 @@ public class SchedulerApp {
         jobNotifier,
         temporalClient,
         Integer.parseInt(configs.getSubmitterNumThreads()),
-        configs.getMaxSyncJobAttempts(),
+        configs.getSyncJobMaxAttempts(),
         configs.getAirbyteVersionOrWarning(), configs.getWorkerEnvironment(), configs.getLogConfigs())
             .start();
   }

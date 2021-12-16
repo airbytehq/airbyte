@@ -24,7 +24,7 @@
           {
             "type": "object",
             "title": "OAuth2.0",
-            "required": ["client_id", "client_secret", "access_token"],
+            "required": ["client_id", "client_secret", "access_token", "auth_method"],
             "properties": {
               "auth_method": {
                 "type": "string",
@@ -53,7 +53,7 @@
           {
             "title": "API Password",
             "type": "object",
-            "required": ["api_password"],
+            "required": ["api_password", "auth_method"],
             "properties": {
               "auth_method": {
                 "type": "string",

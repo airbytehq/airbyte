@@ -64,6 +64,10 @@ class DataTypeEnforcer:
     def _transform_number(value: Any):
         return Decimal(value)
 
+    @staticmethod
+    def _transform_string(value: Any):
+        return str(value)
+
     def _transform_array(self, array: List[Any], item_properties: Mapping[str, Any]):
         # iterate over items in array, compare schema types and convert if necessary.
         for index, record in enumerate(array):
@@ -92,6 +96,8 @@ class DataTypeEnforcer:
             if not any(field_json_type in schema_types for field_json_type in field_json_types):
                 if schema_type == "number":
                     return self._transform_number(field)
+                if schema_type == "string":
+                    return self._transform_string(field)
             if schema_type == "object":
                 properties = schema.get("properties", {})
                 return self._transform_object(field, properties)

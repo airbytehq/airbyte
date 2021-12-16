@@ -41,7 +41,11 @@ public abstract class FacebookOAuthFlow extends BaseOAuth2Flow {
   protected abstract String getScopes();
 
   @Override
-  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId,
+                                    final String clientId,
+                                    final String redirectUrl,
+                                    final JsonNode inputOAuthConfiguration)
+      throws IOException {
     try {
       return new URIBuilder(AUTH_CODE_TOKEN_URL)
           .addParameter("client_id", clientId)
@@ -55,7 +59,7 @@ public abstract class FacebookOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected String getAccessTokenUrl() {
+  protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
     return ACCESS_TOKEN_URL;
   }
 
@@ -72,6 +76,7 @@ public abstract class FacebookOAuthFlow extends BaseOAuth2Flow {
                                                   final String clientSecret,
                                                   final String authCode,
                                                   final String redirectUrl,
+                                                  final JsonNode inputOAuthConfiguration,
                                                   final JsonNode oAuthParamConfig)
       throws IOException {
     // Access tokens generated via web login are short-lived tokens
@@ -80,7 +85,8 @@ public abstract class FacebookOAuthFlow extends BaseOAuth2Flow {
     // https://developers.facebook.com/docs/instagram-basic-display-api/overview#short-lived-access-tokens
     // Long-Term Tokens section)
 
-    final Map<String, Object> data = super.completeOAuthFlow(clientId, clientSecret, authCode, redirectUrl, oAuthParamConfig);
+    final Map<String, Object> data =
+        super.completeOAuthFlow(clientId, clientSecret, authCode, redirectUrl, inputOAuthConfiguration, oAuthParamConfig);
     Preconditions.checkArgument(data.containsKey("access_token"));
     final String shortLivedAccessToken = (String) data.get("access_token");
     final String longLivedAccessToken = getLongLivedAccessToken(clientId, clientSecret, shortLivedAccessToken);

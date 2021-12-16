@@ -89,7 +89,9 @@ Snapchat Marketing API has limitations to 1000 items per page
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.1 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
-| 0.1.0 | 2021-07-26 | [4843](https://github.com/airbytehq/airbyte/pull/4843) | Initial release supporting the Snapchat Marketing API |
+| 0.1.4 | 2021-12-07 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Update titles and descriptions |
+| 0.1.3 | 2021-11-10 | [7811](https://github.com/airbytehq/airbyte/pull/7811) | Add oauth2.0, fix stream_state |
+| 0.1.2 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
 | 0.1.1 | 2021-07-29 | [5072](https://github.com/airbytehq/airbyte/pull/5072) | Fix bug with incorrect stream\_state value |
+| 0.1.0 | 2021-07-26 | [4843](https://github.com/airbytehq/airbyte/pull/4843) | Initial release supporting the Snapchat Marketing API |
 

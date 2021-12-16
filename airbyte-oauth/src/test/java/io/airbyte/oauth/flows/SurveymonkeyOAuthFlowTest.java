@@ -5,7 +5,6 @@
 package io.airbyte.oauth.flows;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.oauth.BaseOAuthFlow;
 import io.airbyte.oauth.MoreOAuthParameters;
 import java.util.List;
@@ -37,8 +36,8 @@ public class SurveymonkeyOAuthFlowTest extends BaseOAuthFlowTest {
   }
 
   @Override
-  protected JsonNode getOutputOAuthSpecification() {
-    return Jsons.jsonNode(Map.of("access_token", Map.of("type", "String")));
+  protected JsonNode getCompleteOAuthOutputSpecification() {
+    return getJsonSchema(Map.of("access_token", Map.of("type", "string")));
   }
 
   @Override

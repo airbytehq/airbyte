@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "integer"
+    },
+    "channel_id": {
+      "type": ["null", "string"]
+    },
+    "video_id": {
+      "type": ["null", "string"]
+    },
+    "live_or_on_demand": {
+      "type": ["null", "string"]
+    },
+    "subscribed_status": {
+      "type": ["null", "string"]
+    },
+    "country_code": {
+      "type": ["null", "string"]
+    },
+    "province_code": {
+      "type": ["null", "string"]
+    },
+    "views": {
+      "type": ["null", "integer"]
+    },
+    "watch_time_minutes": {
+      "type": ["null", "number"]
+    },
+    "average_view_duration_seconds": {
+      "type": ["null", "number"]
+    },
+    "average_view_duration_percentage": {
+      "type": ["null", "number"]
+    },
+    "annotation_click_through_rate": {
+      "type": ["null", "integer"]
+    },
+    "annotation_close_rate": {
+      "type": ["null", "integer"]
+    },
+    "annotation_impressions": {
+      "type": ["null", "integer"]
+    },
+    "annotation_clickable_impressions": {
+      "type": ["null", "integer"]
+    },
+    "annotation_closable_impressions": {
+      "type": ["null", "integer"]
+    },
+    "annotation_clicks": {
+      "type": ["null", "integer"]
+    },
+    "annotation_closes": {
+      "type": ["null", "integer"]
+    },
+    "card_click_rate": {
+      "type": ["null", "integer"]
+    },
+    "card_teaser_click_rate": {
+      "type": ["null", "integer"]
+    },
+    "card_impressions": {
+      "type": ["null", "integer"]
+    },
+    "card_teaser_impressions": {
+      "type": ["null", "integer"]
+    },
+    "card_clicks": {
+      "type": ["null", "integer"]
+    },
+    "card_teaser_clicks": {
+      "type": ["null", "integer"]
+    },
+    "red_views": {
+      "type": ["null", "integer"]
+    },
+    "red_watch_time_minutes": {
+      "type": ["null", "number"]
+    }
+  }
+}

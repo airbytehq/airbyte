@@ -37,7 +37,7 @@ public class CockroachDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    container = new CockroachContainer("cockroachdb/cockroach");
+    container = new CockroachContainer("cockroachdb/cockroach:v20.2.18");
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()

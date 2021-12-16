@@ -4,6 +4,7 @@
 
 package io.airbyte.oauth.flows;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -36,7 +37,11 @@ public class QuickbooksOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId,
+                                    final String clientId,
+                                    final String redirectUrl,
+                                    final JsonNode inputOAuthConfiguration)
+      throws IOException {
     try {
 
       return (new URIBuilder(CONSENT_URL)
@@ -71,7 +76,7 @@ public class QuickbooksOAuthFlow extends BaseOAuth2Flow {
    * Returns the URL where to retrieve the access token from.
    */
   @Override
-  protected String getAccessTokenUrl() {
+  protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
     return TOKEN_URL;
   }
 
