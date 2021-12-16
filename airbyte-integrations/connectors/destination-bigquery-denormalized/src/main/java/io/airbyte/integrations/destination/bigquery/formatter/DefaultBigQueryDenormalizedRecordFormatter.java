@@ -94,7 +94,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
 
     protected void formatDateTimeFields(final FieldList fields, final JsonNode root) {
         final List<String> dateTimeFields = BigQueryUtils.getDateTimeFieldsFromSchema(fields);
-        if (!dateTimeFields.isEmpty()) {
+        if (!dateTimeFields.isEmpty() && !root.isNull()) {
             BigQueryUtils.transformJsonDateTimeToBigDataFormat(dateTimeFields, (ObjectNode) root);
         }
     }
