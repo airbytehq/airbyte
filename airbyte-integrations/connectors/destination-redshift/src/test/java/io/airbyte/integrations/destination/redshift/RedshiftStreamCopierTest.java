@@ -81,8 +81,7 @@ class RedshiftStreamCopierTest {
                 "fake-access-key-id",
                 "fake-secret-access-key",
                 PART_SIZE,
-                null)
-        ),
+                null)),
         new ExtendedNameTransformer(),
         sqlOperations,
         UPLOAD_TIME,

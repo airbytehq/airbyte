@@ -54,8 +54,9 @@ public abstract class S3StreamCopierFactory implements StreamCopierFactory<Confi
       throws Exception;
 
   /**
-   * S3 copy destinations need an S3DestinationConfig to configure the basic upload behavior. We also want additional flags to configure behavior that
-   * only applies to the copy-to-S3 + load-into-warehouse portion. Currently this is just purgeStagingData, but this may expand.
+   * S3 copy destinations need an S3DestinationConfig to configure the basic upload behavior. We also
+   * want additional flags to configure behavior that only applies to the copy-to-S3 +
+   * load-into-warehouse portion. Currently this is just purgeStagingData, but this may expand.
    */
   public record Config(boolean purgeStagingData, S3DestinationConfig s3Config) {
 
@@ -66,5 +67,7 @@ public abstract class S3StreamCopierFactory implements StreamCopierFactory<Confi
         return config.get("purge_staging_data").asBoolean();
       }
     }
+
   }
+
 }

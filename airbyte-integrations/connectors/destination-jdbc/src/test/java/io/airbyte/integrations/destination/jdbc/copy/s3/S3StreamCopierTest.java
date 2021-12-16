@@ -239,11 +239,11 @@ public class S3StreamCopierTest {
 
       @Override
       public void copyS3CsvFileIntoTable(
-          final JdbcDatabase database,
-          final String s3FileLocation,
-          final String schema,
-          final String tableName,
-          final S3DestinationConfig s3Config) {
+                                         final JdbcDatabase database,
+                                         final String s3FileLocation,
+                                         final String schema,
+                                         final String tableName,
+                                         final S3DestinationConfig s3Config) {
         copyArguments.add(new CopyArguments(database, s3FileLocation, schema, tableName, s3Config));
       }
 
