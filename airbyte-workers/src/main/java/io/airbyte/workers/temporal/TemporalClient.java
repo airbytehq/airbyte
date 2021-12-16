@@ -288,8 +288,7 @@ public class TemporalClient {
     return connectionUpdaterWorkflow;
   }
 
-  @VisibleForTesting
-  <T> TemporalResponse<T> execute(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
+  @VisibleForTesting <T> TemporalResponse<T> execute(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
     final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig);
     final Path logPath = WorkerUtils.getLogPath(jobRoot);
 
@@ -307,6 +306,7 @@ public class TemporalClient {
   }
 
   public List<WorkflowExecutionInfo> getExecutionsResponse(final String workflowName) {
+    // TODO: pagination as explained here: https://temporalio.slack.com/archives/CTRCR8RBP/p1638926310308200
     final ListOpenWorkflowExecutionsRequest openWorkflowExecutionsRequest =
         ListOpenWorkflowExecutionsRequest.newBuilder()
             .setNamespace(client.getOptions().getNamespace())
@@ -314,14 +314,10 @@ public class TemporalClient {
     final ListOpenWorkflowExecutionsResponse listOpenWorkflowExecutionsRequest =
         service.blockingStub().listOpenWorkflowExecutions(openWorkflowExecutionsRequest);
 
-    listOpenWorkflowExecutionsRequest.getExecutionsList().stream()
-        .forEach((workflowExecutionInfo -> log.error("wei: " + workflowExecutionInfo)));
-
     final List<WorkflowExecutionInfo> workflowExecutionInfos = listOpenWorkflowExecutionsRequest.getExecutionsList().stream()
         .filter((workflowExecutionInfo -> workflowExecutionInfo.getExecution().getWorkflowId().equals(workflowName)))
         .collect(Collectors.toList());
 
-    log.error("result.size: " + workflowExecutionInfos.size());
     return workflowExecutionInfos;
   }
 
