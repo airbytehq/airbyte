@@ -9,7 +9,8 @@ import java.io.IOException;
 import java.util.UUID;
 
 /**
- * {@link S3Writer} is responsible for writing Airbyte stream data to an S3 location in a specific format.
+ * {@link S3Writer} is responsible for writing Airbyte stream data to an S3 location in a specific
+ * format.
  */
 public interface S3Writer {
 
@@ -29,8 +30,9 @@ public interface S3Writer {
   void close(boolean hasFailed) throws IOException;
 
   /**
-   * @return The path within the bucket that this writer will create. For example, if we wrote to "s3://yourBucket/some/path/to/file.csv", this method
-   * would return "some/path/to/file.csv".
+   * @return The path within the bucket that this writer will create. For example, if we wrote to
+   *         "s3://yourBucket/some/path/to/file.csv", this method would return
+   *         "some/path/to/file.csv".
    */
   String getObjectPath();
 

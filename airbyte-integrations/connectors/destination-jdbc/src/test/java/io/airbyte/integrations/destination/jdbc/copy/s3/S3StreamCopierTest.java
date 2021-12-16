@@ -50,14 +50,12 @@ public class S3StreamCopierTest {
       "fake-access-key-id",
       "fake-secret-access-key",
       PART_SIZE,
-      null
-  );
+      null);
   private static final ConfiguredAirbyteStream CONFIGURED_STREAM = new ConfiguredAirbyteStream()
       .withDestinationSyncMode(DestinationSyncMode.APPEND)
       .withStream(new AirbyteStream()
           .withName("fake-stream")
-          .withNamespace("fake-namespace")
-      );
+          .withNamespace("fake-namespace"));
   private static final int UPLOAD_THREADS = 10;
   private static final int QUEUE_CAPACITY = 10;
   // equivalent to Thu, 09 Dec 2021 19:17:54 GMT
@@ -107,10 +105,12 @@ public class S3StreamCopierTest {
     csvWriterMockedConstruction = mockConstruction(
         S3CsvWriter.class,
         (mock, context) -> {
-          // Normally, the S3CsvWriter would return a path that ends in a UUID, but this mock will generate an int ID to make our asserts easier.
+          // Normally, the S3CsvWriter would return a path that ends in a UUID, but this mock will generate an
+          // int ID to make our asserts easier.
           doReturn(String.format("fakeOutputPath-%05d", csvWriterConstructorArguments.size())).when(mock).getObjectPath();
 
-          // Mockito doesn't seem to provide an easy way to actually retrieve these arguments later on, so manually store them on construction.
+          // Mockito doesn't seem to provide an easy way to actually retrieve these arguments later on, so
+          // manually store them on construction.
           // _PowerMockito_ does, but I didn't want to set up that additional dependency.
           final List<?> arguments = context.arguments();
           csvWriterConstructorArguments.add(new S3CsvWriterArguments(
@@ -121,10 +121,8 @@ public class S3StreamCopierTest {
               (int) arguments.get(5),
               (boolean) arguments.get(6),
               (CSVFormat) arguments.get(7),
-              (CsvSheetGenerator) arguments.get(8)
-          ));
-        }
-    );
+              (CsvSheetGenerator) arguments.get(8)));
+        });
 
     copier = new S3StreamCopier(
         // In reality, this is normally a UUID - see CopyConsumerFactory#createWriteConfigs
@@ -137,17 +135,18 @@ public class S3StreamCopierTest {
         sqlOperations,
         CONFIGURED_STREAM,
         UPLOAD_TIME,
-        MAX_PARTS_PER_FILE
-    ) {
+        MAX_PARTS_PER_FILE) {
+
       @Override
       public void copyS3CsvFileIntoTable(
-          final JdbcDatabase database,
-          final String s3FileLocation,
-          final String schema,
-          final String tableName,
-          final S3DestinationConfig s3Config) {
+                                         final JdbcDatabase database,
+                                         final String s3FileLocation,
+                                         final String schema,
+                                         final String tableName,
+                                         final S3DestinationConfig s3Config) {
         copyArguments.add(new CopyArguments(database, s3FileLocation, schema, tableName, s3Config));
       }
+
     };
   }
 
@@ -158,7 +157,8 @@ public class S3StreamCopierTest {
 
   @Test
   public void createSequentialStagingFiles_when_multipleFilesRequested() {
-    // When we call prepareStagingFile() the first time, it should create exactly one S3CsvWriter. The next (MAX_PARTS_PER_FILE - 1) invocations
+    // When we call prepareStagingFile() the first time, it should create exactly one S3CsvWriter. The
+    // next (MAX_PARTS_PER_FILE - 1) invocations
     // should reuse that same writer.
     for (var i = 0; i < MAX_PARTS_PER_FILE; i++) {
       final String file = copier.prepareStagingFile();
@@ -185,8 +185,7 @@ public class S3StreamCopierTest {
     assertEquals(CSVFormat.DEFAULT, args.csvSettings);
     assertTrue(
         args.csvSheetGenerator instanceof StagingDatabaseCsvSheetGenerator,
-        "Sheet generator was actually a " + args.csvSheetGenerator.getClass()
-    );
+        "Sheet generator was actually a " + args.csvSheetGenerator.getClass());
   }
 
   @Test
@@ -232,7 +231,8 @@ public class S3StreamCopierTest {
 
     assertEquals(2, copyArguments.size(), "Number of invocations was actually " + copyArguments.size() + ". Arguments were " + copyArguments);
 
-    // S3StreamCopier operates on these from a HashMap, so need to sort them in order to assert in a sane way.
+    // S3StreamCopier operates on these from a HashMap, so need to sort them in order to assert in a
+    // sane way.
     final List<CopyArguments> sortedArgs = copyArguments.stream().sorted(Comparator.comparing(arg -> arg.s3FileLocation)).toList();
     for (int i = 0; i < sortedArgs.size(); i++) {
       LOGGER.info("Checking arguments for index {}", i);
@@ -242,4 +242,5 @@ public class S3StreamCopierTest {
       assertTrue(args.tableName.endsWith("fake_stream"), "Table name was actually " + args.tableName);
     }
   }
+
 }

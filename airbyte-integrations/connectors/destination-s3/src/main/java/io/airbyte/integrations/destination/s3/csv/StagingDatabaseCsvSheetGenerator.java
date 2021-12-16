@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.s3.csv;
 
 import io.airbyte.commons.json.Jsons;
@@ -9,23 +13,24 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * A CsvSheetGenerator that produces data in the format expected by JdbcSqlOperations. See JdbcSqlOperations#createTableQuery.
+ * A CsvSheetGenerator that produces data in the format expected by JdbcSqlOperations. See
+ * JdbcSqlOperations#createTableQuery.
  * <p>
- * This intentionally does not extend {@link BaseSheetGenerator}, because it needs the columns in a different order (ABID, JSON, timestamp) vs (ABID,
- * timestamp, JSON)
+ * This intentionally does not extend {@link BaseSheetGenerator}, because it needs the columns in a
+ * different order (ABID, JSON, timestamp) vs (ABID, timestamp, JSON)
  */
 public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
 
   /**
-   * This method is implemented for clarity, but not actually used. S3StreamCopier disables headers on S3CsvWriter.
+   * This method is implemented for clarity, but not actually used. S3StreamCopier disables headers on
+   * S3CsvWriter.
    */
   @Override
   public List<String> getHeaderRow() {
     return List.of(
         JavaBaseConstants.COLUMN_NAME_AB_ID,
         JavaBaseConstants.COLUMN_NAME_DATA,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT
-    );
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
   @Override
@@ -33,7 +38,7 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
     return List.of(
         id,
         Jsons.serialize(recordMessage.getData()),
-        Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt()))
-    );
+        Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
   }
+
 }

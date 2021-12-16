@@ -125,17 +125,19 @@ public abstract class BaseS3Writer implements S3Writer {
   }
 
   /**
-   * @return A string in the format "{upload-date}_{upload-millis}_0.{format-extension}". For example, "2021_12_09_1639077474000_0.csv"
+   * @return A string in the format "{upload-date}_{upload-millis}_0.{format-extension}". For example,
+   *         "2021_12_09_1639077474000_0.csv"
    */
   public static String getOutputFilename(final Timestamp timestamp, final S3Format format) {
     return getOutputFilename(timestamp, DEFAULT_SUFFIX, format);
   }
 
   /**
-   * @param customSuffix A string to append to the filename. Commonly used to distinguish multiple part files within a single upload. You probably
-   *                     want to use strings with a leading underscore (i.e. prefer "_0" to "0").
-   * @return A string in the format "{upload-date}_{upload-millis}_{suffix}.{format-extension}". For example,
-   * "2021_12_09_1639077474000_customSuffix.csv"
+   * @param customSuffix A string to append to the filename. Commonly used to distinguish multiple
+   *        part files within a single upload. You probably want to use strings with a leading
+   *        underscore (i.e. prefer "_0" to "0").
+   * @return A string in the format "{upload-date}_{upload-millis}_{suffix}.{format-extension}". For
+   *         example, "2021_12_09_1639077474000_customSuffix.csv"
    */
   public static String getOutputFilename(final Timestamp timestamp, final String customSuffix, final S3Format format) {
     final DateFormat formatter = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
@@ -147,4 +149,5 @@ public abstract class BaseS3Writer implements S3Writer {
         customSuffix,
         format.getFileExtension());
   }
+
 }

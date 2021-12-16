@@ -28,7 +28,8 @@ public class RedshiftStreamCopier extends S3StreamCopier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftStreamCopier.class);
   // From https://docs.aws.amazon.com/redshift/latest/dg/t_loading-tables-from-s3.html
-  // "Split your load data files so that the files are about equal size, between 1 MB and 1 GB after compression"
+  // "Split your load data files so that the files are about equal size, between 1 MB and 1 GB after
+  // compression"
   public static final int MAX_PARTS_PER_FILE = 4;
 
   private final ObjectMapper objectMapper;
@@ -48,8 +49,7 @@ public class RedshiftStreamCopier extends S3StreamCopier {
         s3Config, nameTransformer,
         sqlOperations,
         Timestamp.from(Instant.now()),
-        configuredAirbyteStream
-    );
+        configuredAirbyteStream);
   }
 
   @VisibleForTesting
@@ -103,8 +103,8 @@ public class RedshiftStreamCopier extends S3StreamCopier {
   }
 
   /**
-   * Creates the contents of a manifest file given the `s3StagingFiles`. There must be at least one entry in a manifest file otherwise it is not
-   * considered valid for the COPY command.
+   * Creates the contents of a manifest file given the `s3StagingFiles`. There must be at least one
+   * entry in a manifest file otherwise it is not considered valid for the COPY command.
    *
    * @return null if no stagingFiles exist otherwise the manifest body String
    */

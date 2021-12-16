@@ -24,9 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This implementation is similar to
- * {@link LegacyS3StreamCopier}. The difference is that
- * this implementation creates Parquet staging files, instead of CSV ones.
+ * This implementation is similar to {@link LegacyS3StreamCopier}. The difference is that this
+ * implementation creates Parquet staging files, instead of CSV ones.
  * <p>
  * </p>
  * It does the following operations:

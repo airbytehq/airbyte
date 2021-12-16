@@ -48,7 +48,6 @@ public abstract class S3StreamCopier implements StreamCopier {
   protected final String stagingFolder;
   protected final Map<String, S3Writer> stagingWritersByFile = new HashMap<>();
 
-
   // The number of batches of records that will be inserted into each file.
   private final int maxPartsPerFile;
   // The number of batches inserted into the current file.
@@ -56,9 +55,10 @@ public abstract class S3StreamCopier implements StreamCopier {
   private String currentFile;
 
   /**
-   * @param maxPartsPerFile The number of "chunks" of requests to add into each file. Each chunk can be up to 256 MiB (see
-   *                        CopyConsumerFactory#MAX_BATCH_SIZE_BYTES). For example, Redshift recommends at most 1 GiB per file, so you would want
-   *                        maxPartsPerFile = 4 (because 4 * 256MiB = 1 GiB).
+   * @param maxPartsPerFile The number of "chunks" of requests to add into each file. Each chunk can
+   *        be up to 256 MiB (see CopyConsumerFactory#MAX_BATCH_SIZE_BYTES). For example, Redshift
+   *        recommends at most 1 GiB per file, so you would want maxPartsPerFile = 4 (because 4 *
+   *        256MiB = 1 GiB).
    */
   public S3StreamCopier(final String stagingFolder,
                         final String schema,
@@ -94,17 +94,18 @@ public abstract class S3StreamCopier implements StreamCopier {
 
       try {
         final S3CsvWriter writer = new S3CsvWriter.Builder(
-            // The Flattening value is actually ignored, because we pass an explicit CsvSheetGenerator. So just pass in null.
+            // The Flattening value is actually ignored, because we pass an explicit CsvSheetGenerator. So just
+            // pass in null.
             s3Config.cloneWithFormatConfig(new S3CsvFormatConfig(null, (long) s3Config.getPartSize())),
             s3Client,
             configuredAirbyteStream,
-            uploadTime
-        ).uploadThreads(DEFAULT_UPLOAD_THREADS)
-            .queueCapacity(DEFAULT_QUEUE_CAPACITY)
-            .csvSettings(CSVFormat.DEFAULT)
-            .withHeader(false)
-            .csvSheetGenerator(new StagingDatabaseCsvSheetGenerator())
-            .build();
+            uploadTime)
+                .uploadThreads(DEFAULT_UPLOAD_THREADS)
+                .queueCapacity(DEFAULT_QUEUE_CAPACITY)
+                .csvSettings(CSVFormat.DEFAULT)
+                .withHeader(false)
+                .csvSheetGenerator(new StagingDatabaseCsvSheetGenerator())
+                .build();
         currentFile = writer.getObjectPath();
         stagingWritersByFile.put(currentFile, writer);
       } catch (final IOException e) {

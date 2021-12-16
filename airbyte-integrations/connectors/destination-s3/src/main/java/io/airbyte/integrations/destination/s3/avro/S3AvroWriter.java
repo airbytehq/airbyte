@@ -88,4 +88,5 @@ public class S3AvroWriter extends BaseS3Writer implements S3Writer {
     // TODO
     throw new UnsupportedOperationException("not yet implemented");
   }
+
 }

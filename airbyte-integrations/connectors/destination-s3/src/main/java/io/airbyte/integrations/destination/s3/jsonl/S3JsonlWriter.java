@@ -85,4 +85,5 @@ public class S3JsonlWriter extends BaseS3Writer implements S3Writer {
     // TODO
     throw new UnsupportedOperationException("not yet implemented");
   }
+
 }

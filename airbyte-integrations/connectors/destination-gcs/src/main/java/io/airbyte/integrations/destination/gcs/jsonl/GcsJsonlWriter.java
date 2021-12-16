@@ -83,4 +83,5 @@ public class GcsJsonlWriter extends BaseGcsWriter implements S3Writer {
     // TODO
     throw new UnsupportedOperationException("not yet implemented");
   }
+
 }

@@ -127,9 +127,9 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
           queueCapacity,
           withHeader,
           csvSettings,
-          csvSheetGenerator
-      );
+          csvSheetGenerator);
     }
+
   }
 
   @Override
@@ -155,4 +155,5 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
   public String getObjectPath() {
     return objectKey;
   }
+
 }

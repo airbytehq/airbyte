@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.redshift;
 
 import static java.util.Comparator.comparing;
@@ -37,9 +41,12 @@ class RedshiftStreamCopierTest {
   private static final int PART_SIZE = 5;
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-  // The full path would be something like "fake-namespace/fake_stream/2021_12_09_1639077474000_e549e712-b89c-4272-9496-9690ba7f973e.csv"
-  // The namespace and stream have their hyphens replaced by underscores. Not super clear that that's actually required.
-  // 2021_12_09_1639077474000 is generated from the timestamp. It's followed by a random UUID, in case we need to create multiple files.
+  // The full path would be something like
+  // "fake-namespace/fake_stream/2021_12_09_1639077474000_e549e712-b89c-4272-9496-9690ba7f973e.csv"
+  // The namespace and stream have their hyphens replaced by underscores. Not super clear that that's
+  // actually required.
+  // 2021_12_09_1639077474000 is generated from the timestamp. It's followed by a random UUID, in case
+  // we need to create multiple files.
   private static final String EXPECTED_OBJECT_BEGINNING = "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000_";
   private static final String EXPECTED_OBJECT_ENDING = ".csv";
 
@@ -71,8 +78,7 @@ class RedshiftStreamCopierTest {
             "fake-access-key-id",
             "fake-secret-access-key",
             PART_SIZE,
-            null
-        ),
+            null),
         new ExtendedNameTransformer(),
         sqlOperations,
         UPLOAD_TIME,
@@ -80,9 +86,7 @@ class RedshiftStreamCopierTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(new AirbyteStream()
                 .withName("fake-stream")
-                .withNamespace("fake-namespace")
-            )
-    );
+                .withNamespace("fake-namespace")));
   }
 
   @Test
@@ -129,19 +133,17 @@ class RedshiftStreamCopierTest {
           } catch (final JsonProcessingException e) {
             throw new RuntimeException(e);
           }
-        })
-    );
+        }));
 
     verify(db).execute(String.format(
         """
-            COPY fake-schema.%s FROM 's3://fake-bucket/fake-bucketPath/fake-staging-folder/fake-schema/%s.manifest'
-            CREDENTIALS 'aws_access_key_id=fake-access-key-id;aws_secret_access_key=fake-secret-access-key'
-            CSV REGION 'fake-region' TIMEFORMAT 'auto'
-            STATUPDATE OFF
-            MANIFEST;""",
+        COPY fake-schema.%s FROM 's3://fake-bucket/fake-bucketPath/fake-staging-folder/fake-schema/%s.manifest'
+        CREDENTIALS 'aws_access_key_id=fake-access-key-id;aws_secret_access_key=fake-secret-access-key'
+        CSV REGION 'fake-region' TIMEFORMAT 'auto'
+        STATUPDATE OFF
+        MANIFEST;""",
         copier.getTmpTableName(),
-        manifestUuid.get()
-    ));
+        manifestUuid.get()));
   }
 
   private static boolean isManifestEntryCorrect(final JsonNode entry, final String expectedFilename) {
@@ -150,4 +152,5 @@ class RedshiftStreamCopierTest {
 
     return ("s3://fake-bucket/" + expectedFilename).equals(url) && mandatory;
   }
+
 }

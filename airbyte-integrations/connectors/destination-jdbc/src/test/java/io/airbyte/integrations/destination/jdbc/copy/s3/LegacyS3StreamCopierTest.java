@@ -42,15 +42,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * IF YOU'RE SEEING WEIRD BEHAVIOR INVOLVING MOCKED OBJECTS: double-check the mockConstruction() call in setup(). You might need to update the methods
- * being mocked.
+ * IF YOU'RE SEEING WEIRD BEHAVIOR INVOLVING MOCKED OBJECTS: double-check the mockConstruction()
+ * call in setup(). You might need to update the methods being mocked.
  * <p>
  * Tests to help define what the legacy S3 stream copier did.
  * <p>
  * Does not verify SQL operations, as they're fairly transparent.
  * <p>
- * A lot of this code is duplicated in other places (S3StreamCopierTest, S3CsvWriterTest, RedshiftStreamCopierTest). This is intentional, as
- * eventually we'd like to delete the LegacyS3StreamCopier along with this file.
+ * A lot of this code is duplicated in other places (S3StreamCopierTest, S3CsvWriterTest,
+ * RedshiftStreamCopierTest). This is intentional, as eventually we'd like to delete the
+ * LegacyS3StreamCopier along with this file.
  */
 public class LegacyS3StreamCopierTest {
 
@@ -113,8 +114,7 @@ public class LegacyS3StreamCopierTest {
             capturer.write(invocation.getArgument(0), invocation.getArgument(1), invocation.getArgument(2));
             return null;
           }).when(stream).write(any(byte[].class), anyInt(), anyInt());
-        }
-    );
+        });
 
     copier = new LegacyS3StreamCopier(
         // In reality, this is normally a UUID - see CopyConsumerFactory#createWriteConfigs
@@ -132,20 +132,20 @@ public class LegacyS3StreamCopierTest {
             "fake-access-key-id",
             "fake-secret-access-key",
             PART_SIZE,
-            null
-        ),
+            null),
         new ExtendedNameTransformer(),
-        sqlOperations
-    ) {
+        sqlOperations) {
+
       @Override
       public void copyS3CsvFileIntoTable(
-          final JdbcDatabase database,
-          final String s3FileLocation,
-          final String schema,
-          final String tableName,
-          final S3DestinationConfig s3Config) {
+                                         final JdbcDatabase database,
+                                         final String s3FileLocation,
+                                         final String schema,
+                                         final String tableName,
+                                         final S3DestinationConfig s3Config) {
         copyArguments.add(new CopyArguments(database, s3FileLocation, schema, tableName, s3Config));
       }
+
     };
   }
 
@@ -156,8 +156,8 @@ public class LegacyS3StreamCopierTest {
 
   @Test
   public void createSequentialStagingFiles_when_multipleFilesRequested() {
-    // When we call prepareStagingFile() the first time, it should create exactly one upload manager. The next (MAX_PARTS_PER_FILE - 1) invocations
-    // should reuse that same upload manager.
+    // When we call prepareStagingFile() the first time, it should create exactly one upload manager.
+    // The next (MAX_PARTS_PER_FILE - 1) invocations should reuse that same upload manager.
     for (var i = 0; i < LegacyS3StreamCopier.MAX_PARTS_PER_FILE; i++) {
       final String file = copier.prepareStagingFile();
       assertEquals("fake-staging-folder/fake-schema/fake-stream_00000", file, "preparing file number " + i);
@@ -219,15 +219,13 @@ public class LegacyS3StreamCopierTest {
         new AirbyteRecordMessage()
             .withData(OBJECT_MAPPER.readTree("{\"foo\": 73}"))
             .withEmittedAt(1234L),
-        file1
-    );
+        file1);
     copier.write(
         UUID.fromString("2b95a13f-d54f-4370-a712-1c7bf2716190"),
         new AirbyteRecordMessage()
             .withData(OBJECT_MAPPER.readTree("{\"bar\": 84}"))
             .withEmittedAt(2345L),
-        file1
-    );
+        file1);
 
     final String file2 = copier.prepareStagingFile();
     copier.write(
@@ -235,8 +233,7 @@ public class LegacyS3StreamCopierTest {
         new AirbyteRecordMessage()
             .withData(OBJECT_MAPPER.readTree("{\"asd\": 95}"))
             .withEmittedAt(3456L),
-        file2
-    );
+        file2);
 
     copier.closeStagingUploader(false);
 
@@ -244,20 +241,17 @@ public class LegacyS3StreamCopierTest {
     assertEquals(
         String.format(
             """
-                f6767f7d-ce1e-45cc-92db-2ad3dfdd088e,"{""foo"":73}",%s\r
-                2b95a13f-d54f-4370-a712-1c7bf2716190,"{""bar"":84}",%s\r
-                """,
+            f6767f7d-ce1e-45cc-92db-2ad3dfdd088e,"{""foo"":73}",%s\r
+            2b95a13f-d54f-4370-a712-1c7bf2716190,"{""bar"":84}",%s\r
+            """,
             Timestamp.from(Instant.ofEpochMilli(1234)),
-            Timestamp.from(Instant.ofEpochMilli(2345))
-        ),
+            Timestamp.from(Instant.ofEpochMilli(2345))),
         outputStreams.get(0).toString(StandardCharsets.UTF_8));
     assertEquals(
         String.format(
             "24eba873-de57-4901-9e1e-2393334320fb,\"{\"\"asd\"\":95}\",%s\r\n",
-            Timestamp.from(Instant.ofEpochMilli(3456))
-        ),
-        outputStreams.get(1).toString(StandardCharsets.UTF_8)
-    );
+            Timestamp.from(Instant.ofEpochMilli(3456))),
+        outputStreams.get(1).toString(StandardCharsets.UTF_8));
   }
 
   @Test
@@ -271,7 +265,8 @@ public class LegacyS3StreamCopierTest {
 
     assertEquals(2, copyArguments.size(), "Number of invocations was actually " + copyArguments.size() + ". Arguments were " + copyArguments);
 
-    // S3StreamCopier operates on these from a HashMap, so need to sort them in order to assert in a sane way.
+    // S3StreamCopier operates on these from a HashMap, so need to sort them in order to assert in a
+    // sane way.
     final List<CopyArguments> sortedArgs = copyArguments.stream().sorted(Comparator.comparing(arg -> arg.s3FileLocation)).toList();
     for (int i = 0; i < sortedArgs.size(); i++) {
       LOGGER.info("Checking arguments for index {}", i);
@@ -281,4 +276,5 @@ public class LegacyS3StreamCopierTest {
       assertTrue(args.tableName.endsWith("fake_stream"), "Table name was actually " + args.tableName);
     }
   }
+
 }

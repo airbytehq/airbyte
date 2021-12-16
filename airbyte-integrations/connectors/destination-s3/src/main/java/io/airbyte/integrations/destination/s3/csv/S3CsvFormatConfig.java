@@ -48,8 +48,7 @@ public class S3CsvFormatConfig implements S3FormatConfig {
   public S3CsvFormatConfig(final JsonNode formatConfig) {
     this(
         Flattening.fromValue(formatConfig.get("flattening").asText()),
-        formatConfig.get(PART_SIZE_MB_ARG_NAME) != null ? formatConfig.get(PART_SIZE_MB_ARG_NAME).asLong() : null
-    );
+        formatConfig.get(PART_SIZE_MB_ARG_NAME) != null ? formatConfig.get(PART_SIZE_MB_ARG_NAME).asLong() : null);
   }
 
   public S3CsvFormatConfig(final Flattening flattening, final Long partSize) {
@@ -95,4 +94,5 @@ public class S3CsvFormatConfig implements S3FormatConfig {
   public int hashCode() {
     return Objects.hash(flattening, partSize);
   }
+
 }

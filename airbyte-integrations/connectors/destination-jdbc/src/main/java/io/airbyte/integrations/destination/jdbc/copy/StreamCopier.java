@@ -8,7 +8,8 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.UUID;
 
 /**
- * StreamCopier is responsible for writing to a staging persistence and providing methods to remove the staged data.
+ * StreamCopier is responsible for writing to a staging persistence and providing methods to remove
+ * the staged data.
  */
 public interface StreamCopier {
 
@@ -18,8 +19,8 @@ public interface StreamCopier {
   void write(UUID id, AirbyteRecordMessage recordMessage, String fileName) throws Exception;
 
   /**
-   * Closes the writer for the stream to the staging persistence. This method should block until all buffered data has been written to the
-   * persistence.
+   * Closes the writer for the stream to the staging persistence. This method should block until all
+   * buffered data has been written to the persistence.
    */
   void closeStagingUploader(boolean hasFailed) throws Exception;
 
@@ -29,7 +30,8 @@ public interface StreamCopier {
   void createTemporaryTable() throws Exception;
 
   /**
-   * Copies the staging file to the temporary table. This method should block until the copy/upload has completed.
+   * Copies the staging file to the temporary table. This method should block until the copy/upload
+   * has completed.
    */
   void copyStagingFileToTemporaryTable() throws Exception;
 
@@ -51,14 +53,16 @@ public interface StreamCopier {
   String generateMergeStatement(String destTableName) throws Exception;
 
   /**
-   * Cleans up the copier by removing the staging file and dropping the temporary table after completion or failure.
+   * Cleans up the copier by removing the staging file and dropping the temporary table after
+   * completion or failure.
    */
   void removeFileAndDropTmpTable() throws Exception;
 
   /**
    * Creates the staging file and all the necessary items to write data to this file.
    *
-   * @return A string that unqiuely identifies the file. E.g. the filename, or a unique suffix that is appended to a shared filename prefix
+   * @return A string that unqiuely identifies the file. E.g. the filename, or a unique suffix that is
+   *         appended to a shared filename prefix
    */
   String prepareStagingFile();
 

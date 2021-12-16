@@ -15,8 +15,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Objects;
 
 /**
- * An S3 configuration. Typical usage sets at most one of {@code bucketPath} (necessary for more delicate data syncing to S3) and {@code partSize}
- * (used by certain bulk-load database operations).
+ * An S3 configuration. Typical usage sets at most one of {@code bucketPath} (necessary for more
+ * delicate data syncing to S3) and {@code partSize} (used by certain bulk-load database
+ * operations).
  */
 public class S3DestinationConfig {
 
@@ -35,28 +36,27 @@ public class S3DestinationConfig {
   private final S3FormatConfig formatConfig;
 
   /**
-   * The part size should not matter in any use case that depends on this constructor. So the default 10 MB is used.
+   * The part size should not matter in any use case that depends on this constructor. So the default
+   * 10 MB is used.
    */
-  public S3DestinationConfig(
-      final String endpoint,
-      final String bucketName,
-      final String bucketPath,
-      final String bucketRegion,
-      final String accessKeyId,
-      final String secretAccessKey,
-      final S3FormatConfig formatConfig) {
+  public S3DestinationConfig(final String endpoint,
+                             final String bucketName,
+                             final String bucketPath,
+                             final String bucketRegion,
+                             final String accessKeyId,
+                             final String secretAccessKey,
+                             final S3FormatConfig formatConfig) {
     this(endpoint, bucketName, bucketPath, bucketRegion, accessKeyId, secretAccessKey, DEFAULT_PART_SIZE_MB, formatConfig);
   }
 
-  public S3DestinationConfig(
-      final String endpoint,
-      final String bucketName,
-      final String bucketPath,
-      final String bucketRegion,
-      final String accessKeyId,
-      final String secretAccessKey,
-      final Integer partSize,
-      final S3FormatConfig formatConfig) {
+  public S3DestinationConfig(final String endpoint,
+                             final String bucketName,
+                             final String bucketPath,
+                             final String bucketRegion,
+                             final String accessKeyId,
+                             final String secretAccessKey,
+                             final Integer partSize,
+                             final S3FormatConfig formatConfig) {
     this.endpoint = endpoint;
     this.bucketName = bucketName;
     this.bucketPath = bucketPath;
@@ -156,8 +156,7 @@ public class S3DestinationConfig {
         this.accessKeyId,
         this.secretAccessKey,
         this.partSize,
-        formatConfig
-    );
+        formatConfig);
   }
 
   @Override
@@ -170,8 +169,10 @@ public class S3DestinationConfig {
     }
     final S3DestinationConfig that = (S3DestinationConfig) o;
     return Objects.equals(endpoint, that.endpoint) && Objects.equals(bucketName, that.bucketName) && Objects.equals(
-        bucketPath, that.bucketPath) && Objects.equals(bucketRegion, that.bucketRegion) && Objects.equals(accessKeyId,
-        that.accessKeyId) && Objects.equals(secretAccessKey, that.secretAccessKey) && Objects.equals(partSize, that.partSize)
+        bucketPath, that.bucketPath) && Objects.equals(bucketRegion, that.bucketRegion)
+        && Objects.equals(accessKeyId,
+            that.accessKeyId)
+        && Objects.equals(secretAccessKey, that.secretAccessKey) && Objects.equals(partSize, that.partSize)
         && Objects.equals(formatConfig, that.formatConfig);
   }
 
@@ -179,4 +180,5 @@ public class S3DestinationConfig {
   public int hashCode() {
     return Objects.hash(endpoint, bucketName, bucketPath, bucketRegion, accessKeyId, secretAccessKey, partSize, formatConfig);
   }
+
 }

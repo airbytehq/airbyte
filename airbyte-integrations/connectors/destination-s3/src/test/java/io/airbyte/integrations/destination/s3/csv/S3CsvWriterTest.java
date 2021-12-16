@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.s3.csv;
 
 import static java.util.Collections.singletonList;
@@ -45,8 +49,7 @@ class S3CsvWriterTest {
       .withDestinationSyncMode(DestinationSyncMode.APPEND)
       .withStream(new AirbyteStream()
           .withName("fake-stream")
-          .withNamespace("fake-namespace")
-      );
+          .withNamespace("fake-namespace"));
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   private static final int PART_SIZE = 7;
@@ -59,17 +62,19 @@ class S3CsvWriterTest {
       "fake-secret-access-key",
       // The part size is configured in the format config. This field is only used by S3StreamCopier.
       null,
-      new S3CsvFormatConfig(Flattening.NO, (long) PART_SIZE)
-  );
+      new S3CsvFormatConfig(Flattening.NO, (long) PART_SIZE));
 
   // equivalent to Thu, 09 Dec 2021 19:17:54 GMT
   private static final Timestamp UPLOAD_TIME = Timestamp.from(Instant.ofEpochMilli(1639077474000L));
   private static final int UPLOAD_THREADS = 8;
   private static final int QUEUE_CAPACITY = 9;
 
-  // The full path would be something like "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000_e549e712-b89c-4272-9496-9690ba7f973e.csv"
-  // The namespace and stream have their hyphens replaced by underscores. Not super clear that that's actually required.
-  // 2021_12_09_1639077474000 is generated from the timestamp. It's followed by a random UUID, in case we need to create multiple files.
+  // The full path would be something like
+  // "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000_e549e712-b89c-4272-9496-9690ba7f973e.csv"
+  // The namespace and stream have their hyphens replaced by underscores. Not super clear that that's
+  // actually required.
+  // 2021_12_09_1639077474000 is generated from the timestamp. It's followed by a random UUID, in case
+  // we need to create multiple files.
   private static final String EXPECTED_OBJECT_BEGINNING = "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000_";
   private static final String EXPECTED_OBJECT_ENDING = ".csv";
 
@@ -92,7 +97,8 @@ class S3CsvWriterTest {
     streamTransferManagerMockedConstruction = mockConstruction(
         StreamTransferManager.class,
         (mock, context) -> {
-          // Mockito doesn't seem to provide an easy way to actually retrieve these arguments later on, so manually store them on construction.
+          // Mockito doesn't seem to provide an easy way to actually retrieve these arguments later on, so
+          // manually store them on construction.
           // _PowerMockito_ does, but I didn't want to set up that additional dependency.
           final List<?> arguments = context.arguments();
           streamTransferManagerConstructorArguments.add(new StreamTransferManagerArguments((String) arguments.get(0), (String) arguments.get(1)));
@@ -120,8 +126,7 @@ class S3CsvWriterTest {
             capturer.write(invocation.getArgument(0), invocation.getArgument(1), invocation.getArgument(2));
             return null;
           }).when(stream).write(any(byte[].class), anyInt(), anyInt());
-        }
-    );
+        });
 
     s3Client = mock(AmazonS3Client.class);
   }
@@ -131,9 +136,8 @@ class S3CsvWriterTest {
         CONFIG,
         s3Client,
         CONFIGURED_STREAM,
-        UPLOAD_TIME
-    ).uploadThreads(UPLOAD_THREADS)
-        .queueCapacity(QUEUE_CAPACITY);
+        UPLOAD_TIME).uploadThreads(UPLOAD_THREADS)
+            .queueCapacity(QUEUE_CAPACITY);
   }
 
   @AfterEach
@@ -195,23 +199,21 @@ class S3CsvWriterTest {
         UUID.fromString("f6767f7d-ce1e-45cc-92db-2ad3dfdd088e"),
         new AirbyteRecordMessage()
             .withData(OBJECT_MAPPER.readTree("{\"foo\": 73}"))
-            .withEmittedAt(1234L)
-    );
+            .withEmittedAt(1234L));
     writer.write(
         UUID.fromString("2b95a13f-d54f-4370-a712-1c7bf2716190"),
         new AirbyteRecordMessage()
             .withData(OBJECT_MAPPER.readTree("{\"bar\": 84}"))
-            .withEmittedAt(2345L)
-    );
+            .withEmittedAt(2345L));
     writer.close(false);
 
     // carriage returns are required b/c RFC4180 requires it :(
     assertEquals(
         """
-            "_airbyte_ab_id","_airbyte_emitted_at","_airbyte_data"\r
-            "f6767f7d-ce1e-45cc-92db-2ad3dfdd088e","1234","{""foo"":73}"\r
-            "2b95a13f-d54f-4370-a712-1c7bf2716190","2345","{""bar"":84}"\r
-            """,
+        "_airbyte_ab_id","_airbyte_emitted_at","_airbyte_data"\r
+        "f6767f7d-ce1e-45cc-92db-2ad3dfdd088e","1234","{""foo"":73}"\r
+        "2b95a13f-d54f-4370-a712-1c7bf2716190","2345","{""bar"":84}"\r
+        """,
         outputStreams.get(0).toString(StandardCharsets.UTF_8));
   }
 
@@ -223,28 +225,27 @@ class S3CsvWriterTest {
         UUID.fromString("f6767f7d-ce1e-45cc-92db-2ad3dfdd088e"),
         new AirbyteRecordMessage()
             .withData(OBJECT_MAPPER.readTree("{\"foo\": 73}"))
-            .withEmittedAt(1234L)
-    );
+            .withEmittedAt(1234L));
     writer.write(
         UUID.fromString("2b95a13f-d54f-4370-a712-1c7bf2716190"),
         new AirbyteRecordMessage()
             .withData(OBJECT_MAPPER.readTree("{\"bar\": 84}"))
-            .withEmittedAt(2345L)
-    );
+            .withEmittedAt(2345L));
     writer.close(false);
 
     // carriage returns are required b/c RFC4180 requires it :(
     assertEquals(
         """
-            "f6767f7d-ce1e-45cc-92db-2ad3dfdd088e","1234","{""foo"":73}"\r
-            "2b95a13f-d54f-4370-a712-1c7bf2716190","2345","{""bar"":84}"\r
-            """,
+        "f6767f7d-ce1e-45cc-92db-2ad3dfdd088e","1234","{""foo"":73}"\r
+        "2b95a13f-d54f-4370-a712-1c7bf2716190","2345","{""bar"":84}"\r
+        """,
         outputStreams.get(0).toString(StandardCharsets.UTF_8));
   }
 
   /**
-   * This test verifies that the S3StreamCopier usecase works. Specifically, the withHeader, csvSettings, and csvSheetGenerator options were all added
-   * solely to support S3StreamCopier; we want to verify that it outputs the exact same data as the previous implementation.
+   * This test verifies that the S3StreamCopier usecase works. Specifically, the withHeader,
+   * csvSettings, and csvSheetGenerator options were all added solely to support S3StreamCopier; we
+   * want to verify that it outputs the exact same data as the previous implementation.
    */
   @Test
   public void writesContentsCorrectly_when_stagingDatabaseConfig() throws IOException {
@@ -258,30 +259,26 @@ class S3CsvWriterTest {
             "fake-secret-access-key",
             // The part size is configured in the format config. This field is only used by S3StreamCopier.
             null,
-            new S3CsvFormatConfig(null, (long) PART_SIZE)
-        ),
+            new S3CsvFormatConfig(null, (long) PART_SIZE)),
         s3Client,
         CONFIGURED_STREAM,
-        UPLOAD_TIME
-    ).uploadThreads(UPLOAD_THREADS)
-        .queueCapacity(QUEUE_CAPACITY)
-        .withHeader(false)
-        .csvSettings(CSVFormat.DEFAULT)
-        .csvSheetGenerator(new StagingDatabaseCsvSheetGenerator())
-        .build();
+        UPLOAD_TIME).uploadThreads(UPLOAD_THREADS)
+            .queueCapacity(QUEUE_CAPACITY)
+            .withHeader(false)
+            .csvSettings(CSVFormat.DEFAULT)
+            .csvSheetGenerator(new StagingDatabaseCsvSheetGenerator())
+            .build();
 
     writer.write(
         UUID.fromString("f6767f7d-ce1e-45cc-92db-2ad3dfdd088e"),
         new AirbyteRecordMessage()
             .withData(OBJECT_MAPPER.readTree("{\"foo\": 73}"))
-            .withEmittedAt(1234L)
-    );
+            .withEmittedAt(1234L));
     writer.write(
         UUID.fromString("2b95a13f-d54f-4370-a712-1c7bf2716190"),
         new AirbyteRecordMessage()
             .withData(OBJECT_MAPPER.readTree("{\"bar\": 84}"))
-            .withEmittedAt(2345L)
-    );
+            .withEmittedAt(2345L));
     writer.close(false);
 
     // carriage returns are required b/c RFC4180 requires it :(
@@ -289,12 +286,11 @@ class S3CsvWriterTest {
     assertEquals(
         String.format(
             """
-                f6767f7d-ce1e-45cc-92db-2ad3dfdd088e,"{""foo"":73}",%s\r
-                2b95a13f-d54f-4370-a712-1c7bf2716190,"{""bar"":84}",%s\r
-                """,
+            f6767f7d-ce1e-45cc-92db-2ad3dfdd088e,"{""foo"":73}",%s\r
+            2b95a13f-d54f-4370-a712-1c7bf2716190,"{""bar"":84}",%s\r
+            """,
             Timestamp.from(Instant.ofEpochMilli(1234)),
-            Timestamp.from(Instant.ofEpochMilli(2345))
-        ),
+            Timestamp.from(Instant.ofEpochMilli(2345))),
         outputStreams.get(0).toString(StandardCharsets.UTF_8));
   }
 
@@ -312,4 +308,5 @@ class S3CsvWriterTest {
         .replaceFirst(EXPECTED_OBJECT_ENDING + "$", "");
     assertDoesNotThrow(() -> UUID.fromString(uuidMaybe), errorMessage);
   }
+
 }

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.jdbc.copy.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -44,6 +48,7 @@ public abstract class S3StreamCopierFactory implements StreamCopierFactory<S3Des
                                          S3DestinationConfig s3Config,
                                          ExtendedNameTransformer nameTransformer,
                                          SqlOperations sqlOperations,
-                                         ConfiguredAirbyteStream configuredStream
-  ) throws Exception;
+                                         ConfiguredAirbyteStream configuredStream)
+      throws Exception;
+
 }
