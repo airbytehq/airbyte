@@ -101,7 +101,7 @@ public class DestinationHandler {
   public void deleteDestination(final DestinationRead destination)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // disable all connections associated with this destination
-    // Delete connections first in case it it fails in the middle, destination will still be visible
+    // Delete connections first in case it fails in the middle, destination will still be visible
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(destination.getWorkspaceId());
     for (final ConnectionRead connectionRead : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
       if (!connectionRead.getDestinationId().equals(destination.getDestinationId())) {
