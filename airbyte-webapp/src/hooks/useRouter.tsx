@@ -18,7 +18,6 @@ function useRouter<T = any, P = any>(): {
   location: Location;
   push(path: To, state?: NavigateOptions): void;
   replace(path: To, state?: NavigateOptions): void;
-  // match: match<History.UnknownFacade>;
 } {
   const params: any = useParams();
   const location = useLocation();
