@@ -111,7 +111,8 @@ public class SourceDefinitionsHandler {
         .withDocumentationUrl(sourceDefinitionCreate.getDocumentationUrl().toString())
         .withName(sourceDefinitionCreate.getName())
         .withIcon(sourceDefinitionCreate.getIcon())
-        .withSpec(spec);
+        .withSpec(spec)
+        .withTombstone(false);
 
     configRepository.writeStandardSourceDefinition(sourceDefinition);
 
