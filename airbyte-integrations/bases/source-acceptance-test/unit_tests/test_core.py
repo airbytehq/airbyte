@@ -32,10 +32,11 @@ from source_acceptance_test.tests.test_core import TestSpec as _TestSpec
                         "client_secret": {"type": "string"},
                         "access_token": {"type": "string"},
                         "refresh_token": {"type": "string"},
-                        "$ref": None
+                        "$ref": None,
                     },
                 }
-            }, True
+            },
+            True,
         ),
         (
             {
@@ -46,15 +47,12 @@ from source_acceptance_test.tests.test_core import TestSpec as _TestSpec
                     "oauth_config_specification": {
                         "complete_oauth_output_specification": {
                             "type": "object",
-                            "properties": {
-                                "refresh_token": {"type": "string"},
-                                "$ref": None
-                            }
+                            "properties": {"refresh_token": {"type": "string"}, "$ref": None},
                         }
-                    }
+                    },
                 }
-            }
-            , True
+            },
+            True,
         ),
         (
             {
@@ -65,15 +63,12 @@ from source_acceptance_test.tests.test_core import TestSpec as _TestSpec
                     "oauth_config_specification": {
                         "complete_oauth_server_input_specification": {
                             "type": "object",
-                            "properties": {
-                                "refresh_token": {"type": "string"},
-                                "$ref": None
-                            }
+                            "properties": {"refresh_token": {"type": "string"}, "$ref": None},
                         }
-                    }
+                    },
                 }
-            }
-            , True
+            },
+            True,
         ),
         (
             {
@@ -84,15 +79,12 @@ from source_acceptance_test.tests.test_core import TestSpec as _TestSpec
                     "oauth_config_specification": {
                         "complete_oauth_server_output_specification": {
                             "type": "object",
-                            "properties": {
-                                "refresh_token": {"type": "string"},
-                                "$ref": None
-                            }
+                            "properties": {"refresh_token": {"type": "string"}, "$ref": None},
                         }
-                    }
+                    },
                 }
-            }
-            , True
+            },
+            True,
         ),
         (
             {
@@ -105,7 +97,8 @@ from source_acceptance_test.tests.test_core import TestSpec as _TestSpec
                         "refresh_token": {"type": "string"},
                     },
                 }
-            }, False
+            },
+            False,
         ),
         ({"$ref": None}, True),
         ({"properties": {"user": {"$ref": None}}}, True),

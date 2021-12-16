@@ -2,10 +2,10 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import json
 import logging
 import re
 from collections import Counter, defaultdict
-import json
 from functools import reduce
 from logging import Logger
 from typing import Any, Dict, List, Mapping, MutableMapping, Set
@@ -81,7 +81,7 @@ class TestSpec(BaseTest):
         if check_result is not None:
             refs_errors = check_result
 
-        assert not refs_errors, f"Found unresolved `$refs` value in spec.json file"
+        assert not refs_errors, "Found unresolved `$refs` value in spec.json file"
 
     def test_oauth_flow_parameters(self, actual_connector_spec: ConnectorSpecification):
         """
