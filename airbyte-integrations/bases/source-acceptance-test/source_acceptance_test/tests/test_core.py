@@ -5,6 +5,7 @@
 import logging
 import re
 from collections import Counter, defaultdict
+import json
 from functools import reduce
 from logging import Logger
 from typing import Any, Dict, List, Mapping, MutableMapping, Set
@@ -41,6 +42,10 @@ class TestSpec(BaseTest):
             request.spec_cache = spec
         return request.spec_cache
 
+    @pytest.fixture(name="connector_spec_dict")
+    def connector_spec_dict_fixture(request: BaseTest, actual_connector_spec):
+        return json.loads(actual_connector_spec.json())
+
     def test_match_expected(
         self, connector_spec: ConnectorSpecification, actual_connector_spec: ConnectorSpecification, connector_config: SecretDict
     ):
@@ -68,6 +73,15 @@ class TestSpec(BaseTest):
 
     def test_secret_never_in_the_output(self):
         """This test should be injected into any docker command it needs to know current config and spec"""
+
+    def test_defined_refs_exist_in_json_spec_file(self, connector_spec_dict: dict):
+        """Checking for the presence of unresolved `$ref`s values within each json spec file"""
+        refs_errors = None
+        check_result = find_key_inside_schema(schema_item=connector_spec_dict)
+        if check_result is not None:
+            refs_errors = check_result
+
+        assert not refs_errors, f"Found unresolved `$refs` value in spec.json file"
 
     def test_oauth_flow_parameters(self, actual_connector_spec: ConnectorSpecification):
         """
