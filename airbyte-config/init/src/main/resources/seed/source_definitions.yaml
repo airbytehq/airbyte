@@ -26,7 +26,6 @@
   sourceType: api
   documentationUrl: https://docs.airbyte.io/integrations/sources/amazon-seller-partner
   icon: amazonsellerpartner.svg
-  sourceType: api
 - name: Amazon SQS
   sourceDefinitionId: 983fd355-6bf3-4709-91b5-37afa391eeb6
   dockerRepository: airbyte/source-amazon-sqs
