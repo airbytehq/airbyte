@@ -30,7 +30,6 @@ import LoadingPage from "components/LoadingPage";
 import useWorkspace from "hooks/services/useWorkspace";
 import useRouterHook from "hooks/useRouter";
 import { Routes } from "pages/routes";
-import { LogsRequestError } from "core/request/LogsRequestError";
 
 const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   width: 100%;
@@ -153,7 +152,6 @@ const OnboardingPage: React.FC = () => {
       return (
         <SourceStep
           afterSelectConnector={() => setErrorStatusRequest(null)}
-          jobInfo={LogsRequestError.extractJobInfo(errorStatusRequest)}
           onSubmit={onSubmitSourceStep}
           availableServices={sourceDefinitions}
           hasSuccess={successRequest}
@@ -199,7 +197,6 @@ const OnboardingPage: React.FC = () => {
       return (
         <DestinationStep
           afterSelectConnector={() => setErrorStatusRequest(null)}
-          jobInfo={LogsRequestError.extractJobInfo(errorStatusRequest)}
           onSubmit={onSubmitDestinationStep}
           availableServices={destinationDefinitions}
           hasSuccess={successRequest}
