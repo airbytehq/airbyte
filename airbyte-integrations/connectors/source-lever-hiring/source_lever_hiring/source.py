@@ -22,32 +22,6 @@ from .streams import (
 )
 
 
-class ConnectorConfig(BaseModel):
-    class Config:
-        title = "Lever Hiring Spec"
-
-    client_id: str = Field(
-        description="The client application id as provided when registering the application with Lever.",
-    )
-    client_secret: str = Field(
-        description="The application secret as provided when registering the application with Lever.",
-        airbyte_secret=True,
-    )
-    access_token: str = Field(
-        description="The refresh token your application will need to submit to get a new access token after it's expired.",
-    )
-    environment: str = Field(
-        description="Sandbox or Production environment.",
-        enum=["Sandbox", "Production"],
-        default="Production",
-    )
-    start_date: str = Field(
-        description="UTC date and time in the format 2019-02-25T00:00:00Z. Any data before this date will not be replicated.",
-        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        examples=["2021-04-25T00:00:00Z"],
-    )
-
-
 def _auth_from_config(config):
     return Oauth2Authenticator(
         client_id=config["credentials"]["client_id"],
