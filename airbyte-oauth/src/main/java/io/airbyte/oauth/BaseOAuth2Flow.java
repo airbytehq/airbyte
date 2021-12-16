@@ -208,13 +208,48 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
         oAuthConfigSpecification);
   }
 
+  /**
+   * Requests the access token from the OAuth provider.
+   *
+   * @param clientId The Client ID.
+   * @param clientSecret The Client Secret.
+   * @param authCode The Authorization Code.
+   * @param redirectUrl The Redirect URL.
+   * @param oAuthParamConfig The OAuth Parameter Configuration.
+   * @return A Provider-specific map of access token information.
+   * @throws IOException
+   */
   protected Map<String, Object> completeOAuthFlow(final String clientId,
                                                   final String clientSecret,
                                                   final String authCode,
                                                   final String redirectUrl,
                                                   final JsonNode oAuthParamConfig)
       throws IOException {
+
     final var accessTokenUrl = getAccessTokenUrl();
+    return completeOAuthFlow(clientId, clientSecret, authCode, redirectUrl, oAuthParamConfig, accessTokenUrl);
+  }
+
+  /**
+   * Requests the access token from the OAuth provider. Overloaded version that allows for a custom
+   * access token URL.
+   *
+   * @param clientId The Client ID.
+   * @param clientSecret The Client Secret.
+   * @param authCode The Authorization Code.
+   * @param redirectUrl The Redirect URL.
+   * @param oAuthParamConfig The OAuth Parameter Configuration.
+   * @param accessTokenUrl The custom access token URL.
+   * @return
+   * @throws IOException
+   */
+  protected Map<String, Object> completeOAuthFlow(final String clientId,
+                                                  final String clientSecret,
+                                                  final String authCode,
+                                                  final String redirectUrl,
+                                                  final JsonNode oAuthParamConfig,
+                                                  final String accessTokenUrl)
+      throws IOException {
     final HttpRequest request = HttpRequest.newBuilder()
         .POST(HttpRequest.BodyPublishers
             .ofString(tokenReqContentType.converter.apply(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
@@ -284,7 +319,8 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
     return List.of("credentials");
   }
 
-  private static void validateInputOAuthConfiguration(final OAuthConfigSpecification oauthConfigSpecification, final JsonNode inputOAuthConfiguration)
+  protected static void validateInputOAuthConfiguration(final OAuthConfigSpecification oauthConfigSpecification,
+                                                        final JsonNode inputOAuthConfiguration)
       throws JsonValidationException {
     if (oauthConfigSpecification != null && oauthConfigSpecification.getOauthUserInputFromConnectorConfigSpecification() != null) {
       final JsonSchemaValidator validator = new JsonSchemaValidator();

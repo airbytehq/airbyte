@@ -10,6 +10,7 @@
     "additionalProperties": true,
     "properties": {
       "credentials": {
+        "order": 3,
         "title": "Authentication Mechanism",
         "description": "Choose how to authenticate to Lever Hiring.",
         "type": "object",
@@ -45,6 +46,7 @@
         ]
       },
       "start_date": {
+        "order": 0,
         "type": "string",
         "title": "Start Date",
         "description": "The date from which you'd like to replicate data for GitHub in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated. Note that it will be used only in the following incremental streams: comments, commits and issues.",
@@ -54,13 +56,12 @@
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
       },
       "environment": {
+        "order": 1,
         "type": "string",
         "title": "Environment",
         "description": "The environment in which you'd like to replicate data for Lever. This is used to determine which Lever API endpoint to use.",
-        "examples": [
-          "Production"
-        ],
-        "pattern": "^(Production|Sandbox)$"
+        "default": "Sandbox",
+        "enum": ["Production", "Sandbox"]
       }
     }
   },
@@ -77,6 +78,15 @@
     "predicate_key": ["credentials", "auth_type"],
     "predicate_value": "Client",
     "oauth_config_specification": {
+      "oauth_user_input_from_connector_config_specification" : {
+        "type":"object",
+        "properties": {
+          "environment": {
+            "type": "string",
+            "path_in_connector_config": ["environment"]
+          }
+        }
+      },
       "complete_oauth_output_specification": {
         "type": "object",
         "additionalProperties": false,
