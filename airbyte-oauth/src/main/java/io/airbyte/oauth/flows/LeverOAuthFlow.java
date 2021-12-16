@@ -79,19 +79,24 @@ public class LeverOAuthFlow extends BaseOAuth2Flow {
   }
 
   private String getBaseAuthUrl(JsonNode inputOAuthConfiguration) {
-    if (inputOAuthConfiguration.get("environment").asText().toLowerCase(Locale.ROOT).equals("production")) {
-      return "https://auth.lever.co";
+    if (isProduction(inputOAuthConfiguration)) {
+      return "http1s://auth.lever.co";
     } else {
       return "https://sandbox-lever.auth0.com";
     }
   }
 
   private String getBaseApiUrl(JsonNode inputOAuthConfiguration) {
-    if (inputOAuthConfiguration.get("environment").asText().toLowerCase(Locale.ROOT).equals("production")) {
+    if (isProduction(inputOAuthConfiguration)) {
       return "https://api.lever.co/";
     } else {
       return "https://api.sandbox.lever.co";
     }
+  }
+
+  private boolean isProduction(JsonNode inputOAuthConfiguration) {
+    return inputOAuthConfiguration.get("environment") != null
+        && inputOAuthConfiguration.get("environment").asText().toLowerCase(Locale.ROOT).equals("production");
   }
 
 }
