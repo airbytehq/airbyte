@@ -104,7 +104,7 @@ public class TestJdbcUtils {
   void testToStream() throws SQLException {
     try (final Connection connection = dataSource.getConnection()) {
       final ResultSet rs = connection.createStatement().executeQuery("SELECT * FROM id_and_name;");
-      final List<JsonNode> actual = sourceOperations.toStream(rs, sourceOperations::rowToJson).collect(Collectors.toList());
+      final List<JsonNode> actual = JdbcDatabase.toStream(rs, sourceOperations::rowToJson).collect(Collectors.toList());
       assertEquals(RECORDS_AS_JSON, actual);
     }
   }
@@ -253,7 +253,7 @@ public class TestJdbcUtils {
     final int columnCount = resultSet.getMetaData().getColumnCount();
     final Map<String, JsonSchemaPrimitive> actual = new HashMap<>(columnCount);
     for (int i = 1; i <= columnCount; i++) {
-      actual.put(resultSet.getMetaData().getColumnName(i), sourceOperations.getType(JDBCType.valueOf(resultSet.getMetaData().getColumnType(i))));
+      actual.put(resultSet.getMetaData().getColumnName(i), sourceOperations.getJsonType(JDBCType.valueOf(resultSet.getMetaData().getColumnType(i))));
     }
 
     final Map<String, JsonSchemaPrimitive> expected = ImmutableMap.<String, JsonSchemaPrimitive>builder()
