@@ -153,6 +153,11 @@
   dockerImageTag: 0.3.21
   documentationUrl: https://docs.airbyte.io/integrations/destinations/redshift
   icon: redshift.svg
+- name: Rockset
+  destinationDefinitionId: 2c9d93a7-9a17-4789-9de9-f46f0097eb70
+  dockerRepository: airbyte/destination-rockset
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/rockset
 - name: S3
   destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   dockerRepository: airbyte/destination-s3
