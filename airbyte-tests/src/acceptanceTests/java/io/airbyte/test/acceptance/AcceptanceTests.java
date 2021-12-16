@@ -104,6 +104,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -862,10 +863,12 @@ public class AcceptanceTests {
     }
   }
 
+  // This test is disabled because it takes a couple minutes to run, as it is testing timeouts.
+  // It should be re-enabled when the @SlowIntegrationTest can be applied to it.
+  // See relevant issue: https://github.com/airbytehq/airbyte/issues/8397
   @Test
   @Order(17)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
+  @Disabled
   public void testFailureTimeout() throws Exception {
     final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
         .name("E2E Test Source")
