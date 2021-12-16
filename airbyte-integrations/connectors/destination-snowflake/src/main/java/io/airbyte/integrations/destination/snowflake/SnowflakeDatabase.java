@@ -42,6 +42,8 @@ public class SnowflakeDatabase {
     // https://docs.snowflake.com/en/user-guide/jdbc-parameters.html#application
     // identify airbyte traffic to snowflake to enable partnership & optimization opportunities
     properties.put("application", "airbyte");
+    // Needed for JDK17 - see https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
+    properties.put("JDBC_QUERY_RESULT_FORMAT", "JSON");
 
     return DriverManager.getConnection(connectUrl, properties);
   }
