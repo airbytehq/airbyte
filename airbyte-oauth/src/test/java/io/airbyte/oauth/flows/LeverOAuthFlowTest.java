@@ -4,18 +4,18 @@
 
 package io.airbyte.oauth.flows;
 
-import io.airbyte.config.persistence.ConfigRepository;
-import java.net.http.HttpClient;
-import java.util.UUID;
+import io.airbyte.oauth.BaseOAuthFlow;
 
-public class LeverOAuthFlowTest {
+public class LeverOAuthFlowTest extends BaseOAuthFlowTest {
 
-  private UUID workspaceId;
-  private UUID definitionId;
-  private ConfigRepository configRepository;
-  private LeverOAuthFlow flow;
-  private HttpClient httpClient;
+  @Override
+  protected BaseOAuthFlow getOAuthFlow() {
+    return new HarvestOAuthFlow(getConfigRepository(), getHttpClient(), this::getConstantState);
+  }
 
-  private static final String REDIRECT_URL = "https://airbyte.io";
+  @Override
+  protected String getExpectedConsentUrl() {
+    return "https://id.getharvest.com/oauth2/authorize?client_id=test_client_id&response_type=code&redirect_uri=https%3A%2F%2Fairbyte.io&state=state";
+  }
 
 }
