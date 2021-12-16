@@ -284,3 +284,17 @@ def test_stream_start_date_should_be_converted_to_datetime_format(stream_rest_co
 def test_stream_start_datetime_format_should_not_changed(stream_rest_config, stream_rest_api):
     stream: IncrementalSalesforceStream = _generate_stream("ActiveFeatureLicenseMetric", stream_rest_config, stream_rest_api)
     assert stream.start_date == "2010-01-18T21:18:20Z"
+
+
+def test_download_data_filter_null_bytes(stream_bulk_config, stream_bulk_api):
+    job_full_url: str = "https://fase-account.salesforce.com/services/data/v52.0/jobs/query/7504W00000bkgnpQAA"
+    stream: BulkIncrementalSalesforceStream = _generate_stream("Account", stream_bulk_config, stream_bulk_api)
+
+    with requests_mock.Mocker() as m:
+        m.register_uri("GET", f"{job_full_url}/results", content=b"\x00")
+        res = list(stream.download_data(url=job_full_url))
+        assert res == []
+
+        m.register_uri("GET", f"{job_full_url}/results", content=b'"Id","IsDeleted"\n\x00"0014W000027f6UwQAI","false"\n\x00\x00')
+        res = list(stream.download_data(url=job_full_url))
+        assert res == [(1, {"Id": "0014W000027f6UwQAI", "IsDeleted": "false"})]
