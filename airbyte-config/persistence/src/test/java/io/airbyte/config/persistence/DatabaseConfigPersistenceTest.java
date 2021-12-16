@@ -149,16 +149,8 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     writeDestination(configPersistence, DESTINATION_S3);
     final Map<String, Stream<JsonNode>> actual = configPersistence.dumpConfigs();
     final Map<String, Stream<JsonNode>> expected = Map.of(
-        STANDARD_WORKSPACE.name(), Stream.empty(),
         STANDARD_SOURCE_DEFINITION.name(), Stream.of(Jsons.jsonNode(SOURCE_GITHUB), Jsons.jsonNode(SOURCE_POSTGRES)),
-        STANDARD_DESTINATION_DEFINITION.name(), Stream.of(Jsons.jsonNode(DESTINATION_S3)),
-        SOURCE_CONNECTION.name(), Stream.empty(),
-        DESTINATION_CONNECTION.name(), Stream.empty(),
-        SOURCE_OAUTH_PARAM.name(), Stream.empty(),
-        DESTINATION_OAUTH_PARAM.name(), Stream.empty(),
-        STANDARD_SYNC_OPERATION.name(), Stream.empty(),
-        STANDARD_SYNC.name(), Stream.empty(),
-        STANDARD_SYNC_STATE.name(), Stream.empty());
+        STANDARD_DESTINATION_DEFINITION.name(), Stream.of(Jsons.jsonNode(DESTINATION_S3)));
     assertSameConfigDump(expected, actual);
   }
 

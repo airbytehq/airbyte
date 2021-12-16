@@ -1325,56 +1325,87 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     LOGGER.info("Exporting all configs...");
 
     final Map<String, Stream<JsonNode>> result = new HashMap<>();
-    result.put(ConfigSchema.STANDARD_WORKSPACE.name(),
-        listStandardWorkspaceWithMetadata()
-            .stream()
-            .map(ConfigWithMetadata::getConfig)
-            .map(Jsons::jsonNode));
-    result.put(ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
-        listStandardSourceDefinitionWithMetadata()
-            .stream()
-            .map(ConfigWithMetadata::getConfig)
-            .map(Jsons::jsonNode));
-    result.put(ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(),
-        listStandardDestinationDefinitionWithMetadata()
-            .stream()
-            .map(ConfigWithMetadata::getConfig)
-            .map(Jsons::jsonNode));
-    result.put(ConfigSchema.SOURCE_CONNECTION.name(),
-        listSourceConnectionWithMetadata()
-            .stream()
-            .map(ConfigWithMetadata::getConfig)
-            .map(Jsons::jsonNode));
-    result.put(ConfigSchema.DESTINATION_CONNECTION.name(),
-        listDestinationConnectionWithMetadata()
-            .stream()
-            .map(ConfigWithMetadata::getConfig)
-            .map(Jsons::jsonNode));
-    result.put(ConfigSchema.SOURCE_OAUTH_PARAM.name(),
-        listSourceOauthParamWithMetadata()
-            .stream()
-            .map(ConfigWithMetadata::getConfig)
-            .map(Jsons::jsonNode));
-    result.put(ConfigSchema.DESTINATION_OAUTH_PARAM.name(),
-        listDestinationOauthParamWithMetadata()
-            .stream()
-            .map(ConfigWithMetadata::getConfig)
-            .map(Jsons::jsonNode));
-    result.put(ConfigSchema.STANDARD_SYNC_OPERATION.name(),
-        listStandardSyncOperationWithMetadata()
-            .stream()
-            .map(ConfigWithMetadata::getConfig)
-            .map(Jsons::jsonNode));
-    result.put(ConfigSchema.STANDARD_SYNC.name(),
-        listStandardSyncWithMetadata()
-            .stream()
-            .map(ConfigWithMetadata::getConfig)
-            .map(Jsons::jsonNode));
-    result.put(ConfigSchema.STANDARD_SYNC_STATE.name(),
-        listStandardSyncStateWithMetadata()
-            .stream()
-            .map(ConfigWithMetadata::getConfig)
-            .map(Jsons::jsonNode));
+    final List<ConfigWithMetadata<StandardWorkspace>> standardWorkspaceWithMetadata = listStandardWorkspaceWithMetadata();
+    if (!standardWorkspaceWithMetadata.isEmpty()) {
+      result.put(ConfigSchema.STANDARD_WORKSPACE.name(),
+          standardWorkspaceWithMetadata
+              .stream()
+              .map(ConfigWithMetadata::getConfig)
+              .map(Jsons::jsonNode));
+    }
+    final List<ConfigWithMetadata<StandardSourceDefinition>> standardSourceDefinitionWithMetadata = listStandardSourceDefinitionWithMetadata();
+    if (!standardSourceDefinitionWithMetadata.isEmpty()) {
+      result.put(ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
+          standardSourceDefinitionWithMetadata
+              .stream()
+              .map(ConfigWithMetadata::getConfig)
+              .map(Jsons::jsonNode));
+    }
+    final List<ConfigWithMetadata<StandardDestinationDefinition>> standardDestinationDefinitionWithMetadata =
+        listStandardDestinationDefinitionWithMetadata();
+    if (!standardDestinationDefinitionWithMetadata.isEmpty()) {
+      result.put(ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(),
+          standardDestinationDefinitionWithMetadata
+              .stream()
+              .map(ConfigWithMetadata::getConfig)
+              .map(Jsons::jsonNode));
+    }
+    final List<ConfigWithMetadata<SourceConnection>> sourceConnectionWithMetadata = listSourceConnectionWithMetadata();
+    if (!sourceConnectionWithMetadata.isEmpty()) {
+      result.put(ConfigSchema.SOURCE_CONNECTION.name(),
+          sourceConnectionWithMetadata
+              .stream()
+              .map(ConfigWithMetadata::getConfig)
+              .map(Jsons::jsonNode));
+    }
+    final List<ConfigWithMetadata<DestinationConnection>> destinationConnectionWithMetadata = listDestinationConnectionWithMetadata();
+    if (!destinationConnectionWithMetadata.isEmpty()) {
+      result.put(ConfigSchema.DESTINATION_CONNECTION.name(),
+          destinationConnectionWithMetadata
+              .stream()
+              .map(ConfigWithMetadata::getConfig)
+              .map(Jsons::jsonNode));
+    }
+    final List<ConfigWithMetadata<SourceOAuthParameter>> sourceOauthParamWithMetadata = listSourceOauthParamWithMetadata();
+    if (!sourceOauthParamWithMetadata.isEmpty()) {
+      result.put(ConfigSchema.SOURCE_OAUTH_PARAM.name(),
+          sourceOauthParamWithMetadata
+              .stream()
+              .map(ConfigWithMetadata::getConfig)
+              .map(Jsons::jsonNode));
+    }
+    final List<ConfigWithMetadata<DestinationOAuthParameter>> destinationOauthParamWithMetadata = listDestinationOauthParamWithMetadata();
+    if (!destinationOauthParamWithMetadata.isEmpty()) {
+      result.put(ConfigSchema.DESTINATION_OAUTH_PARAM.name(),
+          destinationOauthParamWithMetadata
+              .stream()
+              .map(ConfigWithMetadata::getConfig)
+              .map(Jsons::jsonNode));
+    }
+    final List<ConfigWithMetadata<StandardSyncOperation>> standardSyncOperationWithMetadata = listStandardSyncOperationWithMetadata();
+    if (!standardSyncOperationWithMetadata.isEmpty()) {
+      result.put(ConfigSchema.STANDARD_SYNC_OPERATION.name(),
+          standardSyncOperationWithMetadata
+              .stream()
+              .map(ConfigWithMetadata::getConfig)
+              .map(Jsons::jsonNode));
+    }
+    final List<ConfigWithMetadata<StandardSync>> standardSyncWithMetadata = listStandardSyncWithMetadata();
+    if (!standardSyncWithMetadata.isEmpty()) {
+      result.put(ConfigSchema.STANDARD_SYNC.name(),
+          standardSyncWithMetadata
+              .stream()
+              .map(ConfigWithMetadata::getConfig)
+              .map(Jsons::jsonNode));
+    }
+    final List<ConfigWithMetadata<StandardSyncState>> standardSyncStateWithMetadata = listStandardSyncStateWithMetadata();
+    if (!standardSyncStateWithMetadata.isEmpty()) {
+      result.put(ConfigSchema.STANDARD_SYNC_STATE.name(),
+          standardSyncStateWithMetadata
+              .stream()
+              .map(ConfigWithMetadata::getConfig)
+              .map(Jsons::jsonNode));
+    }
     return result;
   }
 
