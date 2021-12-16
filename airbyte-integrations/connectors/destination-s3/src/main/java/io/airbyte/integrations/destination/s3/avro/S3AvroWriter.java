@@ -34,6 +34,7 @@ public class S3AvroWriter extends BaseS3Writer implements S3Writer {
   private final StreamTransferManager uploadManager;
   private final MultiPartOutputStream outputStream;
   private final DataFileWriter<GenericData.Record> dataFileWriter;
+  private final String objectKey;
 
   public S3AvroWriter(final S3DestinationConfig config,
                       final AmazonS3 s3Client,
@@ -45,10 +46,9 @@ public class S3AvroWriter extends BaseS3Writer implements S3Writer {
     super(config, s3Client, configuredStream);
 
     final String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.AVRO);
-    final String objectKey = String.join("/", outputPrefix, outputFilename);
+    objectKey = String.join("/", outputPrefix, outputFilename);
 
-    LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(),
-        objectKey);
+    LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(), objectKey);
 
     this.avroRecordFactory = new AvroRecordFactory(schema, converter);
     this.uploadManager = S3StreamTransferManagerHelper.getDefault(
@@ -85,8 +85,7 @@ public class S3AvroWriter extends BaseS3Writer implements S3Writer {
 
   @Override
   public String getObjectPath() {
-    // TODO
-    throw new UnsupportedOperationException("not yet implemented");
+    return objectKey;
   }
 
 }
