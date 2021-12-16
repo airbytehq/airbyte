@@ -7,4 +7,4 @@ ENV APPLICATION source-kafka
 ADD build/distributions/${APPLICATION}*.tar /airbyte
 
 LABEL io.airbyte.name=airbyte/source-kafka
-LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.version=0.1.1

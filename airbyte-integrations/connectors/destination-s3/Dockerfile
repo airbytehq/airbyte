@@ -5,5 +5,5 @@ ENV APPLICATION destination-s3
 
 ADD build/distributions/${APPLICATION}*.tar /airbyte
 
-LABEL io.airbyte.version=0.1.15
+LABEL io.airbyte.version=0.1.16
 LABEL io.airbyte.name=airbyte/destination-s3

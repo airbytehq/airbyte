@@ -10,8 +10,11 @@ FROM airbyte/integration-base-java:dev
 WORKDIR /airbyte
 
 ENV APPLICATION destination-snowflake
+# Needed for JDK17 (in turn, needed on M1 macs) - see https://github.com/snowflakedb/snowflake-jdbc/issues/589#issuecomment-983944767
+ENV DESTINATION_SNOWFLAKE_OPTS "--add-opens java.base/java.nio=ALL-UNNAMED"
 
 ADD build/distributions/${APPLICATION}*.tar /airbyte
 
-LABEL io.airbyte.version=0.3.18
+
+LABEL io.airbyte.version=0.3.21
 LABEL io.airbyte.name=airbyte/destination-snowflake
