@@ -10,7 +10,6 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
-import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.gcs.writer.CommonWriter;
 import io.airbyte.protocol.models.AirbyteMessage;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -195,4 +194,14 @@ public abstract class AbstractBigQueryUploader<T extends CommonWriter> {
             + String.format(" from `%s.%s.%s`", projectId, destinationTableId.getDataset(), destinationTableId.getTable());
   }
 
+  @Override
+  public String toString() {
+    return "AbstractBigQueryUploader{" +
+        "table=" + table.getTable() +
+        ", tmpTable=" + tmpTable.getTable() +
+        ", syncMode=" + syncMode +
+        ", writer=" + writer.getClass() +
+        ", recordFormatter=" + recordFormatter.getClass() +
+        '}';
+  }
 }

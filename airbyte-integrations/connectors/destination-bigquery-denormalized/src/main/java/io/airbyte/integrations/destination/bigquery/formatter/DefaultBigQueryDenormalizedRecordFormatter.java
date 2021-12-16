@@ -63,10 +63,14 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
             return node.findParents(TYPE_FIELD).stream()
                 .filter(
                     jsonNode -> {
-                        ArrayNode typeNode = (ArrayNode) jsonNode.get(TYPE_FIELD);
-                        for (JsonNode arrayTypeNode : typeNode) {
-                            if (arrayTypeNode.isTextual() && arrayTypeNode.textValue().equals("array"))
-                                return true;
+                        if (jsonNode.isArray()) {
+                            ArrayNode typeNode = (ArrayNode) jsonNode.get(TYPE_FIELD);
+                            for (JsonNode arrayTypeNode : typeNode) {
+                                if (arrayTypeNode.isTextual() && arrayTypeNode.textValue().equals("array"))
+                                    return true;
+                            }
+                        } else {
+                            return jsonNode.asText().equals("array");
                         }
                         return false;
                     }).collect(Collectors.toList());
