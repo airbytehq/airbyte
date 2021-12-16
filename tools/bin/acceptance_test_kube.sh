@@ -15,6 +15,7 @@ kind load docker-image airbyte/webapp:dev --name chart-testing &
 kind load docker-image airbyte/worker:dev --name chart-testing &
 kind load docker-image airbyte/db:dev --name chart-testing &
 kind load docker-image airbyte/container-orchestrator:dev --name chart-testing &
+kind load docker-image airbyte/bootloader:dev --name chart-testing &
 wait
 
 echo "Starting app..."

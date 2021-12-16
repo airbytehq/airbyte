@@ -50,7 +50,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     ORACLE,
     POSTGRES,
     REDSHIFT,
-    SNOWFLAKE
+    SNOWFLAKE,
+    CLICKHOUSE
   }
 
   public DefaultNormalizationRunner(final WorkerConfigs workerConfigs,

@@ -221,7 +221,8 @@ public abstract class AbstractSourceConnectorTest {
   }
 
   private AirbyteSource prepareAirbyteSource(ResourceRequirements resourceRequirements) {
-    var integrationLauncher = resourceRequirements == null ? new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements())
+    var integrationLauncher = resourceRequirements == null
+        ? new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements())
         : new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, resourceRequirements);
     return new DefaultAirbyteSource(integrationLauncher);
   }
