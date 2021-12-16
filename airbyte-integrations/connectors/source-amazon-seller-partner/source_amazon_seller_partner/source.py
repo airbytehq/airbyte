@@ -26,6 +26,7 @@ from source_amazon_seller_partner.streams import (
     SellerFeedbackReports,
     VendorDirectFulfillmentShipping,
     VendorInventoryHealthReports,
+    BrandAnalyticsSearchTermsReports,
 )
 
 
@@ -43,6 +44,11 @@ class ConnectorConfig(BaseModel):
         30,
         description="Will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.",
         examples=["30", "365"],
+    )
+    report_options: str = Field(
+        None,
+        description="Additional information passed to reports. This varies by report type. Must be a valid json string.",
+        examples=['{"GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT": {"reportPeriod": "WEEK"}}', '{"GET_SOME_REPORT": {"custom": "true"}}'],
     )
     refresh_token: str = Field(
         description="The Refresh Token obtained via OAuth flow authorization.",
@@ -98,6 +104,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             "replication_start_date": config.replication_start_date,
             "marketplace_ids": [marketplace_id],
             "period_in_days": config.period_in_days,
+            "report_options": config.report_options,
         }
         return stream_kwargs
 
@@ -136,6 +143,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             VendorInventoryHealthReports(**stream_kwargs),
             Orders(**stream_kwargs),
             SellerFeedbackReports(**stream_kwargs),
+            BrandAnalyticsSearchTermsReports(**stream_kwargs),
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
