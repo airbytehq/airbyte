@@ -79,6 +79,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Notion](sources/notion.md) | Alpha |
 | [Okta](sources/okta.md) | Beta |
 | [OneSignal](sources/onesignal.md) | Alpha |
+| [OpenWeather](sources/openweather.md) | Alpha |
 | [Oracle DB](sources/oracle.md) | Certified |
 | [Oracle PeopleSoft](sources/oracle-peoplesoft.md) | Beta |
 | [Oracle Siebel CRM](sources/oracle-siebel-crm.md) | Beta |
@@ -158,6 +159,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Pulsar](destinations/pulsar.md) | Alpha |
 | [RabbitMQ](destinations/rabbitmq.md) | Alpha |
 | [Redshift](destinations/redshift.md) | Certified |
+| [Rockset](destinations/rockset.md) | Alpha |
 | [S3](destinations/s3.md) | Certified |
 | [SFTP JSON](./destinations/sftp-json.md)| Alpha |
 | [SQL Server \(MSSQL\)](destinations/mssql.md) | Alpha |
