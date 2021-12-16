@@ -6,13 +6,13 @@ package io.airbyte.oauth.flows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.oauth.BaseOAuthFlow;
+import io.airbyte.oauth.BaseOAuth2Flow;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -21,21 +21,29 @@ import org.apache.http.client.utils.URIBuilder;
 /**
  * Following docs from https://developer.zendesk.com/documentation/live-chat/getting-started/auth/
  */
-public class ZendeskChatOAuthFlow extends BaseOAuthFlow {
+public class ZendeskChatOAuthFlow extends BaseOAuth2Flow {
 
   private static final String ACCESS_TOKEN_URL = "https://www.zopim.com/oauth2/token";
 
-  public ZendeskChatOAuthFlow(final ConfigRepository configRepository) {
-    super(configRepository);
+  public ZendeskChatOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
+    super(configRepository, httpClient);
   }
 
   @VisibleForTesting
-  ZendeskChatOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
+  public ZendeskChatOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier);
   }
 
   @Override
-  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId,
+                                    final String clientId,
+                                    final String redirectUrl,
+                                    final JsonNode inputOAuthConfiguration)
+      throws IOException {
+
+    // getting subdomain value from user's config
+    final String subdomain = getConfigValueUnsafe(inputOAuthConfiguration, "subdomain");
+
     final URIBuilder builder = new URIBuilder()
         .setScheme("https")
         .setHost("www.zopim.com")
@@ -44,9 +52,14 @@ public class ZendeskChatOAuthFlow extends BaseOAuthFlow {
         .addParameter("client_id", clientId)
         .addParameter("redirect_uri", redirectUrl)
         .addParameter("response_type", "code")
-        .addParameter("scope", "read%20chat")
+        .addParameter("scope", "read chat")
         .addParameter("state", getState());
+
     try {
+      // applying optional parameter of subdomain, if there is any value
+      if (!subdomain.isEmpty()) {
+        builder.addParameter("subdomain", subdomain);
+      }
       return builder.build().toString();
     } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
@@ -54,26 +67,10 @@ public class ZendeskChatOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected String getClientIdUnsafe(JsonNode config) {
-    // the config object containing client ID is nested inside the "credentials" object
-    Preconditions.checkArgument(config.hasNonNull("credentials"));
-    return super.getClientIdUnsafe(config.get("credentials"));
-  }
-
-  @Override
-  protected String getClientSecretUnsafe(JsonNode config) {
-    // the config object containing client SECRET is nested inside the "credentials" object
-    Preconditions.checkArgument(config.hasNonNull("credentials"));
-    return super.getClientSecretUnsafe(config.get("credentials"));
-  }
-
-  @Override
-  protected String getAccessTokenUrl() {
-    return ACCESS_TOKEN_URL;
-  }
-
-  @Override
-  protected Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl) {
+  protected Map<String, String> getAccessTokenQueryParameters(String clientId,
+                                                              String clientSecret,
+                                                              String authCode,
+                                                              String redirectUrl) {
     return ImmutableMap.<String, String>builder()
         // required
         .put("grant_type", "authorization_code")
@@ -86,13 +83,26 @@ public class ZendeskChatOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected Map<String, Object> extractRefreshToken(final JsonNode data, String accessTokenUrl) throws IOException {
-    // the config object containing access_token is nested inside the "credentials" object
+  protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
+    return ACCESS_TOKEN_URL;
+  }
+
+  @Override
+  protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl) throws IOException {
+    final Map<String, Object> result = new HashMap<>();
+    // getting out access_token
     if (data.has("access_token")) {
-      return Map.of("credentials", Map.of("access_token", data.get("access_token").asText()));
+      result.put("access_token", data.get("access_token").asText());
     } else {
-      throw new IOException(String.format("Missing 'access_token' in query params from %s", ACCESS_TOKEN_URL));
+      throw new IOException(String.format("Missing 'access_token' in query params from %s", accessTokenUrl));
     }
+    // getting out refresh_token
+    if (data.has("refresh_token")) {
+      result.put("refresh_token", data.get("refresh_token").asText());
+    } else {
+      throw new IOException(String.format("Missing 'refresh_token' in query params from %s", accessTokenUrl));
+    }
+    return result;
   }
 
 }
