@@ -96,6 +96,7 @@ As a summary, custom insights allows to replicate only some fields, resulting in
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.27  | 2021-11-29 | [8257](https://github.com/airbytehq/airbyte/pull/8257) | Add fields to Campaign stream |
 | 0.2.26  | 2021-11-19 | [7855](https://github.com/airbytehq/airbyte/pull/7855) | Add Video stream |
 | 0.2.25  | 2021-11-12 | [7904](https://github.com/airbytehq/airbyte/pull/7904) | Implement retry logic for async jobs |
 | 0.2.24  | 2021-11-09 | [7744](https://github.com/airbytehq/airbyte/pull/7744) | Fix fail when async job takes too long |
