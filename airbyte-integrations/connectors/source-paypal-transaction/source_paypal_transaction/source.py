@@ -10,7 +10,6 @@ from datetime import datetime, timedelta
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -394,19 +393,17 @@ class SourcePaypalTransaction(AbstractSource):
                 "end_date": end_date.isoformat(),
             }
             records = Transactions(authenticator=authenticator, **config).read_records(
-                sync_mode=SyncMode.full_refresh,
+                sync_mode=None,
                 stream_slice=stream_slice
             )
             # Try to read one value from records iterator
             next(records, None)
-
+            return True, None
         except Exception as e:
             if "Data for the given start date is not available" in repr(e):
                 return False, f"Data for the given start date ({config['start_date']}) is not available, please use more recent start date"
             else:
                 return False, e
-
-        return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
