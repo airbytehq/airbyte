@@ -24,6 +24,7 @@ This source is capable of syncing the following streams:
 * [Orders](https://github.com/amzn/selling-partner-api-docs/blob/main/references/orders-api/ordersV0.md) \(incremental\)
 * [VendorDirectFulfillmentShipping](https://github.com/amzn/selling-partner-api-docs/blob/main/references/vendor-direct-fulfillment-shipping-api/vendorDirectFulfillmentShippingV1.md)
 * [Seller Feedback Report](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#performance-reports)
+* [Brand Analytics Search Terms Report](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#brand-analytics-reports)
 
 ## Getting started
 
@@ -63,6 +64,7 @@ Information about rate limits you may find [here](https://github.com/amzn/sellin
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| `0.2.6` | 2021-12-10 | [\#8179](https://github.com/airbytehq/airbyte/pull/8179) | Add GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT report |
 | `0.2.5` | 2021-12-06 | [\#8425](https://github.com/airbytehq/airbyte/pull/8425) | Update title, description fields in spec |
 | `0.2.4` | 2021-11-08 | [\#8021](https://github.com/airbytehq/airbyte/pull/8021) | Added GET_SELLER_FEEDBACK_DATA report with incremental sync capability |
 | `0.2.3` | 2021-11-08 | [\#7828](https://github.com/airbytehq/airbyte/pull/7828) | Remove datetime format from all streams |
