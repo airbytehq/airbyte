@@ -51,22 +51,22 @@ public class AvroRecordHelper {
     return output;
   }
 
-  public static void obtainPaths(String currentPath, JsonNode jsonNode, Map<JsonNode,String> jsonNodeStringMap) {
+  public static void obtainPaths(String currentPath, JsonNode jsonNode, Map<JsonNode,String> jsonNodePathMap) {
     if (jsonNode.isObject()) {
       ObjectNode objectNode = (ObjectNode) jsonNode;
       Iterator<Map.Entry<String, JsonNode>> iter = objectNode.fields();
       String pathPrefix = currentPath.isEmpty() ? "" : currentPath + "/";
-      jsonNodeStringMap.put(jsonNode,pathPrefix);
+      jsonNodePathMap.put(jsonNode,pathPrefix);
       while (iter.hasNext()) {
         Map.Entry<String, JsonNode> entry = iter.next();
-        obtainPaths(pathPrefix + entry.getKey(), entry.getValue(), jsonNodeStringMap);
+        obtainPaths(pathPrefix + entry.getKey(), entry.getValue(), jsonNodePathMap);
       }
     } else if (jsonNode.isArray()) {
       ArrayNode arrayNode = (ArrayNode) jsonNode;
 
       for (int i = 0; i < arrayNode.size(); i++) {
         String arrayPath = currentPath + "/" + i;
-        obtainPaths(arrayPath, arrayNode.get(i),jsonNodeStringMap);
+        obtainPaths(arrayPath, arrayNode.get(i),jsonNodePathMap);
       }
     }
   }
