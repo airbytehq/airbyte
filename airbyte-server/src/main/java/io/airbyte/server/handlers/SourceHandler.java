@@ -157,7 +157,7 @@ public class SourceHandler {
   public void deleteSource(final SourceRead source)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // "delete" all connections associated with source as well.
-    // Delete connections first in case it it fails in the middle, source will still be visible
+    // Delete connections first in case it fails in the middle, source will still be visible
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody()
         .workspaceId(source.getWorkspaceId());
     for (final ConnectionRead connectionRead : connectionsHandler
@@ -170,10 +170,7 @@ public class SourceHandler {
     }
 
     final ConnectorSpecification spec = getSpecFromSourceId(source.getSourceId());
-    validateSource(spec, source.getConnectionConfiguration());
-
     final var fullConfig = configRepository.getSourceConnectionWithSecrets(source.getSourceId()).getConfiguration();
-    validateSource(spec, fullConfig);
 
     // persist
     persistSourceConnection(
