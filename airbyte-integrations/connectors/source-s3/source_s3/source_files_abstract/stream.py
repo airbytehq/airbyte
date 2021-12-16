@@ -151,7 +151,8 @@ class FileStream(Stream, ABC):
 
         :return: list in time-ascending order
         """
-        return sorted(self.pattern_matched_filepath_iterator(self.filepath_iterator()), key=lambda file_info: file_info.last_modified)
+        return sorted(self.pattern_matched_filepath_iterator(self.filepath_iterator()),
+                      key=lambda file_info: file_info.last_modified)
 
     def _get_schema_map(self) -> Mapping[str, Any]:
         if self._schema != {}:
@@ -212,10 +213,12 @@ class FileStream(Stream, ABC):
                     continue  # exact schema match so go to next file
 
                 # creates a superset of columns retaining order of master_schema with any additional columns added to end
-                column_superset = list(master_schema.keys()) + [c for c in this_schema.keys() if c not in master_schema.keys()]
+                column_superset = list(master_schema.keys()) + [c for c in this_schema.keys() if
+                                                                c not in master_schema.keys()]
                 # this compares datatype of every column that the two schemas have in common
                 for col in column_superset:
-                    if (col in master_schema.keys()) and (col in this_schema.keys()) and (master_schema[col] != this_schema[col]):
+                    if (col in master_schema.keys()) and (col in this_schema.keys()) and (
+                            master_schema[col] != this_schema[col]):
                         # if this column exists in a provided schema or schema state, we'll WARN here rather than throw an error
                         # this is to allow more leniency as we may be able to coerce this datatype mismatch on read according to provided schema state
                         # if not, then the read will error anyway
@@ -245,7 +248,7 @@ class FileStream(Stream, ABC):
         return self.master_schema
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+            self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         This builds full-refresh stream_slices regardless of sync_mode param.
@@ -259,7 +262,7 @@ class FileStream(Stream, ABC):
         # we could do this concurrently both full and incremental by running batches in parallel
         # and then incrementing the cursor per each complete batch
         for file_info in self.get_time_ordered_file_infos():
-            yield {"storage_file": self.storagefile_class(file_info, self._provider)}
+            yield [{"storage_file": self.storagefile_class(file_info, self._provider)}]
 
     def _match_target_schema(self, record: Mapping[str, Any], target_columns: List) -> Mapping[str, Any]:
         """
@@ -301,37 +304,39 @@ class FileStream(Stream, ABC):
         return record
 
     def _read_from_slice(
-        self,
-        file_reader,
-        stream_slice: Mapping[str, Any],
-        stream_state: Mapping[str, Any] = None,
+            self,
+            file_reader,
+            stream_slice: Mapping[str, Any],
+            stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
         Uses provider-relevant StorageFile to open file and then iterates through stream_records() using format-relevant AbstractFileParser.
         Records are mutated on the fly using _match_target_schema() and _add_extra_fields_from_map() to achieve desired final schema.
         Since this is called per stream_slice, this method works for both full_refresh and incremental.
         """
-        storage_file: FileInfo = stream_slice["storage_file"]
-        with storage_file.open(file_reader.is_binary) as f:
-            # TODO: make this more efficient than mutating every record one-by-one as they stream
-            for record in file_reader.stream_records(f, storage_file.file_info):
-                schema_matched_record = self._match_target_schema(record, list(self._get_schema_map().keys()))
-                complete_record = self._add_extra_fields_from_map(
-                    schema_matched_record,
-                    {
-                        self.ab_last_mod_col: datetime.strftime(storage_file.last_modified, self.datetime_format_string),
-                        self.ab_file_name_col: storage_file.url,
-                    },
-                )
-                yield complete_record
+        for file_item in stream_slice:
+            storage_file: FileInfo = file_item["storage_file"]
+            with storage_file.open(file_reader.is_binary) as f:
+                # TODO: make this more efficient than mutating every record one-by-one as they stream
+                for record in file_reader.stream_records(f, storage_file.file_info):
+                    schema_matched_record = self._match_target_schema(record, list(self._get_schema_map().keys()))
+                    complete_record = self._add_extra_fields_from_map(
+                        schema_matched_record,
+                        {
+                            self.ab_last_mod_col: datetime.strftime(storage_file.last_modified,
+                                                                    self.datetime_format_string),
+                            self.ab_file_name_col: storage_file.url,
+                        },
+                    )
+                    yield complete_record
         LOGGER.info("finished reading a stream slice")
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
         The heavy lifting sits in _read_from_slice() which is full refresh / incremental agnostic
@@ -359,7 +364,8 @@ class IncrementalFileStream(FileStream, ABC):
         else:
             return datetime.strptime("1970-01-01T00:00:00+0000", self.datetime_format_string)
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
+            Mapping[str, Any]:
         """
         Inspects the latest record extracted from the data source and the current state object and return an updated state object.
         In the case where current_stream_state is null, we default to 1970-01-01 in order to pick up all files present.
@@ -374,13 +380,14 @@ class IncrementalFileStream(FileStream, ABC):
         latest_record_datetime = datetime.strptime(
             latest_record.get(self.cursor_field, "1970-01-01T00:00:00+0000"), self.datetime_format_string
         )
-        state_dict[self.cursor_field] = datetime.strftime(max(current_parsed_datetime, latest_record_datetime), self.datetime_format_string)
+        state_dict[self.cursor_field] = datetime.strftime(max(current_parsed_datetime, latest_record_datetime),
+                                                          self.datetime_format_string)
 
         state_dict["schema"] = self._get_schema_map()
         return state_dict
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+            self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Builds either full_refresh or incremental stream_slices based on sync_mode.
@@ -402,40 +409,39 @@ class IncrementalFileStream(FileStream, ABC):
 
             # logic here is to bundle all files with exact same last modified timestamp together in each slice
             prev_file_last_mod = None  # init variable to hold previous iterations last modified
-            stream_slices = []
-
+            grouped_files_by_time = []
             for file_info in self.get_time_ordered_file_infos():
                 # skip this file if last_mod is earlier than our cursor value from state
                 if (
-                    stream_state is not None
-                    and self.cursor_field in stream_state.keys()
-                    and file_info.last_modified <= self._get_datetime_from_stream_state(stream_state)
+                        stream_state is not None
+                        and self.cursor_field in stream_state.keys()
+                        and file_info.last_modified <= self._get_datetime_from_stream_state(stream_state)
                 ):
                     continue
 
                 # check if this file belongs in the next slice, if so yield the current slice before this file
                 if (prev_file_last_mod is not None) and (file_info.last_modified != prev_file_last_mod):
-                    yield from stream_slices
-                    stream_slices.clear()
+                    yield grouped_files_by_time
+                    grouped_files_by_time.clear()
 
                 # now we either have an empty stream_slice or a stream_slice that this file shares a last modified with, so append it
-                stream_slices.append({"storage_file": self.storagefile_class(file_info, self._provider)})
+                grouped_files_by_time.append({"storage_file": self.storagefile_class(file_info, self._provider)})
                 # update our prev_file_last_mod to the current one for next iteration
                 prev_file_last_mod = file_info.last_modified
 
             # now yield the final stream_slice. This is required because our loop only yields the slice previous to its current iteration.
-            if len(stream_slices) > 0:
-                yield from stream_slices
+            if len(grouped_files_by_time) > 0:
+                yield grouped_files_by_time
             else:
                 # in case we have no files
                 yield None
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
         The heavy lifting sits in _read_from_slice() which is full refresh / incremental agnostic.

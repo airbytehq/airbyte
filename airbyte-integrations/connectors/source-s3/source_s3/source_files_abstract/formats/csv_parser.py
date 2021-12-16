@@ -4,7 +4,8 @@
 
 import csv
 import json
-import multiprocessing as mp
+import os
+import tempfile
 from typing import Any, BinaryIO, Iterator, Mapping, Optional, TextIO, Tuple, Union
 
 import pyarrow
@@ -12,20 +13,28 @@ import pyarrow as pa
 import six
 from pyarrow import csv as pa_csv
 
-from ...utils import run_in_external_process
-from ..file_info import FileInfo
 from .abstract_file_parser import AbstractFileParser
 from .csv_spec import CsvFormat
+from ..file_info import FileInfo
+from ...utils import run_in_external_process
+
+MAX_CHUNK_SIZE = 50.0 * 1024 ** 2  # in bytes
+TMP_FOLDER = tempfile.mkdtemp()
 
 
 class CsvParser(AbstractFileParser):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.format_model = None
+
     @property
     def is_binary(self):
         return True
 
     @property
     def format(self) -> CsvFormat:
-        if not hasattr(self, "format_model"):
+        if self.format_model is None:
             self.format_model = CsvFormat.parse_obj(self._format)
         return self.format_model
 
@@ -76,7 +85,7 @@ class CsvParser(AbstractFileParser):
         """
 
         def infer_schema_process(
-            file_sample: str, read_opts: dict, parse_opts: dict, convert_opts: dict
+                file_sample: str, read_opts: dict, parse_opts: dict, convert_opts: dict
         ) -> Tuple[dict, Optional[Exception]]:
             """
             we need to reimport here to be functional on Windows systems since it doesn't have fork()
@@ -95,7 +104,8 @@ class CsvParser(AbstractFileParser):
                     fp.write(file_sample)
                     fp.seek(0)
                     streaming_reader = pa.csv.open_csv(
-                        fp, pa.csv.ReadOptions(**read_opts), pa.csv.ParseOptions(**parse_opts), pa.csv.ConvertOptions(**convert_opts)
+                        fp, pa.csv.ReadOptions(**read_opts), pa.csv.ParseOptions(**parse_opts),
+                        pa.csv.ConvertOptions(**convert_opts)
                     )
                     schema_dict = {field.name: field.type for field in streaming_reader.schema}
 
@@ -166,6 +176,7 @@ class CsvParser(AbstractFileParser):
                 for record_values in zip(*columnwise_record_values):
                     # create our record of {col: value, col: value} by dict comprehension, iterating through all cols in batch_columns
                     yield {batch_columns[i]: record_values[i] for i in range(len(batch_columns))}
+
     def __read_stream_by_chunks(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html

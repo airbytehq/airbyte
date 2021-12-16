@@ -7,9 +7,9 @@ from typing import Any, BinaryIO, Iterator, List, Mapping, TextIO, Tuple, Union
 import pyarrow.parquet as pq
 from pyarrow.parquet import ParquetFile
 
-from ..file_info import FileInfo
 from .abstract_file_parser import AbstractFileParser
 from .parquet_spec import ParquetFormat
+from ..file_info import FileInfo
 
 # All possible parquet data types
 PARQUET_TYPES = {
@@ -70,7 +70,8 @@ class ParquetParser(AbstractFileParser):
         else:
             json_type, physical_types, _ = PARQUET_TYPES[needed_logical_type]
             if need_physical_type and need_physical_type not in physical_types:
-                raise TypeError(f"incorrect parquet physical type: {need_physical_type}; logical type: {needed_logical_type}")
+                raise TypeError(
+                    f"incorrect parquet physical type: {need_physical_type}; logical type: {needed_logical_type}")
             return json_type, needed_logical_type
 
         raise TypeError(f"incorrect parquet physical type: {need_physical_type}; logical type: {needed_logical_type}")
@@ -93,7 +94,8 @@ class ParquetParser(AbstractFileParser):
         """
         reader = self._init_reader(file)
         schema_dict = {
-            field.name: self.parse_field_type(field.logical_type.type.lower(), field.physical_type)[0] for field in reader.schema
+            field.name: self.parse_field_type(field.logical_type.type.lower(), field.physical_type)[0] for field in
+            reader.schema
         }
         if not schema_dict:
             # pyarrow can parse empty parquet files but a connector can't generate dynamic schema
@@ -109,7 +111,8 @@ class ParquetParser(AbstractFileParser):
         reader = self._init_reader(file)
         self.logger.info(f"found {reader.num_row_groups} row groups")
         logical_types = {
-            field.name: self.parse_field_type(field.logical_type.type.lower(), field.physical_type)[1] for field in reader.schema
+            field.name: self.parse_field_type(field.logical_type.type.lower(), field.physical_type)[1] for field in
+            reader.schema
         }
         if not reader.schema:
             # pyarrow can parse empty parquet files but a connector can't generate dynamic schema

@@ -12,13 +12,15 @@ from uuid import uuid4
 import pytest
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
+
 from source_s3.source_files_abstract.formats.csv_parser import CsvParser
 from source_s3.source_files_abstract.stream import FileStream
 
 HERE = Path(__file__).resolve().parent
 SAMPLE_DIR = HERE.joinpath("sample_files/")
 LOGGER = AirbyteLogger()
-JSONTYPE_TO_PYTHONTYPE = {"string": str, "number": float, "integer": int, "object": dict, "array": list, "boolean": bool, "null": None}
+JSONTYPE_TO_PYTHONTYPE = {"string": str, "number": float, "integer": int, "object": dict, "array": list,
+                          "boolean": bool, "null": None}
 
 
 class AbstractTestIncrementalFileStream(ABC):
@@ -34,7 +36,8 @@ class AbstractTestIncrementalFileStream(ABC):
 
     @pytest.fixture(scope="session")
     def airbyte_system_columns(self) -> Mapping[str, str]:
-        return {FileStream.ab_additional_col: "object", FileStream.ab_last_mod_col: "string", FileStream.ab_file_name_col: "string"}
+        return {FileStream.ab_additional_col: "object", FileStream.ab_last_mod_col: "string",
+                FileStream.ab_file_name_col: "string"}
 
     @property
     @abstractmethod
@@ -59,7 +62,8 @@ class AbstractTestIncrementalFileStream(ABC):
         """
 
     @abstractmethod
-    def cloud_files(self, cloud_bucket_name: str, credentials: Mapping, files_to_upload: List, private: bool = True) -> Iterator[str]:
+    def cloud_files(self, cloud_bucket_name: str, credentials: Mapping, files_to_upload: List, private: bool = True) -> \
+            Iterator[str]:
         """
         See S3 for example what the override of this needs to achieve.
 
@@ -81,20 +85,20 @@ class AbstractTestIncrementalFileStream(ABC):
         """
 
     def _stream_records_test_logic(
-        self,
-        cloud_bucket_name,
-        format,
-        airbyte_system_columns,
-        sync_mode,
-        files,
-        path_pattern,
-        private,
-        num_columns,
-        num_records,
-        expected_schema,
-        user_schema,
-        fails,
-        state=None,
+            self,
+            cloud_bucket_name,
+            format,
+            airbyte_system_columns,
+            sync_mode,
+            files,
+            path_pattern,
+            private,
+            num_columns,
+            num_records,
+            expected_schema,
+            user_schema,
+            fails,
+            state=None,
     ):
         uploaded_files = [fpath for fpath in self.cloud_files(cloud_bucket_name, self.credentials, files, private)]
         LOGGER.info(f"file(s) uploaded: {uploaded_files}")
@@ -109,10 +113,10 @@ class AbstractTestIncrementalFileStream(ABC):
         full_expected_schema = {**expected_schema, **airbyte_system_columns}
         str_user_schema = str(user_schema).replace("'", '"') if user_schema is not None else None
         total_num_columns = num_columns + len(airbyte_system_columns.keys())
-        provider = {**self.provider(cloud_bucket_name), **self.credentials} if private else self.provider(cloud_bucket_name)
+        provider = {**self.provider(cloud_bucket_name), **self.credentials} if private else self.provider(
+            cloud_bucket_name)
 
         if not fails:
-            print(str_user_schema)
             fs = self.stream_class("dataset", provider, format, path_pattern, str_user_schema)
             LOGGER.info(f"Testing stream_records() in SyncMode:{sync_mode.value}")
 
@@ -121,23 +125,25 @@ class AbstractTestIncrementalFileStream(ABC):
 
             records = []
             for stream_slice in fs.stream_slices(sync_mode=sync_mode, stream_state=current_state):
-                # we need to do this in order to work out which extra columns (if any) we expect in this stream_slice
-                expected_columns = []
-                # TODO: if we ever test other filetypes in these tests this will need fixing
-                file_reader = CsvParser(format)
-                with stream_slice["storage_file"].open(file_reader.is_binary) as f:
-                    expected_columns.extend(list(file_reader.get_inferred_schema(f).keys()))
-                expected_columns = set(expected_columns)  # de-dupe
+                if stream_slice is not None:
+                    # we need to do this in order to work out which extra columns (if any) we expect in this stream_slice
+                    expected_columns = []
+                    for file_dict in stream_slice:
+                        # TODO: if we ever test other filetypes in these tests this will need fixing
+                        file_reader = CsvParser(format)
+                        with file_dict["storagefile"].open(file_reader.is_binary) as f:
+                            expected_columns.extend(list(file_reader.get_inferred_schema(f).keys()))
+                    expected_columns = set(expected_columns)  # de-dupe
 
-                for record in fs.read_records(sync_mode, stream_slice=stream_slice):
-                    # check actual record values match expected schema
-                    assert all(
-                        [
-                            isinstance(record[col], JSONTYPE_TO_PYTHONTYPE[typ]) or record[col] is None
-                            for col, typ in full_expected_schema.items()
-                        ]
-                    )
-                    records.append(record)
+                    for record in fs.read_records(sync_mode, stream_slice=stream_slice):
+                        # check actual record values match expected schema
+                        assert all(
+                            [
+                                isinstance(record[col], JSONTYPE_TO_PYTHONTYPE[typ]) or record[col] is None
+                                for col, typ in full_expected_schema.items()
+                            ]
+                        )
+                        records.append(record)
 
             assert all([len(r.keys()) == total_num_columns for r in records])
             assert len(records) == num_records
@@ -165,328 +171,331 @@ class AbstractTestIncrementalFileStream(ABC):
 
                 LOGGER.info(f"Failed as expected, error: {e_info}")
 
-    @pytest.mark.parametrize(  # make user_schema None to test auto-inference. Exclude any _airbyte system columns in expected_schema.
+    @pytest.mark.parametrize(
+        # make user_schema None to test auto-inference. Exclude any _airbyte system columns in expected_schema.
         "files, path_pattern, private, num_columns, num_records, expected_schema, user_schema, incremental, fails",
         [
             # single file tests
             (  # public
-                [SAMPLE_DIR.joinpath("simple_test.csv")],
-                "**",
-                False,
-                3,
-                8,
-                {"id": "integer", "name": "string", "valid": "boolean"},
-                None,
-                False,
-                False,
+                    [SAMPLE_DIR.joinpath("simple_test.csv")],
+                    "**",
+                    False,
+                    3,
+                    8,
+                    {"id": "integer", "name": "string", "valid": "boolean"},
+                    None,
+                    False,
+                    False,
             ),
             (  # private
-                [SAMPLE_DIR.joinpath("simple_test.csv")],
-                "**",
-                True,
-                3,
-                8,
-                {"id": "integer", "name": "string", "valid": "boolean"},
-                None,
-                False,
-                False,
+                    [SAMPLE_DIR.joinpath("simple_test.csv")],
+                    "**",
+                    True,
+                    3,
+                    8,
+                    {"id": "integer", "name": "string", "valid": "boolean"},
+                    None,
+                    False,
+                    False,
             ),
             (  # provided schema exact match to actual schema
-                [SAMPLE_DIR.joinpath("simple_test.csv")],
-                "**",
-                True,
-                3,
-                8,
-                {"id": "integer", "name": "string", "valid": "boolean"},
-                {"id": "integer", "name": "string", "valid": "boolean"},
-                False,
-                False,
+                    [SAMPLE_DIR.joinpath("simple_test.csv")],
+                    "**",
+                    True,
+                    3,
+                    8,
+                    {"id": "integer", "name": "string", "valid": "boolean"},
+                    {"id": "integer", "name": "string", "valid": "boolean"},
+                    False,
+                    False,
             ),
             (  # provided schema not matching datatypes, expect successful coercion
-                [SAMPLE_DIR.joinpath("simple_test.csv")],
-                "**",
-                True,
-                3,
-                8,
-                {"id": "string", "name": "string", "valid": "string"},
-                {"id": "string", "name": "string", "valid": "string"},
-                False,
-                False,
+                    [SAMPLE_DIR.joinpath("simple_test.csv")],
+                    "**",
+                    True,
+                    3,
+                    8,
+                    {"id": "string", "name": "string", "valid": "string"},
+                    {"id": "string", "name": "string", "valid": "string"},
+                    False,
+                    False,
             ),
             (  # provided incompatible schema, expect fail
-                [SAMPLE_DIR.joinpath("simple_test.csv")],
-                "**",
-                True,
-                3,
-                8,
-                {"id": "boolean", "name": "boolean", "valid": "boolean"},
-                {"id": "boolean", "name": "boolean", "valid": "boolean"},
-                False,
-                True,
+                    [SAMPLE_DIR.joinpath("simple_test.csv")],
+                    "**",
+                    True,
+                    3,
+                    8,
+                    {"id": "boolean", "name": "boolean", "valid": "boolean"},
+                    {"id": "boolean", "name": "boolean", "valid": "boolean"},
+                    False,
+                    True,
             ),
             # multiple file tests (all have identical schemas)
             (  # public, auto-infer
-                [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_2.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_3.csv"),
-                ],
-                "**",
-                False,
-                3,
-                17,
-                {"id": "integer", "name": "string", "valid": "boolean"},
-                None,
-                False,
-                False,
+                    [
+                        SAMPLE_DIR.joinpath("simple_test.csv"),
+                        SAMPLE_DIR.joinpath("simple_test_2.csv"),
+                        SAMPLE_DIR.joinpath("simple_test_3.csv"),
+                    ],
+                    "**",
+                    False,
+                    3,
+                    17,
+                    {"id": "integer", "name": "string", "valid": "boolean"},
+                    None,
+                    False,
+                    False,
             ),
             (  # private, auto-infer
-                [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_2.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_3.csv"),
-                ],
-                "**",
-                True,
-                3,
-                17,
-                {"id": "integer", "name": "string", "valid": "boolean"},
-                None,
-                False,
-                False,
+                    [
+                        SAMPLE_DIR.joinpath("simple_test.csv"),
+                        SAMPLE_DIR.joinpath("simple_test_2.csv"),
+                        SAMPLE_DIR.joinpath("simple_test_3.csv"),
+                    ],
+                    "**",
+                    True,
+                    3,
+                    17,
+                    {"id": "integer", "name": "string", "valid": "boolean"},
+                    None,
+                    False,
+                    False,
             ),
             (  # provided schema exact match to actual schema
-                [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_2.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_3.csv"),
-                ],
-                "**",
-                True,
-                3,
-                17,
-                {"id": "integer", "name": "string", "valid": "boolean"},
-                {"id": "integer", "name": "string", "valid": "boolean"},
-                False,
-                False,
+                    [
+                        SAMPLE_DIR.joinpath("simple_test.csv"),
+                        SAMPLE_DIR.joinpath("simple_test_2.csv"),
+                        SAMPLE_DIR.joinpath("simple_test_3.csv"),
+                    ],
+                    "**",
+                    True,
+                    3,
+                    17,
+                    {"id": "integer", "name": "string", "valid": "boolean"},
+                    {"id": "integer", "name": "string", "valid": "boolean"},
+                    False,
+                    False,
             ),
             (  # provided schema not matching datatypes, expect successful coercion
-                [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_2.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_3.csv"),
-                ],
-                "**",
-                True,
-                3,
-                17,
-                {"id": "string", "name": "string", "valid": "string"},
-                {"id": "string", "name": "string", "valid": "string"},
-                False,
-                False,
+                    [
+                        SAMPLE_DIR.joinpath("simple_test.csv"),
+                        SAMPLE_DIR.joinpath("simple_test_2.csv"),
+                        SAMPLE_DIR.joinpath("simple_test_3.csv"),
+                    ],
+                    "**",
+                    True,
+                    3,
+                    17,
+                    {"id": "string", "name": "string", "valid": "string"},
+                    {"id": "string", "name": "string", "valid": "string"},
+                    False,
+                    False,
             ),
             (  # provided incompatible schema, expect fail
-                [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_2.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_3.csv"),
-                ],
-                "**",
-                True,
-                3,
-                17,
-                {"id": "boolean", "name": "boolean", "valid": "boolean"},
-                {"id": "boolean", "name": "boolean", "valid": "boolean"},
-                False,
-                True,
+                    [
+                        SAMPLE_DIR.joinpath("simple_test.csv"),
+                        SAMPLE_DIR.joinpath("simple_test_2.csv"),
+                        SAMPLE_DIR.joinpath("simple_test_3.csv"),
+                    ],
+                    "**",
+                    True,
+                    3,
+                    17,
+                    {"id": "boolean", "name": "boolean", "valid": "boolean"},
+                    {"id": "boolean", "name": "boolean", "valid": "boolean"},
+                    False,
+                    True,
             ),
             # multiple file tests (different but merge-able schemas)
             (  # auto-infer
-                [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("multi_file_diffschema_1.csv"),
-                    SAMPLE_DIR.joinpath("multi_file_diffschema_2.csv"),
-                ],
-                "**",
-                True,
-                6,
-                17,
-                {"id": "integer", "name": "string", "valid": "boolean", "location": "string", "percentage": "number", "nullable": "string"},
-                None,
-                False,
-                False,
+                    [
+                        SAMPLE_DIR.joinpath("simple_test.csv"),
+                        SAMPLE_DIR.joinpath("multi_file_diffschema_1.csv"),
+                        SAMPLE_DIR.joinpath("multi_file_diffschema_2.csv"),
+                    ],
+                    "**",
+                    True,
+                    6,
+                    17,
+                    {"id": "integer", "name": "string", "valid": "boolean", "location": "string",
+                     "percentage": "number", "nullable": "string"},
+                    None,
+                    False,
+                    False,
             ),
             (  # provided schema, not containing all columns (extra columns should go into FileStream.ab_additional_col)
-                [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("multi_file_diffschema_1.csv"),
-                    SAMPLE_DIR.joinpath("multi_file_diffschema_2.csv"),
-                ],
-                "**",
-                True,
-                3,
-                17,
-                {"id": "integer", "name": "string", "valid": "boolean"},
-                {"id": "integer", "name": "string", "valid": "boolean"},
-                False,
-                False,
+                    [
+                        SAMPLE_DIR.joinpath("simple_test.csv"),
+                        SAMPLE_DIR.joinpath("multi_file_diffschema_1.csv"),
+                        SAMPLE_DIR.joinpath("multi_file_diffschema_2.csv"),
+                    ],
+                    "**",
+                    True,
+                    3,
+                    17,
+                    {"id": "integer", "name": "string", "valid": "boolean"},
+                    {"id": "integer", "name": "string", "valid": "boolean"},
+                    False,
+                    False,
             ),
             # pattern matching tests with additional files present that we don't want to read
             (  # at top-level of bucket
-                [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_2.csv"),
-                    SAMPLE_DIR.joinpath("file_to_skip.csv"),
-                    SAMPLE_DIR.joinpath("file_to_skip.txt"),
-                ],
-                "simple*",
-                True,
-                3,
-                11,
-                {"id": "integer", "name": "string", "valid": "boolean"},
-                None,
-                False,
-                False,
+                    [
+                        SAMPLE_DIR.joinpath("simple_test.csv"),
+                        SAMPLE_DIR.joinpath("simple_test_2.csv"),
+                        SAMPLE_DIR.joinpath("file_to_skip.csv"),
+                        SAMPLE_DIR.joinpath("file_to_skip.txt"),
+                    ],
+                    "simple*",
+                    True,
+                    3,
+                    11,
+                    {"id": "integer", "name": "string", "valid": "boolean"},
+                    None,
+                    False,
+                    False,
             ),
             (  # at multiple levels of bucket
-                [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_2.csv"),
-                    SAMPLE_DIR.joinpath("file_to_skip.csv"),
-                    SAMPLE_DIR.joinpath("file_to_skip.txt"),
-                    SAMPLE_DIR.joinpath("pattern_match_test/this_folder/simple_test.csv"),
-                    SAMPLE_DIR.joinpath("pattern_match_test/not_this_folder/file_to_skip.csv"),
-                    SAMPLE_DIR.joinpath("pattern_match_test/not_this_folder/file_to_skip.txt"),
-                ],
-                "**/simple*",
-                True,
-                3,
-                19,
-                {"id": "integer", "name": "string", "valid": "boolean"},
-                None,
-                False,
-                False,
+                    [
+                        SAMPLE_DIR.joinpath("simple_test.csv"),
+                        SAMPLE_DIR.joinpath("simple_test_2.csv"),
+                        SAMPLE_DIR.joinpath("file_to_skip.csv"),
+                        SAMPLE_DIR.joinpath("file_to_skip.txt"),
+                        SAMPLE_DIR.joinpath("pattern_match_test/this_folder/simple_test.csv"),
+                        SAMPLE_DIR.joinpath("pattern_match_test/not_this_folder/file_to_skip.csv"),
+                        SAMPLE_DIR.joinpath("pattern_match_test/not_this_folder/file_to_skip.txt"),
+                    ],
+                    "**/simple*",
+                    True,
+                    3,
+                    19,
+                    {"id": "integer", "name": "string", "valid": "boolean"},
+                    None,
+                    False,
+                    False,
             ),
             # incremental tests (passing num_records/num_columns/fails as lists holding value for each file in order)
             (  # auto-infer, all same schema
-                [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_2.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_3.csv"),
-                ],
-                "**",
-                True,
-                [3, 3, 3],
-                [8, 3, 6],
-                {"id": "integer", "name": "string", "valid": "boolean"},
-                None,
-                True,
-                [False, False, False],
+                    [
+                        SAMPLE_DIR.joinpath("simple_test.csv"),
+                        SAMPLE_DIR.joinpath("simple_test_2.csv"),
+                        SAMPLE_DIR.joinpath("simple_test_3.csv"),
+                    ],
+                    "**",
+                    True,
+                    [3, 3, 3],
+                    [8, 3, 6],
+                    {"id": "integer", "name": "string", "valid": "boolean"},
+                    None,
+                    True,
+                    [False, False, False],
             ),
             (  # provided schema, all same schema
-                [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_2.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_3.csv"),
-                ],
-                "**",
-                True,
-                [3, 3, 3],
-                [8, 3, 6],
-                {"id": "integer", "name": "string", "valid": "boolean"},
-                {"id": "integer", "name": "string", "valid": "boolean"},
-                True,
-                [False, False, False],
+                    [
+                        SAMPLE_DIR.joinpath("simple_test.csv"),
+                        SAMPLE_DIR.joinpath("simple_test_2.csv"),
+                        SAMPLE_DIR.joinpath("simple_test_3.csv"),
+                    ],
+                    "**",
+                    True,
+                    [3, 3, 3],
+                    [8, 3, 6],
+                    {"id": "integer", "name": "string", "valid": "boolean"},
+                    {"id": "integer", "name": "string", "valid": "boolean"},
+                    True,
+                    [False, False, False],
             ),
             (  # auto-infer, (different but merge-able schemas)
-                [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("multi_file_diffschema_1.csv"),
-                    SAMPLE_DIR.joinpath("multi_file_diffschema_2.csv"),
-                ],
-                "**",
-                True,
-                [3, 3, 3],
-                [8, 3, 6],
-                {"id": "integer", "name": "string", "valid": "boolean"},
-                None,
-                True,
-                [False, False, False],
+                    [
+                        SAMPLE_DIR.joinpath("simple_test.csv"),
+                        SAMPLE_DIR.joinpath("multi_file_diffschema_1.csv"),
+                        SAMPLE_DIR.joinpath("multi_file_diffschema_2.csv"),
+                    ],
+                    "**",
+                    True,
+                    [3, 3, 3],
+                    [8, 3, 6],
+                    {"id": "integer", "name": "string", "valid": "boolean"},
+                    None,
+                    True,
+                    [False, False, False],
             ),
             (  # same as previous but change order and expect 5 columns instead of 3 in all
-                [
-                    SAMPLE_DIR.joinpath("multi_file_diffschema_2.csv"),
-                    SAMPLE_DIR.joinpath("multi_file_diffschema_1.csv"),
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                ],
-                "**",
-                True,
-                [5, 5, 5],
-                [6, 3, 8],
-                {"id": "integer", "name": "string", "valid": "boolean", "percentage": "number", "nullable": "string"},
-                None,
-                True,
-                [False, False, False],
+                    [
+                        SAMPLE_DIR.joinpath("multi_file_diffschema_2.csv"),
+                        SAMPLE_DIR.joinpath("multi_file_diffschema_1.csv"),
+                        SAMPLE_DIR.joinpath("simple_test.csv"),
+                    ],
+                    "**",
+                    True,
+                    [5, 5, 5],
+                    [6, 3, 8],
+                    {"id": "integer", "name": "string", "valid": "boolean", "percentage": "number",
+                     "nullable": "string"},
+                    None,
+                    True,
+                    [False, False, False],
             ),
             (  # like previous test but with a user_schema limiting columns
-                [
-                    SAMPLE_DIR.joinpath("multi_file_diffschema_2.csv"),
-                    SAMPLE_DIR.joinpath("multi_file_diffschema_1.csv"),
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                ],
-                "**",
-                True,
-                [2, 2, 2],
-                [6, 3, 8],
-                {"id": "integer", "name": "string"},
-                {"id": "integer", "name": "string"},
-                True,
-                [False, False, False],
+                    [
+                        SAMPLE_DIR.joinpath("multi_file_diffschema_2.csv"),
+                        SAMPLE_DIR.joinpath("multi_file_diffschema_1.csv"),
+                        SAMPLE_DIR.joinpath("simple_test.csv"),
+                    ],
+                    "**",
+                    True,
+                    [2, 2, 2],
+                    [6, 3, 8],
+                    {"id": "integer", "name": "string"},
+                    {"id": "integer", "name": "string"},
+                    True,
+                    [False, False, False],
             ),
             (  # fail when 2nd file has incompatible schema, auto-infer
-                [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("incompatible_schema.csv"),
-                ],
-                "**",
-                True,
-                [3, 3],
-                [8, 8],
-                {"id": "integer", "name": "string", "valid": "boolean"},
-                None,
-                True,
-                [False, True],
+                    [
+                        SAMPLE_DIR.joinpath("simple_test.csv"),
+                        SAMPLE_DIR.joinpath("incompatible_schema.csv"),
+                    ],
+                    "**",
+                    True,
+                    [3, 3],
+                    [8, 8],
+                    {"id": "integer", "name": "string", "valid": "boolean"},
+                    None,
+                    True,
+                    [False, True],
             ),
             (  # fail when 2nd file has incompatible schema, provided schema
-                [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("incompatible_schema.csv"),
-                ],
-                "**",
-                True,
-                [3, 3],
-                [8, 8],
-                {"id": "integer", "name": "string", "valid": "boolean"},
-                {"id": "integer", "name": "string", "valid": "boolean"},
-                True,
-                [False, True],
+                    [
+                        SAMPLE_DIR.joinpath("simple_test.csv"),
+                        SAMPLE_DIR.joinpath("incompatible_schema.csv"),
+                    ],
+                    "**",
+                    True,
+                    [3, 3],
+                    [8, 8],
+                    {"id": "integer", "name": "string", "valid": "boolean"},
+                    {"id": "integer", "name": "string", "valid": "boolean"},
+                    True,
+                    [False, True],
             ),
         ],
     )
     def test_stream_records(
-        self,
-        cloud_bucket_prefix,
-        format,
-        airbyte_system_columns,
-        files,
-        path_pattern,
-        private,
-        num_columns,
-        num_records,
-        expected_schema,
-        user_schema,
-        incremental,
-        fails,
+            self,
+            cloud_bucket_prefix,
+            format,
+            airbyte_system_columns,
+            files,
+            path_pattern,
+            private,
+            num_columns,
+            num_records,
+            expected_schema,
+            user_schema,
+            incremental,
+            fails,
     ):
         try:
             if not incremental:  # we expect matching behaviour here in either sync_mode

@@ -28,7 +28,8 @@ def run_in_external_process(fn, timeout: int, max_timeout: int, logger, args: Li
             result, potential_error = q_worker.get(timeout=min(timeout, max_timeout))
         except mp.queues.Empty:
             if timeout >= max_timeout:  # if we've got to max_timeout and tried once with that value
-                raise TimeoutError(f"Timed out too many times while running {fn.__name__}, max timeout of {max_timeout} seconds reached.")
+                raise TimeoutError(
+                    f"Timed out too many times while running {fn.__name__}, max timeout of {max_timeout} seconds reached.")
             logger.info(f"timed out while running {fn.__name__} after {timeout} seconds, retrying...")
             timeout *= 2  # double timeout and try again
         else:

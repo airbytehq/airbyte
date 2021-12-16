@@ -1,8 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
-
+import os.path
 import shutil
 import tempfile
 from zipfile import ZipFile
@@ -20,24 +19,26 @@ def minio_setup():
     with ZipFile("./integration_tests/minio_data.zip") as archive:
         archive.extractall(TMP_FOLDER)
     client = docker.from_env()
+    minio_container = None
     for container in client.containers.list():
         if container.name == "ci_test_minio":
-            container.stop()
+            minio_container = container
+            logger.info("minio was started before")
             break
-
-    container = client.containers.run(
-        "minio/minio",
-        f"server {TMP_FOLDER}",
-        name="ci_test_minio",
-        auto_remove=True,
-        # network_mode="host",
-        volumes=[f"/{TMP_FOLDER}/minio_data:/{TMP_FOLDER}"],
-        detach=True,
-        ports={"9000/tcp": ("127.0.0.1", 9000)},
-    )
-    logger.info("Run a minio/minio container")
+    if not minio_container:
+        container = client.containers.run(
+            "minio/minio",
+            f"server {TMP_FOLDER}",
+            name="ci_test_minio",
+            auto_remove=True,
+            volumes=[f"/{TMP_FOLDER}/minio_data:/{TMP_FOLDER}"],
+            detach=True,
+            ports={"9000/tcp": ("127.0.0.1", 9000)},
+        )
+        logger.info("Run a minio/minio container")
     yield
-    shutil.rmtree(TMP_FOLDER)
+    if os.path.exists(TMP_FOLDER):
+        shutil.rmtree(TMP_FOLDER)
     container.stop()
 
 

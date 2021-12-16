@@ -8,8 +8,8 @@ from typing import Iterator
 from boto3 import session as boto3session
 from botocore import UNSIGNED
 from botocore.config import Config
-from source_s3.s3_utils import make_s3_client
 
+from source_s3.s3_utils import make_s3_client
 from .s3file import S3File
 from .source_files_abstract.stream import FileInfo, IncrementalFileStream
 
@@ -43,7 +43,8 @@ class IncrementalFileStreamS3(IncrementalFileStream):
             # list_objects_v2 doesn't like a None value for ContinuationToken
             # so we don't set it if we don't have one.
             if ctoken:
-                kwargs = dict(Bucket=provider["bucket"], Prefix=provider.get("path_prefix", ""), ContinuationToken=ctoken)
+                kwargs = dict(Bucket=provider["bucket"], Prefix=provider.get("path_prefix", ""),
+                              ContinuationToken=ctoken)
             else:
                 kwargs = dict(Bucket=provider["bucket"], Prefix=provider.get("path_prefix", ""))
             response = client.list_objects_v2(**kwargs)

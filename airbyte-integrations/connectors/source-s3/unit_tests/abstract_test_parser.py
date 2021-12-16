@@ -15,6 +15,7 @@ from typing import Any, Callable, List, Mapping
 import pytest
 from airbyte_cdk import AirbyteLogger
 from smart_open import open as smart_open
+
 from source_s3.source_files_abstract.file_info import FileInfo
 
 
@@ -47,13 +48,21 @@ def memory_limit(max_memory_in_megabytes: int, print_limit: int = 20) -> Callabl
             log_messages.append("Total allocated size: %.4f Mb" % (total,))
             log_messages = "\n".join(log_messages)
             assert (
-                total < max_memory_in_megabytes
+                    total < max_memory_in_megabytes
             ), f"Overuse of memory, used: {total}Mb, limit: {max_memory_in_megabytes}Mb!!{log_messages}"
             return result
 
         return wrapper
 
     return decorator
+
+
+def create_by_local_file(filepath: str) -> FileInfo:
+    "Generates a FileInfo instance for local files"
+    if not os.path.exists(filepath):
+        return FileInfo(key=filepath, size=0, last_modified=datetime.now())
+    return FileInfo(key=filepath, size=os.stat(filepath).st_size,
+                    last_modified=datetime.fromtimestamp(os.path.getmtime(filepath)))
 
 
 class AbstractTestParser(ABC):
@@ -137,7 +146,7 @@ class AbstractTestParser(ABC):
         filepath = file_info["filepath"]
         self.logger.info(f"read the file: {filepath}, size: {os.stat(filepath).st_size / (1024 ** 2)}Mb")
         with smart_open(filepath, self._get_readmode(file_info)) as f:
-            file_metadata = FileInfo.create_by_local_file(filepath)
+            file_metadata = create_by_local_file(filepath)
             if "test_stream_records" in file_info["fails"]:
                 with pytest.raises(Exception) as e_info:
                     [print(r) for r in file_info["AbstractFileParser"].stream_records(f, file_metadata)]
