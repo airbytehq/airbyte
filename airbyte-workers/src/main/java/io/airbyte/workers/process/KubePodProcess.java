@@ -117,6 +117,7 @@ public class KubePodProcess extends Process {
   // This variable should be set in functions where the pod is forcefully terminated. See
   // getReturnCode() for more info.
   private final AtomicBoolean wasKilled = new AtomicBoolean(false);
+  private final AtomicBoolean wasClosed = new AtomicBoolean(false);
 
   private final OutputStream stdin;
   private InputStream stdout;
@@ -517,6 +518,14 @@ public class KubePodProcess extends Process {
    * implementation with OS processes and resources, which are automatically reaped by the OS.
    */
   private void close() {
+    final boolean previouslyClosed = wasClosed.getAndSet(true);
+
+    // short-circuit if close was already called, so we don't re-offer ports multiple times
+    // since the offer call is non-atomic
+    if (previouslyClosed) {
+      return;
+    }
+
     if (this.stdin != null) {
       Exceptions.swallow(this.stdin::close);
     }
