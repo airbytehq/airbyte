@@ -6,6 +6,7 @@ package io.airbyte.config;
 
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.helpers.LogConfigs;
+import io.airbyte.config.storage.CloudStorageConfigs;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -54,11 +55,19 @@ public interface Configs {
 
   String getDatabaseUrl();
 
+  String getJobsDatabaseMinimumFlywayMigrationVersion();
+
+  long getJobsDatabaseInitializationTimeoutMs();
+
   String getConfigDatabaseUser();
 
   String getConfigDatabasePassword();
 
   String getConfigDatabaseUrl();
+
+  String getConfigsDatabaseMinimumFlywayMigrationVersion();
+
+  long getConfigsDatabaseInitializationTimeoutMs();
 
   boolean runDatabaseMigrationOnStartup();
 
@@ -102,6 +111,8 @@ public interface Configs {
 
   // Logging/Monitoring/Tracking
   LogConfigs getLogConfigs();
+
+  CloudStorageConfigs getStateStorageCloudConfigs();
 
   boolean getPublishMetrics();
 

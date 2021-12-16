@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
-import static io.airbyte.integrations.destination.snowflake.SnowflakeDestination.isInternalStaging;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
@@ -18,7 +16,6 @@ public class SnowflakeInternalStagingDestinatiomAcceptanceTest extends Snowflake
     final JsonNode internalStagingConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/internal_staging_config.json")));
     Preconditions.checkArgument(!SnowflakeDestination.isS3Copy(internalStagingConfig));
     Preconditions.checkArgument(!SnowflakeDestination.isGcsCopy(internalStagingConfig));
-    Preconditions.checkArgument(isInternalStaging(internalStagingConfig));
     return internalStagingConfig;
   }
 
