@@ -2,6 +2,7 @@ FROM airbyte/integration-base-java:dev
 
 WORKDIR /airbyte
 ENV APPLICATION destination-s3
+#ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005
 
 COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 

@@ -6,15 +6,13 @@ package io.airbyte.integrations.destination.s3.avro;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.ValueNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -47,6 +45,7 @@ public class JsonToAvroSchemaConverter {
 
   private final Map<String, String> standardizedNames = new HashMap<>();
   private final List<String> recordFieldNames = new ArrayList<>();
+  Map<JsonNode,String> jsonNodeStringMap = new HashMap<>();
 
   static List<JsonSchemaType> getNonNullTypes(final String fieldName, final JsonNode fieldDefinition) {
     return getTypes(fieldName, fieldDefinition).stream()
@@ -100,9 +99,14 @@ public class JsonToAvroSchemaConverter {
   public Schema getAvroSchema(final JsonNode jsonSchema,
                               final String name,
                               @Nullable final String namespace,
-                              final boolean appendAirbyteFields) {
+                              final boolean appendAirbyteFields,
+                              final boolean rootNode) {
     final String stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(name);
     RecordBuilder<Schema> builder = SchemaBuilder.record(stdName);
+    if(rootNode) {
+      Map<String, String> schemaMap = new HashMap<>();
+      addKeys("", jsonSchema, schemaMap, jsonNodeStringMap);
+    }
     if (!stdName.equals(name)) {
       standardizedNames.put(name, stdName);
       LOGGER.warn("Schema name contains illegal character(s) and is standardized: {} -> {}", name,
@@ -211,9 +215,21 @@ public class JsonToAvroSchemaConverter {
       }
       case OBJECT -> {
         final String stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(fieldName);
+        String s = jsonNodeStringMap.get(fieldDefinition);
+        String path = null;
+        if(s!=null){
+          path = Arrays.stream(s.split("/"))
+                  .filter(key -> !key.isBlank())
+                  .filter(key -> !key.equals("items"))
+                  .filter(key -> !key.equals("properties"))
+                  .filter(key -> !key.equals("format"))
+                  .collect(Collectors.joining("."));
+//                  .collect(Collectors.toList());
+          int i =9;
+        }
         recordFieldNames.add(stdName);
         fieldSchema = getAvroSchema(fieldDefinition, fieldName,
-            AvroConstants.NAME_TRANSFORMER.resolveNamespace(stdName, recordFieldNames), false);
+            path, false,false);
       }
       default -> throw new IllegalStateException(
           String.format("Unexpected type for field %s: %s", fieldName, fieldType));
@@ -271,6 +287,39 @@ public class JsonToAvroSchemaConverter {
       }
       return Schema.createUnion(nonNullFieldTypes);
     }
+  }
+
+  private static void addKeys(String currentPath, JsonNode jsonNode, Map<String, String> map, Map<JsonNode,String> jsonNodeStringMap) {
+    if (jsonNode.isObject()) {
+      ObjectNode objectNode = (ObjectNode) jsonNode;
+      Iterator<Map.Entry<String, JsonNode>> iter = objectNode.fields();
+      String pathPrefix = currentPath.isEmpty() ? "" : currentPath + "/";
+      jsonNodeStringMap.put(jsonNode,pathPrefix);
+      while (iter.hasNext()) {
+        Map.Entry<String, JsonNode> entry = iter.next();
+        addKeys(pathPrefix + entry.getKey(), entry.getValue(), map, jsonNodeStringMap);
+      }
+    } else if (jsonNode.isArray()) {
+      ArrayNode arrayNode = (ArrayNode) jsonNode;
+
+      for (int i = 0; i < arrayNode.size(); i++) {
+        String arrayPath = currentPath + "/" + i;
+        addKeys(arrayPath, arrayNode.get(i), map,jsonNodeStringMap);
+      }
+
+    } else if (jsonNode.isValueNode()) {
+      ValueNode valueNode = (ValueNode) jsonNode;
+//      if (jsonSchema) {
+//            if (schemaContainsProperties(currentPath, valueNode, "format", List.of("date", "date-time", "time"))) {
+        map.put("/" + currentPath, valueNode.asText());
+//            }
+//      } else {
+//        String value = valueNode.asText();
+//        if (!value.equals("null") && !value.isBlank() && !Boolean.parseBoolean(value)) {
+//          map.put("/" + currentPath, value);
+//        }
+      }
+//    }
   }
 
 }
