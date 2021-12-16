@@ -549,3 +549,9 @@ logs:
   gcs:
     bucket: ""
     credentials: ""
+
+minio:
+  accessKey:
+    password: minio
+  secretKey:
+    password: minio123
