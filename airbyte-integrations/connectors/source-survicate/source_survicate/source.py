@@ -86,26 +86,13 @@ class SurvicateStream(HttpStream, ABC):
         else:
             if self.cursor_field in current_stream_state and isinstance(current_stream_state[self.cursor_field], str):
                 # Handle initial state loaded from JSON which is in str format
-                # TODO: Is there a clearner way to handle this?
+                # TODO: Is there a cleaner way to handle this?
                 current_stream_state[self.cursor_field] = _parse_datetime(current_stream_state[self.cursor_field])
             current_stream_state[self.cursor_field] = max(
                 _parse_datetime(latest_record[self.cursor_field]), current_stream_state.get(self.cursor_field, self._start_datetime)
             )
 
         return current_stream_state
-
-
-    def get_json_schema(self) -> Dict:
-        """Get the JSON schema by appending any fields in the latest record to our existing schema def."""
-        schema = super().get_json_schema()
-        # This is sooo ugly
-        # We have to get all records and read the last one in order to  get the most up-to-date schema representation
-        *_, last = self.read_records(SyncMode.incremental)
-        for k in last.keys():
-            kk = k.strip()
-            if kk not in schema:
-                schema[kk] = {"type": "date" if kk.endswith("date") else "string"}
-        return schema
 
 
 class Responses(SurvicateStream):
@@ -139,6 +126,18 @@ class Responses(SurvicateStream):
             del sr_parsed['custom_attributes']
             survey_responses_parsed.append(sr_parsed)
         return survey_responses_parsed
+
+    def get_json_schema(self) -> Dict:
+        """Get the JSON schema by appending any fields in the latest record to our existing schema def."""
+        schema = super().get_json_schema()
+        # This is sooo ugly
+        # We have to get all records and read the last one in order to  get the most up-to-date schema representation
+        *_, last = self.read_records(SyncMode.incremental)
+        for k in last.keys():
+            kk = k.strip()
+            if kk not in schema:
+                schema['properties'][kk] = {"type": "date" if kk.endswith("date") else "string"}
+        return schema
 
 
 def _parse_datetime(dt_str: str):
