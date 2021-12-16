@@ -139,7 +139,8 @@ public class SourceDefinitionsHandler {
         .withDocumentationUrl(currentSourceDefinition.getDocumentationUrl())
         .withName(currentSourceDefinition.getName())
         .withIcon(currentSourceDefinition.getIcon())
-        .withSpec(spec);
+        .withSpec(spec)
+        .withTombstone(currentSourceDefinition.getTombstone());
 
     configRepository.writeStandardSourceDefinition(newSource);
     return buildSourceDefinitionRead(newSource);

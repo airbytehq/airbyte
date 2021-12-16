@@ -76,7 +76,8 @@ class SourceDefinitionsHandlerTest {
         .withDockerRepository("dockerstuff")
         .withDockerImageTag("12.3")
         .withIcon("http.svg")
-        .withSpec(spec);
+        .withSpec(spec)
+        .withTombstone(false);
   }
 
   @Test
