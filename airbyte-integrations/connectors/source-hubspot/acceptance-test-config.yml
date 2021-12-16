@@ -11,10 +11,10 @@ tests:
       status: "failed"
       # Commented two tests cause validation return 'fatal' status for both tests.
       # acceptance-test-config didn't support 'fatal' status.
-#    - config_path: "integration_tests/invalid_config_oauth.json"
-#      status: "exception"
-#    - config_path: "integration_tests/invalid_config_wrong_title.json"
-#      status: "exception"
+    - config_path: "integration_tests/invalid_config_oauth.json"
+      status: "exception"
+    - config_path: "integration_tests/invalid_config_wrong_title.json"
+      status: "exception"
   discovery:
     - config_path: "secrets/config.json"
   basic_read:

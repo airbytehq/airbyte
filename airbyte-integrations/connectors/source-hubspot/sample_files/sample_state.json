@@ -3,7 +3,7 @@
     "updatedAt": "2021-02-23T00:00:00Z"
   },
   "contact_lists": {
-    "updatedAt": 1639058042
+    "timestamp": "2021-02-23T00:00:00Z"
   },
   "contacts": {
     "updatedAt": "2021-02-23T00:00:00Z"
@@ -12,7 +12,7 @@
     "updatedAt": "2021-02-23T00:00:00Z"
   },
   "email_events": {
-    "timestamp": 1639058042
+    "timestamp": "2021-02-23T00:00:00Z"
   },
   "line_items": {
     "updatedAt": "2021-02-23T00:00:00Z"
@@ -24,7 +24,7 @@
     "updatedAt": "2021-02-23T00:00:00Z"
   },
   "subscription_changes": {
-    "timestamp": 1639058042
+    "timestamp": "2021-02-23T00:00:00Z"
   },
   "tickets": {
     "updatedAt": "2021-02-23T00:00:00Z"

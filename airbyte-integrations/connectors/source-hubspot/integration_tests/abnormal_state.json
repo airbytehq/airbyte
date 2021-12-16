@@ -1,32 +1,32 @@
 {
   "companies": {
-    "updatedAt": "2221-02-23T00:00:00Z"
+    "updatedAt": "2221-02-23T00:00:00:45.743000+00:00"
   },
   "contact_lists": {
-    "timestamp": 4770964127000
+    "timestamp": "2121-03-19T17:00:45.743000+00:00"
   },
   "contacts": {
-    "updatedAt": "2221-02-23T00:00:00Z"
+    "updatedAt": "2221-02-23T00:00:45.743000+00:00"
   },
   "deals": {
-    "updatedAt": "2221-02-23T00:00:00Z"
+    "updatedAt": "2221-02-23T00:00:00:45.743000+00:00"
   },
   "email_events": {
-    "timestamp": 4770964127000
+    "timestamp": "2121-03-19T17:00:45.743000+00:00"
   },
   "line_items": {
-    "updatedAt": "2221-02-23T00:00:00Z"
+    "updatedAt": "2221-02-23T00:00:00:45.743000+00:00"
   },
   "products": {
-    "updatedAt": "2221-02-23T00:00:00Z"
+    "updatedAt": "2221-02-23T00:00:00:45.743000+00:00"
   },
   "quotes": {
-    "updatedAt": "2221-02-23T00:00:00Z"
+    "updatedAt": "2221-02-23T00:00:00:45.743000+00:00"
   },
   "subscription_changes": {
-    "timestamp": 4770964127000
+    "timestamp": "2121-03-19T17:00:45.743000+00:00"
   },
   "tickets": {
-    "updatedAt": "2221-02-23T00:00:00Z"
+    "updatedAt": "2221-02-23T00:00:00:45.743000+00:00"
   }
 }

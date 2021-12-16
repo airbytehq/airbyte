@@ -436,6 +436,8 @@ class IncrementalStream(Stream, ABC):
 
     state_pk = "timestamp"
     limit = 1000
+    # Flag which enable/disable chunked read in read_chunked method
+    # False -> chunk size is max (only one slice), True -> chunk_size is 30 days
     need_chunk = True
 
     @property
