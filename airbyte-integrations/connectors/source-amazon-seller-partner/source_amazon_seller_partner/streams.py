@@ -518,7 +518,7 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
     Field definitions: https://sellercentral.amazon.com/help/hub/reference/G202125660
     """
 
-    REGION_DATE_FORMAT_MAP = dict(
+    MARKETPLACE_DATE_FORMAT_MAP = dict(
         # eu
         A2VIGQ35RCS4UG = "D/M/YY", # AE
         A1PA6795UKMFR9 = "D/M/YY", # DE
@@ -556,7 +556,7 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
         def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
             if original_value and "format" in field_schema and field_schema["format"] == "date":
                 marketplace_id = self.marketplace_ids[0]
-                date_format = self.REGION_DATE_FORMAT_MAP.get(marketplace_id)
+                date_format = self.MARKETPLACE_DATE_FORMAT_MAP.get(marketplace_id)
                 if not date_format:
                     raise KeyError(f"Region date format not found for Markeplace ID: {marketplace_id}")
                 transformed_value = pendulum.from_format(original_value, date_format).to_date_string()
