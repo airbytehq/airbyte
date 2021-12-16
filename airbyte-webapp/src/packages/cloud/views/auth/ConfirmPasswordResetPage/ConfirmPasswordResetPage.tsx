@@ -6,7 +6,7 @@ import * as yup from "yup";
 import { LabeledInput, Link, LoadingButton } from "components";
 import useRouterHook from "hooks/useRouter";
 
-import { Routes } from "packages/cloud/routes";
+import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { FormTitle } from "../components/FormTitle";
 
@@ -43,7 +43,7 @@ const ResetPasswordConfirmPage: React.FC = () => {
               title: formatMessage({ id: "confirmResetPassword.success" }),
               isError: false,
             });
-            push(Routes.Login);
+            push(CloudRoutes.Login);
           } catch (err) {
             // Error code reference:
             // https://firebase.google.com/docs/reference/js/v8/firebase.auth.Auth#confirmpasswordreset
@@ -111,7 +111,7 @@ const ResetPasswordConfirmPage: React.FC = () => {
               </Field>
             </FieldItem>
             <BottomBlock>
-              <Link to={Routes.Login} $light>
+              <Link to={CloudRoutes.Login} $light>
                 <FormattedMessage id="login.backLogin" />
               </Link>
               <LoadingButton type="submit" isLoading={isSubmitting}>

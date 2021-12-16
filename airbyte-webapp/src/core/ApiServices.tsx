@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 
 import { useConfig } from "config";
 import { RequestMiddleware } from "./request/RequestMiddleware";
@@ -9,7 +9,7 @@ import { OperationService } from "./domain/connection";
 import { HealthService } from "./health/HealthService";
 import { useGetService, useInjectServices } from "./servicesProvider";
 
-export const useApiServices = (): void => {
+export const ApiServices: React.FC = React.memo(({ children }) => {
   const config = useConfig();
   const middlewares = useGetService<RequestMiddleware[]>(
     "DefaultRequestMiddlewares"
@@ -37,4 +37,6 @@ export const useApiServices = (): void => {
   );
 
   useInjectServices(services);
-};
+
+  return <>{children}</>;
+});

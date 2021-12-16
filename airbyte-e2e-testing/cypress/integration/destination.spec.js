@@ -2,7 +2,7 @@ describe("Destination main actions", () => {
   it("Create new destination", () => {
     cy.createTestDestination("Test destination cypress");
 
-    cy.url().should("include", `${Cypress.config().baseUrl}/destination/`);
+    cy.url().should("include", `/destination/`);
   });
 
   it("Update destination", () => {

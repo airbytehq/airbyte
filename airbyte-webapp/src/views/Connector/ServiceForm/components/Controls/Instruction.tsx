@@ -3,11 +3,10 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useToggle } from "react-use";
 
-import { SourceDefinition } from "core/resources/SourceDefinition";
-import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import useDocumentation from "hooks/services/useDocumentation";
 import { SideView } from "components/SideView";
 import { Markdown } from "components/Markdown";
+import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
 
 type IProps = {
   selectedService: SourceDefinition | DestinationDefinition;

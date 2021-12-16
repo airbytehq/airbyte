@@ -1,42 +1,34 @@
-import React, { Suspense } from "react";
-import { Redirect, Route, Switch } from "react-router-dom";
+import React from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { NetworkErrorBoundary as ErrorBoundary } from "rest-hooks";
 
-import { Routes } from "../routes";
-import LoadingPage from "components/LoadingPage";
+import { RoutePaths } from "../routes";
 import AllDestinationsPage from "./pages/AllDestinationsPage";
 import DestinationItemPage from "./pages/DestinationItemPage";
 import CreateDestinationPage from "./pages/CreateDestinationPage";
-import ConnectionPage from "../ConnectionPage";
+import CreationFormPage from "../ConnectionPage/pages/CreationFormPage";
 
-const FallbackRootRedirector = () => <Redirect to={Routes.Destination} />;
+const FallbackRootNavigateor = () => <Navigate to={RoutePaths.Destination} />;
 
 const DestinationsPage: React.FC = () => {
   return (
-    <Suspense fallback={<LoadingPage />}>
-      <Switch>
-        <Route path={`${Routes.Destination}${Routes.DestinationNew}`}>
-          <CreateDestinationPage />
-        </Route>
-        <Route path={Routes.Destination} exact>
-          <AllDestinationsPage />
-        </Route>
-        <Route
-          path={[
-            `${Routes.Destination}${Routes.ConnectionNew}`,
-            `${Routes.Destination}${Routes.Connection}/:id`,
-          ]}
-        >
-          <ConnectionPage />
-        </Route>
-        <Route path={`${Routes.Destination}/:id`}>
-          <ErrorBoundary fallbackComponent={FallbackRootRedirector}>
+    <Routes>
+      <Route
+        path={RoutePaths.DestinationNew}
+        element={<CreateDestinationPage />}
+      />
+      <Route path={RoutePaths.ConnectionNew} element={<CreationFormPage />} />
+      <Route
+        path=":id"
+        element={
+          <ErrorBoundary fallbackComponent={FallbackRootNavigateor}>
             <DestinationItemPage />
           </ErrorBoundary>
-        </Route>
-        <Redirect to={Routes.Root} />
-      </Switch>
-    </Suspense>
+        }
+      />
+      <Route index element={<AllDestinationsPage />} />
+      <Route element={<Navigate to={RoutePaths.Root} />} />
+    </Routes>
   );
 };
 
