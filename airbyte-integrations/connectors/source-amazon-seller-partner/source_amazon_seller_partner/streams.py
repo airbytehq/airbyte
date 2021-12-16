@@ -35,6 +35,7 @@ REPORTS_MAX_WAIT_SECONDS = 1980
 
 DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
+
 class AmazonSPStream(HttpStream, ABC):
     data_field = "payload"
 
@@ -386,6 +387,7 @@ class FbaShipmentsReports(ReportsAmazonSPStream):
 class VendorInventoryHealthReports(ReportsAmazonSPStream):
     name = "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT"
 
+
 class BrandAnalyticsSearchTermsReports(ReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.co.uk/help/hub/reference/G5NXWNY8HUD3VDCW
@@ -405,12 +407,12 @@ class BrandAnalyticsSearchTermsReports(ReportsAmazonSPStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
-         data = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
-         options = self.report_options()
-         if options is not None:
-             data.update(self._augmented_data(options))
+        data = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
+        options = self.report_options()
+        if options is not None:
+            data.update(self._augmented_data(options))
 
-         return data
+        return data
 
     @staticmethod
     def _augmented_data(report_options) -> Mapping[str, Any]:

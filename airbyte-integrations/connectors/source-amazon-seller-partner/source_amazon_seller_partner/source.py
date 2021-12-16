@@ -15,6 +15,7 @@ from pydantic.main import BaseModel
 from source_amazon_seller_partner.auth import AWSAuthenticator, AWSSignature
 from source_amazon_seller_partner.constants import AWSEnvironment, AWSRegion, get_marketplaces
 from source_amazon_seller_partner.streams import (
+    BrandAnalyticsSearchTermsReports,
     FbaInventoryReports,
     FbaOrdersReports,
     FbaShipmentsReports,
@@ -26,7 +27,6 @@ from source_amazon_seller_partner.streams import (
     SellerFeedbackReports,
     VendorDirectFulfillmentShipping,
     VendorInventoryHealthReports,
-    BrandAnalyticsSearchTermsReports,
 )
 
 

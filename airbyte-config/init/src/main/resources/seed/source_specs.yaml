@@ -179,6 +179,15 @@
           - "30"
           - "365"
           type: "integer"
+        report_options:
+          title: "Report Options"
+          description: "Additional information passed to reports. This varies by report\
+            \ type. Must be a valid json string."
+          examples:
+          - "{\"GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT\": {\"reportPeriod\": \"WEEK\"\
+            }}"
+          - "{\"GET_SOME_REPORT\": {\"custom\": \"true\"}}"
+          type: "string"
         refresh_token:
           title: "Refresh Token"
           description: "The Refresh Token obtained via OAuth flow authorization."
