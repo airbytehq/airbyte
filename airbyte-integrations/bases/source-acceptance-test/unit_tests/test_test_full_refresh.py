@@ -112,12 +112,10 @@ def get_default_catalog(schema):
     return ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
-                stream=AirbyteStream.parse_obj(
-                    {
-                        "name": "test_stream",
-                        "json_schema": schema,
-                        "supported_sync_modes": ["full_refresh"],
-                    }
+                stream=AirbyteStream(
+                    name="test_stream",
+                    json_schema=schema,
+                    supported_sync_modes=["full_refresh"],
                 ),
                 sync_mode="full_refresh",
                 destination_sync_mode="overwrite",
