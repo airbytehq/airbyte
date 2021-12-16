@@ -142,7 +142,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
           .set(sendNewsletter, standardWorkspace.getNews())
           .set(sendSecurityUpdates, standardWorkspace.getSecurityUpdates())
           .set(displaySetupWizard, standardWorkspace.getDisplaySetupWizard())
-          .set(tombstone, standardWorkspace.getTombstone())
+          .set(tombstone, standardWorkspace.getTombstone() != null && standardWorkspace.getTombstone())
           .set(notifications, JSONB.valueOf(Jsons.serialize(standardWorkspace.getNotifications())))
           .set(firstSyncComplete, standardWorkspace.getFirstCompletedSync())
           .set(feedbackComplete, standardWorkspace.getFeedbackDone())
@@ -277,7 +277,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
           .set(name, sourceConnection.getName())
           .set(configuration, JSONB.valueOf(Jsons.serialize(sourceConnection.getConfiguration())))
           .set(actorType, ActorType.source)
-          .set(tombstone, sourceConnection.getTombstone())
+          .set(tombstone, sourceConnection.getTombstone() != null && sourceConnection.getTombstone())
           .set(createdAt, OffsetDateTime.ofInstant(configWithMetadata.getCreatedAt(), ZoneOffset.UTC))
           .set(updatedAt, OffsetDateTime.ofInstant(configWithMetadata.getUpdatedAt(), ZoneOffset.UTC))
           .execute();
@@ -298,7 +298,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
           .set(name, destinationConnection.getName())
           .set(configuration, JSONB.valueOf(Jsons.serialize(destinationConnection.getConfiguration())))
           .set(actorType, ActorType.destination)
-          .set(tombstone, destinationConnection.getTombstone())
+          .set(tombstone, destinationConnection.getTombstone() != null && destinationConnection.getTombstone())
           .set(createdAt, OffsetDateTime.ofInstant(configWithMetadata.getCreatedAt(), ZoneOffset.UTC))
           .set(updatedAt, OffsetDateTime.ofInstant(configWithMetadata.getUpdatedAt(), ZoneOffset.UTC))
           .execute();
@@ -417,7 +417,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
               : Enums.toEnum(standardSyncOperation.getOperatorType().value(), OperatorType.class).orElseThrow())
           .set(operatorNormalization, JSONB.valueOf(Jsons.serialize(standardSyncOperation.getOperatorNormalization())))
           .set(operatorDbt, JSONB.valueOf(Jsons.serialize(standardSyncOperation.getOperatorDbt())))
-          .set(tombstone, standardSyncOperation.getTombstone())
+          .set(tombstone, standardSyncOperation.getTombstone() != null && standardSyncOperation.getTombstone())
           .set(createdAt, OffsetDateTime.ofInstant(configWithMetadata.getCreatedAt(), ZoneOffset.UTC))
           .set(updatedAt, OffsetDateTime.ofInstant(configWithMetadata.getUpdatedAt(), ZoneOffset.UTC))
           .execute();
