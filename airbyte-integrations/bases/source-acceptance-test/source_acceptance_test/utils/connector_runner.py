@@ -115,24 +115,28 @@ class ConnectorRunner:
     def read(cls, container: Container, command: str = None, with_ext: bool = True) -> Iterable[str]:
         """Reads connector's logs per line"""
         buffer = b""
-        has_exception = False
+        exception = ""
         for chunk in container.logs(stdout=True, stderr=True, stream=True, follow=True):
             buffer += chunk
-            found = buffer.find(b"\n")
-            if found <= -1:
-                continue
-            line = buffer[:found].decode("utf-8")
-            if has_exception or "Traceback (most recent call last)" in line:
-                has_exception = True
-            else:
-                yield line
+            while True:
+                # every chunk can include several lines
+                found = buffer.find(b"\n")
+                if found <= -1:
+                    break
+                line = buffer[:found].decode("utf-8")
+                if len(exception) > 0 or "Traceback (most recent call last)" in line:
+                    exception += line
+                else:
+                    yield line
                 buffer = buffer[found + 1 :]
-        if not has_exception and buffer:
+
+        if not exception and buffer:
+            # send the latest chunk if exists
             yield buffer.decode("utf-8")
 
         exit_status = container.wait()
         if exit_status["StatusCode"]:
-            error = buffer.decode("utf-8") if has_exception else exit_status["Error"]
+            error = exception or exit_status["Error"]
             logging.error(f"Docker container was failed, " f'code {exit_status["StatusCode"]}, error:\n{error}')
             if with_ext:
                 raise ContainerError(
