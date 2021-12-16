@@ -476,10 +476,9 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.transformer.registerCustomTransform(self.get_transform_function())
 
-    def get_transform_function(self):
-        def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
+      @transformer.registerCustomTransform
+      def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
             if original_value and "format" in field_schema and field_schema["format"] == "date":
                 date_format = self.region_date_formats[self.marketplace_ids[0]]
                 transformed_value = pendulum.from_format(original_value, date_format).to_date_string()
