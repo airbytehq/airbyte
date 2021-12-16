@@ -124,12 +124,15 @@ public class KubePodProcessIntegrationTest {
     }
 
     // stop taking from available ports
-    executor.shutdown();
+    executor.shutdownNow();
 
     // prior to fixing this race condition, the close method would offer ports every time it was called.
     // without the race condition, we should have only been able to pull each of the originally
     // available ports once
     assertEquals(availablePortsBefore, portsTaken.size());
+
+    // release ports for next tests
+    portsTaken.forEach(KubePortManagerSingleton.getInstance()::offer);
   }
 
   @Test
