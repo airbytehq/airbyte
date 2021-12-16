@@ -21,7 +21,7 @@ public class GcsAvroBigQueryRecordFormatter extends DefaultBigQueryRecordFormatt
 
   @Override
   public JsonNode formatRecord(AirbyteRecordMessage recordMessage) {
-    final long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
+    final long emittedAtMicroseconds = TimeUnit.MILLISECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
     final JsonNode formattedData = StandardNameTransformer.formatJsonPath(recordMessage.getData());
     return Jsons.jsonNode(ImmutableMap.of(
         JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(),

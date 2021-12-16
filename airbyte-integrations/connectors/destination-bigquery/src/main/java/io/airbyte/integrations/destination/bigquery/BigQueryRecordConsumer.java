@@ -54,8 +54,6 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   public void close(final boolean hasFailed) {
     LOGGER.info("Started closing all connections");
     uploaderMap.values().parallelStream().forEach(uploader -> uploader.close(hasFailed, outputRecordCollector, lastStateMessage));
-    if (hasFailed)
-      throw new RuntimeException("Big Query destination is failed!");
   }
 
 }
