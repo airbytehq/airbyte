@@ -78,22 +78,23 @@ const MainViewRoutes: React.FC<{ workspace: Workspace }> = ({ workspace }) => {
       <TrackPageAnalytics />
       <Routes>
         <Route
-          path={`/${RoutePaths.Destination}/*`}
+          path={`${RoutePaths.Destination}/*`}
           element={<DestinationPage />}
         />
-        <Route path={`/${RoutePaths.Source}/*`} element={<SourcesPage />} />
+        <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
         <Route
-          path={`/${RoutePaths.Connections}/*`}
+          path={`${RoutePaths.Connections}/*`}
           element={<ConnectionPage />}
         />
-        <Route path={`/${RoutePaths.Settings}/*`} element={<SettingsPage />} />
+        <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
         {workspace.displaySetupWizard ? (
           <Route
-            path={`/${RoutePaths.Onboarding}/*`}
+            path={`${RoutePaths.Onboarding}/*`}
             element={<OnboardingPage />}
           />
         ) : null}
         <Route
+          path="*"
           element={
             <Navigate
               to={
@@ -112,7 +113,7 @@ const MainViewRoutes: React.FC<{ workspace: Workspace }> = ({ workspace }) => {
 const PreferencesRoutes = () => (
   <Routes>
     <Route path={RoutePaths.Preferences} element={<PreferencesPage />} />
-    <Route element={<Navigate to={RoutePaths.Preferences} />} />
+    <Route path="*" element={<Navigate to={RoutePaths.Preferences} />} />
   </Routes>
 );
 
