@@ -13,8 +13,13 @@ public abstract class BigQueryRecordFormatter {
 
     public BigQueryRecordFormatter(JsonNode jsonSchema, StandardNameTransformer namingResolver) {
         this.namingResolver = namingResolver;
-        this.jsonSchema = jsonSchema;
+        this.jsonSchema = formatJsonSchema(jsonSchema);
     }
+
+    protected JsonNode formatJsonSchema(JsonNode jsonSchema) {
+        // Do nothing by default
+        return jsonSchema;
+    };
 
     public abstract JsonNode formatRecord(AirbyteRecordMessage recordMessage);
 
@@ -22,6 +27,10 @@ public abstract class BigQueryRecordFormatter {
         if (bigQuerySchema == null)
             bigQuerySchema = getBigQuerySchema(jsonSchema);
         return bigQuerySchema;
+    }
+
+    public JsonNode getJsonSchema() {
+        return jsonSchema;
     }
 
     protected abstract Schema getBigQuerySchema(JsonNode jsonSchema);

@@ -67,7 +67,6 @@ public class BigQueryUploaderFactory {
             targetTable,
             tmpTable,
             uploaderConfig.getBigQuery(),
-            bigQuerySchema,
             syncMode,
             recordFormatter,
             uploaderConfig.isDefaultAirbyteTmpSchema())
@@ -76,7 +75,6 @@ public class BigQueryUploaderFactory {
             targetTable,
             tmpTable,
             uploaderConfig.getBigQuery(),
-            bigQuerySchema,
             syncMode,
             datasetLocation,
             recordFormatter));
@@ -88,7 +86,6 @@ public class BigQueryUploaderFactory {
       TableId targetTable,
       TableId tmpTable,
       BigQuery bigQuery,
-      Schema schema,
       JobInfo.WriteDisposition syncMode,
       BigQueryRecordFormatter formatter,
       boolean isDefaultAirbyteTmpSchema)
@@ -98,7 +95,7 @@ public class BigQueryUploaderFactory {
         GcsDestinationConfig.getGcsDestinationConfig(
             BigQueryUtils.getGcsAvroJsonNodeConfig(config));
     JsonNode tmpTableSchema =
-        (isDefaultAirbyteTmpSchema ? null : configStream.getStream().getJsonSchema());
+        (isDefaultAirbyteTmpSchema ? null : formatter.getJsonSchema());
     final GcsAvroWriter gcsCsvWriter =
         initGcsWriter(gcsDestinationConfig, configStream, tmpTableSchema);
     gcsCsvWriter.initialize();
@@ -136,7 +133,6 @@ public class BigQueryUploaderFactory {
       TableId targetTable,
       TableId tmpTable,
       BigQuery bigQuery,
-      Schema schema,
       JobInfo.WriteDisposition syncMode,
       String datasetLocation,
       BigQueryRecordFormatter formatter) {
@@ -144,7 +140,7 @@ public class BigQueryUploaderFactory {
     final WriteChannelConfiguration writeChannelConfiguration =
         WriteChannelConfiguration.newBuilder(tmpTable)
             .setCreateDisposition(JobInfo.CreateDisposition.CREATE_IF_NEEDED)
-            .setSchema(schema)
+            .setSchema(formatter.getBigQuerySchema())
             .setFormatOptions(FormatOptions.json())
             .build(); // new-line delimited json.
 
