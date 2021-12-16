@@ -30,7 +30,11 @@ import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogActivityImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflowImpl;
 import io.airbyte.workers.temporal.spec.SpecActivityImpl;
 import io.airbyte.workers.temporal.spec.SpecWorkflowImpl;
-import io.airbyte.workers.temporal.sync.*;
+import io.airbyte.workers.temporal.sync.DbtTransformationActivityImpl;
+import io.airbyte.workers.temporal.sync.NormalizationActivityImpl;
+import io.airbyte.workers.temporal.sync.PersistStateActivityImpl;
+import io.airbyte.workers.temporal.sync.ReplicationActivityImpl;
+import io.airbyte.workers.temporal.sync.SyncWorkflowImpl;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
@@ -69,6 +73,7 @@ public class WorkerApp {
   private final String databasePassword;
   private final String databaseUrl;
   private final String airbyteVersion;
+  private final boolean containerOrchestratorEnabled;
 
   public WorkerApp(final Path workspaceRoot,
                    final ProcessFactory jobProcessFactory,
@@ -83,7 +88,8 @@ public class WorkerApp {
                    final String databaseUser,
                    final String databasePassword,
                    final String databaseUrl,
-                   final String airbyteVersion) {
+                   final String airbyteVersion,
+                   final boolean containerOrchestratorEnabled) {
 
     this.workspaceRoot = workspaceRoot;
     this.jobProcessFactory = jobProcessFactory;
@@ -99,6 +105,7 @@ public class WorkerApp {
     this.databasePassword = databasePassword;
     this.databaseUrl = databaseUrl;
     this.airbyteVersion = airbyteVersion;
+    this.containerOrchestratorEnabled = containerOrchestratorEnabled;
   }
 
   public void start() {
@@ -140,11 +147,22 @@ public class WorkerApp {
                 databasePassword, databaseUrl, airbyteVersion));
 
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
+    final ReplicationActivityImpl replicationActivityImpl = getReplicationActivityImpl(
+        containerOrchestratorEnabled,
+        workerConfigs,
+        jobProcessFactory,
+        orchestratorProcessFactory,
+        secretsHydrator,
+        workspaceRoot,
+        workerEnvironment,
+        logConfigs,
+        databaseUser,
+        databasePassword,
+        databaseUrl,
+        airbyteVersion);
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
     syncWorker.registerActivitiesImplementations(
-        new ReplicationActivityImpl(workerConfigs, orchestratorProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs,
-            databaseUser,
-            databasePassword, databaseUrl, airbyteVersion),
+        replicationActivityImpl,
         new NormalizationActivityImpl(workerConfigs, jobProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser,
             databasePassword, databaseUrl, airbyteVersion),
         new DbtTransformationActivityImpl(workerConfigs, jobProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs,
@@ -153,6 +171,52 @@ public class WorkerApp {
         new PersistStateActivityImpl(workspaceRoot, configRepository));
 
     factory.start();
+  }
+
+  /**
+   * Switches behavior based on containerOrchestratorEnabled to decide whether to use new container
+   * launching or not.
+   */
+  private ReplicationActivityImpl getReplicationActivityImpl(
+                                                             final boolean containerOrchestratorEnabled,
+                                                             final WorkerConfigs workerConfigs,
+                                                             final ProcessFactory jobProcessFactory,
+                                                             final ProcessFactory orchestratorProcessFactory,
+                                                             final SecretsHydrator secretsHydrator,
+                                                             final Path workspaceRoot,
+                                                             final WorkerEnvironment workerEnvironment,
+                                                             final LogConfigs logConfigs,
+                                                             final String databaseUser,
+                                                             final String databasePassword,
+                                                             final String databaseUrl,
+                                                             final String airbyteVersion) {
+    if (containerOrchestratorEnabled) {
+      return new ReplicationActivityImpl(
+          containerOrchestratorEnabled,
+          workerConfigs,
+          orchestratorProcessFactory,
+          secretsHydrator,
+          workspaceRoot,
+          workerEnvironment,
+          logConfigs,
+          databaseUser,
+          databasePassword,
+          databaseUrl,
+          airbyteVersion);
+    } else {
+      return new ReplicationActivityImpl(
+          containerOrchestratorEnabled,
+          workerConfigs,
+          jobProcessFactory,
+          secretsHydrator,
+          workspaceRoot,
+          workerEnvironment,
+          logConfigs,
+          databaseUser,
+          databasePassword,
+          databaseUrl,
+          airbyteVersion);
+    }
   }
 
   private static ProcessFactory getJobProcessFactory(final Configs configs) throws IOException {
@@ -254,7 +318,8 @@ public class WorkerApp {
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
         configs.getDatabaseUrl(),
-        configs.getAirbyteVersionOrWarning()).start();
+        configs.getAirbyteVersionOrWarning(),
+        configs.getContainerOrchestratorEnabled()).start();
   }
 
 }

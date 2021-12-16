@@ -544,6 +544,11 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(SUBMITTER_NUM_THREADS, "5");
   }
 
+  @Override
+  public boolean getContainerOrchestratorEnabled() {
+    return getEnvOrDefault("CONTAINER_ORCHESTRATOR_ENABLED", false, Boolean::valueOf);
+  }
+
   // Helpers
   public String getEnvOrDefault(final String key, final String defaultValue) {
     return getEnvOrDefault(key, defaultValue, Function.identity(), false);
