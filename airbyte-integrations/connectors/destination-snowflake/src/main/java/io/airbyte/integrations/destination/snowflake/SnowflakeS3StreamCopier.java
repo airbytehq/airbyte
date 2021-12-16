@@ -22,25 +22,25 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier {
   private static final int FILE_PREFIX_LENGTH = 5;
 
   public SnowflakeS3StreamCopier(final String stagingFolder,
-      final DestinationSyncMode destSyncMode,
-      final String schema,
-      final String streamName,
-      final AmazonS3 client,
-      final JdbcDatabase db,
-      final S3DestinationConfig s3Config,
-      final ExtendedNameTransformer nameTransformer,
-      final SqlOperations sqlOperations) {
+                                 final DestinationSyncMode destSyncMode,
+                                 final String schema,
+                                 final String streamName,
+                                 final AmazonS3 client,
+                                 final JdbcDatabase db,
+                                 final S3DestinationConfig s3Config,
+                                 final ExtendedNameTransformer nameTransformer,
+                                 final SqlOperations sqlOperations) {
     super(stagingFolder, destSyncMode, schema, streamName, Strings.addRandomSuffix("", "", FILE_PREFIX_LENGTH) + "_" + streamName,
         client, db, s3Config, nameTransformer, sqlOperations);
   }
 
   @Override
   public void copyS3CsvFileIntoTable(
-      final JdbcDatabase database,
-      final String s3FileLocation,
-      final String schema,
-      final String tableName,
-      final S3DestinationConfig s3Config)
+                                     final JdbcDatabase database,
+                                     final String s3FileLocation,
+                                     final String schema,
+                                     final String tableName,
+                                     final S3DestinationConfig s3Config)
       throws SQLException {
     final var copyQuery = String.format(
         "COPY INTO %s.%s FROM '%s' "

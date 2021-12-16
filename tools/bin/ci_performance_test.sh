@@ -7,26 +7,26 @@ set -e
 # runs performance tests for an performance name
 
 connector="$1"
-all_performance_tests=$(./gradlew performanceTest --dry-run | grep 'performanceTest SKIPPED' | cut -d: -f 4)
-run() {
 firstarg=""
 secondarg=""
 if [[ "$2" ]]; then
   if [[ "$2" == *"cpulimit"* ]]; then
-    firstarg="-DcpuLimit=$(echo $2 | cut -d = -f 2)"
+    firstarg="-DcpuLimit=$(echo $2 | cut -d / -f 2)"
   fi
   if [[ "$2" == *"memorylimit"* ]]; then
-    firstarg="-DmemoryLimit=$(echo $2 | cut -d = -f 2)"
+    firstarg="-DmemoryLimit=$(echo $2 | cut -d / -f 2)"
   fi
 fi
 if [[ "$3" ]]; then
   if [[ "$3" == *"cpulimit"* ]]; then
-    secondarg="-DcpuLimit=$(echo $3 | cut -d = -f 2)"
+    secondarg="-DcpuLimit=$(echo $3 | cut -d / -f 2)"
   fi
   if [[ "$3" == *"memorylimit"* ]]; then
-    secondarg="-DmemoryLimit=$(echo $3 | cut -d = -f 2)"
+    secondarg="-DmemoryLimit=$(echo $3 | cut -d / -f 2)"
   fi
 fi
+all_performance_tests=$(./gradlew performanceTest --dry-run | grep 'performanceTest SKIPPED' | cut -d: -f 4)
+run() {
 if [[ "$connector" == "all" ]] ; then
   echo "Running: ./gradlew --no-daemon --scan performanceTest"
   ./gradlew --no-daemon --scan performanceTest
@@ -46,7 +46,7 @@ else
   elif [[ "$connector" == *"connectors"* ]]; then
     connector_name=$(echo $connector | cut -d / -f 2)
     selected_performance_test=$(echo "$all_performance_tests" | grep "^$connector_name$" || echo "")
-    performanceTestCommand="$(_to_gradle_path "airbyte-integrations/$connector $firstarg $secondarg" performanceTest)"
+    performanceTestCommand="$(_to_gradle_path "airbyte-integrations/$connector" performanceTest) $firstarg $secondargt"
   else
     selected_performance_test=$(echo "$all_performance_tests" | grep "^$connector$" || echo "")
     performanceTestCommand=":airbyte-integrations:connectors:$connector:performanceTest $firstarg $secondarg"

@@ -66,15 +66,15 @@ public abstract class S3StreamCopier implements StreamCopier {
   private final StagingFilenameGenerator filenameGenerator;
 
   public S3StreamCopier(final String stagingFolder,
-      final DestinationSyncMode destSyncMode,
-      final String schema,
-      final String streamName,
-      final String s3FileName,
-      final AmazonS3 client,
-      final JdbcDatabase db,
-      final S3DestinationConfig s3Config,
-      final ExtendedNameTransformer nameTransformer,
-      final SqlOperations sqlOperations) {
+                        final DestinationSyncMode destSyncMode,
+                        final String schema,
+                        final String streamName,
+                        final String s3FileName,
+                        final AmazonS3 client,
+                        final JdbcDatabase db,
+                        final S3DestinationConfig s3Config,
+                        final ExtendedNameTransformer nameTransformer,
+                        final SqlOperations sqlOperations) {
     this.destSyncMode = destSyncMode;
     this.schemaName = schema;
     this.streamName = streamName;
@@ -224,10 +224,10 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   public abstract void copyS3CsvFileIntoTable(JdbcDatabase database,
-      String s3FileLocation,
-      String schema,
-      String tableName,
-      S3DestinationConfig s3Config)
+                                              String s3FileLocation,
+                                              String schema,
+                                              String tableName,
+                                              S3DestinationConfig s3Config)
       throws SQLException;
 
 }
