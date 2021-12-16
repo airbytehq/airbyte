@@ -388,6 +388,79 @@
         },
         "type": ["null", "object"]
       }
+    },
+    "transactions": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "admin_graphql_api_id": {
+            "type": ["null", "string"]
+          },
+          "amount": {
+            "type": ["null", "string"]
+          },
+          "authorization": {
+            "type": ["null", "string"]
+          },
+          "created_at": {
+            "type": ["null", "string"]
+          },
+          "currency": {
+            "type": ["null", "string"]
+          },
+          "device_id": {
+            "type": ["null", "integer"]
+          },
+          "error_code": {
+            "type": ["null", "string"]
+          },
+          "gateway": {
+            "type": ["null", "string"]
+          },
+          "kind": {
+            "type": ["null", "string"]
+          },
+          "location_id": {
+            "type": ["null", "integer"]
+          },
+          "message": {
+            "type": ["null", "string"]
+          },
+          "order_id": {
+            "type": ["null", "integer"]
+          },
+          "parent_id": {
+            "type": ["null", "integer"]
+          },
+          "processed_at": {
+            "type": ["null", "string"]
+          },
+          "receipt": {
+            "type": ["null", "object"],
+            "properties": {
+              "paid_amount": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "source_name": {
+            "type": ["null", "string"]
+          },
+          "status": {
+            "type": ["null", "string"]
+          },
+          "test": {
+            "type": ["null", "boolean"]
+          },
+          "user_id": {
+            "type": ["null", "integer"]
+          }
+        }
+      }
     }
   }
 }
