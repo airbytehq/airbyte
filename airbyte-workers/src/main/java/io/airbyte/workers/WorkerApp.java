@@ -53,7 +53,7 @@ import org.slf4j.MDC;
 public class WorkerApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerApp.class);
-  public static final int KUBE_HEARTBEAT_PORT = 9876;
+  public static final int KUBE_HEARTBEAT_PORT = 9000;
 
   private final Path workspaceRoot;
   private final ProcessFactory jobProcessFactory;
