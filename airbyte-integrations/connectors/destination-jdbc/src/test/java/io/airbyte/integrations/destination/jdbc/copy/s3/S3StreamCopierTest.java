@@ -10,12 +10,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopierFactory.Config;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.csv.CsvSheetGenerator;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
@@ -130,7 +132,7 @@ public class S3StreamCopierTest {
         "fake-schema",
         s3Client,
         db,
-        S3_CONFIG,
+        new Config(true, S3_CONFIG),
         new ExtendedNameTransformer(),
         sqlOperations,
         CONFIGURED_STREAM,
@@ -218,6 +220,41 @@ public class S3StreamCopierTest {
     copier.removeFileAndDropTmpTable();
 
     verify(s3Client).deleteObject("fake-bucket", "fakeOutputPath-00000");
+  }
+
+  @Test
+  public void doesNotDeleteStagingFiles_if_purgeStagingDataDisabled() throws Exception {
+    copier = new S3StreamCopier(
+        "fake-staging-folder",
+        "fake-schema",
+        s3Client,
+        db,
+        // Explicitly disable purgeStagingData
+        new Config(false, S3_CONFIG),
+        new ExtendedNameTransformer(),
+        sqlOperations,
+        CONFIGURED_STREAM,
+        UPLOAD_TIME,
+        MAX_PARTS_PER_FILE) {
+
+      @Override
+      public void copyS3CsvFileIntoTable(
+          final JdbcDatabase database,
+          final String s3FileLocation,
+          final String schema,
+          final String tableName,
+          final S3DestinationConfig s3Config) {
+        copyArguments.add(new CopyArguments(database, s3FileLocation, schema, tableName, s3Config));
+      }
+
+    };
+
+    copier.prepareStagingFile();
+    doReturn(true).when(s3Client).doesObjectExist("fake-bucket", "fakeOutputPath-00000");
+
+    copier.removeFileAndDropTmpTable();
+
+    verify(s3Client, never()).deleteObject("fake-bucket", "fakeOutputPath-00000");
   }
 
   @Test
