@@ -28,5 +28,8 @@
   },
   "GET_SELLER_FEEDBACK_DATA": {
     "createdTime": "2021-07-01T00:00:00Z"
+  },
+  "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT": {
+    "createdTime": "2021-07-01T00:00:00Z"
   }
 }
