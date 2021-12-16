@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers.temporal.scheduling.activities;
 
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -6,7 +10,7 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
-import io.airbyte.workers.temporal.exception.NonRetryableException;
+import io.airbyte.workers.temporal.exception.RetryableException;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptCreationInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptCreationOutput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCreationInput;
@@ -95,8 +99,7 @@ public class JobCreationAndStatusUpdateActivityTest {
             .thenReturn(mLogClientSingleton);
 
         final AttemptCreationOutput output = jobCreationAndStatusUpdateActivity.createNewAttempt(new AttemptCreationInput(
-            JOB_ID
-        ));
+            JOB_ID));
 
         Mockito.verify(mLogClientSingleton).setJobMdc(mWorkerEnvironment, mLogConfigs, mPath);
         Assertions.assertThat(output.getAttemptId()).isEqualTo(ATTEMPT_ID);
@@ -110,15 +113,16 @@ public class JobCreationAndStatusUpdateActivityTest {
           .thenThrow(new IOException());
 
       Assertions.assertThatThrownBy(() -> jobCreationAndStatusUpdateActivity.createNewAttempt(new AttemptCreationInput(
-              JOB_ID
-          )))
-          .isInstanceOf(NonRetryableException.class)
+          JOB_ID)))
+          .isInstanceOf(RetryableException.class)
           .hasCauseInstanceOf(IOException.class);
     }
+
   }
 
   @Nested
   class Update {
     // TODO: add update test
   }
+
 }

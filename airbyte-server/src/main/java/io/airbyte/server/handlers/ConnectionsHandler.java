@@ -153,14 +153,8 @@ public class ConnectionsHandler {
 
     trackNewConnection(standardSync);
 
-    LOGGER.error("ff: " + featureFlags);
-    LOGGER.error("ff.uNS: " + featureFlags.usesNewScheduler());
     if (featureFlags.usesNewScheduler()) {
-      try {
-        temporalWorkerRunFactory.createNewSchedulerWorkflow(connectionId);
-      } catch (final Exception e) {
-        e.printStackTrace();
-      }
+      temporalWorkerRunFactory.createNewSchedulerWorkflow(connectionId);
     }
 
     return connectionHelper.buildConnectionRead(connectionId);

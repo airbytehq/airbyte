@@ -68,14 +68,11 @@ public class TemporalWorkerRunFactory {
     return switch (job.getConfigType()) {
       case SYNC -> () -> {
 
-        LOGGER.error("flag checking ____________");
         if (featureFlags.usesNewScheduler()) {
-          LOGGER.error("Running the new workflow ____________");
           temporalClient.submitConnectionUpdaterAsync(connectionId);
 
           return toOutputAndStatusConnector();
         }
-        LOGGER.error("old way to run ________");
         final TemporalResponse<StandardSyncOutput> output = temporalClient.submitSync(job.getId(),
             attemptId, job.getConfig().getSync(), connectionId);
         return toOutputAndStatus(output);

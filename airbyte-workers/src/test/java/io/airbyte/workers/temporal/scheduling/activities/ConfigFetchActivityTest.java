@@ -49,8 +49,7 @@ public class ConfigFetchActivityTest {
   private final static StandardSync standardSyncWithSchedule = new StandardSync()
       .withSchedule(new Schedule()
           .withTimeUnit(TimeUnit.MINUTES)
-          .withUnits(5L)
-      );
+          .withUnits(5L));
   private static final StandardSync standardSyncWithoutSchedule = new StandardSync();
 
   @Nested
@@ -135,6 +134,7 @@ public class ConfigFetchActivityTest {
       Assertions.assertThat(output.getTimeToWait())
           .isZero();
     }
+
   }
 
   @Nested
@@ -152,6 +152,7 @@ public class ConfigFetchActivityTest {
       Assertions.assertThat(configFetchActivity.getMaxAttempt().getMaxAttempt())
           .isEqualTo(maxAttempt);
     }
+
   }
 
 }

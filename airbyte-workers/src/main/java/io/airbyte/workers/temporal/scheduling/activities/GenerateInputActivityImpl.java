@@ -10,7 +10,7 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.temporal.TemporalUtils;
-import io.airbyte.workers.temporal.exception.NonRetryableException;
+import io.airbyte.workers.temporal.exception.RetryableException;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -50,7 +50,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
 
       return new SyncOutput(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
     } catch (final Exception e) {
-      throw new NonRetryableException(e);
+      throw new RetryableException(e);
     }
   }
 

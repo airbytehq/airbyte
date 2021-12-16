@@ -5,7 +5,7 @@
 package io.airbyte.workers.temporal.scheduling;
 
 import io.airbyte.workers.temporal.TemporalJobType;
-import io.airbyte.workers.temporal.exception.NonRetryableException;
+import io.airbyte.workers.temporal.exception.RetryableException;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverInput;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverOutput;
@@ -58,12 +58,10 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
 
   private CancellationScope syncWorkflowCancellationScope;
 
-  public ConnectionUpdaterWorkflowImpl() {
-  }
+  public ConnectionUpdaterWorkflowImpl() {}
 
   @Override
-  public void run(final ConnectionUpdaterInput connectionUpdaterInput) throws NonRetryableException {
-    log.error("Starting a new WF: " + connectionUpdaterInput.getConnectionId());
+  public void run(final ConnectionUpdaterInput connectionUpdaterInput) throws RetryableException {
     try {
       if (connectionUpdaterInput.getWorkflowState() != null) {
         workflowState = connectionUpdaterInput.getWorkflowState();
@@ -74,7 +72,6 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
           final ScheduleRetrieverInput scheduleRetrieverInput = new ScheduleRetrieverInput(
               connectionUpdaterInput.getConnectionId());
           final ScheduleRetrieverOutput scheduleRetrieverOutput = configFetchActivity.getTimeToWait(scheduleRetrieverInput);
-          log.error("Await for: " + scheduleRetrieverOutput.getTimeToWait().toString());
           Workflow.await(scheduleRetrieverOutput.getTimeToWait(), () -> skipScheduling() || connectionUpdaterInput.isFromFailure());
 
           if (!workflowState.isUpdated() && !workflowState.isDeleted()) {
@@ -233,10 +230,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
     connectionUpdaterInput.setAttemptId(null);
     workflowState.reset();
     if (!workflowState.isDeleted()) {
-      log.error("Continue as new");
       Workflow.continueAsNew(connectionUpdaterInput);
-    } else {
-      log.error("Not continue as new");
     }
   }
 

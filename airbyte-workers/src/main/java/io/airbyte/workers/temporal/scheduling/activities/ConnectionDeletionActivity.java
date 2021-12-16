@@ -23,6 +23,9 @@ public interface ConnectionDeletionActivity {
 
   }
 
+  /**
+   * Delete a connection
+   */
   @ActivityMethod
   void deleteConnection(ConnectionDeletionInput input);
 

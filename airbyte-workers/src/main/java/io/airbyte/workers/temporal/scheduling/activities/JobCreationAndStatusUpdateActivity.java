@@ -4,7 +4,7 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import io.airbyte.workers.temporal.exception.NonRetryableException;
+import io.airbyte.workers.temporal.exception.RetryableException;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import java.util.UUID;
@@ -60,8 +60,14 @@ public interface JobCreationAndStatusUpdateActivity {
 
   }
 
+  /**
+   * Create a new attempt for a given job ID
+   *
+   * @param input POJO containing the jobId
+   * @return A POJO containing the attemptId
+   */
   @ActivityMethod
-  AttemptCreationOutput createNewAttempt(AttemptCreationInput input) throws NonRetryableException;
+  AttemptCreationOutput createNewAttempt(AttemptCreationInput input) throws RetryableException;
 
   @Data
   @NoArgsConstructor
@@ -73,6 +79,9 @@ public interface JobCreationAndStatusUpdateActivity {
 
   }
 
+  /**
+   * Set a job status as successful
+   */
   @ActivityMethod
   void jobSuccess(JobSuccessInput input);
 
@@ -85,6 +94,9 @@ public interface JobCreationAndStatusUpdateActivity {
 
   }
 
+  /**
+   * Set a job status as failed
+   */
   @ActivityMethod
   void jobFailure(JobFailureInput input);
 
@@ -98,6 +110,9 @@ public interface JobCreationAndStatusUpdateActivity {
 
   }
 
+  /**
+   * Set an attempt status as failed
+   */
   @ActivityMethod
   void attemptFailure(AttemptFailureInput input);
 
@@ -110,6 +125,9 @@ public interface JobCreationAndStatusUpdateActivity {
 
   }
 
+  /**
+   * Set a job status as cancelled
+   */
   @ActivityMethod
   void jobCancelled(JobCancelledInput input);
 

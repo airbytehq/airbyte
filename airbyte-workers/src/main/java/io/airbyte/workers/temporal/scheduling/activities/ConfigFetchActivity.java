@@ -33,6 +33,9 @@ public interface ConfigFetchActivity {
 
   }
 
+  /**
+   * Return how much time to wait before running the next sync
+   */
   @ActivityMethod
   ScheduleRetrieverOutput getTimeToWait(ScheduleRetrieverInput input);
 
@@ -45,6 +48,9 @@ public interface ConfigFetchActivity {
 
   }
 
+  /**
+   * Return the maximum number of attempt allowed for a connection.
+   */
   @ActivityMethod
   GetMaxAttemptOutput getMaxAttempt();
 

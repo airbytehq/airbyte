@@ -23,12 +23,10 @@ import java.io.Serializable;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Slf4j
 public class TemporalUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TemporalUtils.class);
@@ -61,7 +59,6 @@ public class TemporalUtils {
   }
 
   public static WorkflowOptions getWorkflowOptionsWithWorkflowId(final TemporalJobType jobType, final String workflowId) {
-    log.error("Wf id: " + workflowId);
 
     return WorkflowOptions.newBuilder()
         .setWorkflowId(workflowId)

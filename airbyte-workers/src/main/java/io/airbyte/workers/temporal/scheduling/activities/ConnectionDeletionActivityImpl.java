@@ -7,7 +7,7 @@ package io.airbyte.workers.temporal.scheduling.activities;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.ConnectionHelper;
-import io.airbyte.workers.temporal.exception.NonRetryableException;
+import io.airbyte.workers.temporal.exception.RetryableException;
 import java.io.IOException;
 import lombok.AllArgsConstructor;
 
@@ -21,7 +21,7 @@ public class ConnectionDeletionActivityImpl implements ConnectionDeletionActivit
     try {
       connectionHelper.deleteConnection(input.getConnectionId());
     } catch (final JsonValidationException | ConfigNotFoundException | IOException e) {
-      throw new NonRetryableException(e);
+      throw new RetryableException(e);
     }
   }
 

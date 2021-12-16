@@ -12,7 +12,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.temporal.exception.NonRetryableException;
+import io.airbyte.workers.temporal.exception.RetryableException;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Optional;
@@ -54,7 +54,7 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
 
       return new ScheduleRetrieverOutput(timeToWait);
     } catch (final IOException | JsonValidationException | ConfigNotFoundException e) {
-      throw new NonRetryableException(e);
+      throw new RetryableException(e);
     }
   }
 

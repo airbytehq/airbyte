@@ -10,7 +10,7 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
-import io.airbyte.workers.temporal.exception.NonRetryableException;
+import io.airbyte.workers.temporal.exception.RetryableException;
 import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.workers.worker_run.WorkerRun;
 import java.io.IOException;
@@ -38,7 +38,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   }
 
   @Override
-  public AttemptCreationOutput createNewAttempt(final AttemptCreationInput input) throws NonRetryableException {
+  public AttemptCreationOutput createNewAttempt(final AttemptCreationInput input) throws RetryableException {
     try {
       final Job createdJob = jobPersistence.getJob(input.getJobId());
 
@@ -50,7 +50,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
       return new AttemptCreationOutput(persistedAttemptId);
     } catch (final IOException e) {
-      throw new NonRetryableException(e);
+      throw new RetryableException(e);
     }
   }
 
@@ -59,7 +59,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     try {
       jobPersistence.succeedAttempt(input.getJobId(), input.getAttemptId());
     } catch (final IOException e) {
-      throw new NonRetryableException(e);
+      throw new RetryableException(e);
     }
   }
 
@@ -68,7 +68,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     try {
       jobPersistence.failJob(input.getJobId());
     } catch (final IOException e) {
-      throw new NonRetryableException(e);
+      throw new RetryableException(e);
     }
   }
 
@@ -77,7 +77,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     try {
       jobPersistence.failAttempt(input.getJobId(), input.getAttemptId());
     } catch (final IOException e) {
-      throw new NonRetryableException(e);
+      throw new RetryableException(e);
     }
   }
 
@@ -86,7 +86,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     try {
       jobPersistence.cancelJob(input.getJobId());
     } catch (final IOException e) {
-      throw new NonRetryableException(e);
+      throw new RetryableException(e);
     }
   }
 

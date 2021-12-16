@@ -1,9 +1,13 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers.temporal.scheduling.activities;
 
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.ConnectionHelper;
-import io.airbyte.workers.temporal.exception.NonRetryableException;
+import io.airbyte.workers.temporal.exception.RetryableException;
 import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActivity.ConnectionDeletionInput;
 import java.io.IOException;
 import java.util.UUID;
@@ -42,16 +46,17 @@ public class ConnectionDeletionActivityTest {
         .when(mConnectionHelper).deleteConnection(input.getConnectionId());
 
     Assertions.assertThatThrownBy(() -> connectionDeletionActivity.deleteConnection(input))
-        .isInstanceOf(NonRetryableException.class)
+        .isInstanceOf(RetryableException.class)
         .hasCauseInstanceOf(JsonValidationException.class);
 
     Assertions.assertThatThrownBy(() -> connectionDeletionActivity.deleteConnection(input))
-        .isInstanceOf(NonRetryableException.class)
+        .isInstanceOf(RetryableException.class)
         .hasCauseInstanceOf(ConfigNotFoundException.class);
 
     Assertions.assertThatThrownBy(() -> connectionDeletionActivity.deleteConnection(input))
-        .isInstanceOf(NonRetryableException.class)
+        .isInstanceOf(RetryableException.class)
         .hasCauseInstanceOf(IOException.class);
 
   }
+
 }

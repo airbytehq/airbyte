@@ -613,9 +613,6 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public JobInfoRead cancelJob(final JobIdRequestBody jobIdRequestBody) {
     if (featureFlags.usesNewScheduler()) {
-      // TODO: update to a new endpoint with the connection. We don't care about the job id because there
-      // is a 1:1 relationship between connection
-      // and job.
       return execute(() -> schedulerHandler.createNewSchedulerCancellation(jobIdRequestBody.getId()));
     }
 
