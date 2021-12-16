@@ -27,7 +27,6 @@ import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerException;
-import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
@@ -221,27 +220,29 @@ public abstract class AbstractSourceConnectorTest {
   }
 
   private AirbyteSource prepareAirbyteSource(ResourceRequirements resourceRequirements) {
+    var workerConfigs = new WorkerConfigs(new EnvConfigs());
     var integrationLauncher = resourceRequirements == null
         ? new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements())
         : new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, resourceRequirements);
-    return new DefaultAirbyteSource(integrationLauncher);
+    return new DefaultAirbyteSource(workerConfigs, integrationLauncher);
   }
 
   private static Map<String, String> prepareResourceRequestMapBySystemProperties() {
     var cpuLimit = System.getProperty(CPU_LIMIT_FIELD_NAME);
     var memoryLimit = System.getProperty(MEMORY_LIMIT_FIELD_NAME);
+    var workerConfigs = new WorkerConfigs(new EnvConfigs());
     if (cpuLimit.isBlank() || cpuLimit.isEmpty()) {
-      cpuLimit = WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuLimit();
+      cpuLimit = workerConfigs.getResourceRequirements().getCpuLimit();
     }
     if (memoryLimit.isBlank() || memoryLimit.isEmpty()) {
-      memoryLimit = WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryLimit();
+      memoryLimit = workerConfigs.getResourceRequirements().getMemoryLimit();
     }
     LOGGER.error("cpu limit -->> {}", cpuLimit);
     LOGGER.error("memory limit -->> {}", memoryLimit);
     Map<String, String> result = new HashMap<>();
-    result.put(CPU_REQUEST_FIELD_NAME, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuRequest());
+    result.put(CPU_REQUEST_FIELD_NAME, workerConfigs.getResourceRequirements().getCpuRequest());
     result.put(CPU_LIMIT_FIELD_NAME, cpuLimit);
-    result.put(MEMORY_REQUEST_FIELD_NAME, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryRequest());
+    result.put(MEMORY_REQUEST_FIELD_NAME, workerConfigs.getResourceRequirements().getMemoryRequest());
     result.put(MEMORY_LIMIT_FIELD_NAME, memoryLimit);
     return result;
   }
