@@ -17,7 +17,7 @@ import { ConnectionConfiguration } from "core/domain/connection";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 
 import { createFormErrorMessage } from "utils/errorStatusMessage";
-import { LogsRequestError } from "../../../../../core/request/LogsRequestError";
+import { LogsRequestError } from "core/request/LogsRequestError";
 
 const Content = styled.div`
   width: 100%;

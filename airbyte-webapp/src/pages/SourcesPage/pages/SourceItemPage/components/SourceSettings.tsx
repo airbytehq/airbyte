@@ -15,6 +15,7 @@ import { JobsLogItem } from "components/JobItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
+import { LogsRequestError } from "core/request/LogsRequestError";
 
 const Content = styled.div`
   max-width: 813px;
@@ -108,7 +109,9 @@ const SourceSettings: React.FC<IProps> = ({
           }}
           selectedConnector={sourceDefinitionSpecification}
         />
-        <JobsLogItem jobInfo={errorStatusRequest?.response} />
+        <JobsLogItem
+          jobInfo={LogsRequestError.extractJobInfo(errorStatusRequest)}
+        />
       </ContentCard>
       <DeleteBlock type="source" onDelete={onDelete} />
     </Content>

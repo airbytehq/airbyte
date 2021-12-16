@@ -1,9 +1,10 @@
 import { ReadShape, Resource, SchemaDetail } from "rest-hooks";
+
 import BaseResource from "./BaseResource";
 import Status from "core/statuses";
 import { ConnectionSpecification } from "core/domain/connection";
 import { JobItem, Logs } from "core/resources/Job";
-import { LogsRequestError } from "../request/LogsRequestError";
+import { LogsRequestError } from "core/request/LogsRequestError";
 
 export type JobInfo = JobItem & {
   logs: Logs;
