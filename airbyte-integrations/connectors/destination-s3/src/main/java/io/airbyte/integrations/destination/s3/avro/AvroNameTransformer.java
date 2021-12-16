@@ -34,7 +34,6 @@ public class AvroNameTransformer extends ExtendedNameTransformer {
             .filter(key -> !key.isBlank())
             .filter(key -> !key.equals("items"))
             .filter(key -> !key.equals("properties"))
-            .filter(key -> !key.equals("format"))
             .collect(Collectors.joining("."));
   }
 
