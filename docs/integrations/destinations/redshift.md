@@ -122,6 +122,7 @@ All Redshift connections are encrypted using SSL
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.3.23 | 2021-12-16 | [\#8855](https://github.com/airbytehq/airbyte/pull/8855) | Add `purgeStagingData` option to enable/disable deleting the staging data |
 | 0.3.22 | 2021-12-15 | [#8607](https://github.com/airbytehq/airbyte/pull/8607) | Accept a path for the staging data |
 | 0.3.21 | 2021-12-10 | [#8562](https://github.com/airbytehq/airbyte/pull/8562) | Moving classes around for better dependency management |
 | 0.3.20 | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count |
