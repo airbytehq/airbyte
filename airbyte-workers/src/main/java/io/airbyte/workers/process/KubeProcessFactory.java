@@ -101,6 +101,7 @@ public class KubeProcessFactory implements ProcessFactory {
     try {
       // used to differentiate source and destination processes with the same id and attempt
       final String podName = createPodName(imageName, jobId, attempt);
+      LOGGER.info("Attempting to start pod = {}", podName);
 
       final int stdoutLocalPort = KubePortManagerSingleton.getInstance().take();
       LOGGER.info("{} stdoutLocalPort = {}", podName, stdoutLocalPort);
@@ -173,7 +174,6 @@ public class KubeProcessFactory implements ProcessFactory {
       imageName = imageName.substring(extra);
       podName = imageName + "-" + suffix;
     }
-    System.out.println(podName);
     final Matcher m = ALPHABETIC.matcher(podName);
     // Since we add sync-UUID as a suffix a couple of lines up, there will always be a substring
     // starting with an alphabetic character.
