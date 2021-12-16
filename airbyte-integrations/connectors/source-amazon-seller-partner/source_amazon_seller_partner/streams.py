@@ -444,11 +444,7 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
     Field definitions: https://sellercentral.amazon.com/help/hub/reference/G202125660
     """
 
-    name = "GET_SELLER_FEEDBACK_DATA"
-    cursor_field = "Date"
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
-
-    region_date_formats = dict(
+    REGION_DATE_FORMAT_MAP = dict(
         # eu
         A2VIGQ35RCS4UG = "D/M/YY", # AE
         A1PA6795UKMFR9 = "D/M/YY", # DE
@@ -474,20 +470,26 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
         A1AM78C64UM0Y8 = "D/M/YY", # MX
     )
 
+    name = "GET_SELLER_FEEDBACK_DATA"
+    cursor_field = "Date"
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.transformer.registerCustomTransform(self.get_transform_function())
 
-      @transformer.registerCustomTransform
-      def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
+    def get_transform_function(self):
+        def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
             if original_value and "format" in field_schema and field_schema["format"] == "date":
-                date_format = self.region_date_formats.get(self.marketplace_ids[0])
+                marketplace_id = self.marketplace_ids[0]
+                date_format = self.region_date_formats.get(marketplace_id)
                 if not date_format:
-                    raise KeyError(f"Region not found for Markeplace ID: {self.marketplace_ids[0]}")
+                    raise KeyError(f"Region date format not found for Markeplace ID: {marketplace_id}")
                 transformed_value = pendulum.from_format(original_value, date_format).to_date_string()
                 return transformed_value
 
             return original_value
-        return transform_function    
+        return transform_function
 
 
 class Orders(IncrementalAmazonSPStream):
