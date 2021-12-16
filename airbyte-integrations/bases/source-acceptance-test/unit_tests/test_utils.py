@@ -2,10 +2,14 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import random
+import string
 from functools import partial
+from unittest.mock import Mock
 
 import pytest
 from source_acceptance_test.utils.compare import make_hashable
+from source_acceptance_test.utils.connector_runner import ConnectorRunner
 
 
 def not_sorted_data():
@@ -164,3 +168,30 @@ def test_exclude_fields():
     output = map(serializer, data)
     for item in output:
         assert "organization_id" not in item
+
+
+def test_read_logs():
+    def binary_generator(lengths):
+
+        data = ""
+        for length in lengths:
+            data += "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(length)) + "\n"
+        data = data.encode()
+        chunk_size = 1024
+
+        while len(data) > chunk_size:
+            yield data[:chunk_size]
+            data = data[chunk_size:]
+        yield data
+
+    class Container:
+        pass
+
+    line_count = 1232
+    line_lengths = [random.randint(0, 1024 * 20) for _ in range(line_count)]
+    Container.wait = Mock(return_value={"StatusCode": 0})
+    Container.logs = Mock(return_value=iter(binary_generator(line_lengths)))
+    lines = [line for line in ConnectorRunner.read(container=Container())]
+    assert line_count == len(lines)
+    for line, length in zip(lines, line_lengths):
+        assert len(line) - 1 == length

@@ -117,13 +117,14 @@ class ConnectorRunner:
         buffer = b""
         exception = ""
         for chunk in container.logs(stdout=True, stderr=True, stream=True, follow=True):
+
             buffer += chunk
             while True:
                 # every chunk can include several lines
                 found = buffer.find(b"\n")
                 if found <= -1:
                     break
-                line = buffer[:found].decode("utf-8")
+                line = buffer[: found + 1].decode("utf-8")
                 if len(exception) > 0 or "Traceback (most recent call last)" in line:
                     exception += line
                 else:
