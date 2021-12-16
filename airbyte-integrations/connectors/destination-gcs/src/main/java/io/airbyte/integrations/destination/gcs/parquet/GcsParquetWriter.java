@@ -109,7 +109,7 @@ public class GcsParquetWriter extends BaseGcsWriter implements S3Writer {
   }
 
   @Override
-  public String getObjectPath() {
+  public String getOutputPath() {
     return objectKey;
   }
 

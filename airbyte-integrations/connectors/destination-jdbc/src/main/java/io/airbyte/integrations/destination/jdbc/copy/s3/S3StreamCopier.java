@@ -106,7 +106,7 @@ public abstract class S3StreamCopier implements StreamCopier {
                 .withHeader(false)
                 .csvSheetGenerator(new StagingDatabaseCsvSheetGenerator())
                 .build();
-        currentFile = writer.getObjectPath();
+        currentFile = writer.getOutputPath();
         stagingWritersByFile.put(currentFile, writer);
       } catch (final IOException e) {
         throw new RuntimeException(e);
@@ -146,7 +146,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   public void copyStagingFileToTemporaryTable() throws Exception {
     LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .", tmpTableName, streamName, schemaName);
     for (final Map.Entry<String, S3Writer> entry : stagingWritersByFile.entrySet()) {
-      final String objectKey = entry.getValue().getObjectPath();
+      final String objectKey = entry.getValue().getOutputPath();
       copyS3CsvFileIntoTable(db, getFullS3Path(s3Config.getBucketName(), objectKey), schemaName, tmpTableName, s3Config);
     }
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
@@ -178,7 +178,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   public void removeFileAndDropTmpTable() throws Exception {
     for (final Map.Entry<String, S3Writer> entry : stagingWritersByFile.entrySet()) {
       final String suffix = entry.getKey();
-      final String objectKey = entry.getValue().getObjectPath();
+      final String objectKey = entry.getValue().getOutputPath();
 
       LOGGER.info("Begin cleaning s3 staging file {}.", objectKey);
       if (s3Client.doesObjectExist(s3Config.getBucketName(), objectKey)) {

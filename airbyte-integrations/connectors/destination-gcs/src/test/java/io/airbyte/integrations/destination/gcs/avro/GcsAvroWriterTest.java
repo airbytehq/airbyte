@@ -40,7 +40,7 @@ class GcsAvroWriterTest {
         mock(Schema.class),
         null);
 
-    assertEquals("fake-bucketPath/fake_namespace/fake_stream/1970_01_01_1234_0.avro", writer.getObjectPath());
+    assertEquals("fake-bucketPath/fake_namespace/fake_stream/1970_01_01_1234_0.avro", writer.getOutputPath());
   }
 
 }

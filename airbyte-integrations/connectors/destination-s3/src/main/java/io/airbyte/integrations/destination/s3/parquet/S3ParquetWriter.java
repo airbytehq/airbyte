@@ -119,7 +119,7 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
   }
 
   @Override
-  public String getObjectPath() {
+  public String getOutputPath() {
     return objectKey;
   }
 

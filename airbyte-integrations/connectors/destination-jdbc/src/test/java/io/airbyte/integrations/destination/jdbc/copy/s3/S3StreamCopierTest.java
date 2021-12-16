@@ -107,7 +107,7 @@ public class S3StreamCopierTest {
         (mock, context) -> {
           // Normally, the S3CsvWriter would return a path that ends in a UUID, but this mock will generate an
           // int ID to make our asserts easier.
-          doReturn(String.format("fakeOutputPath-%05d", csvWriterConstructorArguments.size())).when(mock).getObjectPath();
+          doReturn(String.format("fakeOutputPath-%05d", csvWriterConstructorArguments.size())).when(mock).getOutputPath();
 
           // Mockito doesn't seem to provide an easy way to actually retrieve these arguments later on, so
           // manually store them on construction.
