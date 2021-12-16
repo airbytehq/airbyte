@@ -123,8 +123,7 @@ public class ConfigRepository {
     final StandardSourceDefinition sourceDefinition = persistence.getConfig(
         ConfigSchema.STANDARD_SOURCE_DEFINITION,
         sourceDefinitionId.toString(),
-        StandardSourceDefinition.class
-    );
+        StandardSourceDefinition.class);
 
     if (!MoreBooleans.isTruthy(sourceDefinition.getTombstone()) || includeTombstone) {
       return sourceDefinition;
@@ -163,8 +162,8 @@ public class ConfigRepository {
 
   public List<StandardSourceDefinition> listStandardSourceDefinitions(final boolean includeTombstone) throws JsonValidationException, IOException {
     final List<StandardSourceDefinition> sourceDefinitions = new ArrayList<>();
-    for (final StandardSourceDefinition sourceDefinition :
-        persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class)) {
+    for (final StandardSourceDefinition sourceDefinition : persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION,
+        StandardSourceDefinition.class)) {
       if (!MoreBooleans.isTruthy(sourceDefinition.getTombstone()) || includeTombstone) {
         sourceDefinitions.add(sourceDefinition);
       }
