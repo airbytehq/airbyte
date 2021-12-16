@@ -194,7 +194,7 @@ class ChildSubstream(IncrementalShopifyStream):
         slice_data = stream_slice.get(self.slice_key)
         # sometimes the stream_slice.get(self.slice_key) has the list of records,
         # to avoid data exposition inside the logs, we should get the data we need correctly out of stream_slice.
-        if isinstance(slice_data, list) and self.nested_record_field_name is not None:
+        if isinstance(slice_data, list) and self.nested_record_field_name is not None and len(slice_data) > 0:
             slice_data = slice_data[0].get(self.nested_record_field_name)
 
         self.logger.info(f"Reading {self.name} for {self.slice_key}: {slice_data}")
