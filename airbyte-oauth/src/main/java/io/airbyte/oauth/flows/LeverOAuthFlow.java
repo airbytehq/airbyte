@@ -6,11 +6,8 @@ package io.airbyte.oauth.flows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuth2Flow;
-import io.airbyte.protocol.models.OAuthConfigSpecification;
-import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
@@ -19,7 +16,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Supplier;
 import org.apache.http.client.utils.URIBuilder;
 
 public class LeverOAuthFlow extends BaseOAuth2Flow {
@@ -42,10 +38,6 @@ public class LeverOAuthFlow extends BaseOAuth2Flow {
     super(configRepository, httpClient);
   }
 
-  public LeverOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
-    super(configRepository, httpClient, stateSupplier);
-  }
-
   private String getAudience(JsonNode inputOAuthConfiguration) {
     return String.format("%s/v1/", getBaseApiUrl(inputOAuthConfiguration));
   }
@@ -65,30 +57,8 @@ public class LeverOAuthFlow extends BaseOAuth2Flow {
    * Returns the URL where to retrieve the access token from.
    */
   @Override
-  protected String getAccessTokenUrl() {
-    return ACCESS_TOKEN_URL;
-  }
-
-  @Override
-  public Map<String, Object> completeSourceOAuth(final UUID workspaceId,
-                                                 final UUID sourceDefinitionId,
-                                                 final Map<String, Object> queryParams,
-                                                 final String redirectUrl,
-                                                 final JsonNode inputOAuthConfiguration,
-                                                 final OAuthConfigSpecification oAuthConfigSpecification)
-      throws IOException, ConfigNotFoundException, JsonValidationException {
-    validateInputOAuthConfiguration(oAuthConfigSpecification, inputOAuthConfiguration);
-    final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
-    return formatOAuthOutput(
-        oAuthParamConfig,
-        completeOAuthFlow(
-            getClientIdUnsafe(oAuthParamConfig),
-            getClientSecretUnsafe(oAuthParamConfig),
-            extractCodeParameter(queryParams),
-            redirectUrl,
-            oAuthParamConfig,
-            String.format(ACCESS_TOKEN_URL, getBaseAuthUrl(inputOAuthConfiguration))),
-        oAuthConfigSpecification);
+  protected String getAccessTokenUrl(JsonNode inputOAuthConfiguration) {
+    return String.format(ACCESS_TOKEN_URL, getBaseAuthUrl(inputOAuthConfiguration));
   }
 
   @Override
