@@ -11,7 +11,9 @@ import pendulum
 import pytest
 import requests
 import vcr
-from source_linnworks.streams import IncrementalLinnworksStream, ProcessedOrders
+from airbyte_cdk.models.airbyte_protocol import SyncMode
+from airbyte_cdk.sources.streams.http.http import HttpSubStream
+from source_linnworks.streams import IncrementalLinnworksStream, ProcessedOrderDetails, ProcessedOrders
 
 
 @pytest.fixture
@@ -93,10 +95,10 @@ def date(*args):
     [
         (None, None, 24, date(2050, 1, 1), date(2050, 1, 2)),
         (date(2050, 1, 2), None, 48, date(2050, 1, 1), date(2050, 1, 3)),
-        (None, {"dReceivedDate": date(2050, 1, 4)}, 1, date(2050, 1, 4), date(2050, 1, 4)),
+        (None, {"dProcessedOn": date(2050, 1, 4)}, 1, date(2050, 1, 4), date(2050, 1, 4)),
         (
             date(2050, 1, 5),
-            {"dReceivedDate": date(2050, 1, 4)},
+            {"dProcessedOn": date(2050, 1, 4)},
             48,
             date(2050, 1, 4),
             date(2050, 1, 6),
@@ -104,7 +106,7 @@ def date(*args):
         (
             # Yearly
             date(2052, 1, 1),
-            {"dReceivedDate": date(2050, 1, 1)},
+            {"dProcessedOn": date(2050, 1, 1)},
             25,
             date(2050, 1, 1),
             date(2052, 1, 2),
@@ -112,7 +114,7 @@ def date(*args):
         (
             # Monthly
             date(2050, 4, 1),
-            {"dReceivedDate": date(2050, 1, 1)},
+            {"dProcessedOn": date(2050, 1, 1)},
             13,
             date(2050, 1, 1),
             date(2050, 4, 2),
@@ -120,7 +122,7 @@ def date(*args):
         (
             # Weekly
             date(2050, 1, 31),
-            {"dReceivedDate": date(2050, 1, 1)},
+            {"dProcessedOn": date(2050, 1, 1)},
             5,
             date(2050, 1, 1),
             date(2050, 2, 1),
@@ -128,7 +130,7 @@ def date(*args):
         (
             # Daily
             date(2050, 1, 1, 23, 59, 59),
-            {"dReceivedDate": date(2050, 1, 1)},
+            {"dProcessedOn": date(2050, 1, 1)},
             24,
             date(2050, 1, 1),
             date(2050, 1, 2),
@@ -213,3 +215,34 @@ def test_processed_orders_request_cache(patch_incremental_base_class, mocker):
         serializer="yaml",
         match_on=["method", "scheme", "host", "port", "path", "query", "body"],
     )
+
+
+@pytest.mark.parametrize(
+    ("count", "stream_state"),
+    [
+        (5, None),
+        (205, None),
+        (5, {"ProcessedDateTime": "a-date"}),
+    ],
+)
+def test_processed_order_details_stream_slices(patch_incremental_base_class, mocker, count, stream_state):
+    parent_stream_slices = MagicMock(return_value=[{"parent": {"pkOrderID": str(n)}} for n in range(count)])
+    mocker.patch.object(HttpSubStream, "stream_slices", parent_stream_slices)
+
+    stream = ProcessedOrderDetails()
+    expected_slices = [[str(m) for m in range(count)[i : i + stream.page_size]] for i in range(0, count, stream.page_size)]
+
+    stream_slices = stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state=stream_state)
+
+    assert list(stream_slices) == list(expected_slices)
+
+    actual_state = parent_stream_slices.call_args.kwargs["stream_state"]
+    if actual_state:
+        assert actual_state["dProcessedOn"] == stream_state["ProcessedDateTime"]
+
+
+def test_processed_order_details_request_body_data(patch_incremental_base_class):
+    stream = ProcessedOrderDetails()
+    request_body_data = stream.request_body_data(None, ["abc", "def", "ghi"])
+
+    assert request_body_data == {"pkOrderIds": '["abc","def","ghi"]'}
