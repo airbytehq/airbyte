@@ -1,7 +1,7 @@
 import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
+import { Navigate, Route, Routes } from "react-router-dom";
 import styled from "styled-components";
-import { Redirect, Route, Switch } from "react-router";
 
 import useConnector from "hooks/services/useConnector";
 import MainPageWithScroll from "components/MainPageWithScroll";
@@ -9,7 +9,7 @@ import PageTitle from "components/PageTitle";
 import LoadingPage from "components/LoadingPage";
 import HeadTitle from "components/HeadTitle";
 import SideMenu from "components/SideMenu";
-import { Routes } from "pages/routes";
+import { RoutePaths } from "pages/routes";
 import useRouter from "hooks/useRouter";
 import NotificationPage from "./pages/NotificationPage";
 import ConfigurationsPage from "./pages/ConfigurationsPage";
@@ -37,6 +37,15 @@ type SettingsPageProps = {
   pageConfig?: PageConfig;
 };
 
+export const SettingsRoute = {
+  Account: "account",
+  Destination: "destination",
+  Source: "source",
+  Configuration: "configuration",
+  Notifications: "notifications",
+  Metrics: "metrics",
+} as const;
+
 const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   const { push, pathname } = useRouter();
   const { countNewSourceVersion, countNewDestinationVersion } = useConnector();
@@ -45,34 +54,34 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
     {
       routes: [
         {
-          path: `${Routes.Settings}${Routes.Account}`,
+          path: `${SettingsRoute.Account}`,
           name: <FormattedMessage id="settings.account" />,
           component: AccountPage,
         },
         {
-          path: `${Routes.Settings}${Routes.Source}`,
+          path: `${SettingsRoute.Source}`,
           name: <FormattedMessage id="tables.sources" />,
           indicatorCount: countNewSourceVersion,
           component: SourcesPage,
         },
         {
-          path: `${Routes.Settings}${Routes.Destination}`,
+          path: `${SettingsRoute.Destination}`,
           name: <FormattedMessage id="tables.destinations" />,
           indicatorCount: countNewDestinationVersion,
           component: DestinationsPage,
         },
         {
-          path: `${Routes.Settings}${Routes.Configuration}`,
+          path: `${SettingsRoute.Configuration}`,
           name: <FormattedMessage id="admin.configuration" />,
           component: ConfigurationsPage,
         },
         {
-          path: `${Routes.Settings}${Routes.Notifications}`,
+          path: `${SettingsRoute.Notifications}`,
           name: <FormattedMessage id="settings.notifications" />,
           component: NotificationPage,
         },
         {
-          path: `${Routes.Settings}${Routes.Metrics}`,
+          path: `${SettingsRoute.Metrics}`,
           name: <FormattedMessage id="settings.metrics" />,
           component: MetricsPage,
         },
@@ -99,25 +108,31 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
 
         <MainView>
           <Suspense fallback={<LoadingPage />}>
-            <Switch>
+            <Routes>
               {menuItems.flatMap((menuItem) =>
-                menuItem.routes.map((route) => (
+                menuItem.routes.map(({ path, component: Component }) => (
                   <Route
-                    key={`${route.path}`}
-                    path={`${route.path}`}
-                    component={route.component}
+                    key={`${path}`}
+                    path={`${path}`}
+                    element={<Component />}
                   />
                 ))
               )}
 
-              <Redirect
-                to={
-                  firstRoute
-                    ? `${menuItems?.[0].routes?.[0]?.path}`
-                    : Routes.Root
+              <Route
+                path="*"
+                element={
+                  <Navigate
+                    to={
+                      firstRoute
+                        ? `${menuItems?.[0].routes?.[0]?.path}`
+                        : RoutePaths.Root
+                    }
+                    replace
+                  />
                 }
               />
-            </Switch>
+            </Routes>
           </Suspense>
         </MainView>
       </Content>

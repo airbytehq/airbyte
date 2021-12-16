@@ -4,7 +4,6 @@ import { useResource } from "rest-hooks";
 
 import PageTitle from "components/PageTitle";
 import SourceForm from "./components/SourceForm";
-import { Routes } from "../../../routes";
 import useRouter from "hooks/useRouter";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import useSource from "hooks/services/useSourceHook";
@@ -46,7 +45,7 @@ const CreateSourcePage: React.FC = () => {
       setSuccessRequest(true);
       setTimeout(() => {
         setSuccessRequest(false);
-        push(`${Routes.Source}/${result.sourceId}`);
+        push(`../${result.sourceId}`);
       }, 2000);
     } catch (e) {
       setErrorStatusRequest(e);
