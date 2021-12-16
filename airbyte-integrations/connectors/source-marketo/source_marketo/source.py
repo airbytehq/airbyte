@@ -2,8 +2,9 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-
 import csv
+import datetime
+import io
 import json
 from abc import ABC
 from time import sleep
@@ -59,6 +60,17 @@ class MarketoStream(HttpStream, ABC):
 
         for record in data:
             yield record
+
+    def normalize_datetime(self, dt: str, format="%Y-%m-%dT%H:%M:%SZ%z"):
+        """
+        Convert '2018-09-07T17:37:18Z+0000' -> '2018-09-07T17:37:18Z'
+        """
+        try:
+            res = datetime.datetime.strptime(dt, format)
+        except ValueError:
+            self.logger.warning("date-time field in unexpected format: '%s'", dt)
+            return dt
+        return to_datetime_str(res)
 
 
 class IncrementalMarketoStream(MarketoStream):
@@ -202,27 +214,25 @@ class MarketoExportBase(IncrementalMarketoStream):
         :return an iterable containing each record in the response
         """
 
-        list_response = response.text.rstrip("\n").split("\n")
-
-        headers = list_response[0].split(",")
-
+        default_prop = {"type": ["null", "string"]}
         schema = self.get_json_schema()["properties"]
 
-        for values in list_response[1:]:
-            record = {
-                headers[i]: format_value(value, schema[headers[i]])
-                for i, value in enumerate(next(csv.reader([values], skipinitialspace=True)))
-            }
+        fp = io.StringIO(response.text)
+        reader = csv.DictReader(fp)
+        for record in reader:
+            new_record = {**record}
+            attributes = json.loads(new_record.pop("attributes", "{}"))
+            for key, value in attributes.items():
+                key = clean_string(key)
+                new_record[key] = value
 
-            if "attributes" in headers:
-                attributes_records = {
-                    clean_string(key): format_value(value, schema[clean_string(key)])
-                    for key, value in json.loads(record["attributes"]).items()
-                }
-                record.update(attributes_records)
-                record.pop("attributes")
-
-            yield record
+            for key, value in new_record.items():
+                if key not in schema:
+                    self.logger.warning("Field '%s' not found in stream '%s' spec", key, self.name)
+                prop = schema.get(key, default_prop)
+                value = format_value(value, prop)
+                new_record[key] = value
+            yield new_record
 
     def read_records(
         self,
@@ -336,13 +346,9 @@ class Activities(MarketoExportBase):
             "activityDate": {"type": ["null", "string"], "format": "date-time"},
             "activityTypeId": {"type": ["null", "integer"]},
             "campaignId": {"type": ["null", "integer"]},
-            "attributes": {"type": ["null", "string"]},
+            "primaryAttributeValueId": {"type": ["null", "string"]},
+            "primaryAttributeValue": {"type": ["null", "string"]},
         }
-
-        if "primaryAttribute" in self.activity:
-            properties["primaryAttributeValue"] = {"type": ["null", "string"]}
-            properties["primaryAttributeName"] = {"type": ["null", "string"]}
-            properties["primaryAttributeValueId"] = {"type": ["null", "string"]}
 
         if "attributes" in self.activity:
             for attr in self.activity["attributes"]:
@@ -436,7 +442,8 @@ class Programs(IncrementalMarketoStream):
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         for record in super().parse_response(response, stream_state, **kwargs):
             # delete +00:00 part from the end of createdAt and updatedAt
-            record["updatedAt"], record["createdAt"] = record["updatedAt"][:-5], record["createdAt"][:-5]
+            record["updatedAt"] = self.normalize_datetime(record["updatedAt"])
+            record["createdAt"] = self.normalize_datetime(record["createdAt"])
             yield record
 
 

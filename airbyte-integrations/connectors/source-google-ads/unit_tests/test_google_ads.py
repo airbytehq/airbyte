@@ -116,7 +116,7 @@ def test_get_date_params():
         conversion_window_days=mock_conversion_window_days,
         start_date=mock_start_date,
         api=MockGoogleAdsClient(SAMPLE_CONFIG),
-        time_zone="local"
+        time_zone="local",
     )
 
     start_date, end_date = IncrementalGoogleAdsStream(**incremental_stream_config).get_date_params(
@@ -127,9 +127,9 @@ def test_get_date_params():
 
 
 def test_get_date_params_with_time_zone():
-    time_zone_chatham = Timezone('Pacific/Chatham')  # UTC+12:45
+    time_zone_chatham = Timezone("Pacific/Chatham")  # UTC+12:45
     mock_start_date_chatham = pendulum.today(tz=time_zone_chatham).subtract(days=1).to_date_string()
-    time_zone_honolulu = Timezone('Pacific/Honolulu')  # UTC-10:00
+    time_zone_honolulu = Timezone("Pacific/Honolulu")  # UTC-10:00
     mock_start_date_honolulu = pendulum.today(tz=time_zone_honolulu).subtract(days=1).to_date_string()
 
     mock_conversion_window_days = 14
@@ -138,16 +138,13 @@ def test_get_date_params_with_time_zone():
         conversion_window_days=mock_conversion_window_days,
         start_date=mock_start_date_chatham,
         api=MockGoogleAdsClient(SAMPLE_CONFIG),
-        time_zone=time_zone_chatham
+        time_zone=time_zone_chatham,
     )
     start_date_chatham, end_date_chatham = IncrementalGoogleAdsStream(**incremental_stream_config).get_date_params(
         stream_slice={"segments.date": mock_start_date_chatham}, cursor_field="segments.date"
     )
 
-    incremental_stream_config.update({
-        'start_date': mock_start_date_honolulu,
-        'time_zone': time_zone_honolulu
-    })
+    incremental_stream_config.update({"start_date": mock_start_date_honolulu, "time_zone": time_zone_honolulu})
     start_date_honolulu, end_date_honolulu = IncrementalGoogleAdsStream(**incremental_stream_config).get_date_params(
         stream_slice={"segments.date": mock_start_date_honolulu}, cursor_field="segments.date"
     )
