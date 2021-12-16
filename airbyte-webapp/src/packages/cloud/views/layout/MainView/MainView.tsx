@@ -6,7 +6,7 @@ import { LoadingPage } from "components";
 
 import SideBar from "packages/cloud/views/layout/SideBar";
 import { ErrorBoundary } from "./ErrorBoundary";
-import { NotFoundView } from "views/common/StartOverErrorView";
+import { StartOverErrorView } from "views/common/StartOverErrorView";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 
 const MainContainer = styled.div`
@@ -26,10 +26,10 @@ const Content = styled.div`
 
 const MainView: React.FC = ({ children }) => (
   <MainContainer>
-    <ErrorBoundary errorComponent={<NotFoundView />}>
+    <ErrorBoundary errorComponent={<StartOverErrorView />}>
       <SideBar />
       <Content>
-        <ResourceNotFoundErrorBoundary errorComponent={<NotFoundView />}>
+        <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
           <React.Suspense fallback={LoadingPage}>
             {children ?? <Outlet />}
           </React.Suspense>

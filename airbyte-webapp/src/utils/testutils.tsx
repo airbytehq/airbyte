@@ -2,7 +2,7 @@ import React from "react";
 import { render as rtlRender, RenderResult } from "@testing-library/react";
 import { ThemeProvider } from "styled-components";
 import { History } from "history";
-import { BrowserRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router-dom";
 import { IntlProvider } from "react-intl";
 
 import en from "locales/en.json";
@@ -27,9 +27,9 @@ export function render(
     return (
       <ThemeProvider theme={{}}>
         <IntlProvider locale="en" messages={en}>
-          <ConfigServiceProvider defaultConfig={defaultConfig} providers={[]}>
+          <ConfigServiceProvider defaultConfig={defaultConfig}>
             <FeatureService>
-              <BrowserRouter>{children}</BrowserRouter>
+              <MemoryRouter>{children}</MemoryRouter>
             </FeatureService>
           </ConfigServiceProvider>
         </IntlProvider>

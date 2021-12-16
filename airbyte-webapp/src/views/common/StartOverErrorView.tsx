@@ -10,7 +10,7 @@ const ResetSection = styled.div`
   margin-top: 30px;
 `;
 
-export const NotFoundView: React.FC<{
+export const StartOverErrorView: React.FC<{
   message?: string;
   onReset?: () => void;
 }> = ({ message, onReset }) => {
