@@ -9,6 +9,8 @@ bases:
 images:
   - name: airbyte/db
     newTag: 0.33.12-alpha
+  - name: airbyte/bootloader
+    newTag: 0.33.12-alpha
   - name: airbyte/scheduler
     newTag: 0.33.12-alpha
   - name: airbyte/server
