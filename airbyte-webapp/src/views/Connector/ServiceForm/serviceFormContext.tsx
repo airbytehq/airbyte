@@ -12,6 +12,7 @@ import {
   makeConnectionConfigurationPath,
   serverProvidedOauthPaths,
 } from "./utils";
+import { ServiceFormValues } from "./types";
 
 type Context = {
   formType: "source" | "destination";
@@ -22,6 +23,7 @@ type Context = {
   isAuthFlowSelected?: boolean;
   isRequestConnectorModalOpen: boolean;
   widgetsInfo: WidgetConfigMap;
+  getValues: (values: ServiceFormValues) => ServiceFormValues;
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
   unfinishedFlows: Record<string, { startValue: string; id: number | string }>;
   addUnfinishedFlow: (key: string, info?: Record<string, unknown>) => void;
@@ -35,6 +37,7 @@ const context: Context = {
   isRequestConnectorModalOpen: false,
   widgetsInfo: {},
   authFieldsToHide: [],
+  getValues: (values) => values,
   setUiWidgetsInfo: (_path: string, _value: Record<string, unknown>) => ({}),
   unfinishedFlows: {},
   addUnfinishedFlow: (_key: string, _info?: Record<string, unknown>) => ({}),
@@ -52,6 +55,7 @@ const ServiceFormContextProvider: React.FC<{
   isLoadingSchema?: boolean;
   serviceType?: string;
   availableServices: ConnectorDefinition[];
+  getValues: (values: ServiceFormValues) => ServiceFormValues;
   selectedConnector?: ConnectorDefinitionSpecification;
   isEditMode?: boolean;
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
@@ -62,6 +66,7 @@ const ServiceFormContextProvider: React.FC<{
   widgetsInfo,
   setUiWidgetsInfo,
   selectedConnector,
+  getValues,
   ...props
 }) => {
   const selectedService = availableServices.find(
@@ -94,6 +99,7 @@ const ServiceFormContextProvider: React.FC<{
       widgetsInfo,
       isAuthFlowSelected,
       authFieldsToHide: isAuthFlowSelected ? authFieldsToHide : [],
+      getValues,
       setUiWidgetsInfo,
       selectedService,
       selectedConnector,
@@ -122,6 +128,7 @@ const ServiceFormContextProvider: React.FC<{
     props,
     widgetsInfo,
     selectedConnector,
+    getValues,
     isAuthFlowSelected,
     authFieldsToHide,
     selectedService,
