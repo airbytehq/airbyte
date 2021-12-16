@@ -94,9 +94,9 @@ public class JsonToAvroSchemaConverter {
   }
 
   public Schema getAvroSchema(final JsonNode jsonSchema,
-      final String name,
-      @Nullable final String namespace,
-      final boolean appendAirbyteFields) {
+                              final String name,
+                              @Nullable final String namespace,
+                              final boolean appendAirbyteFields) {
     return getAvroSchema(jsonSchema, name, namespace, appendAirbyteFields, true);
   }
 
@@ -265,15 +265,6 @@ public class JsonToAvroSchemaConverter {
       if (!nonNullFieldTypes.contains(NULL_SCHEMA)) {
         nonNullFieldTypes.add(0, NULL_SCHEMA);
       }
-      // Logical types are converted to a union of logical type itself and string. The purpose is to
-      // default the logical type field to a string, if the value of the logical type field is invalid and
-      // cannot be properly processed.
-      //@TODO
-//      if ((nonNullFieldTypes
-//          .stream().anyMatch(schema -> schema.getLogicalType() != null)) &&
-//          (!nonNullFieldTypes.contains(STRING_SCHEMA))) {
-//        nonNullFieldTypes.add(STRING_SCHEMA);
-//      }
       return Schema.createUnion(nonNullFieldTypes);
     }
   }

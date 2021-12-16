@@ -34,13 +34,13 @@ import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.integrations.destination.gcs.GcsS3Helper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.integrations.destination.gcs.GcsS3Helper;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -107,14 +107,16 @@ class BigQueryDenormalizedGscDestinationTest {
 
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
-          "Must provide path to a big query credentials file. By default {module-root}/"+CREDENTIALS_PATH+". Override by setting setting path with the CREDENTIALS_PATH constant.");
+          "Must provide path to a big query credentials file. By default {module-root}/" + CREDENTIALS_PATH
+              + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
     final String credentialsJsonString = new String(Files.readAllBytes(CREDENTIALS_PATH));
     final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
     final JsonNode credentialsGcsJson = Jsons.deserialize(credentialsJsonString).get(BigQueryConsts.GCS_CONFIG);
 
     final String projectId = credentialsJson.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
-    final ServiceAccountCredentials credentials = ServiceAccountCredentials.fromStream(new ByteArrayInputStream(credentialsJson.toString().getBytes()));
+    final ServiceAccountCredentials credentials =
+        ServiceAccountCredentials.fromStream(new ByteArrayInputStream(credentialsJson.toString().getBytes()));
     bigquery = BigQueryOptions.newBuilder()
         .setProjectId(projectId)
         .setCredentials(credentials)
@@ -136,18 +138,18 @@ class BigQueryDenormalizedGscDestinationTest {
 
     final JsonNode credentialFromSecretFile = credentialsGcsJson.get(BigQueryConsts.CREDENTIAL);
     final JsonNode credential = Jsons.jsonNode(ImmutableMap.builder()
-            .put(BigQueryConsts.CREDENTIAL_TYPE, credentialFromSecretFile.get(BigQueryConsts.CREDENTIAL_TYPE))
-            .put(BigQueryConsts.HMAC_KEY_ACCESS_ID, credentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_ID))
-            .put(BigQueryConsts.HMAC_KEY_ACCESS_SECRET, credentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_SECRET))
-            .build());
+        .put(BigQueryConsts.CREDENTIAL_TYPE, credentialFromSecretFile.get(BigQueryConsts.CREDENTIAL_TYPE))
+        .put(BigQueryConsts.HMAC_KEY_ACCESS_ID, credentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_ID))
+        .put(BigQueryConsts.HMAC_KEY_ACCESS_SECRET, credentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_SECRET))
+        .build());
 
     final JsonNode loadingMethod = Jsons.jsonNode(ImmutableMap.builder()
-            .put(BigQueryConsts.METHOD, BigQueryConsts.GCS_STAGING)
-            .put(BigQueryConsts.KEEP_GCS_FILES, BigQueryConsts.KEEP_GCS_FILES_VAL)
-            .put(BigQueryConsts.GCS_BUCKET_NAME, credentialsGcsJson.get(BigQueryConsts.GCS_BUCKET_NAME))
-            .put(BigQueryConsts.GCS_BUCKET_PATH, credentialsGcsJson.get(BigQueryConsts.GCS_BUCKET_PATH).asText() + System.currentTimeMillis())
-            .put(BigQueryConsts.CREDENTIAL, credential)
-            .build());
+        .put(BigQueryConsts.METHOD, BigQueryConsts.GCS_STAGING)
+        .put(BigQueryConsts.KEEP_GCS_FILES, BigQueryConsts.KEEP_GCS_FILES_VAL)
+        .put(BigQueryConsts.GCS_BUCKET_NAME, credentialsGcsJson.get(BigQueryConsts.GCS_BUCKET_NAME))
+        .put(BigQueryConsts.GCS_BUCKET_PATH, credentialsGcsJson.get(BigQueryConsts.GCS_BUCKET_PATH).asText() + System.currentTimeMillis())
+        .put(BigQueryConsts.CREDENTIAL, credential)
+        .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(BigQueryConsts.CONFIG_PROJECT_ID, projectId)
@@ -159,7 +161,7 @@ class BigQueryDenormalizedGscDestinationTest {
         .build());
 
     final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
-            .getGcsDestinationConfig(BigQueryUtils.getGcsJsonNodeConfig(config));
+        .getGcsDestinationConfig(BigQueryUtils.getGcsJsonNodeConfig(config));
     this.s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
 
     tornDown = false;
@@ -193,8 +195,8 @@ class BigQueryDenormalizedGscDestinationTest {
 
     final List<DeleteObjectsRequest.KeyVersion> keysToDelete = new LinkedList<>();
     final List<S3ObjectSummary> objects = s3Client
-            .listObjects(gcsBucketName, gcs_bucket_path)
-            .getObjectSummaries();
+        .listObjects(gcsBucketName, gcs_bucket_path)
+        .getObjectSummaries();
     for (final S3ObjectSummary object : objects) {
       keysToDelete.add(new DeleteObjectsRequest.KeyVersion(object.getKey()));
     }

@@ -7,24 +7,18 @@ package io.airbyte.integrations.destination.bigquery;
 import static java.util.Objects.isNull;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
-import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.QueryJobConfiguration;
-import com.google.cloud.bigquery.Schema;
-import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.common.base.Charsets;
-import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.GcsAvroBigQueryRecordFormatter;
@@ -124,8 +118,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
-
-
   /**
    * Strategy:
    * <p>
@@ -157,7 +149,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   protected Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> getUploaderMap(final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog) throws IOException {
+                                                                                            final ConfiguredAirbyteCatalog catalog)
+      throws IOException {
     final BigQuery bigquery = getBigQuery(config);
 
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();

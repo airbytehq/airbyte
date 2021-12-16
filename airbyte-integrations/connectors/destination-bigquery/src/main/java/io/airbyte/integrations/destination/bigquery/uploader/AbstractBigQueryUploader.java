@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.bigquery.uploader;
 
+import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.printHeapMemoryConsumption;
+
 import com.google.cloud.bigquery.*;
 import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import io.airbyte.commons.string.Strings;
@@ -12,15 +14,12 @@ import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.gcs.writer.CommonWriter;
 import io.airbyte.protocol.models.AirbyteMessage;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
-import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.printHeapMemoryConsumption;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractBigQueryUploader<T extends CommonWriter> {
 
@@ -46,7 +45,7 @@ public abstract class AbstractBigQueryUploader<T extends CommonWriter> {
     this.bigQuery = bigQuery;
     this.recordFormatter = recordFormatter;
   }
-  
+
   protected void postProcessAction(boolean hasFailed) throws Exception {
     // Do nothing by default
   }
@@ -57,29 +56,29 @@ public abstract class AbstractBigQueryUploader<T extends CommonWriter> {
     } catch (final IOException | RuntimeException e) {
       LOGGER.error("Got an error while writing message: {}", e.getMessage(), e);
       LOGGER.error(String.format(
-              "Failed to process a message for job: \n%s, \nAirbyteMessage: %s",
-              writer.toString(),
-              airbyteMessage.getRecord()));
+          "Failed to process a message for job: \n%s, \nAirbyteMessage: %s",
+          writer.toString(),
+          airbyteMessage.getRecord()));
       printHeapMemoryConsumption();
       throw new RuntimeException(e);
     }
   }
 
   public void close(boolean hasFailed, Consumer<AirbyteMessage> outputRecordCollector, AirbyteMessage lastStateMessage) {
-        try {
-          LOGGER.info("Closing connector:" + this);
-          this.writer.close(hasFailed);
+    try {
+      LOGGER.info("Closing connector:" + this);
+      this.writer.close(hasFailed);
 
-          if (!hasFailed) {
-            uploadData(outputRecordCollector, lastStateMessage);
-          }
-          this.postProcessAction(hasFailed);
-          LOGGER.info("Closed connector:" + this);
-        } catch (final Exception e) {
-          LOGGER.error(String.format("Failed to close %s writer, \n details: %s", this, e.getMessage()));
-          printHeapMemoryConsumption();
-          throw new RuntimeException(e);
-        }
+      if (!hasFailed) {
+        uploadData(outputRecordCollector, lastStateMessage);
+      }
+      this.postProcessAction(hasFailed);
+      LOGGER.info("Closed connector:" + this);
+    } catch (final Exception e) {
+      LOGGER.error(String.format("Failed to close %s writer, \n details: %s", this, e.getMessage()));
+      printHeapMemoryConsumption();
+      throw new RuntimeException(e);
+    }
   }
 
   protected void uploadData(Consumer<AirbyteMessage> outputRecordCollector, AirbyteMessage lastStateMessage) throws Exception {
@@ -114,19 +113,19 @@ public abstract class AbstractBigQueryUploader<T extends CommonWriter> {
       partitionIfUnpartitioned(table);
     }
     copyTable(tmpTable, table,
-            syncMode);
+        syncMode);
   }
 
   private void partitionIfUnpartitioned(final TableId destinationTableId) {
     try {
       final QueryJobConfiguration queryConfig = QueryJobConfiguration
-              .newBuilder(
-                      String.format("SELECT max(is_partitioning_column) as is_partitioned FROM `%s.%s.INFORMATION_SCHEMA.COLUMNS` WHERE TABLE_NAME = '%s';",
-                              bigQuery.getOptions().getProjectId(),
-                              destinationTableId.getDataset(),
-                              destinationTableId.getTable()))
-              .setUseLegacySql(false)
-              .build();
+          .newBuilder(
+              String.format("SELECT max(is_partitioning_column) as is_partitioned FROM `%s.%s.INFORMATION_SCHEMA.COLUMNS` WHERE TABLE_NAME = '%s';",
+                  bigQuery.getOptions().getProjectId(),
+                  destinationTableId.getDataset(),
+                  destinationTableId.getTable()))
+          .setUseLegacySql(false)
+          .build();
       final ImmutablePair<Job, String> result = BigQueryUtils.executeQuery(bigQuery, queryConfig);
       result.getLeft().getQueryResults().getValues().forEach(row -> {
         if (!row.get("is_partitioned").isNull() && row.get("is_partitioned").getStringValue().equals("NO")) {
@@ -139,11 +138,12 @@ public abstract class AbstractBigQueryUploader<T extends CommonWriter> {
           // select query, see:
           // https://cloud.google.com/bigquery/docs/creating-partitioned-tables#create_a_partitioned_table_from_a_query_result
           final QueryJobConfiguration partitionQuery = QueryJobConfiguration
-                  .newBuilder(
-                          getCreatePartitionedTableFromSelectQuery(recordFormatter.getBigQuerySchema(), bigQuery.getOptions().getProjectId(), destinationTableId,
-                                  tmpPartitionTable))
-                  .setUseLegacySql(false)
-                  .build();
+              .newBuilder(
+                  getCreatePartitionedTableFromSelectQuery(recordFormatter.getBigQuerySchema(), bigQuery.getOptions().getProjectId(),
+                      destinationTableId,
+                      tmpPartitionTable))
+              .setUseLegacySql(false)
+              .build();
           BigQueryUtils.executeQuery(bigQuery, partitionQuery);
           // Copying data from a partitioned tmp table into an existing non-partitioned table does not make it
           // partitioned... thus, we force re-create from scratch by completely deleting and creating new
@@ -160,13 +160,13 @@ public abstract class AbstractBigQueryUploader<T extends CommonWriter> {
 
   // https://cloud.google.com/bigquery/docs/managing-tables#copying_a_single_source_table
   private void copyTable(
-          final TableId sourceTableId,
-          final TableId destinationTableId,
-          final JobInfo.WriteDisposition syncMode) {
+                         final TableId sourceTableId,
+                         final TableId destinationTableId,
+                         final JobInfo.WriteDisposition syncMode) {
     final CopyJobConfiguration configuration = CopyJobConfiguration.newBuilder(destinationTableId, sourceTableId)
-            .setCreateDisposition(JobInfo.CreateDisposition.CREATE_IF_NEEDED)
-            .setWriteDisposition(syncMode)
-            .build();
+        .setCreateDisposition(JobInfo.CreateDisposition.CREATE_IF_NEEDED)
+        .setWriteDisposition(syncMode)
+        .build();
 
     final Job job = bigQuery.create(JobInfo.of(configuration));
     final ImmutablePair<Job, String> jobStringImmutablePair = BigQueryUtils.executeQuery(job);
@@ -182,16 +182,16 @@ public abstract class AbstractBigQueryUploader<T extends CommonWriter> {
                                                             final TableId destinationTableId,
                                                             final String tmpPartitionTable) {
     return String.format("create table `%s.%s.%s` (", projectId, destinationTableId.getDataset(), tmpPartitionTable)
-            + schema.getFields().stream()
+        + schema.getFields().stream()
             .map(field -> String.format("%s %s", field.getName(), field.getType()))
             .collect(Collectors.joining(", "))
-            + ") partition by date("
-            + JavaBaseConstants.COLUMN_NAME_EMITTED_AT
-            + ") as select "
-            + schema.getFields().stream()
+        + ") partition by date("
+        + JavaBaseConstants.COLUMN_NAME_EMITTED_AT
+        + ") as select "
+        + schema.getFields().stream()
             .map(Field::getName)
             .collect(Collectors.joining(", "))
-            + String.format(" from `%s.%s.%s`", projectId, destinationTableId.getDataset(), destinationTableId.getTable());
+        + String.format(" from `%s.%s.%s`", projectId, destinationTableId.getDataset(), destinationTableId.getTable());
   }
 
   @Override
@@ -204,4 +204,5 @@ public abstract class AbstractBigQueryUploader<T extends CommonWriter> {
         ", recordFormatter=" + recordFormatter.getClass() +
         '}';
   }
+
 }

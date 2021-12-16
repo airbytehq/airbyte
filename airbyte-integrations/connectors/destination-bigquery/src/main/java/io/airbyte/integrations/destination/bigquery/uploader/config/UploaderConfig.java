@@ -1,8 +1,11 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery.uploader.config;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.Schema;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;

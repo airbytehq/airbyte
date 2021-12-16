@@ -32,7 +32,8 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
     Map<UploaderType, BigQueryRecordFormatter> formatterMap = new HashMap<>();
     formatterMap.put(UploaderType.STANDARD, new DefaultBigQueryDenormalizedRecordFormatter(jsonSchema, getNamingResolver()));
     formatterMap.put(UploaderType.AVRO, new GcsBigQueryDenormalizedRecordFormatter(jsonSchema, getNamingResolver()));
-    return formatterMap;  }
+    return formatterMap;
+  }
 
   @Override
   protected boolean isDefaultAirbyteTmpTableSchema() {

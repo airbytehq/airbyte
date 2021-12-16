@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery.formatter;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -7,31 +11,32 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 
 public abstract class BigQueryRecordFormatter {
 
-    private Schema bigQuerySchema;
-    protected final StandardNameTransformer namingResolver;
-    protected final JsonNode jsonSchema;
+  private Schema bigQuerySchema;
+  protected final StandardNameTransformer namingResolver;
+  protected final JsonNode jsonSchema;
 
-    public BigQueryRecordFormatter(JsonNode jsonSchema, StandardNameTransformer namingResolver) {
-        this.namingResolver = namingResolver;
-        this.jsonSchema = formatJsonSchema(jsonSchema.deepCopy());
-    }
+  public BigQueryRecordFormatter(JsonNode jsonSchema, StandardNameTransformer namingResolver) {
+    this.namingResolver = namingResolver;
+    this.jsonSchema = formatJsonSchema(jsonSchema.deepCopy());
+  }
 
-    protected JsonNode formatJsonSchema(JsonNode jsonSchema) {
-        // Do nothing by default
-        return jsonSchema;
-    };
+  protected JsonNode formatJsonSchema(JsonNode jsonSchema) {
+    // Do nothing by default
+    return jsonSchema;
+  };
 
-    public abstract JsonNode formatRecord(AirbyteRecordMessage recordMessage);
+  public abstract JsonNode formatRecord(AirbyteRecordMessage recordMessage);
 
-    public Schema getBigQuerySchema() {
-        if (bigQuerySchema == null)
-            bigQuerySchema = getBigQuerySchema(jsonSchema);
-        return bigQuerySchema;
-    }
+  public Schema getBigQuerySchema() {
+    if (bigQuerySchema == null)
+      bigQuerySchema = getBigQuerySchema(jsonSchema);
+    return bigQuerySchema;
+  }
 
-    public JsonNode getJsonSchema() {
-        return jsonSchema;
-    }
+  public JsonNode getJsonSchema() {
+    return jsonSchema;
+  }
 
-    protected abstract Schema getBigQuerySchema(JsonNode jsonSchema);
+  protected abstract Schema getBigQuerySchema(JsonNode jsonSchema);
+
 }

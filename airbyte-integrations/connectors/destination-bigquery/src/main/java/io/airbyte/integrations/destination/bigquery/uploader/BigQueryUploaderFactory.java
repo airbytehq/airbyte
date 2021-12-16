@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery.uploader;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -81,14 +85,14 @@ public class BigQueryUploaderFactory {
   }
 
   private static AbstractGscBigQueryUploader<?> getGcsBigQueryUploader(
-      JsonNode config,
-      ConfiguredAirbyteStream configStream,
-      TableId targetTable,
-      TableId tmpTable,
-      BigQuery bigQuery,
-      JobInfo.WriteDisposition syncMode,
-      BigQueryRecordFormatter formatter,
-      boolean isDefaultAirbyteTmpSchema)
+                                                                       JsonNode config,
+                                                                       ConfiguredAirbyteStream configStream,
+                                                                       TableId targetTable,
+                                                                       TableId tmpTable,
+                                                                       BigQuery bigQuery,
+                                                                       JobInfo.WriteDisposition syncMode,
+                                                                       BigQueryRecordFormatter formatter,
+                                                                       boolean isDefaultAirbyteTmpSchema)
       throws IOException {
 
     final GcsDestinationConfig gcsDestinationConfig =
@@ -112,9 +116,9 @@ public class BigQueryUploaderFactory {
   }
 
   private static GcsAvroWriter initGcsWriter(
-      final GcsDestinationConfig gcsDestinationConfig,
-      final ConfiguredAirbyteStream configuredStream,
-      final JsonNode bigQuerySchema)
+                                             final GcsDestinationConfig gcsDestinationConfig,
+                                             final ConfiguredAirbyteStream configuredStream,
+                                             final JsonNode bigQuerySchema)
       throws IOException {
     final Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
@@ -129,13 +133,13 @@ public class BigQueryUploaderFactory {
   }
 
   private static BigQueryDirectUploader getBigQueryDirectUploader(
-      JsonNode config,
-      TableId targetTable,
-      TableId tmpTable,
-      BigQuery bigQuery,
-      JobInfo.WriteDisposition syncMode,
-      String datasetLocation,
-      BigQueryRecordFormatter formatter) {
+                                                                  JsonNode config,
+                                                                  TableId targetTable,
+                                                                  TableId tmpTable,
+                                                                  BigQuery bigQuery,
+                                                                  JobInfo.WriteDisposition syncMode,
+                                                                  String datasetLocation,
+                                                                  BigQueryRecordFormatter formatter) {
     // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
     final WriteChannelConfiguration writeChannelConfiguration =
         WriteChannelConfiguration.newBuilder(tmpTable)
@@ -168,4 +172,5 @@ public class BigQueryUploaderFactory {
         bigQuery,
         formatter);
   }
+
 }

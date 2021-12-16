@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.getJobErrorMessage;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.BigQuery;
@@ -29,19 +31,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.DestinationSyncMode;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.getJobErrorMessage;
 
 public class BigQueryUtils {
 
@@ -78,11 +77,11 @@ public class BigQueryUtils {
   }
 
   public static void createSchemaAndTableIfNeeded(final BigQuery bigquery,
-                                           final Set<String> existingSchemas,
-                                           final String schemaName,
-                                           final String tmpTableName,
-                                           final String datasetLocation,
-                                           final Schema schema) {
+                                                  final Set<String> existingSchemas,
+                                                  final String schemaName,
+                                                  final String tmpTableName,
+                                                  final String datasetLocation,
+                                                  final Schema schema) {
     if (!existingSchemas.contains(schemaName)) {
       createSchemaTable(bigquery, schemaName, datasetLocation);
       existingSchemas.add(schemaName);
@@ -147,15 +146,15 @@ public class BigQueryUtils {
   public static JsonNode getGcsAvroJsonNodeConfig(final JsonNode config) {
     final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
     final JsonNode gcsJsonNode = Jsons.jsonNode(ImmutableMap.builder()
-            .put(BigQueryConsts.GCS_BUCKET_NAME, loadingMethod.get(BigQueryConsts.GCS_BUCKET_NAME))
-            .put(BigQueryConsts.GCS_BUCKET_PATH, loadingMethod.get(BigQueryConsts.GCS_BUCKET_PATH))
-            .put(BigQueryConsts.GCS_BUCKET_REGION, getDatasetLocation(config))
-            .put(BigQueryConsts.CREDENTIAL, loadingMethod.get(BigQueryConsts.CREDENTIAL))
-            .put(BigQueryConsts.FORMAT, Jsons.deserialize("{\n"
-                    + "  \"format_type\": \"AVRO\",\n"
-                    + "  \"flattening\": \"No flattening\"\n"
-                    + "}"))
-            .build());
+        .put(BigQueryConsts.GCS_BUCKET_NAME, loadingMethod.get(BigQueryConsts.GCS_BUCKET_NAME))
+        .put(BigQueryConsts.GCS_BUCKET_PATH, loadingMethod.get(BigQueryConsts.GCS_BUCKET_PATH))
+        .put(BigQueryConsts.GCS_BUCKET_REGION, getDatasetLocation(config))
+        .put(BigQueryConsts.CREDENTIAL, loadingMethod.get(BigQueryConsts.CREDENTIAL))
+        .put(BigQueryConsts.FORMAT, Jsons.deserialize("{\n"
+            + "  \"format_type\": \"AVRO\",\n"
+            + "  \"flattening\": \"No flattening\"\n"
+            + "}"))
+        .build());
 
     LOGGER.debug("Composed GCS config is: \n" + gcsJsonNode.toPrettyString());
     return gcsJsonNode;
@@ -268,7 +267,7 @@ public class BigQueryUtils {
   public static boolean isKeepFilesInGcs(final JsonNode config) {
     final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
     if (loadingMethod != null && loadingMethod.get(BigQueryConsts.KEEP_GCS_FILES) != null
-            && BigQueryConsts.KEEP_GCS_FILES_VAL
+        && BigQueryConsts.KEEP_GCS_FILES_VAL
             .equals(loadingMethod.get(BigQueryConsts.KEEP_GCS_FILES).asText())) {
       LOGGER.info("All tmp files GCS will be kept in bucket when replication is finished");
       return true;

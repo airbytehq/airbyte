@@ -15,12 +15,11 @@ import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsS3Helper;
 import io.airbyte.integrations.destination.gcs.writer.GscWriter;
 import io.airbyte.protocol.models.AirbyteMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractGscBigQueryUploader<T extends GscWriter> extends AbstractBigQueryUploader<GscWriter> {
 
@@ -62,8 +61,8 @@ public abstract class AbstractGscBigQueryUploader<T extends GscWriter> extends A
 
       // Initialize client that will be used to send requests. This client only needs to be created
       // once, and can be reused for multiple requests.
-      LOGGER.info(String.format("Started copying data from %s GCS "+getFileTypeName()+" file to %s tmp BigQuery table with schema: \n %s",
-              fileLocation, tmpTable, recordFormatter.getBigQuerySchema()));
+      LOGGER.info(String.format("Started copying data from %s GCS " + getFileTypeName() + " file to %s tmp BigQuery table with schema: \n %s",
+          fileLocation, tmpTable, recordFormatter.getBigQuerySchema()));
 
       LoadJobConfiguration configuration = getLoadConfiguration();
 
@@ -71,13 +70,13 @@ public abstract class AbstractGscBigQueryUploader<T extends GscWriter> extends A
       // https://googleapis.dev/java/google-cloud-clients/latest/index.html?com/google/cloud/bigquery/package-summary.html
       // Load the table
       final Job loadJob = this.bigQuery.create(JobInfo.of(configuration));
-      LOGGER.info("Created a new job GCS "+getFileTypeName()+" file to tmp BigQuery table: " + loadJob);
+      LOGGER.info("Created a new job GCS " + getFileTypeName() + " file to tmp BigQuery table: " + loadJob);
 
       // Load data from a GCS parquet file into the table
       // Blocks until this load table job completes its execution, either failing or succeeding.
       BigQueryUtils.waitForJobFinish(loadJob);
 
-      LOGGER.info("Table is successfully overwritten by "+getFileTypeName()+" file loaded from GCS");
+      LOGGER.info("Table is successfully overwritten by " + getFileTypeName() + " file loaded from GCS");
     } catch (final BigQueryException | InterruptedException e) {
       LOGGER.error("Column not added during load append \n" + e.toString());
       throw new RuntimeException("Column not added during load append \n" + e.toString());
@@ -100,8 +99,8 @@ public abstract class AbstractGscBigQueryUploader<T extends GscWriter> extends A
 
     final List<DeleteObjectsRequest.KeyVersion> keysToDelete = new LinkedList<>();
     final List<S3ObjectSummary> objects = s3Client
-            .listObjects(gcsBucketName, gcs_bucket_path)
-            .getObjectSummaries();
+        .listObjects(gcsBucketName, gcs_bucket_path)
+        .getObjectSummaries();
     for (final S3ObjectSummary object : objects) {
       keysToDelete.add(new DeleteObjectsRequest.KeyVersion(object.getKey()));
     }
@@ -116,4 +115,5 @@ public abstract class AbstractGscBigQueryUploader<T extends GscWriter> extends A
     }
     s3Client.shutdown();
   }
+
 }

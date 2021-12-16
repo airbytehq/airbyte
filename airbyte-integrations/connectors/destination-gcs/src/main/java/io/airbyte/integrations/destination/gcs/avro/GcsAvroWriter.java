@@ -24,7 +24,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.UUID;
-
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.GenericData;
@@ -45,10 +44,11 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer, GscWriter,
   private final String gcsFileLocation;
 
   public GcsAvroWriter(final GcsDestinationConfig config,
-      final AmazonS3 s3Client,
-      final ConfiguredAirbyteStream configuredStream,
-      final Timestamp uploadTimestamp,
-      final JsonAvroConverter converter) throws IOException {
+                       final AmazonS3 s3Client,
+                       final ConfiguredAirbyteStream configuredStream,
+                       final Timestamp uploadTimestamp,
+                       final JsonAvroConverter converter)
+      throws IOException {
     this(config, s3Client, configuredStream, uploadTimestamp, converter, null);
   }
 
@@ -61,11 +61,9 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer, GscWriter,
       throws IOException {
     super(config, s3Client, configuredStream);
 
-    Schema schema = (airbyteSchema == null ?
-        GcsUtils.getDefaultAvroSchema(stream.getName(), stream.getNamespace(), true) :
-        new JsonToAvroSchemaConverter().getAvroSchema(airbyteSchema, stream.getName(),
-            stream.getNamespace(), true, false)
-    );
+    Schema schema = (airbyteSchema == null ? GcsUtils.getDefaultAvroSchema(stream.getName(), stream.getNamespace(), true)
+        : new JsonToAvroSchemaConverter().getAvroSchema(airbyteSchema, stream.getName(),
+            stream.getNamespace(), true, false));
     final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.AVRO);
     final String objectKey = String.join("/", outputPrefix, outputFilename);
     gcsFileLocation = String.format("gs://%s/%s", config.getBucketName(), objectKey);
@@ -121,4 +119,5 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer, GscWriter,
   public S3Format getFileFormat() {
     return S3Format.AVRO;
   }
+
 }

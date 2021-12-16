@@ -22,7 +22,6 @@ import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -99,4 +98,5 @@ public class GcsJsonlWriter extends BaseGcsWriter implements S3Writer, GscWriter
   public S3Format getFileFormat() {
     return S3Format.JSONL;
   }
+
 }

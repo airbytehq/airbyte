@@ -108,9 +108,9 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
 
   @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-      final String streamName,
-      final String namespace,
-      final JsonNode streamSchema)
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return new ArrayList<>(retrieveRecordsFromTable(namingResolver.getIdentifier(streamName), namingResolver.getIdentifier(namespace)));
   }

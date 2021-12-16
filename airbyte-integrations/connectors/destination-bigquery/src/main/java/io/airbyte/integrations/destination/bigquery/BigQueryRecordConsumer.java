@@ -24,7 +24,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   private AirbyteMessage lastStateMessage = null;
 
   public BigQueryRecordConsumer(final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap,
-      final Consumer<AirbyteMessage> outputRecordCollector) {
+                                final Consumer<AirbyteMessage> outputRecordCollector) {
     this.uploaderMap = uploaderMap;
     this.outputRecordCollector = outputRecordCollector;
   }

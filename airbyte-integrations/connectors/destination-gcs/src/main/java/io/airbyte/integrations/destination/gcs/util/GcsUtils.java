@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.gcs.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -29,8 +33,8 @@ public class GcsUtils {
   private static final String FORMAT_FIELD = "format";
 
   public static Schema getDefaultAvroSchema(final String name,
-      @Nullable final String namespace,
-      final boolean appendAirbyteFields) {
+                                            @Nullable final String namespace,
+                                            final boolean appendAirbyteFields) {
     LOGGER.info("Default schema.");
     final String stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(name);
     SchemaBuilder.RecordBuilder<Schema> builder = SchemaBuilder.record(stdName);
@@ -56,7 +60,11 @@ public class GcsUtils {
     return assembler.endRecord();
   }
 
-  public static Schema getAvroSchema(JsonNode airbyteSchema, StandardNameTransformer nameTransformer, String name, @Nullable final String namespace, final boolean appendAirbyteFields) {
+  public static Schema getAvroSchema(JsonNode airbyteSchema,
+                                     StandardNameTransformer nameTransformer,
+                                     String name,
+                                     @Nullable final String namespace,
+                                     final boolean appendAirbyteFields) {
     final String stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(name);
     SchemaBuilder.RecordBuilder<Schema> builder = SchemaBuilder.record(stdName);
 

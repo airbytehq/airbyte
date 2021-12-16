@@ -128,4 +128,5 @@ public class GcsParquetWriter extends BaseGcsWriter implements S3Writer, GscWrit
   public S3Format getFileFormat() {
     return S3Format.PARQUET;
   }
+
 }
