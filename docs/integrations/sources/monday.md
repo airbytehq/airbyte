@@ -44,5 +44,6 @@ You can get the API key for Monday by going to Profile picture (bottom left) => 
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.2 | 2021-12-07 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Update titles and descriptions |
 | 0.1.1 | 2021-11-18 | [8016](https://github.com/airbytehq/airbyte/pull/8016) | 🐛 Source Monday: fix pagination and schema bug |
 | 0.1.0 | 2021-11-07 | [7168](https://github.com/airbytehq/airbyte/pull/7168) | 🎉 New Source: Monday |

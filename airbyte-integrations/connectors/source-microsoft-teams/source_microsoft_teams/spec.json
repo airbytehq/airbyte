@@ -9,6 +9,7 @@
     "properties": {
       "period": {
         "type": "string",
+        "title": "Period",
         "description": "Specifies the length of time over which the Team Device Report stream is aggregated. The supported values are: D7, D30, D90, and D180.",
         "examples": ["D7"]
       },
@@ -38,23 +39,23 @@
               "tenant_id": {
                 "title": "Directory (tenant) ID",
                 "type": "string",
-                "description": "Directory (tenant) ID"
+                "description": "A globally unique identifier (GUID) that is different than your organization name or domain. Follow these steps to obtain: open one of the Teams where you belong inside the Teams Application -> Click on the … next to the Team title -> Click on Get link to team -> Copy the link to the team and grab the tenant ID form the URL"
               },
               "client_id": {
-                "title": "Application (client) ID",
+                "title": "Client ID",
                 "type": "string",
-                "description": "Application (client) ID"
+                "description": "The Client ID of your Microsoft Teams developer application."
               },
               "client_secret": {
                 "title": "Client Secret",
                 "type": "string",
-                "description": "Client secret",
+                "description": "The Client Secret of your Microsoft Teams developer application.",
                 "airbyte_secret": true
               },
               "refresh_token": {
                 "title": "Refresh Token",
                 "type": "string",
-                "description": "A refresh token generated using the above client ID and secret",
+                "description": "A Refresh Token to renew the expired Access Token.",
                 "airbyte_secret": true
               }
             }
@@ -75,17 +76,17 @@
               "tenant_id": {
                 "title": "Directory (tenant) ID",
                 "type": "string",
-                "description": "Directory (tenant) ID"
+                "description": "A globally unique identifier (GUID) that is different than your organization name or domain. Follow these steps to obtain: open one of the Teams where you belong inside the Teams Application -> Click on the … next to the Team title -> Click on Get link to team -> Copy the link to the team and grab the tenant ID form the URL"
               },
               "client_id": {
-                "title": "Application (client) ID",
+                "title": "Client ID",
                 "type": "string",
-                "description": "Application (client) ID"
+                "description": "The Client ID of your Microsoft Teams developer application."
               },
               "client_secret": {
                 "title": "Client Secret",
                 "type": "string",
-                "description": "Client secret",
+                "description": "The Client Secret of your Microsoft Teams developer application.",
                 "airbyte_secret": true
               }
             }
