@@ -2,7 +2,7 @@
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/lever-hiriing",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "GitHub Source Spec",
+    "title": "Lever Hiring Source Spec",
     "type": "object",
     "required": [
       "start_date"
@@ -11,25 +11,32 @@
     "properties": {
       "credentials": {
         "title": "Authentication Mechanism",
-        "description": "Choose how to authenticate to GitHub",
+        "description": "Choose how to authenticate to Lever Hiring.",
         "type": "object",
         "oneOf": [
           {
             "type": "object",
             "title": "Authenticate via Lever (OAuth)",
             "required": [
-              "access_token"
+              "refresh_token"
             ],
             "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Client",
+                "enum": ["Client"],
+                "default": "Client",
+                "order": 0
+              },
               "option_title": {
                 "type": "string",
                 "title": "Credentials Title",
                 "description": "OAuth Credentials",
                 "const": "OAuth Credentials"
               },
-              "access_token": {
+              "refresh_token": {
                 "type": "string",
-                "title": "Access Token",
+                "title": "Refresh Token",
                 "description": "OAuth access token",
                 "airbyte_secret": true
               }
@@ -60,16 +67,52 @@
   "authSpecification": {
     "auth_type": "oauth2.0",
     "oauth2Specification": {
-      "rootObject": [
-        "credentials",
-        0
-      ],
-      "oauthFlowInitParameters": [],
-      "oauthFlowOutputParameters": [
-        [
-          "access_token"
-        ]
-      ]
+      "rootObject": ["credentials", 0],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["refresh_token"]]
+    }
+  },
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": ["credentials", "auth_type"],
+    "predicate_value": "Client",
+    "oauth_config_specification": {
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "refresh_token"]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_id"]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_secret"]
+          }
+        }
+      }
     }
   }
 }
