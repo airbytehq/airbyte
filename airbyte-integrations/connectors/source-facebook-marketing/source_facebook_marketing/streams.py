@@ -409,9 +409,6 @@ class AdsInsights(FBMarketingIncrementalStream):
         if self.breakdowns:
             breakdowns_properties = loader.get_schema("ads_insights_breakdowns")["properties"]
             schema["properties"].update({prop: breakdowns_properties[prop] for prop in self.breakdowns})
-        if self.action_breakdowns:
-            action_breakdowns_properties = loader.get_schema("ads_insights_action_breakdowns")["properties"]
-            schema["properties"].update({prop: action_breakdowns_properties[prop] for prop in self.action_breakdowns})
         return schema
 
     @cached_property
