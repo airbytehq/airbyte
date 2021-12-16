@@ -44,7 +44,7 @@ Provide the required S3 info.
 
 Optional parameters:
 * **Bucket Path**
-  * The directory within the S3 bucket to place the staging data. For example, if you set this to `yourFavoriteSubdirectory`, we will place the staging data inside `s3://yourBucket/yourFavoriteSubdirectory`. If not provided, defaults to the root directory.
+  * The directory within the S3 bucket to place the staging data. For example, if you set this to `yourFavoriteSubdirectory`, staging data will be placed inside `s3://yourBucket/yourFavoriteSubdirectory`. If not provided, defaults to the root directory.
 
 ## Notes about Redshift Naming Conventions
 
