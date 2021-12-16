@@ -99,6 +99,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
         case TIME -> putTime(json, columnName, resultSet, colIndex);
         case TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
         case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(json, columnName, resultSet, colIndex);
+        case ARRAY -> putArray(json, columnName, resultSet, colIndex);
         default -> putDefault(json, columnName, resultSet, colIndex);
       }
     }
@@ -135,6 +136,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
       case BOOLEAN -> JsonSchemaPrimitive.BOOLEAN;
       case TINYINT, SMALLINT, INTEGER, BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL -> JsonSchemaPrimitive.NUMBER;
       case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaPrimitive.STRING_BINARY;
+      case ARRAY -> JsonSchemaPrimitive.ARRAY;
       default -> JsonSchemaPrimitive.STRING;
     };
   }
