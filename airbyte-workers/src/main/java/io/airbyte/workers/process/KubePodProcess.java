@@ -229,11 +229,7 @@ public class KubePodProcess extends Process {
         // https://github.com/fabric8io/kubernetes-client/issues/2217
         final Copy copy = new Copy(officialClient);
         copy.copyFileToPod(namespace, podName, INIT_CONTAINER_NAME, contents, containerPath);
-
-        // add a wait for stability until we debug why copyFileToPod isn't working 100% of the time
-        TimeUnit.SECONDS.sleep(2);
-
-      } catch (final IOException | ApiException | InterruptedException e) {
+      } catch (final IOException | ApiException e) {
         throw new RuntimeException(e);
       }
     }
