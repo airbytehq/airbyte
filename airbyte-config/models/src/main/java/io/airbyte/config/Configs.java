@@ -55,11 +55,19 @@ public interface Configs {
 
   String getDatabaseUrl();
 
+  String getJobsDatabaseMinimumFlywayMigrationVersion();
+
+  long getJobsDatabaseInitializationTimeoutMs();
+
   String getConfigDatabaseUser();
 
   String getConfigDatabasePassword();
 
   String getConfigDatabaseUrl();
+
+  String getConfigsDatabaseMinimumFlywayMigrationVersion();
+
+  long getConfigsDatabaseInitializationTimeoutMs();
 
   boolean runDatabaseMigrationOnStartup();
 
