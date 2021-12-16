@@ -21,7 +21,7 @@ logger = AirbyteLogger()
 def default_backoff_handler(max_tries: int, factor: int, **kwargs):
     def log_retry_attempt(details):
         _, exc, _ = sys.exc_info()
-        if exc.response is not None:
+        if exc.response:
             logger.info(f"Status code: {exc.response.status_code}, Response Content: {exc.response.content}")
         logger.info(
             f"Caught retryable error '{str(exc)}' after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
@@ -50,7 +50,7 @@ def user_defined_backoff_handler(max_tries: int, **kwargs):
     def sleep_on_ratelimit(details):
         _, exc, _ = sys.exc_info()
         if isinstance(exc, UserDefinedBackoffException):
-            if exc.response is not None:
+            if exc.response:
                 logger.info(f"Status code: {exc.response.status_code}, Response Content: {exc.response.content}")
             retry_after = exc.backoff
             logger.info(f"Retrying. Sleeping for {retry_after} seconds")
