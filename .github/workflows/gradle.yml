@@ -346,7 +346,7 @@ jobs:
 
       - name: Install Cypress Test Dependencies
         run: |
-          // wait to receive lock (see https://askubuntu.com/questions/132059/how-to-make-a-package-manager-wait-if-another-instance-of-apt-is-running)
+          # wait to receive lock (see https://askubuntu.com/questions/132059/how-to-make-a-package-manager-wait-if-another-instance-of-apt-is-running)
           while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock >/dev/null 2>&1; do
              sleep 1
           done
@@ -454,7 +454,7 @@ jobs:
 
       - name: Install socat (required for port forwarding)
         run: |
-          // wait to receive lock (see https://askubuntu.com/questions/132059/how-to-make-a-package-manager-wait-if-another-instance-of-apt-is-running)
+          # wait to receive lock (see https://askubuntu.com/questions/132059/how-to-make-a-package-manager-wait-if-another-instance-of-apt-is-running)
           while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock >/dev/null 2>&1; do
              sleep 1
           done
