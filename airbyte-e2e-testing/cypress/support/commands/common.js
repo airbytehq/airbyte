@@ -33,13 +33,13 @@ Cypress.Commands.add("openDestinationPage", () => {
 Cypress.Commands.add("openNewSourceForm", () => {
   cy.openSourcePage();
   cy.get("button[data-id='new-source'").click();
-  cy.url().should("eq", `${Cypress.config().baseUrl}/source/new-source`);
+  cy.url().should("include", `/source/new-source`);
 })
 
 Cypress.Commands.add("openNewDestinationForm", () => {
   cy.openDestinationPage();
   cy.get("button[data-id='new-destination'").click();
-  cy.url().should("eq", `${Cypress.config().baseUrl}/destination/new-destination`);
+  cy.url().should("include", `/destination/new-destination`);
 })
 
 Cypress.Commands.add("updateField", (field, value) => {
