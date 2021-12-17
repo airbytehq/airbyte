@@ -29,4 +29,11 @@ public interface S3Writer {
    */
   void close(boolean hasFailed) throws IOException;
 
+  /**
+   * @return The path within the bucket that this writer will create. For example, if it is writing to
+   *         "s3://yourBucket/some/path/to/file.csv", this method would return
+   *         "some/path/to/file.csv".
+   */
+  String getOutputPath();
+
 }

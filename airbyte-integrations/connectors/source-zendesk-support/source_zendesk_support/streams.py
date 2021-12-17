@@ -323,24 +323,6 @@ class IncrementalUnsortedPageStream(IncrementalUnsortedStream, ABC):
         return params
 
 
-class IncrementalUnsortedCursorStream(IncrementalUnsortedStream, ABC):
-    """Stream for loading without sorting but with cursor based pagination"""
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        has_more = response.json().get("meta", {}).get("has_more")
-        if not has_more:
-            self._finished = True
-            return None
-        return response.json().get("meta", {}).get("after_cursor")
-
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(next_page_token=next_page_token, **kwargs)
-        params["page[size]"] = self.page_size
-        if next_page_token:
-            params["page[after]"] = next_page_token
-        return params
-
-
 class FullRefreshStream(IncrementalUnsortedPageStream, ABC):
     """ "Stream for endpoints where there are not any created_at or updated_at fields"""
 
@@ -348,14 +330,21 @@ class FullRefreshStream(IncrementalUnsortedPageStream, ABC):
     cursor_field = SourceZendeskSupportStream.cursor_field
 
 
-class IncrementalSortedCursorStream(IncrementalUnsortedCursorStream, ABC):
+class IncrementalSortedCursorStream(IncrementalUnsortedStream, ABC):
     """Stream for loading sorting data with cursor based pagination"""
 
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(**kwargs)
-        if params:
-            params.update({"sort_by": self.cursor_field, "sort_order": "desc"})
+    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(next_page_token=next_page_token, **kwargs)
+        params.update({"sort_by": self.cursor_field, "sort_order": "desc", "limit": self.page_size})
+
+        if next_page_token:
+            params["cursor"] = next_page_token
         return params
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if self.is_finished:
+            return None
+        return response.json().get("before_cursor")
 
 
 class IncrementalSortedPageStream(IncrementalUnsortedPageStream, ABC):
@@ -368,7 +357,7 @@ class IncrementalSortedPageStream(IncrementalUnsortedPageStream, ABC):
         return params
 
 
-class TicketComments(IncrementalSortedCursorStream):
+class TicketComments(IncrementalSortedPageStream):
     """TicketComments stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_comments/
     ZenDesk doesn't provide API for loading of all comments by one direct endpoints.
     Thus at first we loads all updated tickets and after this tries to load all created/updated
@@ -379,7 +368,7 @@ class TicketComments(IncrementalSortedCursorStream):
     raise_on_http_errors = False
 
     response_list_name = "comments"
-    cursor_field = IncrementalSortedCursorStream.created_at_field
+    cursor_field = IncrementalSortedPageStream.created_at_field
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -475,8 +464,7 @@ class TicketComments(IncrementalSortedCursorStream):
 # 2) pagination and sorting mechanism
 # 3) cursor pagination and sorting mechanism
 # 4) without sorting but with pagination
-# 5) without sorting but with cursor pagination
-# 6) without created_at/updated_at fields
+# 5) without created_at/updated_at fields
 
 # endpoints provide a built-in incremental approach
 
@@ -518,15 +506,15 @@ class Tickets(IncrementalExportStream):
 # endpoints provide a pagination mechanism but we can't manage a response order
 
 
-class Groups(IncrementalUnsortedCursorStream):
+class Groups(IncrementalUnsortedPageStream):
     """Groups stream: https://developer.zendesk.com/api-reference/ticketing/groups/groups/"""
 
 
-class GroupMemberships(IncrementalUnsortedCursorStream):
+class GroupMemberships(IncrementalUnsortedPageStream):
     """GroupMemberships stream: https://developer.zendesk.com/api-reference/ticketing/groups/group_memberships/"""
 
 
-class SatisfactionRatings(IncrementalUnsortedCursorStream):
+class SatisfactionRatings(IncrementalUnsortedPageStream):
     """SatisfactionRatings stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/satisfaction_ratings/
 
     The ZenDesk API for this stream provides the filter "start_time" that can be used for incremental logic
@@ -558,16 +546,8 @@ class TicketForms(IncrementalUnsortedPageStream):
     """TicketForms stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_forms/"""
 
 
-class TicketMetrics(IncrementalUnsortedCursorStream):
+class TicketMetrics(IncrementalUnsortedPageStream):
     """TicketMetric stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metrics/"""
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        # Tickets are ordered chronologically by created date, from newest to oldest.
-        # No need to get next page once cursor passed initial state
-        if self.is_finished:
-            return None
-
-        return super().next_page_token(response)
 
 
 class TicketMetricEvents(IncrementalExportStream):
@@ -576,14 +556,14 @@ class TicketMetricEvents(IncrementalExportStream):
     cursor_field = "time"
 
 
-class Macros(IncrementalSortedCursorStream):
+class Macros(IncrementalSortedPageStream):
     """Macros stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/macros/"""
 
 
 # endpoints provide a cursor pagination and sorting mechanism
 
 
-class TicketAudits(IncrementalUnsortedStream):
+class TicketAudits(IncrementalSortedCursorStream):
     """TicketAudits stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/"""
 
     # can request a maximum of 1,000 results
@@ -593,20 +573,6 @@ class TicketAudits(IncrementalUnsortedStream):
 
     # Root of response is 'audits'. As rule as an endpoint name is equal a response list name
     response_list_name = "audits"
-
-    # This endpoint uses a variant of cursor pagination with some differences from cursor pagination used in other endpoints.
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(next_page_token=next_page_token, **kwargs)
-        params.update({"sort_by": self.cursor_field, "sort_order": "desc", "limit": self.page_size})
-
-        if next_page_token:
-            params["cursor"] = next_page_token
-        return params
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if self.is_finished:
-            return None
-        return response.json().get("before_cursor")
 
 
 # endpoints don't provide the updated_at/created_at fields

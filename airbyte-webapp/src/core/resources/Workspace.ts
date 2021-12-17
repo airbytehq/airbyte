@@ -1,28 +1,7 @@
 import { MutateShape, ReadShape, Resource, SchemaDetail } from "rest-hooks";
+
 import BaseResource from "./BaseResource";
-
-export interface Notification {
-  notificationType: string;
-  sendOnSuccess: boolean;
-  sendOnFailure: boolean;
-  slackConfiguration: {
-    webhook: string;
-  };
-}
-
-export interface Workspace {
-  workspaceId: string;
-  customerId: string;
-  name: string;
-  email: string;
-  slug: string;
-  initialSetupComplete: boolean;
-  anonymousDataCollection: boolean;
-  news: boolean;
-  securityUpdates: boolean;
-  displaySetupWizard: boolean;
-  notifications: Notification[];
-}
+import { Notification, Workspace } from "core/domain/workspace/Workspace";
 
 export default class WorkspaceResource
   extends BaseResource
@@ -60,6 +39,17 @@ export default class WorkspaceResource
     return {
       ...super.detailShape(),
       schema: this,
+    };
+  }
+
+  static getBySlug<T extends typeof Resource>(
+    this: T
+  ): ReadShape<SchemaDetail<Workspace>> {
+    return {
+      ...super.detailShape(),
+      schema: this,
+      fetch: async (body: Readonly<{ slug: string }>): Promise<Workspace> =>
+        await this.fetch("post", `${this.url(body)}/get_by_slug`, body),
     };
   }
 

@@ -2,7 +2,7 @@ describe("Source main actions", () => {
   it("Create new source", () => {
     cy.createTestSource("Test source cypress");
 
-    cy.url().should("include", `${Cypress.config().baseUrl}/source/`);
+    cy.url().should("include", `/source/`);
   });
 
   //TODO: add update source on some other connector or create 1 more user for pg
