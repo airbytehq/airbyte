@@ -42,6 +42,7 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer, GscWriter,
   private final MultiPartOutputStream outputStream;
   private final DataFileWriter<GenericData.Record> dataFileWriter;
   private final String gcsFileLocation;
+  private final String objectKey;
 
   public GcsAvroWriter(final GcsDestinationConfig config,
                        final AmazonS3 s3Client,
@@ -65,7 +66,7 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer, GscWriter,
         : new JsonToAvroSchemaConverter().getAvroSchema(airbyteSchema, stream.getName(),
             stream.getNamespace(), true, false));
     final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.AVRO);
-    final String objectKey = String.join("/", outputPrefix, outputFilename);
+    objectKey = String.join("/", outputPrefix, outputFilename);
     gcsFileLocation = String.format("gs://%s/%s", config.getBucketName(), objectKey);
 
     LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
@@ -118,6 +119,11 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer, GscWriter,
   @Override
   public S3Format getFileFormat() {
     return S3Format.AVRO;
+  }
+
+  @Override
+  public String getOutputPath() {
+    return objectKey;
   }
 
 }

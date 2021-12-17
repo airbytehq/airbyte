@@ -4,9 +4,7 @@ WORKDIR /airbyte
 
 ENV APPLICATION source-mongodb-v2
 
-COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
+ADD build/distributions/${APPLICATION}*.tar /airbyte
 
-RUN tar xf ${APPLICATION}.tar --strip-components=1
-
-LABEL io.airbyte.version=0.1.8
+LABEL io.airbyte.version=0.1.9
 LABEL io.airbyte.name=airbyte/source-mongodb-v2

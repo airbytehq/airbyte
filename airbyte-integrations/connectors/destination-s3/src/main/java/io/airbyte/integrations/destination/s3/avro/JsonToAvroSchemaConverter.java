@@ -186,7 +186,7 @@ public class JsonToAvroSchemaConverter {
       case NUMBER, INTEGER, BOOLEAN -> fieldSchema = Schema.create(fieldType.getAvroType());
       case STRING -> {
         if (fieldDefinition.has("format")) {
-          String format = fieldDefinition.get("format").asText();
+          final String format = fieldDefinition.get("format").asText();
           fieldSchema = switch (format) {
             case "timestamp-micros" -> LogicalTypes.timestampMicros().addToSchema(Schema.create(Schema.Type.LONG));
             case "date-time" -> LogicalTypes.timestampMicros().addToSchema(Schema.create(Schema.Type.LONG));

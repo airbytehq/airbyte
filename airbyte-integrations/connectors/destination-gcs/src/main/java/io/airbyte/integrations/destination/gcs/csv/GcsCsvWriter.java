@@ -39,6 +39,7 @@ public class GcsCsvWriter extends BaseGcsWriter implements S3Writer, GscWriter, 
   private final MultiPartOutputStream outputStream;
   private final CSVPrinter csvPrinter;
   private final String gcsFileLocation;
+  private final String objectKey;
 
   public GcsCsvWriter(final GcsDestinationConfig config,
                       final AmazonS3 s3Client,
@@ -51,7 +52,7 @@ public class GcsCsvWriter extends BaseGcsWriter implements S3Writer, GscWriter, 
     this.csvSheetGenerator = CsvSheetGenerator.Factory.create(configuredStream.getStream().getJsonSchema(), formatConfig);
 
     final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.CSV);
-    final String objectKey = String.join("/", outputPrefix, outputFilename);
+    objectKey = String.join("/", outputPrefix, outputFilename);
     gcsFileLocation = String.format("gs://%s/%s", config.getBucketName(), objectKey);
 
     LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
@@ -102,6 +103,11 @@ public class GcsCsvWriter extends BaseGcsWriter implements S3Writer, GscWriter, 
   @Override
   public S3Format getFileFormat() {
     return S3Format.CSV;
+  }
+
+  @Override
+  public String getOutputPath() {
+    return objectKey;
   }
 
 }

@@ -40,11 +40,11 @@ public class GcsParquetWriter extends BaseGcsWriter implements S3Writer, GscWrit
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GcsParquetWriter.class);
   private static final ObjectMapper MAPPER = new ObjectMapper();
-  private static final ObjectWriter WRITER = MAPPER.writer();
 
   private final ParquetWriter<Record> parquetWriter;
   private final AvroRecordFactory avroRecordFactory;
   private final String gcsFileLocation;
+  private final String objectKey;
 
   public GcsParquetWriter(final GcsDestinationConfig config,
                           final AmazonS3 s3Client,
@@ -56,7 +56,7 @@ public class GcsParquetWriter extends BaseGcsWriter implements S3Writer, GscWrit
     super(config, s3Client, configuredStream);
 
     final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.PARQUET);
-    final String objectKey = String.join("/", outputPrefix, outputFilename);
+    objectKey = String.join("/", outputPrefix, outputFilename);
     LOGGER.info("Storage path for stream '{}': {}/{}", stream.getName(), config.getBucketName(), objectKey);
 
     gcsFileLocation = String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename);
@@ -117,6 +117,11 @@ public class GcsParquetWriter extends BaseGcsWriter implements S3Writer, GscWrit
       parquetWriter.close();
       LOGGER.info("Upload completed for stream '{}'.", stream.getName());
     }
+  }
+
+  @Override
+  public String getOutputPath() {
+    return objectKey;
   }
 
   @Override

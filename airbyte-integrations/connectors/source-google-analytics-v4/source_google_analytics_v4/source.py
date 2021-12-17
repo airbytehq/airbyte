@@ -8,7 +8,7 @@ import pkgutil
 import time
 from abc import ABC
 from datetime import datetime
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import jwt
 import pendulum
@@ -91,7 +91,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
     def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
         self.start_date = config["start_date"]
-        self.window_in_days = config["window_in_days"]
+        self.window_in_days = config.get("window_in_days", 90)
         self.view_id = config["view_id"]
         self.metrics = config["metrics"]
         self.dimensions = config["dimensions"]
@@ -111,8 +111,13 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         """
         return date.strftime("%Y-%m-%d")
 
+    @staticmethod
+    def to_iso_datetime_str(date: str) -> str:
+        return datetime.strptime(date, "%Y%m%d").strftime("%Y-%m-%d")
+
     def path(self, **kwargs) -> str:
-        return "reports:batchGet"
+        # need add './' for correct urllib.parse.urljoin work due to path contains ':'
+        return "./reports:batchGet"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = response.json().get("nextPageToken")
@@ -173,21 +178,25 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         # Add the dimensions to the schema
         for dimension in self.dimensions:
             data_type = self.lookup_data_type("dimension", dimension)
+            data_format = self.lookup_data_format(dimension)
             dimension = dimension.replace("ga:", "ga_")
 
-            schema["properties"][dimension] = {
-                "type": [data_type],
-            }
+            dimension_data = {"type": [data_type]}
+            if data_format:
+                dimension_data["format"] = data_format
+            schema["properties"][dimension] = dimension_data
 
         # Add the metrics to the schema
         for metric in self.metrics:
             data_type = self.lookup_data_type("metric", metric)
+            data_format = self.lookup_data_format(metric)
             metric = metric.replace("ga:", "ga_")
 
-            schema["properties"][metric] = {
-                # metrics are allowed to also have null values
-                "type": ["null", data_type],
-            }
+            # metrics are allowed to also have null values
+            metric_data = {"type": ["null", data_type]}
+            if data_format:
+                metric_data["format"] = data_format
+            schema["properties"][metric] = metric_data
 
         return schema
 
@@ -268,6 +277,21 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         data_type = self.map_type.get(attr_type, "string")
 
         return data_type
+
+    @staticmethod
+    def lookup_data_format(attribute: str) -> Union[str, None]:
+        if attribute == "ga:date":
+            return "date"
+        return
+
+    def convert_to_type(self, header, value, data_type):
+        if data_type == "integer":
+            return int(value)
+        if data_type == "number":
+            return float(value)
+        if header == "ga:date":
+            return self.to_iso_datetime_str(value)
+        return value
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -358,13 +382,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
 
                 for header, dimension in zip(dimension_headers, dimensions):
                     data_type = self.lookup_data_type("dimension", header)
-
-                    if data_type == "integer":
-                        value = int(dimension)
-                    elif data_type == "number":
-                        value = float(dimension)
-                    else:
-                        value = dimension
+                    value = self.convert_to_type(header, dimension, data_type)
 
                     record[header.replace("ga:", "ga_")] = value
 
@@ -372,11 +390,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                     for metric_header, value in zip(metric_headers, values.get("values")):
                         metric_name = metric_header.get("name")
                         metric_type = self.lookup_data_type("metric", metric_name)
-
-                        if metric_type == "integer":
-                            value = int(value)
-                        elif metric_type == "number":
-                            value = float(value)
+                        value = self.convert_to_type(metric_name, value, metric_type)
 
                         record[metric_name.replace("ga:", "ga_")] = value
 
@@ -535,9 +549,6 @@ class SourceGoogleAnalyticsV4(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         streams: List[GoogleAnalyticsV4Stream] = []
-
-        if "window_in_days" not in config:
-            config["window_in_days"] = 90
 
         authenticator = self.get_authenticator(config)
 

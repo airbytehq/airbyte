@@ -13,4 +13,8 @@ public class SnowflakeSQLNameTransformer extends ExtendedNameTransformer {
     return input.toUpperCase();
   }
 
+  public String getStageName(String schemaName, String outputTableName) {
+    return schemaName.concat(outputTableName).replaceAll("-", "_").toUpperCase();
+  }
+
 }

@@ -6,6 +6,7 @@ package io.airbyte.config;
 
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.helpers.LogConfigs;
+import io.airbyte.config.storage.CloudStorageConfigs;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -54,11 +55,19 @@ public interface Configs {
 
   String getDatabaseUrl();
 
+  String getJobsDatabaseMinimumFlywayMigrationVersion();
+
+  long getJobsDatabaseInitializationTimeoutMs();
+
   String getConfigDatabaseUser();
 
   String getConfigDatabasePassword();
 
   String getConfigDatabaseUrl();
+
+  String getConfigsDatabaseMinimumFlywayMigrationVersion();
+
+  long getConfigsDatabaseInitializationTimeoutMs();
 
   boolean runDatabaseMigrationOnStartup();
 
@@ -72,36 +81,38 @@ public interface Configs {
   String getWebappUrl();
 
   // Jobs
-  int getMaxSyncJobAttempts();
+  int getSyncJobMaxAttempts();
 
-  int getMaxSyncTimeoutDays();
+  int getSyncJobMaxTimeoutDays();
 
-  List<WorkerPodToleration> getWorkerPodTolerations();
+  List<TolerationPOJO> getJobPodTolerations();
 
-  Map<String, String> getWorkerNodeSelectors();
+  Map<String, String> getJobPodNodeSelectors();
 
-  String getJobImagePullPolicy();
+  String getJobPodMainContainerImagePullPolicy();
 
-  String getJobsImagePullSecret();
+  String getJobPodMainContainerImagePullSecret();
 
-  String getJobSocatImage();
+  String getJobPodSocatImage();
 
-  String getJobBusyboxImage();
+  String getJobPodBusyboxImage();
 
-  String getJobCurlImage();
+  String getJobPodCurlImage();
 
-  String getKubeNamespace();
+  String getJobPodKubeNamespace();
 
-  String getCpuRequest();
+  String getJobPodMainContainerCpuRequest();
 
-  String getCpuLimit();
+  String getJobPodMainContainerCpuLimit();
 
-  String getMemoryRequest();
+  String getJobPodMainContainerMemoryRequest();
 
-  String getMemoryLimit();
+  String getJobPodMainContainerMemoryLimit();
 
   // Logging/Monitoring/Tracking
   LogConfigs getLogConfigs();
+
+  CloudStorageConfigs getStateStorageCloudConfigs();
 
   boolean getPublishMetrics();
 
