@@ -117,14 +117,18 @@ const PreferencesRoutes = () => (
   </Routes>
 );
 
-export const AutoSelectFirstWorkspace: React.FC = () => {
+export const AutoSelectFirstWorkspace: React.FC<{ includePath?: boolean }> = ({
+  includePath,
+}) => {
   const location = useLocation();
   const workspaces = useListWorkspaces();
   const currentWorkspace = workspaces[0];
 
   return (
     <Navigate
-      to={`/${currentWorkspace.workspaceId}${location.pathname}`}
+      to={`/workspaces/${currentWorkspace.workspaceId}${
+        includePath ? location.pathname : ""
+      }`}
       replace={true}
     />
   );
@@ -152,7 +156,11 @@ export const Routing: React.FC = () => {
   const OldRoutes = useMemo(
     () =>
       Object.values(RoutePaths).map((r) => (
-        <Route path={`${r}/*`} key={r} element={<AutoSelectFirstWorkspace />} />
+        <Route
+          path={`${r}/*`}
+          key={r}
+          element={<AutoSelectFirstWorkspace includePath />}
+        />
       )),
     []
   );
@@ -160,7 +168,11 @@ export const Routing: React.FC = () => {
     <Routes>
       {OldRoutes}
       <Route path={RoutePaths.AuthFlow} element={<CompleteOauthRequest />} />
-      <Route path="/:workspaceId/*" element={<RoutingWithWorkspace />} />
+      <Route
+        path="workspaces/:workspaceId/*"
+        element={<RoutingWithWorkspace />}
+      />
+      <Route path="*" element={<AutoSelectFirstWorkspace />} />
     </Routes>
   );
 };
