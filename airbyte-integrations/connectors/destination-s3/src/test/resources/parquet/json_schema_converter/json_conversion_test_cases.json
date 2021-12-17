@@ -742,22 +742,20 @@
           "name": "date_time_field",
           "type": [
             "null",
-            { "type": "long", "logicalType": "timestamp-micros" },
-            "string"
+            { "type": "long", "logicalType": "timestamp-micros" }
           ],
           "default": null
         },
         {
           "name": "date_field",
-          "type": ["null", { "type": "int", "logicalType": "date" }, "string"],
+          "type": ["null", { "type": "int", "logicalType": "date" }],
           "default": null
         },
         {
           "name": "time_field",
           "type": [
             "null",
-            { "type": "long", "logicalType": "time-micros" },
-            "string"
+            { "type": "long", "logicalType": "time-micros" }
           ],
           "default": null
         },

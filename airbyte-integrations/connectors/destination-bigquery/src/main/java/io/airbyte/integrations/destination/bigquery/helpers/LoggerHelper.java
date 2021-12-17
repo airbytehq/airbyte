@@ -37,5 +37,4 @@ public class LoggerHelper {
     return StringUtils.EMPTY;
   }
 
-
 }

@@ -172,8 +172,7 @@
     },
     "avroFieldType": [
       "null",
-      { "type": "long", "logicalType": "timestamp-micros" },
-      "string"
+      { "type": "long", "logicalType": "timestamp-micros" }
     ]
   },
   {
@@ -184,8 +183,7 @@
     },
     "avroFieldType": [
       "null",
-      { "type": "int", "logicalType": "date" },
-      "string"
+      { "type": "int", "logicalType": "date" }
     ]
   },
   {
@@ -196,8 +194,7 @@
     },
     "avroFieldType": [
       "null",
-      { "type": "long", "logicalType": "time-micros" },
-      "string"
+      { "type": "long", "logicalType": "time-micros" }
     ]
   }
 ]
