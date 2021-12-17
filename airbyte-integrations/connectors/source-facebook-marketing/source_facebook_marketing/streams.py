@@ -402,10 +402,13 @@ class AdsInsights(FBMarketingIncrementalStream):
         """Add fields from breakdowns to the stream schema
         :return: A dict of the JSON schema representing this stream.
         """
-        schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
+        loader = ResourceSchemaLoader(package_name_from_class(self.__class__))
+        schema = loader.get_schema("ads_insights")
         if self._fields:
             schema["properties"] = {k: v for k, v in schema["properties"].items() if k in self._fields}
-        schema["properties"].update(self._schema_for_breakdowns())
+        if self.breakdowns:
+            breakdowns_properties = loader.get_schema("ads_insights_breakdowns")["properties"]
+            schema["properties"].update({prop: breakdowns_properties[prop] for prop in self.breakdowns})
         return schema
 
     @cached_property
@@ -415,25 +418,6 @@ class AdsInsights(FBMarketingIncrementalStream):
             return self._fields
         schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
         return list(schema.get("properties", {}).keys())
-
-    def _schema_for_breakdowns(self) -> Mapping[str, Any]:
-        """Breakdown fields and their type"""
-        schemas = {
-            "age": {"type": ["null", "integer", "string"]},
-            "gender": {"type": ["null", "string"]},
-            "country": {"type": ["null", "string"]},
-            "dma": {"type": ["null", "string"]},
-            "region": {"type": ["null", "string"]},
-            "impression_device": {"type": ["null", "string"]},
-            "placement": {"type": ["null", "string"]},
-            "platform_position": {"type": ["null", "string"]},
-            "publisher_platform": {"type": ["null", "string"]},
-        }
-        breakdowns = self.breakdowns[:]
-        if "platform_position" in breakdowns:
-            breakdowns.append("placement")
-
-        return {breakdown: schemas[breakdown] for breakdown in self.breakdowns}
 
     def _date_ranges(self, stream_state: Mapping[str, Any]) -> Iterator[dict]:
         """Iterate over period between start_date/state and now
