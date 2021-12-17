@@ -498,6 +498,77 @@ class IncrementalStream(Stream, ABC):
             yield from super().read(getter, params)
 
 
+class CRMSearchStream(IncrementalStream, ABC):
+
+    limit = 100  # This value is used only when state is None.
+    state_pk = "updatedAt"
+    updated_at_field = "updatedAt"
+    
+    @property
+    def url(self):
+        if self.state:
+            return f"/crm/v3/objects/{self.entity}/search"
+        return f"/crm/v3/objects/{self.entity}"
+
+    def __init__(
+        self,
+        entity: Optional[str] = None,
+        last_modified_field: Optional[str] = None,
+        associations: Optional[List[str]] = None,
+        include_archived_only: bool = False, **kwargs
+    ):
+        super().__init__(**kwargs)
+        self._state = None
+        self.entity = entity or self.entity
+        self.last_modified_field = last_modified_field or self.last_modified_field
+        self.associations = associations or self.associations
+        self._include_archived_only = include_archived_only
+
+    def list(self, fields) -> Iterable:
+        if self.state:
+            yield from self._filter_dynamic_fields(self._filter_old_records(
+                self.read(partial(self._api.post, url=self.url))))
+        else:
+            yield from self._filter_dynamic_fields(self._filter_old_records(
+                self.read(partial(self._api.get, url=self.url))))
+    
+    def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
+        """Apply state filter to set of records, update cursor(state) if necessary in the end"""
+        latest_cursor = None
+        default_params = {'limit': self.limit, "associations": self.associations, "archived": str(self._include_archived_only).lower()}
+        params = {**default_params, **params} if params else {**default_params}
+        properties_list = list(self.properties.keys())
+
+        payload = {"filters": [{
+            "value": int(self._state.timestamp() * 1000),
+            "propertyName": self.last_modified_field,
+            "operator": "GTE"
+        }], "properties": properties_list
+        } if self.state else {}
+        params.update({"properties": ",".join(properties_list)})
+        while True:
+            if self.state:
+                response = getter(data=payload)
+            else:
+                response = getter(params=params)
+            for record in self._transform(self.parse_response(response)):
+                yield record
+                cursor = self._field_to_datetime(record[self.updated_at_field])
+                latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+            if 'paging' in response and 'next' in response['paging'] and 'after' in response['paging']['next']:
+                params['after'] = response['paging']['next']['after']
+                payload['after'] = response['paging']['next']['after']
+            else:
+                break
+
+        if latest_cursor:
+            new_state = max(latest_cursor, self._state) if self._state else latest_cursor
+            if new_state != self._state:
+                logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
+                self._state = new_state
+                self._start_date = self._state
+
+
 class CRMObjectStream(Stream):
     """Unified stream interface for CRM objects.
     You need to provide `entity` parameter to read concrete stream, possible values are:
@@ -653,11 +724,11 @@ class DealStageHistoryStream(Stream):
         yield from self.read(partial(self._api.get, url=self.url), params)
 
 
-class DealStream(CRMObjectIncrementalStream):
+class DealStream(CRMSearchStream):
     """Deals, API v3"""
 
     def __init__(self, **kwargs):
-        super().__init__(entity="deal", **kwargs)
+        super().__init__(entity="deal", last_modified_field="hs_lastmodifieddate", **kwargs)
         self._stage_history = DealStageHistoryStream(**kwargs)
 
     def list(self, fields) -> Iterable:
