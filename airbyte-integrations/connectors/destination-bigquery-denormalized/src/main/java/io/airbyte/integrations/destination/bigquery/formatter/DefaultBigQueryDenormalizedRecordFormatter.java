@@ -279,7 +279,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
                 .stream()
                 .map(f -> getField(namingResolver, f, properties.get(f)).build())
                 .collect(Collectors.toList()));
-            if (fieldList.size() > 0) {
+            if (fieldList.isEmpty()) {
               builder.setType(StandardSQLTypeName.STRUCT, fieldList);
             } else {
               builder.setType(StandardSQLTypeName.STRING);

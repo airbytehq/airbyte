@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.bigquery.uploader;
 
+import static io.airbyte.integrations.destination.s3.avro.AvroConstants.JSON_CONVERTER;
+
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
@@ -22,7 +24,6 @@ import io.airbyte.integrations.destination.bigquery.writer.BigQueryTableWriter;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsS3Helper;
 import io.airbyte.integrations.destination.gcs.avro.GcsAvroWriter;
-import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -128,7 +129,7 @@ public class BigQueryUploaderFactory {
         s3Client,
         configuredStream,
         uploadTimestamp,
-        AvroConstants.JSON_CONVERTER,
+        JSON_CONVERTER,
         bigQuerySchema);
   }
 

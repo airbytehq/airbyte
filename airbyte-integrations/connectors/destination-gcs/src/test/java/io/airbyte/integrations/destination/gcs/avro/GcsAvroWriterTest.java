@@ -17,7 +17,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Instant;
-import org.apache.avro.Schema;
 import org.junit.jupiter.api.Test;
 
 class GcsAvroWriterTest {

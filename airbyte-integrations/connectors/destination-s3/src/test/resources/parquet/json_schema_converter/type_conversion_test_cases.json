@@ -181,10 +181,7 @@
       "type": "string",
       "format": "date"
     },
-    "avroFieldType": [
-      "null",
-      { "type": "int", "logicalType": "date" }
-    ]
+    "avroFieldType": ["null", { "type": "int", "logicalType": "date" }]
   },
   {
     "fieldName": "logical_type_time",
@@ -192,9 +189,6 @@
       "type": "string",
       "format": "time"
     },
-    "avroFieldType": [
-      "null",
-      { "type": "long", "logicalType": "time-micros" }
-    ]
+    "avroFieldType": ["null", { "type": "long", "logicalType": "time-micros" }]
   }
 ]

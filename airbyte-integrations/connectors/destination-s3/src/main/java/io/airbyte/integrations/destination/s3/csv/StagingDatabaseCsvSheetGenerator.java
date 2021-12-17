@@ -48,4 +48,5 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
   public List<Object> getDataRow(JsonNode formattedData) {
     return new LinkedList<>(Collections.singletonList(Jsons.serialize(formattedData)));
   }
+
 }
