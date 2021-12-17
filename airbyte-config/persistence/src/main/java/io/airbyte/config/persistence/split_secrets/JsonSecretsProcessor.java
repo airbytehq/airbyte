@@ -58,9 +58,12 @@ public class JsonSecretsProcessor {
         if (copy.has(key)) {
           ((ObjectNode) copy).put(key, SECRETS_MASK);
         }
+      } else if (canBeProcessed(fieldSchema) && copy.has(key)) {
+        ((ObjectNode) copy).set(key, maskSecrets(copy.get(key), fieldSchema));
       }
 
       final var combinationKey = findJsonCombinationNode(fieldSchema);
+
       if (combinationKey.isPresent() && copy.has(key)) {
         var combinationCopy = copy.get(key);
         final var arrayNode = (ArrayNode) fieldSchema.get(combinationKey.get());
@@ -111,8 +114,9 @@ public class JsonSecretsProcessor {
       // We only copy the original secret if the destination object isn't attempting to overwrite it
       // i.e: if the value of the secret isn't set to the mask
       if (isSecret(fieldSchema) && src.has(key)) {
-        if (dst.has(key) && dst.get(key).asText().equals(SECRETS_MASK))
+        if (dst.has(key) && dst.get(key).asText().equals(SECRETS_MASK)) {
           dstCopy.set(key, src.get(key));
+        }
       }
 
       final var combinationKey = findJsonCombinationNode(fieldSchema);
