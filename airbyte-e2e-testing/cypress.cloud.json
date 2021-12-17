@@ -1,0 +1,11 @@
+{
+  "baseUrl": "https://dev-cloud.airbyte.io/",
+  "testFiles": [
+    "cloud/signup.spec.js",
+    "cloud/signout.spec.js",
+    "cloud/signin.spec.js",
+    "cloud/restorePassword.spec.js",
+    "cloud/inviteUser.spec.js",
+    "cloud/workspace.spec.js"
+  ]
+}

@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "description": "Airbyte e2e testing",
   "scripts": {
-    "cypress:open": "cypress open",
+    "cypress:local": "cypress open --config-file cypress.local.json",
+    "cypress:cloud": "cypress open --config-file cypress.cloud.json",
     "cypress:ci": "CYPRESS_BASE_URL=http://localhost:8000 cypress run"
   },
   "eslintConfig": {
@@ -19,7 +20,9 @@
     ]
   },
   "devDependencies": {
-    "cypress": "^6.4.0",
-    "eslint-plugin-cypress": "^2.11.2"
+    "cypress": "^8.7.0",
+    "eslint-plugin-cypress": "^2.11.2",
+    "mailslurp-client": "^15.0.1",
+    "node-html-parser": "^5.0.0"
   }
 }

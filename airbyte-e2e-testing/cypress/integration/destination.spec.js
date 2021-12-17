@@ -7,7 +7,11 @@ describe("Destination main actions", () => {
 
   it("Update destination", () => {
     cy.createTestDestination("Test destination cypress for update");
-    cy.updateDestination("Test destination cypress for update", "connectionConfiguration.destination_path", "/local/my-json");
+    cy.updateDestination(
+      "Test destination cypress for update",
+      "connectionConfiguration.destination_path",
+      "/local/my-json"
+    );
 
     cy.get("div[data-id='success-result']").should("exist");
     cy.get("input[value='/local/my-json']").should("exist");
@@ -18,6 +22,8 @@ describe("Destination main actions", () => {
     cy.deleteDestination("Test destination cypress for delete");
 
     cy.visit("/destination");
-    cy.get("div").contains("Test destination cypress for delete").should("not.exist");
+    cy.get("div")
+      .contains("Test destination cypress for delete")
+      .should("not.exist");
   });
 });
