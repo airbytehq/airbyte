@@ -221,8 +221,8 @@ public abstract class AbstractSourceConnectorTest {
     if (memoryLimit.isBlank() || memoryLimit.isEmpty()) {
       memoryLimit = WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryLimit();
     }
-    LOGGER.error("cpu limit -->> {}", cpuLimit);
-    LOGGER.error("memory limit -->> {}", memoryLimit);
+    LOGGER.info("Container CPU Limit = {}", cpuLimit);
+    LOGGER.info("Container Memory Limit = {}", memoryLimit);
     Map<String, String> result = new HashMap<>();
     result.put(CPU_REQUEST_FIELD_NAME, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuRequest());
     result.put(CPU_LIMIT_FIELD_NAME, cpuLimit);
