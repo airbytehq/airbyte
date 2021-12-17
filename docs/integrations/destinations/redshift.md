@@ -88,6 +88,8 @@ Provide the required S3 info.
 Optional parameters:
 * **Bucket Path**
   * The directory within the S3 bucket to place the staging data. For example, if you set this to `yourFavoriteSubdirectory`, we will place the staging data inside `s3://yourBucket/yourFavoriteSubdirectory`. If not provided, defaults to the root directory.
+* **Purge Staging Data**
+  * Whether to delete the staging files from S3 after completing the sync. Specifically, the connector will create CSV files named `bucketPath/namespace/streamName/syncDate_epochMillis_randomUuid.csv` containing three columns (`ab_id`, `data`, `emitted_at`). Normally these files are deleted after the `COPY` command completes; if you want to keep them for other purposes, set `purge_staging_data` to `false`.
 
 ## Notes about Redshift Naming Conventions
 
