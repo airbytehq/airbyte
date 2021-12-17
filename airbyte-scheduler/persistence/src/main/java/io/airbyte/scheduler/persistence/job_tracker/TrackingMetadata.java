@@ -96,6 +96,7 @@ public class TrackingMetadata {
           final JobOutput jobOutput = lastAttempt.getOutput().get();
           if (jobOutput.getSync() != null) {
             final StandardSyncSummary syncSummary = jobOutput.getSync().getStandardSyncSummary();
+            metadata.put("sync_start_time", syncSummary.getStartTime());
             metadata.put("duration", Math.round((syncSummary.getEndTime() - syncSummary.getStartTime()) / 1000.0));
             metadata.put("volume_mb", syncSummary.getBytesSynced());
             metadata.put("volume_rows", syncSummary.getRecordsSynced());
