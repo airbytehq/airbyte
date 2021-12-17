@@ -1,4 +1,5 @@
 trap "touch TERMINATION_FILE_MAIN" EXIT
+trap "echo 'received ABRT'; exit 1;" ABRT
 
 ENTRYPOINT_OVERRIDE=ENTRYPOINT_OVERRIDE_VALUE
 
@@ -14,7 +15,24 @@ fi
 
 ((eval "$AIRBYTE_ENTRYPOINT ARGS" 2> STDERR_PIPE_FILE > STDOUT_PIPE_FILE) OPTIONAL_STDIN) &
 CHILD_PID=$!
-(while true; do if [ -f TERMINATION_FILE_CHECK ]; then echo "Heartbeat to worker failed, exiting..."; exit 1; fi; sleep 1; done) &
+
+# Check for TERMINATIOn_FILE_CHECK in a loop to handle heartbeat failure
+(
+  # must use $$$$ instead of $$ because kube entrypoint transforms $$ into $
+  PARENT_PID=$$$$
+  echo "PARENT_PID: ${PARENT_PID}"
+  while true
+  do
+    if [ -f TERMINATION_FILE_CHECK ]
+    then
+      echo "Heartbeat to worker failed, exiting..."
+      kill -s ABRT ${PARENT_PID}
+      exit 0
+    fi
+    sleep 1
+  done
+) &
+
 echo "Waiting on CHILD_PID $CHILD_PID"
 wait $CHILD_PID
 EXIT_STATUS=$?

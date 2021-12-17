@@ -4,9 +4,11 @@
 
 package io.airbyte.workers.process;
 
+import static java.lang.Thread.sleep;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.lang.Exceptions;
@@ -207,6 +209,23 @@ public class KubePodProcessIntegrationTest {
     assertFalse(process.isAlive());
     assertEquals(availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
     assertNotEquals(0, process.exitValue());
+  }
+
+  @Test
+  public void testExitValueWaitsForMainToTerminate() throws Exception {
+    // start a long running main process
+    final Process process = getProcess("sleep 2; exit 13;");
+
+    // immediately close streams
+    process.getInputStream().close();
+    process.getOutputStream().close();
+
+    // verify that exitValue throws IllegalThreadStateException
+    // this confirms that closing the streams does not terminate the overall process
+    assertThrows(IllegalThreadStateException.class, process::exitValue);
+
+    // checking that exit code matches main would require a long wait due to STATUS_CHECK_INTERVAL_MS,
+    // so don't do that here. We have other tests confirming that exit value matches main's exit code anyway.
   }
 
   private static String getRandomFile(final int lines) {
