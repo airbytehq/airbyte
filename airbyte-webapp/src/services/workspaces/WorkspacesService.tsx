@@ -5,6 +5,7 @@ import { useResetter, useResource } from "rest-hooks";
 import WorkspaceResource from "core/resources/Workspace";
 import useRouter from "hooks/useRouter";
 import { Workspace } from "core/domain/workspace/Workspace";
+import { RoutePaths } from "pages/routes";
 
 type Context = {
   selectWorkspace: (workspaceId?: string | null | Workspace) => void;
@@ -25,9 +26,9 @@ const useSelectWorkspace = (): ((
   return useCallback(
     async (workspace) => {
       if (typeof workspace === "object") {
-        push(workspace?.workspaceId ?? "/");
+        push(`/${RoutePaths.Workspaces}/${workspace?.workspaceId}`);
       } else {
-        push(workspace ?? "/");
+        push(`/${RoutePaths.Workspaces}/${workspace}`);
       }
       await queryClient.resetQueries();
       resetCache();
