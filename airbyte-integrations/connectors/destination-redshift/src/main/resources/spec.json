@@ -54,6 +54,12 @@
         "description": "The name of the staging S3 bucket to use if utilising a COPY strategy. COPY is recommended for production workloads for better speed and scalability. See <a href=\"https://docs.aws.amazon.com/redshift/latest/dg/c_loading-data-best-practices.html\">AWS docs</a> for more details.",
         "examples": ["airbyte.staging"]
       },
+      "s3_bucket_path": {
+        "title": "S3 Bucket Path",
+        "type": "string",
+        "description": "The directory under the S3 bucket where data will be written. If not provided, then defaults to the root directory.",
+        "examples": ["data_sync/test"]
+      },
       "s3_bucket_region": {
         "title": "S3 Bucket Region",
         "type": "string",
