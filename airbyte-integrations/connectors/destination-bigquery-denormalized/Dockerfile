@@ -4,9 +4,7 @@ WORKDIR /airbyte
 
 ENV APPLICATION destination-bigquery-denormalized
 
-COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
+ADD build/distributions/${APPLICATION}*.tar /airbyte
 
-RUN tar xf ${APPLICATION}.tar --strip-components=1
-
-LABEL io.airbyte.version=0.1.10
+LABEL io.airbyte.version=0.1.11
 LABEL io.airbyte.name=airbyte/destination-bigquery-denormalized

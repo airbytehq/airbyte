@@ -91,7 +91,7 @@ public class KubePodProcess extends Process {
 
   private static final String INIT_CONTAINER_NAME = "init";
   private static final Long STATUS_CHECK_INTERVAL_MS = 30 * 1000L;
-  private static final String DEFAULT_MEMORY_LIMIT = "6Mi";
+  private static final String DEFAULT_MEMORY_LIMIT = "25Mi";
   private static final ResourceRequirements DEFAULT_SIDECAR_RESOURCES = new ResourceRequirements()
       .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_LIMIT);
 
@@ -117,6 +117,7 @@ public class KubePodProcess extends Process {
   // This variable should be set in functions where the pod is forcefully terminated. See
   // getReturnCode() for more info.
   private final AtomicBoolean wasKilled = new AtomicBoolean(false);
+  private final AtomicBoolean wasClosed = new AtomicBoolean(false);
 
   private final OutputStream stdin;
   private InputStream stdout;
@@ -517,6 +518,14 @@ public class KubePodProcess extends Process {
    * implementation with OS processes and resources, which are automatically reaped by the OS.
    */
   private void close() {
+    final boolean previouslyClosed = wasClosed.getAndSet(true);
+
+    // short-circuit if close was already called, so we don't re-offer ports multiple times
+    // since the offer call is non-atomic
+    if (previouslyClosed) {
+      return;
+    }
+
     if (this.stdin != null) {
       Exceptions.swallow(this.stdin::close);
     }

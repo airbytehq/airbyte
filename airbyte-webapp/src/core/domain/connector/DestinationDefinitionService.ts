@@ -1,5 +1,5 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
-import { DestinationDefinition } from "core/resources/DestinationDefinition";
+import { DestinationDefinition } from "./types";
 
 class DestinationDefinitionService extends AirbyteRequestService {
   get url(): string {
