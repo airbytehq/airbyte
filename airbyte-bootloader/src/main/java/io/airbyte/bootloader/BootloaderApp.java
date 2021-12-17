@@ -46,14 +46,38 @@ public class BootloaderApp {
   private static final AirbyteVersion VERSION_BREAK = new AirbyteVersion("0.32.0-alpha");
 
   private final Configs configs;
+  private Runnable postLoadExecution;
 
   @VisibleForTesting
   public BootloaderApp(Configs configs) {
     this.configs = configs;
   }
 
+  /**
+   * This method is exposed for Airbyte Cloud consumption.
+   *
+   * @param configs
+   * @param postLoadExecution
+   */
+  public BootloaderApp(Configs configs, Runnable postLoadExecution) {
+    this.configs = configs;
+    this.postLoadExecution = postLoadExecution;
+  }
+
   public BootloaderApp() {
     configs = new EnvConfigs();
+    postLoadExecution = () -> {
+      try {
+        final Database configDatabase =
+            new ConfigsDatabaseInstance(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(), configs.getConfigDatabaseUrl())
+                .getAndInitialize();
+        final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
+        configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
+        LOGGER.info("Loaded seed data..");
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    };
   }
 
   public void load() throws Exception {
@@ -86,10 +110,10 @@ public class BootloaderApp {
 
       jobPersistence.setVersion(currAirbyteVersion.serialize());
       LOGGER.info("Set version to {}", currAirbyteVersion);
-
-      configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
-      LOGGER.info("Loaded seed data...");
     }
+
+    postLoadExecution.run();
+    LOGGER.info("Finished running post load Execution..");
 
     LOGGER.info("Finished bootstrapping Airbyte environment..");
   }
