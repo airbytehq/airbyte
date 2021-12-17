@@ -24,8 +24,6 @@ public class LoggingConsumer implements AirbyteMessageConsumer {
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final Map<AirbyteStreamNameNamespacePair, TestingLogger> loggers;
 
-  private final AirbyteMessage lastStateMessage = null;
-
   public LoggingConsumer(final TestingLoggerFactory loggerFactory,
                          final ConfiguredAirbyteCatalog configuredCatalog,
                          final Consumer<AirbyteMessage> outputRecordCollector) {
