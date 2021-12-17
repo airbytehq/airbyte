@@ -49,7 +49,7 @@ public class ProductionWriterFactory implements S3WriterFactory {
     }
 
     if (format == S3Format.CSV) {
-      return new S3CsvWriter(config, s3Client, configuredStream, uploadTimestamp);
+      return new S3CsvWriter.Builder(config, s3Client, configuredStream, uploadTimestamp).build();
     }
 
     if (format == S3Format.JSONL) {
