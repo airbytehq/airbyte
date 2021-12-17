@@ -16,9 +16,10 @@ fi
 ((eval "$AIRBYTE_ENTRYPOINT ARGS" 2> STDERR_PIPE_FILE > STDOUT_PIPE_FILE) OPTIONAL_STDIN) &
 CHILD_PID=$!
 
-# Check for TERMINATIOn_FILE_CHECK in a loop to handle heartbeat failure
+# Check for TERMINATION_FILE_CHECK in a loop to handle heartbeat failure
 (
   # must use $$$$ instead of $$ because kube entrypoint transforms $$ into $
+  # see https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#entrypoint for explanation
   PARENT_PID=$$$$
   echo "PARENT_PID: ${PARENT_PID}"
   while true
