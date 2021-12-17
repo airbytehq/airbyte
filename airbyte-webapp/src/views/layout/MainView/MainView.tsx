@@ -1,8 +1,10 @@
-import React, { Suspense } from "react";
+import React from "react";
 import styled from "styled-components";
 
+import { LoadingPage } from "components";
 import SideBar from "views/layout/SideBar";
-import LoadingPage from "components/LoadingPage";
+import { StartOverErrorView } from "views/common/StartOverErrorView";
+import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 
 const MainContainer = styled.div`
   width: 100%;
@@ -10,6 +12,7 @@ const MainContainer = styled.div`
   overflow: hidden;
   display: flex;
   flex-direction: row;
+  min-height: 680px;
 `;
 
 const Content = styled.div`
@@ -22,7 +25,11 @@ const MainView: React.FC = (props) => (
   <MainContainer>
     <SideBar />
     <Content>
-      <Suspense fallback={<LoadingPage />}>{props.children}</Suspense>
+      <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
+        <React.Suspense fallback={<LoadingPage />}>
+          {props.children}
+        </React.Suspense>
+      </ResourceNotFoundErrorBoundary>
     </Content>
   </MainContainer>
 );
