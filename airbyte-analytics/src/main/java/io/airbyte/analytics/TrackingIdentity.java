@@ -4,13 +4,14 @@
 
 package io.airbyte.analytics;
 
+import io.airbyte.commons.version.AirbyteVersion;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
 public class TrackingIdentity {
 
-  private final String airbyteVersion;
+  private final AirbyteVersion airbyteVersion;
   private final UUID customerId;
   private final String email;
   private final Boolean anonymousDataCollection;
@@ -22,7 +23,7 @@ public class TrackingIdentity {
   }
 
   public TrackingIdentity(
-                          final String airbyteVersion,
+                          final AirbyteVersion airbyteVersion,
                           final UUID customerId,
                           final String email,
                           final Boolean anonymousDataCollection,
@@ -36,7 +37,7 @@ public class TrackingIdentity {
     this.securityUpdates = securityUpdates;
   }
 
-  public String getAirbyteVersion() {
+  public AirbyteVersion getAirbyteVersion() {
     return airbyteVersion;
   }
 

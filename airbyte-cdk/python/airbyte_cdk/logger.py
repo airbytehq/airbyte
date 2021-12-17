@@ -4,7 +4,9 @@
 
 import logging
 import logging.config
+import sys
 import traceback
+from typing import List
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage
 
@@ -29,6 +31,22 @@ LOGGING_CONFIG = {
 }
 
 
+def init_unhandled_exception_output_filtering(logger: logging.Logger) -> None:
+    """
+    Make sure unhandled exceptions are not printed to the console without passing through the Airbyte logger and having
+    secrets removed.
+    """
+
+    def hook_fn(exception_type, exception_value, traceback_):
+        # For developer ergonomics, we want to see the stack trace in the logs when we do a ctrl-c
+        if issubclass(exception_type, KeyboardInterrupt):
+            sys.__excepthook__(exception_type, exception_value, traceback_)
+        else:
+            logger.critical(exception_value, exc_info=exception_value)
+
+    sys.excepthook = hook_fn
+
+
 def init_logger(name: str = None):
     """Initial set up of logger"""
     logging.setLoggerClass(AirbyteNativeLogger)
@@ -36,16 +54,37 @@ def init_logger(name: str = None):
     logger = logging.getLogger(name)
     logger.setLevel(TRACE_LEVEL_NUM)
     logging.config.dictConfig(LOGGING_CONFIG)
+    init_unhandled_exception_output_filtering(logger)
     return logger
 
 
 class AirbyteLogFormatter(logging.Formatter):
     """Output log records using AirbyteMessage"""
 
+    _secrets = []
+
+    @classmethod
+    def update_secrets(cls, secrets: List[str]):
+        """Update the list of secrets to be replaced in the log message"""
+        cls._secrets = secrets
+
+    # Transforming Python log levels to Airbyte protocol log levels
+    level_mapping = {
+        logging.FATAL: "FATAL",
+        logging.ERROR: "ERROR",
+        logging.WARNING: "WARN",
+        logging.INFO: "INFO",
+        logging.DEBUG: "DEBUG",
+        TRACE_LEVEL_NUM: "TRACE",
+    }
+
     def format(self, record: logging.LogRecord) -> str:
         """Return a JSON representation of the log message"""
         message = super().format(record)
-        log_message = AirbyteMessage(type="LOG", log=AirbyteLogMessage(level=record.levelname, message=message))
+        airbyte_level = self.level_mapping.get(record.levelno, "INFO")
+        for secret in AirbyteLogFormatter._secrets:
+            message = message.replace(secret, "****")
+        log_message = AirbyteMessage(type="LOG", log=AirbyteLogMessage(level=airbyte_level, message=message))
         return log_message.json(exclude_unset=True)
 
 

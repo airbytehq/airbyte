@@ -70,6 +70,7 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("replication_method", replicationMethod)
+        .put("ssl", false)
         .build());
 
     final Database database = Databases.createDatabase(

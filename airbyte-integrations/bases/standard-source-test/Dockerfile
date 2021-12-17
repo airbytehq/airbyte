@@ -1,4 +1,4 @@
-ARG JDK_VERSION=14.0.2
+ARG JDK_VERSION=17.0.1
 FROM openjdk:${JDK_VERSION}-slim
 
 # Install Docker to launch worker images. Eventually should be replaced with Docker-java.
@@ -21,9 +21,7 @@ ENV APPLICATION standard-source-test
 WORKDIR /app
 
 COPY entrypoint.sh .
-COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
-
-RUN tar xf ${APPLICATION}.tar --strip-components=1
+ADD build/distributions/${APPLICATION}*.tar /app
 
 ENTRYPOINT ["/app/entrypoint.sh"]
 

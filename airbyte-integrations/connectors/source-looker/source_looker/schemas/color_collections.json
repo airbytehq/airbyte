@@ -21,8 +21,7 @@
             "type": ["null", "string"]
           }
         },
-        "type": ["null", "object"],
-        "additionalProperties": false
+        "type": ["null", "object"]
       },
       "type": ["null", "array"]
     },
@@ -46,8 +45,7 @@
                   "type": ["null", "number"]
                 }
               },
-              "type": ["null", "object"],
-              "additionalProperties": false
+              "type": ["null", "object"]
             },
             "type": ["null", "array"]
           },
@@ -55,8 +53,7 @@
             "type": ["null", "string"]
           }
         },
-        "type": ["null", "object"],
-        "additionalProperties": false
+        "type": ["null", "object"]
       },
       "type": ["null", "array"]
     },
@@ -86,8 +83,7 @@
                   "type": ["null", "number"]
                 }
               },
-              "type": ["null", "object"],
-              "additionalProperties": false
+              "type": ["null", "object"]
             },
             "type": ["null", "array"]
           },
@@ -95,8 +91,7 @@
             "type": ["null", "string"]
           }
         },
-        "type": ["null", "object"],
-        "additionalProperties": false
+        "type": ["null", "object"]
       },
       "type": ["null", "array"]
     }

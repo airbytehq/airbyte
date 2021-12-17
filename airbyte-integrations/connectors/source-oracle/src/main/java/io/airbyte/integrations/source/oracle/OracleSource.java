@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.OracleJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
@@ -27,7 +28,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OracleSource extends AbstractJdbcSource implements Source {
+public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleSource.class);
 
@@ -44,7 +45,7 @@ public class OracleSource extends AbstractJdbcSource implements Source {
   }
 
   public OracleSource() {
-    super(DRIVER_CLASS, new OracleJdbcStreamingQueryConfiguration());
+    super(DRIVER_CLASS, new OracleJdbcStreamingQueryConfiguration(), JdbcUtils.getDefaultSourceOperations());
   }
 
   public static Source sshWrappedSource() {
@@ -54,6 +55,15 @@ public class OracleSource extends AbstractJdbcSource implements Source {
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
     final List<String> additionalParameters = new ArrayList<>();
+
+    /*
+     * The property useFetchSizeWithLongColumn required to select LONG or LONG RAW columns. Oracle
+     * recommends avoiding LONG and LONG RAW columns. Use LOB instead. They are included in Oracle only
+     * for legacy reasons. THIS IS A THIN ONLY PROPERTY. IT SHOULD NOT BE USED WITH ANY OTHER DRIVERS.
+     * See https://docs.oracle.com/cd/E11882_01/appdev.112/e13995/oracle/jdbc/OracleDriver.html
+     * https://docs.oracle.com/cd/B19306_01/java.102/b14355/jstreams.htm#i1014085
+     */
+    additionalParameters.add("oracle.jdbc.useFetchSizeWithLongColumn=true");
 
     final Protocol protocol = config.has("encryption")
         ? obtainConnectionProtocol(config.get("encryption"), additionalParameters)

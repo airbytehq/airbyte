@@ -227,7 +227,7 @@ Let's create a class in `source.py` which extends `HttpStream`. You'll notice th
 We'll begin by creating a stream to represent the data that we're pulling from the Exchange Rates API: 
 ```python
 class ExchangeRates(HttpStream):
-    url_base = "https://api.ratesapi.io/"
+    url_base = "https://api.exchangeratesapi.io/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         # The API does not offer pagination, so we return None to indicate there are no more pages in the response
@@ -320,7 +320,7 @@ Let's begin by pulling data for the last day's rates by using the `/latest` endp
 
 ```python
 class ExchangeRates(HttpStream):
-    url_base = "https://api.ratesapi.io/"
+    url_base = "https://api.exchangeratesapi.io/"
     
     def __init__(self, base: str, **kwargs):
         super().__init__()
@@ -425,7 +425,7 @@ from datetime import datetime, timedelta
 
 
 class ExchangeRates(HttpStream):
-    url_base = "https://api.ratesapi.io/"
+    url_base = "https://api.exchangeratesapi.io/"
     cursor_field = "date"
 
     def __init__(self, base: str, start_date: datetime, **kwargs):

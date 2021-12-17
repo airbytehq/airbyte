@@ -10,17 +10,18 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import java.sql.JDBCType;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeSource extends AbstractJdbcSource implements Source {
+public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSource.class);
   public static final String DRIVER_CLASS = "net.snowflake.client.jdbc.SnowflakeDriver";
 
   public SnowflakeSource() {
-    super(DRIVER_CLASS, new SnowflakeJdbcStreamingQueryConfiguration());
+    super(DRIVER_CLASS, new SnowflakeJdbcStreamingQueryConfiguration(), new SnowflakeSourceOperations());
   }
 
   public static void main(final String[] args) throws Exception {

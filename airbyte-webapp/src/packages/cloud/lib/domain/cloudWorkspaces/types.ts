@@ -12,7 +12,7 @@ export interface CloudWorkspaceUsage {
     creditsConsumed: number;
   }[];
   creditConsumptionByDay: {
-    date: string;
+    date: [number, number, number];
     creditsConsumed: number;
   }[];
 }

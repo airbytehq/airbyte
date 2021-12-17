@@ -9,11 +9,11 @@ import { useDestinationDefinitionSpecificationLoad } from "hooks/services/useDes
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { DestinationDefinition } from "core/resources/DestinationDefinition";
 
 import TitlesBlock from "./TitlesBlock";
 import HighlightedText from "./HighlightedText";
-import { useAnalytics } from "hooks/useAnalytics";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { DestinationDefinition } from "core/domain/connector";
 
 type IProps = {
   availableServices: DestinationDefinition[];
@@ -43,7 +43,7 @@ const DestinationStep: React.FC<IProps> = ({
     isLoading,
   } = useDestinationDefinitionSpecificationLoad(destinationDefinitionId);
 
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
 
   const onDropDownSelect = (destinationDefinition: string) => {
     const destinationConnector = availableServices.find(

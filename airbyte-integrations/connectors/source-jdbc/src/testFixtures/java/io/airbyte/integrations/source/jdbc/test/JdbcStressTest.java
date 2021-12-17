@@ -61,7 +61,7 @@ public abstract class JdbcStressTest {
 
   private BitSet bitSet;
   private JsonNode config;
-  private AbstractJdbcSource source;
+  private AbstractJdbcSource<?> source;
 
   /**
    * These tests write records without specifying a namespace (schema name). They will be written into
@@ -93,7 +93,7 @@ public abstract class JdbcStressTest {
    *
    * @return source
    */
-  public abstract AbstractJdbcSource getSource();
+  public abstract AbstractJdbcSource<?> getSource();
 
   protected String createTableQuery(final String tableName, final String columnClause) {
     return String.format("CREATE TABLE %s(%s)",

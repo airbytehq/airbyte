@@ -7,7 +7,6 @@ package io.airbyte.server.handlers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -20,24 +19,23 @@ import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
-import io.airbyte.config.persistence.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.db.Database;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
-import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
-import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
@@ -59,16 +57,18 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
 public class ArchiveHandlerTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ArchiveHandlerTest.class);
 
-  private static final String VERSION = "0.6.8";
+  private static final AirbyteVersion VERSION = new AirbyteVersion("0.6.8");
   private static PostgreSQLContainer<?> container;
 
-  private Database database;
+  private Database jobDatabase;
+  private Database configDatabase;
   private JobPersistence jobPersistence;
   private DatabaseConfigPersistence configPersistence;
   private ConfigPersistence seedPersistence;
@@ -102,21 +102,17 @@ public class ArchiveHandlerTest {
 
   @BeforeEach
   public void setup() throws Exception {
-    database = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-    jobPersistence = new DefaultJobPersistence(database);
-    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(container);
+    jobDatabase = databaseProviders.createNewJobsDatabase();
+    configDatabase = databaseProviders.createNewConfigsDatabase();
+    jobPersistence = new DefaultJobPersistence(jobDatabase);
     seedPersistence = YamlSeedConfigPersistence.getDefault();
-    configPersistence = new DatabaseConfigPersistence(database);
+    configPersistence = new DatabaseConfigPersistence(jobDatabase);
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
     configPersistence.loadData(seedPersistence);
     configRepository = new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.empty(), Optional.empty());
 
-    jobPersistence.setVersion(VERSION);
-
-    final SpecFetcher specFetcher = mock(SpecFetcher.class);
-    final ConnectorSpecification emptyConnectorSpec = mock(ConnectorSpecification.class);
-    when(emptyConnectorSpec.getConnectionSpecification()).thenReturn(Jsons.emptyObject());
-    when(specFetcher.execute(any())).thenReturn(emptyConnectorSpec);
+    jobPersistence.setVersion(VERSION.serialize());
 
     archiveHandler = new ArchiveHandler(
         VERSION,
@@ -125,13 +121,13 @@ public class ArchiveHandlerTest {
         YamlSeedConfigPersistence.getDefault(),
         new WorkspaceHelper(configRepository, jobPersistence),
         new NoOpFileTtlManager(),
-        specFetcher,
         true);
   }
 
   @AfterEach
   void tearDown() throws Exception {
-    database.close();
+    jobDatabase.close();
+    configDatabase.close();
   }
 
   /**
@@ -290,17 +286,17 @@ public class ArchiveHandlerTest {
     configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, sourceid.toString(), new SourceConnection()
         .withSourceId(sourceid)
         .withWorkspaceId(workspaceId)
-        .withSourceDefinitionId(configRepository.listStandardSourceDefinitions().get(0).getSourceDefinitionId())
+        .withSourceDefinitionId(UUID.fromString("ef69ef6e-aa7f-4af1-a01d-ef775033524e")) // GitHub source definition
         .withName("test-source")
-        .withConfiguration(Jsons.emptyObject())
+        .withConfiguration(Jsons.jsonNode(ImmutableMap.of("start_date", "2021-03-01T00:00:00Z", "repository", "airbytehq/airbyte")))
         .withTombstone(false));
     final UUID destinationId = UUID.randomUUID();
     configPersistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destinationId.toString(), new DestinationConnection()
         .withDestinationId(destinationId)
         .withWorkspaceId(workspaceId)
-        .withDestinationDefinitionId(configRepository.listStandardDestinationDefinitions().get(0).getDestinationDefinitionId())
+        .withDestinationDefinitionId(UUID.fromString("079d5540-f236-4294-ba7c-ade8fd918496")) // BigQuery destination definition
         .withName("test-destination")
-        .withConfiguration(Jsons.emptyObject())
+        .withConfiguration(Jsons.jsonNode(ImmutableMap.of("project_id", "project", "dataset_id", "dataset")))
         .withTombstone(false));
   }
 
@@ -314,13 +310,16 @@ public class ArchiveHandlerTest {
       final Set<JsonNode> expectedRecords = expected.get(stream).collect(Collectors.toSet());
       final Set<JsonNode> actualRecords = actual.get(stream).collect(Collectors.toSet());
       for (final var expectedRecord : expectedRecords) {
-        assertTrue(actualRecords.contains(expectedRecord),
-            String.format("\n Expected record was not found:\n%s\n Actual records were:\n%s\n",
+        assertTrue(
+            actualRecords.contains(expectedRecord),
+            String.format(
+                "\n Expected record was not found:\n%s\n Actual records were:\n%s\n",
                 expectedRecord,
                 Strings.join(actualRecords, "\n")));
       }
       assertEquals(expectedRecords.size(), actualRecords.size(),
-          String.format("The expected vs actual records does not match:\n expected records:\n%s\n actual records\n%s\n",
+          String.format(
+              "The expected vs actual records does not match:\n expected records:\n%s\n actual records\n%s\n",
               Strings.join(expectedRecords, "\n"),
               Strings.join(actualRecords, "\n")));
     }

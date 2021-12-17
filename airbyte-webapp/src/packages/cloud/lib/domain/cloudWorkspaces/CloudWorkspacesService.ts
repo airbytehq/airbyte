@@ -15,16 +15,7 @@ class CloudWorkspacesService extends AirbyteRequestService {
     return workspaces;
   }
 
-  public async get(workspaceId?: string | null): Promise<CloudWorkspace> {
-    if (!workspaceId) {
-      return Promise.resolve({
-        name: "",
-        workspaceId: "",
-        billingUserId: "",
-        remainingCredits: 0,
-      });
-    }
-
+  public async get(workspaceId: string): Promise<CloudWorkspace> {
     return await this.fetch<CloudWorkspace>(`${this.url}/get`, {
       workspaceId,
     });

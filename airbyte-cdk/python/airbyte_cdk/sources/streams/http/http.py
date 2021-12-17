@@ -6,6 +6,7 @@
 import os
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from urllib.parse import urljoin
 
 import requests
 import vcr
@@ -165,7 +166,7 @@ class HttpStream(Stream, ABC):
 
         If returns a ready text that it will be sent as is.
         If returns a dict that it will be converted to a urlencoded form.
-           E.g. {"key1": "value1", "key2": "value2"} => "key1=value1&key2=value2"
+        E.g. {"key1": "value1", "key2": "value2"} => "key1=value1&key2=value2"
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
@@ -239,7 +240,7 @@ class HttpStream(Stream, ABC):
     def _create_prepared_request(
         self, path: str, headers: Mapping = None, params: Mapping = None, json: Any = None, data: Any = None
     ) -> requests.PreparedRequest:
-        args = {"method": self.http_method, "url": self.url_base + path, "headers": headers, "params": params}
+        args = {"method": self.http_method, "url": urljoin(self.url_base, path), "headers": headers, "params": params}
         if self.http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:
                 raise RequestBodyException(

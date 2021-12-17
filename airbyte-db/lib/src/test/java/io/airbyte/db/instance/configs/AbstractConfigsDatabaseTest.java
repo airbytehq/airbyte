@@ -8,11 +8,10 @@ import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.table;
 
 import io.airbyte.db.Database;
-import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.AbstractDatabaseTest;
+import io.airbyte.db.instance.test.TestDatabaseProviders;
 import java.io.IOException;
 import java.time.OffsetDateTime;
-import java.util.UUID;
 import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.Record;
@@ -27,21 +26,9 @@ public abstract class AbstractConfigsDatabaseTest extends AbstractDatabaseTest {
   public static final Field<OffsetDateTime> CREATED_AT = field("created_at", OffsetDateTime.class);
   public static final Field<OffsetDateTime> UPDATED_AT = field("updated_at", OffsetDateTime.class);
 
-  public Database getAndInitializeDatabase(final String username, final String password, final String connectionString) throws IOException {
-    final Database database =
-        new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-
-    // The configs database is considered ready only if there are some seed records.
-    // So we need to create at least one record here.
-    final OffsetDateTime timestamp = OffsetDateTime.now();
-    new ExceptionWrappingDatabase(database).transaction(ctx -> ctx.insertInto(AIRBYTE_CONFIGS)
-        .set(CONFIG_ID, UUID.randomUUID().toString())
-        .set(CONFIG_TYPE, "STANDARD_SOURCE_DEFINITION")
-        .set(CONFIG_BLOB, JSONB.valueOf("{}"))
-        .set(CREATED_AT, timestamp)
-        .set(UPDATED_AT, timestamp)
-        .execute());
-    return database;
+  @Override
+  public Database getDatabase() throws IOException {
+    return new TestDatabaseProviders(container).turnOffMigration().createNewConfigsDatabase();
   }
 
 }

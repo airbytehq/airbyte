@@ -1,3 +1,22 @@
+# union of frontend, api, server, scheduler, protocol, worker, kubernetes
+area/platform:
+  - airbyte-webapp/*
+  - airbyte-webapp/**/*
+  - airbyte-api/*
+  - airbyte-api/**/*
+  - airbyte-server/*
+  - airbyte-server/**/*
+  - airbyte-scheduler/*
+  - airbyte-scheduler/**/*
+  - airbyte-protocol/*
+  - airbyte-protocol/**/*
+  - airbyte-workers/*
+  - airbyte-workers/**/*
+  - kube/*
+  - kube/**/*
+  - charts/*
+  - charts/**/*
+
 area/frontend:
   - airbyte-webapp/*
   - airbyte-webapp/**/*
@@ -6,9 +25,11 @@ area/api:
   - airbyte-api/*
   - airbyte-api/**/*
 
-area/core:
+area/server:
   - airbyte-server/*
   - airbyte-server/**/*
+
+area/scheduler:
   - airbyte-scheduler/*
   - airbyte-scheduler/**/*
 
@@ -19,6 +40,12 @@ area/protocol:
 area/worker:
   - airbyte-workers/*
   - airbyte-workers/**/*
+
+kubernetes:
+  - kube/*
+  - kube/**/*
+  - charts/*
+  - charts/**/*
 
 area/connectors:
   - airbyte-integrations/connectors/*
@@ -36,9 +63,3 @@ CDK:
 normalization:
   - airbyte-integrations/bases/base-normalization/*
   - airbyte-integrations/bases/base-normalization/**/*
-
-kubernetes:
-  - kube/*
-  - kube/**/*
-  - charts/*
-  - charts/**/*

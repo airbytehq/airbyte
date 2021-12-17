@@ -3,24 +3,25 @@
 #
 
 import csv
-import pendulum
-import requests
-
-from . import fields
 from abc import ABC
 from datetime import date, datetime, timedelta
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union, Callable, Dict
-from operator import add
-from pendulum.tz.timezone import Timezone
-from http import HTTPStatus
 from decimal import Decimal
+from http import HTTPStatus
+from operator import add
+from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
+import pendulum
+import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from pendulum.tz.timezone import Timezone
+
+from . import fields
+
 
 # Simple transformer
 def parse_date(date: Any, timezone: Timezone) -> datetime:
@@ -38,13 +39,7 @@ class AppsflyerStream(HttpStream, ABC):
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
 
     def __init__(
-        self,
-        app_id: str,
-        api_token: str,
-        timezone: str,
-        start_date: Union[date, str] = None,
-        end_date: Union[date, str] = None,
-        **kwargs
+        self, app_id: str, api_token: str, timezone: str, start_date: Union[date, str] = None, end_date: Union[date, str] = None, **kwargs
     ):
         super().__init__(**kwargs)
         self.app_id = app_id
@@ -61,17 +56,14 @@ class AppsflyerStream(HttpStream, ABC):
         return None
 
     def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = {
             "api_token": self.api_token,
             "from": pendulum.yesterday(self.timezone).to_date_string(),
             "to": pendulum.today(self.timezone).to_date_string(),
             "timezone": self.timezone.name,
-            "maximum_rows": self.maximum_rows
+            "maximum_rows": self.maximum_rows,
         }
 
         if self.additional_fields:
@@ -92,7 +84,7 @@ class AppsflyerStream(HttpStream, ABC):
 
     def is_aggregate_reports_reached_limit(self, response: requests.Response) -> bool:
         template = "Limit reached for "
-        is_forbidden =  response.status_code == HTTPStatus.FORBIDDEN
+        is_forbidden = response.status_code == HTTPStatus.FORBIDDEN
         is_template_match = template in response.text
 
         return is_forbidden and is_template_match
@@ -132,6 +124,7 @@ class AppsflyerStream(HttpStream, ABC):
             return Decimal(original_value)
         return original_value
 
+
 # Basic incremental stream
 class IncrementalAppsflyerStream(AppsflyerStream, ABC):
     intervals = 60
@@ -145,13 +138,12 @@ class IncrementalAppsflyerStream(AppsflyerStream, ABC):
                 return {self.cursor_field: max(latest_state, current_state)}
             return {}
         except TypeError as e:
-            raise TypeError(f"Expected {self.cursor_field} type '{type(current_state).__name__}' but returned type '{type(latest_state).__name__}'.") from e
+            raise TypeError(
+                f"Expected {self.cursor_field} type '{type(current_state).__name__}' but returned type '{type(latest_state).__name__}'."
+            ) from e
 
     def stream_slices(
-        self,
-        sync_mode,
-        cursor_field: List[str] = None,
-        stream_state: Mapping[str, Any] = None
+        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
         cursor_value = stream_state.get(self.cursor_field)
@@ -173,141 +165,125 @@ class IncrementalAppsflyerStream(AppsflyerStream, ABC):
         delta = timedelta(days=self.intervals)
         while start_date <= self.end_date:
             end_date = self.get_date(start_date + delta, self.end_date, min)
-            dates.append({
-                self.cursor_field: start_date,
-                self.cursor_field + '_end': end_date
-            })
+            dates.append({self.cursor_field: start_date, self.cursor_field + "_end": end_date})
             start_date += delta
         return dates
+
 
 class RawDataMixin:
     main_fields = fields.raw_data.main_fields
     additional_fields = fields.raw_data.additional_fields
 
     def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params["from"] = stream_slice.get(self.cursor_field).to_datetime_string()
-        params["to"] = stream_slice.get(self.cursor_field + '_end').to_datetime_string()
-        # use currency set in the app settings to align with aggregate api currency. 
+        params["to"] = stream_slice.get(self.cursor_field + "_end").to_datetime_string()
+        # use currency set in the app settings to align with aggregate api currency.
         params["currency"] = "preferred"
 
         return params
+
 
 class AggregateDataMixin:
     cursor_field = "date"
 
     def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params["from"] = stream_slice.get(self.cursor_field).to_date_string()
-        params["to"] = stream_slice.get(self.cursor_field + '_end').to_date_string()
+        params["to"] = stream_slice.get(self.cursor_field + "_end").to_date_string()
 
         return params
 
-class RetargetingMixin:
 
+class RetargetingMixin:
     def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params["reattr"] = True
 
         return params
 
+
 class InAppEvents(RawDataMixin, IncrementalAppsflyerStream):
     intervals = 31
     cursor_field = "event_time"
 
     def path(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "in_app_events_report/v5"
+
 
 class UninstallEvents(RawDataMixin, IncrementalAppsflyerStream):
     cursor_field = "event_time"
     additional_fields = fields.uninstall_events.additional_fields
 
     def path(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "uninstall_events_report/v5"
+
 
 class Installs(RawDataMixin, IncrementalAppsflyerStream):
     cursor_field = "install_time"
 
     def path(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "installs_report/v5"
 
-class RetargetingInAppEvents(RetargetingMixin,InAppEvents):
+
+class RetargetingInAppEvents(RetargetingMixin, InAppEvents):
     pass
 
-class RetargetingConversions(RetargetingMixin,Installs):
+
+class RetargetingConversions(RetargetingMixin, Installs):
     pass
+
 
 class PartnersReport(AggregateDataMixin, IncrementalAppsflyerStream):
     main_fields = fields.partners_report.main_fields
 
     def path(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "partners_by_date_report/v5"
+
 
 class DailyReport(AggregateDataMixin, IncrementalAppsflyerStream):
     main_fields = fields.daily_report.main_fields
 
     def path(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "daily_report/v5"
+
 
 class GeoReport(AggregateDataMixin, IncrementalAppsflyerStream):
     main_fields = fields.geo_report.main_fields
 
     def path(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "geo_by_date_report/v5"
+
 
 class RetargetingPartnersReport(RetargetingMixin, PartnersReport):
     main_fields = fields.retargeting_partners_report.main_fields
 
+
 class RetargetingDailyReport(RetargetingMixin, DailyReport):
     main_fields = fields.retargeting_daily_report.main_fields
 
+
 class RetargetingGeoReport(RetargetingMixin, GeoReport):
     main_fields = fields.retargeting_geo_report.main_fields
+
 
 # Source
 class SourceAppsflyer(AbstractSource):
@@ -319,7 +295,9 @@ class SourceAppsflyer(AbstractSource):
             app_id = config["app_id"]
             api_token = config["api_token"]
             dates = pendulum.now("UTC").to_date_string()
-            test_url = f"https://hq.appsflyer.com/export/{app_id}/partners_report/v5?api_token={api_token}&from={dates}&to={dates}&timezone=UTC"
+            test_url = (
+                f"https://hq.appsflyer.com/export/{app_id}/partners_report/v5?api_token={api_token}&from={dates}&to={dates}&timezone=UTC"
+            )
             response = requests.request("GET", url=test_url)
 
             if response.status_code != 200:
@@ -359,5 +337,5 @@ class SourceAppsflyer(AbstractSource):
             GeoReport(authenticator=auth, **config),
             RetargetingPartnersReport(authenticator=auth, **config),
             RetargetingDailyReport(authenticator=auth, **config),
-            RetargetingGeoReport(authenticator=auth, **config)
+            RetargetingGeoReport(authenticator=auth, **config),
         ]

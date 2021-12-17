@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.validation.json.JsonSchemaValidator;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -17,10 +18,12 @@ import org.slf4j.LoggerFactory;
 
 public class JsonSecretsProcessor {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(JsonSecretsProcessor.class);
+
   public static String AIRBYTE_SECRET_FIELD = "airbyte_secret";
   public static final String PROPERTIES_FIELD = "properties";
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(JsonSecretsProcessor.class);
+  private static final JsonSchemaValidator VALIDATOR = new JsonSchemaValidator();
 
   @VisibleForTesting
   static String SECRETS_MASK = "**********";
@@ -55,9 +58,12 @@ public class JsonSecretsProcessor {
         if (copy.has(key)) {
           ((ObjectNode) copy).put(key, SECRETS_MASK);
         }
+      } else if (canBeProcessed(fieldSchema) && copy.has(key)) {
+        ((ObjectNode) copy).set(key, maskSecrets(copy.get(key), fieldSchema));
       }
 
       final var combinationKey = findJsonCombinationNode(fieldSchema);
+
       if (combinationKey.isPresent() && copy.has(key)) {
         var combinationCopy = copy.get(key);
         final var arrayNode = (ArrayNode) fieldSchema.get(combinationKey.get());
@@ -108,8 +114,9 @@ public class JsonSecretsProcessor {
       // We only copy the original secret if the destination object isn't attempting to overwrite it
       // i.e: if the value of the secret isn't set to the mask
       if (isSecret(fieldSchema) && src.has(key)) {
-        if (dst.has(key) && dst.get(key).asText().equals(SECRETS_MASK))
+        if (dst.has(key) && dst.get(key).asText().equals(SECRETS_MASK)) {
           dstCopy.set(key, src.get(key));
+        }
       }
 
       final var combinationKey = findJsonCombinationNode(fieldSchema);
@@ -118,8 +125,16 @@ public class JsonSecretsProcessor {
         if (src.has(key)) {
           final var arrayNode = (ArrayNode) fieldSchema.get(combinationKey.get());
           for (int i = 0; i < arrayNode.size(); i++) {
-            // Absorb field values if any of the combination option is declaring it as secrets
-            combinationCopy = copySecrets(src.get(key), combinationCopy, arrayNode.get(i));
+            final JsonNode childSchema = arrayNode.get(i);
+            /*
+             * when traversing a oneOf or anyOf if multiple schema in the oneOf or anyOf have the SAME key, but
+             * a different type, then, without this test, we can try to apply the wrong schema to the object
+             * resulting in errors because of type mismatches.
+             */
+            if (VALIDATOR.test(childSchema, combinationCopy)) {
+              // Absorb field values if any of the combination option is declaring it as secrets
+              combinationCopy = copySecrets(src.get(key), combinationCopy, childSchema);
+            }
           }
         }
         dstCopy.set(key, combinationCopy);

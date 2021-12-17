@@ -24,6 +24,10 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflow;
+import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflow;
+import io.airbyte.workers.temporal.spec.SpecWorkflow;
+import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.temporal.client.WorkflowClient;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -38,6 +42,7 @@ import org.junit.jupiter.api.Test;
 
 class TemporalClientTest {
 
+  private static final UUID CONNECTION_ID = UUID.randomUUID();
   private static final UUID JOB_UUID = UUID.randomUUID();
   private static final long JOB_ID = 11L;
   private static final int ATTEMPT_ID = 21;
@@ -176,8 +181,8 @@ class TemporalClientTest {
           .withAttemptId((long) ATTEMPT_ID)
           .withDockerImage(IMAGE_NAME2);
 
-      temporalClient.submitSync(JOB_ID, ATTEMPT_ID, syncConfig);
-      discoverCatalogWorkflow.run(JOB_RUN_CONFIG, LAUNCHER_CONFIG, destinationLauncherConfig, input);
+      temporalClient.submitSync(JOB_ID, ATTEMPT_ID, syncConfig, CONNECTION_ID);
+      discoverCatalogWorkflow.run(JOB_RUN_CONFIG, LAUNCHER_CONFIG, destinationLauncherConfig, input, CONNECTION_ID);
       verify(workflowClient).newWorkflowStub(SyncWorkflow.class, TemporalUtils.getWorkflowOptions(TemporalJobType.SYNC));
     }
 

@@ -4,7 +4,7 @@
 
 package io.airbyte.config.persistence.split_secrets;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -62,7 +62,188 @@ public class JsonSecretsProcessorTest {
           + "    }\n"
           + "  }");
 
+  private static final JsonNode ONE_OF_WITH_SAME_KEY_IN_SUB_SCHEMAS = Jsons.deserialize(
+      "{\n"
+          + "    \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n"
+          + "    \"title\": \"S3 Destination Spec\",\n"
+          + "    \"type\": \"object\",\n"
+          + "    \"required\": [\n"
+          + "      \"client_id\",\n"
+          + "      \"format\"\n"
+          + "    ],\n"
+          + "    \"additionalProperties\": false,\n"
+          + "    \"properties\": {\n"
+          + "      \"client_id\": {\n"
+          + "        \"title\": \"client it\",\n"
+          + "        \"type\": \"string\",\n"
+          + "        \"default\": \"\"\n"
+          + "      },\n"
+          + "      \"format\": {\n"
+          + "        \"title\": \"Output Format\",\n"
+          + "        \"type\": \"object\",\n"
+          + "        \"description\": \"Output data format\",\n"
+          + "        \"oneOf\": [\n"
+          + "          {\n"
+          + "            \"title\": \"Avro: Apache Avro\",\n"
+          + "            \"required\": [\"format_type\", \"compression_codec\"],\n"
+          + "            \"properties\": {\n"
+          + "              \"format_type\": {\n"
+          + "                \"type\": \"string\",\n"
+          + "                \"enum\": [\"Avro\"],\n"
+          + "                \"default\": \"Avro\"\n"
+          + "              },\n"
+          + "              \"compression_codec\": {\n"
+          + "                \"title\": \"Compression Codec\",\n"
+          + "                \"description\": \"The compression algorithm used to compress data. Default to no compression.\",\n"
+          + "                \"type\": \"object\",\n"
+          + "                \"oneOf\": [\n"
+          + "                  {\n"
+          + "                    \"title\": \"no compression\",\n"
+          + "                    \"required\": [\"codec\"],\n"
+          + "                    \"properties\": {\n"
+          + "                      \"codec\": {\n"
+          + "                        \"type\": \"string\",\n"
+          + "                        \"enum\": [\"no compression\"],\n"
+          + "                        \"default\": \"no compression\"\n"
+          + "                      }\n"
+          + "                    }\n"
+          + "                  },\n"
+          + "                  {\n"
+          + "                    \"title\": \"Deflate\",\n"
+          + "                    \"required\": [\"codec\", \"compression_level\"],\n"
+          + "                    \"properties\": {\n"
+          + "                      \"codec\": {\n"
+          + "                        \"type\": \"string\",\n"
+          + "                        \"enum\": [\"Deflate\"],\n"
+          + "                        \"default\": \"Deflate\"\n"
+          + "                      },\n"
+          + "                      \"compression_level\": {\n"
+          + "                        \"type\": \"integer\",\n"
+          + "                        \"default\": 0,\n"
+          + "                        \"minimum\": 0,\n"
+          + "                        \"maximum\": 9\n"
+          + "                      }\n"
+          + "                    }\n"
+          + "                  }\n"
+          + "                ]\n"
+          + "              }\n"
+          + "            }\n"
+          + "          },\n"
+          + "          {\n"
+          + "            \"title\": \"Parquet: Columnar Storage\",\n"
+          + "            \"required\": [\"format_type\"],\n"
+          + "            \"properties\": {\n"
+          + "              \"format_type\": {\n"
+          + "                \"type\": \"string\",\n"
+          + "                \"enum\": [\"Parquet\"],\n"
+          + "                \"default\": \"Parquet\"\n"
+          + "              },\n"
+          + "              \"compression_codec\": {\n"
+          + "                \"type\": \"string\",\n"
+          + "                \"enum\": [\n"
+          + "                  \"UNCOMPRESSED\",\n"
+          + "                  \"GZIP\"\n"
+          + "                ],\n"
+          + "                \"default\": \"UNCOMPRESSED\"\n"
+          + "              }\n"
+          + "            }\n"
+          + "          }\n"
+          + "        ]\n"
+          + "      }\n"
+          + "    }\n"
+          + "  }");
+
+  private final static String test = """
+                                       {
+                                         "provider": {
+                                           "bucket": "bucket",
+                                           "endpoint": "",
+                                           "path_prefix": "",
+                                           "aws_access_key_id": "nothingtosee",
+                                           "aws_secret_access_key": "same"
+                                         }
+                                     }
+                                     """;
+
+  private final static String testSpecs =
+      """
+       {
+         "type": "object",
+         "title": "S3 Source Spec",
+         "required": [
+           "dataset",
+           "path_pattern",
+           "provider"
+         ],
+         "properties": {
+           "provider": {
+             "type": "object",
+             "title": "S3: Amazon Web Services",
+             "required": [
+               "bucket"
+             ],
+             "properties": {
+               "bucket": {
+                 "type": "string",
+                 "title": "Bucket",
+                 "description": "Name of the S3 bucket where the file(s) exist."
+               },
+               "use_ssl": {
+                 "type": "boolean",
+                 "title": "Use Ssl",
+                 "description": "Is remote server using secure SSL/TLS connection"
+               },
+               "endpoint": {
+                 "type": "string",
+                 "title": "Endpoint",
+                 "default": "",
+                 "description": "Endpoint to an S3 compatible service. Leave empty to use AWS."
+               },
+               "path_prefix": {
+                 "type": "string",
+                 "title": "Path Prefix",
+                 "default": "",
+                 "description": "By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit, we can optimise finding these in S3. This is optional but recommended if your bucket contains many folders/files."
+               },
+               "verify_ssl_cert": {
+                 "type": "boolean",
+                 "title": "Verify Ssl Cert",
+                 "description": "Allow self signed certificates"
+               },
+               "aws_access_key_id": {
+                 "type": "string",
+                 "title": "Aws Access Key Id",
+                 "description": "In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
+                 "airbyte_secret": true
+               },
+               "aws_secret_access_key": {
+                 "type": "string",
+                 "title": "Aws Secret Access Key",
+                 "description": "In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
+                 "airbyte_secret": true
+               }
+             }
+           }
+         }
+       }
+      """;
+
   JsonSecretsProcessor processor = new JsonSecretsProcessor();
+
+  @Test
+  public void testNestedSecrets() {
+    final JsonNode obj = Jsons.deserialize(test);
+    final JsonNode specObj = Jsons.deserialize(testSpecs);
+    final JsonNode sanitized = processor.maskSecrets(obj, specObj);
+
+    final JsonNode expected = Jsons.jsonNode(ImmutableMap.builder()
+        .put("bucket", "bucket")
+        .put("endpoint", "")
+        .put("path_prefix", "")
+        .put("aws_access_key_id", JsonSecretsProcessor.SECRETS_MASK)
+        .put("aws_secret_access_key", JsonSecretsProcessor.SECRETS_MASK).build());
+    assertEquals(expected, sanitized.get("provider"));
+  }
 
   @Test
   public void testMaskSecrets() {
@@ -226,6 +407,28 @@ public class JsonSecretsProcessorTest {
     final JsonNode expected = dst.deepCopy();
 
     assertEquals(expected, actual);
+  }
+
+  // test the case where multiple sub schemas of a oneOf contain the same key but a different type.
+  @Test
+  void testHandlesSameKeyInOneOf() {
+    final JsonNode compressionCodecObject = Jsons.jsonNode(ImmutableMap.of(
+        "codec", "no compression"));
+    final JsonNode avroConfig = Jsons.jsonNode(ImmutableMap.of(
+        "format_type", "Avro",
+        "compression_codec", compressionCodecObject));
+    final JsonNode src = Jsons.jsonNode(ImmutableMap.of(
+        "client_id", "whatever",
+        "format", avroConfig));
+
+    final JsonNode parquetConfig = Jsons.jsonNode(ImmutableMap.of(
+        "format_type", "Parquet",
+        "compression_codec", "GZIP"));
+    final JsonNode dst = Jsons.jsonNode(ImmutableMap.of(
+        "client_id", "whatever",
+        "format", parquetConfig));
+
+    final JsonNode actual = new JsonSecretsProcessor().copySecrets(src, dst, ONE_OF_WITH_SAME_KEY_IN_SUB_SCHEMAS);
   }
 
 }

@@ -6,16 +6,19 @@
       "type": ["null", "string"]
     },
     "createdAt": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "updatedAt": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "archived": {
       "type": ["null", "boolean"]
     },
     "archivedAt": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "associations": {
       "type": ["null", "object"]

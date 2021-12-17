@@ -43,11 +43,11 @@ class TestIntegrationZendeskSupport:
                 break
 
     def test_export_with_unixtime(self):
-        """ Tickets stream has 'generated_timestamp' as cursor_field and it is unixtime format'' """
+        """Tickets stream has 'generated_timestamp' as cursor_field and it is unixtime format''"""
         self._test_export_stream(Tickets)
 
     def test_export_with_str_datetime(self):
-        """ Other export streams has 'updated_at' as cursor_field and it is datetime  string format """
+        """Other export streams has 'updated_at' as cursor_field and it is datetime  string format"""
         self._test_export_stream(Users)
 
     def _test_insertion(self, stream_cls: type, index: int = None):

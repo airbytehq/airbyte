@@ -25,7 +25,11 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
             testClassesDirs += project.sourceSets.integrationTestJava.output.classesDirs
             classpath += project.sourceSets.integrationTestJava.runtimeClasspath
 
-            useJUnitPlatform()
+            useJUnitPlatform {
+                // todo (cgardens) - figure out how to de-dupe this exclusion with the one in build.gradle.
+                excludeTags 'log4j2-config', 'logger-client', 'cloud-storage'
+            }
+
             testLogging() {
                 events "passed", "failed"
                 exceptionFormat "full"
@@ -38,7 +42,12 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
                 dependsOn project.airbyteDocker
             }
 
+            maxHeapSize = '3g'
+
             mustRunAfter project.test
+
+            // This is needed to make the destination-snowflake tests succeed - https://github.com/snowflakedb/snowflake-jdbc/issues/589#issuecomment-983944767
+            jvmArgs = ["--add-opens=java.base/java.nio=ALL-UNNAMED"]
         }
 
         // make sure we create the integrationTest task once in case a standard source test was already initialized

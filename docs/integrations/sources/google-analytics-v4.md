@@ -32,7 +32,7 @@ Please reach out to us on Slack or [create an issue](https://github.com/airbyteh
 
 1. Click `OAuth2.0 authorization` then `Authenticate your Google Analytics account`.
 2. Find your View ID for the view you want to fetch data from. Find it [here](https://ga-dev-tools.web.app/account-explorer/).
-3. Enter a start date, window size, and custom report information.
+3. Enter a start date, and custom report information.
 4. You're done.
 
 ## Getting Started \(Airbyte Open-Source\)
@@ -132,6 +132,12 @@ The Google Analytics connector should not run into Google Analytics API limitati
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.14 | 2021-12-09 | [8656](https://github.com/airbytehq/airbyte/pull/8656) | Fix date-format in schemas |
+| 0.1.13 | 2021-12-09 | [8676](https://github.com/airbytehq/airbyte/pull/8676) | Fix `window_in_days` validation issue |
+| 0.1.12 | 2021-12-03 | [8175](https://github.com/airbytehq/airbyte/pull/8175) | Fix validation of unknown metric(s) or dimension(s) error |
+| 0.1.11 | 2021-11-30 | [8264](https://github.com/airbytehq/airbyte/pull/8264) | Corrected date range |
+| 0.1.10 | 2021-11-19 | [8087](https://github.com/airbytehq/airbyte/pull/8087) | Support `start_date` before the account has any data |
+| 0.1.9 | 2021-10-27 | [7410](https://github.com/airbytehq/airbyte/pull/7410) | Add check for correct permission for requested `view_id` |
 | 0.1.8 | 2021-10-13 | [7020](https://github.com/airbytehq/airbyte/pull/7020) | Add intermediary auth config support |
 | 0.1.7 | 2021-10-07 | [6414](https://github.com/airbytehq/airbyte/pull/6414) | Declare oauth parameters in google sources |
 | 0.1.6 | 2021-09-27 | [6459](https://github.com/airbytehq/airbyte/pull/6459) | Update OAuth Spec File |

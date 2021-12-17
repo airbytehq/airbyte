@@ -10,6 +10,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
@@ -76,7 +77,7 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
   @Override
   @BeforeEach
   public void setup() throws Exception {
-    db = new ClickHouseContainer("yandex/clickhouse-server:21.3.10.1-alpine");
+    db = new ClickHouseContainer("yandex/clickhouse-server:21.8.8.29-alpine");
     db.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -85,13 +86,14 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
         .put("database", SCHEMA_NAME)
         .put("username", db.getUsername())
         .put("password", db.getPassword())
+        .put("ssl", false)
         .build());
 
     super.setup();
   }
 
   @Override
-  public AbstractJdbcSource getJdbcSource() {
+  public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new ClickHouseSource();
   }
 

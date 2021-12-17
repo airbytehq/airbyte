@@ -6,7 +6,7 @@ plugins {
 dependencies {
     implementation 'org.jooq:jooq-meta:3.13.4'
     implementation 'org.jooq:jooq:3.13.4'
-    implementation 'org.postgresql:postgresql:42.2.18'
+    implementation 'org.postgresql:postgresql:42.3.1'
     implementation "org.flywaydb:flyway-core:7.14.0"
 
     implementation project(':airbyte-db:lib')
@@ -14,6 +14,12 @@ dependencies {
     // jOOQ code generation
     implementation 'org.jooq:jooq-codegen:3.13.4'
     implementation "org.testcontainers:postgresql:1.15.3"
+    // These are required because gradle might be using lower version of Jna from other
+    // library transitive dependency. Can be removed if we can figure out which library is the cause.
+    // Refer: https://github.com/testcontainers/testcontainers-java/issues/3834#issuecomment-825409079
+    implementation 'net.java.dev.jna:jna:5.8.0'
+    implementation 'net.java.dev.jna:jna-platform:5.8.0'
+
     // The jOOQ code generator only has access to classes added to the jooqGenerator configuration
     jooqGenerator project(':airbyte-db:lib')
 }

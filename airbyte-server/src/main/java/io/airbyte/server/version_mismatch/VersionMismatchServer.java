@@ -28,11 +28,11 @@ import org.slf4j.LoggerFactory;
 public class VersionMismatchServer implements ServerRunnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(VersionMismatchServer.class);
-  private final String version1;
-  private final String version2;
+  private final AirbyteVersion version1;
+  private final AirbyteVersion version2;
   private final int port;
 
-  public VersionMismatchServer(final String version1, final String version2, final int port) {
+  public VersionMismatchServer(final AirbyteVersion version1, final AirbyteVersion version2, final int port) {
     this.version1 = version1;
     this.version2 = version2;
     this.port = port;

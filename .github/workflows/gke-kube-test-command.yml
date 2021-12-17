@@ -46,18 +46,11 @@ jobs:
 
       - uses: actions/setup-java@v1
         with:
-          java-version: '14'
+          java-version: '17'
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '14.7'
-
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.7'
-
-      - name: Install Pyenv
-        run: python3 -m pip install virtualenv==16.7.9 --user
+          node-version: '16.13.0'
 
       - name: Fix EC-2 Runner
         run: |
