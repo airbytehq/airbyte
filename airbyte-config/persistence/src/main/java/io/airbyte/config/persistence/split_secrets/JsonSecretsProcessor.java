@@ -6,13 +6,18 @@ package io.airbyte.config.persistence.split_secrets;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.validation.json.JsonSchemaValidator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,14 +34,12 @@ public class JsonSecretsProcessor {
   static String SECRETS_MASK = "**********";
 
   /**
-   * Returns a copy of the input object wherein any fields annotated with "airbyte_secret" in the
-   * input schema are masked.
+   * Returns a copy of the input object wherein any fields annotated with "airbyte_secret" in the input schema are masked.
    * <p>
-   * This method masks secrets both at the top level of the configuration object and in nested
-   * properties in a oneOf.
+   * This method masks secrets both at the top level of the configuration object and in nested properties in a oneOf.
    *
    * @param schema Schema containing secret annotations
-   * @param obj Object containing potentially secret fields
+   * @param obj    Object containing potentially secret fields
    */
   // todo: fix bug where this doesn't handle non-oneof nesting or just arrays
   // see: https://github.com/airbytehq/airbyte/issues/6393
@@ -46,36 +49,55 @@ public class JsonSecretsProcessor {
       return obj;
     }
     Preconditions.checkArgument(schema.isObject());
+
     // get the properties field
-    final ObjectNode properties = (ObjectNode) schema.get(PROPERTIES_FIELD);
-    final JsonNode copy = obj.deepCopy();
-    // for the property keys
-    for (final String key : Jsons.keys(properties)) {
-      final JsonNode fieldSchema = properties.get(key);
-      // if the json schema field is an obj and has the airbyte secret field
-      if (isSecret(fieldSchema) && copy.has(key)) {
-        // mask and set it
-        if (copy.has(key)) {
-          ((ObjectNode) copy).put(key, SECRETS_MASK);
-        }
-      } else if (canBeProcessed(fieldSchema) && copy.has(key)) {
-        ((ObjectNode) copy).set(key, maskSecrets(copy.get(key), fieldSchema));
-      }
+    final Set<String> secretKeys = getAllSecretKeys(schema);
+    return maskAllSecrets(obj, secretKeys);
+  }
 
-      final var combinationKey = findJsonCombinationNode(fieldSchema);
-
-      if (combinationKey.isPresent() && copy.has(key)) {
-        var combinationCopy = copy.get(key);
-        final var arrayNode = (ArrayNode) fieldSchema.get(combinationKey.get());
-        for (int i = 0; i < arrayNode.size(); i++) {
-          // Mask field values if any of the combination option is declaring it as secrets
-          combinationCopy = maskSecrets(combinationCopy, arrayNode.get(i));
+  private JsonNode maskAllSecrets(final JsonNode obj, final Set<String> secretKeys) {
+    if (obj.isObject()) {
+      for (final String key : Jsons.keys(obj)) {
+        if (secretKeys.contains(key)) {
+          ((ObjectNode) obj).put(key, SECRETS_MASK);
+        } else if (obj.get(key).isObject()) {
+          maskAllSecrets(obj.get(key), secretKeys);
+        } else if (obj.get(key).isArray()) {
+          final ArrayNode updatedArrayNode = new ArrayNode(JsonNodeFactory.instance);
+          obj.get(key).forEach((arrayElement) -> {
+            final JsonNode sanitizedNode = maskAllSecrets(arrayElement, secretKeys);
+            updatedArrayNode.add(sanitizedNode);
+          });
+          return updatedArrayNode;
         }
-        ((ObjectNode) copy).set(key, combinationCopy);
       }
     }
 
-    return copy;
+    return obj;
+  }
+
+  private Set<String> getAllSecretKeys(final JsonNode schema) {
+    final Set<String> result = new HashSet<>();
+
+    final Queue<JsonNode> toProcess = Lists.newLinkedList(schema);
+
+    while (!toProcess.isEmpty()) {
+      final JsonNode currentNode = toProcess.remove();
+      for (final String key : Jsons.keys(currentNode)) {
+        if (isSecret(currentNode.get(key))) {
+          result.add(key);
+        } else if (currentNode.get(key).isObject()) {
+          toProcess.add(currentNode.get(key));
+        } else if (currentNode.get(key).isArray()) {
+          final ArrayNode arrayNode = (ArrayNode) currentNode.get(key);
+          arrayNode.forEach((node) -> {
+            toProcess.add(node);
+          });
+        }
+      }
+    }
+
+    return result;
   }
 
   public static Optional<String> findJsonCombinationNode(final JsonNode node) {
@@ -88,14 +110,12 @@ public class JsonSecretsProcessor {
   }
 
   /**
-   * Returns a copy of the destination object in which any secret fields (as denoted by the input
-   * schema) found in the source object are added.
+   * Returns a copy of the destination object in which any secret fields (as denoted by the input schema) found in the source object are added.
    * <p>
-   * This method absorbs secrets both at the top level of the configuration object and in nested
-   * properties in a oneOf.
+   * This method absorbs secrets both at the top level of the configuration object and in nested properties in a oneOf.
    *
-   * @param src The object potentially containing secrets
-   * @param dst The object to absorb secrets into
+   * @param src    The object potentially containing secrets
+   * @param dst    The object to absorb secrets into
    * @param schema
    * @return
    */
