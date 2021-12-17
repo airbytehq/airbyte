@@ -37,7 +37,6 @@ class GcsAvroWriterTest {
                 .withNamespace("fake-namespace")
                 .withName("fake-stream")),
         Timestamp.from(Instant.ofEpochMilli(1234)),
-        mock(Schema.class),
         null);
 
     assertEquals("fake-bucketPath/fake_namespace/fake_stream/1970_01_01_1234_0.avro", writer.getOutputPath());
