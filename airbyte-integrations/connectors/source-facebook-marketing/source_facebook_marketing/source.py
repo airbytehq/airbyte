@@ -204,13 +204,10 @@ class SourceFacebookMarketing(AbstractSource):
 
     def _check_custom_insights_entries(self, insights: List[Mapping[str, Any]]):
 
-        default_fields = list(
-            ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights").get("properties", {}).keys()
-        )
-        default_breakdowns = list(
-            ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights_breakdowns").get("properties", {}).keys()
-        )
-        default_actions_breakdowns = [e for e in default_breakdowns if "action_" in e]
+        loader = ResourceSchemaLoader(package_name_from_class(self.__class__))
+        default_fields = list(loader.get_schema("ads_insights").get("properties", {}).keys())
+        default_breakdowns = list(loader.get_schema("ads_insights_breakdowns").get("properties", {}).keys())
+        default_action_breakdowns = list(loader.get_schema("ads_insights_action_breakdowns").get("properties", {}).keys())
 
         for insight in insights:
             if insight.get("fields"):
@@ -224,7 +221,7 @@ class SourceFacebookMarketing(AbstractSource):
                     message = f"{value} is not a valid breakdown name"
                     raise Exception("Config validation error: " + message) from None
             if insight.get("action_breakdowns"):
-                value_checked, value = self._check_values(default_actions_breakdowns, insight.get("action_breakdowns"))
+                value_checked, value = self._check_values(default_action_breakdowns, insight.get("action_breakdowns"))
                 if not value_checked:
                     message = f"{value} is not a valid action_breakdown name"
                     raise Exception("Config validation error: " + message) from None
