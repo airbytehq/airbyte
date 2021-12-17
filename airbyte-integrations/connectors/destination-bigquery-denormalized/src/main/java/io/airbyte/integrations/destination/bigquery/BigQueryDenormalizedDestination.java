@@ -50,6 +50,7 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   protected String getTargetTableName(final String streamName) {
     // This BigQuery destination does not write to a staging "raw" table but directly to a normalized
     // table
+    //
     return getNamingResolver().getIdentifier(streamName);
   }
 
