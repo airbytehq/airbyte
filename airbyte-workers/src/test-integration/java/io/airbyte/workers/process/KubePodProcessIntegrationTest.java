@@ -4,7 +4,6 @@
 
 package io.airbyte.workers.process;
 
-import static java.lang.Thread.sleep;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -225,7 +224,8 @@ public class KubePodProcessIntegrationTest {
     assertThrows(IllegalThreadStateException.class, process::exitValue);
 
     // checking that exit code matches main would require a long wait due to STATUS_CHECK_INTERVAL_MS,
-    // so don't do that here. We have other tests confirming that exit value matches main's exit code anyway.
+    // so don't do that here. We have other tests confirming that exit value matches main's exit code
+    // anyway.
   }
 
   private static String getRandomFile(final int lines) {
