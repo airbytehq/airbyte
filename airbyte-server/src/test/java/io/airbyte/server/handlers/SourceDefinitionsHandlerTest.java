@@ -113,7 +113,7 @@ class SourceDefinitionsHandlerTest {
   @Test
   @DisplayName("getSourceDefinition should return the right source")
   void testGetSourceDefinition() throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
-    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId(), false))
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
         .thenReturn(source);
 
     final SourceDefinitionRead expectedSourceDefinitionRead = new SourceDefinitionRead()
@@ -168,7 +168,7 @@ class SourceDefinitionsHandlerTest {
   @Test
   @DisplayName("updateSourceDefinition should correctly update a sourceDefinition")
   void testUpdateSourceDefinition() throws ConfigNotFoundException, IOException, JsonValidationException, URISyntaxException {
-    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId(), false)).thenReturn(source);
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId())).thenReturn(source);
     final String newDockerImageTag = "averydifferenttag";
     final SourceDefinitionRead sourceDefinition = sourceHandler
         .getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(source.getSourceDefinitionId()));

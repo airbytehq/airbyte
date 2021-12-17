@@ -52,7 +52,7 @@ public class OAuthHandler {
   public OAuthConsentRead getSourceOAuthConsent(final SourceOauthConsentRequest sourceDefinitionIdRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSourceDefinition sourceDefinition =
-        configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId(), false);
+        configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(sourceDefinition);
     final ConnectorSpecification spec = sourceDefinition.getSpec();
     final ImmutableMap<String, Object> metadata = generateSourceMetadata(sourceDefinitionIdRequestBody.getSourceDefinitionId());
@@ -110,7 +110,7 @@ public class OAuthHandler {
   public Map<String, Object> completeSourceOAuth(final CompleteSourceOauthRequest oauthSourceRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSourceDefinition sourceDefinition =
-        configRepository.getStandardSourceDefinition(oauthSourceRequestBody.getSourceDefinitionId(), false);
+        configRepository.getStandardSourceDefinition(oauthSourceRequestBody.getSourceDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(sourceDefinition);
     final ConnectorSpecification spec = sourceDefinition.getSpec();
     final ImmutableMap<String, Object> metadata = generateSourceMetadata(oauthSourceRequestBody.getSourceDefinitionId());
@@ -197,7 +197,7 @@ public class OAuthHandler {
 
   private ImmutableMap<String, Object> generateSourceMetadata(final UUID sourceDefinitionId)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId, false);
+    final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
     return TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
   }
 

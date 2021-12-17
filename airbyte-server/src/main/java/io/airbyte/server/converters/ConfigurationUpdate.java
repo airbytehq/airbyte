@@ -38,7 +38,7 @@ public class ConfigurationUpdate {
     final SourceConnection persistedSource = configRepository.getSourceConnectionWithSecrets(sourceId);
     persistedSource.setName(sourceName);
     // get spec
-    final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(persistedSource.getSourceDefinitionId(), false);
+    final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(persistedSource.getSourceDefinitionId());
     final ConnectorSpecification spec = sourceDefinition.getSpec();
     // copy any necessary secrets from the current source to the incoming updated source
     final JsonNode updatedConfiguration = secretsProcessor.copySecrets(

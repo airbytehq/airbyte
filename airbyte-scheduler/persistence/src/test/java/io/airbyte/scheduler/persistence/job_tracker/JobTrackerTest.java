@@ -125,7 +125,7 @@ class JobTrackerTest {
         .put("connector_source_version", CONNECTOR_VERSION)
         .build();
 
-    when(configRepository.getStandardSourceDefinition(UUID1, false))
+    when(configRepository.getStandardSourceDefinition(UUID1))
         .thenReturn(new StandardSourceDefinition()
             .withSourceDefinitionId(UUID1)
             .withName(SOURCE_DEF_NAME)
@@ -181,7 +181,7 @@ class JobTrackerTest {
         .put("connector_source_version", CONNECTOR_VERSION)
         .build();
 
-    when(configRepository.getStandardSourceDefinition(UUID1, false))
+    when(configRepository.getStandardSourceDefinition(UUID1))
         .thenReturn(new StandardSourceDefinition()
             .withSourceDefinitionId(UUID1)
             .withName(SOURCE_DEF_NAME)
@@ -292,7 +292,7 @@ class JobTrackerTest {
   }
 
   private Job getJobMock(final ConfigType configType, final long jobId) throws ConfigNotFoundException, IOException, JsonValidationException {
-    when(configRepository.getSourceDefinitionFromConnection(CONNECTION_ID, false))
+    when(configRepository.getSourceDefinitionFromConnection(CONNECTION_ID))
         .thenReturn(new StandardSourceDefinition()
             .withSourceDefinitionId(UUID1)
             .withName(SOURCE_DEF_NAME)
@@ -303,7 +303,7 @@ class JobTrackerTest {
             .withName(DESTINATION_DEF_NAME)
             .withDockerImageTag(CONNECTOR_VERSION));
 
-    when(configRepository.getStandardSourceDefinition(UUID1, false))
+    when(configRepository.getStandardSourceDefinition(UUID1))
         .thenReturn(new StandardSourceDefinition()
             .withSourceDefinitionId(UUID1)
             .withName(SOURCE_DEF_NAME)

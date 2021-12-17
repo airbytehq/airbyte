@@ -101,7 +101,7 @@ class SourceHandlerTest {
 
     when(uuidGenerator.get()).thenReturn(sourceConnection.getSourceId());
     when(configRepository.getSourceConnection(sourceConnection.getSourceId())).thenReturn(sourceConnection);
-    when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId(), false))
+    when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
         .thenReturn(standardSourceDefinition);
     when(secretsProcessor.maskSecrets(sourceCreate.getConnectionConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification()))
         .thenReturn(sourceCreate.getConnectionConfiguration());
@@ -138,9 +138,9 @@ class SourceHandlerTest {
         .copySecrets(sourceConnection.getConfiguration(), newConfiguration, sourceDefinitionSpecificationRead.getConnectionSpecification()))
             .thenReturn(newConfiguration);
     when(secretsProcessor.maskSecrets(newConfiguration, sourceDefinitionSpecificationRead.getConnectionSpecification())).thenReturn(newConfiguration);
-    when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId(), false))
+    when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
         .thenReturn(standardSourceDefinition);
-    when(configRepository.getSourceDefinitionFromSource(sourceConnection.getSourceId(), false))
+    when(configRepository.getSourceDefinitionFromSource(sourceConnection.getSourceId()))
         .thenReturn(standardSourceDefinition);
     when(configRepository.getSourceConnection(sourceConnection.getSourceId()))
         .thenReturn(sourceConnection)
@@ -165,9 +165,9 @@ class SourceHandlerTest {
     final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody().sourceId(expectedSourceRead.getSourceId());
 
     when(configRepository.getSourceConnection(sourceConnection.getSourceId())).thenReturn(sourceConnection);
-    when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId(), false))
+    when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
         .thenReturn(standardSourceDefinition);
-    when(configRepository.getSourceDefinitionFromSource(sourceConnection.getSourceId(), false)).thenReturn(standardSourceDefinition);
+    when(configRepository.getSourceDefinitionFromSource(sourceConnection.getSourceId())).thenReturn(standardSourceDefinition);
     when(secretsProcessor.maskSecrets(sourceConnection.getConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification()))
         .thenReturn(sourceConnection.getConfiguration());
 
@@ -184,9 +184,9 @@ class SourceHandlerTest {
 
     when(configRepository.getSourceConnection(sourceConnection.getSourceId())).thenReturn(sourceConnection);
     when(configRepository.listSourceConnection()).thenReturn(Lists.newArrayList(sourceConnection));
-    when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId(), false))
+    when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
         .thenReturn(standardSourceDefinition);
-    when(configRepository.getSourceDefinitionFromSource(sourceConnection.getSourceId(), false)).thenReturn(standardSourceDefinition);
+    when(configRepository.getSourceDefinitionFromSource(sourceConnection.getSourceId())).thenReturn(standardSourceDefinition);
     when(secretsProcessor.maskSecrets(sourceConnection.getConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification()))
         .thenReturn(sourceConnection.getConfiguration());
 
@@ -202,9 +202,9 @@ class SourceHandlerTest {
 
     when(configRepository.getSourceConnection(sourceConnection.getSourceId())).thenReturn(sourceConnection);
     when(configRepository.listSourceConnection()).thenReturn(Lists.newArrayList(sourceConnection));
-    when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId(), false))
+    when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
         .thenReturn(standardSourceDefinition);
-    when(configRepository.getSourceDefinitionFromSource(sourceConnection.getSourceId(), false)).thenReturn(standardSourceDefinition);
+    when(configRepository.getSourceDefinitionFromSource(sourceConnection.getSourceId())).thenReturn(standardSourceDefinition);
     when(secretsProcessor.maskSecrets(sourceConnection.getConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification()))
         .thenReturn(sourceConnection.getConfiguration());
 
@@ -237,9 +237,9 @@ class SourceHandlerTest {
     when(configRepository.getSourceConnectionWithSecrets(sourceConnection.getSourceId()))
         .thenReturn(sourceConnection)
         .thenReturn(expectedSourceConnection);
-    when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId(), false))
+    when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
         .thenReturn(standardSourceDefinition);
-    when(configRepository.getSourceDefinitionFromSource(sourceConnection.getSourceId(), false)).thenReturn(standardSourceDefinition);
+    when(configRepository.getSourceDefinitionFromSource(sourceConnection.getSourceId())).thenReturn(standardSourceDefinition);
     when(connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody)).thenReturn(connectionReadList);
     when(secretsProcessor.maskSecrets(sourceConnection.getConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification()))
         .thenReturn(sourceConnection.getConfiguration());

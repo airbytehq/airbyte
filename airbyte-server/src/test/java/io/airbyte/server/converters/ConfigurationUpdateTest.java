@@ -87,7 +87,7 @@ class ConfigurationUpdateTest {
   @Test
   void testSourceUpdate() throws JsonValidationException, IOException, ConfigNotFoundException {
     when(configRepository.getSourceConnectionWithSecrets(UUID1)).thenReturn(ORIGINAL_SOURCE_CONNECTION);
-    when(configRepository.getStandardSourceDefinition(UUID2, false)).thenReturn(SOURCE_DEFINITION);
+    when(configRepository.getStandardSourceDefinition(UUID2)).thenReturn(SOURCE_DEFINITION);
     when(secretsProcessor.copySecrets(ORIGINAL_CONFIGURATION, NEW_CONFIGURATION, SPEC)).thenReturn(NEW_CONFIGURATION);
 
     final SourceConnection actual = configurationUpdate.source(UUID1, ORIGINAL_SOURCE_CONNECTION.getName(), NEW_CONFIGURATION);

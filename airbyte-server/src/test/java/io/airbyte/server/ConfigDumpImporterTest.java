@@ -88,7 +88,7 @@ class ConfigDumpImporterTest {
         .withWorkspaceId(workspaceId);
     when(configRepository.listStandardSourceDefinitions(false))
         .thenReturn(List.of(standardSourceDefinition));
-    when(configRepository.getStandardSourceDefinition(standardSourceDefinition.getSourceDefinitionId(), false))
+    when(configRepository.getStandardSourceDefinition(standardSourceDefinition.getSourceDefinitionId()))
         .thenReturn(standardSourceDefinition);
     when(configRepository.getSourceConnection(any()))
         .thenReturn(sourceConnection);

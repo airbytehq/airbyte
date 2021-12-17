@@ -64,7 +64,7 @@ class DefaultSyncJobFactoryTest {
     when(configRepository.getStandardSyncOperation(operationId)).thenReturn(operation);
     when(jobCreator.createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage, operations))
         .thenReturn(Optional.of(jobId));
-    when(configRepository.getStandardSourceDefinition(sourceDefinitionId, false))
+    when(configRepository.getStandardSourceDefinition(sourceDefinitionId))
         .thenReturn(new StandardSourceDefinition().withSourceDefinitionId(sourceDefinitionId).withDockerRepository(srcDockerRepo)
             .withDockerImageTag(srcDockerTag));
 
