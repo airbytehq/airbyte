@@ -359,6 +359,9 @@ public class ConfigDumpImporter {
                 if (sourceDefinition == null) {
                   return;
                 }
+                if (sourceDefinition.getTombstone() != null && sourceDefinition.getTombstone()) {
+                  return;
+                }
                 configRepository.writeSourceConnection(sourceConnection, sourceDefinition.getSpec());
               } catch (final ConfigNotFoundException e) {
                 return;
