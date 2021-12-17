@@ -12,7 +12,6 @@
       {
         "title": "Logging",
         "required": ["type", "logging_config"],
-        "additionalProperties": false,
         "properties": {
           "type": {
             "type": "string",
@@ -120,7 +119,6 @@
       {
         "title": "Silent",
         "required": ["type"],
-        "additionalProperties": false,
         "properties": {
           "type": {
             "type": "string",
@@ -132,7 +130,6 @@
       {
         "title": "Throttled",
         "required": ["type", "millis_per_record"],
-        "additionalProperties": false,
         "properties": {
           "type": {
             "type": "string",
@@ -148,7 +145,6 @@
       {
         "title": "Failing",
         "required": ["type", "num_messages"],
-        "additionalProperties": false,
         "properties": {
           "type": {
             "type": "string",

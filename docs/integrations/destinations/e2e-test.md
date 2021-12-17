@@ -7,7 +7,7 @@ This destination is for testing of Airbyte connections. It can be set up as a so
 | Feature | Supported  | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes | |
-| Incremental Sync | No | |
+| Incremental Sync | Yes | |
 | Replicate Incremental Deletes | No | |
 | SSL connection | No | |
 | SSH Tunnel Support | No | |

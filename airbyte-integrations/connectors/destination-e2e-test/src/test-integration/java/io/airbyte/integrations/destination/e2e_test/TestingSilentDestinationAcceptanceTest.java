@@ -1,7 +1,8 @@
 package io.airbyte.integrations.destination.e2e_test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.e2e_test.TestingDestinations.TestDestinationType;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
@@ -9,9 +10,8 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
-public class TestingDestinationLoggingEveryNthAcceptanceTest extends DestinationAcceptanceTest {
+public class TestingSilentDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected String getImageName() {
@@ -20,22 +20,12 @@ public class TestingDestinationLoggingEveryNthAcceptanceTest extends Destination
 
   @Override
   protected JsonNode getConfig() {
-    final JsonNode loggingConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put("logging_type", "EveryNth")
-        .put("nth_entry_to_log", 1)
-        .put("max_entry_count", 3)
-        .build());
-    return Jsons.jsonNode(Map.of("type", TestDestinationType.LOGGING.name(), "logging_config", loggingConfig));
+    return Jsons.jsonNode(Collections.singletonMap("type", TestDestinationType.SILENT.name()));
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    final JsonNode loggingConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put("logging_type", "LastN")
-        // max allowed entry count is 1000
-        .put("max_entry_count", 3000)
-        .build());
-    return Jsons.jsonNode(Map.of("type", TestDestinationType.LOGGING.name(), "logging_config", loggingConfig));
+    return Jsons.jsonNode(Collections.singletonMap("type", "invalid"));
   }
 
   @Override
@@ -60,7 +50,7 @@ public class TestingDestinationLoggingEveryNthAcceptanceTest extends Destination
   protected void assertSameMessages(final List<AirbyteMessage> expected,
                                     final List<AirbyteRecordMessage> actual,
                                     final boolean pruneAirbyteInternalFields) {
-    // do nothing
+    assertEquals(0, actual.size());
   }
 
 }
