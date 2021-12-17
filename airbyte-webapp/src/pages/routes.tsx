@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useIntl } from "react-intl";
+import { useLocation } from "react-use";
 
 import { useConfig } from "config";
 
@@ -23,13 +24,13 @@ import {
 import { useListWorkspaces } from "services/workspaces/WorkspacesService";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { useLocation } from "react-use";
 import { Workspace } from "core/domain/workspace/Workspace";
 
 export enum RoutePaths {
   AuthFlow = "/auth_flow",
   Root = "/",
 
+  Workspaces = "workspaces",
   Preferences = "preferences",
   Onboarding = "onboarding",
   Connections = "connections",
@@ -126,7 +127,7 @@ export const AutoSelectFirstWorkspace: React.FC<{ includePath?: boolean }> = ({
 
   return (
     <Navigate
-      to={`/workspaces/${currentWorkspace.workspaceId}${
+      to={`/${RoutePaths.Workspaces}/${currentWorkspace.workspaceId}${
         includePath ? location.pathname : ""
       }`}
       replace={true}
@@ -169,7 +170,7 @@ export const Routing: React.FC = () => {
       {OldRoutes}
       <Route path={RoutePaths.AuthFlow} element={<CompleteOauthRequest />} />
       <Route
-        path="workspaces/:workspaceId/*"
+        path={`${RoutePaths.Workspaces}/:workspaceId/*`}
         element={<RoutingWithWorkspace />}
       />
       <Route path="*" element={<AutoSelectFirstWorkspace />} />
