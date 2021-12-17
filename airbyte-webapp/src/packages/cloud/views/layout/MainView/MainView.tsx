@@ -5,7 +5,7 @@ import { Outlet } from "react-router-dom";
 import { LoadingPage } from "components";
 
 import SideBar from "packages/cloud/views/layout/SideBar";
-import { ErrorBoundary } from "./ErrorBoundary";
+import { InsufficientPermissionsErrorBoundary } from "./InsufficientPermissionsErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 
@@ -26,16 +26,18 @@ const Content = styled.div`
 
 const MainView: React.FC = ({ children }) => (
   <MainContainer>
-    <ErrorBoundary errorComponent={<StartOverErrorView />}>
+    <InsufficientPermissionsErrorBoundary
+      errorComponent={<StartOverErrorView />}
+    >
       <SideBar />
       <Content>
         <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
-          <React.Suspense fallback={LoadingPage}>
-            {children ?? <Outlet />}
+          <React.Suspense fallback={<LoadingPage />}>
+            {props.children ?? <Outlet />}
           </React.Suspense>
         </ResourceNotFoundErrorBoundary>
       </Content>
-    </ErrorBoundary>
+    </InsufficientPermissionsErrorBoundary>
   </MainContainer>
 );
 
