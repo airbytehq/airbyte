@@ -8,6 +8,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
@@ -82,7 +83,6 @@ public abstract class S3StreamCopier implements StreamCopier {
     this.tmpTableName = nameTransformer.getTmpTableName(this.streamName);
     this.s3Client = client;
     this.s3Config = s3Config;
-
     this.maxPartsPerFile = maxPartsPerFile;
     this.partsAddedToCurrentFile = 0;
   }

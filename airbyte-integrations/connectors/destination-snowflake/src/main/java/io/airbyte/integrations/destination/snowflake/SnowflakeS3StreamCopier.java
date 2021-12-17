@@ -17,9 +17,6 @@ import org.slf4j.LoggerFactory;
 
 public class SnowflakeS3StreamCopier extends LegacyS3StreamCopier {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeS3StreamCopier.class);
-  private static final int FILE_PREFIX_LENGTH = 5;
-
   public SnowflakeS3StreamCopier(final String stagingFolder,
                                  final DestinationSyncMode destSyncMode,
                                  final String schema,

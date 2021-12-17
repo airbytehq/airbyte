@@ -13,6 +13,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
+import io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -87,7 +88,7 @@ public abstract class LegacyS3StreamCopier implements StreamCopier {
     this.tmpTableName = nameTransformer.getTmpTableName(streamName);
     this.s3Client = client;
     this.s3Config = s3Config;
-    this.filenameGenerator = new StagingFilenameGenerator(streamName, MAX_PARTS_PER_FILE);
+    this.filenameGenerator = new StagingFilenameGenerator(streamName, GlobalDataSizeConstants.MAX_BYTE_PARTS_PER_FILE_DEFAULT);
   }
 
   private String prepareS3StagingFile() {
