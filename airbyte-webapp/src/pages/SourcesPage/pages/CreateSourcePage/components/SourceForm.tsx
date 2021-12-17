@@ -9,8 +9,8 @@ import { JobInfo } from "core/resources/Scheduler";
 import { JobsLogItem } from "components/JobItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { SourceDefinition } from "core/resources/SourceDefinition";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { SourceDefinition } from "core/domain/connector";
 
 type IProps = {
   onSubmit: (values: {
