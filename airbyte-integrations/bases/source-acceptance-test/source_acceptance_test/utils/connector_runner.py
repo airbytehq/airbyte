@@ -124,16 +124,21 @@ class ConnectorRunner:
                 found = buffer.find(b"\n")
                 if found <= -1:
                     break
+
                 line = buffer[: found + 1].decode("utf-8")
-                if len(exception) > 0 or "Traceback (most recent call last)" in line:
+                if len(exception) > 0 or line.startswith("Traceback (most recent call last)"):
                     exception += line
                 else:
                     yield line
                 buffer = buffer[found + 1 :]
 
-        if not exception and buffer:
+        if buffer:
             # send the latest chunk if exists
-            yield buffer.decode("utf-8")
+            line = buffer.decode("utf-8")
+            if exception:
+                exception += line
+            else:
+                yield line
 
         exit_status = container.wait()
         if exit_status["StatusCode"]:

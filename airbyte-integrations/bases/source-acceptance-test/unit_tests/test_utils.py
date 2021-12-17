@@ -5,9 +5,11 @@
 import random
 import string
 from functools import partial
+from typing import Iterable
 from unittest.mock import Mock
 
 import pytest
+from docker.errors import ContainerError
 from source_acceptance_test.utils.compare import make_hashable
 from source_acceptance_test.utils.connector_runner import ConnectorRunner
 
@@ -170,28 +172,69 @@ def test_exclude_fields():
         assert "organization_id" not in item
 
 
-def test_read_logs():
-    def binary_generator(lengths):
+class MockContainer:
+    def __init__(self, status: dict, iter_logs: Iterable):
+        self.wait = Mock(return_value=status)
+        self.logs = Mock(return_value=iter(iter_logs))
 
-        data = ""
-        for length in lengths:
-            data += "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(length)) + "\n"
-        data = data.encode()
-        chunk_size = 1024
+        class Image:
+            pass
 
-        while len(data) > chunk_size:
-            yield data[:chunk_size]
-            data = data[chunk_size:]
-        yield data
+        self.image = Image()
 
-    class Container:
-        pass
 
-    line_count = 1232
+def binary_generator(lengths):
+    data = ""
+    for length in lengths:
+        data += "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(length)) + "\n"
+    data = data.encode()
+    chunk_size = random.randint(512, 1024)
+
+    while len(data) > chunk_size:
+        yield data[:chunk_size]
+        data = data[chunk_size:]
+    yield data
+
+
+def test_successful_logs_reading():
+    line_count = 1234
     line_lengths = [random.randint(0, 1024 * 20) for _ in range(line_count)]
-    Container.wait = Mock(return_value={"StatusCode": 0})
-    Container.logs = Mock(return_value=iter(binary_generator(line_lengths)))
-    lines = [line for line in ConnectorRunner.read(container=Container())]
+    lines = [
+        line for line in ConnectorRunner.read(container=MockContainer(status={"StatusCode": 0}, iter_logs=binary_generator(line_lengths)))
+    ]
     assert line_count == len(lines)
     for line, length in zip(lines, line_lengths):
         assert len(line) - 1 == length
+
+
+def test_failed_logs_reading():
+    line_count = 10
+    line_lengths = [random.randint(0, 523) for _ in range(line_count)]
+    expected_error = "fake error"
+    with pytest.raises(ContainerError) as exc:
+        list(
+            ConnectorRunner.read(
+                container=MockContainer(status={"StatusCode": 1, "Error": expected_error}, iter_logs=binary_generator(line_lengths))
+            )
+        )
+    assert expected_error == exc.value.stderr
+
+
+def test_failed_exception_reading():
+    expected_error = "Traceback (most recent call last):\n  File \"<stdin>\", line 1, in <module>\nKeyError: 'bbbb'"
+
+    def binary_generator_with_exception(lengths):
+        yield from binary_generator(lengths)
+        yield ("bla-1234567890-bla\n" + expected_error).encode()
+
+    line_count = 10
+    line_lengths = [random.randint(0, 523) for _ in range(line_count)]
+
+    with pytest.raises(ContainerError) as exc:
+        list(
+            ConnectorRunner.read(
+                container=MockContainer(status={"StatusCode": 1, "Error": "error"}, iter_logs=binary_generator_with_exception(line_lengths))
+            )
+        )
+
+    assert expected_error == exc.value.stderr
