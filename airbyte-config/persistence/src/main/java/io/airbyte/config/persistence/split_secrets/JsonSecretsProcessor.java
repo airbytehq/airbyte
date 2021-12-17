@@ -6,14 +6,13 @@ package io.airbyte.config.persistence.split_secrets;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
@@ -55,30 +54,34 @@ public class JsonSecretsProcessor {
   }
 
   private JsonNode maskAllSecrets(final JsonNode obj, final Set<String> secretKeys) {
-    if (obj.isObject()) {
-      for (final String key : Jsons.keys(obj)) {
+    final JsonNode copiedObj = obj.deepCopy();
+    final Queue<JsonNode> toProcess = new LinkedList<>();
+    toProcess.add(copiedObj);
+
+    while (!toProcess.isEmpty()) {
+      final JsonNode currentNode = toProcess.remove();
+      for (final String key : Jsons.keys(currentNode)) {
         if (secretKeys.contains(key)) {
-          ((ObjectNode) obj).put(key, SECRETS_MASK);
-        } else if (obj.get(key).isObject()) {
-          maskAllSecrets(obj.get(key), secretKeys);
-        } else if (obj.get(key).isArray()) {
-          final ArrayNode updatedArrayNode = new ArrayNode(JsonNodeFactory.instance);
-          obj.get(key).forEach((arrayElement) -> {
-            final JsonNode sanitizedNode = maskAllSecrets(arrayElement, secretKeys);
-            updatedArrayNode.add(sanitizedNode);
+          ((ObjectNode) currentNode).put(key, SECRETS_MASK);
+        } else if (currentNode.get(key).isObject()) {
+          toProcess.add(currentNode.get(key));
+        } else if (currentNode.get(key).isArray()) {
+          final ArrayNode arrayNode = (ArrayNode) currentNode.get(key);
+          arrayNode.forEach((node) -> {
+            toProcess.add(node);
           });
-          return updatedArrayNode;
         }
       }
     }
 
-    return obj;
+    return copiedObj;
   }
 
   private Set<String> getAllSecretKeys(final JsonNode schema) {
     final Set<String> result = new HashSet<>();
 
-    final Queue<JsonNode> toProcess = Lists.newLinkedList(schema);
+    final Queue<JsonNode> toProcess = new LinkedList<>();
+    toProcess.add(schema);
 
     while (!toProcess.isEmpty()) {
       final JsonNode currentNode = toProcess.remove();
