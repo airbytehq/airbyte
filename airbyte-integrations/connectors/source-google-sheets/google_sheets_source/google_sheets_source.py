@@ -6,9 +6,17 @@
 import json
 from typing import Dict, Generator
 
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models.airbyte_protocol import (
+    AirbyteCatalog,
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    ConfiguredAirbyteCatalog,
+    Status,
+    Type,
+)
+from airbyte_cdk.sources.source import Source
 from apiclient import errors
-from base_python import AirbyteLogger, Source
 from requests.status_codes import codes as status_codes
 
 from .client import GoogleSheetsClient

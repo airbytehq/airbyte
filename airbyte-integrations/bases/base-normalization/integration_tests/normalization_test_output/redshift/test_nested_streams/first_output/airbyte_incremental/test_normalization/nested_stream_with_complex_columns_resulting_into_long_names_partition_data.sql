@@ -53,7 +53,7 @@ joined as (
     from "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_partition"
     cross join numbers
     -- only generate the number of records in the cross join that corresponds
-    -- to the number of items in nested_stream_with_complex_columns_resulting_into_long_names_partition.data
+    -- to the number of items in "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_partition".data
     where numbers.generated_number <= json_array_length(data, true)
 )
 select

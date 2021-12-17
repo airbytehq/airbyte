@@ -3,5 +3,6 @@
   "name": "MQTT",
   "dockerRepository": "airbyte/destination-mqtt",
   "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mqtt"
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mqtt",
+  "icon": "mqtt.svg"
 }

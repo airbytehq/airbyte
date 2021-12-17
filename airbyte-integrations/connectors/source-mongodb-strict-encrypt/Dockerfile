@@ -4,9 +4,7 @@ WORKDIR /airbyte
 
 ENV APPLICATION source-mongodb-strict-encrypt
 
-COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
+ADD build/distributions/${APPLICATION}*.tar /airbyte
 
-RUN tar xf ${APPLICATION}.tar --strip-components=1
-
-LABEL io.airbyte.version=0.1.4
+LABEL io.airbyte.version=0.1.6
 LABEL io.airbyte.name=airbyte/source-mongodb-strict-encrypt

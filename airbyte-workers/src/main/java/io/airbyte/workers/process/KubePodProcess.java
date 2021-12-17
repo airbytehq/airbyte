@@ -7,7 +7,7 @@ package io.airbyte.workers.process;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
-import io.airbyte.config.WorkerPodToleration;
+import io.airbyte.config.TolerationPOJO;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
@@ -91,6 +91,9 @@ public class KubePodProcess extends Process {
 
   private static final String INIT_CONTAINER_NAME = "init";
   private static final Long STATUS_CHECK_INTERVAL_MS = 30 * 1000L;
+  private static final String DEFAULT_MEMORY_LIMIT = "25Mi";
+  private static final ResourceRequirements DEFAULT_SIDECAR_RESOURCES = new ResourceRequirements()
+      .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_LIMIT);
 
   private static final String PIPES_DIR = "/pipes";
   private static final String STDIN_PIPE_FILE = PIPES_DIR + "/stdin";
@@ -114,6 +117,7 @@ public class KubePodProcess extends Process {
   // This variable should be set in functions where the pod is forcefully terminated. See
   // getReturnCode() for more info.
   private final AtomicBoolean wasKilled = new AtomicBoolean(false);
+  private final AtomicBoolean wasClosed = new AtomicBoolean(false);
 
   private final OutputStream stdin;
   private InputStream stdout;
@@ -235,7 +239,7 @@ public class KubePodProcess extends Process {
     LOGGER.info("Init container ready..");
   }
 
-  private Toleration[] buildPodTolerations(final List<WorkerPodToleration> tolerations) {
+  private Toleration[] buildPodTolerations(final List<TolerationPOJO> tolerations) {
     if (tolerations == null || tolerations.isEmpty()) {
       return null;
     }
@@ -263,7 +267,7 @@ public class KubePodProcess extends Process {
                         final String entrypointOverride,
                         final ResourceRequirements resourceRequirements,
                         final String imagePullSecret,
-                        final List<WorkerPodToleration> tolerations,
+                        final List<TolerationPOJO> tolerations,
                         final Map<String, String> nodeSelectors,
                         final Map<String, String> labels,
                         final String socatImage,
@@ -328,11 +332,13 @@ public class KubePodProcess extends Process {
         resourceRequirements,
         args);
 
+    final io.fabric8.kubernetes.api.model.ResourceRequirements sidecarResources = getResourceRequirementsBuilder(DEFAULT_SIDECAR_RESOURCES).build();
     final Container remoteStdin = new ContainerBuilder()
         .withName("remote-stdin")
         .withImage(socatImage)
         .withCommand("sh", "-c", "socat -d TCP-L:9001 STDOUT > " + STDIN_PIPE_FILE)
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
+        .withResources(sidecarResources)
         .build();
 
     final Container relayStdout = new ContainerBuilder()
@@ -340,6 +346,7 @@ public class KubePodProcess extends Process {
         .withImage(socatImage)
         .withCommand("sh", "-c", String.format("cat %s | socat -d - TCP:%s:%s", STDOUT_PIPE_FILE, processRunnerHost, stdoutLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
+        .withResources(sidecarResources)
         .build();
 
     final Container relayStderr = new ContainerBuilder()
@@ -347,6 +354,7 @@ public class KubePodProcess extends Process {
         .withImage(socatImage)
         .withCommand("sh", "-c", String.format("cat %s | socat -d - TCP:%s:%s", STDERR_PIPE_FILE, processRunnerHost, stderrLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
+        .withResources(sidecarResources)
         .build();
 
     // communicates via a file if it isn't able to reach the heartbeating server and succeeds if the
@@ -362,6 +370,7 @@ public class KubePodProcess extends Process {
         .withCommand("sh")
         .withArgs("-c", heartbeatCommand)
         .withVolumeMounts(terminationVolumeMount)
+        .withResources(sidecarResources)
         .build();
 
     final List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr, callHeartbeatServer)
@@ -509,6 +518,14 @@ public class KubePodProcess extends Process {
    * implementation with OS processes and resources, which are automatically reaped by the OS.
    */
   private void close() {
+    final boolean previouslyClosed = wasClosed.getAndSet(true);
+
+    // short-circuit if close was already called, so we don't re-offer ports multiple times
+    // since the offer call is non-atomic
+    if (previouslyClosed) {
+      return;
+    }
+
     if (this.stdin != null) {
       Exceptions.swallow(this.stdin::close);
     }

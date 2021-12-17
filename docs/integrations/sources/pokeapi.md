@@ -36,6 +36,8 @@ The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-js
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.4 | 2021-12-07 | [8582](https://github.com/airbytehq/airbyte/pull/8582) | Update connector fields title/description |
+| 0.1.3 | 2021-12-03 | [8432](https://github.com/airbytehq/airbyte/pull/8432) | Migrate from base_python to CDK, add SAT tests. |
 | 0.1.1 | 2020-06-29 | [1046](https://github.com/airbytehq/airbyte/pull/4410) | Fix runtime UI error from GitHub store path. |
 | 0.1.0 | 2020-05-04 | [1046](https://github.com/airbytehq/airbyte/pull/3149) | Add source for PokeAPI. |
 

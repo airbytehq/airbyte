@@ -1,0 +1,18 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "breakdowns": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "time": {
+      "type": ["string", "null"],
+      "format": "datetime"
+    },
+    "value": {
+      "type": ["string", "null"]
+    }
+  }
+}

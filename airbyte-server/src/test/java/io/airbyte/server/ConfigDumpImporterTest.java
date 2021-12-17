@@ -29,7 +29,6 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
-import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
@@ -63,14 +62,10 @@ class ConfigDumpImporterTest {
     final JobPersistence jobPersistence = mock(JobPersistence.class);
     final WorkspaceHelper workspaceHelper = mock(WorkspaceHelper.class);
 
-    final SpecFetcher specFetcher = mock(SpecFetcher.class);
-    emptyConnectorSpec = mock(ConnectorSpecification.class);
-    when(emptyConnectorSpec.getConnectionSpecification()).thenReturn(Jsons.emptyObject());
-    when(specFetcher.getSpec(any(StandardSourceDefinition.class))).thenReturn(emptyConnectorSpec);
-    when(specFetcher.getSpec(any(StandardDestinationDefinition.class))).thenReturn(emptyConnectorSpec);
+    emptyConnectorSpec = new ConnectorSpecification().withConnectionSpecification(Jsons.emptyObject());
 
     configDumpImporter =
-        new ConfigDumpImporter(configRepository, jobPersistence, workspaceHelper, mock(JsonSchemaValidator.class), specFetcher, true);
+        new ConfigDumpImporter(configRepository, jobPersistence, workspaceHelper, mock(JsonSchemaValidator.class), true);
     configDumpExporter = new ConfigDumpExporter(configRepository, jobPersistence, workspaceHelper);
 
     workspaceId = UUID.randomUUID();
@@ -83,7 +78,7 @@ class ConfigDumpImporterTest {
         .withDocumentationUrl("http://doc")
         .withIcon("hello")
         .withDockerImageTag("dev")
-        .withSpec(new ConnectorSpecification());
+        .withSpec(emptyConnectorSpec);
     sourceConnection = new SourceConnection()
         .withSourceId(UUID.randomUUID())
         .withSourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
@@ -105,7 +100,7 @@ class ConfigDumpImporterTest {
         .withDocumentationUrl("http://doc")
         .withIcon("hello")
         .withDockerImageTag("dev")
-        .withSpec(new ConnectorSpecification());
+        .withSpec(emptyConnectorSpec);
     destinationConnection = new DestinationConnection()
         .withDestinationId(UUID.randomUUID())
         .withDestinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())

@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "title": "Predicted Gender Segment",
+  "description": "Segment by predicted gender.",
+  "required": ["field", "op", "value"],
+  "properties": {
+    "condition_type": {
+      "type": "string",
+      "x-value": "PredictedGender",
+      "enum": ["PredictedGender"]
+    },
+    "field": {
+      "type": "string",
+      "enum": ["predicted_gender"],
+      "title": "Segment Field",
+      "description": "Segment by predicted gender."
+    },
+    "op": {
+      "type": "string",
+      "enum": ["is", "not"],
+      "title": "Segment Operator",
+      "description": "Members who are/not the exact criteria listed.",
+      "example": "is"
+    },
+    "value": {
+      "type": "string",
+      "enum": ["male", "female"],
+      "title": "Segment Operator",
+      "description": "The predicted gender to segment.",
+      "example": "female"
+    }
+  }
+}

@@ -9,8 +9,8 @@ import pendulum
 import pytest
 import responses
 from airbyte_cdk.models import SyncMode
-from source_iterable.api import EmailSend
-from source_iterable.iterable_streams import IterableExportStreamRanged, StreamSlice
+from source_iterable.api import Users
+from source_iterable.iterable_streams import StreamSlice
 
 
 @pytest.fixture
@@ -25,7 +25,7 @@ def session_mock():
 
 
 def test_send_email_stream(session_mock):
-    stream = EmailSend(start_date="2020", api_key="")
+    stream = Users(start_date="2020", api_key="")
     stream_slice = StreamSlice(start_date=pendulum.parse("2020"), end_date=pendulum.parse("2021"))
     _ = list(stream.read_records(sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=stream_slice, stream_state={}))
 
@@ -37,66 +37,10 @@ def test_send_email_stream(session_mock):
 @responses.activate
 def test_stream_correct():
     stream_slice = StreamSlice(start_date=pendulum.parse("2020"), end_date=pendulum.parse("2021"))
-    record_js = {"createdAt": "2020"}
+    record_js = {"profileUpdatedAt": "2020"}
     NUMBER_OF_RECORDS = 10 ** 2
     resp_body = "\n".join([json.dumps(record_js)] * NUMBER_OF_RECORDS)
     responses.add("GET", "https://api.iterable.com/api/export/data.json", body=resp_body)
-    stream = EmailSend(start_date="2020", api_key="")
+    stream = Users(start_date="2020", api_key="")
     records = list(stream.read_records(sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=stream_slice, stream_state={}))
     assert len(records) == NUMBER_OF_RECORDS
-
-
-@pytest.mark.parametrize(
-    "start_day,end_day,days,range",
-    [
-        (
-            "2020-01-01",
-            "2020-01-10",
-            5,
-            [
-                (pendulum.parse("2020-01-01"), pendulum.parse("2020-01-06")),
-                (pendulum.parse("2020-01-06"), pendulum.parse("2020-01-10")),
-            ],
-        ),
-        (
-            "2020-01-01",
-            "2020-01-10 20:00:12",
-            5,
-            [
-                (pendulum.parse("2020-01-01"), pendulum.parse("2020-01-06")),
-                (pendulum.parse("2020-01-06"), pendulum.parse("2020-01-10 20:00:12")),
-            ],
-        ),
-        (
-            "2020-01-01",
-            "2020-01-01 20:00:12",
-            5,
-            [
-                (pendulum.parse("2020-01-01"), pendulum.parse("2020-01-01 20:00:12")),
-            ],
-        ),
-        (
-            "2020-01-01",
-            "2020-01-10",
-            50,
-            [(pendulum.parse("2020-01-01"), pendulum.parse("2020-01-10"))],
-        ),
-        (
-            "2020-01-01",
-            "2020-01-01",
-            50,
-            [],
-        ),
-    ],
-)
-def test_datetime_ranges(start_day, end_day, days, range):
-    start_day = pendulum.parse(start_day)
-    end_day = pendulum.parse(end_day)
-    assert list(IterableExportStreamRanged.make_datetime_ranges(start_day, end_day, days)) == range
-
-
-def test_datetime_wrong_range():
-    start_day = pendulum.parse("2020")
-    end_day = pendulum.parse("2000")
-    with pytest.raises(StopIteration):
-        next(IterableExportStreamRanged.make_datetime_ranges(start_day, end_day, 1))

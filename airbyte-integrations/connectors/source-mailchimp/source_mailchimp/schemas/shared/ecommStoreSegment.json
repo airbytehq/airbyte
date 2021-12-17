@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "title": "Ecommerce Purchased Store Segment",
+  "description": "Segment by purchases from a specific store.",
+  "properties": {
+    "condition_type": {
+      "type": "string",
+      "x-value": "EcommStore",
+      "enum": ["EcommStore"]
+    },
+    "field": {
+      "type": "string",
+      "enum": ["ecomm_store"],
+      "title": "Segment Field",
+      "description": "Segment by purchases from a specific store.",
+      "example": "ecomm_store"
+    },
+    "op": {
+      "type": "string",
+      "enum": ["is", "not"],
+      "title": "Segment Operator",
+      "description": "Members who have or have not purchased from a specific store.",
+      "example": "is"
+    },
+    "value": {
+      "type": "string",
+      "title": "Segment Operator",
+      "description": "The store id to segment against.",
+      "example": "289"
+    }
+  }
+}
