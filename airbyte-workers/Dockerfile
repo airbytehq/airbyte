@@ -24,7 +24,7 @@ ENV AIRBYTE_ENTRYPOINT "/app/${APPLICATION}-0.34.0-alpha/bin/${APPLICATION}"
 WORKDIR /app
 
 # Move worker app
-ADD bin/${APPLICATION}-0.34.0-alpha.tar /app
+ADD bin/${APPLICATION}-0.34.1-alpha.tar /app
 
 # wait for upstream dependencies to become available before starting server
-ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-0.34.0-alpha/bin/${APPLICATION}"]
+ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-0.34.1-alpha/bin/${APPLICATION}"]
