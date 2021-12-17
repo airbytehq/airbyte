@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.protobuf.ByteString;
 import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
@@ -180,9 +181,9 @@ public class TemporalClient {
 
   public ManualSyncSubmissionResult startNewManualSync(final UUID connectionId) {
     log.info("Manual sync request");
-    final List<WorkflowExecutionInfo> workflows = getExecutionsResponse("connection_updater_" + connectionId);
+    final boolean isWorflowRunning = isWorkflowRunning("connection_updater_" + connectionId);
 
-    if (workflows.isEmpty()) {
+    if (!isWorflowRunning) {
       return new ManualSyncSubmissionResult(
           Optional.of("No scheduler workflow is running for: " + connectionId),
           Optional.empty());
@@ -231,9 +232,9 @@ public class TemporalClient {
   public ManualSyncSubmissionResult startNewCancelation(final UUID connectionId) {
     log.info("Manual sync request");
 
-    final List<WorkflowExecutionInfo> workflows = getExecutionsResponse("connection_updater_" + connectionId);
+    final boolean isWorflowRunning = isWorkflowRunning("connection_updater_" + connectionId);
 
-    if (workflows.isEmpty()) {
+    if (!isWorflowRunning) {
       return new ManualSyncSubmissionResult(
           Optional.of("No scheduler workflow is running for: " + connectionId),
           Optional.empty());
@@ -276,9 +277,9 @@ public class TemporalClient {
   }
 
   private ConnectionUpdaterWorkflow getConnectionUpdateWorkflow(final UUID connectionId) {
-    final List<WorkflowExecutionInfo> workflows = getExecutionsResponse("connection_updater_" + connectionId);
+    final boolean isWorflowRunning = isWorkflowRunning("connection_updater_" + connectionId);
 
-    if (workflows.isEmpty()) {
+    if (!isWorflowRunning) {
       throw new IllegalStateException("No running workflow for the connection {} while trying to delete it");
     }
 
@@ -288,7 +289,8 @@ public class TemporalClient {
     return connectionUpdaterWorkflow;
   }
 
-  @VisibleForTesting <T> TemporalResponse<T> execute(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
+  @VisibleForTesting
+  <T> TemporalResponse<T> execute(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
     final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig);
     final Path logPath = WorkerUtils.getLogPath(jobRoot);
 
@@ -305,20 +307,36 @@ public class TemporalClient {
     return new TemporalResponse<>(operationOutput, metadata);
   }
 
-  public List<WorkflowExecutionInfo> getExecutionsResponse(final String workflowName) {
-    // TODO: pagination as explained here: https://temporalio.slack.com/archives/CTRCR8RBP/p1638926310308200
-    final ListOpenWorkflowExecutionsRequest openWorkflowExecutionsRequest =
+  /**
+   * Check if a workflow is currently running. It is using the temporal pagination (see:
+   * https://temporalio.slack.com/archives/CTRCR8RBP/p1638926310308200)
+   */
+  public boolean isWorkflowRunning(final String workflowName) {
+    ByteString token;
+    ListOpenWorkflowExecutionsRequest openWorkflowExecutionsRequest =
         ListOpenWorkflowExecutionsRequest.newBuilder()
             .setNamespace(client.getOptions().getNamespace())
             .build();
-    final ListOpenWorkflowExecutionsResponse listOpenWorkflowExecutionsRequest =
-        service.blockingStub().listOpenWorkflowExecutions(openWorkflowExecutionsRequest);
+    do {
+      final ListOpenWorkflowExecutionsResponse listOpenWorkflowExecutionsRequest =
+          service.blockingStub().listOpenWorkflowExecutions(openWorkflowExecutionsRequest);
+      final List<WorkflowExecutionInfo> workflowExecutionInfos = listOpenWorkflowExecutionsRequest.getExecutionsList().stream()
+          .filter((workflowExecutionInfo -> workflowExecutionInfo.getExecution().getWorkflowId().equals(workflowName)))
+          .collect(Collectors.toList());
+      if (!workflowExecutionInfos.isEmpty()) {
+        return true;
+      }
+      token = listOpenWorkflowExecutionsRequest.getNextPageToken();
 
-    final List<WorkflowExecutionInfo> workflowExecutionInfos = listOpenWorkflowExecutionsRequest.getExecutionsList().stream()
-        .filter((workflowExecutionInfo -> workflowExecutionInfo.getExecution().getWorkflowId().equals(workflowName)))
-        .collect(Collectors.toList());
+      openWorkflowExecutionsRequest =
+          ListOpenWorkflowExecutionsRequest.newBuilder()
+              .setNamespace(client.getOptions().getNamespace())
+              .setNextPageToken(token)
+              .build();
 
-    return workflowExecutionInfos;
+    } while (token != null && token.size() > 0);
+
+    return false;
   }
 
 }
