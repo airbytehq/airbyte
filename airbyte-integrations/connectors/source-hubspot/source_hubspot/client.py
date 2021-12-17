@@ -14,6 +14,7 @@ from source_hubspot.api import (
     ContactListStream,
     ContactsListMembershipsStream,
     CRMObjectIncrementalStream,
+    CRMSearchStream,
     DealPipelineStream,
     DealStream,
     EmailEventStream,
@@ -37,9 +38,9 @@ class Client(BaseClient):
         common_params = dict(api=self._api, start_date=self._start_date)
         self._apis = {
             "campaigns": CampaignStream(**common_params),
-            "companies": CRMObjectIncrementalStream(entity="company", associations=["contacts"], **common_params),
+            "companies": CRMSearchStream(entity="company", last_modified_field="hs_lastmodifieddate", associations=["contacts"], **common_params),
             "contact_lists": ContactListStream(**common_params),
-            "contacts": CRMObjectIncrementalStream(entity="contact", **common_params),
+            "contacts": CRMSearchStream(entity="contact", last_modified_field="lastmodifieddate", associations=["contacts"], **common_params),
             "contacts_list_memberships": ContactsListMembershipsStream(**common_params),
             "deal_pipelines": DealPipelineStream(**common_params),
             "deals": DealStream(associations=["contacts"], **common_params),
