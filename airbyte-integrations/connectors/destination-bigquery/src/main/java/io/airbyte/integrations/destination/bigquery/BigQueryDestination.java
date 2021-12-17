@@ -180,11 +180,9 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   protected Map<UploaderType, BigQueryRecordFormatter> getFormatterMap(JsonNode jsonSchema) {
-    Map<UploaderType, BigQueryRecordFormatter> formatterMap = new HashMap<>();
-    formatterMap.put(UploaderType.STANDARD, new DefaultBigQueryRecordFormatter(jsonSchema, getNamingResolver()));
-    formatterMap.put(UploaderType.CSV, new GcsCsvBigQueryRecordFormatter(jsonSchema, getNamingResolver()));
-    formatterMap.put(UploaderType.AVRO, new GcsAvroBigQueryRecordFormatter(jsonSchema, getNamingResolver()));
-    return formatterMap;
+    return Map.of(UploaderType.STANDARD, new DefaultBigQueryRecordFormatter(jsonSchema, getNamingResolver()),
+        UploaderType.CSV, new GcsCsvBigQueryRecordFormatter(jsonSchema, getNamingResolver()),
+        UploaderType.AVRO, new GcsAvroBigQueryRecordFormatter(jsonSchema, getNamingResolver()));
   }
 
   protected String getTargetTableName(final String streamName) {
