@@ -9,7 +9,7 @@ import { Transformation } from "core/domain/connection/operation";
 import { equal } from "utils/objects";
 import { FormikErrors } from "formik/dist/types";
 import { useGetService } from "core/servicesProvider";
-import { OperationService } from "../../../core/domain/connection";
+import { OperationService } from "core/domain/connection";
 
 const Content = styled.div`
   display: flex;

@@ -6,7 +6,7 @@ import PageTitle from "components/PageTitle";
 import useRouter from "hooks/useRouter";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import ConnectionResource from "core/resources/Connection";
-import { Routes } from "../../../routes";
+import { RoutePaths } from "pages/routes";
 import Breadcrumbs from "components/Breadcrumbs";
 import DestinationConnectionTable from "./components/DestinationConnectionTable";
 import DestinationResource from "core/resources/Destination";
@@ -28,7 +28,7 @@ import useWorkspace from "hooks/services/useWorkspace";
 import { DropDownRow } from "components";
 
 const DestinationItemPage: React.FC = () => {
-  const { query, push } = useRouter<{ id: string }>();
+  const { params, push } = useRouter<unknown, { id: string }>();
   const { workspace } = useWorkspace();
   const [currentStep, setCurrentStep] = useState<string>(StepsTypes.OVERVIEW);
   const onSelectStep = (id: string) => setCurrentStep(id);
@@ -45,7 +45,7 @@ const DestinationItemPage: React.FC = () => {
   );
 
   const destination = useResource(DestinationResource.detailShape(), {
-    destinationId: query.id,
+    destinationId: params.id,
   });
 
   const destinationDefinition = useResource(
@@ -59,7 +59,7 @@ const DestinationItemPage: React.FC = () => {
     workspaceId: workspace.workspaceId,
   });
 
-  const onClickBack = () => push(Routes.Destination);
+  const onClickBack = () => push("..");
 
   const breadcrumbsData = [
     {
@@ -90,20 +90,16 @@ const DestinationItemPage: React.FC = () => {
   );
 
   const onSelect = (data: DropDownRow.IDataItem) => {
-    if (data.value === "create-new-item") {
-      push({
-        pathname: `${Routes.Destination}${Routes.ConnectionNew}`,
-        state: { destinationId: destination.destinationId },
-      });
-    } else {
-      push({
-        pathname: `${Routes.Destination}${Routes.ConnectionNew}`,
-        state: {
-          sourceId: data.value,
-          destinationId: destination.destinationId,
-        },
-      });
-    }
+    const path = `../${RoutePaths.ConnectionNew}`;
+    const state =
+      data.value === "create-new-item"
+        ? { destinationId: destination.destinationId }
+        : {
+            sourceId: data.value,
+            destinationId: destination.destinationId,
+          };
+
+    push(path, { state });
   };
 
   const renderContent = () => {
