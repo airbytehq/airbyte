@@ -7,9 +7,16 @@ package io.airbyte.config.persistence.split_secrets;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class JsonSecretsProcessorTest {
 
@@ -429,6 +436,47 @@ public class JsonSecretsProcessorTest {
         "format", parquetConfig));
 
     final JsonNode actual = new JsonSecretsProcessor().copySecrets(src, dst, ONE_OF_WITH_SAME_KEY_IN_SUB_SCHEMAS);
+  }
+
+  private static Stream<Arguments> scenarioProvider() {
+    return Stream.of(
+        Arguments.of("array", true),
+        Arguments.of("array", false),
+        Arguments.of("array_of_oneof", true),
+        Arguments.of("array_of_oneof", false),
+        Arguments.of("nested_object", true),
+        Arguments.of("nested_object", false),
+        Arguments.of("nested_oneof", true),
+        Arguments.of("nested_oneof", false),
+        Arguments.of("oneof", true),
+        Arguments.of("oneof", false),
+        Arguments.of("optional_password", true),
+        Arguments.of("optional_password", false),
+        Arguments.of("postgres_ssh_key", true),
+        Arguments.of("postgres_ssh_key", false),
+        Arguments.of("simple", true),
+        Arguments.of("simple", false));
+  }
+
+  @ParameterizedTest
+  @MethodSource("scenarioProvider")
+  void testSecretScenario(final String folder, final boolean partial) throws IOException {
+    final ObjectMapper objectMapper = new ObjectMapper();
+
+    final InputStream specIs = getClass().getClassLoader().getResourceAsStream(folder + "/spec.json");
+    final JsonNode specs = objectMapper.readTree(specIs);
+
+    final String inputFilePath = folder + (partial ? "/partial_config.json" : "/full_config.json");
+    final InputStream inputIs = getClass().getClassLoader().getResourceAsStream(inputFilePath);
+    final JsonNode input = objectMapper.readTree(inputIs);
+
+    final String expectedFilePath = folder + "/expected.json";
+    final InputStream expectedIs = getClass().getClassLoader().getResourceAsStream(expectedFilePath);
+    final JsonNode expected = objectMapper.readTree(expectedIs);
+
+    final JsonNode actual = processor.maskSecrets(input, specs);
+
+    assertEquals(expected, actual);
   }
 
 }

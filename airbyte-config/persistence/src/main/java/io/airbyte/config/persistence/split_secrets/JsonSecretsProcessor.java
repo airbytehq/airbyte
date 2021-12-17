@@ -6,6 +6,7 @@ package io.airbyte.config.persistence.split_secrets;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
+import lombok.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +28,9 @@ public class JsonSecretsProcessor {
 
   public static String AIRBYTE_SECRET_FIELD = "airbyte_secret";
   public static final String PROPERTIES_FIELD = "properties";
+  public static String AIRBYTE_TYPE_FIELD = "type";
+  public static String AIRBYTE_ARRAY_TYPE_FIELD = "array";
+  public static String AIRBYTE_ITEMS_FIELD = "items";
 
   private static final JsonSchemaValidator VALIDATOR = new JsonSchemaValidator();
 
@@ -51,11 +56,11 @@ public class JsonSecretsProcessor {
     }
     Preconditions.checkArgument(schema.isObject());
 
-    final Set<String> secretKeys = getAllSecretKeys(schema);
+    final SecretKeys secretKeys = getAllSecretKeys(schema);
     return maskAllSecrets(obj, secretKeys);
   }
 
-  private JsonNode maskAllSecrets(final JsonNode obj, final Set<String> secretKeys) {
+  private JsonNode maskAllSecrets(final JsonNode obj, final SecretKeys secretKeys) {
     final JsonNode copiedObj = obj.deepCopy();
     final Queue<JsonNode> toProcess = new LinkedList<>();
     toProcess.add(copiedObj);
@@ -63,15 +68,21 @@ public class JsonSecretsProcessor {
     while (!toProcess.isEmpty()) {
       final JsonNode currentNode = toProcess.remove();
       for (final String key : Jsons.keys(currentNode)) {
-        if (secretKeys.contains(key)) {
+        if (secretKeys.fieldSecretKey.contains(key)) {
           ((ObjectNode) currentNode).put(key, SECRETS_MASK);
         } else if (currentNode.get(key).isObject()) {
           toProcess.add(currentNode.get(key));
         } else if (currentNode.get(key).isArray()) {
-          final ArrayNode arrayNode = (ArrayNode) currentNode.get(key);
-          arrayNode.forEach((node) -> {
-            toProcess.add(node);
-          });
+          if (secretKeys.arraySecretKey.contains(key)) {
+            final ArrayNode sanitizedArrayNode = new ArrayNode(JsonNodeFactory.instance);
+            currentNode.get(key).forEach((secret) -> sanitizedArrayNode.add(SECRETS_MASK));
+            ((ObjectNode) currentNode).put(key, sanitizedArrayNode);
+          } else {
+            final ArrayNode arrayNode = (ArrayNode) currentNode.get(key);
+            arrayNode.forEach((node) -> {
+              toProcess.add(node);
+            });
+          }
         }
       }
     }
@@ -79,8 +90,17 @@ public class JsonSecretsProcessor {
     return copiedObj;
   }
 
-  private Set<String> getAllSecretKeys(final JsonNode schema) {
-    final Set<String> result = new HashSet<>();
+  @Value
+  private class SecretKeys {
+
+    private final Set<String> fieldSecretKey;
+    private final Set<String> arraySecretKey;
+
+  }
+
+  private SecretKeys getAllSecretKeys(final JsonNode schema) {
+    final Set<String> fieldSecretKeys = new HashSet<>();
+    final Set<String> arraySecretKeys = new HashSet<>();
 
     final Queue<JsonNode> toProcess = new LinkedList<>();
     toProcess.add(schema);
@@ -88,8 +108,15 @@ public class JsonSecretsProcessor {
     while (!toProcess.isEmpty()) {
       final JsonNode currentNode = toProcess.remove();
       for (final String key : Jsons.keys(currentNode)) {
-        if (isSecret(currentNode.get(key))) {
-          result.add(key);
+        if (isArrayDefinition(currentNode.get(key))) {
+          final JsonNode arrayItems = currentNode.get(key).get(AIRBYTE_ITEMS_FIELD);
+          if (arrayItems.has(AIRBYTE_SECRET_FIELD) && arrayItems.get(AIRBYTE_SECRET_FIELD).asBoolean()) {
+            arraySecretKeys.add(key);
+          } else {
+            toProcess.add(arrayItems);
+          }
+        } else if (isSecret(currentNode.get(key))) {
+          fieldSecretKeys.add(key);
         } else if (currentNode.get(key).isObject()) {
           toProcess.add(currentNode.get(key));
         } else if (currentNode.get(key).isArray()) {
@@ -101,7 +128,7 @@ public class JsonSecretsProcessor {
       }
     }
 
-    return result;
+    return new SecretKeys(fieldSecretKeys, arraySecretKeys);
   }
 
   public static Optional<String> findJsonCombinationNode(final JsonNode node) {
@@ -176,6 +203,13 @@ public class JsonSecretsProcessor {
 
   public static boolean canBeProcessed(final JsonNode schema) {
     return schema.isObject() && schema.has(PROPERTIES_FIELD) && schema.get(PROPERTIES_FIELD).isObject();
+  }
+
+  public static boolean isArrayDefinition(final JsonNode obj) {
+    return obj.isObject()
+        && obj.has(AIRBYTE_TYPE_FIELD)
+        && obj.get(AIRBYTE_TYPE_FIELD).asText().equals(AIRBYTE_ARRAY_TYPE_FIELD)
+        && obj.has(AIRBYTE_ITEMS_FIELD);
   }
 
 }
