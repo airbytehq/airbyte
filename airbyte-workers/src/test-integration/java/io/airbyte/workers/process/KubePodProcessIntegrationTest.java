@@ -7,7 +7,6 @@ package io.airbyte.workers.process;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.lang.Exceptions;
@@ -219,13 +218,11 @@ public class KubePodProcessIntegrationTest {
     process.getInputStream().close();
     process.getOutputStream().close();
 
-    // verify that exitValue throws IllegalThreadStateException
-    // this confirms that closing the streams does not terminate the overall process
-    assertThrows(IllegalThreadStateException.class, process::exitValue);
+    // waiting for process
+    process.waitFor();
 
-    // checking that exit code matches main would require a long wait due to STATUS_CHECK_INTERVAL_MS,
-    // so don't do that here. We have other tests confirming that exit value matches main's exit code
-    // anyway.
+    // the pod exit code should match the main container exit value
+    assertEquals(13, process.exitValue());
   }
 
   private static String getRandomFile(final int lines) {
