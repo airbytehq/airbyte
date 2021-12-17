@@ -13,6 +13,7 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.CopyConsumerFactory;
 import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
+import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopyConfig;
 import io.airbyte.integrations.destination.s3.S3Destination;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -42,7 +43,7 @@ public class RedshiftCopyS3Destination extends CopyDestination {
         getDatabase(config),
         getSqlOperations(),
         getNameTransformer(),
-        getS3DestinationConfig(config),
+        new S3CopyConfig(S3CopyConfig.shouldPurgeStagingData(config), getS3DestinationConfig(config)),
         catalog,
         new RedshiftStreamCopierFactory(),
         getConfiguredSchema(config));
