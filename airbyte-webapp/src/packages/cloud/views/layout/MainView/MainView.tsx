@@ -24,7 +24,7 @@ const Content = styled.div`
   height: 100%;
 `;
 
-const MainView: React.FC = ({ children }) => (
+const MainView: React.FC = (props) => (
   <MainContainer>
     <InsufficientPermissionsErrorBoundary
       errorComponent={<StartOverErrorView />}
