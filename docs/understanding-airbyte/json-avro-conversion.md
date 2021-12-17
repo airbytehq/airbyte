@@ -22,6 +22,12 @@ Json schema types are mapped to Avro types as follows:
 
 The following built-in Json formats will be mapped to Avro logical types.
 
+| Json Type | Json Built-in Format | Avro Type | Avro Logical Type | Meaning |
+| --- | --- | --- | --- | --- |
+| `string` | `date` | `int` | `date` | Number of epoch days from 1970-01-01 ([reference](https://avro.apache.org/docs/current/spec.html#Date)). |
+| `string` | `time` | `long` | `time-micros` | Number of microseconds after midnight ([reference](https://avro.apache.org/docs/current/spec.html#Time+%28microsecond+precision%29)). |
+| `string` | `date-time` | `long` | `timestamp-micros` | Number of microseconds from `1970-01-01T00:00:00Z` ([reference](https://avro.apache.org/docs/current/spec.html#Timestamp+%28microsecond+precision%29)). |
+
 **Date**
 
 The date logical type represents a date within the calendar, with no reference to a particular time zone or time of day.
@@ -90,7 +96,7 @@ will become in Avro schema:
 
 ### Combined Restrictions
 
-Combined restrictions \("allOf", "anyOf", and "oneOf"\) will be converted to type unions. The corresponding Avro schema can be less stringent. For example, the following Json schema
+Combined restrictions \(`allOf`, `anyOf`, and `oneOf`\) will be converted to type unions. The corresponding Avro schema can be less stringent. For example, the following Json schema
 
 ```json
 {
@@ -113,13 +119,11 @@ will become this in Avro schema:
 
 Keyword `not` is not supported, as there is no equivalent validation mechanism in Avro schema.
 
-### Character Set
+### Filed Name
 
 Only alphanumeric characters and underscores \(`/a-zA-Z0-9_/`\) are allowed in a stream or field name. Any special character will be converted to an alphabet or underscore. For example, `spécial:character_names` will become `special_character_names`. The original names will be stored in the `doc`property in this format: `_airbyte_original_name:<original-name>`.
 
-### Filed Name
-
-The field name cannot start with a number, so an underscore will be added to the field name at the beginning.
+Field name cannot start with a number, so an underscore will be added to those field names at the beginning.
 
 ### Nullable Fields
 
@@ -141,7 +145,7 @@ For array fields in Json schema, when the `items` property is an array, it means
 }
 ```
 
-This is not supported in Avro schema. As a compromise, the converter creates a union, \["string", "number"\], which is less stringent:
+This is not supported in Avro schema. As a compromise, the converter creates a union, `["null", "string", "number"]`, which is less stringent:
 
 ```json
 {
@@ -150,7 +154,7 @@ This is not supported in Avro schema. As a compromise, the converter creates a u
     "null",
     {
       "type": "array",
-      "items": ["null", "string"]
+      "items": ["null", "string", "number"]
     }
   ],
   "default": null
@@ -159,9 +163,9 @@ This is not supported in Avro schema. As a compromise, the converter creates a u
 
 ### Untyped Array
 
-When a Json array field has no `items`, the element of that array field may have any type. However, Avro requires that each array has a clear type specification. To solve this problem, the elements in the array are forced to be `string`s.
+When a Json array field has no `items`, the element in that array field may have any type. However, Avro requires that each array has a clear type specification. To solve this problem, the elements in the array are forced to be `string`s.
 
-For example, given the following Json schema:
+For example, given the following Json schema and object:
 
 ```json
 {
@@ -174,15 +178,13 @@ For example, given the following Json schema:
 }
 ```
 
-and Json object:
-
 ```json
 {
   "identifier": ["151", 152, true, {"id": 153}, null]
 }
 ```
 
-the corresponding Avro schema is:
+the corresponding Avro schema and object will be:
 
 ```json
 {
@@ -202,8 +204,6 @@ the corresponding Avro schema is:
   ]
 }
 ```
-
-and the Avro object is:
 
 ```json
 {
@@ -240,7 +240,6 @@ For example, given the following Json schema:
 ```json
 {
   "type": "object",
-  "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "username": {
       "type": ["null", "string"]
@@ -306,7 +305,6 @@ the corresponding Avro schema and record will be:
 {
   "type": "record",
   "name": "record_without_properties",
-  "namespace": "namespace14",
   "fields": [
     {
       "name": "_airbyte_additional_properties",
@@ -415,7 +413,11 @@ Its corresponding Avro schema will be:
     },
     {
       "name": "created_at",
-      "type": ["null", "string"],
+      "type": [
+        "null",
+        {"type": "long", "logicalType": "timestamp-micros"},
+        "string"
+      ],
       "default": null
     },
     {
