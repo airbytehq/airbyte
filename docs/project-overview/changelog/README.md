@@ -245,7 +245,7 @@ New Source: Short.io \(contributed by @Apostol Tegko\)
 * 💎 GitHub source: Added support for rotating through multiple API tokens!
 * ✨ Syncs are now scheduled with a 3 day timeout \(contributed by @Vladimir Remar\).
 * ✨ Google Ads source: Added UserLocationReport stream \(contributed by @Max Krog\).
-* ✨ Cart source: Added the order\_items stream.
+* ✨ Cart.com source: Added the order\_items stream.
 * 🐛 Postgres source: Fixed out-of-memory issue with CDC interacting with large JSON blobs.
 * 🐛 Intercom source: Pagination now works as expected.
 

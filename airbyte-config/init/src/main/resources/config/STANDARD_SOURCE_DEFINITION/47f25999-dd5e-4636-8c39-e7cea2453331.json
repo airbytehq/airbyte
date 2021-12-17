@@ -3,5 +3,6 @@
   "name": "Bing Ads",
   "dockerRepository": "airbyte/source-bing-ads",
   "dockerImageTag": "0.1.1",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/bing-ads"
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/bing-ads",
+  "icon": "bingads.svg"
 }
