@@ -776,19 +776,49 @@ class EmailEventStream(IncrementalStream):
     created_at_field = "created"
 
 
-class EngagementStream(Stream):
+class EngagementStream(IncrementalStream):
     """Engagements, API v1
     Docs: https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements
+          https://legacydocs.hubspot.com/docs/methods/engagements/get-recent-engagements
     """
 
+<<<<<<< HEAD
     url = "/engagements/v1/engagements/paged"
+=======
+    entity = "engagement"
+>>>>>>> 12cff8cbe (Added support for incremental updates on engagements)
     more_key = "hasMore"
     limit = 250
     updated_at_field = "lastUpdated"
     created_at_field = "createdAt"
+    state_pk = "lastUpdated"
+
+    @property
+    def url(self):
+        if self.state:
+            return "/engagements/v1/engagements/recent/modified"
+        return "/engagements/v1/engagements/paged"
 
     def _transform(self, records: Iterable) -> Iterable:
         yield from super()._transform({**record.pop("engagement"), **record} for record in records)
+    
+    def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
+        max_last_updated_at = None
+        default_params = {self.limit_field: self.limit}
+        params = {**default_params, **params} if params else {**default_params}
+        if self.state:
+            params['since'] = int(self._state.timestamp() * 1000)
+        for record in self._filter_dynamic_fields(self._filter_old_records(self._read(getter, params))):
+            yield record
+            cursor = self._field_to_datetime(record[self.updated_at_field])
+            max_last_updated_at = max(cursor, max_last_updated_at) if max_last_updated_at else cursor
+        
+        if max_last_updated_at:
+            new_state = max(max_last_updated_at, self._state) if self._state else max_last_updated_at
+            if new_state != self._state:
+                logger.info(f"Advancing bookmark for engagement stream from {self._state} to {max_last_updated_at}")
+                self._state = new_state
+                self._start_date = self._state
 
 
 class FormStream(Stream):
