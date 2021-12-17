@@ -735,6 +735,7 @@ List of available streams:
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
 
+| 0.1.10 | 2021-12-?? | [????](https://github.com/airbytehq/airbyte/pull/????) | Add the ability to filter streams by user |
 | 0.1.9 | 2021-12-07 | [8405](https://github.com/airbytehq/airbyte/pull/8405) | Filter 'null' byte(s) in HTTP responses |
 | 0.1.8 | 2021-11-30 | [8191](https://github.com/airbytehq/airbyte/pull/8191) | Make `start_date` optional and change its format to `YYYY-MM-DD` |
 | 0.1.7 | 2021-11-24 | [8206](https://github.com/airbytehq/airbyte/pull/8206) | Handling 400 error when trying to create a job for sync using Bulk API. |

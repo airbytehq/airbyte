@@ -9,6 +9,7 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog
 
 from .exceptions import TypeSalesforceException
 from .rate_limiting import default_backoff_handler
+from .utils import filter_streams
 
 STRING_TYPES = [
     "byte",
@@ -208,14 +209,22 @@ class Salesforce:
             return False
         return True
 
-    def get_validated_streams(self, catalog: ConfiguredAirbyteCatalog = None):
+    def get_validated_streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None):
         salesforce_objects = self.describe()["sobjects"]
+        stream_names = [stream_object["name"] for stream_object in salesforce_objects]
         validated_streams = []
         if catalog:
             streams_for_read = [configured_stream.stream.name for configured_stream in catalog.streams]
 
-        for stream_object in salesforce_objects:
-            stream_name = stream_object["name"]
+        if config.get("streams_criteria"):
+            filtered_stream_list = []
+            for stream_criteria in config["streams_criteria"]:
+                filtered_stream_list += filter_streams(
+                    streams_list=stream_names, search_word=stream_criteria["value"], search_criteria=stream_criteria["criteria"]
+                )
+            stream_names = list(set(filtered_stream_list))
+
+        for stream_name in stream_names:
             if catalog and stream_name not in streams_for_read:
                 continue
             if self.filter_streams(stream_name):
