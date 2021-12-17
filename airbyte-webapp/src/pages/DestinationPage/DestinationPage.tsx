@@ -1,14 +1,13 @@
 import React from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
-import { NetworkErrorBoundary as ErrorBoundary } from "rest-hooks";
+import { Route, Routes } from "react-router-dom";
 
 import { RoutePaths } from "../routes";
 import AllDestinationsPage from "./pages/AllDestinationsPage";
 import DestinationItemPage from "./pages/DestinationItemPage";
 import CreateDestinationPage from "./pages/CreateDestinationPage";
 import CreationFormPage from "../ConnectionPage/pages/CreationFormPage";
-
-const FallbackRootNavigateor = () => <Navigate to={RoutePaths.Destination} />;
+import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
+import { StartOverErrorView } from "views/common/StartOverErrorView";
 
 const DestinationsPage: React.FC = () => {
   return (
@@ -21,13 +20,14 @@ const DestinationsPage: React.FC = () => {
       <Route
         path=":id"
         element={
-          <ErrorBoundary fallbackComponent={FallbackRootNavigateor}>
+          <ResourceNotFoundErrorBoundary
+            errorComponent={<StartOverErrorView />}
+          >
             <DestinationItemPage />
-          </ErrorBoundary>
+          </ResourceNotFoundErrorBoundary>
         }
       />
       <Route index element={<AllDestinationsPage />} />
-      <Route element={<Navigate to={RoutePaths.Root} />} />
     </Routes>
   );
 };
