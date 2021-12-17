@@ -1,8 +1,8 @@
 package io.airbyte.integrations.destination.e2e_test.logging;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
-import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -12,19 +12,23 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class LoggingConsumer extends FailureTrackingAirbyteMessageConsumer {
+public class LoggingConsumer implements AirbyteMessageConsumer {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(LoggingConsumer.class);
 
   private final TestingLoggerFactory loggerFactory;
   private final ConfiguredAirbyteCatalog configuredCatalog;
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final Map<AirbyteStreamNameNamespacePair, TestingLogger> loggers;
 
-  private AirbyteMessage lastStateMessage = null;
+  private final AirbyteMessage lastStateMessage = null;
 
   public LoggingConsumer(final TestingLoggerFactory loggerFactory,
-                      final ConfiguredAirbyteCatalog configuredCatalog,
-                      final Consumer<AirbyteMessage> outputRecordCollector) {
+                         final ConfiguredAirbyteCatalog configuredCatalog,
+                         final Consumer<AirbyteMessage> outputRecordCollector) {
     this.loggerFactory = loggerFactory;
     this.configuredCatalog = configuredCatalog;
     this.outputRecordCollector = outputRecordCollector;
@@ -32,7 +36,7 @@ public class LoggingConsumer extends FailureTrackingAirbyteMessageConsumer {
   }
 
   @Override
-  protected void startTracked() {
+  public void start() {
     for (final ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
       final AirbyteStream stream = configuredStream.getStream();
       final AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
@@ -42,22 +46,22 @@ public class LoggingConsumer extends FailureTrackingAirbyteMessageConsumer {
   }
 
   @Override
-  protected void acceptTracked(final AirbyteMessage airbyteMessage) {
-    if (airbyteMessage.getType() == Type.STATE) {
-      this.lastStateMessage = airbyteMessage;
+  public void accept(final AirbyteMessage message) {
+    if (message.getType() == Type.STATE) {
+      LOGGER.info("Emitting state: {}", message);
+      outputRecordCollector.accept(message);
       return;
-    } else if (airbyteMessage.getType() != Type.RECORD) {
+    } else if (message.getType() != Type.RECORD) {
       return;
     }
 
-    final AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
-    final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair
-        .fromRecordMessage(recordMessage);
+    final AirbyteRecordMessage recordMessage = message.getRecord();
+    final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
 
     if (!loggers.containsKey(pair)) {
       throw new IllegalArgumentException(
           String.format(
-              "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
+              "Message contained record from a stream that was not in the catalog.\n  Catalog: %s\n  Message: %s",
               Jsons.serialize(configuredCatalog), Jsons.serialize(recordMessage)));
     }
 
@@ -65,10 +69,7 @@ public class LoggingConsumer extends FailureTrackingAirbyteMessageConsumer {
   }
 
   @Override
-  protected void close(final boolean hasFailed) {
-    if (!hasFailed) {
-      outputRecordCollector.accept(lastStateMessage);
-    }
+  public void close() {
   }
 
 }
