@@ -9,7 +9,6 @@ import PageTitle from "components/PageTitle";
 import LoadingPage from "components/LoadingPage";
 import HeadTitle from "components/HeadTitle";
 import SideMenu from "components/SideMenu";
-import { RoutePaths } from "pages/routes";
 import useRouter from "hooks/useRouter";
 import NotificationPage from "./pages/NotificationPage";
 import ConfigurationsPage from "./pages/ConfigurationsPage";
@@ -90,7 +89,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   ];
 
   const onSelectMenuItem = (newPath: string) => push(newPath);
-  const firstRoute = menuItems?.[0].routes?.[0]?.path;
+  const firstRoute = menuItems[0].routes?.[0]?.path;
 
   return (
     <MainPageWithScroll
@@ -109,29 +108,13 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
         <MainView>
           <Suspense fallback={<LoadingPage />}>
             <Routes>
-              {menuItems.flatMap((menuItem) =>
-                menuItem.routes.map(({ path, component: Component }) => (
-                  <Route
-                    key={`${path}`}
-                    path={`${path}`}
-                    element={<Component />}
-                  />
-                ))
-              )}
+              {menuItems
+                .flatMap((menuItem) => menuItem.routes)
+                .map(({ path, component: Component }) => (
+                  <Route key={path} path={path} element={<Component />} />
+                ))}
 
-              <Route
-                path="*"
-                element={
-                  <Navigate
-                    to={
-                      firstRoute
-                        ? `${menuItems?.[0].routes?.[0]?.path}`
-                        : RoutePaths.Root
-                    }
-                    replace
-                  />
-                }
-              />
+              <Route path="*" element={<Navigate to={firstRoute} replace />} />
             </Routes>
           </Suspense>
         </MainView>

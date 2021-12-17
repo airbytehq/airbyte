@@ -130,7 +130,7 @@ const MainViewRoutes = () => {
       <Route path={CloudRoutes.SelectWorkspace} element={<WorkspacesPage />} />
       <Route path={CloudRoutes.AuthFlow} element={<CompleteOauthRequest />} />
       <Route
-        path=":workspaceId/*"
+        path={`${RoutePaths.Workspaces}/:workspaceId/*`}
         element={
           <MainView>
             <MainRoutes />
