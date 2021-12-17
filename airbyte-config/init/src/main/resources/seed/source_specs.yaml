@@ -1428,7 +1428,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.28"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.29"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
@@ -1469,9 +1469,15 @@
           - "2017-01-26T00:00:00Z"
           type: "string"
           format: "date-time"
+        fetch_thumbnail_images:
+          title: "Fetch Thumbnail Images"
+          description: "In each Ad Creative, fetch the thumbnail_url and store the\
+            \ result in thumbnail_data_url"
+          default: false
+          type: "boolean"
         include_deleted:
           title: "Include Deleted"
-          description: "Include data from deleted campaigns, ads, and adsets."
+          description: "Include data from deleted campaigns, ads, and adsets"
           default: false
           type: "boolean"
         insights_lookback_window:
@@ -1483,8 +1489,8 @@
           type: "integer"
         insights_days_per_job:
           title: "Insights Days Per Job"
-          description: "Number of days to sync in one job. The more data you have\
-            \ - the smaller you want this parameter to be."
+          description: "Number of days to sync in one job (the more data you have,\
+            \ the smaller this parameter should be)"
           default: 7
           minimum: 1
           maximum: 30
