@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.35
+## 0.1.36
 Add assert that spec.json file does not have any `$ref` in it: [#8842](https://github.com/airbytehq/airbyte/pull/8842)
 
 ## 0.1.32
