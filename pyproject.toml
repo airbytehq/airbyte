@@ -1,11 +1,11 @@
 [tool.black]
-check = true
 line-length = 140
 target-version = ["py37"]
 
 [tool.flake8]
-extend-exclude = ".venv,models"
+extend-exclude = ".venv"
 max-complexity = 10
+max-line-length = 140
 
 [tool.isort]
 profile = "black"
@@ -38,6 +38,6 @@ warn_unused_ignores = true
 [[tool.mypy.overrides]]
 module = [
     "integration_tests.*",
-    "unit_tests.*"
+    "unit_tests.*",
 ]
 allow_incomplete_defs = true
