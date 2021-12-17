@@ -9,7 +9,8 @@ export const TrackPageAnalytics: React.FC = () => {
   const { pathname } = useRouter();
   const analyticsService = useAnalyticsService();
   useEffect(() => {
-    const pageName = getPageName(pathname);
+    const pathWithoutWorkspaceId = pathname.split("/").splice(2).join(".");
+    const pageName = getPageName(pathWithoutWorkspaceId);
     if (pageName) {
       analyticsService.page(pageName);
     }

@@ -7,8 +7,7 @@ import ImageBlock from "components/ImageBlock";
 import { Header, Row, Cell } from "components/SimpleTableComponents";
 import EnabledControl from "./EnabledControl";
 import { Connection } from "core/resources/Connection";
-import { DestinationDefinition } from "core/resources/DestinationDefinition";
-import { SourceDefinition } from "core/resources/SourceDefinition";
+import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
 
 const MainInfo = styled(ContentCard)`
   margin-bottom: 14px;
