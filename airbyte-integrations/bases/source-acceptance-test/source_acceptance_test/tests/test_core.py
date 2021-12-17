@@ -76,12 +76,9 @@ class TestSpec(BaseTest):
 
     def test_defined_refs_exist_in_json_spec_file(self, connector_spec_dict: dict):
         """Checking for the presence of unresolved `$ref`s values within each json spec file"""
-        refs_errors = None
         check_result = find_key_inside_schema(schema_item=connector_spec_dict)
-        if check_result is not None:
-            refs_errors = check_result
 
-        assert not refs_errors, "Found unresolved `$refs` value in spec.json file"
+        assert not check_result, "Found unresolved `$refs` value in spec.json file"
 
     def test_oauth_flow_parameters(self, actual_connector_spec: ConnectorSpecification):
         """

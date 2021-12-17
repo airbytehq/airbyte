@@ -100,6 +100,31 @@ from source_acceptance_test.tests.test_core import TestSpec as _TestSpec
             },
             False,
         ),
+        (
+            {
+                "connectionSpecification": {
+                    "type": "object",
+                    "properties": {
+                        "client_id": {"type": "string"},
+                        "client_secret": {"type": "string"},
+                        "access_token": {"type": "string"},
+                        "refresh_token": {"type": "string"},
+                    },
+                },
+                "advanced_auth": {
+                    "auth_flow_type": "oauth2.0",
+                    "predicate_key": ["credentials", "auth_type"],
+                    "predicate_value": "Client",
+                    "oauth_config_specification": {
+                        "complete_oauth_server_output_specification": {
+                            "type": "object",
+                            "properties": {"refresh_token": {"type": "string"}},
+                        }
+                    },
+                },
+            },
+            False,
+        ),
         ({"$ref": None}, True),
         ({"properties": {"user": {"$ref": None}}}, True),
         ({"properties": {"user": {"$ref": "user.json"}}}, True),
