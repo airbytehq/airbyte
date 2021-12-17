@@ -1,8 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
-
+import json
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.sources import AbstractSource
@@ -34,6 +33,8 @@ class SourceLeverHiring(AbstractSource):
     }
 
     def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+        #debugging CI build
+        logger.warn(f"SourceLeverHiring.check_connection() config {json.dumps(config)}")
 
         authenticator = _auth_from_config(config)
         _ = authenticator.get_auth_header()
