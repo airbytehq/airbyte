@@ -4,7 +4,7 @@
 
 package io.airbyte.config.persistence.split_secrets;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -153,7 +153,97 @@ public class JsonSecretsProcessorTest {
           + "    }\n"
           + "  }");
 
+  private final static String test = """
+                                       {
+                                         "provider": {
+                                           "bucket": "bucket",
+                                           "endpoint": "",
+                                           "path_prefix": "",
+                                           "aws_access_key_id": "nothingtosee",
+                                           "aws_secret_access_key": "same"
+                                         }
+                                     }
+                                     """;
+
+  private final static String testSpecs =
+      """
+       {
+         "type": "object",
+         "title": "S3 Source Spec",
+         "required": [
+           "dataset",
+           "path_pattern",
+           "provider"
+         ],
+         "properties": {
+           "provider": {
+             "type": "object",
+             "title": "S3: Amazon Web Services",
+             "required": [
+               "bucket"
+             ],
+             "properties": {
+               "bucket": {
+                 "type": "string",
+                 "title": "Bucket",
+                 "description": "Name of the S3 bucket where the file(s) exist."
+               },
+               "use_ssl": {
+                 "type": "boolean",
+                 "title": "Use Ssl",
+                 "description": "Is remote server using secure SSL/TLS connection"
+               },
+               "endpoint": {
+                 "type": "string",
+                 "title": "Endpoint",
+                 "default": "",
+                 "description": "Endpoint to an S3 compatible service. Leave empty to use AWS."
+               },
+               "path_prefix": {
+                 "type": "string",
+                 "title": "Path Prefix",
+                 "default": "",
+                 "description": "By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit, we can optimise finding these in S3. This is optional but recommended if your bucket contains many folders/files."
+               },
+               "verify_ssl_cert": {
+                 "type": "boolean",
+                 "title": "Verify Ssl Cert",
+                 "description": "Allow self signed certificates"
+               },
+               "aws_access_key_id": {
+                 "type": "string",
+                 "title": "Aws Access Key Id",
+                 "description": "In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
+                 "airbyte_secret": true
+               },
+               "aws_secret_access_key": {
+                 "type": "string",
+                 "title": "Aws Secret Access Key",
+                 "description": "In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
+                 "airbyte_secret": true
+               }
+             }
+           }
+         }
+       }
+      """;
+
   JsonSecretsProcessor processor = new JsonSecretsProcessor();
+
+  @Test
+  public void testNestedSecrets() {
+    final JsonNode obj = Jsons.deserialize(test);
+    final JsonNode specObj = Jsons.deserialize(testSpecs);
+    final JsonNode sanitized = processor.maskSecrets(obj, specObj);
+
+    final JsonNode expected = Jsons.jsonNode(ImmutableMap.builder()
+        .put("bucket", "bucket")
+        .put("endpoint", "")
+        .put("path_prefix", "")
+        .put("aws_access_key_id", JsonSecretsProcessor.SECRETS_MASK)
+        .put("aws_secret_access_key", JsonSecretsProcessor.SECRETS_MASK).build());
+    assertEquals(expected, sanitized.get("provider"));
+  }
 
   @Test
   public void testMaskSecrets() {
