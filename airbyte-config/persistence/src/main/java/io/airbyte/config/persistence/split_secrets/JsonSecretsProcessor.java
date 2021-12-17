@@ -50,7 +50,6 @@ public class JsonSecretsProcessor {
     }
     Preconditions.checkArgument(schema.isObject());
 
-    // get the properties field
     final Set<String> secretKeys = getAllSecretKeys(schema);
     return maskAllSecrets(obj, secretKeys);
   }
