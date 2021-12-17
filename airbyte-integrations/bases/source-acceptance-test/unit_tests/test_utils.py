@@ -183,7 +183,7 @@ class MockContainer:
         self.image = Image()
 
 
-def binary_generator(lengths):
+def binary_generator(lengths, last_line=None):
     data = ""
     for length in lengths:
         data += "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(length)) + "\n"
@@ -194,6 +194,8 @@ def binary_generator(lengths):
         yield data[:chunk_size]
         data = data[chunk_size:]
     yield data
+    if last_line:
+        yield ("bla-1234567890-bla\n" + last_line).encode()
 
 
 def test_successful_logs_reading():
@@ -207,33 +209,42 @@ def test_successful_logs_reading():
         assert len(line) - 1 == length
 
 
-def test_failed_logs_reading():
+@pytest.mark.parametrize(
+    "traceback,container_error,last_line,expected_error",
+    (
+        # container returns a some internal error
+        (
+            "Traceback (most recent call last):\n  File \"<stdin>\", line 1, in <module>\nKeyError: 'bbbb'",
+            "Some Container Error",
+            "Last Container Logs Line",
+            "Some Container Error",
+        ),
+        # container returns a raw traceback
+        (
+            "Traceback (most recent call last):\n  File \"<stdin>\", line 1, in <module>\nKeyError: 'bbbb'",
+            None,
+            "Last Container Logs Line",
+            "Traceback (most recent call last):\n  File \"<stdin>\", line 1, in <module>\nKeyError: 'bbbb'",
+        ),
+        # container returns a raw traceback
+        (
+            None,
+            None,
+            "Last Container Logs Line",
+            "Last Container Logs Line",
+        ),
+    ),
+)
+def test_failed_reading(traceback, container_error, last_line, expected_error):
     line_count = 10
     line_lengths = [random.randint(0, 523) for _ in range(line_count)]
-    expected_error = "fake error"
+
     with pytest.raises(ContainerError) as exc:
         list(
             ConnectorRunner.read(
-                container=MockContainer(status={"StatusCode": 1, "Error": expected_error}, iter_logs=binary_generator(line_lengths))
-            )
-        )
-    assert expected_error == exc.value.stderr
-
-
-def test_failed_exception_reading():
-    expected_error = "Traceback (most recent call last):\n  File \"<stdin>\", line 1, in <module>\nKeyError: 'bbbb'"
-
-    def binary_generator_with_exception(lengths):
-        yield from binary_generator(lengths)
-        yield ("bla-1234567890-bla\n" + expected_error).encode()
-
-    line_count = 10
-    line_lengths = [random.randint(0, 523) for _ in range(line_count)]
-
-    with pytest.raises(ContainerError) as exc:
-        list(
-            ConnectorRunner.read(
-                container=MockContainer(status={"StatusCode": 1, "Error": "error"}, iter_logs=binary_generator_with_exception(line_lengths))
+                container=MockContainer(
+                    status={"StatusCode": 1, "Error": container_error}, iter_logs=binary_generator(line_lengths, traceback or last_line)
+                )
             )
         )
 

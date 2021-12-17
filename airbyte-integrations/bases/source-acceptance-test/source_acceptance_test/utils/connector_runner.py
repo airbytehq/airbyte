@@ -116,6 +116,7 @@ class ConnectorRunner:
         """Reads connector's logs per line"""
         buffer = b""
         exception = ""
+        line = ""
         for chunk in container.logs(stdout=True, stderr=True, stream=True, follow=True):
 
             buffer += chunk
@@ -142,7 +143,7 @@ class ConnectorRunner:
 
         exit_status = container.wait()
         if exit_status["StatusCode"]:
-            error = exception or exit_status["Error"]
+            error = exit_status["Error"] or exception or line
             logging.error(f"Docker container was failed, " f'code {exit_status["StatusCode"]}, error:\n{error}')
             if with_ext:
                 raise ContainerError(
