@@ -4,7 +4,7 @@ export type ConfirmationModal = {
   submitButtonText: React.ReactNode;
   title: React.ReactNode;
   text: React.ReactNode;
-  onSubmit: () => void;
+  onSubmit: () => Promise<void>;
 };
 
 export type ConfirmationModalServiceApi = {

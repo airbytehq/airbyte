@@ -42,9 +42,6 @@ export const WorkspaceSettingsView: React.FC = () => {
   const removeWorkspace = useRemoveWorkspace();
   const updateWorkspace = useUpdateWorkspace();
 
-  const deleteWorkspace = () =>
-    removeWorkspace.mutateAsync(workspace.workspaceId);
-
   const modalData = {
     title: (
       <FormattedMessage id="workspaces.workspaceSettings.deleteWorkspace" />
@@ -56,8 +53,9 @@ export const WorkspaceSettingsView: React.FC = () => {
       />
     ),
     submitButtonText: <FormattedMessage id="form.delete" />,
-    onSubmit: deleteWorkspace,
+    onSubmit: () => removeWorkspace.mutateAsync(workspace.workspaceId),
   };
+
   const { openConfirmationModal } = useConfirmationModalService();
 
   return (
@@ -130,13 +128,9 @@ export const WorkspaceSettingsView: React.FC = () => {
         title={
           <Header>
             <FormattedMessage id="settings.generalSettings.deleteLabel" />
-            <LoadingButton
-              isLoading={removeWorkspace.isLoading}
-              danger
-              onClick={() => openConfirmationModal(modalData)}
-            >
+            <Button danger onClick={() => openConfirmationModal(modalData)}>
               <FormattedMessage id="settings.generalSettings.deleteText" />
-            </LoadingButton>
+            </Button>
           </Header>
         }
       />
