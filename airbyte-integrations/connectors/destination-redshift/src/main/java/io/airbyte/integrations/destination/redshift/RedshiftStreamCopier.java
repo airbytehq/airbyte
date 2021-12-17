@@ -11,8 +11,8 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopyConfig;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopierFactory.Config;
 import io.airbyte.integrations.destination.redshift.manifest.Entry;
 import io.airbyte.integrations.destination.redshift.manifest.Manifest;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
@@ -40,7 +40,7 @@ public class RedshiftStreamCopier extends S3StreamCopier {
                               final String schema,
                               final AmazonS3 client,
                               final JdbcDatabase db,
-                              final Config config,
+                              final S3CopyConfig config,
                               final ExtendedNameTransformer nameTransformer,
                               final SqlOperations sqlOperations,
                               final ConfiguredAirbyteStream configuredAirbyteStream) {
@@ -61,7 +61,7 @@ public class RedshiftStreamCopier extends S3StreamCopier {
                        final String schema,
                        final AmazonS3 client,
                        final JdbcDatabase db,
-                       final Config config,
+                       final S3CopyConfig config,
                        final ExtendedNameTransformer nameTransformer,
                        final SqlOperations sqlOperations,
                        final Timestamp uploadTime,

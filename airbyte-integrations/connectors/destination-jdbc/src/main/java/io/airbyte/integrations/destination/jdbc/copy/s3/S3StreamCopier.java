@@ -9,7 +9,6 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopierFactory.Config;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
@@ -66,7 +65,7 @@ public abstract class S3StreamCopier implements StreamCopier {
                         final String schema,
                         final AmazonS3 client,
                         final JdbcDatabase db,
-                        final Config config,
+                        final S3CopyConfig config,
                         final ExtendedNameTransformer nameTransformer,
                         final SqlOperations sqlOperations,
                         final ConfiguredAirbyteStream configuredAirbyteStream,

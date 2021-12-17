@@ -17,7 +17,6 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopierFactory.Config;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.csv.CsvSheetGenerator;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
@@ -132,7 +131,7 @@ public class S3StreamCopierTest {
         "fake-schema",
         s3Client,
         db,
-        new Config(true, S3_CONFIG),
+        new S3CopyConfig(true, S3_CONFIG),
         new ExtendedNameTransformer(),
         sqlOperations,
         CONFIGURED_STREAM,
@@ -230,7 +229,7 @@ public class S3StreamCopierTest {
         s3Client,
         db,
         // Explicitly disable purgeStagingData
-        new Config(false, S3_CONFIG),
+        new S3CopyConfig(false, S3_CONFIG),
         new ExtendedNameTransformer(),
         sqlOperations,
         CONFIGURED_STREAM,

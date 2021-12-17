@@ -9,6 +9,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
+import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopyConfig;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopierFactory;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 
@@ -22,7 +23,7 @@ public class RedshiftStreamCopierFactory extends S3StreamCopierFactory {
                              final String schema,
                              final AmazonS3 s3Client,
                              final JdbcDatabase db,
-                             final Config config,
+                             final S3CopyConfig config,
                              final ExtendedNameTransformer nameTransformer,
                              final SqlOperations sqlOperations,
                              final ConfiguredAirbyteStream configuredStream) {
