@@ -52,7 +52,7 @@ public class LoggingDestination extends BaseConnector implements Destination {
       LOGGER.info("record: {}", message);
 
       if (message.getType() == Type.STATE) {
-        LOGGER.info("emitting state: {}", message);
+        LOGGER.info("Emitting state: {}", message);
         outputRecordCollector.accept(message);
       }
     }
