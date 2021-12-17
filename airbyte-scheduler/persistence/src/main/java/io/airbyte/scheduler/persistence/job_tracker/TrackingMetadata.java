@@ -66,6 +66,7 @@ public class TrackingMetadata {
     final Builder<String, Object> metadata = ImmutableMap.builder();
     metadata.put("connector_destination", destinationDefinition.getName());
     metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
+    metadata.put("connector_destination_docker_repository", destinationDefinition.getDockerRepository());
     final String imageTag = destinationDefinition.getDockerImageTag();
     if (!Strings.isEmpty(imageTag)) {
       metadata.put("connector_destination_version", imageTag);
@@ -77,6 +78,7 @@ public class TrackingMetadata {
     final Builder<String, Object> metadata = ImmutableMap.builder();
     metadata.put("connector_source", sourceDefinition.getName());
     metadata.put("connector_source_definition_id", sourceDefinition.getSourceDefinitionId());
+    metadata.put("connector_source_docker_repository", sourceDefinition.getDockerRepository());
     final String imageTag = sourceDefinition.getDockerImageTag();
     if (!Strings.isEmpty(imageTag)) {
       metadata.put("connector_source_version", imageTag);
