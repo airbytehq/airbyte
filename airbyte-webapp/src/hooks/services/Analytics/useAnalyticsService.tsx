@@ -55,9 +55,7 @@ function AnalyticsServiceProvider({
 }
 
 export const useAnalyticsService = (): AnalyticsService => {
-  const analyticsService = useAnalytics();
-
-  return analyticsService.service;
+  return useAnalytics().service;
 };
 
 export const useAnalytics = (): AnalyticsServiceProviderValue => {
@@ -80,6 +78,14 @@ export const useAnalyticsIdentifyUser = (userId?: string): void => {
       analyticsService.identify(userId);
     }
   }, [userId]);
+};
+
+export const useTrackPage = (page: string): void => {
+  const analyticsService = useAnalyticsService();
+
+  useEffect(() => {
+    analyticsService.page(page);
+  }, [analyticsService, page]);
 };
 
 export const useAnalyticsRegisterValues = (

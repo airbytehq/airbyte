@@ -62,6 +62,7 @@
 | MySQL   | [![source-mysql](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-mysql%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-mysql) |
 | Notion   | [![source-notion](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-notion%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-notion) |
 | OneSignal   | [![source-onesignal](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-onesignal%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-onesignal) |
+| OpenWeather   | [![source-openweather](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-openweather%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-openweather) |
 | Oracle DB   | [![source-oracle](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-oracle%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-oracle) |
 | Paypal Transaction   | [![paypal-transaction](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-paypal-transaction%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-paypal-transaction) |
 | Paystack   | [![source-paystack](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-paystack%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-paystack) |
@@ -108,6 +109,7 @@
 | :--- | :--- |
 | Azure Blob Storage | [![destination-azure-blob-storage](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-azure-blob-storage%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-azure-blob-storage) |
 | BigQuery   | [![destination-bigquery](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-bigquery%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-bigquery) |
+| ClickHouse   | [![destination-clickhouse](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-clickhouse%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-clickhouse) |
 | Cassandra   | [![destination-cassandra](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-cassandra%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-cassandra) |
 | Databricks | (Temporarily Not Available) |
 | Elasticsearch | (Temporarily Not Available) |
@@ -124,6 +126,7 @@
 | Postgres   | [![destination-postgres](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-postgres%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-postgres) |
 | Pulsar   | [![destination-pulsar](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-pulsar%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-pulsar) |
 | Redshift   | [![destination-redshift](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-redshift%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-redshift) |
+| Rockset   | [![destination-rockset](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-rockset%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-rockset) |
 | S3         | [![destination-s3](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-s3%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-s3) |
 | SFTP-JSON   | [![destination-sftp-json](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-sftp-json%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-sftp-json) |
 | Snowflake   | [![destination-snowflake](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-snowflake%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-snowflake) |\

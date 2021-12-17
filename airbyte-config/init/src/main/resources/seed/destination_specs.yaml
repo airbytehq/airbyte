@@ -78,7 +78,105 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-bigquery:0.5.0"
+- dockerImage: "airbyte/destination-amazon-sqs:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/amazon-sqs"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Destination Amazon Sqs"
+      type: "object"
+      required:
+      - "queue_url"
+      - "region"
+      additionalProperties: false
+      properties:
+        queue_url:
+          title: "Queue URL"
+          description: "URL of the SQS Queue"
+          type: "string"
+          examples:
+          - "https://sqs.eu-west-1.amazonaws.com/1234567890/my-example-queue"
+          order: 0
+        region:
+          title: "AWS Region"
+          description: "AWS Region of the SQS Queue"
+          type: "string"
+          enum:
+          - "us-east-1"
+          - "us-east-2"
+          - "us-west-1"
+          - "us-west-2"
+          - "af-south-1"
+          - "ap-east-1"
+          - "ap-south-1"
+          - "ap-northeast-1"
+          - "ap-northeast-2"
+          - "ap-northeast-3"
+          - "ap-southeast-1"
+          - "ap-southeast-2"
+          - "ca-central-1"
+          - "cn-north-1"
+          - "cn-northwest-1"
+          - "eu-central-1"
+          - "eu-north-1"
+          - "eu-south-1"
+          - "eu-west-1"
+          - "eu-west-2"
+          - "eu-west-3"
+          - "sa-east-1"
+          - "me-south-1"
+          - "us-gov-east-1"
+          - "us-gov-west-1"
+          order: 1
+        message_delay:
+          title: "Message Delay"
+          description: "Modify the Message Delay of the individual message from the\
+            \ Queue's default (seconds)."
+          type: "integer"
+          examples:
+          - "15"
+          order: 2
+        access_key:
+          title: "AWS IAM Access Key ID"
+          description: "The Access Key ID of the AWS IAM Role to use for sending \
+            \ messages"
+          type: "string"
+          examples:
+          - "xxxxxHRNxxx3TBxxxxxx"
+          order: 3
+          airbyte_secret: true
+        secret_key:
+          title: "AWS IAM Secret Key"
+          description: "The Secret Key of the AWS IAM Role to use for sending messages"
+          type: "string"
+          examples:
+          - "hu+qE5exxxxT6o/ZrKsxxxxxxBhxxXLexxxxxVKz"
+          order: 4
+          airbyte_secret: true
+        message_body_key:
+          title: "Message Body Key"
+          description: "Use this property to extract the contents of the named key\
+            \ in the input record to use as the SQS message body. If not set, the\
+            \ entire content of the input record data is used as the message body."
+          type: "string"
+          examples:
+          - "myDataPath"
+          order: 5
+        message_group_id:
+          title: "Message Group Id"
+          description: "The tag that specifies that a message belongs to a specific\
+            \ message group. This parameter applies only to, and is REQUIRED by, FIFO\
+            \ queues."
+          type: "string"
+          examples:
+          - "my-fifo-group"
+          order: 6
+    supportsIncremental: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes:
+    - "append"
+- dockerImage: "airbyte/destination-bigquery:0.5.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -128,27 +226,29 @@
           - "asia-northeast2"
           - "asia-northeast3"
           - "asia-south1"
+          - "asia-south2"
           - "asia-southeast1"
           - "asia-southeast2"
           - "australia-southeast1"
-          - "europe-central1"
+          - "australia-southeast2"
           - "europe-central2"
           - "europe-north1"
           - "europe-west1"
           - "europe-west2"
           - "europe-west3"
           - "europe-west4"
-          - "europe-west5"
           - "europe-west6"
           - "northamerica-northeast1"
+          - "northamerica-northeast2"
           - "southamerica-east1"
+          - "southamerica-west1"
           - "us-central1"
           - "us-east1"
           - "us-east4"
-          - "us-west-1"
-          - "us-west-2"
-          - "us-west-3"
-          - "us-west-4"
+          - "us-west1"
+          - "us-west2"
+          - "us-west3"
+          - "us-west4"
         credentials_json:
           type: "string"
           description: "The contents of the JSON service account key. Check out the\
@@ -254,7 +354,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:0.1.10"
+- dockerImage: "airbyte/destination-bigquery-denormalized:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -291,27 +391,29 @@
           - "asia-northeast2"
           - "asia-northeast3"
           - "asia-south1"
+          - "asia-south2"
           - "asia-southeast1"
           - "asia-southeast2"
           - "australia-southeast1"
-          - "europe-central1"
+          - "australia-southeast2"
           - "europe-central2"
           - "europe-north1"
           - "europe-west1"
           - "europe-west2"
           - "europe-west3"
           - "europe-west4"
-          - "europe-west5"
           - "europe-west6"
           - "northamerica-northeast1"
+          - "northamerica-northeast2"
           - "southamerica-east1"
+          - "southamerica-west1"
           - "us-central1"
           - "us-east1"
           - "us-east4"
-          - "us-west-1"
-          - "us-west-2"
-          - "us-west-3"
-          - "us-west-4"
+          - "us-west1"
+          - "us-west2"
+          - "us-west3"
+          - "us-west4"
         credentials_json:
           type: "string"
           description: "The contents of the JSON service account key. Check out the\
@@ -427,6 +529,165 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
+- dockerImage: "airbyte/destination-clickhouse:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/clickhouse"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "ClickHouse Destination Spec"
+      type: "object"
+      required:
+      - "host"
+      - "port"
+      - "database"
+      - "username"
+      additionalProperties: true
+      properties:
+        host:
+          title: "Host"
+          description: "Hostname of the database."
+          type: "string"
+          order: 0
+        port:
+          title: "Port"
+          description: "JDBC port (not the native port) of the database."
+          type: "integer"
+          minimum: 0
+          maximum: 65536
+          default: 8123
+          examples:
+          - "8123"
+          order: 1
+        database:
+          title: "DB Name"
+          description: "Name of the database."
+          type: "string"
+          order: 2
+        username:
+          title: "User"
+          description: "Username to use to access the database."
+          type: "string"
+          order: 3
+        password:
+          title: "Password"
+          description: "Password associated with the username."
+          type: "string"
+          airbyte_secret: true
+          order: 4
+        ssl:
+          title: "SSL Connection"
+          description: "Encrypt data using SSL."
+          type: "boolean"
+          default: false
+          order: 5
+        tunnel_method:
+          type: "object"
+          title: "SSH Tunnel Method"
+          description: "Whether to initiate an SSH tunnel before connecting to the\
+            \ database, and if so, which kind of authentication to use."
+          oneOf:
+          - title: "No Tunnel"
+            required:
+            - "tunnel_method"
+            properties:
+              tunnel_method:
+                description: "No ssh tunnel needed to connect to database"
+                type: "string"
+                const: "NO_TUNNEL"
+                order: 0
+          - title: "SSH Key Authentication"
+            required:
+            - "tunnel_method"
+            - "tunnel_host"
+            - "tunnel_port"
+            - "tunnel_user"
+            - "ssh_key"
+            properties:
+              tunnel_method:
+                description: "Connect through a jump server tunnel host using username\
+                  \ and ssh key"
+                type: "string"
+                const: "SSH_KEY_AUTH"
+                order: 0
+              tunnel_host:
+                title: "SSH Tunnel Jump Server Host"
+                description: "Hostname of the jump server host that allows inbound\
+                  \ ssh tunnel."
+                type: "string"
+                order: 1
+              tunnel_port:
+                title: "SSH Connection Port"
+                description: "Port on the proxy/jump server that accepts inbound ssh\
+                  \ connections."
+                type: "integer"
+                minimum: 0
+                maximum: 65536
+                default: 22
+                examples:
+                - "22"
+                order: 2
+              tunnel_user:
+                title: "SSH Login Username"
+                description: "OS-level username for logging into the jump server host."
+                type: "string"
+                order: 3
+              ssh_key:
+                title: "SSH Private Key"
+                description: "OS-level user account ssh key credentials in RSA PEM\
+                  \ format ( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )"
+                type: "string"
+                airbyte_secret: true
+                multiline: true
+                order: 4
+          - title: "Password Authentication"
+            required:
+            - "tunnel_method"
+            - "tunnel_host"
+            - "tunnel_port"
+            - "tunnel_user"
+            - "tunnel_user_password"
+            properties:
+              tunnel_method:
+                description: "Connect through a jump server tunnel host using username\
+                  \ and password authentication"
+                type: "string"
+                const: "SSH_PASSWORD_AUTH"
+                order: 0
+              tunnel_host:
+                title: "SSH Tunnel Jump Server Host"
+                description: "Hostname of the jump server host that allows inbound\
+                  \ ssh tunnel."
+                type: "string"
+                order: 1
+              tunnel_port:
+                title: "SSH Connection Port"
+                description: "Port on the proxy/jump server that accepts inbound ssh\
+                  \ connections."
+                type: "integer"
+                minimum: 0
+                maximum: 65536
+                default: 22
+                examples:
+                - "22"
+                order: 2
+              tunnel_user:
+                title: "SSH Login Username"
+                description: "OS-level username for logging into the jump server host"
+                type: "string"
+                order: 3
+              tunnel_user_password:
+                title: "Password"
+                description: "OS-level password for logging into the jump server host"
+                type: "string"
+                airbyte_secret: true
+                order: 4
+    supportsIncremental: true
+    supportsNormalization: true
+    supportsDBT: false
+    supported_destination_sync_modes:
+    - "overwrite"
+    - "append"
+    - "append_dedup"
 - dockerImage: "airbyte/destination-dynamodb:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/dynamodb"
@@ -2560,6 +2821,48 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
+- dockerImage: "airbyte/destination-rabbitmq:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/rabbitmq"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Destination Rabbitmq"
+      type: "object"
+      required:
+      - "host"
+      - "routing_key"
+      additionalProperties: false
+      properties:
+        ssl:
+          type: "boolean"
+          description: "SSL enabled."
+          default: true
+        host:
+          type: "string"
+          description: "The RabbitMQ host name."
+        port:
+          type: "integer"
+          description: "The RabbitMQ port."
+        virtual_host:
+          type: "string"
+          description: "The RabbitMQ virtual host name."
+        username:
+          type: "string"
+          description: "The username to connect."
+        password:
+          type: "string"
+          description: "The password to connect."
+        exchange:
+          type: "string"
+          description: "The exchange name."
+        routing_key:
+          type: "string"
+          description: "The routing key."
+    supportsIncremental: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes:
+    - "append"
 - dockerImage: "airbyte/destination-redis:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/redis"
@@ -2615,7 +2918,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-redshift:0.3.20"
+- dockerImage: "airbyte/destination-redshift:0.3.22"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/redshift"
     connectionSpecification:
@@ -2676,6 +2979,13 @@
             >AWS docs</a> for more details."
           examples:
           - "airbyte.staging"
+        s3_bucket_path:
+          title: "S3 Bucket Path"
+          type: "string"
+          description: "The directory under the S3 bucket where data will be written.\
+            \ If not provided, then defaults to the root directory."
+          examples:
+          - "data_sync/test"
         s3_bucket_region:
           title: "S3 Bucket Region"
           type: "string"
@@ -2740,7 +3050,50 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-s3:0.1.15"
+- dockerImage: "airbyte/destination-rockset:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/rockset"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Rockset Destination Spec"
+      type: "object"
+      required:
+      - "api_key"
+      - "workspace"
+      additionalProperties: false
+      properties:
+        api_key:
+          title: "Api Key"
+          description: "Rockset api key"
+          type: "string"
+          order: 0
+          airbyte_secret: true
+        workspace:
+          title: "Workspace"
+          description: "The Rockset workspace in which collections will be created\
+            \ + written to."
+          type: "string"
+          examples:
+          - "commons"
+          - "my_workspace"
+          default: "commons"
+          airbyte_secret: false
+          order: 1
+        api_server:
+          title: "Api Server"
+          description: "Rockset api URL"
+          type: "string"
+          airbyte_secret: false
+          default: "https://api.rs2.usw2.rockset.com"
+          pattern: "^https:\\/\\/.*.rockset.com$"
+          order: 2
+    supportsIncremental: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes:
+    - "append"
+    - "overwrite"
+- dockerImage: "airbyte/destination-s3:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/s3"
     connectionSpecification:
@@ -3111,7 +3464,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.3.19"
+- dockerImage: "airbyte/destination-snowflake:0.3.21"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:

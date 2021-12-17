@@ -28,6 +28,7 @@ import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
+import io.airbyte.scheduler.models.AttemptWithJobInfo;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import java.io.IOException;
@@ -411,35 +412,61 @@ public class DefaultJobPersistence implements JobPersistence {
             timeConvertedIntoLocalDateTime)));
   }
 
+  @Override
+  public List<AttemptWithJobInfo> listAttemptsWithJobInfo(final ConfigType configType, final Instant attemptEndedAtTimestamp) throws IOException {
+    final LocalDateTime timeConvertedIntoLocalDateTime = LocalDateTime.ofInstant(attemptEndedAtTimestamp, ZoneOffset.UTC);
+    return jobDatabase.query(ctx -> getAttemptsWithJobsFromResult(ctx.fetch(
+        BASE_JOB_SELECT_AND_JOIN + "WHERE " + "CAST(config_type AS VARCHAR) =  ? AND " + " attempts.ended_at > ? ORDER BY attempts.ended_at ASC",
+        Sqls.toSqlName(configType),
+        timeConvertedIntoLocalDateTime)));
+  }
+
+  // Retrieves only Job information from the record, without any attempt info
+  private static Job getJobFromRecord(final Record record) {
+    return new Job(record.get("job_id", Long.class),
+        Enums.toEnum(record.get("config_type", String.class), ConfigType.class).orElseThrow(),
+        record.get("scope", String.class),
+        Jsons.deserialize(record.get("config", String.class), JobConfig.class),
+        new ArrayList<Attempt>(),
+        JobStatus.valueOf(record.get("job_status", String.class).toUpperCase()),
+        Optional.ofNullable(record.get("job_started_at")).map(value -> getEpoch(record, "started_at")).orElse(null),
+        getEpoch(record, "job_created_at"),
+        getEpoch(record, "job_updated_at"));
+  }
+
+  private static Attempt getAttemptFromRecord(final Record record) {
+    return new Attempt(
+        record.get("attempt_number", Long.class),
+        record.get("job_id", Long.class),
+        Path.of(record.get("log_path", String.class)),
+        record.get("attempt_output", String.class) == null ? null : Jsons.deserialize(record.get("attempt_output", String.class), JobOutput.class),
+        Enums.toEnum(record.get("attempt_status", String.class), AttemptStatus.class).orElseThrow(),
+        getEpoch(record, "attempt_created_at"),
+        getEpoch(record, "attempt_updated_at"),
+        Optional.ofNullable(record.get("attempt_ended_at"))
+            .map(value -> getEpoch(record, "attempt_ended_at"))
+            .orElse(null));
+  }
+
+  private static List<AttemptWithJobInfo> getAttemptsWithJobsFromResult(final Result<Record> result) {
+    return result
+        .stream()
+        .filter(record -> record.getValue("attempt_number") != null)
+        .map(record -> new AttemptWithJobInfo(getAttemptFromRecord(record), getJobFromRecord(record)))
+        .collect(Collectors.toList());
+  }
+
   private static List<Job> getJobsFromResult(final Result<Record> result) {
     // keeps results strictly in order so the sql query controls the sort
     final List<Job> jobs = new ArrayList<Job>();
     Job currentJob = null;
     for (final Record entry : result) {
       if (currentJob == null || currentJob.getId() != entry.get("job_id", Long.class)) {
-        currentJob = new Job(entry.get("job_id", Long.class),
-            Enums.toEnum(entry.get("config_type", String.class), ConfigType.class).orElseThrow(),
-            entry.get("scope", String.class),
-            Jsons.deserialize(entry.get("config", String.class), JobConfig.class),
-            new ArrayList<Attempt>(),
-            JobStatus.valueOf(entry.get("job_status", String.class).toUpperCase()),
-            Optional.ofNullable(entry.get("job_started_at")).map(value -> getEpoch(entry, "started_at")).orElse(null),
-            getEpoch(entry, "job_created_at"),
-            getEpoch(entry, "job_updated_at"));
+        currentJob = getJobFromRecord(entry);
         jobs.add(currentJob);
       }
       if (entry.getValue("attempt_number") != null) {
-        currentJob.getAttempts().add(new Attempt(
-            entry.get("attempt_number", Long.class),
-            entry.get("job_id", Long.class),
-            Path.of(entry.get("log_path", String.class)),
-            entry.get("attempt_output", String.class) == null ? null : Jsons.deserialize(entry.get("attempt_output", String.class), JobOutput.class),
-            Enums.toEnum(entry.get("attempt_status", String.class), AttemptStatus.class).orElseThrow(),
-            getEpoch(entry, "attempt_created_at"),
-            getEpoch(entry, "attempt_updated_at"),
-            Optional.ofNullable(entry.get("attempt_ended_at"))
-                .map(value -> getEpoch(entry, "attempt_ended_at"))
-                .orElse(null)));
+        currentJob.getAttempts().add(getAttemptFromRecord(entry));
       }
     }
 

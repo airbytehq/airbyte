@@ -4,9 +4,7 @@ WORKDIR /airbyte
 
 ENV APPLICATION source-{{dashCase name}}
 
-COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
-
-RUN tar xf ${APPLICATION}.tar --strip-components=1
+ADD build/distributions/${APPLICATION}*.tar /airbyte
 
 # Airbyte's build system uses these labels to know what to name and tag the docker images produced by this Dockerfile.
 LABEL io.airbyte.version=0.1.0

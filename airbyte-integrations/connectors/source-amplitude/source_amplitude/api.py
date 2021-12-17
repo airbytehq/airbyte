@@ -27,8 +27,8 @@ class AmplitudeStream(HttpStream, ABC):
         return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        respose_data = response.json()
-        yield from respose_data.get(self.name, [])
+        response_data = response.json()
+        yield from response_data.get(self.name, [])
 
     def path(self, **kwargs) -> str:
         return f"{self.api_version}/{self.name}"
@@ -43,8 +43,8 @@ class Annotations(AmplitudeStream):
     primary_key = "id"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        respose_data = response.json()
-        yield from respose_data.get("data", [])
+        response_data = response.json()
+        yield from response_data.get("data", [])
 
 
 class IncrementalAmplitudeStream(AmplitudeStream, ABC):
