@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 from unittest.mock import Mock
 
 from source_recurly.streams import (
+    BEGIN_TIME_PARAM,
+    DEFAULT_CURSOR,
     BaseRecurlyStream,
     RecurlyAccountCouponRedemptionsStream,
     RecurlyExportDatesStream,
@@ -28,7 +30,7 @@ class TestStreams(unittest.TestCase):
 
         self.sync_mode_mock = Mock()
 
-        self.params = {"order": "asc", "sort": BaseRecurlyStream.DEFAULT_CURSOR}
+        self.params = {"order": "asc", "sort": DEFAULT_CURSOR}
 
     def test_read_records(self):
         stream = RecurlyTestStream(client=self.client_mock)
@@ -45,7 +47,7 @@ class TestStreams(unittest.TestCase):
 
         next(iter(stream.read_records(self.sync_mode_mock)))
 
-        params = {**self.params, BaseRecurlyStream.BEGIN_TIME_PARAM: begin_time_mock}
+        params = {**self.params, BEGIN_TIME_PARAM: begin_time_mock}
 
         getattr(self.client_mock, METHOD_NAME).assert_called_once_with(params=params)
 

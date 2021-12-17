@@ -9,14 +9,14 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from recurly import Client
 
+DEFAULT_PRIMARY_KEY = "id"
+DEFAULT_CURSOR = "updated_at"
+DEFAULT_SORT_KEY = "updated_at"
+
+BEGIN_TIME_PARAM = "begin_time"
+
 
 class BaseRecurlyStream(Stream):
-    DEFAULT_PRIMARY_KEY = "id"
-    DEFAULT_CURSOR = "updated_at"
-    DEFAULT_SORT_KEY = "updated_at"
-
-    BEGIN_TIME_PARAM = "begin_time"
-
     def __init__(self, client: Client, begin_time: str = None, **kwargs):
         super(Stream, self).__init__(**kwargs)
 
@@ -51,7 +51,7 @@ class BaseRecurlyStream(Stream):
         :return: The Recurly resource primary key(s)
         :rtype: Either `str`, list(str) or list(list(str))
         """
-        return self.DEFAULT_PRIMARY_KEY
+        return DEFAULT_PRIMARY_KEY
 
     @property
     def sort_key(self) -> str:
@@ -63,7 +63,7 @@ class BaseRecurlyStream(Stream):
         :return: The Recurly resource sort key
         :rtype: `str`
         """
-        return self.DEFAULT_SORT_KEY
+        return DEFAULT_SORT_KEY
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
@@ -81,7 +81,7 @@ class BaseRecurlyStream(Stream):
         :return: The cursor field(s) to be used in the `incremental` sync mode.
         :rtype: Union[str, List[str]]
         """
-        return self.DEFAULT_CURSOR
+        return DEFAULT_CURSOR
 
     def read_records(
         self,
@@ -102,7 +102,7 @@ class BaseRecurlyStream(Stream):
         self.begin_time = (stream_state and stream_state[self.cursor_field]) or self.begin_time
 
         if self.begin_time:
-            params.update({self.BEGIN_TIME_PARAM: self.begin_time})
+            params.update({BEGIN_TIME_PARAM: self.begin_time})
 
         # Call the Recurly client methods
         items = getattr(self._client, self.client_method_name)(params=params).items()
@@ -165,7 +165,7 @@ class RecurlyAccountCouponRedemptionsStream(BaseRecurlyStream):
         self.begin_time = (stream_state and stream_state[self.cursor_field]) or self.begin_time
 
         if self.begin_time:
-            params.update({self.BEGIN_TIME_PARAM: self.begin_time})
+            params.update({BEGIN_TIME_PARAM: self.begin_time})
 
         # Call the Recurly client methods
         accounts = self._client.list_accounts().items()
