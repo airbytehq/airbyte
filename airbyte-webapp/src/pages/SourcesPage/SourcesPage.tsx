@@ -1,43 +1,30 @@
-import React, { Suspense } from "react";
-import { Redirect, Route, Switch } from "react-router-dom";
+import React from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { NetworkErrorBoundary as ErrorBoundary } from "rest-hooks";
 
-import { Routes } from "../routes";
-import LoadingPage from "components/LoadingPage";
-import ConnectionPage from "pages/ConnectionPage";
+import { RoutePaths } from "pages/routes";
 import AllSourcesPage from "./pages/AllSourcesPage";
 import CreateSourcePage from "./pages/CreateSourcePage";
 import SourceItemPage from "./pages/SourceItemPage";
+import CreationFormPage from "pages/ConnectionPage/pages/CreationFormPage";
 
-const FallbackRootRedirector = () => <Redirect to={Routes.Root} />;
+const FallbackRootNavigateor = () => <Navigate to="" />;
 
-const SourcesPage: React.FC = () => {
-  return (
-    <Suspense fallback={<LoadingPage />}>
-      <Switch>
-        <Route path={`${Routes.Source}${Routes.SourceNew}`}>
-          <CreateSourcePage />
-        </Route>
-        <Route
-          path={[
-            `${Routes.Source}${Routes.ConnectionNew}`,
-            `${Routes.Source}${Routes.Connection}/:id`,
-          ]}
-        >
-          <ConnectionPage />
-        </Route>
-        <Route path={`${Routes.Source}/:id`}>
-          <ErrorBoundary fallbackComponent={FallbackRootRedirector}>
-            <SourceItemPage />
-          </ErrorBoundary>
-        </Route>
-        <Route path={Routes.Source} exact>
-          <AllSourcesPage />
-        </Route>
-        <Redirect to={Routes.Root} />
-      </Switch>
-    </Suspense>
-  );
-};
+const SourcesPage: React.FC = () => (
+  <Routes>
+    <Route path={RoutePaths.SourceNew} element={<CreateSourcePage />} />
+    <Route path={RoutePaths.ConnectionNew} element={<CreationFormPage />} />
+    <Route
+      path=":id"
+      element={
+        <ErrorBoundary fallbackComponent={FallbackRootNavigateor}>
+          <SourceItemPage />
+        </ErrorBoundary>
+      }
+    />
+    <Route index element={<AllSourcesPage />} />
+    <Route element={<Navigate to="" />} />
+  </Routes>
+);
 
 export default SourcesPage;

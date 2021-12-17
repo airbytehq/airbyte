@@ -4,7 +4,7 @@ WORKDIR /airbyte
 
 ENV APPLICATION destination-e2e-test
 
-COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
+ADD build/distributions/${APPLICATION}*.tar /airbyte
 
 RUN tar xf ${APPLICATION}.tar --strip-components=1
 
