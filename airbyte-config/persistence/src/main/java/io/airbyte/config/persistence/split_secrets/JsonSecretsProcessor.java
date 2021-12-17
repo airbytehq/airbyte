@@ -33,12 +33,14 @@ public class JsonSecretsProcessor {
   static String SECRETS_MASK = "**********";
 
   /**
-   * Returns a copy of the input object wherein any fields annotated with "airbyte_secret" in the input schema are masked.
+   * Returns a copy of the input object wherein any fields annotated with "airbyte_secret" in the
+   * input schema are masked.
    * <p>
-   * This method masks secrets both at the top level of the configuration object and in nested properties in a oneOf.
+   * This method masks secrets both at the top level of the configuration object and in nested
+   * properties in a oneOf.
    *
    * @param schema Schema containing secret annotations
-   * @param obj    Object containing potentially secret fields
+   * @param obj Object containing potentially secret fields
    */
   // todo: fix bug where this doesn't handle non-oneof nesting or just arrays
   // see: https://github.com/airbytehq/airbyte/issues/6393
@@ -112,12 +114,14 @@ public class JsonSecretsProcessor {
   }
 
   /**
-   * Returns a copy of the destination object in which any secret fields (as denoted by the input schema) found in the source object are added.
+   * Returns a copy of the destination object in which any secret fields (as denoted by the input
+   * schema) found in the source object are added.
    * <p>
-   * This method absorbs secrets both at the top level of the configuration object and in nested properties in a oneOf.
+   * This method absorbs secrets both at the top level of the configuration object and in nested
+   * properties in a oneOf.
    *
-   * @param src    The object potentially containing secrets
-   * @param dst    The object to absorb secrets into
+   * @param src The object potentially containing secrets
+   * @param dst The object to absorb secrets into
    * @param schema
    * @return
    */
