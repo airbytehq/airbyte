@@ -133,12 +133,12 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                 .map(f -> {
                   final Datatype datatype = getFieldType(f);
                   final JsonSchemaPrimitive jsonType = getType(datatype);
-//                  LOGGER.info("Table {} column {} (type {}[{}]) -> Json type {}",
-//                      fields.get(0).get(INTERNAL_TABLE_NAME).asText(),
-//                      f.get(INTERNAL_COLUMN_NAME).asText(),
-//                      f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
-//                      f.get(INTERNAL_COLUMN_SIZE).asInt(),
-//                      jsonType);
+                  LOGGER.info("Table {} column {} (type {}[{}]) -> Json type {}",
+                      fields.get(0).get(INTERNAL_TABLE_NAME).asText(),
+                      f.get(INTERNAL_COLUMN_NAME).asText(),
+                      f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
+                      f.get(INTERNAL_COLUMN_SIZE).asInt(),
+                      jsonType);
                   return new CommonField<Datatype>(f.get(INTERNAL_COLUMN_NAME).asText(), datatype) {};
                 })
                 .collect(Collectors.toList()))
