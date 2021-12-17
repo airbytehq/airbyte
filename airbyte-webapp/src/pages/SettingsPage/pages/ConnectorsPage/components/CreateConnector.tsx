@@ -5,7 +5,7 @@ import { useFetcher } from "rest-hooks";
 import { Button } from "components";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import useRouter from "hooks/useRouter";
-import { Routes } from "pages/routes";
+import { RoutePaths } from "pages/routes";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 
 import CreateConnectorModal from "./CreateConnectorModal";
@@ -57,10 +57,12 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
         ],
       ]);
 
-      push({
-        pathname: `${Routes.Source}${Routes.SourceNew}`,
-        state: { sourceDefinitionId: result.sourceDefinitionId },
-      });
+      push(
+        {
+          pathname: `${RoutePaths.Source}${RoutePaths.SourceNew}`,
+        },
+        { state: { sourceDefinitionId: result.sourceDefinitionId } }
+      );
     } catch (e) {
       setErrorMessage(e.message || formatMessage({ id: "form.dockerError" }));
     }
@@ -92,10 +94,12 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
         ]
       );
 
-      push({
-        pathname: `${Routes.Destination}${Routes.DestinationNew}`,
-        state: { destinationDefinitionId: result.destinationDefinitionId },
-      });
+      push(
+        {
+          pathname: `${RoutePaths.Destination}${RoutePaths.DestinationNew}`,
+        },
+        { state: { destinationDefinitionId: result.destinationDefinitionId } }
+      );
     } catch (e) {
       setErrorMessage(e.message || formatMessage({ id: "form.dockerError" }));
     }

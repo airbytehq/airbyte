@@ -3,7 +3,6 @@ import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
-import { Source } from "core/resources/Source";
 import ContentCard from "components/ContentCard";
 import ServiceForm from "views/Connector/ServiceForm";
 import useSource from "hooks/services/useSourceHook";
@@ -15,6 +14,7 @@ import { JobsLogItem } from "components/JobItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
+import { Source } from "core/domain/connector";
 
 const Content = styled.div`
   max-width: 813px;
