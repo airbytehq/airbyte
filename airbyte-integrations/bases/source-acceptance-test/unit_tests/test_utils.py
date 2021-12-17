@@ -226,7 +226,7 @@ def test_successful_logs_reading():
             "Last Container Logs Line",
             "Traceback (most recent call last):\n  File \"<stdin>\", line 1, in <module>\nKeyError: 'bbbb'",
         ),
-        # container returns a raw traceback
+        # container doesn't return any tracebacks or errors
         (
             None,
             None,
