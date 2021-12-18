@@ -81,8 +81,9 @@ public class GcsUtils {
       assembler.name(nameTransformer.getIdentifier(fieldName)).type().optional().type(avroType.getName());
     });
 
-    if (appendAirbyteFields)
+    if (appendAirbyteFields) {
       addAirbyteFields(assembler);
+    }
 
     return assembler.endRecord();
   }
