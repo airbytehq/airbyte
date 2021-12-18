@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -61,14 +62,9 @@ import java.util.function.Supplier;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
 class ConnectionsHandlerTest {
 
-  @Mock
   private ConfigRepository configRepository;
   private Supplier<UUID> uuidGenerator;
 
@@ -87,19 +83,12 @@ class ConnectionsHandlerTest {
   private UUID connectionId;
   private UUID operationId;
   private StandardSyncOperation standardSyncOperation;
-  @Mock
   private WorkspaceHelper workspaceHelper;
-  @Mock
   private TrackingClient trackingClient;
-  @Mock
   private TemporalWorkerRunFactory temporalWorkflowHandler;
-  @Mock
   private SyncJobFactory jobFactory;
-  @Mock
   private JobPersistence jobPersistence;
-  @Mock
   private LogConfigs logConfigs;
-  @Mock
   private FeatureFlags featureFlags;
 
   // TODO: bmoric move to a mock
@@ -155,6 +144,12 @@ class ConnectionsHandlerTest {
         .withOperationId(operationId)
         .withWorkspaceId(workspaceId);
 
+    configRepository = mock(ConfigRepository.class);
+    uuidGenerator = mock(Supplier.class);
+    workspaceHelper = mock(WorkspaceHelper.class);
+    trackingClient = mock(TrackingClient.class);
+    featureFlags = mock(FeatureFlags.class);
+
     connectionHelper = new ConnectionHelper(configRepository, workspaceHelper);
 
     connectionsHandler = new ConnectionsHandler(
@@ -170,6 +165,8 @@ class ConnectionsHandlerTest {
     when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(deletedSourceId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(destinationId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(operationId)).thenReturn(workspaceId);
+
+    when(featureFlags.usesNewScheduler()).thenReturn(false);
   }
 
   @Test

@@ -309,8 +309,24 @@ public class ConnectionsHandler {
       temporalWorkerRunFactory.deleteConnection(connectionIdRequestBody.getConnectionId());
     } else {
 
-      connectionHelper.deleteConnection(connectionIdRequestBody.getConnectionId());
+      final ConnectionRead connectionRead = getConnection(connectionIdRequestBody);
+      deleteConnection(connectionRead);
     }
+  }
+
+  public void deleteConnection(final ConnectionRead connectionRead) throws ConfigNotFoundException, IOException, JsonValidationException {
+    final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
+        .namespaceDefinition(connectionRead.getNamespaceDefinition())
+        .namespaceFormat(connectionRead.getNamespaceFormat())
+        .prefix(connectionRead.getPrefix())
+        .connectionId(connectionRead.getConnectionId())
+        .operationIds(connectionRead.getOperationIds())
+        .syncCatalog(connectionRead.getSyncCatalog())
+        .schedule(connectionRead.getSchedule())
+        .status(ConnectionStatus.DEPRECATED)
+        .resourceRequirements(connectionRead.getResourceRequirements());
+
+    updateConnection(connectionUpdate);
   }
 
   private boolean isStandardSyncInWorkspace(final UUID workspaceId,
