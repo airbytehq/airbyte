@@ -48,7 +48,7 @@ public abstract class AbstractGscBigQueryUploader<T extends GscWriter> extends A
 
   @Override
   public void postProcessAction(boolean hasFailed) throws Exception {
-    if (isKeepFilesInGcs) {
+    if (!isKeepFilesInGcs) {
       deleteGcsFiles();
     }
   }
