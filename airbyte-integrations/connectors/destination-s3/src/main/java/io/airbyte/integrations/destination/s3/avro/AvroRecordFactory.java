@@ -21,7 +21,6 @@ import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 public class AvroRecordFactory {
 
-  protected static final Logger LOGGER = LoggerFactory.getLogger(AvroRecordFactory.class);
   private static final ObjectMapper MAPPER = MoreMappers.initMapper();
   private static final ObjectWriter WRITER = MAPPER.writer();
 
