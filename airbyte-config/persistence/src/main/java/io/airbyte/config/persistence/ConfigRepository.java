@@ -213,8 +213,18 @@ public class ConfigRepository {
     }
   }
 
-  public List<StandardDestinationDefinition> listStandardDestinationDefinitions() throws JsonValidationException, IOException {
-    return persistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class);
+  public List<StandardDestinationDefinition> listStandardDestinationDefinitions(final boolean includeTombstone)
+      throws JsonValidationException, IOException {
+    final List<StandardDestinationDefinition> destinationDefinitions = new ArrayList<>();
+
+    for (final StandardDestinationDefinition destinationDefinition : persistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION,
+        StandardDestinationDefinition.class)) {
+      if (!MoreBooleans.isTruthy(destinationDefinition.getTombstone()) || includeTombstone) {
+        destinationDefinitions.add(destinationDefinition);
+      }
+    }
+
+    return destinationDefinitions;
   }
 
   public void writeStandardDestinationDefinition(final StandardDestinationDefinition destinationDefinition)

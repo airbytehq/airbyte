@@ -43,6 +43,7 @@ class ConfigRepositoryTest {
 
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final UUID SOURCE_DEFINITION_ID = UUID.randomUUID();
+  private static final UUID DESTINATION_DEFINITION_ID = UUID.randomUUID();
 
   private ConfigPersistence configPersistence;
   private ConfigRepository configRepository;
@@ -267,6 +268,105 @@ class ConfigRepositoryTest {
     verify(configPersistence, never()).deleteConfig(ConfigSchema.STANDARD_SYNC, syncToStay.getConnectionId().toString());
     verify(configPersistence, never()).deleteConfig(ConfigSchema.SOURCE_CONNECTION, sourceConnectionToStay.getSourceId().toString());
     verify(configPersistence, never()).deleteConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefToStay.getSourceDefinitionId().toString());
+  }
+
+  @Test
+  void testDestinationDefinitionWithNullTombstone() throws JsonValidationException, ConfigNotFoundException, IOException {
+    assertReturnsDestinationDefinition(new StandardDestinationDefinition().withDestinationDefinitionId(DESTINATION_DEFINITION_ID));
+  }
+
+  @Test
+  void testDestinationDefinitionWithTrueTombstone() throws JsonValidationException, ConfigNotFoundException, IOException {
+    assertReturnsDestinationDefinition(
+        new StandardDestinationDefinition().withDestinationDefinitionId(DESTINATION_DEFINITION_ID).withTombstone(true));
+  }
+
+  @Test
+  void testDestinationDefinitionWithFalseTombstone() throws JsonValidationException, ConfigNotFoundException, IOException {
+    assertReturnsDestinationDefinition(
+        new StandardDestinationDefinition().withDestinationDefinitionId(DESTINATION_DEFINITION_ID).withTombstone(false));
+  }
+
+  void assertReturnsDestinationDefinition(final StandardDestinationDefinition destinationDefinition)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    when(configPersistence.getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, DESTINATION_DEFINITION_ID.toString(),
+        StandardDestinationDefinition.class))
+            .thenReturn(destinationDefinition);
+
+    assertEquals(destinationDefinition, configRepository.getStandardDestinationDefinition(DESTINATION_DEFINITION_ID));
+  }
+
+  @Test
+  void testDestinationDefinitionFromDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final UUID destinationId = UUID.randomUUID();
+
+    final DestinationConnection destination = new DestinationConnection()
+        .withDestinationId(destinationId)
+        .withDestinationDefinitionId(DESTINATION_DEFINITION_ID);
+
+    doReturn(destination)
+        .when(configRepository)
+        .getDestinationConnection(destinationId);
+
+    configRepository.getDestinationDefinitionFromDestination(destinationId);
+    verify(configRepository).getStandardDestinationDefinition(DESTINATION_DEFINITION_ID);
+  }
+
+  @Test
+  void testDestinationDefinitionsFromConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final UUID destinationId = UUID.randomUUID();
+    final UUID connectionId = UUID.randomUUID();
+
+    final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
+        .withDestinationDefinitionId(DESTINATION_DEFINITION_ID);
+
+    final DestinationConnection destination = new DestinationConnection()
+        .withDestinationId(destinationId)
+        .withDestinationDefinitionId(DESTINATION_DEFINITION_ID);
+
+    final StandardSync connection = new StandardSync()
+        .withDestinationId(destinationId)
+        .withConnectionId(connectionId);
+
+    doReturn(destinationDefinition)
+        .when(configRepository)
+        .getStandardDestinationDefinition(DESTINATION_DEFINITION_ID);
+    doReturn(destination)
+        .when(configRepository)
+        .getDestinationConnection(destinationId);
+    doReturn(connection)
+        .when(configRepository)
+        .getStandardSync(connectionId);
+
+    configRepository.getDestinationDefinitionFromDestination(destinationId);
+
+    verify(configRepository).getStandardDestinationDefinition(DESTINATION_DEFINITION_ID);
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {0, 1, 2, 10})
+  void testListStandardDestinationDefinitions_handlesTombstoneDestinationDefinitions(final int numDestinationDefinitions)
+      throws JsonValidationException, IOException {
+    final List<StandardDestinationDefinition> allDestinationDefinitions = new ArrayList<>();
+    final List<StandardDestinationDefinition> notTombstoneDestinationDefinitions = new ArrayList<>();
+    for (int i = 0; i < numDestinationDefinitions; i++) {
+      final boolean isTombstone = i % 2 == 0; // every other is tombstone
+      final StandardDestinationDefinition destinationDefinition =
+          new StandardDestinationDefinition().withDestinationDefinitionId(UUID.randomUUID()).withTombstone(isTombstone);
+      allDestinationDefinitions.add(destinationDefinition);
+      if (!isTombstone) {
+        notTombstoneDestinationDefinitions.add(destinationDefinition);
+      }
+    }
+    when(configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
+        .thenReturn(allDestinationDefinitions);
+
+    final List<StandardDestinationDefinition> returnedDestinationDefinitionsWithoutTombstone =
+        configRepository.listStandardDestinationDefinitions(false);
+    assertEquals(notTombstoneDestinationDefinitions, returnedDestinationDefinitionsWithoutTombstone);
+
+    final List<StandardDestinationDefinition> returnedDestinationDefinitionsWithTombstone = configRepository.listStandardDestinationDefinitions(true);
+    assertEquals(allDestinationDefinitions, returnedDestinationDefinitionsWithTombstone);
   }
 
   @Test
