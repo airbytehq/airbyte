@@ -9,12 +9,16 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.commons.json.JsonSchemas;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.json.Secrets;
+import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -207,7 +211,9 @@ public class SecretsHelpers {
         if (JsonSecretsProcessor.isSecret(spec)) {
           final var oldFullSecretCoordinate = oldPartialConfig.has(COORDINATE_FIELD) ? oldPartialConfig.get(COORDINATE_FIELD).asText() : null;
           final var secretCoordinate = getCoordinate(fullConfig.asText(), secretReader, workspaceId, uuidSupplier, oldFullSecretCoordinate);
-
+          // todo (cgardens) -- got lost here. on update do we always persist a new secret or only if the
+          // secret changed?
+          // answer, we don't resend secrets and line ~216 means we don't re process.
           final var newPartialConfig = Jsons.jsonNode(Map.of(
               COORDINATE_FIELD, secretCoordinate.getFullCoordinate()));
 
@@ -260,6 +266,63 @@ public class SecretsHelpers {
     }
 
     return new SplitSecretConfig(fullConfig, secretMap);
+  }
+
+  private static Optional<String> getExistingCoordinateIfExists(final JsonNode json) {
+    if (json.has(COORDINATE_FIELD)) {
+      return Optional.ofNullable(json.get(COORDINATE_FIELD).asText());
+    } else {
+      return Optional.empty();
+    }
+  }
+
+  private static SecretCoordinate getOrCreateCoordinate(final ReadOnlySecretPersistence secretReader,
+                                                        final UUID workspaceId,
+                                                        final Supplier<UUID> uuidSupplier,
+                                                        final JsonNode newJson,
+                                                        final JsonNode persistedJson) {
+
+    // if it doesn't have a coordinate then it was unset.
+//    final JsonNode jsonNodes = JsonPaths.getSingle(persistedJson, path);
+    final Optional<String> existingCoordinateOptional = getExistingCoordinateIfExists(persistedJson);
+    return getCoordinate(newJson.asText(), secretReader, workspaceId, uuidSupplier, existingCoordinateOptional.orElse(null));
+  }
+
+  // todo need to make sure our traversal get down to string types! very replaceable.
+  @VisibleForTesting
+  static SplitSecretConfig internalSplitAndUpdateConfig2(final Supplier<UUID> uuidSupplier,
+                                                         final UUID workspaceId,
+                                                         final ReadOnlySecretPersistence secretReader,
+                                                         final JsonNode persistedPartialConfig,
+                                                         final JsonNode newFullConfig,
+                                                         final JsonNode spec) {
+    final var fullConfigCopy = newFullConfig.deepCopy();
+    final var secretMap = new HashMap<SecretCoordinate, String>();
+
+    final Set<String> paths = JsonSchemas.collectJsonPathsThatMeetCondition(
+        spec,
+        node -> MoreIterators.toList(node.fields())
+            .stream()
+            .anyMatch(field -> field.getKey().equals(JsonSecretsProcessor.AIRBYTE_SECRET_FIELD)));
+
+    paths.forEach(path -> {
+      Secrets.replaceAt(fullConfigCopy, path, (json, pathOfNode) -> {
+        System.out.println("pathOfNode = " + pathOfNode);
+        final Optional<JsonNode> persistedNode = Secrets.getSingleValue(persistedPartialConfig, pathOfNode);
+        final SecretCoordinate coordinate = getOrCreateCoordinate(
+            secretReader,
+            workspaceId,
+            uuidSupplier,
+            json,
+            persistedNode.orElse(null));
+
+        secretMap.put(coordinate, json.asText());
+
+        return Jsons.jsonNode(Map.of(COORDINATE_FIELD, coordinate.getFullCoordinate()));
+      });
+    });
+
+    return new SplitSecretConfig(fullConfigCopy, secretMap);
   }
 
   /**

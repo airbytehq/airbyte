@@ -82,6 +82,10 @@ class JsonPaths {
     });
   }
 
+  public static String empty() {
+    return "$";
+  }
+
   /*
    * This version of the JsonPath Configuration object allows queries to return to the path of values
    * instead of the values that were found.

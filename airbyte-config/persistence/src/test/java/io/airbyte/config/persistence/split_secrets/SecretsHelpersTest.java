@@ -55,7 +55,8 @@ public class SecretsHelpersTest {
         new ArrayTestCase(),
         new ArrayOneOfTestCase(),
         new NestedOneOfTestCase(),
-        new PostgresSshKeyTestCase()).map(Arguments::of);
+        new PostgresSshKeyTestCase()
+    ).map(Arguments::of);
   }
 
   @ParameterizedTest
@@ -122,6 +123,44 @@ public class SecretsHelpersTest {
         inputUpdateConfig,
         testCase.getSpec(),
         secretPersistence::read);
+
+    assertEquals(testCase.getUpdatedPartialConfig(), updatedSplit.getPartialConfig());
+    assertEquals(testCase.getSecondSecretMap(), updatedSplit.getCoordinateToPayload());
+
+    // check that we didn't mutate the input configs
+    assertEquals(inputPartialConfigCopy, inputPartialConfig);
+    assertEquals(inputUpdateConfigCopy, inputUpdateConfig);
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideTestCases")
+  void testSplitUpdate2(final SecretsTestCase testCase) {
+    final var uuidIterator = UUIDS.iterator();
+    final var inputPartialConfig = testCase.getPartialConfig();
+    final var inputUpdateConfig = testCase.getUpdateConfig();
+    final var inputPartialConfigCopy = inputPartialConfig.deepCopy();
+    final var inputUpdateConfigCopy = inputUpdateConfig.deepCopy();
+    final var secretPersistence = new MemorySecretPersistence();
+
+    for (final Map.Entry<SecretCoordinate, String> entry : testCase.getFirstSecretMap().entrySet()) {
+      secretPersistence.write(entry.getKey(), entry.getValue());
+    }
+
+    // final var updatedSplit = SecretsHelpers.splitAndUpdateConfig(
+    // uuidIterator::next,
+    // WORKSPACE_ID,
+    // inputPartialConfig,
+    // inputUpdateConfig,
+    // testCase.getSpec(),
+    // secretPersistence::read);
+
+    final var updatedSplit = SecretsHelpers.internalSplitAndUpdateConfig2(
+        uuidIterator::next,
+        WORKSPACE_ID,
+        secretPersistence,
+        inputPartialConfig,
+        inputUpdateConfig,
+        testCase.getSpec().getConnectionSpecification());
 
     assertEquals(testCase.getUpdatedPartialConfig(), updatedSplit.getPartialConfig());
     assertEquals(testCase.getSecondSecretMap(), updatedSplit.getCoordinateToPayload());

@@ -64,6 +64,7 @@ public interface ServerFactory {
                                  final ConfigPersistence seed,
                                  final Database configsDatabase,
                                  final Database jobsDatabase,
+
                                  final TrackingClient trackingClient,
                                  final WorkerEnvironment workerEnvironment,
                                  final LogConfigs logConfigs,

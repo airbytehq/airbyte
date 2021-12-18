@@ -1,0 +1,10 @@
+{
+  "credList": [
+    {
+      "cred": "hunter20"
+    },
+    {
+      "cred": ["hunter30", "hunter40"]
+    }
+  ]
+}

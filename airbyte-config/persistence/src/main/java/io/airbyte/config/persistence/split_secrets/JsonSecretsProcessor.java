@@ -10,7 +10,10 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import io.airbyte.commons.json.JsonSchemas;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.json.Secrets;
+import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -170,6 +173,10 @@ public class JsonSecretsProcessor {
 
     return copiedObj;
   }
+
+  public JsonNode maskAllSecrets2(final JsonNode obj, final JsonNode schema) {
+    return Secrets.maskAllSecrets(obj, schema);
+  };
 
   @Value
   protected class SecretKeys {
