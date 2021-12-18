@@ -38,7 +38,7 @@ public class ProductionWriterFactory implements GcsWriterFactory {
       LOGGER.info("Json schema for stream {}: {}", stream.getName(), stream.getJsonSchema());
 
       if (format == S3Format.AVRO) {
-        return new GcsAvroWriter(config, s3Client, configuredStream, uploadTimestamp, AvroConstants.JSON_CONVERTER);
+        return new GcsAvroWriter(config, s3Client, configuredStream, uploadTimestamp, AvroConstants.JSON_CONVERTER, stream.getJsonSchema());
       } else {
         final JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
         final Schema avroSchema = schemaConverter.getAvroSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace(), true);
