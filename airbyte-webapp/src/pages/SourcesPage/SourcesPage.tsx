@@ -1,14 +1,13 @@
 import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import { NetworkErrorBoundary as ErrorBoundary } from "rest-hooks";
 
 import { RoutePaths } from "pages/routes";
 import AllSourcesPage from "./pages/AllSourcesPage";
 import CreateSourcePage from "./pages/CreateSourcePage";
 import SourceItemPage from "./pages/SourceItemPage";
 import CreationFormPage from "pages/ConnectionPage/pages/CreationFormPage";
-
-const FallbackRootNavigateor = () => <Navigate to="" />;
+import { StartOverErrorView } from "views/common/StartOverErrorView";
+import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 
 const SourcesPage: React.FC = () => (
   <Routes>
@@ -17,9 +16,9 @@ const SourcesPage: React.FC = () => (
     <Route
       path=":id"
       element={
-        <ErrorBoundary fallbackComponent={FallbackRootNavigateor}>
+        <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
           <SourceItemPage />
-        </ErrorBoundary>
+        </ResourceNotFoundErrorBoundary>
       }
     />
     <Route index element={<AllSourcesPage />} />

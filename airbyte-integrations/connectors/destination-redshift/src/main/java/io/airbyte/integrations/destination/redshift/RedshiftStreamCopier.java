@@ -11,6 +11,7 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopyConfig;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
 import io.airbyte.integrations.destination.redshift.manifest.Entry;
 import io.airbyte.integrations.destination.redshift.manifest.Manifest;
@@ -39,14 +40,17 @@ public class RedshiftStreamCopier extends S3StreamCopier {
                               final String schema,
                               final AmazonS3 client,
                               final JdbcDatabase db,
-                              final S3DestinationConfig s3Config,
+                              final S3CopyConfig config,
                               final ExtendedNameTransformer nameTransformer,
                               final SqlOperations sqlOperations,
                               final ConfiguredAirbyteStream configuredAirbyteStream) {
     this(
         stagingFolder,
-        schema, client, db,
-        s3Config, nameTransformer,
+        schema,
+        client,
+        db,
+        config,
+        nameTransformer,
         sqlOperations,
         Timestamp.from(Instant.now()),
         configuredAirbyteStream);
@@ -57,12 +61,21 @@ public class RedshiftStreamCopier extends S3StreamCopier {
                        final String schema,
                        final AmazonS3 client,
                        final JdbcDatabase db,
-                       final S3DestinationConfig s3Config,
+                       final S3CopyConfig config,
                        final ExtendedNameTransformer nameTransformer,
                        final SqlOperations sqlOperations,
                        final Timestamp uploadTime,
                        final ConfiguredAirbyteStream configuredAirbyteStream) {
-    super(stagingFolder, schema, client, db, s3Config, nameTransformer, sqlOperations, configuredAirbyteStream, uploadTime, MAX_PARTS_PER_FILE);
+    super(stagingFolder,
+        schema,
+        client,
+        db,
+        config,
+        nameTransformer,
+        sqlOperations,
+        configuredAirbyteStream,
+        uploadTime,
+        MAX_PARTS_PER_FILE);
     objectMapper = new ObjectMapper();
   }
 
