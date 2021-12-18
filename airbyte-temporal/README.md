@@ -1,6 +1,6 @@
 # airbyte-temporal
 
-This module wraps the publicly available Temporal Docker image (temporal.io). It decorates it with functionality that makes it so that users of Airbyte do not need to do anything manual when the Airbyte platform upgrades the version of Temporal that it is using.
+This module implements a custom version of what the Temporal autosetup image is doing. Because Temporal does not recommend the autosetup be used in production, we had to add some modifications. It ensures that the temporalDB schema will get upgraded if the temporal version is updated.
 
 ## Testing a temporal migration
 
