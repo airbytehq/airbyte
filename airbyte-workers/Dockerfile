@@ -1,4 +1,4 @@
-ARG JDK_VERSION=14.0.2
+ARG JDK_VERSION=17.0.1
 FROM openjdk:${JDK_VERSION}-slim AS worker
 
 ARG DOCKER_BUILD_ARCH=amd64
@@ -19,7 +19,6 @@ RUN add-apt-repository \
 RUN apt-get update && apt-get install -y docker-ce-cli jq
 
 ENV APPLICATION airbyte-workers
-ENV AIRBYTE_ENTRYPOINT "/app/${APPLICATION}-0.34.0-alpha/bin/${APPLICATION}"
 
 WORKDIR /app
 
