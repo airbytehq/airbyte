@@ -159,7 +159,7 @@ public class JsonToAvroSchemaConverter {
             AvroConstants.DOC_KEY_VALUE_DELIMITER,
             fieldName));
       }
-      assembler = fieldBuilder.type(getNullableFieldTypes(fieldName, fieldDefinition, addStringToLogicalTypes))
+      assembler = fieldBuilder.type(getNullableFieldTypes(fieldName, fieldDefinition, appendExtraProps, addStringToLogicalTypes))
           .withDefault(null);
     }
 
@@ -172,7 +172,7 @@ public class JsonToAvroSchemaConverter {
     return assembler.endRecord();
   }
 
-  Schema getSingleFieldType(final String fieldName, final JsonSchemaType fieldType, final JsonNode fieldDefinition, final boolean addStringToLogicalTypes) {
+  Schema getSingleFieldType(final String fieldName, final JsonSchemaType fieldType, final JsonNode fieldDefinition, final boolean appendExtraProps, final boolean addStringToLogicalTypes) {
     Preconditions
         .checkState(fieldType != JsonSchemaType.NULL, "Null types should have been filtered out");
 
@@ -201,7 +201,7 @@ public class JsonToAvroSchemaConverter {
       }
       case COMBINED -> {
         final Optional<JsonNode> combinedRestriction = getCombinedRestriction(fieldDefinition);
-        final List<Schema> unionTypes = getSchemasFromTypes(fieldName, (ArrayNode) combinedRestriction.get(), addStringToLogicalTypes);
+        final List<Schema> unionTypes = getSchemasFromTypes(fieldName, (ArrayNode) combinedRestriction.get(), appendExtraProps, addStringToLogicalTypes);
         fieldSchema = Schema.createUnion(unionTypes);
       }
       case ARRAY -> {
@@ -209,9 +209,9 @@ public class JsonToAvroSchemaConverter {
         Preconditions.checkNotNull(items, "Array field %s misses the items property.", fieldName);
 
         if (items.isObject()) {
-          fieldSchema = Schema.createArray(getNullableFieldTypes(fieldName, items, addStringToLogicalTypes));
+          fieldSchema = Schema.createArray(getNullableFieldTypes(fieldName, items, appendExtraProps, addStringToLogicalTypes));
         } else if (items.isArray()) {
-          final List<Schema> arrayElementTypes = getSchemasFromTypes(fieldName, (ArrayNode) items, addStringToLogicalTypes);
+          final List<Schema> arrayElementTypes = getSchemasFromTypes(fieldName, (ArrayNode) items, appendExtraProps, addStringToLogicalTypes);
           arrayElementTypes.add(0, NULL_SCHEMA);
           fieldSchema = Schema.createArray(Schema.createUnion(arrayElementTypes));
         } else {
@@ -219,18 +219,18 @@ public class JsonToAvroSchemaConverter {
               String.format("Array field %s has invalid items property: %s", fieldName, items));
         }
       }
-      case OBJECT -> fieldSchema = getAvroSchema(fieldDefinition, fieldName, null, false);
+      case OBJECT -> fieldSchema = getAvroSchema(fieldDefinition, fieldName, null, false, appendExtraProps, addStringToLogicalTypes);
       default -> throw new IllegalStateException(
           String.format("Unexpected type for field %s: %s", fieldName, fieldType));
     }
     return fieldSchema;
   }
 
-  List<Schema> getSchemasFromTypes(final String fieldName, final ArrayNode types, final boolean addStringToLogicalTypes) {
+  List<Schema> getSchemasFromTypes(final String fieldName, final ArrayNode types, final boolean appendExtraProps, final boolean addStringToLogicalTypes) {
     return MoreIterators.toList(types.elements())
         .stream()
         .flatMap(definition -> getNonNullTypes(fieldName, definition).stream().flatMap(type -> {
-          final Schema singleFieldSchema = getSingleFieldType(fieldName, type, definition, addStringToLogicalTypes);
+          final Schema singleFieldSchema = getSingleFieldType(fieldName, type, definition, appendExtraProps, addStringToLogicalTypes);
           if (singleFieldSchema.isUnion()) {
             return singleFieldSchema.getTypes().stream();
           } else {
@@ -244,12 +244,12 @@ public class JsonToAvroSchemaConverter {
   /**
    * @param fieldDefinition - Json schema field definition. E.g. { type: "number" }.
    */
-  Schema getNullableFieldTypes(final String fieldName, final JsonNode fieldDefinition, final boolean addStringToLogicalTypes) {
+  Schema getNullableFieldTypes(final String fieldName, final JsonNode fieldDefinition, final boolean appendExtraProps, final boolean addStringToLogicalTypes) {
     // Filter out null types, which will be added back in the end.
     final List<Schema> nonNullFieldTypes = getNonNullTypes(fieldName, fieldDefinition)
         .stream()
         .flatMap(fieldType -> {
-          final Schema singleFieldSchema = getSingleFieldType(fieldName, fieldType, fieldDefinition, addStringToLogicalTypes);
+          final Schema singleFieldSchema = getSingleFieldType(fieldName, fieldType, fieldDefinition, appendExtraProps, addStringToLogicalTypes);
           if (singleFieldSchema.isUnion()) {
             return singleFieldSchema.getTypes().stream();
           } else {
