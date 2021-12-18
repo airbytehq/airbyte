@@ -20,7 +20,6 @@ import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsS3Helper;
 import io.airbyte.integrations.destination.gcs.writer.GscWriter;
 import io.airbyte.protocol.models.AirbyteMessage;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
@@ -102,22 +101,14 @@ public abstract class AbstractGscBigQueryUploader<T extends GscWriter> extends A
     final String gcsBucketName = gcsDestinationConfig.getBucketName();
     final String gcs_bucket_path = gcsDestinationConfig.getBucketPath();
 
-    final List<DeleteObjectsRequest.KeyVersion> keysToDelete = new LinkedList<>();
     final List<S3ObjectSummary> objects = s3Client
         .listObjects(gcsBucketName, gcs_bucket_path)
         .getObjectSummaries();
-    for (final S3ObjectSummary object : objects) {
-      keysToDelete.add(new DeleteObjectsRequest.KeyVersion(object.getKey()));
-    }
 
-    if (!keysToDelete.isEmpty()) {
-      LOGGER.info("Tearing down test bucket path: {}/{}", gcsBucketName, gcs_bucket_path);
-      // Google Cloud Storage doesn't accept request to delete multiple objects
-      for (final DeleteObjectsRequest.KeyVersion keyToDelete : keysToDelete) {
-        s3Client.deleteObject(gcsBucketName, keyToDelete.getKey());
-      }
-      LOGGER.info("Deleted {} file(s).", keysToDelete.size());
-    }
+    objects.stream().filter(s3ObjectSummary -> s3ObjectSummary.getKey().equals(writer.getOutputPath())).forEach(s3ObjectSummary -> {
+      s3Client.deleteObject(gcsBucketName, new DeleteObjectsRequest.KeyVersion(s3ObjectSummary.getKey()).getKey());
+      LOGGER.info("File is deleted : " + s3ObjectSummary.getKey());
+    });
     s3Client.shutdown();
   }
 

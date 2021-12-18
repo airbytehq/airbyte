@@ -17,6 +17,11 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Default BigQuery formatter.
+ * Represents default Airbyte schema (three columns).
+ * Note! Default formatter is used inside Direct uploader.
+ */
 public class DefaultBigQueryRecordFormatter extends BigQueryRecordFormatter {
 
   private static final com.google.cloud.bigquery.Schema SCHEMA = com.google.cloud.bigquery.Schema.of(

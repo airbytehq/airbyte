@@ -12,4 +12,6 @@ public interface GscWriter extends CommonWriter {
 
   S3Format getFileFormat();
 
+  String getOutputPath();
+
 }

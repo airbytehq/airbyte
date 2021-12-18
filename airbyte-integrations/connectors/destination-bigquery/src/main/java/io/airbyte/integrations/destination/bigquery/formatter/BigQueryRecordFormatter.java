@@ -15,12 +15,15 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The class formats incoming JsonSchema and AirbyteRecord in order to be inline with a corresponding uploader.
+ */
 public abstract class BigQueryRecordFormatter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryRecordFormatter.class);
 
   private Schema bigQuerySchema;
-  private Map<String, Set<String>> mapOfFailedFields = new HashMap<>();
+  private final Map<String, Set<String>> mapOfFailedFields = new HashMap<>();
   protected final StandardNameTransformer namingResolver;
   protected final JsonNode jsonSchema;
 

@@ -10,12 +10,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class BigQueryGcsDestinationAcceptanceTest extends BigQueryDestinationAcceptanceTest {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryGcsDestinationAcceptanceTest.class);
 
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 

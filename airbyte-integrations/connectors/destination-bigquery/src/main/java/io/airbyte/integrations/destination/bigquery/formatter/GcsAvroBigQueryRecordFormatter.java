@@ -8,6 +8,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 
+/**
+ * Formatter for GCS Avro uploader.
+ * Contains specific filling of default Airbyte attributes.
+ */
 public class GcsAvroBigQueryRecordFormatter extends DefaultBigQueryRecordFormatter {
 
   public GcsAvroBigQueryRecordFormatter(JsonNode jsonSchema, StandardNameTransformer namingResolver) {
