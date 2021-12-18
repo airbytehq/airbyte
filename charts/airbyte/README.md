@@ -1,5 +1,7 @@
 # airbyte
 
+Helm charts for Airbyte.
+
 ## Parameters
 
 ### Global Parameters

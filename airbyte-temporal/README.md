@@ -1,3 +1,7 @@
+# airbyte-temporal
+
+This module wraps the publicly available Temporal Docker image (temporal.io). It decorates it with functionality that makes it so that users of Airbyte do not need to do anything manual when the Airbyte platform upgrades the version of Temporal that it is using.
+
 ## Testing a temporal migration
 
 `tools/bin/test_temporal_migration.sh` is available to test that a bump of the temporal version won't break the docker compose build. Here is what 
