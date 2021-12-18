@@ -35,6 +35,9 @@ docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-e2e-test:dev disc
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/destination-e2e-test:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
+#### Dev Null Destination
+The Dev Null Destination depends on this connector. It only allows the "silent" mode. When this mode is changed, please make sure that the Dev Null Destination is updated and published accordingly as well.
+
 ## Testing
 We use `JUnit` for Java tests.
 

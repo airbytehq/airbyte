@@ -14,6 +14,12 @@ This destination is for testing of Airbyte connections. It can be set up as a so
 
 ## Mode
 
+### Silent (`/dev/null`)
+
+**This is the only mode allowed on Airbyte Cloud.**
+
+This mode works as `/dev/null`. It does nothing about any data from the source connector. This is usually only useful for performance testing of the source connector.
+
 ### Logging
 
 This mode logs the data from the source connector. It will log at most 1,000 data entries.
@@ -25,10 +31,6 @@ There are the different logging modes to choose from:
 | First N entries  | Log the first N number of data entries for each data stream. | N: how many entries to log. |
 | Every N-th entry | Log every N-th entry for each data stream. When N=1, it will log every entry. When N=1, it will log every other entry. Etc. | N: the N-th entry to log. Max entry count: max number of entries to log. |
 | Random sampling | Log a random percentage of the entries for each data stream. | Sampling ratio: a number in range of `[0, 1]`. Optional seed: default to system epoch time. Max entry count: max number of entries to log. |
-
-### `/dev/null`
-
-This mode works as `/dev/null`. It does nothing about any data from the source connector. This is usually only useful for performance testing of the source connector.
 
 ### Throttling
 
