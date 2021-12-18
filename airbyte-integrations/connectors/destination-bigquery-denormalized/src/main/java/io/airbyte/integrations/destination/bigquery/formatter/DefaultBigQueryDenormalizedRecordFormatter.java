@@ -171,8 +171,6 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
         .map(p -> formatData(subFields, p))
         .collect(Collectors.toList()));
 
-    // "Array of Array of" (nested arrays) are not permitted by BigQuery ("Array of Record of Array of"
-    // is). Turn all "Array of" into "Array of Record of" instead
     return Jsons.jsonNode(ImmutableMap.of(NESTED_ARRAY_FIELD, items));
   }
 
@@ -182,7 +180,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
         .filter(key -> {
           final boolean validKey = fieldNames.contains(namingResolver.getIdentifier(key));
           if (!validKey && !invalidKeys.contains(key)) {
-            LOGGER.warn("Ignoring field {} as it is not defined in catalog", key);
+            logFieldFail("Ignoring field as it is not defined in catalog", key);
             invalidKeys.add(key);
           }
           return validKey;

@@ -73,6 +73,9 @@ public abstract class AbstractBigQueryUploader<T extends CommonWriter> {
 
   public void close(boolean hasFailed, Consumer<AirbyteMessage> outputRecordCollector, AirbyteMessage lastStateMessage) {
     try {
+      LOGGER.info("Field fails during format : ");
+      recordFormatter.printAndCleanFieldFails();
+
       LOGGER.info("Closing connector:" + this);
       this.writer.close(hasFailed);
 

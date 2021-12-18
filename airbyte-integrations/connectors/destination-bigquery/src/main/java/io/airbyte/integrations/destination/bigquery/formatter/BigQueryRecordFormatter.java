@@ -8,10 +8,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.Schema;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class BigQueryRecordFormatter {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryRecordFormatter.class);
+
   private Schema bigQuerySchema;
+  private Map<String, Set<String>> mapOfFailedFields = new HashMap<>();
   protected final StandardNameTransformer namingResolver;
   protected final JsonNode jsonSchema;
 
@@ -38,5 +47,24 @@ public abstract class BigQueryRecordFormatter {
   }
 
   protected abstract Schema getBigQuerySchema(JsonNode jsonSchema);
+
+  protected void logFieldFail(String error, String fieldName) {
+    mapOfFailedFields.putIfAbsent(error, new HashSet<>());
+    mapOfFailedFields.get(error).add(fieldName);
+  }
+
+  public void printAndCleanFieldFails() {
+    if (!mapOfFailedFields.isEmpty()) {
+      mapOfFailedFields.forEach(
+          (error, fieldNames) ->
+              LOGGER.warn(
+                  "Field(s) fail with error {}. Fields : {} ",
+                  error,
+                  String.join(", ", fieldNames)));
+      mapOfFailedFields.clear();
+    } else {
+      LOGGER.info("No field fails during record format.");
+    }
+  }
 
 }
