@@ -28,9 +28,9 @@ public class JsonSecretsProcessor {
 
   public static String AIRBYTE_SECRET_FIELD = "airbyte_secret";
   public static final String PROPERTIES_FIELD = "properties";
-  public static String AIRBYTE_TYPE_FIELD = "type";
-  public static String AIRBYTE_ARRAY_TYPE_FIELD = "array";
-  public static String AIRBYTE_ITEMS_FIELD = "items";
+  public static String TYPE_FIELD = "type";
+  public static String ARRAY_TYPE_FIELD = "array";
+  public static String ITEMS_FIELD = "items";
 
   private static final JsonSchemaValidator VALIDATOR = new JsonSchemaValidator();
 
@@ -109,7 +109,7 @@ public class JsonSecretsProcessor {
       final JsonNode currentNode = toProcess.remove();
       for (final String key : Jsons.keys(currentNode)) {
         if (isArrayDefinition(currentNode.get(key))) {
-          final JsonNode arrayItems = currentNode.get(key).get(AIRBYTE_ITEMS_FIELD);
+          final JsonNode arrayItems = currentNode.get(key).get(ITEMS_FIELD);
           if (arrayItems.has(AIRBYTE_SECRET_FIELD) && arrayItems.get(AIRBYTE_SECRET_FIELD).asBoolean()) {
             arraySecretKeys.add(key);
           } else {
@@ -207,9 +207,9 @@ public class JsonSecretsProcessor {
 
   public static boolean isArrayDefinition(final JsonNode obj) {
     return obj.isObject()
-        && obj.has(AIRBYTE_TYPE_FIELD)
-        && obj.get(AIRBYTE_TYPE_FIELD).asText().equals(AIRBYTE_ARRAY_TYPE_FIELD)
-        && obj.has(AIRBYTE_ITEMS_FIELD);
+        && obj.has(TYPE_FIELD)
+        && obj.get(TYPE_FIELD).asText().equals(ARRAY_TYPE_FIELD)
+        && obj.has(ITEMS_FIELD);
   }
 
 }
