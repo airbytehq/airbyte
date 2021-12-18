@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardCheckConnectionInput;
@@ -24,8 +25,8 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerException;
-import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
@@ -98,6 +99,8 @@ public abstract class AbstractSourceConnectorTest {
    */
   protected abstract void tearDown(TestDestinationEnv testEnv) throws Exception;
 
+  private WorkerConfigs workerConfigs;
+
   @BeforeEach
   public void setUpInternal() throws Exception {
     final Path testDir = Path.of("/tmp/airbyte_tests/");
@@ -106,14 +109,17 @@ public abstract class AbstractSourceConnectorTest {
     jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"));
     localRoot = Files.createTempDirectory(testDir, "output");
     environment = new TestDestinationEnv(localRoot);
+    workerConfigs = new WorkerConfigs(new EnvConfigs());
 
     setupEnvironment(environment);
 
     processFactory = new DockerProcessFactory(
+        workerConfigs,
         workspaceRoot,
         workspaceRoot.toString(),
         localRoot.toString(),
-        "host");
+        "host",
+        false);
   }
 
   @AfterEach
@@ -122,18 +128,24 @@ public abstract class AbstractSourceConnectorTest {
   }
 
   protected ConnectorSpecification runSpec() throws WorkerException {
-    return new DefaultGetSpecWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory))
-        .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
+    return new DefaultGetSpecWorker(
+        workerConfigs,
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements()))
+            .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
   }
 
   protected StandardCheckConnectionOutput runCheck() throws Exception {
-    return new DefaultCheckConnectionWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory))
-        .run(new StandardCheckConnectionInput().withConnectionConfiguration(getConfig()), jobRoot);
+    return new DefaultCheckConnectionWorker(
+        workerConfigs,
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements()))
+            .run(new StandardCheckConnectionInput().withConnectionConfiguration(getConfig()), jobRoot);
   }
 
   protected AirbyteCatalog runDiscover() throws Exception {
-    return new DefaultDiscoverCatalogWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory))
-        .run(new StandardDiscoverCatalogInput().withConnectionConfiguration(getConfig()), jobRoot);
+    return new DefaultDiscoverCatalogWorker(
+        workerConfigs,
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements()))
+            .run(new StandardDiscoverCatalogInput().withConnectionConfiguration(getConfig()), jobRoot);
   }
 
   protected void checkEntrypointEnvVariable() throws Exception {
@@ -159,7 +171,8 @@ public abstract class AbstractSourceConnectorTest {
         .withState(state == null ? null : new State().withState(state))
         .withCatalog(catalog);
 
-    final AirbyteSource source = new DefaultAirbyteSource(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory));
+    final AirbyteSource source = new DefaultAirbyteSource(workerConfigs,
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements()));
     final List<AirbyteMessage> messages = new ArrayList<>();
     source.start(sourceConfig, jobRoot);
     while (!source.isFinished()) {
@@ -207,26 +220,29 @@ public abstract class AbstractSourceConnectorTest {
   }
 
   private AirbyteSource prepareAirbyteSource(ResourceRequirements resourceRequirements) {
-    var integrationLauncher = resourceRequirements == null ? new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory)
+    var workerConfigs = new WorkerConfigs(new EnvConfigs());
+    var integrationLauncher = resourceRequirements == null
+        ? new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements())
         : new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, resourceRequirements);
-    return new DefaultAirbyteSource(integrationLauncher);
+    return new DefaultAirbyteSource(workerConfigs, integrationLauncher);
   }
 
   private static Map<String, String> prepareResourceRequestMapBySystemProperties() {
     var cpuLimit = System.getProperty(CPU_LIMIT_FIELD_NAME);
     var memoryLimit = System.getProperty(MEMORY_LIMIT_FIELD_NAME);
+    var workerConfigs = new WorkerConfigs(new EnvConfigs());
     if (cpuLimit.isBlank() || cpuLimit.isEmpty()) {
-      cpuLimit = WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuLimit();
+      cpuLimit = workerConfigs.getResourceRequirements().getCpuLimit();
     }
     if (memoryLimit.isBlank() || memoryLimit.isEmpty()) {
-      memoryLimit = WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryLimit();
+      memoryLimit = workerConfigs.getResourceRequirements().getMemoryLimit();
     }
     LOGGER.info("Container CPU Limit = {}", cpuLimit);
     LOGGER.info("Container Memory Limit = {}", memoryLimit);
     Map<String, String> result = new HashMap<>();
-    result.put(CPU_REQUEST_FIELD_NAME, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuRequest());
+    result.put(CPU_REQUEST_FIELD_NAME, workerConfigs.getResourceRequirements().getCpuRequest());
     result.put(CPU_LIMIT_FIELD_NAME, cpuLimit);
-    result.put(MEMORY_REQUEST_FIELD_NAME, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryRequest());
+    result.put(MEMORY_REQUEST_FIELD_NAME, workerConfigs.getResourceRequirements().getMemoryRequest());
     result.put(MEMORY_LIMIT_FIELD_NAME, memoryLimit);
     return result;
   }
