@@ -32,9 +32,15 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
         UploaderType.AVRO, new GcsBigQueryDenormalizedRecordFormatter(jsonSchema, getNamingResolver()));
   }
 
+  /**
+   * BigQuery might have different structure of the Temporary table.
+   * If this method returns TRUE, temporary table will have only three common Airbyte attributes.
+   * In case of FALSE, temporary table structure will be in line with Airbyte message JsonSchema.
+   * @return use default AirbyteSchema or build using JsonSchema
+   */
   @Override
   protected boolean isDefaultAirbyteTmpTableSchema() {
-    // Use source schema instead of
+    // Build temporary table structure based on incoming JsonSchema
     return false;
   }
 

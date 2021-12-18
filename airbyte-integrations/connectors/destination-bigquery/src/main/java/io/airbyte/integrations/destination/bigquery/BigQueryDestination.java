@@ -175,6 +175,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return uploaderMap;
   }
 
+  /**
+   * BigQuery might have different structure of the Temporary table.
+   * If this method returns TRUE, temporary table will have only three common Airbyte attributes.
+   * In case of FALSE, temporary table structure will be in line with Airbyte message JsonSchema.
+   * @return use default AirbyteSchema or build using JsonSchema
+   */
   protected boolean isDefaultAirbyteTmpTableSchema() {
     return true;
   }
