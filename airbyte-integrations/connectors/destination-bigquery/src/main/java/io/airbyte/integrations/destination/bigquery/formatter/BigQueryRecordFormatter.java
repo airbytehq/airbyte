@@ -28,8 +28,9 @@ public abstract class BigQueryRecordFormatter {
   public abstract JsonNode formatRecord(AirbyteRecordMessage recordMessage);
 
   public Schema getBigQuerySchema() {
-    if (bigQuerySchema == null)
+    if (bigQuerySchema == null) {
       bigQuerySchema = getBigQuerySchema(jsonSchema);
+    }
     return bigQuerySchema;
   }
 
