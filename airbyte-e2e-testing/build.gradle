@@ -3,7 +3,7 @@ plugins {
     id "com.github.node-gradle.node" version "2.2.4"
 }
 
-def nodeVersion = System.getenv('NODE_VERSION') ?: '14.11.0'
+def nodeVersion = System.getenv('NODE_VERSION') ?: '16.13.0'
 
 node {
     download = true

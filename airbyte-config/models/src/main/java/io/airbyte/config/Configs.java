@@ -129,6 +129,10 @@ public interface Configs {
 
   String getSubmitterNumThreads();
 
+  // Container Orchestrator
+
+  boolean getContainerOrchestratorEnabled();
+
   enum TrackingStrategy {
     SEGMENT,
     LOGGING

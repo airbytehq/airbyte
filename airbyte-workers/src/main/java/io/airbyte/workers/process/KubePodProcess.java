@@ -10,10 +10,13 @@ import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.TolerationPOJO;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
+import io.fabric8.kubernetes.api.model.ContainerPort;
+import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
 import io.fabric8.kubernetes.api.model.LocalObjectReference;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
+import io.fabric8.kubernetes.api.model.PodFluent;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.ResourceRequirementsBuilder;
 import io.fabric8.kubernetes.api.model.Toleration;
@@ -45,6 +48,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
@@ -128,6 +132,7 @@ public class KubePodProcess extends Process {
   private final ServerSocket stdoutServerSocket;
   private final int stdoutLocalPort;
   private final ServerSocket stderrServerSocket;
+  private final Map<Integer, Integer> internalToExternalPorts;
   private final int stderrLocalPort;
   private final ExecutorService executorService;
 
@@ -165,6 +170,7 @@ public class KubePodProcess extends Process {
                                    final String entrypointOverride,
                                    final List<VolumeMount> mainVolumeMounts,
                                    final ResourceRequirements resourceRequirements,
+                                   final Map<Integer, Integer> internalToExternalPorts,
                                    final String[] args)
       throws IOException {
     final var argsStr = String.join(" ", args);
@@ -182,8 +188,15 @@ public class KubePodProcess extends Process {
         .replaceAll("STDERR_PIPE_FILE", STDERR_PIPE_FILE)
         .replaceAll("STDOUT_PIPE_FILE", STDOUT_PIPE_FILE);
 
+    final List<ContainerPort> containerPorts = internalToExternalPorts.keySet().stream()
+        .map(integer -> new ContainerPortBuilder()
+            .withContainerPort(integer)
+            .build())
+        .collect(Collectors.toList());
+
     final ContainerBuilder containerBuilder = new ContainerBuilder()
         .withName("main")
+        .withPorts(containerPorts)
         .withImage(image)
         .withImagePullPolicy(imagePullPolicy)
         .withCommand("sh", "-c", mainCommand)
@@ -216,7 +229,6 @@ public class KubePodProcess extends Process {
         // https://github.com/fabric8io/kubernetes-client/issues/2217
         final Copy copy = new Copy(officialClient);
         copy.copyFileToPod(namespace, podName, INIT_CONTAINER_NAME, contents, containerPath);
-
       } catch (final IOException | ApiException e) {
         throw new RuntimeException(e);
       }
@@ -252,7 +264,8 @@ public class KubePodProcess extends Process {
         .toArray(Toleration[]::new);
   }
 
-  public KubePodProcess(final String processRunnerHost,
+  public KubePodProcess(final boolean isOrchestrator,
+                        final String processRunnerHost,
                         final ApiClient officialClient,
                         final KubernetesClient fabricClient,
                         final String podName,
@@ -273,15 +286,17 @@ public class KubePodProcess extends Process {
                         final String socatImage,
                         final String busyboxImage,
                         final String curlImage,
+                        final Map<Integer, Integer> internalToExternalPorts,
                         final String... args)
       throws IOException, InterruptedException {
     this.fabricClient = fabricClient;
     this.stdoutLocalPort = stdoutLocalPort;
     this.stderrLocalPort = stderrLocalPort;
 
-    stdoutServerSocket = new ServerSocket(stdoutLocalPort);
-    stderrServerSocket = new ServerSocket(stderrLocalPort);
-    executorService = Executors.newFixedThreadPool(2);
+    this.stdoutServerSocket = new ServerSocket(stdoutLocalPort);
+    this.stderrServerSocket = new ServerSocket(stderrLocalPort);
+    this.internalToExternalPorts = internalToExternalPorts;
+    this.executorService = Executors.newFixedThreadPool(2);
     setupStdOutAndStdErrListeners();
 
     if (entrypointOverride != null) {
@@ -330,6 +345,7 @@ public class KubePodProcess extends Process {
         entrypointOverride,
         List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount),
         resourceRequirements,
+        internalToExternalPorts,
         args);
 
     final io.fabric8.kubernetes.api.model.ResourceRequirements sidecarResources = getResourceRequirementsBuilder(DEFAULT_SIDECAR_RESOURCES).build();
@@ -376,14 +392,19 @@ public class KubePodProcess extends Process {
     final List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr, callHeartbeatServer)
         : List.of(main, relayStdout, relayStderr, callHeartbeatServer);
 
-    final Pod pod = new PodBuilder()
+    PodFluent.SpecNested<PodBuilder> podBuilder = new PodBuilder()
         .withApiVersion("v1")
         .withNewMetadata()
         .withName(podName)
         .withLabels(labels)
         .endMetadata()
-        .withNewSpec()
-        .withTolerations(buildPodTolerations(tolerations))
+        .withNewSpec();
+
+    if (isOrchestrator) {
+      podBuilder = podBuilder.withServiceAccount("airbyte-admin").withAutomountServiceAccountToken(true);
+    }
+
+    final Pod pod = podBuilder.withTolerations(buildPodTolerations(tolerations))
         .withImagePullSecrets(new LocalObjectReference(imagePullSecret)) // An empty string turns this into a no-op setting.
         .withNodeSelector(nodeSelectors.isEmpty() ? null : nodeSelectors)
         .withRestartPolicy("Never")

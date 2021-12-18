@@ -470,7 +470,6 @@ jobs:
           nodes:
           - role: control-plane
           - role: worker
-          - role: worker
           EOF
 
       - name: Check Docker System Info

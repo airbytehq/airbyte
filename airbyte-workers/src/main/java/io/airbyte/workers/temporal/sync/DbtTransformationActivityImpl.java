@@ -19,6 +19,7 @@ import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.DbtTransformationRunner;
 import io.airbyte.workers.DbtTransformationWorker;
 import io.airbyte.workers.Worker;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.CancellationHandler;
@@ -32,6 +33,7 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DbtTransformationActivityImpl.class);
 
+  private final WorkerConfigs workerConfigs;
   private final ProcessFactory processFactory;
   private final SecretsHydrator secretsHydrator;
   private final Path workspaceRoot;
@@ -43,7 +45,8 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
   private final String databaseUrl;
   private final String airbyteVersion;
 
-  public DbtTransformationActivityImpl(final ProcessFactory processFactory,
+  public DbtTransformationActivityImpl(final WorkerConfigs workerConfigs,
+                                       final ProcessFactory processFactory,
                                        final SecretsHydrator secretsHydrator,
                                        final Path workspaceRoot,
                                        final WorkerEnvironment workerEnvironment,
@@ -52,12 +55,13 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
                                        final String databasePassword,
                                        final String databaseUrl,
                                        final String airbyteVersion) {
-    this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment, logConfigs, databaseUser,
+    this(workerConfigs, processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment, logConfigs, databaseUser,
         databasePassword, databaseUrl, airbyteVersion);
   }
 
   @VisibleForTesting
-  DbtTransformationActivityImpl(final ProcessFactory processFactory,
+  DbtTransformationActivityImpl(final WorkerConfigs workerConfigs,
+                                final ProcessFactory processFactory,
                                 final SecretsHydrator secretsHydrator,
                                 final Path workspaceRoot,
                                 final AirbyteConfigValidator validator,
@@ -67,6 +71,7 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
                                 final String databasePassword,
                                 final String databaseUrl,
                                 final String airbyteVersion) {
+    this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
     this.workspaceRoot = workspaceRoot;
@@ -111,7 +116,9 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
         Math.toIntExact(jobRunConfig.getAttemptId()),
         resourceRequirements,
         new DbtTransformationRunner(
+            workerConfigs,
             processFactory, NormalizationRunnerFactory.create(
+                workerConfigs,
                 destinationLauncherConfig.getDockerImage(),
                 processFactory)));
   }

@@ -53,6 +53,8 @@ public class EnvConfigs implements Configs {
   public static final String CONFIG_DATABASE_PASSWORD = "CONFIG_DATABASE_PASSWORD";
   public static final String CONFIG_DATABASE_URL = "CONFIG_DATABASE_URL";
   public static final String RUN_DATABASE_MIGRATION_ON_STARTUP = "RUN_DATABASE_MIGRATION_ON_STARTUP";
+  public static final String LOG_LEVEL = "LOG_LEVEL";
+  public static final String S3_PATH_STYLE_ACCESS = "S3_PATH_STYLE_ACCESS";
   public static final String WEBAPP_URL = "WEBAPP_URL";
   public static final String JOB_POD_MAIN_CONTAINER_IMAGE_PULL_POLICY = "JOB_POD_MAIN_CONTAINER_IMAGE_PULL_POLICY";
   public static final String JOB_POD_TOLERATIONS = "JOB_POD_TOLERATIONS";
@@ -73,12 +75,12 @@ public class EnvConfigs implements Configs {
   private static final String TEMPORAL_WORKER_PORTS = "TEMPORAL_WORKER_PORTS";
   private static final String JOB_POD_KUBE_NAMESPACE = "JOB_POD_KUBE_NAMESPACE";
   private static final String SUBMITTER_NUM_THREADS = "SUBMITTER_NUM_THREADS";
-  private static final String JOB_POD_MAIN_CONTAINER_CPU_REQUEST = "JOB_POD_MAIN_CONTAINER_CPU_REQUEST";
-  private static final String JOB_POD_MAIN_CONTAINER_CPU_LIMIT = "JOB_POD_MAIN_CONTAINER_CPU_LIMIT";
-  private static final String JOB_POD_MAIN_CONTAINER_MEMORY_REQUEST = "JOB_POD_MAIN_CONTAINER_MEMORY_REQUEST";
-  private static final String JOB_POD_MAIN_CONTAINER_MEMORY_LIMIT = "JOB_POD_MAIN_CONTAINER_MEMORY_LIMIT";
+  public static final String JOB_POD_MAIN_CONTAINER_CPU_REQUEST = "JOB_POD_MAIN_CONTAINER_CPU_REQUEST";
+  public static final String JOB_POD_MAIN_CONTAINER_CPU_LIMIT = "JOB_POD_MAIN_CONTAINER_CPU_LIMIT";
+  public static final String JOB_POD_MAIN_CONTAINER_MEMORY_REQUEST = "JOB_POD_MAIN_CONTAINER_MEMORY_REQUEST";
+  public static final String JOB_POD_MAIN_CONTAINER_MEMORY_LIMIT = "JOB_POD_MAIN_CONTAINER_MEMORY_LIMIT";
   private static final String SECRET_PERSISTENCE = "SECRET_PERSISTENCE";
-  private static final String JOB_POD_MAIN_CONTAINER_IMAGE_PULL_SECRET = "JOB_POD_MAIN_CONTAINER_IMAGE_PULL_SECRET";
+  public static final String JOB_POD_MAIN_CONTAINER_IMAGE_PULL_SECRET = "JOB_POD_MAIN_CONTAINER_IMAGE_PULL_SECRET";
   private static final String PUBLISH_METRICS = "PUBLISH_METRICS";
   private static final String CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION = "CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION";
   private static final String CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS = "CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS";
@@ -98,7 +100,7 @@ public class EnvConfigs implements Configs {
 
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
-  private static final String DEFAULT_JOB_POD_KUBE_NAMESPACE = "default";
+  public static final String DEFAULT_JOB_POD_KUBE_NAMESPACE = "default";
   private static final String DEFAULT_JOB_POD_CPU_REQUIREMENT = null;
   private static final String DEFAULT_JOB_POD_MEMORY_REQUIREMENT = null;
   private static final String DEFAULT_JOB_POD_MAIN_CONTAINER_IMAGE_PULL_POLICY = "IfNotPresent";
@@ -127,7 +129,7 @@ public class EnvConfigs implements Configs {
     this(System::getenv);
   }
 
-  EnvConfigs(final Function<String, String> getEnv) {
+  public EnvConfigs(final Function<String, String> getEnv) {
     this.getEnv = getEnv;
     this.logConfigs = new LogConfigs(getLogConfiguration().orElse(null));
     this.stateStorageCloudConfigs = getStateStorageConfiguration().orElse(null);
@@ -540,6 +542,11 @@ public class EnvConfigs implements Configs {
   @Override
   public String getSubmitterNumThreads() {
     return getEnvOrDefault(SUBMITTER_NUM_THREADS, "5");
+  }
+
+  @Override
+  public boolean getContainerOrchestratorEnabled() {
+    return getEnvOrDefault("CONTAINER_ORCHESTRATOR_ENABLED", false, Boolean::valueOf);
   }
 
   // Helpers

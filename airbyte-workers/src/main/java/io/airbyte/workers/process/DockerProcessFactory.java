@@ -12,6 +12,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
@@ -33,16 +34,34 @@ public class DockerProcessFactory implements ProcessFactory {
   private static final String IMAGE_EXISTS_SCRIPT = "image_exists.sh";
 
   private final String workspaceMountSource;
+  private final WorkerConfigs workerConfigs;
   private final Path workspaceRoot;
   private final String localMountSource;
   private final String networkName;
+  private final boolean isOrchestrator;
   private final Path imageExistsScriptPath;
 
-  public DockerProcessFactory(final Path workspaceRoot, final String workspaceMountSource, final String localMountSource, final String networkName) {
+  /**
+   * Used to construct a Docker process.
+   *
+   * @param workspaceRoot real root of workspace
+   * @param workspaceMountSource workspace volume
+   * @param localMountSource local volume
+   * @param networkName docker network
+   * @param isOrchestrator if the process needs to be able to launch containers
+   */
+  public DockerProcessFactory(final WorkerConfigs workerConfigs,
+                              final Path workspaceRoot,
+                              final String workspaceMountSource,
+                              final String localMountSource,
+                              final String networkName,
+                              final boolean isOrchestrator) {
+    this.workerConfigs = workerConfigs;
     this.workspaceRoot = workspaceRoot;
     this.workspaceMountSource = workspaceMountSource;
     this.localMountSource = localMountSource;
     this.networkName = networkName;
+    this.isOrchestrator = isOrchestrator;
     this.imageExistsScriptPath = prepareImageExistsScript();
   }
 
@@ -70,6 +89,7 @@ public class DockerProcessFactory implements ProcessFactory {
                         final String entrypoint,
                         final ResourceRequirements resourceRequirements,
                         final Map<String, String> labels,
+                        final Map<Integer, Integer> internalToExternalPorts,
                         final String... args)
       throws WorkerException {
     try {
@@ -85,23 +105,47 @@ public class DockerProcessFactory implements ProcessFactory {
         IOs.writeFile(jobRoot, file.getKey(), file.getValue());
       }
 
-      final List<String> cmd =
-          Lists.newArrayList(
-              "docker",
-              "run",
-              "--rm",
-              "--init",
-              "-i",
-              "-v",
-              String.format("%s:%s", workspaceMountSource, DATA_MOUNT_DESTINATION),
-              "-v",
-              String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION),
-              "-w",
-              rebasePath(jobRoot).toString(),
-              "--network",
-              networkName,
-              "--log-driver",
-              "none");
+      List<String> cmd;
+
+      // todo: add --expose 80 to each
+
+      if (isOrchestrator) {
+        cmd = Lists.newArrayList(
+            "docker",
+            "run",
+            "--rm",
+            "--init",
+            "-i",
+            "-v",
+            String.format("%s:%s", workspaceMountSource, workspaceRoot), // real workspace root, not a rebased version
+            "-v",
+            String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION),
+            "-v",
+            "/var/run/docker.sock:/var/run/docker.sock", // needs to be able to run docker in docker
+            "-w",
+            jobRoot.toString(), // real jobroot, not rebased version
+            "--network",
+            networkName,
+            "--log-driver",
+            "none");
+      } else {
+        cmd = Lists.newArrayList(
+            "docker",
+            "run",
+            "--rm",
+            "--init",
+            "-i",
+            "-v",
+            String.format("%s:%s", workspaceMountSource, DATA_MOUNT_DESTINATION), // uses job data mount
+            "-v",
+            String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION),
+            "-w",
+            rebasePath(jobRoot).toString(), // rebases the job root on the job data mount
+            "--network",
+            networkName,
+            "--log-driver",
+            "none");
+      }
       if (!Strings.isNullOrEmpty(entrypoint)) {
         cmd.add("--entrypoint");
         cmd.add(entrypoint);
@@ -144,7 +188,7 @@ public class DockerProcessFactory implements ProcessFactory {
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
 
-      WorkerUtils.gentleClose(process, 10, TimeUnit.MINUTES);
+      WorkerUtils.gentleClose(workerConfigs, process, 10, TimeUnit.MINUTES);
 
       if (process.isAlive()) {
         throw new WorkerException("Process to check if image exists is stuck. Exiting.");

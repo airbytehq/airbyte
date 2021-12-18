@@ -15,6 +15,7 @@ import io.airbyte.commons.logging.MdcScope.Builder;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
@@ -35,8 +36,9 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteDestination.class);
   private static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
       .setLogPrefix("destination")
-      .setPrefixColor(Color.MAGENTA);
+      .setPrefixColor(Color.YELLOW_BACKGROUND);
 
+  private final WorkerConfigs workerConfigs;
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
 
@@ -46,13 +48,15 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   private BufferedWriter writer = null;
   private Iterator<AirbyteMessage> messageIterator = null;
 
-  public DefaultAirbyteDestination(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER));
+  public DefaultAirbyteDestination(final WorkerConfigs workerConfigs, final IntegrationLauncher integrationLauncher) {
+    this(workerConfigs, integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER));
 
   }
 
-  public DefaultAirbyteDestination(final IntegrationLauncher integrationLauncher,
+  public DefaultAirbyteDestination(final WorkerConfigs workerConfigs,
+                                   final IntegrationLauncher integrationLauncher,
                                    final AirbyteStreamFactory streamFactory) {
+    this.workerConfigs = workerConfigs;
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
   }
@@ -107,7 +111,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     }
 
     LOGGER.debug("Closing destination process");
-    WorkerUtils.gentleClose(destinationProcess, 1, TimeUnit.MINUTES);
+    WorkerUtils.gentleClose(workerConfigs, destinationProcess, 1, TimeUnit.MINUTES);
     if (destinationProcess.isAlive() || destinationProcess.exitValue() != 0) {
       final String message =
           destinationProcess.isAlive() ? "Destination has not terminated " : "Destination process exit with code " + destinationProcess.exitValue();
