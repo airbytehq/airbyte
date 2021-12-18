@@ -30,15 +30,23 @@ public class DefaultBigQueryRecordFormatter extends BigQueryRecordFormatter {
 
   @Override
   public JsonNode formatRecord(AirbyteRecordMessage recordMessage) {
+    return Jsons.jsonNode(Map.of(
+        JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(),
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT, getEmittedAtField(recordMessage),
+        JavaBaseConstants.COLUMN_NAME_DATA, getData(recordMessage))
+    );
+  }
+
+  protected Object getEmittedAtField(AirbyteRecordMessage recordMessage) {
     // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds then
     // use BQ helpers to string-format correctly.
     final long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
-    final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
+    return QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
+  }
+
+  protected Object getData(AirbyteRecordMessage recordMessage) {
     final JsonNode formattedData = StandardNameTransformer.formatJsonPath(recordMessage.getData());
-    return Jsons.jsonNode(Map.of(
-        JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(),
-        JavaBaseConstants.COLUMN_NAME_DATA, Jsons.serialize(formattedData),
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT, formattedEmittedAt));
+    return Jsons.serialize(formattedData);
   }
 
   @Override
