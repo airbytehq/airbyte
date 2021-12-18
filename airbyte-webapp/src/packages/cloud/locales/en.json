@@ -68,7 +68,7 @@
   "settings.userSettings": "User settings",
   "settings.workspaceSettings": "Workspace settings",
   "workspaces.workspaceSettings.deleteWorkspace": "Confirm workspace deletion",
-  "workspaces.workspaceSettings.deleteWorkspaceText": "Do you confirm you want to delete the workspace {name}? You won’t be able to retrieve any connections you made. ",
+  "workspaces.workspaceSettings.deleteWorkspaceText": "Are you sure you want to delete the workspace {name}? You won’t be able to retrieve any sources, destinations, or connections. ",
   "settings.generalSettings": "General Settings",
   "settings.generalSettings.changeWorkspace": "Change Workspace",
   "settings.generalSettings.form.name.label": "Workspace name",
