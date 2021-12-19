@@ -28,6 +28,7 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -69,20 +70,24 @@ public class ConfigDumpImporter {
   private static final Path TMP_AIRBYTE_STAGED_RESOURCES = Path.of("/tmp/airbyte_staged_resources");
 
   private final ConfigRepository configRepository;
+  private final SecretsRepositoryWriter secretsRepositoryWriter;
   private final WorkspaceHelper workspaceHelper;
   private final JsonSchemaValidator jsonSchemaValidator;
   private final JobPersistence jobPersistence;
   private final boolean importDefinitions;
 
   public ConfigDumpImporter(final ConfigRepository configRepository,
+                            final SecretsRepositoryWriter secretsRepositoryWriter,
+
                             final JobPersistence jobPersistence,
                             final WorkspaceHelper workspaceHelper,
                             final boolean importDefinitions) {
-    this(configRepository, jobPersistence, workspaceHelper, new JsonSchemaValidator(), importDefinitions);
+    this(configRepository, secretsRepositoryWriter, jobPersistence, workspaceHelper, new JsonSchemaValidator(), importDefinitions);
   }
 
   @VisibleForTesting
   public ConfigDumpImporter(final ConfigRepository configRepository,
+                            final SecretsRepositoryWriter secretsRepositoryWriter,
                             final JobPersistence jobPersistence,
                             final WorkspaceHelper workspaceHelper,
                             final JsonSchemaValidator jsonSchemaValidator,
@@ -90,6 +95,7 @@ public class ConfigDumpImporter {
     this.jsonSchemaValidator = jsonSchemaValidator;
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
+    this.secretsRepositoryWriter = secretsRepositoryWriter;
     this.workspaceHelper = workspaceHelper;
     this.importDefinitions = importDefinitions;
   }
@@ -134,7 +140,7 @@ public class ConfigDumpImporter {
 
       // 4. Import Configs and update connector definitions
       importConfigsFromArchive(sourceRoot, false);
-      configRepository.loadData(seedPersistence);
+      secretsRepositoryWriter.loadData(seedPersistence);
 
       // 5. Set DB version
       LOGGER.info("Setting the DB Airbyte version to : " + targetVersion);
@@ -188,7 +194,7 @@ public class ConfigDumpImporter {
       final ConfigSchema configSchema = configSchemaOptional.get();
       data.put(configSchema, readConfigsFromArchive(sourceRoot, configSchema));
     }
-    configRepository.replaceAllConfigs(data, dryRun);
+    secretsRepositoryWriter.replaceAllConfigs(data, dryRun);
   }
 
   private <T> Stream<T> readConfigsFromArchive(final Path storageRoot, final ConfigSchema schemaType)
@@ -413,7 +419,7 @@ public class ConfigDumpImporter {
                 if (sourceDefinition == null) {
                   return;
                 }
-                configRepository.writeSourceConnection(sourceConnection, sourceDefinition.getSpec());
+                secretsRepositoryWriter.writeSourceConnection(sourceConnection, sourceDefinition.getSpec());
               } catch (final ConfigNotFoundException e) {
                 return;
               }
@@ -441,7 +447,7 @@ public class ConfigDumpImporter {
                 if (destinationDefinition == null) {
                   return;
                 }
-                configRepository.writeDestinationConnection(destinationConnection, destinationDefinition.getSpec());
+                secretsRepositoryWriter.writeDestinationConnection(destinationConnection, destinationDefinition.getSpec());
               } catch (final ConfigNotFoundException e) {
                 return;
               }

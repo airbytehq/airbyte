@@ -29,6 +29,8 @@ import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
@@ -70,6 +72,8 @@ public class ArchiveHandlerTest {
   private Database jobDatabase;
   private Database configDatabase;
   private JobPersistence jobPersistence;
+  private SecretsRepositoryReader secretsRepositoryReader;
+  private SecretsRepositoryWriter secretsRepositoryWriter;
   private DatabaseConfigPersistence configPersistence;
   private ConfigPersistence seedPersistence;
 
@@ -110,13 +114,17 @@ public class ArchiveHandlerTest {
     configPersistence = new DatabaseConfigPersistence(jobDatabase);
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
     configPersistence.loadData(seedPersistence);
-    configRepository = new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.empty(), Optional.empty());
+    configRepository = new ConfigRepository(configPersistence);
+    secretsRepositoryReader = new SecretsRepositoryReader(configRepository, new NoOpSecretsHydrator());
+    secretsRepositoryWriter = new SecretsRepositoryWriter(configRepository, Optional.empty(), Optional.empty());
 
     jobPersistence.setVersion(VERSION.serialize());
 
     archiveHandler = new ArchiveHandler(
         VERSION,
         configRepository,
+        secretsRepositoryReader,
+        secretsRepositoryWriter,
         jobPersistence,
         YamlSeedConfigPersistence.getDefault(),
         new WorkspaceHelper(configRepository, jobPersistence),
@@ -135,21 +143,21 @@ public class ArchiveHandlerTest {
    */
   @Test
   void testFullExportImportRoundTrip() throws Exception {
-    assertSameConfigDump(seedPersistence.dumpConfigs(), configRepository.dumpConfigs());
+    assertSameConfigDump(seedPersistence.dumpConfigs(), secretsRepositoryReader.dumpConfigs());
 
     // Export the configs.
     File archive = archiveHandler.exportData();
 
     // After deleting the configs, the dump becomes empty.
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
-    assertSameConfigDump(Collections.emptyMap(), configRepository.dumpConfigs());
+    assertSameConfigDump(Collections.emptyMap(), secretsRepositoryReader.dumpConfigs());
 
     // After importing the configs, the dump is restored.
     assertTrue(archive.exists());
     final ImportRead importResult = archiveHandler.importData(archive);
     assertFalse(archive.exists());
     assertEquals(StatusEnum.SUCCEEDED, importResult.getStatus());
-    assertSameConfigDump(seedPersistence.dumpConfigs(), configRepository.dumpConfigs());
+    assertSameConfigDump(seedPersistence.dumpConfigs(), secretsRepositoryReader.dumpConfigs());
 
     // When a connector definition is in use, it will not be updated.
     final UUID sourceS3DefinitionId = UUID.fromString("69589781-7828-43c5-9f63-8925b1c1ccc2");
@@ -187,12 +195,12 @@ public class ArchiveHandlerTest {
 
   @Test
   void testLightWeightExportImportRoundTrip() throws Exception {
-    assertSameConfigDump(seedPersistence.dumpConfigs(), configRepository.dumpConfigs());
+    assertSameConfigDump(seedPersistence.dumpConfigs(), secretsRepositoryReader.dumpConfigs());
 
     // Insert some workspace data
     final UUID workspaceId = UUID.randomUUID();
     setupTestData(workspaceId);
-    final Map<String, Stream<JsonNode>> workspaceDump = configRepository.dumpConfigs();
+    final Map<String, Stream<JsonNode>> workspaceDump = secretsRepositoryReader.dumpConfigs();
 
     // Insert some other workspace data
     setupTestData(UUID.randomUUID());
@@ -204,11 +212,11 @@ public class ArchiveHandlerTest {
 
     // After deleting all the configs, the dump becomes empty.
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
-    assertSameConfigDump(Collections.emptyMap(), configRepository.dumpConfigs());
+    assertSameConfigDump(Collections.emptyMap(), secretsRepositoryReader.dumpConfigs());
 
     // Restore default seed data
     configPersistence.loadData(seedPersistence);
-    assertSameConfigDump(seedPersistence.dumpConfigs(), configRepository.dumpConfigs());
+    assertSameConfigDump(seedPersistence.dumpConfigs(), secretsRepositoryReader.dumpConfigs());
 
     setupWorkspaceData(workspaceId);
 
@@ -221,11 +229,11 @@ public class ArchiveHandlerTest {
         .resourceId(uploadRead.getResourceId())
         .workspaceId(workspaceId));
     assertEquals(StatusEnum.SUCCEEDED, importResult.getStatus());
-    assertSameConfigDump(workspaceDump, configRepository.dumpConfigs());
+    assertSameConfigDump(workspaceDump, secretsRepositoryReader.dumpConfigs());
 
     // we modify first workspace
     setupTestData(workspaceId);
-    final Map<String, Stream<JsonNode>> secondWorkspaceDump = configRepository.dumpConfigs();
+    final Map<String, Stream<JsonNode>> secondWorkspaceDump = secretsRepositoryReader.dumpConfigs();
 
     final UUID secondWorkspaceId = UUID.randomUUID();
     setupWorkspaceData(secondWorkspaceId);
@@ -238,7 +246,7 @@ public class ArchiveHandlerTest {
         .workspaceId(secondWorkspaceId));
     assertEquals(StatusEnum.SUCCEEDED, secondImportResult.getStatus());
 
-    final UUID secondSourceId = configRepository.listSourceConnectionWithSecrets()
+    final UUID secondSourceId = secretsRepositoryReader.listSourceConnectionWithSecrets()
         .stream()
         .filter(sourceConnection -> secondWorkspaceId.equals(sourceConnection.getWorkspaceId()))
         .map(SourceConnection::getSourceId)
@@ -255,7 +263,7 @@ public class ArchiveHandlerTest {
     final ConnectorSpecification emptyConnectorSpec = mock(ConnectorSpecification.class);
     when(emptyConnectorSpec.getConnectionSpecification()).thenReturn(Jsons.emptyObject());
 
-    configRepository.writeSourceConnection(sourceConnection, emptyConnectorSpec);
+    secretsRepositoryWriter.writeSourceConnection(sourceConnection, emptyConnectorSpec);
 
     // check that first workspace is unchanged even though modifications were made to second workspace
     // (that contains similar connections from importing the same archive)
@@ -269,7 +277,7 @@ public class ArchiveHandlerTest {
         .resourceId(uploadRead.getResourceId())
         .workspaceId(workspaceId));
     assertEquals(StatusEnum.SUCCEEDED, importResult.getStatus());
-    assertSameConfigDump(secondWorkspaceDump, configRepository.dumpConfigs());
+    assertSameConfigDump(secondWorkspaceDump, secretsRepositoryReader.dumpConfigs());
   }
 
   private void setupWorkspaceData(final UUID workspaceId) throws IOException {

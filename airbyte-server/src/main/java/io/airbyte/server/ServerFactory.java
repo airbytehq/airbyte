@@ -11,6 +11,8 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
@@ -30,6 +32,8 @@ public interface ServerFactory {
                         SynchronousSchedulerClient cachingSchedulerClient,
                         WorkflowServiceStubs temporalService,
                         ConfigRepository configRepository,
+                        SecretsRepositoryReader secretsRepositoryReader,
+                        SecretsRepositoryWriter secretsRepositoryWriter,
                         JobPersistence jobPersistence,
                         ConfigPersistence seed,
                         Database configsDatabase,
@@ -50,10 +54,13 @@ public interface ServerFactory {
                                  final SynchronousSchedulerClient synchronousSchedulerClient,
                                  final WorkflowServiceStubs temporalService,
                                  final ConfigRepository configRepository,
+                                 final SecretsRepositoryReader secretsRepositoryReader,
+                                 final SecretsRepositoryWriter secretsRepositoryWriter,
                                  final JobPersistence jobPersistence,
                                  final ConfigPersistence seed,
                                  final Database configsDatabase,
                                  final Database jobsDatabase,
+
                                  final TrackingClient trackingClient,
                                  final WorkerEnvironment workerEnvironment,
                                  final LogConfigs logConfigs,
@@ -66,6 +73,8 @@ public interface ServerFactory {
       ConfigurationApiFactory.setValues(
           temporalService,
           configRepository,
+          secretsRepositoryReader,
+          secretsRepositoryWriter,
           jobPersistence,
           seed,
           schedulerJobClient,
