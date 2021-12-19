@@ -181,8 +181,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         trackingClient);
     schedulerHandler = new SchedulerHandler(
         configRepository,
-        secretsRepositoryWriter,
         secretsRepositoryReader,
+        secretsRepositoryWriter,
         schedulerJobClient,
         synchronousSchedulerClient,
         jobPersistence,

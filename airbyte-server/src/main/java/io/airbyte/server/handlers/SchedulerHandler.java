@@ -77,7 +77,6 @@ public class SchedulerHandler {
 
   private final ConfigRepository configRepository;
   private final SecretsRepositoryWriter secretsRepositoryWriter;
-  private final SecretsRepositoryReader secretsRepositoryReader;
   private final SchedulerJobClient schedulerJobClient;
   private final SynchronousSchedulerClient synchronousSchedulerClient;
   private final ConfigurationUpdate configurationUpdate;
@@ -91,8 +90,8 @@ public class SchedulerHandler {
   private final LogConfigs logConfigs;
 
   public SchedulerHandler(final ConfigRepository configRepository,
-                          final SecretsRepositoryWriter secretsRepositoryWriter,
                           final SecretsRepositoryReader secretsRepositoryReader,
+                          final SecretsRepositoryWriter secretsRepositoryWriter,
                           final SchedulerJobClient schedulerJobClient,
                           final SynchronousSchedulerClient synchronousSchedulerClient,
                           final JobPersistence jobPersistence,
@@ -133,7 +132,6 @@ public class SchedulerHandler {
                    final LogConfigs logConfigs) {
     this.configRepository = configRepository;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
-    this.secretsRepositoryReader = secretsRepositoryReader;
     this.schedulerJobClient = schedulerJobClient;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
     this.configurationUpdate = configurationUpdate;
