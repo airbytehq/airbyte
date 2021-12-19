@@ -221,7 +221,6 @@ describe("Service Form", () => {
       container = renderResult.container;
     });
 
-    jest.setTimeout(10000);
     test("should fill all fields by right values", async () => {
       const name = container.querySelector("input[name='name']");
       const host = container.querySelector(
