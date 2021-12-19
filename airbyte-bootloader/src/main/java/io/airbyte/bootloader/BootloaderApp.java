@@ -54,7 +54,9 @@ public class BootloaderApp {
   }
 
   /**
-   * This method is exposed for Airbyte Cloud consumption.
+   * This method is exposed for Airbyte Cloud consumption. This lets us override the seed loading
+   * logic and customise Cloud connector versions. Please check with the Platform team before making
+   * changes to this method.
    *
    * @param configs
    * @param postLoadExecution
@@ -112,8 +114,10 @@ public class BootloaderApp {
       LOGGER.info("Set version to {}", currAirbyteVersion);
     }
 
-    postLoadExecution.run();
-    LOGGER.info("Finished running post load Execution..");
+    if (postLoadExecution != null) {
+      postLoadExecution.run();
+      LOGGER.info("Finished running post load Execution..");
+    }
 
     LOGGER.info("Finished bootstrapping Airbyte environment..");
   }
