@@ -5,15 +5,16 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.e2e_test.TestingDestinations'
+    mainClass = 'io.airbyte.integrations.destination.dev_null.DevNullDestination'
 }
 
 dependencies {
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-integrations:bases:base-java')
+    implementation project(':airbyte-integrations:connectors:destination-e2e-test')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-e2e-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-dev-null')
 }

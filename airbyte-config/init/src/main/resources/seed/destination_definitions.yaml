@@ -45,6 +45,12 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/dynamodb
   icon: dynamodb.svg
+- name: E2E Testing
+  destinationDefinitionId: 2eb65e87-983a-4fd7-b3e3-9d9dc6eb8537
+  dockerRepository: airbyte/destination-e2e-test
+  dockerImageTag: 0.2.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/e2e-test
+  icon: airbyte.svg
 - destinationDefinitionId: 68f351a7-2745-4bef-ad7f-996b8e51bb8c
   name: ElasticSearch
   dockerRepository: airbyte/destination-elasticsearch
