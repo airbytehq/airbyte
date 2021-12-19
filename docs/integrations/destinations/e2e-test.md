@@ -29,7 +29,7 @@ There are the different logging modes to choose from:
 | Mode | Notes | Parameters |
 | :--- | :--- | :--- |
 | First N entries  | Log the first N number of data entries for each data stream. | N: how many entries to log. |
-| Every N-th entry | Log every N-th entry for each data stream. When N=1, it will log every entry. When N=1, it will log every other entry. Etc. | N: the N-th entry to log. Max entry count: max number of entries to log. |
+| Every N-th entry | Log every N-th entry for each data stream. When N=1, it will log every entry. When N=2, it will log every other entry. Etc. | N: the N-th entry to log. Max entry count: max number of entries to log. |
 | Random sampling | Log a random percentage of the entries for each data stream. | Sampling ratio: a number in range of `[0, 1]`. Optional seed: default to system epoch time. Max entry count: max number of entries to log. |
 
 ### Throttling
