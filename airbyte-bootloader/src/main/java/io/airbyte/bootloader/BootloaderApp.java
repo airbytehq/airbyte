@@ -48,7 +48,7 @@ public class BootloaderApp {
   private final Configs configs;
 
   @VisibleForTesting
-  public BootloaderApp(Configs configs) {
+  public BootloaderApp(final Configs configs) {
     this.configs = configs;
   }
 
@@ -75,8 +75,7 @@ public class BootloaderApp {
       LOGGER.info("Ran Flyway migrations...");
 
       final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
-      final ConfigRepository configRepository =
-          new ConfigRepository(configPersistence.withValidation(), null, Optional.empty(), Optional.empty());
+      final ConfigRepository configRepository = new ConfigRepository(configPersistence.withValidation());
 
       createWorkspaceIfNoneExists(configRepository);
       LOGGER.info("Default workspace created..");
@@ -94,7 +93,7 @@ public class BootloaderApp {
     LOGGER.info("Finished bootstrapping Airbyte environment..");
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final var bootloader = new BootloaderApp();
     bootloader.load();
   }
@@ -128,7 +127,7 @@ public class BootloaderApp {
     configRepository.writeStandardWorkspace(workspace);
   }
 
-  private static void assertNonBreakingMigration(JobPersistence jobPersistence, AirbyteVersion airbyteVersion) throws IOException {
+  private static void assertNonBreakingMigration(final JobPersistence jobPersistence, final AirbyteVersion airbyteVersion) throws IOException {
     // version in the database when the server main method is called. may be empty if this is the first
     // time the server is started.
     LOGGER.info("Checking illegal upgrade..");
@@ -138,7 +137,7 @@ public class BootloaderApp {
       LOGGER.error(attentionBanner);
       final String message = String.format(
           "Cannot upgrade from version %s to version %s directly. First you must upgrade to version %s. After that upgrade is complete, you may upgrade to version %s",
-          initialAirbyteDatabaseVersion.get().serialize(),
+          initialAirbyteDatabaseVersion.orElseThrow().serialize(),
           airbyteVersion.serialize(),
           VERSION_BREAK.serialize(),
           airbyteVersion.serialize());

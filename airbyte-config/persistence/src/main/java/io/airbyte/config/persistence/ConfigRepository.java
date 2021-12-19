@@ -262,7 +262,7 @@ public class ConfigRepository {
    * @throws JsonValidationException - throws is the source is invalid
    * @throws IOException - you never know when you IO
    */
-  public void writeSourceConnection(final SourceConnection partialSource) throws JsonValidationException, IOException {
+  public void writeSourceConnectionNoSecrets(final SourceConnection partialSource) throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, partialSource.getSourceId().toString(), partialSource);
   }
 
@@ -304,7 +304,7 @@ public class ConfigRepository {
    * @throws JsonValidationException - throws is the destination is invalid
    * @throws IOException - you never know when you IO
    */
-  public void writeDestinationConnection(final DestinationConnection partialDestination) throws JsonValidationException, IOException {
+  public void writeDestinationConnectionNoSecrets(final DestinationConnection partialDestination) throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, partialDestination.getDestinationId().toString(), partialDestination);
   }
 
@@ -429,7 +429,7 @@ public class ConfigRepository {
    * @param dryRun - whether to test run of the load
    * @throws IOException - you never know when you IO.
    */
-  void replaceAllConfigs1(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
+  void replaceAllConfigsNoSecrets(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
     persistence.replaceAllConfigs(configs, dryRun);
   }
 
@@ -441,7 +441,7 @@ public class ConfigRepository {
    * @return all configurations in the Config Database
    * @throws IOException - you never know when you IO
    */
-  public Map<String, Stream<JsonNode>> dumpConfigs1() throws IOException {
+  public Map<String, Stream<JsonNode>> dumpConfigsNoSecrets() throws IOException {
     return persistence.dumpConfigs();
   }
 
@@ -454,7 +454,7 @@ public class ConfigRepository {
    * @param seedPersistenceWithoutSecrets - seed persistence WITHOUT secrets
    * @throws IOException - you never know when you IO
    */
-  void loadData1(final ConfigPersistence seedPersistenceWithoutSecrets) throws IOException {
+  void loadDataNoSecrets(final ConfigPersistence seedPersistenceWithoutSecrets) throws IOException {
     persistence.loadData(seedPersistenceWithoutSecrets);
   }
 

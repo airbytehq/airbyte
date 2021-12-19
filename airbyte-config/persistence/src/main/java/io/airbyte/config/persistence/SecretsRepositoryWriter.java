@@ -21,7 +21,6 @@ import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,8 +31,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class takes secrets as arguments but never returns an secrets (even the ones that are passed
- * in as arguments).
+ * This class takes secrets as arguments but never returns a secrets as return values (even the ones
+ * that are passed in as arguments). It is responsible for writing connector secrets to the correct
+ * secrets store and then making sure the remainder of the configuration is written to the Config
+ * Database.
  */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class SecretsRepositoryWriter {
@@ -42,7 +43,6 @@ public class SecretsRepositoryWriter {
 
   private static final UUID NO_WORKSPACE = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
-  // private final ConfigPersistence persistence;
   private final ConfigRepository configRepository;
   private final JsonSchemaValidator validator;
   private final Optional<SecretPersistence> longLivedSecretPersistence;
@@ -91,7 +91,7 @@ public class SecretsRepositoryWriter {
     // validate partial to avoid secret leak issues.
     validator.ensure(connectorSpecification.getConnectionSpecification(), partialSource.getConfiguration());
 
-    configRepository.writeSourceConnection(partialSource);
+    configRepository.writeSourceConnectionNoSecrets(partialSource);
   }
 
   private Optional<DestinationConnection> getOptionalDestinationConnection(final UUID destinationId) throws JsonValidationException, IOException {
@@ -117,7 +117,7 @@ public class SecretsRepositoryWriter {
     // validate partial to avoid secret leak issues.
     validator.ensure(connectorSpecification.getConnectionSpecification(), partialDestination.getConfiguration());
 
-    configRepository.writeDestinationConnection(partialDestination);
+    configRepository.writeDestinationConnectionNoSecrets(partialDestination);
   }
 
   /**
@@ -193,27 +193,6 @@ public class SecretsRepositoryWriter {
     }
   }
 
-  /**
-   * Converts between a dumpConfig() output and a replaceAllConfigs() input, by deserializing the
-   * string/jsonnode into the AirbyteConfig, Stream&lt;Object&lt;AirbyteConfig.getClassName()&gt;&gt;
-   *
-   * @param configurations from dumpConfig()
-   * @return input suitable for replaceAllConfigs()
-   */
-  public static Map<AirbyteConfig, Stream<?>> deserialize(final Map<String, Stream<JsonNode>> configurations) {
-    final Map<AirbyteConfig, Stream<?>> deserialized = new LinkedHashMap<AirbyteConfig, Stream<?>>();
-    for (final String configSchemaName : configurations.keySet()) {
-      deserialized.put(
-          ConfigSchema.valueOf(configSchemaName),
-          configurations.get(configSchemaName).map(jsonNode -> Jsons.object(jsonNode, ConfigSchema.valueOf(configSchemaName).getClassName())));
-    }
-    return deserialized;
-  }
-
-  public void replaceAllConfigsDeserializing(final Map<String, Stream<JsonNode>> configs, final boolean dryRun) throws IOException {
-    replaceAllConfigs(deserialize(configs), dryRun);
-  }
-
   public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
     if (longLivedSecretPersistence.isPresent()) {
       final var augmentedMap = new HashMap<>(configs);
@@ -276,14 +255,14 @@ public class SecretsRepositoryWriter {
         augmentedMap.put(ConfigSchema.DESTINATION_CONNECTION, augmentedValue);
       }
 
-      configRepository.replaceAllConfigs1(augmentedMap, dryRun);
+      configRepository.replaceAllConfigsNoSecrets(augmentedMap, dryRun);
     } else {
-      configRepository.replaceAllConfigs1(configs, dryRun);
+      configRepository.replaceAllConfigsNoSecrets(configs, dryRun);
     }
   }
 
   public void loadData(final ConfigPersistence seedPersistence) throws IOException {
-    configRepository.loadData1(seedPersistence);
+    configRepository.loadDataNoSecrets(seedPersistence);
   }
 
 }

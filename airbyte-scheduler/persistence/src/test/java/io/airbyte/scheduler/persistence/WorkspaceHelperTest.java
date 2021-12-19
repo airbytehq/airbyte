@@ -110,13 +110,13 @@ class WorkspaceHelperTest {
   @Test
   public void testSource() throws IOException, JsonValidationException {
     configRepository.writeStandardSourceDefinition(SOURCE_DEF);
-    configRepository.writeSourceConnection(SOURCE);
+    configRepository.writeSourceConnectionNoSecrets(SOURCE);
 
     final UUID retrievedWorkspace = workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(SOURCE_ID);
     assertEquals(WORKSPACE_ID, retrievedWorkspace);
 
     // check that caching is working
-    configRepository.writeSourceConnection(Jsons.clone(SOURCE).withWorkspaceId(UUID.randomUUID()));
+    configRepository.writeSourceConnectionNoSecrets(Jsons.clone(SOURCE).withWorkspaceId(UUID.randomUUID()));
     final UUID retrievedWorkspaceAfterUpdate = workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(SOURCE_ID);
     assertEquals(WORKSPACE_ID, retrievedWorkspaceAfterUpdate);
   }
@@ -124,13 +124,13 @@ class WorkspaceHelperTest {
   @Test
   public void testDestination() throws IOException, JsonValidationException {
     configRepository.writeStandardDestinationDefinition(DEST_DEF);
-    configRepository.writeDestinationConnection(DEST);
+    configRepository.writeDestinationConnectionNoSecrets(DEST);
 
     final UUID retrievedWorkspace = workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(DEST_ID);
     assertEquals(WORKSPACE_ID, retrievedWorkspace);
 
     // check that caching is working
-    configRepository.writeDestinationConnection(Jsons.clone(DEST).withWorkspaceId(UUID.randomUUID()));
+    configRepository.writeDestinationConnectionNoSecrets(Jsons.clone(DEST).withWorkspaceId(UUID.randomUUID()));
     final UUID retrievedWorkspaceAfterUpdate = workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(DEST_ID);
     assertEquals(WORKSPACE_ID, retrievedWorkspaceAfterUpdate);
   }
@@ -138,9 +138,9 @@ class WorkspaceHelperTest {
   @Test
   public void testConnection() throws IOException, JsonValidationException {
     configRepository.writeStandardSourceDefinition(SOURCE_DEF);
-    configRepository.writeSourceConnection(SOURCE);
+    configRepository.writeSourceConnectionNoSecrets(SOURCE);
     configRepository.writeStandardDestinationDefinition(DEST_DEF);
-    configRepository.writeDestinationConnection(DEST);
+    configRepository.writeDestinationConnectionNoSecrets(DEST);
 
     // set up connection
     configRepository.writeStandardSync(CONNECTION);
@@ -155,8 +155,8 @@ class WorkspaceHelperTest {
 
     // check that caching is working
     final UUID newWorkspace = UUID.randomUUID();
-    configRepository.writeSourceConnection(Jsons.clone(SOURCE).withWorkspaceId(newWorkspace));
-    configRepository.writeDestinationConnection(Jsons.clone(DEST).withWorkspaceId(newWorkspace));
+    configRepository.writeSourceConnectionNoSecrets(Jsons.clone(SOURCE).withWorkspaceId(newWorkspace));
+    configRepository.writeDestinationConnectionNoSecrets(Jsons.clone(DEST).withWorkspaceId(newWorkspace));
     final UUID retrievedWorkspaceAfterUpdate = workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(DEST_ID);
     assertEquals(WORKSPACE_ID, retrievedWorkspaceAfterUpdate);
   }
@@ -178,9 +178,9 @@ class WorkspaceHelperTest {
   @Test
   public void testConnectionAndJobs() throws IOException, JsonValidationException {
     configRepository.writeStandardSourceDefinition(SOURCE_DEF);
-    configRepository.writeSourceConnection(SOURCE);
+    configRepository.writeSourceConnectionNoSecrets(SOURCE);
     configRepository.writeStandardDestinationDefinition(DEST_DEF);
-    configRepository.writeDestinationConnection(DEST);
+    configRepository.writeDestinationConnectionNoSecrets(DEST);
     configRepository.writeStandardSync(CONNECTION);
 
     // test jobs

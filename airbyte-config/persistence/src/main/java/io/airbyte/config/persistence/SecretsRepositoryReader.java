@@ -23,7 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class returns secrets!
+ * This class is responsible for fetching both connectors and their secrets (from separate secrets
+ * stores). All methods in this class return secrets! Use it carefully.
  */
 public class SecretsRepositoryReader {
 
@@ -71,7 +72,7 @@ public class SecretsRepositoryReader {
   }
 
   public Map<String, Stream<JsonNode>> dumpConfigs() throws IOException {
-    final var map = new HashMap<>(configRepository.dumpConfigs1());
+    final var map = new HashMap<>(configRepository.dumpConfigsNoSecrets());
     final var sourceKey = ConfigSchema.SOURCE_CONNECTION.name();
     final var destinationKey = ConfigSchema.DESTINATION_CONNECTION.name();
 
