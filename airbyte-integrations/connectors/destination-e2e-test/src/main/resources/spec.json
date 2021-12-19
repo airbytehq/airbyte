@@ -49,7 +49,11 @@
                 "title": "Every N-th Entry",
                 "description": "For each stream, log every N-th entry with a maximum cap.",
                 "type": "object",
-                "required": ["logging_type", "nth_entry_to_log", "max_entry_count"],
+                "required": [
+                  "logging_type",
+                  "nth_entry_to_log",
+                  "max_entry_count"
+                ],
                 "properties": {
                   "logging_type": {
                     "type": "string",
@@ -79,7 +83,11 @@
                 "title": "Random Sampling",
                 "description": "For each stream, randomly log a percentage of the entries with a maximum cap.",
                 "type": "object",
-                "required": ["logging_type", "sampling_ratio", "max_entry_count"],
+                "required": [
+                  "logging_type",
+                  "sampling_ratio",
+                  "max_entry_count"
+                ],
                 "properties": {
                   "logging_type": {
                     "type": "string",

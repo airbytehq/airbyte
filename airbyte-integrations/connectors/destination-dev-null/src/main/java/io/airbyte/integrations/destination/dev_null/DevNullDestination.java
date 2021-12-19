@@ -33,8 +33,7 @@ public class DevNullDestination extends SpecModifyingDestination implements Dest
   }
 
   /**
-   * 1. Update the title.
-   * 2. Only keep the "silent" mode.
+   * 1. Update the title. 2. Only keep the "silent" mode.
    */
   @Override
   public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {

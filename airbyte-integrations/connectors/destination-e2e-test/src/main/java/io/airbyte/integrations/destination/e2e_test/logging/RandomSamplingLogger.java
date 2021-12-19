@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.e2e_test.logging;
 
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
@@ -13,7 +17,10 @@ public class RandomSamplingLogger extends BaseLogger implements TestingLogger {
   private final double samplingRatio;
   private final Random random;
 
-  public RandomSamplingLogger(final AirbyteStreamNameNamespacePair streamNamePair, final double samplingRatio, final long seed, final int maxEntryCount) {
+  public RandomSamplingLogger(final AirbyteStreamNameNamespacePair streamNamePair,
+                              final double samplingRatio,
+                              final long seed,
+                              final int maxEntryCount) {
     super(streamNamePair, maxEntryCount);
     this.samplingRatio = samplingRatio;
     this.random = new Random(seed);
