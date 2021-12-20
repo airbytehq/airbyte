@@ -2,6 +2,11 @@
 line-length = 140
 target-version = ["py37"]
 
+[tool.coverage.report]
+fail_under = 100
+skip_empty = true
+sort = "-cover"
+
 [tool.flake8]
 extend-exclude = ".venv"
 max-complexity = 10
