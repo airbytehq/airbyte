@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.allegro.schema.json2avro.converter.AdditionalPropertyField;
 
-import static io.airbyte.integrations.destination.s3.avro.AvroNameTransformer.resolveNamespace;
 import static io.airbyte.integrations.destination.s3.util.AvroRecordHelper.obtainPaths;
 
 /**

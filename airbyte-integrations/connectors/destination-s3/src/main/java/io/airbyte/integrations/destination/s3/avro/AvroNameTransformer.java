@@ -28,13 +28,4 @@ public class AvroNameTransformer extends ExtendedNameTransformer {
       return "_" + name;
     }
   }
-
-  public static String resolveNamespace(String fullPathToNode) {
-    return fullPathToNode==null ? null : Arrays.stream(fullPathToNode.split("/"))
-            .filter(key -> !key.isBlank())
-            .filter(key -> !key.equals("items"))
-            .filter(key -> !key.equals("properties"))
-            .collect(Collectors.joining("."));
-  }
-
 }
