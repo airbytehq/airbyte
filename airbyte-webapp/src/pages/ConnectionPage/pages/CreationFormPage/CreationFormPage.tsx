@@ -124,7 +124,7 @@ const CreationFormPage: React.FC<IProps> = ({}) => {
     push("", {
       state: {
         ...(location.state as Record<string, unknown>),
-        destinationId: id,
+        sourceId: id,
       },
     });
     setCurrentEntityStep(EntityStepsTypes.DESTINATION);
@@ -135,7 +135,7 @@ const CreationFormPage: React.FC<IProps> = ({}) => {
     push("", {
       state: {
         ...(location.state as Record<string, unknown>),
-        sourceId: id,
+        destinationId: id,
       },
     });
     setCurrentEntityStep(EntityStepsTypes.CONNECTION);
