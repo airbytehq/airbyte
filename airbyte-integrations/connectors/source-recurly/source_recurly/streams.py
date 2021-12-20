@@ -1,8 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
-from abc import abstractmethod
+import re
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
@@ -15,8 +14,10 @@ DEFAULT_SORT_KEY = "updated_at"
 
 BEGIN_TIME_PARAM = "begin_time"
 
+CAMEL_CASE_PATTERN = re.compile(r"(?<!^)(?=[A-Z])")
 
-class BaseRecurlyStream(Stream):
+
+class BaseStream(Stream):
     def __init__(self, client: Client, begin_time: str = None, **kwargs):
         super(Stream, self).__init__(**kwargs)
 
@@ -24,12 +25,11 @@ class BaseRecurlyStream(Stream):
         self.begin_time = begin_time
 
     @property
-    @abstractmethod
     def name(self):
         """
-        The name of the Recurly resource. All children inherit from this class should set the resource name
+        The name of the Recurly resource. By default it converts the class name from `CamelCase` to `snake_case`.
         """
-        pass
+        return CAMEL_CASE_PATTERN.sub("_", type(self).__name__).lower()
 
     @property
     def client_method_name(self) -> str:
@@ -138,12 +138,12 @@ class BaseRecurlyStream(Stream):
             return resource
 
 
-class RecurlyAccountsStream(BaseRecurlyStream):
-    name = "accounts"
+class Accounts(BaseStream):
+    pass
 
 
-class RecurlyAccountCouponRedemptionsStream(BaseRecurlyStream):
-    name = "account_coupon_redemptions"
+class AccountCouponRedemptions(BaseStream):
+    pass
 
     def read_records(
         self,
@@ -175,34 +175,31 @@ class RecurlyAccountCouponRedemptionsStream(BaseRecurlyStream):
                 yield self._item_to_dict(coupon)
 
 
-class RecurlyCouponsStream(BaseRecurlyStream):
-    name = "coupons"
+class Coupons(BaseStream):
+    pass
 
 
-class RecurlyInvoicesStream(BaseRecurlyStream):
-    name = "invoices"
+class Invoices(BaseStream):
+    pass
 
 
-class RecurlyMeasuredUnitsStream(BaseRecurlyStream):
-    name = "measured_units"
+class MeasuredUnits(BaseStream):
     client_method_name = "list_measured_unit"
 
 
-class RecurlyPlansStream(BaseRecurlyStream):
-    name = "plans"
+class Plans(BaseStream):
+    pass
 
 
-class RecurlySubscriptionsStream(BaseRecurlyStream):
-    name = "subscriptions"
+class Subscriptions(BaseStream):
+    pass
 
 
-class RecurlyTransactionsStream(BaseRecurlyStream):
-    name = "transactions"
+class Transactions(BaseStream):
+    pass
 
 
-class RecurlyExportDatesStream(BaseRecurlyStream):
-    name = "export_dates"
-
+class ExportDates(BaseStream):
     cursor_field = []  # Disable `incremental` sync for `export_dates` Recurly API call
 
     def read_records(
