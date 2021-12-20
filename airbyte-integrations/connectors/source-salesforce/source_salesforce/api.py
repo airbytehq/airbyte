@@ -212,9 +212,8 @@ class Salesforce:
     def get_validated_streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None):
         salesforce_objects = self.describe()["sobjects"]
         stream_names = [stream_object["name"] for stream_object in salesforce_objects]
-        validated_streams = []
         if catalog:
-            streams_for_read = [configured_stream.stream.name for configured_stream in catalog.streams]
+            return [configured_stream.stream.name for configured_stream in catalog.streams]
 
         if config.get("streams_criteria"):
             filtered_stream_list = []
@@ -224,12 +223,7 @@ class Salesforce:
                 )
             stream_names = list(set(filtered_stream_list))
 
-        for stream_name in stream_names:
-            if catalog and stream_name not in streams_for_read:
-                continue
-            if self.filter_streams(stream_name):
-                validated_streams.append(stream_name)
-
+        validated_streams = [stream_name for stream_name in stream_names if self.filter_streams(stream_name)]
         return validated_streams
 
     @default_backoff_handler(max_tries=5, factor=15)
