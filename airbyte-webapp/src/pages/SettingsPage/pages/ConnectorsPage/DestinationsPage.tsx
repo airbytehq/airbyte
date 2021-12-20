@@ -5,10 +5,10 @@ import { useAsyncFn } from "react-use";
 
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import { DestinationResource } from "core/resources/Destination";
-import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import useConnector from "hooks/services/useConnector";
 import ConnectorsView from "./components/ConnectorsView";
 import useWorkspace from "hooks/services/useWorkspace";
+import { DestinationDefinition } from "core/domain/connector";
 
 const DestinationsPage: React.FC = () => {
   const { workspace } = useWorkspace();
