@@ -46,6 +46,7 @@ This mode throws an exception after receiving a configurable number of messages.
 
 | Version | Date       | Pull Request                                             | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--- |
+| 0.2.1   | 2021-12-16 | [\#8824](https://github.com/airbytehq/airbyte/pull/8824) | Fix documentation URL. |
 | 0.2.0   | 2021-12-16 | [\#8824](https://github.com/airbytehq/airbyte/pull/8824) | Add multiple logging modes. |
 | 0.1.0   | 2021-05-25 | [\#3290](https://github.com/airbytehq/airbyte/pull/3290) | Create initial version. |
 
@@ -53,4 +54,5 @@ This mode throws an exception after receiving a configurable number of messages.
 
 | Version | Date       | Pull Request                                             | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--- |
+| 0.1.1   | 2021-12-16 | [\#8824](https://github.com/airbytehq/airbyte/pull/8824) | Fix documentation URL. |
 | 0.1.0   | 2021-12-16 | [\#8824](https://github.com/airbytehq/airbyte/pull/8824) | Create initial version. |
