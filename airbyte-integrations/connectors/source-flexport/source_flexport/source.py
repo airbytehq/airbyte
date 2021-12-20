@@ -143,6 +143,15 @@ class Products(FlexportStream):
         return "products"
 
 
+class Invoices(FlexportStream):
+    page_size = 100
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "invoices"
+
+
 class Shipments(IncrementalFlexportStream):
     cursor_field = "updated_at"
 
@@ -185,5 +194,6 @@ class SourceFlexport(AbstractSource):
             Companies(authenticator=auth),
             Locations(authenticator=auth),
             Products(authenticator=auth),
+            Invoices(authenticator=auth),
             Shipments(authenticator=auth, start_date=config["start_date"]),
         ]
