@@ -8,7 +8,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
@@ -48,6 +47,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   private final Timestamp uploadTime;
   protected final String stagingFolder;
   protected final Map<String, S3Writer> stagingWritersByFile = new HashMap<>();
+  private final boolean purgeStagingData;
 
   // The number of batches of records that will be inserted into each file.
   private final int maxPartsPerFile;
@@ -65,7 +65,7 @@ public abstract class S3StreamCopier implements StreamCopier {
                         final String schema,
                         final AmazonS3 client,
                         final JdbcDatabase db,
-                        final S3DestinationConfig s3Config,
+                        final S3CopyConfig config,
                         final ExtendedNameTransformer nameTransformer,
                         final SqlOperations sqlOperations,
                         final ConfiguredAirbyteStream configuredAirbyteStream,
@@ -82,7 +82,9 @@ public abstract class S3StreamCopier implements StreamCopier {
     this.uploadTime = uploadTime;
     this.tmpTableName = nameTransformer.getTmpTableName(this.streamName);
     this.s3Client = client;
-    this.s3Config = s3Config;
+    this.s3Config = config.s3Config();
+    this.purgeStagingData = config.purgeStagingData();
+
     this.maxPartsPerFile = maxPartsPerFile;
     this.partsAddedToCurrentFile = 0;
   }
@@ -176,15 +178,17 @@ public abstract class S3StreamCopier implements StreamCopier {
 
   @Override
   public void removeFileAndDropTmpTable() throws Exception {
-    for (final Map.Entry<String, S3Writer> entry : stagingWritersByFile.entrySet()) {
-      final String suffix = entry.getKey();
-      final String objectKey = entry.getValue().getOutputPath();
+    if (purgeStagingData) {
+      for (final Map.Entry<String, S3Writer> entry : stagingWritersByFile.entrySet()) {
+        final String suffix = entry.getKey();
+        final String objectKey = entry.getValue().getOutputPath();
 
-      LOGGER.info("Begin cleaning s3 staging file {}.", objectKey);
-      if (s3Client.doesObjectExist(s3Config.getBucketName(), objectKey)) {
-        s3Client.deleteObject(s3Config.getBucketName(), objectKey);
+        LOGGER.info("Begin cleaning s3 staging file {}.", objectKey);
+        if (s3Client.doesObjectExist(s3Config.getBucketName(), objectKey)) {
+          s3Client.deleteObject(s3Config.getBucketName(), objectKey);
+        }
+        LOGGER.info("S3 staging file {} cleaned.", suffix);
       }
-      LOGGER.info("S3 staging file {} cleaned.", suffix);
     }
 
     LOGGER.info("Begin cleaning {} tmp table in destination.", tmpTableName);

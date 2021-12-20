@@ -7,9 +7,16 @@ package io.airbyte.config.persistence.split_secrets;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class JsonSecretsProcessorTest {
 
@@ -153,162 +160,7 @@ public class JsonSecretsProcessorTest {
           + "    }\n"
           + "  }");
 
-  private final static String test = """
-                                       {
-                                         "provider": {
-                                           "bucket": "bucket",
-                                           "endpoint": "",
-                                           "path_prefix": "",
-                                           "aws_access_key_id": "nothingtosee",
-                                           "aws_secret_access_key": "same"
-                                         }
-                                     }
-                                     """;
-
-  private final static String testSpecs =
-      """
-       {
-         "type": "object",
-         "title": "S3 Source Spec",
-         "required": [
-           "dataset",
-           "path_pattern",
-           "provider"
-         ],
-         "properties": {
-           "provider": {
-             "type": "object",
-             "title": "S3: Amazon Web Services",
-             "required": [
-               "bucket"
-             ],
-             "properties": {
-               "bucket": {
-                 "type": "string",
-                 "title": "Bucket",
-                 "description": "Name of the S3 bucket where the file(s) exist."
-               },
-               "use_ssl": {
-                 "type": "boolean",
-                 "title": "Use Ssl",
-                 "description": "Is remote server using secure SSL/TLS connection"
-               },
-               "endpoint": {
-                 "type": "string",
-                 "title": "Endpoint",
-                 "default": "",
-                 "description": "Endpoint to an S3 compatible service. Leave empty to use AWS."
-               },
-               "path_prefix": {
-                 "type": "string",
-                 "title": "Path Prefix",
-                 "default": "",
-                 "description": "By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit, we can optimise finding these in S3. This is optional but recommended if your bucket contains many folders/files."
-               },
-               "verify_ssl_cert": {
-                 "type": "boolean",
-                 "title": "Verify Ssl Cert",
-                 "description": "Allow self signed certificates"
-               },
-               "aws_access_key_id": {
-                 "type": "string",
-                 "title": "Aws Access Key Id",
-                 "description": "In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
-                 "airbyte_secret": true
-               },
-               "aws_secret_access_key": {
-                 "type": "string",
-                 "title": "Aws Secret Access Key",
-                 "description": "In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
-                 "airbyte_secret": true
-               }
-             }
-           }
-         }
-       }
-      """;
-
   JsonSecretsProcessor processor = new JsonSecretsProcessor();
-
-  @Test
-  public void testNestedSecrets() {
-    final JsonNode obj = Jsons.deserialize(test);
-    final JsonNode specObj = Jsons.deserialize(testSpecs);
-    final JsonNode sanitized = processor.maskSecrets(obj, specObj);
-
-    final JsonNode expected = Jsons.jsonNode(ImmutableMap.builder()
-        .put("bucket", "bucket")
-        .put("endpoint", "")
-        .put("path_prefix", "")
-        .put("aws_access_key_id", JsonSecretsProcessor.SECRETS_MASK)
-        .put("aws_secret_access_key", JsonSecretsProcessor.SECRETS_MASK).build());
-    assertEquals(expected, sanitized.get("provider"));
-  }
-
-  @Test
-  public void testMaskSecrets() {
-    final JsonNode obj = Jsons.jsonNode(ImmutableMap.builder()
-        .put("field1", "value1")
-        .put("field2", 2)
-        .put("secret1", "donttellanyone")
-        .put("secret2", "verysecret").build());
-
-    final JsonNode sanitized = processor.maskSecrets(obj, SCHEMA_ONE_LAYER);
-
-    final JsonNode expected = Jsons.jsonNode(ImmutableMap.builder()
-        .put("field1", "value1")
-        .put("field2", 2)
-        .put("secret1", JsonSecretsProcessor.SECRETS_MASK)
-        .put("secret2", JsonSecretsProcessor.SECRETS_MASK).build());
-    assertEquals(expected, sanitized);
-  }
-
-  @Test
-  public void testMaskSecretsNotInObj() {
-    final JsonNode obj = Jsons.jsonNode(ImmutableMap.builder()
-        .put("field1", "value1")
-        .put("field2", 2).build());
-
-    final JsonNode actual = processor.maskSecrets(obj, SCHEMA_ONE_LAYER);
-
-    // Didn't have secrets, no fields should have been impacted.
-    assertEquals(obj, actual);
-  }
-
-  @Test
-  public void testMaskSecretInnerObject() {
-    final JsonNode oneOf = Jsons.jsonNode(ImmutableMap.builder()
-        .put("s3_bucket_name", "name")
-        .put("secret_access_key", "secret").build());
-    final JsonNode base = Jsons.jsonNode(ImmutableMap.builder()
-        .put("warehouse", "house")
-        .put("loading_method", oneOf).build());
-
-    final JsonNode actual = processor.maskSecrets(base, SCHEMA_INNER_OBJECT);
-
-    final JsonNode expectedOneOf = Jsons.jsonNode(ImmutableMap.builder()
-        .put("s3_bucket_name", "name")
-        .put("secret_access_key", JsonSecretsProcessor.SECRETS_MASK)
-        .build());
-    final JsonNode expected = Jsons.jsonNode(ImmutableMap.builder()
-        .put("warehouse", "house")
-        .put("loading_method", expectedOneOf).build());
-
-    assertEquals(expected, actual);
-  }
-
-  @Test
-  public void testMaskSecretNotInInnerObject() {
-    final JsonNode base = Jsons.jsonNode(ImmutableMap.builder()
-        .put("warehouse", "house").build());
-
-    final JsonNode actual = processor.maskSecrets(base, SCHEMA_INNER_OBJECT);
-
-    final JsonNode expected = Jsons.jsonNode(ImmutableMap.builder()
-        .put("warehouse", "house").build());
-
-    assertEquals(expected, actual);
-  }
 
   @Test
   public void testCopySecrets() {
@@ -429,6 +281,47 @@ public class JsonSecretsProcessorTest {
         "format", parquetConfig));
 
     final JsonNode actual = new JsonSecretsProcessor().copySecrets(src, dst, ONE_OF_WITH_SAME_KEY_IN_SUB_SCHEMAS);
+  }
+
+  private static Stream<Arguments> scenarioProvider() {
+    return Stream.of(
+        Arguments.of("array", true),
+        Arguments.of("array", false),
+        Arguments.of("array_of_oneof", true),
+        Arguments.of("array_of_oneof", false),
+        Arguments.of("nested_object", true),
+        Arguments.of("nested_object", false),
+        Arguments.of("nested_oneof", true),
+        Arguments.of("nested_oneof", false),
+        Arguments.of("oneof", true),
+        Arguments.of("oneof", false),
+        Arguments.of("optional_password", true),
+        Arguments.of("optional_password", false),
+        Arguments.of("postgres_ssh_key", true),
+        Arguments.of("postgres_ssh_key", false),
+        Arguments.of("simple", true),
+        Arguments.of("simple", false));
+  }
+
+  @ParameterizedTest
+  @MethodSource("scenarioProvider")
+  void testSecretScenario(final String folder, final boolean partial) throws IOException {
+    final ObjectMapper objectMapper = new ObjectMapper();
+
+    final InputStream specIs = getClass().getClassLoader().getResourceAsStream(folder + "/spec.json");
+    final JsonNode specs = objectMapper.readTree(specIs);
+
+    final String inputFilePath = folder + (partial ? "/partial_config.json" : "/full_config.json");
+    final InputStream inputIs = getClass().getClassLoader().getResourceAsStream(inputFilePath);
+    final JsonNode input = objectMapper.readTree(inputIs);
+
+    final String expectedFilePath = folder + "/expected.json";
+    final InputStream expectedIs = getClass().getClassLoader().getResourceAsStream(expectedFilePath);
+    final JsonNode expected = objectMapper.readTree(expectedIs);
+
+    final JsonNode actual = processor.maskSecrets(input, specs);
+
+    assertEquals(expected, actual);
   }
 
 }

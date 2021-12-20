@@ -774,5 +774,48 @@
       "time_field": 44581541000,
       "_airbyte_additional_properties": null
     }
+  },
+  {
+    "schemaName": "array_without_items_in_schema",
+    "namespace": "namespace16",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "identifier": {
+          "type": "array"
+        }
+      }
+    },
+    "jsonObject": {
+      "identifier": ["151", 152, true, { "id": 153 }]
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "array_without_items_in_schema",
+      "namespace": "namespace16",
+      "fields": [
+        {
+          "name": "identifier",
+          "type": [
+            "null",
+            {
+              "type": "array",
+              "items": ["null", "string"]
+            }
+          ],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": ["null", { "type": "map", "values": "string" }],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "identifier": ["151", "152", "true", "{\"id\":153}"],
+      "_airbyte_additional_properties": null
+    }
   }
 ]
