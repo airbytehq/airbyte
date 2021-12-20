@@ -20,6 +20,7 @@ import { IDataItem } from "components/base/DropDown/components/Option";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { Destination, Source } from "core/domain/connector";
+import { Connection } from "core/domain/connection";
 
 const SkipButton = styled.div`
   margin-top: 6px;
@@ -39,7 +40,7 @@ type IProps = {
   additionBottomControls?: React.ReactNode;
   source: Source;
   destination: Destination;
-  afterSubmitConnection?: () => void;
+  afterSubmitConnection?: (connection: Connection) => void;
   noTitles?: boolean;
 };
 
@@ -111,7 +112,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
   }
 
   const onSubmitConnectionStep = async (values: ValuesProps) => {
-    await createConnection({
+    const connection = await createConnection({
       values,
       source: source,
       destination: destination,
@@ -126,7 +127,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
     });
 
     if (afterSubmitConnection) {
-      afterSubmitConnection();
+      afterSubmitConnection(connection);
     }
   };
 
