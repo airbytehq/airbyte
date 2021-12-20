@@ -29,7 +29,7 @@ import StepsCounter from "./components/StepsCounter";
 import LoadingPage from "components/LoadingPage";
 import useWorkspace from "hooks/services/useWorkspace";
 import useRouterHook from "hooks/useRouter";
-import { Routes } from "pages/routes";
+import { RoutePaths } from "pages/routes";
 
 const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   width: 100%;
@@ -111,7 +111,7 @@ const OnboardingPage: React.FC = () => {
 
   const handleFinishOnboarding = () => {
     finishOnboarding();
-    push(Routes.Connections);
+    push(RoutePaths.Connections);
   };
 
   const renderStep = () => {

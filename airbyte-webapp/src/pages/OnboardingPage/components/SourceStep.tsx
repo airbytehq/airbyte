@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { ConnectionConfiguration } from "core/domain/connection";
-import { SourceDefinition } from "core/resources/SourceDefinition";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 
@@ -11,6 +10,7 @@ import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import HighlightedText from "./HighlightedText";
 import TitlesBlock from "./TitlesBlock";
+import { SourceDefinition } from "core/domain/connector";
 
 type IProps = {
   onSubmit: (values: {

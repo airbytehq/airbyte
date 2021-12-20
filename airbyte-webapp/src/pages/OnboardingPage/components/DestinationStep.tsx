@@ -12,6 +12,7 @@ import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import TitlesBlock from "./TitlesBlock";
 import HighlightedText from "./HighlightedText";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { DestinationDefinition } from "core/domain/connector";
 
 type IProps = {
   availableServices: DestinationDefinition[];

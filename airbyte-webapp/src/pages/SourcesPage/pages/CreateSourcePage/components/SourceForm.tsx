@@ -5,10 +5,10 @@ import useRouter from "hooks/useRouter";
 import { useSourceDefinitionSpecificationLoad } from "hooks/services/useSourceHook";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { SourceDefinition } from "core/resources/SourceDefinition";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { SourceDefinition } from "core/domain/connector";
 
 type IProps = {
   onSubmit: (values: {

@@ -5,6 +5,7 @@
 package io.airbyte.workers.normalization;
 
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.normalization.DefaultNormalizationRunner.DestinationType;
 import io.airbyte.workers.process.ProcessFactory;
 import java.util.Map;
@@ -34,9 +35,10 @@ public class NormalizationRunnerFactory {
           .put("airbyte/destination-clickhouse-strict-encrypt", ImmutablePair.of("airbyte/normalization-clickhouse", DestinationType.CLICKHOUSE))
           .build();
 
-  public static NormalizationRunner create(final String connectorImageName, final ProcessFactory processFactory) {
+  public static NormalizationRunner create(final WorkerConfigs workerConfigs, final String connectorImageName, final ProcessFactory processFactory) {
     final var valuePair = getNormalizationInfoForConnector(connectorImageName);
     return new DefaultNormalizationRunner(
+        workerConfigs,
         valuePair.getRight(),
         processFactory,
         String.format("%s:%s", valuePair.getLeft(), NORMALIZATION_VERSION));

@@ -35,6 +35,7 @@ public class GcsJsonlWriter extends BaseGcsWriter implements S3Writer {
   private final StreamTransferManager uploadManager;
   private final MultiPartOutputStream outputStream;
   private final PrintWriter printWriter;
+  private final String objectKey;
 
   public GcsJsonlWriter(final GcsDestinationConfig config,
                         final AmazonS3 s3Client,
@@ -43,7 +44,7 @@ public class GcsJsonlWriter extends BaseGcsWriter implements S3Writer {
     super(config, s3Client, configuredStream);
 
     final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.JSONL);
-    final String objectKey = String.join("/", outputPrefix, outputFilename);
+    objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.getBucketName(), objectKey);
 
@@ -76,6 +77,11 @@ public class GcsJsonlWriter extends BaseGcsWriter implements S3Writer {
     printWriter.close();
     outputStream.close();
     uploadManager.abort();
+  }
+
+  @Override
+  public String getOutputPath() {
+    return objectKey;
   }
 
 }

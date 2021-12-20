@@ -4,9 +4,9 @@ import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
 import DeleteBlock from "components/DeleteBlock";
-import { Destination } from "core/resources/Destination";
-import DestinationDefinitionSpecificationResource from "core/resources/DestinationDefinitionSpecification";
-import useDestination from "hooks/services/useDestinationHook";
+import useDestination, {
+  useDestinationDefinitionSpecificationLoadAsync,
+} from "hooks/services/useDestinationHook";
 import { Connection } from "core/resources/Connection";
 import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
@@ -15,6 +15,7 @@ import DestinationDefinitionResource from "core/resources/DestinationDefinition"
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { Destination } from "core/domain/connector";
 
 const Content = styled.div`
   width: 100%;
@@ -37,11 +38,8 @@ const DestinationsSettings: React.FC<IProps> = ({
     response: JobInfo;
   } | null>(null);
 
-  const destinationSpecification = useResource(
-    DestinationDefinitionSpecificationResource.detailShape(),
-    {
-      destinationDefinitionId: currentDestination.destinationDefinitionId,
-    }
+  const destinationSpecification = useDestinationDefinitionSpecificationLoadAsync(
+    currentDestination.destinationDefinitionId
   );
 
   const destinationDefinition = useResource(

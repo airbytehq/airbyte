@@ -4,10 +4,10 @@ import useRouter from "hooks/useRouter";
 import { useDestinationDefinitionSpecificationLoad } from "hooks/services/useDestinationHook";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { DestinationDefinition } from "core/domain/connector";
 
 type IProps = {
   onSubmit: (values: {

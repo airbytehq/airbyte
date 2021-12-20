@@ -3,7 +3,6 @@ import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
-import { Source } from "core/resources/Source";
 import useSource from "hooks/services/useSourceHook";
 import SourceDefinitionSpecificationResource from "core/resources/SourceDefinitionSpecification";
 import DeleteBlock from "components/DeleteBlock";
@@ -14,6 +13,7 @@ import { ConnectionConfiguration } from "core/domain/connection";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { Source } from "core/domain/connector";
 
 const Content = styled.div`
   max-width: 813px;
