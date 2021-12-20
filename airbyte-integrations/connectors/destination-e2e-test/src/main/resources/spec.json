@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://example.com",
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/e2e-test",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,
