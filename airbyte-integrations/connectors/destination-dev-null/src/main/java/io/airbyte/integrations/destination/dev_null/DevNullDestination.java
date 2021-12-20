@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 public class DevNullDestination extends SpecModifyingDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DevNullDestination.class);
-  private static final String DEV_NULL_DESTINATION_TITLE = "Dev Null Destination Spec";
+  private static final String DEV_NULL_DESTINATION_TITLE = "E2E Test (/dev/null) Destination Spec";
 
   public DevNullDestination() {
     super(new TestingDestinations());
