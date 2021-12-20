@@ -208,7 +208,7 @@ class DefaultAirbyteDestinationTest {
 
   @Test
   public void testGetExitValue() throws Exception {
-    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher);
+    final AirbyteDestination destination = new DefaultAirbyteDestination(workerConfigs, integrationLauncher);
     destination.start(DESTINATION_CONFIG, jobRoot);
 
     when(process.isAlive()).thenReturn(false);
