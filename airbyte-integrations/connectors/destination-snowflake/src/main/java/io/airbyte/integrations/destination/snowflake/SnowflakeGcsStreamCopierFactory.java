@@ -18,7 +18,7 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 
 public class SnowflakeGcsStreamCopierFactory extends GcsStreamCopierFactory {
 
-  int DEFAULT_MAX_BATCH_SIZE_BYTES_SNOWFLAKE = DataSize.of(250L, IEC.MEBIBYTE).toUnit(IEC.BYTE).getValue().intValue();
+  private static final int DEFAULT_MAX_BATCH_SIZE_BYTES_SNOWFLAKE = DataSize.of(250L, IEC.MEBIBYTE).toUnit(IEC.BYTE).getValue().intValue();
 
   @Override
   public StreamCopier create(final String stagingFolder,
