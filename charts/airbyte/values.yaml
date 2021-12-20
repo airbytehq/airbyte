@@ -337,6 +337,9 @@ server:
   log:
     level: "INFO"
 
+  flyway:
+    jobsMinVersion: 0.29.15.001
+    configsMinVersion: 0.30.22.001
   ## @param server.extraEnv [array] Additional env vars for server pod(s).
   ## Example:
   ##
