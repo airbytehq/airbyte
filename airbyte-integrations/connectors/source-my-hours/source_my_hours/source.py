@@ -2,9 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import logging
-from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qs, urlparse
 
 import pendulum
@@ -12,27 +10,11 @@ import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from source_my_hours.auth import MyHoursAuthenticator
+from source_my_hours.stream import MyHoursStream
 
 from .constants import REQUEST_HEADERS, URL_BASE
-
-
-class MyHoursStream(HttpStream, ABC):
-    url_base = URL_BASE + "/"
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        for record in response.json():
-            yield record
-
-    def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Mapping[str, Any]:
-        return REQUEST_HEADERS
 
 
 class Clients(MyHoursStream):
@@ -108,7 +90,7 @@ class TimeLogs(MyHoursStream):
     ) -> MutableMapping[str, Any]:
 
         if next_page_token is None:
-            return {"DateFrom": self.start_date.to_date_string(), "DateTo": self.start_date.add(days=6).to_date_string()}
+            return {"DateFrom": self.start_date.to_date_string(), "DateTo": self.start_date.add(days=self.batch_size - 1).to_date_string()}
         return next_page_token
 
 

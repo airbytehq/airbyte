@@ -4,29 +4,28 @@
 
 import json
 from typing import Any, Mapping, MutableMapping, Tuple
-from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import Oauth2Authenticator
 
 import pendulum
 import requests
+from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import Oauth2Authenticator
 
 from .constants import REQUEST_HEADERS, URL_BASE
 
 
 class MyHoursAuthenticator(Oauth2Authenticator):
-    def __init__(
-        self,
-        email: str,
-        password: str
-    ):
+    def __init__(self, email: str, password: str):
         super().__init__(
-            token_refresh_endpoint = f"{URL_BASE}/tokens/refresh",
-            client_id = None,
-            client_secret = None,
-            refresh_token = None,
-            access_token_name = "accessToken",
-            expires_in_name = "expiresIn"
+            token_refresh_endpoint=f"{URL_BASE}/tokens/refresh",
+            client_id=None,
+            client_secret=None,
+            refresh_token=None,
+            access_token_name="accessToken",
+            expires_in_name="expiresIn",
         )
 
+        self.retrieve_refresh_token(email, password)
+
+    def retrieve_refresh_token(self, email: str, password: str):
         t0 = pendulum.now()
         payload = json.dumps({"grantType": "password", "email": email, "password": password, "clientId": "api"})
         response = requests.post(f"{URL_BASE}/tokens/login", headers=REQUEST_HEADERS, data=payload)
@@ -44,7 +43,7 @@ class MyHoursAuthenticator(Oauth2Authenticator):
         }
 
         return payload
-    
+
     def refresh_access_token(self) -> Tuple[str, int]:
         try:
             response = requests.request(method="POST", url=self.token_refresh_endpoint, data=self.get_refresh_request_body())
