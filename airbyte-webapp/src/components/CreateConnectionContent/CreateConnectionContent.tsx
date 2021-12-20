@@ -18,6 +18,7 @@ import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import { IDataItem } from "components/base/DropDown/components/Option";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { LogsRequestError } from "core/request/LogsRequestError";
 import { Destination, Source } from "core/domain/connector";
 
 const SkipButton = styled.div`
@@ -102,7 +103,9 @@ const CreateConnectionContent: React.FC<IProps> = ({
           onClick={onDiscoverSchema}
           additionControl={<SkipButton>{additionBottomControls}</SkipButton>}
         />
-        <JobsLogItem jobInfo={schemaErrorStatus?.response} />
+        <JobsLogItem
+          jobInfo={LogsRequestError.extractJobInfo(schemaErrorStatus)}
+        />
       </ContentCard>
     );
   }
