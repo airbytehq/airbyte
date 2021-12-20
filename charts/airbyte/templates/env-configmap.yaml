@@ -41,3 +41,5 @@ data:
   WORKER_ENVIRONMENT: kubernetes
   WORKSPACE_DOCKER_MOUNT: airbyte_workspace
   WORKSPACE_ROOT: /workspace
+  CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: {{ .Values.flyway.configs.minimum_version | quote }}
+  JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: {{ .Values.flyway.jobs.minimum_version | quote }}
