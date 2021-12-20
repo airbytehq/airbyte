@@ -12,8 +12,11 @@ else
   echo "Using existing AIRBYTE_ENTRYPOINT: $AIRBYTE_ENTRYPOINT"
 fi
 
-(OPTIONAL_STDIN (eval "$AIRBYTE_ENTRYPOINT ARGS" 2> STDERR_PIPE_FILE > STDOUT_PIPE_FILE)) &
+((eval "$AIRBYTE_ENTRYPOINT ARGS" 2> STDERR_PIPE_FILE > STDOUT_PIPE_FILE) OPTIONAL_STDIN) &
 CHILD_PID=$!
 (while true; do if [ -f TERMINATION_FILE_CHECK ]; then echo "Heartbeat to worker failed, exiting..."; exit 1; fi; sleep 1; done) &
+echo "Waiting on CHILD_PID $CHILD_PID"
 wait $CHILD_PID
-exit $?
+EXIT_STATUS=$?
+echo "EXIT_STATUS: $EXIT_STATUS"
+exit $EXIT_STATUS
