@@ -218,8 +218,8 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | `character varying`, `varchar`        | string         |                                                                                                             |
 | `cidr`                                | string         |                                                                                                             |
 | `circle`                              | string         |                                                                                                             |
-| `date`                                | string         |                                                                                                             |
-| `double precision`, `float`, `float8` | number         | Support `Infinity`, `-Infinity`, and `NaN`.                                                                 |
+| `date`                                | string         | Parsed as ISO8601 date time at midnight. Does not support B.C. dates. Issue: [#8903](https://github.com/airbytehq/airbyte/issues/8903). |
+| `double precision`, `float`, `float8` | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902). |
 | `inet`                                | string         |                                                                                                             |
 | `integer`, `int`, `int4`              | number         |                                                                                                             |
 | `interval`                            | string         |                                                                                                             |
@@ -230,7 +230,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | `macaddr`                             | string         |                                                                                                             |
 | `macaddr8`                            | string         |                                                                                                             |
 | `money`                               | number         |                                                                                                             |
-| `numeric`, `decimal`                  | number         | Support `Infinity`, `-Infinity`, and `NaN`.                                                                 |
+| `numeric`, `decimal`                  | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902). |
 | `path`                                | string         |                                                                                                             |
 | `pg_lsn`                              | string         |                                                                                                             |
 | `point`                               | string         |                                                                                                             |
@@ -244,7 +244,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | `timetz`                              | string         |                                                                                                             |
 | `timestamp`                           | string         |                                                                                                             |
 | `timestamptz`                         | string         |                                                                                                             |
-| `tsquery`                             | string         | Not supported with CDC node. Parsed value is null [#7911](https://github.com/airbytehq/airbyte/issues/7911) |
+| `tsquery`                             | string         | Not supported with CDC node. Parsed value is null. Issue: [#7911](https://github.com/airbytehq/airbyte/issues/7911) |
 | `tsvector`                            | string         |                                                                                                             |
 | `uuid`                                | string         |                                                                                                             |
 | `xml`                                 | string         |                                                                                                             |
