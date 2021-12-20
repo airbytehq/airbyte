@@ -76,7 +76,8 @@ class SourceDefinitionsHandlerTest {
         .withDockerRepository("dockerstuff")
         .withDockerImageTag("12.3")
         .withIcon("http.svg")
-        .withSpec(spec);
+        .withSpec(spec)
+        .withTombstone(false);
   }
 
   @Test
@@ -84,7 +85,7 @@ class SourceDefinitionsHandlerTest {
   void testListSourceDefinitions() throws JsonValidationException, IOException, URISyntaxException {
     final StandardSourceDefinition source2 = generateSource();
 
-    when(configRepository.listStandardSourceDefinitions()).thenReturn(Lists.newArrayList(source, source2));
+    when(configRepository.listStandardSourceDefinitions(false)).thenReturn(Lists.newArrayList(source, source2));
 
     final SourceDefinitionRead expectedSourceDefinitionRead1 = new SourceDefinitionRead()
         .sourceDefinitionId(source.getSourceDefinitionId())

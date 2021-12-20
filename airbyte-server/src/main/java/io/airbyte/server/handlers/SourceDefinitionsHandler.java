@@ -72,7 +72,7 @@ public class SourceDefinitionsHandler {
   }
 
   public SourceDefinitionReadList listSourceDefinitions() throws IOException, JsonValidationException {
-    return toSourceDefinitionReadList(configRepository.listStandardSourceDefinitions());
+    return toSourceDefinitionReadList(configRepository.listStandardSourceDefinitions(false));
   }
 
   private static SourceDefinitionReadList toSourceDefinitionReadList(final List<StandardSourceDefinition> defs) {
@@ -111,7 +111,8 @@ public class SourceDefinitionsHandler {
         .withDocumentationUrl(sourceDefinitionCreate.getDocumentationUrl().toString())
         .withName(sourceDefinitionCreate.getName())
         .withIcon(sourceDefinitionCreate.getIcon())
-        .withSpec(spec);
+        .withSpec(spec)
+        .withTombstone(false);
 
     configRepository.writeStandardSourceDefinition(sourceDefinition);
 
@@ -138,7 +139,8 @@ public class SourceDefinitionsHandler {
         .withDocumentationUrl(currentSourceDefinition.getDocumentationUrl())
         .withName(currentSourceDefinition.getName())
         .withIcon(currentSourceDefinition.getIcon())
-        .withSpec(spec);
+        .withSpec(spec)
+        .withTombstone(currentSourceDefinition.getTombstone());
 
     configRepository.writeStandardSourceDefinition(newSource);
     return buildSourceDefinitionRead(newSource);
