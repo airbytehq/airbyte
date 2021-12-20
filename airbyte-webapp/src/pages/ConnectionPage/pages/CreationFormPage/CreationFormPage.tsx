@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
-import { RoutePaths } from "pages/routes";
 import useRouter from "hooks/useRouter";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import PageTitle from "components/PageTitle";
@@ -25,6 +24,7 @@ import {
   Source,
   SourceDefinition,
 } from "core/domain/connector";
+import { Connection } from "core/domain/connection";
 
 type IProps = {
   type?: "source" | "destination" | "connection";
@@ -189,7 +189,7 @@ const CreationFormPage: React.FC<IProps> = ({}) => {
       }
     }
 
-    const afterSubmitConnection = () => {
+    const afterSubmitConnection = (connection: Connection) => {
       switch (type) {
         case "destination":
           push(`../${source?.sourceId}`);
@@ -198,7 +198,7 @@ const CreationFormPage: React.FC<IProps> = ({}) => {
           push(`../${destination?.destinationId}`);
           break;
         default:
-          push(`../${RoutePaths.Connections}`);
+          push(`../${connection.connectionId}`);
           break;
       }
     };
