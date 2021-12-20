@@ -210,7 +210,7 @@ public class JsonToAvroSchemaConverter {
           LOGGER.warn("Source connector provided schema for ARRAY with missed \"items\", will assume that it's a String type");
           fieldSchema = Schema.createArray(Schema.createUnion(NULL_SCHEMA, STRING_SCHEMA));
         } else if (items.isObject()) {
-          fieldSchema = Schema.createArray(getNullableFieldTypes(String.format("%s.items", fieldName), items));
+          fieldSchema = Schema.createArray(getNullableFieldTypes(String.format("%s.items", fieldName), items, appendExtraProps, addStringToLogicalTypes));
         } else if (items.isArray()) {
           final List<Schema> arrayElementTypes = getSchemasFromTypes(fieldName, (ArrayNode) items, appendExtraProps, addStringToLogicalTypes);
           arrayElementTypes.add(0, NULL_SCHEMA);
