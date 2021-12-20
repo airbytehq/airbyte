@@ -248,17 +248,11 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
               .sourceType(type)
               .airbyteType(JsonSchemaPrimitive.NUMBER)
               .addInsertValues(
-                  "null", "'123'",
-                  "'1234567890.1234567'",
-                  "'infinity'",
-                  "'-infinity'",
-                  "'nan'")
-              .addExpectedValues(
-                  null, "123.0",
-                  "1.2345678901234567E9",
-                  String.valueOf(Double.POSITIVE_INFINITY),
-                  String.valueOf(Double.NEGATIVE_INFINITY),
-                  String.valueOf(Double.NaN))
+                  "null", "'123'", "'1234567890.1234567'",
+                  // Postgres source does not support these special values yet
+                  // https://github.com/airbytehq/airbyte/issues/8902
+                  "'infinity'", "'-infinity'", "'nan'")
+              .addExpectedValues(null, "123.0", "1.2345678901234567E9", null, null, null)
               .build());
     }
 
@@ -364,17 +358,11 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
               .sourceType(type)
               .airbyteType(JsonSchemaPrimitive.NUMBER)
               .addInsertValues(
-                  "'123'", "null",
-                  "'1234567890.1234567'",
-                  "'infinity'",
-                  "'-infinity'",
-                  "'nan'")
-              .addExpectedValues(
-                  "123", null,
-                  "1.2345678901234567E9",
-                  String.valueOf(Double.POSITIVE_INFINITY),
-                  String.valueOf(Double.NEGATIVE_INFINITY),
-                  String.valueOf(Double.NaN))
+                  "'123'", "null", "'1234567890.1234567'",
+                  // Postgres source does not support these special values yet
+                  // https://github.com/airbytehq/airbyte/issues/8902
+                  "'infinity'", "'-infinity'", "'nan'")
+              .addExpectedValues("123", null, "1.2345678901234567E9", null, null, null)
               .build());
     }
 

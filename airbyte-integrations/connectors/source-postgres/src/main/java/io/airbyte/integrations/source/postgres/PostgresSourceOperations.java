@@ -145,23 +145,13 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
     node.put(columnName, resultSet.getString(index).equalsIgnoreCase("t"));
   }
 
-  protected void putBigDecimal(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+  protected void putBigDecimal(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) {
     final BigDecimal bigDecimal = DataTypeUtils.returnNullIfInvalid(() -> resultSet.getBigDecimal(index));
     if (bigDecimal != null) {
       node.put(columnName, bigDecimal);
-      return;
-    }
-
-    // ResultSet#getBigDecimal cannot handle Infinity, -Infinity, or NaN, and will throw exception,
-    // which becomes null. So we need to check these special values as string.
-    final String value = resultSet.getString(index);
-    if (value.equalsIgnoreCase("infinity")) {
-      node.put(columnName, Double.POSITIVE_INFINITY);
-    } else if (value.equalsIgnoreCase("-infinity")) {
-      node.put(columnName, Double.NEGATIVE_INFINITY);
-    } else if (value.equalsIgnoreCase("nan")) {
-      node.put(columnName, Double.NaN);
     } else {
+      // Special values (Infinity, -Infinity, and NaN) is default to null for now.
+      // https://github.com/airbytehq/airbyte/issues/8902
       node.put(columnName, (BigDecimal) null);
     }
   }
@@ -171,7 +161,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
     if (resultSet.getMetaData().getColumnTypeName(index).equals("money")) {
       putMoney(node, columnName, resultSet, index);
     } else {
-      node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> resultSet.getDouble(index)));
+      super.putDouble(node, columnName, resultSet, index);
     }
   }
 
