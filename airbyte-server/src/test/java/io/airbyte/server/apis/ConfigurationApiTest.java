@@ -20,6 +20,7 @@ import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.workers.WorkerConfigs;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
@@ -46,6 +47,7 @@ public class ConfigurationApiTest {
         mock(TrackingClient.class),
         WorkerEnvironment.DOCKER,
         LogConfigs.EMPTY,
+        mock(WorkerConfigs.class),
         "http://localhost",
         new AirbyteVersion("0.1.0-alpha"),
         Path.of(""),

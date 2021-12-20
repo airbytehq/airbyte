@@ -76,7 +76,11 @@ class ConnectorConfig(BaseModel):
         default_factory=pendulum.now,
     )
 
-    include_deleted: bool = Field(default=False, description="Include data from deleted campaigns, ads, and adsets.")
+    fetch_thumbnail_images: bool = Field(
+        default=False, description="In each Ad Creative, fetch the thumbnail_url and store the result in thumbnail_data_url"
+    )
+
+    include_deleted: bool = Field(default=False, description="Include data from deleted campaigns, ads, and adsets")
 
     insights_lookback_window: int = Field(
         default=28,
@@ -87,7 +91,7 @@ class ConnectorConfig(BaseModel):
 
     insights_days_per_job: int = Field(
         default=7,
-        description="Number of days to sync in one job. The more data you have - the smaller you want this parameter to be.",
+        description="Number of days to sync in one job (the more data you have, the smaller this parameter should be)",
         minimum=1,
         maximum=30,
     )
@@ -137,7 +141,7 @@ class SourceFacebookMarketing(AbstractSource):
             Campaigns(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
             AdSets(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
             Ads(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
-            AdCreatives(api=api),
+            AdCreatives(api=api, fetch_thumbnail_images=config.fetch_thumbnail_images),
             AdsInsights(**insights_args),
             AdsInsightsAgeAndGender(**insights_args),
             AdsInsightsCountry(**insights_args),
