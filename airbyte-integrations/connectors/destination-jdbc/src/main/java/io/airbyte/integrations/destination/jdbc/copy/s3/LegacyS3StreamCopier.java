@@ -44,14 +44,6 @@ public abstract class LegacyS3StreamCopier implements StreamCopier {
 
   private static final int DEFAULT_UPLOAD_THREADS = 10; // The S3 cli uses 10 threads by default.
   private static final int DEFAULT_QUEUE_CAPACITY = DEFAULT_UPLOAD_THREADS;
-  // It is optimal to write every 10,000,000 records (BATCH_SIZE * DEFAULT_PART) to a new file.
-  // The BATCH_SIZE is defined in CopyConsumerFactory.
-  // The average size of such a file will be about 1 GB.
-  // This will make it easier to work with files and speed up the recording of large amounts of data.
-  // In addition, for a large number of records, we will not get a drop in the copy request to
-  // QUERY_TIMEOUT when
-  // the records from the file are copied to the staging table.
-  public static final int MAX_PARTS_PER_FILE = 1000;
 
   protected final AmazonS3 s3Client;
   protected final S3DestinationConfig s3Config;
