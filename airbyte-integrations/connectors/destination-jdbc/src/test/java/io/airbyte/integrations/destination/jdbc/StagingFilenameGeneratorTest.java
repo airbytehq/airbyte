@@ -19,7 +19,7 @@ class StagingFilenameGeneratorTest {
   // because <insert explanation here>
   private static final long MAX_PARTS_PER_FILE = 58;
   private static final StagingFilenameGenerator FILENAME_GENERATOR =
-      new StagingFilenameGenerator(STREAM_NAME, GlobalDataSizeConstants.MAX_BYTE_PARTS_PER_FILE_DEFAULT);
+      new StagingFilenameGenerator(STREAM_NAME, GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES);
 
   @Test
   public void testGetStagingFilename() {
