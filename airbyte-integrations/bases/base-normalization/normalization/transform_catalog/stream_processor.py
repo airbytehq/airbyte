@@ -744,7 +744,7 @@ dedup_data as (
         -- we need to ensure de-duplicated rows for merge/update queries
         -- additionally, we generate a unique key for the scd table
         row_number() over (
-            partition by {{ unique_key }}, {{ airbyte_start_at }}, {{ col_emitted_at }}{{ cdc_cols }}
+            partition by {{ unique_key }}, cast({{ airbyte_start_at }} as {{ dbt_utils.type_string() }}), {{ col_emitted_at }}{{ cdc_cols }}
             order by {{ active_row }} desc, {{ col_ab_id }}
         ) as {{ airbyte_row_num }},
         {{ '{{' }} dbt_utils.surrogate_key([
