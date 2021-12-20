@@ -190,3 +190,11 @@
 | `logs.s3.bucketRegion`       | Region of the bucket (must be empty if using minio)    | `""`               |
 
 
+### Flyway parameters
+
+| Name                             | Description                                            | Value              |
+| ---------------------------------| ------------------------------------------------------ | ------------------ |
+| `flyway.jobs.minimum_version`    | The minimum Flyway `jobs` version                      | `0.29.15.001`      |
+| `flyway.cofigs.minimum_version`  | The minimum Flyway `cofigs` version                    | `0.30.22.00`       |
+
+
