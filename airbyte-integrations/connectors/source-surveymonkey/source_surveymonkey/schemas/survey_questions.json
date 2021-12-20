@@ -21,13 +21,10 @@
       "type": "string"
     },
     "layout": {
-      "type": [
-        "object",
-        "null"
-      ]
+      "type": ["object", "null"]
     },
     "sorting": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "ignore_last": {
           "type": "boolean"
@@ -38,7 +35,7 @@
       }
     },
     "required": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "amount": {
           "type": "string"
@@ -52,31 +49,19 @@
       }
     },
     "validation": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "max": {
-          "type": [
-            "integer",
-            "null"
-          ]
+          "type": ["integer", "null"]
         },
         "min": {
-          "type": [
-            "integer",
-            "null"
-          ]
+          "type": ["integer", "null"]
         },
         "sum": {
-          "type": [
-            "integer",
-            "null"
-          ]
+          "type": ["integer", "null"]
         },
         "sum_text": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         },
         "text": {
           "type": "string"
