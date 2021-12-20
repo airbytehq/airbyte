@@ -94,7 +94,10 @@ class IncrementalFlexportStream(FlexportStream, ABC):
             self.cursor_field: max(latest, current),
         }
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = {}, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        if not stream_state:
+            stream_state = {}
+
         from_date = pendulum.parse(stream_state.get(self.cursor_field, self.start_date))
         end_date = max(from_date, pendulum.tomorrow("UTC"))
 
