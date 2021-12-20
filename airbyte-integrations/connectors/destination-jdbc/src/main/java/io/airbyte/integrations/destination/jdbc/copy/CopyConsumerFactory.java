@@ -29,7 +29,7 @@ public class CopyConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CopyConsumerFactory.class);
 
-  private static final int MAX_BATCH_SIZE_BYTES = 1024 * 1024 * 1024 / 4; // 256 mib
+  private static final int MAX_BATCH_SIZE_BYTES = 1024 * 1024 * 1024 / 4; // 256 MiB
 
   public static <T> AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
                                                   final JdbcDatabase database,

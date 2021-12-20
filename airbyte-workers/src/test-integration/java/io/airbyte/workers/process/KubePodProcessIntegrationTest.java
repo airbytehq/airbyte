@@ -10,8 +10,9 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.config.EnvConfigs;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerException;
-import io.airbyte.workers.WorkerUtils;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -62,8 +64,9 @@ public class KubePodProcessIntegrationTest {
     officialClient = Config.defaultClient();
     fabricClient = new DefaultKubernetesClient();
 
-    processFactory = new KubeProcessFactory("default", officialClient, fabricClient, heartbeatUrl, getHost(),
-        new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
+    KubePortManagerSingleton.init(new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
+    processFactory =
+        new KubeProcessFactory(new WorkerConfigs(new EnvConfigs()), "default", officialClient, fabricClient, heartbeatUrl, getHost(), false);
   }
 
   @BeforeEach
@@ -88,6 +91,50 @@ public class KubePodProcessIntegrationTest {
     assertFalse(process.isAlive());
     assertEquals(availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
     assertEquals(0, process.exitValue());
+  }
+
+  @Test
+  public void testPortsReintroducedIntoPoolOnlyOnce() throws Exception {
+    final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
+
+    // run a finite process
+    final Process process = getProcess("echo hi; sleep 1; echo hi2");
+    process.waitFor();
+
+    // the pod should be dead and in a good state
+    assertFalse(process.isAlive());
+
+    // run a background process to continuously consume available ports
+    final var portsTaken = new ArrayList<Integer>();
+    final var executor = Executors.newSingleThreadExecutor();
+
+    executor.submit(() -> {
+      try {
+        while (true) {
+          portsTaken.add(KubePortManagerSingleton.getInstance().take());
+        }
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+        throw new RuntimeException(e);
+      }
+    });
+
+    // repeatedly call exitValue (and therefore the close method)
+    for (int i = 0; i < 100; i++) {
+      // if exitValue no longer calls close in the future this test will fail and need to be updated.
+      process.exitValue();
+    }
+
+    // stop taking from available ports
+    executor.shutdownNow();
+
+    // prior to fixing this race condition, the close method would offer ports every time it was called.
+    // without the race condition, we should have only been able to pull each of the originally
+    // available ports once
+    assertEquals(availablePortsBefore, portsTaken.size());
+
+    // release ports for next tests
+    portsTaken.forEach(KubePortManagerSingleton.getInstance()::offer);
   }
 
   @Test
@@ -186,7 +233,10 @@ public class KubePodProcessIntegrationTest {
         "busybox:latest",
         false,
         files,
-        entrypoint, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of());
+        entrypoint,
+        new WorkerConfigs(new EnvConfigs()).getResourceRequirements(),
+        Map.of(),
+        Map.of());
   }
 
   private static Set<Integer> getOpenPorts(final int count) {
