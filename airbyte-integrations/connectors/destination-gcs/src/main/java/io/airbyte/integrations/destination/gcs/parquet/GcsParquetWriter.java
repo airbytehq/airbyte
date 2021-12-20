@@ -5,10 +5,13 @@
 package io.airbyte.integrations.destination.gcs.parquet;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig;
 import io.airbyte.integrations.destination.gcs.writer.BaseGcsWriter;
+import io.airbyte.integrations.destination.gcs.writer.CommonWriter;
+import io.airbyte.integrations.destination.gcs.writer.GscWriter;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.AvroRecordFactory;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
@@ -32,13 +35,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
-public class GcsParquetWriter extends BaseGcsWriter implements S3Writer {
+public class GcsParquetWriter extends BaseGcsWriter implements S3Writer, GscWriter, CommonWriter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GcsParquetWriter.class);
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
   private final ParquetWriter<Record> parquetWriter;
   private final AvroRecordFactory avroRecordFactory;
+  private final String gcsFileLocation;
   private final String objectKey;
 
   public GcsParquetWriter(final GcsDestinationConfig config,
@@ -54,7 +58,8 @@ public class GcsParquetWriter extends BaseGcsWriter implements S3Writer {
     objectKey = String.join("/", outputPrefix, outputFilename);
     LOGGER.info("Storage path for stream '{}': {}/{}", stream.getName(), config.getBucketName(), objectKey);
 
-    final URI uri = new URI(String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename));
+    gcsFileLocation = String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename);
+    final URI uri = new URI(gcsFileLocation);
     final Path path = new Path(uri);
 
     LOGGER.info("Full GCS path for stream '{}': {}", stream.getName(), path);
@@ -96,6 +101,11 @@ public class GcsParquetWriter extends BaseGcsWriter implements S3Writer {
   }
 
   @Override
+  public void write(JsonNode formattedData) throws IOException {
+    parquetWriter.write(avroRecordFactory.getAvroRecord(formattedData));
+  }
+
+  @Override
   public void close(final boolean hasFailed) throws IOException {
     if (hasFailed) {
       LOGGER.warn("Failure detected. Aborting upload of stream '{}'...", stream.getName());
@@ -111,6 +121,16 @@ public class GcsParquetWriter extends BaseGcsWriter implements S3Writer {
   @Override
   public String getOutputPath() {
     return objectKey;
+  }
+
+  @Override
+  public String getFileLocation() {
+    return gcsFileLocation;
+  }
+
+  @Override
+  public S3Format getFileFormat() {
+    return S3Format.PARQUET;
   }
 
 }

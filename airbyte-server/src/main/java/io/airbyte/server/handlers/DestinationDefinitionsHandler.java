@@ -75,7 +75,7 @@ public class DestinationDefinitionsHandler {
   }
 
   public DestinationDefinitionReadList listDestinationDefinitions() throws IOException, JsonValidationException {
-    return toDestinationDefinitionReadList(configRepository.listStandardDestinationDefinitions());
+    return toDestinationDefinitionReadList(configRepository.listStandardDestinationDefinitions(false));
   }
 
   private static DestinationDefinitionReadList toDestinationDefinitionReadList(final List<StandardDestinationDefinition> defs) {
@@ -117,7 +117,8 @@ public class DestinationDefinitionsHandler {
         .withDocumentationUrl(destinationDefinitionCreate.getDocumentationUrl().toString())
         .withName(destinationDefinitionCreate.getName())
         .withIcon(destinationDefinitionCreate.getIcon())
-        .withSpec(spec);
+        .withSpec(spec)
+        .withTombstone(false);
 
     configRepository.writeStandardDestinationDefinition(destinationDefinition);
 
@@ -144,7 +145,8 @@ public class DestinationDefinitionsHandler {
         .withName(currentDestination.getName())
         .withDocumentationUrl(currentDestination.getDocumentationUrl())
         .withIcon(currentDestination.getIcon())
-        .withSpec(spec);
+        .withSpec(spec)
+        .withTombstone(currentDestination.getTombstone());
 
     configRepository.writeStandardDestinationDefinition(newDestination);
     return buildDestinationDefinitionRead(newDestination);
