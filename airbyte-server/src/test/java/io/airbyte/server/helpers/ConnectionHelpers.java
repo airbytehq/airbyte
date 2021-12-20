@@ -28,7 +28,6 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.server.converters.CatalogConverter;
-import io.airbyte.workers.WorkerUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -39,6 +38,14 @@ public class ConnectionHelpers {
   private static final String FIELD_NAME = "id";
   private static final String BASIC_SCHEDULE_TIME_UNIT = "days";
   private static final long BASIC_SCHEDULE_UNITS = 1L;
+
+  // only intended for unit tests, so intentionally set very high to ensure they aren't being used
+  // elsewhere
+  public static final io.airbyte.config.ResourceRequirements TESTING_RESOURCE_REQUIREMENTS = new io.airbyte.config.ResourceRequirements()
+      .withCpuLimit("100g")
+      .withCpuRequest("100g")
+      .withMemoryLimit("100g")
+      .withMemoryRequest("100g");
 
   public static StandardSync generateSyncWithSourceId(final UUID sourceId) {
     final UUID connectionId = UUID.randomUUID();
@@ -56,7 +63,7 @@ public class ConnectionHelpers {
         .withOperationIds(List.of(UUID.randomUUID()))
         .withManual(false)
         .withSchedule(generateBasicSchedule())
-        .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+        .withResourceRequirements(TESTING_RESOURCE_REQUIREMENTS);
   }
 
   public static StandardSync generateSyncWithDestinationId(final UUID destinationId) {
@@ -106,10 +113,10 @@ public class ConnectionHelpers {
         .schedule(generateBasicConnectionSchedule())
         .syncCatalog(ConnectionHelpers.generateBasicApiCatalog())
         .resourceRequirements(new ResourceRequirements()
-            .cpuRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuRequest())
-            .cpuLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuLimit())
-            .memoryRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryRequest())
-            .memoryLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryLimit()));
+            .cpuRequest(TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
+            .cpuLimit(TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
+            .memoryRequest(TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest())
+            .memoryLimit(TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit()));
   }
 
   public static ConnectionRead generateExpectedConnectionRead(final StandardSync standardSync) {
