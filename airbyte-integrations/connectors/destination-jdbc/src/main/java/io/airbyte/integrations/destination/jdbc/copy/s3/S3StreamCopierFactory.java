@@ -10,18 +10,17 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
-import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 
-public abstract class S3StreamCopierFactory implements StreamCopierFactory<S3DestinationConfig> {
+public abstract class S3StreamCopierFactory implements StreamCopierFactory<S3CopyConfig> {
 
   /**
    * Used by the copy consumer.
    */
   @Override
   public StreamCopier create(final String configuredSchema,
-                             final S3DestinationConfig s3Config,
+                             final S3CopyConfig config,
                              final String stagingFolder,
                              final ConfiguredAirbyteStream configuredStream,
                              final ExtendedNameTransformer nameTransformer,
@@ -30,9 +29,9 @@ public abstract class S3StreamCopierFactory implements StreamCopierFactory<S3Des
     try {
       final AirbyteStream stream = configuredStream.getStream();
       final String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
-      final AmazonS3 s3Client = s3Config.getS3Client();
+      final AmazonS3 s3Client = config.s3Config().getS3Client();
 
-      return create(stagingFolder, schema, s3Client, db, s3Config, nameTransformer, sqlOperations, configuredStream);
+      return create(stagingFolder, schema, s3Client, db, config, nameTransformer, sqlOperations, configuredStream);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
@@ -45,7 +44,7 @@ public abstract class S3StreamCopierFactory implements StreamCopierFactory<S3Des
                                          String schema,
                                          AmazonS3 s3Client,
                                          JdbcDatabase db,
-                                         S3DestinationConfig s3Config,
+                                         S3CopyConfig config,
                                          ExtendedNameTransformer nameTransformer,
                                          SqlOperations sqlOperations,
                                          ConfiguredAirbyteStream configuredStream)
