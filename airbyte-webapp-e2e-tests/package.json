@@ -1,5 +1,5 @@
 {
-  "name": "airbyte-e2e-testing",
+  "name": "airbyte-webapp-e2e-tests",
   "version": "0.0.0",
   "description": "Airbyte e2e testing",
   "scripts": {
