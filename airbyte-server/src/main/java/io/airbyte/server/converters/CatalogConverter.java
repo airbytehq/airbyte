@@ -48,7 +48,7 @@ public class CatalogConverter {
   }
 
   private static io.airbyte.api.model.AirbyteStreamConfiguration generateDefaultConfiguration(final io.airbyte.api.model.AirbyteStream stream) {
-    io.airbyte.api.model.AirbyteStreamConfiguration result = new io.airbyte.api.model.AirbyteStreamConfiguration()
+    final io.airbyte.api.model.AirbyteStreamConfiguration result = new io.airbyte.api.model.AirbyteStreamConfiguration()
         .aliasName(Names.toAlphanumericAndUnderscore(stream.getName()))
         .cursorField(stream.getDefaultCursorField())
         .destinationSyncMode(io.airbyte.api.model.DestinationSyncMode.APPEND)

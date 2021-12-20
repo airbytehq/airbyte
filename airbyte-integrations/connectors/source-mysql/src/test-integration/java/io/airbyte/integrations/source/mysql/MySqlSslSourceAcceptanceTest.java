@@ -18,7 +18,7 @@ import org.testcontainers.containers.MySQLContainer;
 public class MySqlSslSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
 

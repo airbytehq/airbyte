@@ -53,7 +53,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
   }
 
-  public OracleContainer(String dockerImageName) {
+  public OracleContainer(final String dockerImageName) {
     this(DockerImageName.parse(dockerImageName));
   }
 
@@ -63,7 +63,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     preconfigure();
   }
 
-  public OracleContainer(Future<String> dockerImageName) {
+  public OracleContainer(final Future<String> dockerImageName) {
     super(dockerImageName);
     preconfigure();
   }
@@ -120,7 +120,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
   }
 
   @Override
-  public OracleContainer withUsername(String username) {
+  public OracleContainer withUsername(final String username) {
     if (StringUtils.isEmpty(username)) {
       throw new IllegalArgumentException("Username cannot be null or empty");
     }
@@ -132,7 +132,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
   }
 
   @Override
-  public OracleContainer withPassword(String password) {
+  public OracleContainer withPassword(final String password) {
     if (StringUtils.isEmpty(password)) {
       throw new IllegalArgumentException("Password cannot be null or empty");
     }
@@ -141,7 +141,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
   }
 
   @Override
-  public OracleContainer withDatabaseName(String databaseName) {
+  public OracleContainer withDatabaseName(final String databaseName) {
     if (StringUtils.isEmpty(databaseName)) {
       throw new IllegalArgumentException("Database name cannot be null or empty");
     }
@@ -160,7 +160,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
   }
 
   @Override
-  public OracleContainer withUrlParam(String paramName, String paramValue) {
+  public OracleContainer withUrlParam(final String paramName, final String paramValue) {
     throw new UnsupportedOperationException("The Oracle Database driver does not support this");
   }
 

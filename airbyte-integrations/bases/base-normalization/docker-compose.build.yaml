@@ -1,0 +1,38 @@
+version: "3.7"
+
+services:
+  normalization:
+    image: airbyte/normalization:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: .
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+  normalization-mssql:
+    image: airbyte/normalization-mssql:${VERSION}
+    build:
+      dockerfile: mssql.Dockerfile
+      context: .
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+  normalization-mysql:
+    image: airbyte/normalization-mysql:${VERSION}
+    build:
+      dockerfile: mysql.Dockerfile
+      context: .
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+  normalization-oracle:
+    image: airbyte/normalization-oracle:${VERSION}
+    build:
+      dockerfile: oracle.Dockerfile
+      context: .
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+  normalization-clickhouse:
+    image: airbyte/normalization-clickhouse:${VERSION}
+    build:
+      dockerfile: clickhouse.Dockerfile
+      context: .
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}

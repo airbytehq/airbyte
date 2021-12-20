@@ -11,15 +11,14 @@ import ContentCard from "components/ContentCard";
 import { JobsLogItem } from "components/JobItem";
 import ConnectionForm from "views/Connection/ConnectionForm";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
-import { Source } from "core/resources/Source";
-import { Destination } from "core/resources/Destination";
 
 import useConnection, { ValuesProps } from "hooks/services/useConnectionHook";
 import { useDiscoverSchema } from "hooks/services/useSchemaHook";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import { IDataItem } from "components/base/DropDown/components/Option";
-import { useAnalytics } from "hooks/useAnalytics";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { Destination, Source } from "core/domain/connector";
 
 const SkipButton = styled.div`
   margin-top: 6px;
@@ -51,7 +50,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
   noTitles,
 }) => {
   const { createConnection } = useConnection();
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
 
   const sourceDefinition = useResource(SourceDefinitionResource.detailShape(), {
     sourceDefinitionId: source.sourceDefinitionId,

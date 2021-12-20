@@ -31,7 +31,7 @@ class NoFlatteningSheetGeneratorTest {
 
   @Test
   public void testGetRecordColumns() {
-    ObjectNode json = mapper.createObjectNode();
+    final ObjectNode json = mapper.createObjectNode();
     json.set("Field 4", mapper.createObjectNode().put("Field 41", 15));
     json.put("Field 1", "A");
     json.put("Field 3", 71);

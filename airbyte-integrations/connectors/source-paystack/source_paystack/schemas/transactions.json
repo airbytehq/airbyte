@@ -1,0 +1,152 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "domain": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "reference": {
+      "type": ["null", "string"]
+    },
+    "amount": {
+      "type": ["null", "integer"]
+    },
+    "message": {
+      "type": ["null", "string"]
+    },
+    "gateway_response": {
+      "type": ["null", "string"]
+    },
+    "paid_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "channel": {
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "ip_address": {
+      "type": ["null", "string"]
+    },
+    "metadata": {
+      "type": ["null", "object"],
+      "properties": {
+        "referrer": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "log": {
+      "type": ["null", "object"],
+      "properties": {
+        "start_time": {
+          "type": ["null", "integer"]
+        },
+        "time_spent": {
+          "type": ["null", "integer"]
+        },
+        "attempts": {
+          "type": ["null", "integer"]
+        },
+        "errors": {
+          "type": ["null", "integer"]
+        },
+        "success": {
+          "type": ["null", "boolean"]
+        },
+        "mobile": {
+          "type": ["null", "boolean"]
+        },
+        "input": {
+          "type": ["null", "array"],
+          "items": {}
+        },
+        "history": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "type": {
+                "type": ["null", "string"]
+              },
+              "message": {
+                "type": ["null", "string"]
+              },
+              "time": {
+                "type": ["null", "integer"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "fees": {
+      "type": ["null", "integer"]
+    },
+    "fees_split": {
+      "type": ["null", "string"]
+    },
+    "customer": {
+      "type": ["null", "object"],
+      "properties": {}
+    },
+    "authorization": {
+      "type": ["null", "object"],
+      "properties": {}
+    },
+    "plan": {
+      "type": ["null", "object"],
+      "properties": {}
+    },
+    "split": {
+      "type": ["null", "object"],
+      "properties": {}
+    },
+    "subaccount": {
+      "type": ["null", "object"],
+      "properties": {}
+    },
+    "order_id": {
+      "type": ["null", "integer"]
+    },
+    "paidAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "createdAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "requested_amount": {
+      "type": ["null", "integer"]
+    },
+    "source": {
+      "type": ["null", "object"],
+      "properties": {
+        "source": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        },
+        "identifier": {
+          "type": ["null", "string"]
+        },
+        "entry_point": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["id"],
+  "properties": {
+    "id": { "type": ["null", "integer"] },
+    "title": { "type": ["null", "string"] },
+    "description": { "type": ["null", "string"] },
+    "due_date": { "type": ["null", "string"] },
+    "targetable_id": { "type": ["null", "integer"] },
+    "targetable_type": { "type": ["null", "string"] },
+    "Possible": { "type": ["null", "string"] },
+    "owner_id": { "type": ["null", "integer"] },
+    "status": { "type": ["null", "string"] },
+    "creater_id": { "type": ["null", "integer"] },
+    "created_at": { "type": ["null", "string"] },
+    "updated_at": { "type": ["null", "string"] },
+    "outcome_id": { "type": ["null", "integer"] },
+    "task_type_id": { "type": ["null", "integer"] }
+  }
+}

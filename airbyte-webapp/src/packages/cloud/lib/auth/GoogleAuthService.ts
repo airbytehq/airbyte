@@ -12,6 +12,7 @@ import {
   reauthenticateWithCredential,
   updatePassword,
   updateEmail,
+  AuthErrorCodes,
 } from "firebase/auth";
 
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
@@ -21,7 +22,7 @@ import { Provider } from "config";
 interface AuthService {
   login(email: string, password: string): Promise<UserCredential>;
 
-  signOut(): Promise<any>;
+  signOut(): Promise<void>;
 
   signUp(email: string, password: string): Promise<UserCredential>;
 
@@ -56,13 +57,13 @@ export class GoogleAuthService implements AuthService {
     return signInWithEmailAndPassword(this.auth, email, password).catch(
       (err) => {
         switch (err.code) {
-          case "auth/invalid-email":
+          case AuthErrorCodes.INVALID_EMAIL:
             throw new FieldError("email", ErrorCodes.Invalid);
-          case "auth/user-disabled":
+          case AuthErrorCodes.USER_CANCELLED:
             throw new FieldError("email", "disabled");
-          case "auth/user-not-found":
+          case AuthErrorCodes.USER_DELETED:
             throw new FieldError("email", "notfound");
-          case "auth/wrong-password":
+          case AuthErrorCodes.INVALID_PASSWORD:
             throw new FieldError("password", ErrorCodes.Invalid);
         }
 
@@ -75,12 +76,12 @@ export class GoogleAuthService implements AuthService {
     return createUserWithEmailAndPassword(this.auth, email, password).catch(
       (err) => {
         switch (err.code) {
-          case "auth/email-already-in-use":
+          case AuthErrorCodes.EMAIL_EXISTS:
             throw new FieldError("email", ErrorCodes.Duplicate);
-          case "auth/invalid-email":
+          case AuthErrorCodes.INVALID_EMAIL:
             throw new FieldError("email", ErrorCodes.Invalid);
-          case "auth/weak-password":
-            throw new FieldError("password", ErrorCodes.Invalid);
+          case AuthErrorCodes.WEAK_PASSWORD:
+            throw new FieldError("password", ErrorCodes.Validation);
         }
 
         throw err;
@@ -103,9 +104,7 @@ export class GoogleAuthService implements AuthService {
     if (this.auth.currentUser === null) {
       throw new Error("You must log in first to update password!");
     }
-    return updatePassword(this.auth.currentUser, newPassword).catch((err) => {
-      throw err;
-    });
+    return updatePassword(this.auth.currentUser, newPassword);
   }
 
   async updateEmail(email: string, password: string): Promise<void> {
@@ -114,55 +113,38 @@ export class GoogleAuthService implements AuthService {
     if (user) {
       await this.reauthenticate(email, password);
 
-      return updateEmail(user, email);
+      try {
+        await updateEmail(user, email);
+      } catch (e) {
+        switch (e.code) {
+          case "auth/invalid-email":
+            throw new FieldError("email", ErrorCodes.Invalid);
+          case "auth/email-already-in-use":
+            throw new FieldError("email", ErrorCodes.Duplicate);
+          case "auth/requires-recent-login":
+            throw new Error("auth/requires-recent-login");
+        }
+      }
     }
-
-    return Promise.resolve();
   }
 
   async resetPassword(email: string): Promise<void> {
-    return sendPasswordResetEmail(this.auth, email).catch((err) => {
-      // switch (err.code) {
-      //   case "auth/email-already-in-use":
-      //     throw new FieldError("email", ErrorCodes.Duplicate);
-      //   case "auth/invalid-email":
-      //     throw new FieldError("email", ErrorCodes.Invalid);
-      //   case "auth/weak-password":
-      //     throw new FieldError("password", ErrorCodes.Invalid);
-      // }
-
-      throw err;
-    });
+    return sendPasswordResetEmail(this.auth, email);
   }
 
   async finishResetPassword(code: string, newPassword: string): Promise<void> {
-    return confirmPasswordReset(this.auth, code, newPassword).catch((err) => {
-      // switch (err.code) {
-      //   case "auth/email-already-in-use":
-      //     throw new FieldError("email", ErrorCodes.Duplicate);
-      //   case "auth/invalid-email":
-      //     throw new FieldError("email", ErrorCodes.Invalid);
-      //   case "auth/weak-password":
-      //     throw new FieldError("password", ErrorCodes.Invalid);
-      // }
-
-      throw err;
-    });
+    return confirmPasswordReset(this.auth, code, newPassword);
   }
 
   async sendEmailVerifiedLink(): Promise<void> {
-    return sendEmailVerification(this.getCurrentUser()!).catch((err) => {
-      // switch (err.code) {
-      //   case "auth/email-already-in-use":
-      //     throw new FieldError("email", ErrorCodes.Duplicate);
-      //   case "auth/invalid-email":
-      //     throw new FieldError("email", ErrorCodes.Invalid);
-      //   case "auth/weak-password":
-      //     throw new FieldError("password", ErrorCodes.Invalid);
-      // }
+    const currentUser = this.getCurrentUser();
 
-      throw err;
-    });
+    if (!currentUser) {
+      console.error("sendEmailVerifiedLink should be used within auth flow");
+      throw new Error("user is not authorised");
+    }
+
+    return sendEmailVerification(currentUser);
   }
 
   async confirmEmailVerify(code: string): Promise<void> {

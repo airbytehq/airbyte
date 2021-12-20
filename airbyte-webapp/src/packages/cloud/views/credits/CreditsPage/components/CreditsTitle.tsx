@@ -1,28 +1,22 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
+import { useIntercom } from "react-use-intercom";
 
 import PageTitle from "components/PageTitle";
 import { Button } from "components/base";
-//
-// const CreditsLink = styled(Link)`
-//   margin-left: 10px;
-//   font-size: 11px;
-//   line-height: 21px;
-// `;
 
 const CreditsTitle: React.FC = () => {
+  const { show } = useIntercom();
+
+  const handleGetCredits = () => {
+    show();
+  };
+
   return (
     <PageTitle
-      title={
-        <>
-          <FormattedMessage id="credits.credits" />
-          {/*<CreditsLink as="a" href="" $light>*/}
-          {/*  <FormattedMessage id="credits.whatAreCredits" />*/}
-          {/*</CreditsLink>*/}
-        </>
-      }
+      title={<FormattedMessage id="credits.credits" />}
       endComponent={
-        <Button disabled>
+        <Button onClick={handleGetCredits}>
           <FormattedMessage id="credits.buyCredits" />
         </Button>
       }

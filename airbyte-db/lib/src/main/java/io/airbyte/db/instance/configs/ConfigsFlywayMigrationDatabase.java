@@ -19,12 +19,12 @@ public class ConfigsFlywayMigrationDatabase extends FlywayMigrationDatabase {
   }
 
   @Override
-  protected Database getAndInitializeDatabase(String username, String password, String connectionString) throws IOException {
+  protected Database getAndInitializeDatabase(final String username, final String password, final String connectionString) throws IOException {
     return new ConfigsDatabaseInstance(username, password, connectionString).getAndInitialize();
   }
 
   @Override
-  protected DatabaseMigrator getDatabaseMigrator(Database database) {
+  protected DatabaseMigrator getDatabaseMigrator(final Database database) {
     return new ConfigsDatabaseMigrator(database, ConfigsFlywayMigrationDatabase.class.getSimpleName());
   }
 

@@ -22,7 +22,7 @@ public class DataArgumentsProvider implements ArgumentsProvider {
       new CatalogMessageTestConfigPair("edge_case_catalog.json", "edge_case_messages.txt");
 
   @Override
-  public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
+  public Stream<? extends Arguments> provideArguments(final ExtensionContext context) {
     return Stream.of(
         Arguments.of(EXCHANGE_RATE_CONFIG.messageFile, EXCHANGE_RATE_CONFIG.catalogFile),
         Arguments.of(EDGE_CASE_CONFIG.messageFile, EDGE_CASE_CONFIG.catalogFile)
@@ -37,7 +37,7 @@ public class DataArgumentsProvider implements ArgumentsProvider {
     final String catalogFile;
     final String messageFile;
 
-    public CatalogMessageTestConfigPair(String catalogFile, String messageFile) {
+    public CatalogMessageTestConfigPair(final String catalogFile, final String messageFile) {
       this.catalogFile = catalogFile;
       this.messageFile = messageFile;
     }

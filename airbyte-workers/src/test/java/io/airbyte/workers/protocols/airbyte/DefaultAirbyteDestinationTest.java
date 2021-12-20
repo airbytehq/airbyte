@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.protocols.airbyte;
 
+import static io.airbyte.commons.logging.LoggingHelper.RESET;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -14,10 +15,17 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.logging.LoggingHelper.Color;
+import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.WorkerDestinationConfig;
+import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.TestConfigHelpers;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
@@ -31,6 +39,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,6 +59,18 @@ class DefaultAirbyteDestinationTest {
       AirbyteMessageUtils.createStateMessage("checkpoint", "1"),
       AirbyteMessageUtils.createStateMessage("checkpoint", "2"));
 
+  private static Path logJobRoot;
+
+  static {
+    try {
+      logJobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
+      LogClientSingleton.getInstance().setJobMdc(WorkerEnvironment.DOCKER, LogConfigs.EMPTY, logJobRoot);
+    } catch (final IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private WorkerConfigs workerConfigs;
   private Path jobRoot;
   private IntegrationLauncher integrationLauncher;
   private Process process;
@@ -57,6 +79,7 @@ class DefaultAirbyteDestinationTest {
 
   @BeforeEach
   public void setup() throws IOException, WorkerException {
+    workerConfigs = new WorkerConfigs(new EnvConfigs());
     jobRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), JOB_ROOT_PREFIX);
 
     process = mock(Process.class);
@@ -81,10 +104,20 @@ class DefaultAirbyteDestinationTest {
     streamFactory = noop -> MESSAGES.stream();
   }
 
+  @AfterEach
+  public void tearDown() throws IOException {
+    // The log file needs to be present and empty
+    final Path logFile = logJobRoot.resolve(LogClientSingleton.LOG_FILENAME);
+    if (Files.exists(logFile)) {
+      Files.delete(logFile);
+    }
+    Files.createFile(logFile);
+  }
+
   @SuppressWarnings("BusyWait")
   @Test
   public void testSuccessfulLifecycle() throws Exception {
-    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher, streamFactory);
+    final AirbyteDestination destination = new DefaultAirbyteDestination(workerConfigs, integrationLauncher, streamFactory);
     destination.start(DESTINATION_CONFIG, jobRoot);
 
     final AirbyteMessage recordMessage = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
@@ -121,8 +154,37 @@ class DefaultAirbyteDestinationTest {
   }
 
   @Test
+  public void testTaggedLogs() throws Exception {
+
+    final AirbyteDestination destination = new DefaultAirbyteDestination(workerConfigs, integrationLauncher, streamFactory);
+    destination.start(DESTINATION_CONFIG, jobRoot);
+
+    final AirbyteMessage recordMessage = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
+    destination.accept(recordMessage);
+
+    final List<AirbyteMessage> messages = Lists.newArrayList();
+
+    messages.add(destination.attemptRead().get());
+    messages.add(destination.attemptRead().get());
+
+    when(process.isAlive()).thenReturn(false);
+
+    destination.notifyEndOfStream();
+
+    destination.close();
+
+    final Path logPath = logJobRoot.resolve(LogClientSingleton.LOG_FILENAME);
+    final Stream<String> logs = IOs.readFile(logPath).lines();
+
+    logs.forEach(line -> {
+      org.assertj.core.api.Assertions.assertThat(line)
+          .startsWith(Color.YELLOW_BACKGROUND.getCode() + "destination" + RESET);
+    });
+  }
+
+  @Test
   public void testCloseNotifiesLifecycle() throws Exception {
-    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher);
+    final AirbyteDestination destination = new DefaultAirbyteDestination(workerConfigs, integrationLauncher);
     destination.start(DESTINATION_CONFIG, jobRoot);
 
     verify(outputStream, never()).close();
@@ -134,7 +196,7 @@ class DefaultAirbyteDestinationTest {
 
   @Test
   public void testNonzeroExitCodeThrowsException() throws Exception {
-    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher);
+    final AirbyteDestination destination = new DefaultAirbyteDestination(workerConfigs, integrationLauncher);
     destination.start(DESTINATION_CONFIG, jobRoot);
 
     when(process.isAlive()).thenReturn(false);

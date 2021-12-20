@@ -10,7 +10,7 @@ public class PostgresUtils {
 
   private static final String PGOUTPUT_PLUGIN = "pgoutput";
 
-  public static String getPluginValue(JsonNode field) {
+  public static String getPluginValue(final JsonNode field) {
     return field.has("plugin") ? field.get("plugin").asText() : PGOUTPUT_PLUGIN;
   }
 

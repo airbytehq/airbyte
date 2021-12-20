@@ -21,7 +21,7 @@
       "type": ["null", "string"]
     },
     "integration_hub_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "label": {
       "type": ["null", "string"]
@@ -60,8 +60,7 @@
             "type": ["null", "string"]
           }
         },
-        "type": ["null", "object"],
-        "additionalProperties": false
+        "type": ["null", "object"]
       },
       "type": ["null", "array"]
     },
@@ -84,8 +83,7 @@
             "type": ["null", "string"]
           }
         },
-        "type": ["null", "object"],
-        "additionalProperties": false
+        "type": ["null", "object"]
       },
       "type": ["null", "array"]
     },

@@ -5,11 +5,12 @@
 package io.airbyte.config.helpers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
+import com.google.cloud.storage.Storage;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.storage.CloudStorageConfigs;
+import io.airbyte.config.storage.DefaultGcsClientFactory;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -20,13 +21,10 @@ import org.junit.jupiter.api.Test;
 @Tag("logger-client")
 public class GcsLogsTest {
 
-  @Test
-  public void testMissingConfiguration() {
-    var configs = mock(LogConfigs.class);
-    when(configs.getGoogleApplicationCredentials()).thenReturn("");
-    when(configs.getGcpStorageBucket()).thenReturn("");
-
-    assertThrows(RuntimeException.class, () -> new GcsLogs().downloadCloudLog(configs, "this-path-should-not-matter"));
+  private static Storage getClientFactory() {
+    return new DefaultGcsClientFactory(new CloudStorageConfigs.GcsConfig(
+        System.getenv(LogClientSingleton.GCS_LOG_BUCKET),
+        System.getenv(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS))).get();
   }
 
   /**
@@ -36,13 +34,12 @@ public class GcsLogsTest {
    */
   @Test
   public void testRetrieveAllLogs() throws IOException {
-    var configs = new LogConfigDelegator(new EnvConfigs());
-    var data = GcsLogs.getFile(configs, "paginate", 6);
+    final File data = GcsLogs.getFile(getClientFactory(), (new EnvConfigs()).getLogConfigs(), "paginate", 6);
 
-    var retrieved = new ArrayList<String>();
+    final var retrieved = new ArrayList<String>();
     Files.lines(data.toPath()).forEach(retrieved::add);
 
-    var expected = List.of("Line 0", "Line 1", "Line 2", "Line 3", "Line 4", "Line 5", "Line 6", "Line 7", "Line 8");
+    final var expected = List.of("Line 0", "Line 1", "Line 2", "Line 3", "Line 4", "Line 5", "Line 6", "Line 7", "Line 8");
 
     assertEquals(expected, retrieved);
   }
@@ -56,10 +53,9 @@ public class GcsLogsTest {
    */
   @Test
   public void testTail() throws IOException {
-    var configs = new LogConfigDelegator(new EnvConfigs());
-    var data = new GcsLogs().tailCloudLog(configs, "tail", 6);
+    final var data = new GcsLogs(GcsLogsTest::getClientFactory).tailCloudLog((new EnvConfigs()).getLogConfigs(), "tail", 6);
 
-    var expected = List.of("Line 4", "Line 5", "Line 6", "Line 7", "Line 8", "Line 9");
+    final var expected = List.of("Line 4", "Line 5", "Line 6", "Line 7", "Line 8", "Line 9");
     assertEquals(data, expected);
   }
 

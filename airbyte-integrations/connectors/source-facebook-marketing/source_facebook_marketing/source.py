@@ -2,13 +2,25 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from datetime import datetime
-from typing import Any, List, Mapping, Optional, Tuple, Type
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Type
 
 import pendulum
-from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AuthSpecification,
+    ConnectorSpecification,
+    DestinationSyncMode,
+    OAuth2Specification,
+    Status,
+)
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from jsonschema import RefResolver
 from pydantic import BaseModel, Field
 from source_facebook_marketing.api import API
 from source_facebook_marketing.streams import (
@@ -23,7 +35,21 @@ from source_facebook_marketing.streams import (
     AdsInsightsPlatformAndDevice,
     AdsInsightsRegion,
     Campaigns,
+    Videos,
 )
+
+logger = logging.getLogger("airbyte")
+
+
+class InsightConfig(BaseModel):
+
+    name: str = Field(description="The name value of insight")
+
+    fields: Optional[List[str]] = Field(description="A list of chosen fields for fields parameter", default=[])
+
+    breakdowns: Optional[List[str]] = Field(description="A list of chosen breakdowns for breakdowns", default=[])
+
+    action_breakdowns: Optional[List[str]] = Field(description="A list of chosen action_breakdowns for action_breakdowns", default=[])
 
 
 class ConnectorConfig(BaseModel):
@@ -50,7 +76,11 @@ class ConnectorConfig(BaseModel):
         default_factory=pendulum.now,
     )
 
-    include_deleted: bool = Field(default=False, description="Include data from deleted campaigns, ads, and adsets.")
+    fetch_thumbnail_images: bool = Field(
+        default=False, description="In each Ad Creative, fetch the thumbnail_url and store the result in thumbnail_data_url"
+    )
+
+    include_deleted: bool = Field(default=False, description="Include data from deleted campaigns, ads, and adsets")
 
     insights_lookback_window: int = Field(
         default=28,
@@ -61,9 +91,12 @@ class ConnectorConfig(BaseModel):
 
     insights_days_per_job: int = Field(
         default=7,
-        description="Number of days to sync in one job. The more data you have - the smaller you want this parameter to be.",
+        description="Number of days to sync in one job (the more data you have, the smaller this parameter should be)",
         minimum=1,
         maximum=30,
+    )
+    custom_insights: Optional[List[InsightConfig]] = Field(
+        description="A list wich contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)"
     )
 
 
@@ -104,11 +137,11 @@ class SourceFacebookMarketing(AbstractSource):
             days_per_job=config.insights_days_per_job,
         )
 
-        return [
+        streams = [
             Campaigns(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
             AdSets(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
             Ads(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
-            AdCreatives(api=api),
+            AdCreatives(api=api, fetch_thumbnail_images=config.fetch_thumbnail_images),
             AdsInsights(**insights_args),
             AdsInsightsAgeAndGender(**insights_args),
             AdsInsightsCountry(**insights_args),
@@ -116,7 +149,23 @@ class SourceFacebookMarketing(AbstractSource):
             AdsInsightsDma(**insights_args),
             AdsInsightsPlatformAndDevice(**insights_args),
             AdsInsightsActionType(**insights_args),
+            Videos(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
         ]
+
+        return self._update_insights_streams(insights=config.custom_insights, args=insights_args, streams=streams)
+
+    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+        """Implements the Check Connection operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
+        try:
+            check_succeeded, error = self.check_connection(logger, config)
+            if not check_succeeded:
+                return AirbyteConnectionStatus(status=Status.FAILED, message=repr(error))
+        except Exception as e:
+            return AirbyteConnectionStatus(status=Status.FAILED, message=repr(e))
+
+        self._check_custom_insights_entries(config.get("custom_insights", []))
+
+        return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
         """
@@ -128,7 +177,7 @@ class SourceFacebookMarketing(AbstractSource):
             changelogUrl="https://docs.airbyte.io/integrations/sources/facebook-marketing",
             supportsIncremental=True,
             supported_destination_sync_modes=[DestinationSyncMode.append],
-            connectionSpecification=ConnectorConfig.schema(),
+            connectionSpecification=expand_local_ref(ConnectorConfig.schema()),
             authSpecification=AuthSpecification(
                 auth_type="oauth2.0",
                 oauth2Specification=OAuth2Specification(
@@ -136,3 +185,73 @@ class SourceFacebookMarketing(AbstractSource):
                 ),
             ),
         )
+
+    def _update_insights_streams(self, insights, args, streams) -> List[Type[Stream]]:
+        """Update method, if insights have values returns streams replacing the
+        default insights streams else returns streams
+
+        """
+        if not insights:
+            return streams
+
+        insights_custom_streams = list()
+
+        for insight in insights:
+            args["name"] = f"Custom{insight.name}"
+            args["fields"] = list(set(insight.fields))
+            args["breakdowns"] = list(set(insight.breakdowns))
+            args["action_breakdowns"] = list(set(insight.action_breakdowns))
+            insight_stream = AdsInsights(**args)
+            insights_custom_streams.append(insight_stream)
+
+        return streams + insights_custom_streams
+
+    def _check_custom_insights_entries(self, insights: List[Mapping[str, Any]]):
+
+        loader = ResourceSchemaLoader(package_name_from_class(self.__class__))
+        default_fields = list(loader.get_schema("ads_insights").get("properties", {}).keys())
+        default_breakdowns = list(loader.get_schema("ads_insights_breakdowns").get("properties", {}).keys())
+        default_action_breakdowns = list(loader.get_schema("ads_insights_action_breakdowns").get("properties", {}).keys())
+
+        for insight in insights:
+            if insight.get("fields"):
+                value_checked, value = self._check_values(default_fields, insight.get("fields"))
+                if not value_checked:
+                    message = f"{value} is not a valid field name"
+                    raise Exception("Config validation error: " + message) from None
+            if insight.get("breakdowns"):
+                value_checked, value = self._check_values(default_breakdowns, insight.get("breakdowns"))
+                if not value_checked:
+                    message = f"{value} is not a valid breakdown name"
+                    raise Exception("Config validation error: " + message) from None
+            if insight.get("action_breakdowns"):
+                value_checked, value = self._check_values(default_action_breakdowns, insight.get("action_breakdowns"))
+                if not value_checked:
+                    message = f"{value} is not a valid action_breakdown name"
+                    raise Exception("Config validation error: " + message) from None
+
+        return True
+
+    def _check_values(self, default_value: List[str], custom_value: List[str]) -> Tuple[bool, Any]:
+        for e in custom_value:
+            if e not in default_value:
+                logger.error(f"{e} does not appear in {default_value}")
+                return False, e
+
+        return True, None
+
+
+def expand_local_ref(schema, resolver=None, **kwargs):
+    resolver = resolver or RefResolver("", schema)
+    if isinstance(schema, MutableMapping):
+        if "$ref" in schema:
+            ref_url = schema.pop("$ref")
+            url, resolved_schema = resolver.resolve(ref_url)
+            schema.update(resolved_schema)
+        for key, value in schema.items():
+            schema[key] = expand_local_ref(value, resolver=resolver)
+        return schema
+    elif isinstance(schema, List):
+        return [expand_local_ref(item, resolver=resolver) for item in schema]
+
+    return schema

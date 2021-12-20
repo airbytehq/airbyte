@@ -9,22 +9,22 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopierFactory;
+import io.airbyte.integrations.destination.jdbc.copy.s3.LegacyS3StreamCopierFactory;
+import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.protocol.models.DestinationSyncMode;
 
-public class SnowflakeS3StreamCopierFactory extends S3StreamCopierFactory {
+public class SnowflakeS3StreamCopierFactory extends LegacyS3StreamCopierFactory {
 
   @Override
-  public StreamCopier create(String stagingFolder,
-                             DestinationSyncMode syncMode,
-                             String schema,
-                             String streamName,
-                             AmazonS3 s3Client,
-                             JdbcDatabase db,
-                             S3Config s3Config,
-                             ExtendedNameTransformer nameTransformer,
-                             SqlOperations sqlOperations)
+  public StreamCopier create(final String stagingFolder,
+                             final DestinationSyncMode syncMode,
+                             final String schema,
+                             final String streamName,
+                             final AmazonS3 s3Client,
+                             final JdbcDatabase db,
+                             final S3DestinationConfig s3Config,
+                             final ExtendedNameTransformer nameTransformer,
+                             final SqlOperations sqlOperations)
       throws Exception {
     return new SnowflakeS3StreamCopier(stagingFolder, syncMode, schema, streamName, s3Client, db, s3Config, nameTransformer, sqlOperations);
   }

@@ -73,12 +73,12 @@ class LazyAutoCloseableIteratorTest {
     verify(iteratorSupplier, never()).get();
   }
 
-  private void mockInternalIteratorWith(Iterator<String> iterator) {
+  private void mockInternalIteratorWith(final Iterator<String> iterator) {
     when(internalIterator.hasNext()).then((a) -> iterator.hasNext());
     when(internalIterator.next()).then((a) -> iterator.next());
   }
 
-  private void assertNext(Iterator<String> iterator, String value) {
+  private void assertNext(final Iterator<String> iterator, final String value) {
     assertTrue(iterator.hasNext());
     assertEquals(value, iterator.next());
   }

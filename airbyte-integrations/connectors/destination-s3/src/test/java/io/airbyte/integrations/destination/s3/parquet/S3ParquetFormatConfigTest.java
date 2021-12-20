@@ -16,7 +16,7 @@ class S3ParquetFormatConfigTest {
 
   @Test
   public void testConfigConstruction() {
-    JsonNode formatConfig = Jsons.deserialize("{\n"
+    final JsonNode formatConfig = Jsons.deserialize("{\n"
         + "\t\"compression_codec\": \"GZIP\",\n"
         + "\t\"block_size_mb\": 1,\n"
         + "\t\"max_padding_size_mb\": 1,\n"
@@ -25,7 +25,7 @@ class S3ParquetFormatConfigTest {
         + "\t\"dictionary_encoding\": false\n"
         + "}");
 
-    S3ParquetFormatConfig config = new S3ParquetFormatConfig(formatConfig);
+    final S3ParquetFormatConfig config = new S3ParquetFormatConfig(formatConfig);
 
     // The constructor should automatically convert MB or KB to bytes.
     assertEquals(1024 * 1024, config.getBlockSize());

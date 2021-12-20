@@ -20,14 +20,14 @@ public class RootLevelFlatteningSheetGenerator extends BaseSheetGenerator implem
    */
   private final List<String> recordHeaders;
 
-  public RootLevelFlatteningSheetGenerator(JsonNode jsonSchema) {
+  public RootLevelFlatteningSheetGenerator(final JsonNode jsonSchema) {
     this.recordHeaders = MoreIterators.toList(jsonSchema.get("properties").fieldNames())
         .stream().sorted().collect(Collectors.toList());;
   }
 
   @Override
   public List<String> getHeaderRow() {
-    List<String> headers = Lists.newArrayList(JavaBaseConstants.COLUMN_NAME_AB_ID,
+    final List<String> headers = Lists.newArrayList(JavaBaseConstants.COLUMN_NAME_AB_ID,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     headers.addAll(recordHeaders);
     return headers;
@@ -37,10 +37,10 @@ public class RootLevelFlatteningSheetGenerator extends BaseSheetGenerator implem
    * With root level flattening, the record columns are the first level fields of the json.
    */
   @Override
-  List<String> getRecordColumns(JsonNode json) {
-    List<String> values = new LinkedList<>();
-    for (String field : recordHeaders) {
-      JsonNode value = json.get(field);
+  List<String> getRecordColumns(final JsonNode json) {
+    final List<String> values = new LinkedList<>();
+    for (final String field : recordHeaders) {
+      final JsonNode value = json.get(field);
       if (value == null) {
         values.add("");
       } else if (value.isValueNode()) {

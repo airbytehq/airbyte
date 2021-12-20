@@ -50,7 +50,7 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
     populateDatabaseTestData();
   }
 
-  public ImmutableMap.Builder<Object, Object> getMSSQLDbConfigBuilder(JdbcDatabaseContainer<?> db) {
+  public ImmutableMap.Builder<Object, Object> getMSSQLDbConfigBuilder(final JdbcDatabaseContainer<?> db) {
     dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
     return ImmutableMap.builder()
         .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()

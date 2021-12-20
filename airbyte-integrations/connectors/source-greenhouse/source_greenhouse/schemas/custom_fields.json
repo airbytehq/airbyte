@@ -6,55 +6,55 @@
       "type": "integer"
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "active": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "field_type": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "priority": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "value_type": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "private": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "required": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "require_approval": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "trigger_new_version": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "name_key": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "description": {
       "type": ["null", "string"]
     },
     "expose_in_job_board_api": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "api_only": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "offices": {
-      "type": "array"
+      "type": ["null", "array"]
     },
     "departments": {
-      "type": "array"
+      "type": ["null", "array"]
     },
     "template_token_string": {
       "type": ["null", "string"]
     },
     "custom_field_options": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
         "type": "object",
         "properties": {

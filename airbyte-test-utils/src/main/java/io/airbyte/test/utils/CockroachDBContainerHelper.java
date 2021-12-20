@@ -20,27 +20,27 @@ import org.testcontainers.utility.MountableFile;
 
 public class CockroachDBContainerHelper {
 
-  public static void runSqlScript(MountableFile file, CockroachContainer db) {
+  public static void runSqlScript(final MountableFile file, final CockroachContainer db) {
     try {
-      String scriptPath = "/etc/" + UUID.randomUUID() + ".sql";
+      final String scriptPath = "/etc/" + UUID.randomUUID() + ".sql";
       db.copyFileToContainer(file, scriptPath);
       db.execInContainer(
           "cockroach", "sql", "-d", db.getDatabaseName(), "-u", db.getUsername(), "-f", scriptPath,
           "--insecure");
 
-    } catch (InterruptedException | IOException e) {
+    } catch (final InterruptedException | IOException e) {
       throw new RuntimeException(e);
     }
   }
 
   public static JsonNode createDatabaseWithRandomNameAndGetPostgresConfig(
-                                                                          CockroachContainer psqlDb) {
+                                                                          final CockroachContainer psqlDb) {
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
     return createDatabaseAndGetPostgresConfig(psqlDb, dbName);
   }
 
-  public static JsonNode createDatabaseAndGetPostgresConfig(CockroachContainer psqlDb,
-                                                            String dbName) {
+  public static JsonNode createDatabaseAndGetPostgresConfig(final CockroachContainer psqlDb,
+                                                            final String dbName) {
     final String initScriptName = "init_" + dbName.concat(".sql");
     final String tmpFilePath = IOs
         .writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
@@ -49,7 +49,7 @@ public class CockroachDBContainerHelper {
     return getDestinationConfig(psqlDb, dbName);
   }
 
-  public static JsonNode getDestinationConfig(CockroachContainer psqlDb, String dbName) {
+  public static JsonNode getDestinationConfig(final CockroachContainer psqlDb, final String dbName) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort())
@@ -61,7 +61,7 @@ public class CockroachDBContainerHelper {
         .build());
   }
 
-  public static Database getDatabaseFromConfig(JsonNode config) {
+  public static Database getDatabaseFromConfig(final JsonNode config) {
     return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
@@ -73,7 +73,7 @@ public class CockroachDBContainerHelper {
         SQLDialect.POSTGRES);
   }
 
-  public static JdbcDatabase getJdbcDatabaseFromConfig(JsonNode config) {
+  public static JdbcDatabase getJdbcDatabaseFromConfig(final JsonNode config) {
     return Databases.createJdbcDatabase(
         config.get("username").asText(),
         config.get("password").asText(),

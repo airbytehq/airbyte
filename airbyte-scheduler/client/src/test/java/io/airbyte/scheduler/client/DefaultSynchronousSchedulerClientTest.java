@@ -82,7 +82,7 @@ class DefaultSynchronousSchedulerClientTest {
     when(oAuthConfigSupplier.injectDestinationOAuthParameters(any(), any(), eq(CONFIGURATION))).thenReturn(CONFIGURATION);
   }
 
-  private static JobMetadata createMetadata(boolean succeeded) {
+  private static JobMetadata createMetadata(final boolean succeeded) {
     return new JobMetadata(
         succeeded,
         LOG_PATH);

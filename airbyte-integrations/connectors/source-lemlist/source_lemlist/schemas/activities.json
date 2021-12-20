@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "_id": {
+      "type": "string"
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "teamId": {
+      "type": ["null", "string"]
+    },
+    "createdAt": {
+      "type": ["null", "string"]
+    },
+    "leadId": {
+      "type": ["null", "string"]
+    },
+    "leadEmail": {
+      "type": ["null", "string"]
+    },
+    "campaignId": {
+      "type": ["null", "string"]
+    },
+    "createdBy": {
+      "type": ["null", "string"]
+    },
+    "leadFirstName": {
+      "type": ["null", "string"]
+    },
+    "leadLastName": {
+      "type": ["null", "string"]
+    },
+    "sequenceId": {
+      "type": ["null", "string"]
+    },
+    "isFirst": {
+      "type": ["null", "boolean"]
+    },
+    "sequenceStep": {
+      "type": ["null", "integer"]
+    },
+    "emailTemplateId": {
+      "type": ["null", "string"]
+    },
+    "extra": {
+      "type": ["null", "object"],
+      "properties": {
+        "userName": {
+          "type": ["null", "string"]
+        },
+        "leadPhone": {
+          "type": ["null", "string"]
+        },
+        "sendUserId": {
+          "type": ["null", "string"]
+        },
+        "leadPicture": {
+          "type": ["null", "string"]
+        },
+        "leadCompanyName": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "firstName": {
+      "type": ["null", "string"]
+    },
+    "lastName": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "companyName": {
+      "type": ["null", "string"]
+    },
+    "picture": {
+      "type": ["null", "string"]
+    },
+    "phone": {
+      "type": ["null", "string"]
+    },
+    "linkedinUrl": {
+      "type": ["null", "string"]
+    },
+    "icebreaker": {
+      "type": ["null", "string"]
+    },
+    "campaignName": {
+      "type": ["null", "string"]
+    },
+    "emailTemplateName": {
+      "type": ["null", "string"]
+    }
+  }
+}

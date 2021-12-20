@@ -30,7 +30,7 @@ class JobsDatabaseInstanceTest extends AbstractJobsDatabaseTest {
 
     // when the jobs database has been initialized, calling getAndInitialize again will not change
     // anything
-    String testSchema = "CREATE TABLE IF NOT EXISTS airbyte_test_metadata(id BIGINT PRIMARY KEY);";
+    final String testSchema = "CREATE TABLE IF NOT EXISTS airbyte_test_metadata(id BIGINT PRIMARY KEY);";
     database = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl(), testSchema).getAndInitialize();
     // the airbyte_test_metadata table does not exist
     assertThrows(DataAccessException.class, () -> database.query(ctx -> ctx.fetchExists(select().from("airbyte_test_metadata"))));

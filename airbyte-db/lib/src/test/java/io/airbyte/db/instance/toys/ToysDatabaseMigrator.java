@@ -15,7 +15,7 @@ public class ToysDatabaseMigrator extends FlywayDatabaseMigrator {
   public static final String DB_IDENTIFIER = "toy";
   public static final String MIGRATION_FILE_LOCATION = "classpath:io/airbyte/db/instance/toys/migrations";
 
-  public ToysDatabaseMigrator(Database database, String migrationRunner) {
+  public ToysDatabaseMigrator(final Database database, final String migrationRunner) {
     super(database, DB_IDENTIFIER, migrationRunner, MIGRATION_FILE_LOCATION);
   }
 

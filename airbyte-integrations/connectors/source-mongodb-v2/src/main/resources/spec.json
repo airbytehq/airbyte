@@ -16,9 +16,13 @@
         "oneOf": [
           {
             "title": "Standalone MongoDb Instance",
-            "additionalProperties": false,
-            "required": ["host", "port"],
+            "required": ["instance", "host", "port"],
             "properties": {
+              "instance": {
+                "type": "string",
+                "enum": ["standalone"],
+                "default": "standalone"
+              },
               "host": {
                 "title": "Host",
                 "type": "string",
@@ -46,9 +50,13 @@
           },
           {
             "title": "Replica Set",
-            "additionalProperties": false,
-            "required": ["server_addresses"],
+            "required": ["instance", "server_addresses"],
             "properties": {
+              "instance": {
+                "type": "string",
+                "enum": ["replica"],
+                "default": "replica"
+              },
               "server_addresses": {
                 "title": "Server addresses",
                 "type": "string",
@@ -67,8 +75,13 @@
           {
             "title": "MongoDB Atlas",
             "additionalProperties": false,
-            "required": ["cluster_url"],
+            "required": ["instance", "cluster_url"],
             "properties": {
+              "instance": {
+                "type": "string",
+                "enum": ["atlas"],
+                "default": "atlas"
+              },
               "cluster_url": {
                 "title": "Cluster URL",
                 "type": "string",

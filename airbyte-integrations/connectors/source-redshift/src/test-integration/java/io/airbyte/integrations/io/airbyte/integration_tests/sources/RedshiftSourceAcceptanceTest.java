@@ -29,17 +29,17 @@ import java.util.List;
 public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
 
   // This test case expects an active redshift cluster that is useable from outside of vpc
-  private JsonNode config;
-  private JdbcDatabase database;
-  private String schemaName;
-  private String streamName;
+  protected JsonNode config;
+  protected JdbcDatabase database;
+  protected String schemaName;
+  protected String streamName;
 
-  private static JsonNode getStaticConfig() {
+  protected static JsonNode getStaticConfig() {
     return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     config = getStaticConfig();
 
     database = Databases.createJdbcDatabase(
@@ -59,20 +59,20 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
 
     streamName = "customer";
     final String fqTableName = JdbcUtils.getFullyQualifiedTableName(schemaName, streamName);
-    String createTestTable =
+    final String createTestTable =
         String.format("CREATE TABLE IF NOT EXISTS %s (c_custkey INTEGER, c_name VARCHAR(16), c_nation VARCHAR(16));\n", fqTableName);
     database.execute(connection -> {
       connection.createStatement().execute(createTestTable);
     });
 
-    String insertTestData = String.format("insert into %s values (1, 'Chris', 'France');\n", fqTableName);
+    final String insertTestData = String.format("insert into %s values (1, 'Chris', 'France');\n", fqTableName);
     database.execute(connection -> {
       connection.createStatement().execute(insertTestData);
     });
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws SQLException {
+  protected void tearDown(final TestDestinationEnv testEnv) throws SQLException {
     final String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s CASCADE", schemaName);
     database.execute(connection -> connection.createStatement().execute(dropSchemaQuery));
   }

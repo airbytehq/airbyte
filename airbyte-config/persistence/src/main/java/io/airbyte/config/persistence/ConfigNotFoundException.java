@@ -12,17 +12,17 @@ public class ConfigNotFoundException extends Exception {
   private final String type;
   private final String configId;
 
-  public ConfigNotFoundException(String type, String configId) {
+  public ConfigNotFoundException(final String type, final String configId) {
     super(String.format("config type: %s id: %s", type, configId));
     this.type = type;
     this.configId = configId;
   }
 
-  public ConfigNotFoundException(AirbyteConfig type, String configId) {
+  public ConfigNotFoundException(final AirbyteConfig type, final String configId) {
     this(type.toString(), configId);
   }
 
-  public ConfigNotFoundException(AirbyteConfig type, UUID uuid) {
+  public ConfigNotFoundException(final AirbyteConfig type, final UUID uuid) {
     this(type.toString(), uuid.toString());
   }
 

@@ -23,32 +23,32 @@ import java.util.stream.Collectors;
  */
 public class CatalogHelpers {
 
-  public static AirbyteCatalog createAirbyteCatalog(String streamName, Field... fields) {
+  public static AirbyteCatalog createAirbyteCatalog(final String streamName, final Field... fields) {
     return new AirbyteCatalog().withStreams(Lists.newArrayList(createAirbyteStream(streamName, fields)));
   }
 
-  public static AirbyteStream createAirbyteStream(String streamName, Field... fields) {
+  public static AirbyteStream createAirbyteStream(final String streamName, final Field... fields) {
     // Namespace is null since not all sources set it.
     return createAirbyteStream(streamName, null, Arrays.asList(fields));
   }
 
-  public static AirbyteStream createAirbyteStream(String streamName, String namespace, Field... fields) {
+  public static AirbyteStream createAirbyteStream(final String streamName, final String namespace, final Field... fields) {
     return createAirbyteStream(streamName, namespace, Arrays.asList(fields));
   }
 
-  public static AirbyteStream createAirbyteStream(String streamName, String namespace, List<Field> fields) {
+  public static AirbyteStream createAirbyteStream(final String streamName, final String namespace, final List<Field> fields) {
     return new AirbyteStream().withName(streamName).withNamespace(namespace).withJsonSchema(fieldsToJsonSchema(fields));
   }
 
-  public static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(String streamName, String namespace, Field... fields) {
+  public static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(final String streamName, final String namespace, final Field... fields) {
     return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(createConfiguredAirbyteStream(streamName, namespace, fields)));
   }
 
-  public static ConfiguredAirbyteStream createConfiguredAirbyteStream(String streamName, String namespace, Field... fields) {
+  public static ConfiguredAirbyteStream createConfiguredAirbyteStream(final String streamName, final String namespace, final Field... fields) {
     return createConfiguredAirbyteStream(streamName, namespace, Arrays.asList(fields));
   }
 
-  public static ConfiguredAirbyteStream createConfiguredAirbyteStream(String streamName, String namespace, List<Field> fields) {
+  public static ConfiguredAirbyteStream createConfiguredAirbyteStream(final String streamName, final String namespace, final List<Field> fields) {
     return new ConfiguredAirbyteStream()
         .withStream(new AirbyteStream().withName(streamName).withNamespace(namespace).withJsonSchema(fieldsToJsonSchema(fields)))
         .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE);
@@ -61,7 +61,7 @@ public class CatalogHelpers {
    * @param catalog - Catalog to be converted.
    * @return - ConfiguredCatalog based of off the input catalog.
    */
-  public static ConfiguredAirbyteCatalog toDefaultConfiguredCatalog(AirbyteCatalog catalog) {
+  public static ConfiguredAirbyteCatalog toDefaultConfiguredCatalog(final AirbyteCatalog catalog) {
     return new ConfiguredAirbyteCatalog()
         .withStreams(catalog.getStreams()
             .stream()
@@ -69,7 +69,7 @@ public class CatalogHelpers {
             .collect(Collectors.toList()));
   }
 
-  public static ConfiguredAirbyteStream toDefaultConfiguredStream(AirbyteStream stream) {
+  public static ConfiguredAirbyteStream toDefaultConfiguredStream(final AirbyteStream stream) {
     return new ConfiguredAirbyteStream()
         .withStream(stream)
         .withSyncMode(SyncMode.FULL_REFRESH)
@@ -78,7 +78,7 @@ public class CatalogHelpers {
         .withPrimaryKey(new ArrayList<>());
   }
 
-  public static JsonNode fieldsToJsonSchema(Field... fields) {
+  public static JsonNode fieldsToJsonSchema(final Field... fields) {
     return fieldsToJsonSchema(Arrays.asList(fields));
   }
 
@@ -89,14 +89,14 @@ public class CatalogHelpers {
    * @param fields fields to map to JsonSchema
    * @return JsonSchema representation of the fields.
    */
-  public static JsonNode fieldsToJsonSchema(List<Field> fields) {
+  public static JsonNode fieldsToJsonSchema(final List<Field> fields) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("type", "object")
         .put("properties", fields
             .stream()
             .collect(Collectors.toMap(
                 Field::getName,
-                field -> ImmutableMap.of("type", field.getTypeAsJsonSchemaString()))))
+                field -> field.getType().getJsonSchemaTypeMap())))
         .build());
   }
 
@@ -118,16 +118,16 @@ public class CatalogHelpers {
    * @return a set of all keys for all objects within the node
    */
   @VisibleForTesting
-  protected static Set<String> getAllFieldNames(JsonNode node) {
-    Set<String> allFieldNames = new HashSet<>();
+  protected static Set<String> getAllFieldNames(final JsonNode node) {
+    final Set<String> allFieldNames = new HashSet<>();
 
     if (node.has("properties")) {
-      JsonNode properties = node.get("properties");
-      Iterator<String> fieldNames = properties.fieldNames();
+      final JsonNode properties = node.get("properties");
+      final Iterator<String> fieldNames = properties.fieldNames();
       while (fieldNames.hasNext()) {
-        String fieldName = fieldNames.next();
+        final String fieldName = fieldNames.next();
         allFieldNames.add(fieldName);
-        JsonNode fieldValue = properties.get(fieldName);
+        final JsonNode fieldValue = properties.get(fieldName);
         if (fieldValue.isObject()) {
           allFieldNames.addAll(getAllFieldNames(fieldValue));
         }

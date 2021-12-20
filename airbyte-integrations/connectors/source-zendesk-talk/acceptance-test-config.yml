@@ -1,0 +1,26 @@
+# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# for more information about how to configure these tests
+# intentionally left out explicit configured_catalog.json to test all streams from discovery
+connector_image: airbyte/source-zendesk-talk:dev
+tests:
+  spec:
+    - spec_path: "integration_tests/spec.json"
+  connection:
+    - config_path: "secrets/config.json"
+      status: "succeed"
+    - config_path: "integration_tests/invalid_config.json"
+      status: "failed"
+  discovery:
+    - config_path: "secrets/config.json"
+  basic_read:
+    - config_path: "secrets/config.json"
+  incremental:
+    - config_path: "secrets/config.json"
+      future_state_path: "integration_tests/abnormal_state.json"
+  full_refresh:
+    - config_path: "secrets/config.json"
+      # Statistics streams (with single record) have artificial PK that changes everytime
+      ignored_fields:
+        "account_overview": ["current_timestamp"]
+        "agents_overview": ["current_timestamp"]
+        "current_queue_activity": ["current_timestamp"]

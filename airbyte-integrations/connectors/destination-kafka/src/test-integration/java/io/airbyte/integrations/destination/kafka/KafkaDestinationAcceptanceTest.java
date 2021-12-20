@@ -42,7 +42,7 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected JsonNode getConfig() {
-    ObjectNode stubProtocolConfig = mapper.createObjectNode();
+    final ObjectNode stubProtocolConfig = mapper.createObjectNode();
     stubProtocolConfig.put("security_protocol", KafkaProtocol.PLAINTEXT.toString());
 
     return Jsons.jsonNode(ImmutableMap.builder()
@@ -73,7 +73,7 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    ObjectNode stubProtocolConfig = mapper.createObjectNode();
+    final ObjectNode stubProtocolConfig = mapper.createObjectNode();
     stubProtocolConfig.put("security_protocol", KafkaProtocol.SASL_PLAINTEXT.toString());
     stubProtocolConfig.put("sasl_mechanism", "PLAIN");
     stubProtocolConfig.put("sasl_jaas_config", "invalid");
@@ -110,20 +110,20 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected String getDefaultSchema(JsonNode config) {
+  protected String getDefaultSchema(final JsonNode config) {
     return "";
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName, String namespace) {
+  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace) {
     return retrieveRecords(testEnv, streamName, namespace, null);
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema) {
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema) {
     final Map<String, Object> props = ImmutableMap.<String, Object>builder()
         .put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers())
         .put(ConsumerConfig.GROUP_ID_CONFIG, namingResolver.getIdentifier(namespace + "-" + streamName))
@@ -144,13 +144,13 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv) {
     KAFKA = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.0"));
     KAFKA.start();
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     KAFKA.close();
   }
 

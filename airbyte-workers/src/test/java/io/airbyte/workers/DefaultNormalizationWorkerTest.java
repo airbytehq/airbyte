@@ -8,6 +8,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
@@ -24,6 +26,7 @@ class DefaultNormalizationWorkerTest {
   private static final int JOB_ATTEMPT = 0;
   private static final Path WORKSPACE_ROOT = Path.of("workspaces/10");
 
+  private WorkerConfigs workerConfigs;
   private Path jobRoot;
   private Path normalizationRoot;
   private NormalizationInput normalizationInput;
@@ -31,6 +34,7 @@ class DefaultNormalizationWorkerTest {
 
   @BeforeEach
   void setup() throws Exception {
+    workerConfigs = new WorkerConfigs(new EnvConfigs());
     jobRoot = Files.createDirectories(Files.createTempDirectory("test").resolve(WORKSPACE_ROOT));
     normalizationRoot = jobRoot.resolve("normalize");
 
@@ -38,7 +42,7 @@ class DefaultNormalizationWorkerTest {
     normalizationInput = new NormalizationInput()
         .withDestinationConfiguration(syncPair.getValue().getDestinationConfiguration())
         .withCatalog(syncPair.getValue().getCatalog())
-        .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+        .withResourceRequirements(workerConfigs.getResourceRequirements());
 
     normalizationRunner = mock(NormalizationRunner.class);
 
@@ -47,13 +51,14 @@ class DefaultNormalizationWorkerTest {
         JOB_ATTEMPT,
         normalizationRoot,
         normalizationInput.getDestinationConfiguration(),
-        normalizationInput.getCatalog(), WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS))
+        normalizationInput.getCatalog(), workerConfigs.getResourceRequirements()))
             .thenReturn(true);
   }
 
   @Test
   void test() throws Exception {
-    final DefaultNormalizationWorker normalizationWorker = new DefaultNormalizationWorker(JOB_ID, JOB_ATTEMPT, normalizationRunner);
+    final DefaultNormalizationWorker normalizationWorker =
+        new DefaultNormalizationWorker(JOB_ID, JOB_ATTEMPT, normalizationRunner, WorkerEnvironment.DOCKER);
 
     normalizationWorker.run(normalizationInput, jobRoot);
 
@@ -63,7 +68,7 @@ class DefaultNormalizationWorkerTest {
         JOB_ATTEMPT,
         normalizationRoot,
         normalizationInput.getDestinationConfiguration(),
-        normalizationInput.getCatalog(), WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+        normalizationInput.getCatalog(), workerConfigs.getResourceRequirements());
     verify(normalizationRunner).close();
   }
 

@@ -11,7 +11,7 @@ import com.google.cloud.bigquery.TableId;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.csv.GcsCsvWriter;
 
-class BigQueryWriteConfig {
+public class BigQueryWriteConfig {
 
   private final TableId table;
   private final TableId tmpTable;
@@ -21,13 +21,13 @@ class BigQueryWriteConfig {
   private final GcsCsvWriter gcsCsvWriter;
   private final GcsDestinationConfig gcsDestinationConfig;
 
-  BigQueryWriteConfig(TableId table,
-                      TableId tmpTable,
-                      TableDataWriteChannel writer,
-                      WriteDisposition syncMode,
-                      Schema schema,
-                      GcsCsvWriter gcsCsvWriter,
-                      GcsDestinationConfig gcsDestinationConfig) {
+  BigQueryWriteConfig(final TableId table,
+                      final TableId tmpTable,
+                      final TableDataWriteChannel writer,
+                      final WriteDisposition syncMode,
+                      final Schema schema,
+                      final GcsCsvWriter gcsCsvWriter,
+                      final GcsDestinationConfig gcsDestinationConfig) {
     this.table = table;
     this.tmpTable = tmpTable;
     this.writer = writer;

@@ -14,10 +14,10 @@ class DatabricksStreamCopierTest {
 
   @Test
   public void testGetStagingS3DestinationConfig() {
-    String bucketPath = UUID.randomUUID().toString();
-    S3DestinationConfig config = new S3DestinationConfig("", "", bucketPath, "", "", "", null);
-    String stagingFolder = UUID.randomUUID().toString();
-    S3DestinationConfig stagingConfig = DatabricksStreamCopier.getStagingS3DestinationConfig(config, stagingFolder);
+    final String bucketPath = UUID.randomUUID().toString();
+    final S3DestinationConfig config = new S3DestinationConfig("", "", bucketPath, "", "", "", null);
+    final String stagingFolder = UUID.randomUUID().toString();
+    final S3DestinationConfig stagingConfig = DatabricksStreamCopier.getStagingS3DestinationConfig(config, stagingFolder);
     assertEquals(String.format("%s/%s", bucketPath, stagingFolder), stagingConfig.getBucketPath());
   }
 

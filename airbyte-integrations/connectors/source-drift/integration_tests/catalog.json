@@ -1,0 +1,167 @@
+{
+  "streams": [
+    {
+      "name": "accounts",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "ownerId": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "accountId": {
+            "type": "string"
+          },
+          "customProperties": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "value": {},
+                "type": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "deleted": {
+            "type": "boolean"
+          },
+          "createDateTime": {
+            "type": "integer"
+          },
+          "updateDateTime": {
+            "type": "integer"
+          },
+          "targeted": {
+            "type": "boolean"
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_cursor": false
+    },
+    {
+      "name": "conversations",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "participants": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": ["open", "closed", "pending", "bulk_sent"]
+          },
+          "contactId": {
+            "type": "integer"
+          },
+          "inboxId": {
+            "type": "integer"
+          },
+          "createdAt": {
+            "type": "integer"
+          },
+          "updatedAt": {
+            "type": "integer"
+          },
+          "relatedPlaybookId": {
+            "type": ["null", "string"]
+          },
+          "conversationTags": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "color": {
+                  "type": "string",
+                  "description": "HEX value"
+                },
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_cursor": false
+    },
+    {
+      "name": "users",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "orgId": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "alias": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "availability": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "timeZone": {
+            "type": "string"
+          },
+          "avatarUrl": {
+            "type": "string"
+          },
+          "verified": {
+            "type": "boolean"
+          },
+          "bot": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "integer"
+          },
+          "updatedAt": {
+            "type": "integer"
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_cursor": false
+    }
+  ]
+}

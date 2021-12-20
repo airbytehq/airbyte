@@ -8,6 +8,7 @@ dependencies {
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-config:persistence')
     implementation project(':airbyte-db:lib')
+    implementation project(':airbyte-db:jooq')
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-notification')
     implementation project(':airbyte-oauth')
@@ -15,5 +16,5 @@ dependencies {
     implementation project(':airbyte-scheduler:models')
 
     testImplementation "org.flywaydb:flyway-core:7.14.0"
-    testImplementation "org.testcontainers:postgresql:1.15.1"
+    testImplementation "org.testcontainers:postgresql:1.15.3"
 }

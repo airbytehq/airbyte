@@ -21,7 +21,7 @@ class OktaStream(HttpStream, ABC):
     def __init__(self, url_base: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Inject custom url base to the stream
-        self._url_base = url_base
+        self._url_base = url_base.rstrip("/") + "/"
 
     @property
     def url_base(self) -> str:
@@ -90,9 +90,14 @@ class IncrementalOktaStream(OktaStream, ABC):
             )
         }
 
-    def request_params(self, stream_state=None, **kwargs):
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
-        params = super().request_params(stream_state=stream_state, **kwargs)
+        params = super().request_params(stream_state, stream_slice, next_page_token)
         latest_entry = stream_state.get(self.cursor_field)
         if latest_entry:
             params["filter"] = f'{self.cursor_field} gt "{latest_entry}"'
@@ -108,11 +113,30 @@ class Groups(IncrementalOktaStream):
 
 
 class Logs(IncrementalOktaStream):
+
     cursor_field = "published"
     primary_key = "uuid"
 
     def path(self, **kwargs) -> str:
         return "logs"
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        # The log stream use a different params to get data
+        # https://developer.okta.com/docs/reference/api/system-log/#datetime-filter
+        stream_state = stream_state or {}
+        params = {
+            "limit": self.page_size,
+            **(next_page_token or {}),
+        }
+        latest_entry = stream_state.get(self.cursor_field)
+        if latest_entry:
+            params["since"] = latest_entry
+        return params
 
 
 class Users(IncrementalOktaStream):

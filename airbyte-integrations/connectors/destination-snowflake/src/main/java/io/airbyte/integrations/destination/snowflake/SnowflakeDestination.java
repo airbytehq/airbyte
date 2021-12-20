@@ -20,28 +20,34 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
   enum DestinationType {
     INSERT,
     COPY_S3,
-    COPY_GCS
+    COPY_GCS,
+    INTERNAL_STAGING
   }
 
   public SnowflakeDestination() {
     super(DestinationType.class, SnowflakeDestination::getTypeFromConfig, getTypeToDestination());
   }
 
-  public static DestinationType getTypeFromConfig(JsonNode config) {
+  public static DestinationType getTypeFromConfig(final JsonNode config) {
     if (isS3Copy(config)) {
       return DestinationType.COPY_S3;
     } else if (isGcsCopy(config)) {
       return DestinationType.COPY_GCS;
     } else {
-      return DestinationType.INSERT;
+      return DestinationType.INTERNAL_STAGING;
     }
   }
 
-  public static boolean isS3Copy(JsonNode config) {
+  public static boolean isInternalStaging(JsonNode config) {
+    return config.has("loading_method") && config.get("loading_method").isObject()
+        && config.get("loading_method").get("method").asText().equals("Internal Staging");
+  }
+
+  public static boolean isS3Copy(final JsonNode config) {
     return config.has("loading_method") && config.get("loading_method").isObject() && config.get("loading_method").has("s3_bucket_name");
   }
 
-  public static boolean isGcsCopy(JsonNode config) {
+  public static boolean isGcsCopy(final JsonNode config) {
     return config.has("loading_method") && config.get("loading_method").isObject() && config.get("loading_method").has("project_id");
   }
 
@@ -49,14 +55,16 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
     final SnowflakeInsertDestination insertDestination = new SnowflakeInsertDestination();
     final SnowflakeCopyS3Destination copyS3Destination = new SnowflakeCopyS3Destination();
     final SnowflakeCopyGcsDestination copyGcsDestination = new SnowflakeCopyGcsDestination();
+    final SnowflakeInternalStagingDestination internalStagingDestination = new SnowflakeInternalStagingDestination();
 
     return ImmutableMap.of(
         DestinationType.INSERT, insertDestination,
         DestinationType.COPY_S3, copyS3Destination,
-        DestinationType.COPY_GCS, copyGcsDestination);
+        DestinationType.COPY_GCS, copyGcsDestination,
+        DestinationType.INTERNAL_STAGING, internalStagingDestination);
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Destination destination = new SnowflakeDestination();
     LOGGER.info("starting destination: {}", SnowflakeDestination.class);
     new IntegrationRunner(destination).run(args);

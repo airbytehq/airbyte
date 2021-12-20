@@ -1,0 +1,6 @@
+{
+  "client_id": "thisisclientid",
+  "client_secret": "thisisclientsecret",
+  "refresh_token": "thisisrefreshtoken",
+  "start_date": "2020-11-16T00:00:00Z"
+}
