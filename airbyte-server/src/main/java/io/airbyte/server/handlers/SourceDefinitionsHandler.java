@@ -12,6 +12,7 @@ import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
+import io.airbyte.api.model.SourceRead;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.StandardSourceDefinition;
@@ -38,22 +39,26 @@ public class SourceDefinitionsHandler {
   private final Supplier<UUID> uuidSupplier;
   private final AirbyteGithubStore githubStore;
   private final SynchronousSchedulerClient schedulerSynchronousClient;
+  private final SourceHandler sourceHandler;
 
   public SourceDefinitionsHandler(
                                   final ConfigRepository configRepository,
-                                  final SynchronousSchedulerClient schedulerSynchronousClient) {
-    this(configRepository, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production());
+                                  final SynchronousSchedulerClient schedulerSynchronousClient,
+                                  final SourceHandler sourceHandler) {
+    this(configRepository, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production(), sourceHandler);
   }
 
   public SourceDefinitionsHandler(
                                   final ConfigRepository configRepository,
                                   final Supplier<UUID> uuidSupplier,
                                   final SynchronousSchedulerClient schedulerSynchronousClient,
-                                  final AirbyteGithubStore githubStore) {
+                                  final AirbyteGithubStore githubStore,
+                                  final SourceHandler sourceHandler) {
     this.configRepository = configRepository;
     this.uuidSupplier = uuidSupplier;
     this.schedulerSynchronousClient = schedulerSynchronousClient;
     this.githubStore = githubStore;
+    this.sourceHandler = sourceHandler;
   }
 
   @VisibleForTesting
@@ -144,6 +149,23 @@ public class SourceDefinitionsHandler {
 
     configRepository.writeStandardSourceDefinition(newSource);
     return buildSourceDefinitionRead(newSource);
+  }
+
+  public void deleteSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    // "delete" all sources associated with the source definition as well. This will cascade to
+    // connections that depend on any deleted sources.
+    // Delete sources first in case a failure occurs mid-operation.
+
+    final StandardSourceDefinition persistedSourceDefinition =
+        configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId());
+
+    for (final SourceRead sourceRead : sourceHandler.listSourcesForSourceDefinition(sourceDefinitionIdRequestBody).getSources()) {
+      sourceHandler.deleteSource(sourceRead);
+    }
+
+    persistedSourceDefinition.withTombstone(true);
+    configRepository.writeStandardSourceDefinition(persistedSourceDefinition);
   }
 
   private ConnectorSpecification getSpecForImage(final String dockerRepository, final String imageTag) throws IOException {
