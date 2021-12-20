@@ -24,7 +24,7 @@ from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
 
 
 class SourceFilesAbstract(AbstractSource, ABC):
-    
+
     @property
     @abstractmethod
     def stream_class(self) -> type:
@@ -60,7 +60,6 @@ class SourceFilesAbstract(AbstractSource, ABC):
         Otherwise, the input config cannot be used to connect to the underlying data source, and the "error" object should describe what went wrong.
         The error object will be cast to string to display the problem to the user.
         """
-
         try:
             for file_info in self.stream_class(**config).filepath_iterator():
                 # TODO: will need to split config.get("path_pattern") up by stream once supporting multiple streams
