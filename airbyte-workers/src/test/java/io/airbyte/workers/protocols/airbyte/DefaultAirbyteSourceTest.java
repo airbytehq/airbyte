@@ -207,7 +207,7 @@ class DefaultAirbyteSourceTest {
 
   @Test
   public void testGetExitValue() throws Exception {
-    final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
+    final AirbyteSource source = new DefaultAirbyteSource(workerConfigs, integrationLauncher, streamFactory, heartbeatMonitor);
     source.start(SOURCE_CONFIG, jobRoot);
 
     when(process.isAlive()).thenReturn(false);
