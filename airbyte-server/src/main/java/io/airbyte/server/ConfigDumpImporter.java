@@ -359,6 +359,9 @@ public class ConfigDumpImporter {
                 if (sourceDefinition == null) {
                   return;
                 }
+                if (sourceDefinition.getTombstone() != null && sourceDefinition.getTombstone()) {
+                  return;
+                }
                 configRepository.writeSourceConnection(sourceConnection, sourceDefinition.getSpec());
               } catch (final ConfigNotFoundException e) {
                 return;
@@ -385,6 +388,9 @@ public class ConfigDumpImporter {
                 final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(
                     destinationConnection.getDestinationDefinitionId());
                 if (destinationDefinition == null) {
+                  return;
+                }
+                if (destinationDefinition.getTombstone() != null && destinationDefinition.getTombstone()) {
                   return;
                 }
                 configRepository.writeDestinationConnection(destinationConnection, destinationDefinition.getSpec());
@@ -463,7 +469,7 @@ public class ConfigDumpImporter {
     importIntoWorkspace(
         ConfigSchema.STANDARD_SOURCE_DEFINITION,
         configs.map(c -> (StandardSourceDefinition) c),
-        configRepository::listStandardSourceDefinitions,
+        () -> configRepository.listStandardSourceDefinitions(false),
         (config) -> true,
         (config, id) -> {
           if (id.equals(config.getSourceDefinitionId())) {
@@ -486,7 +492,7 @@ public class ConfigDumpImporter {
     importIntoWorkspace(
         ConfigSchema.STANDARD_DESTINATION_DEFINITION,
         configs.map(c -> (StandardDestinationDefinition) c),
-        configRepository::listStandardDestinationDefinitions,
+        () -> configRepository.listStandardDestinationDefinitions(false),
         (config) -> true,
         (config, id) -> {
           if (id.equals(config.getDestinationDefinitionId())) {

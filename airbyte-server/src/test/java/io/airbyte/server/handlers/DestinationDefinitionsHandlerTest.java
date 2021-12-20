@@ -74,7 +74,8 @@ class DestinationDefinitionsHandlerTest {
         .withDockerRepository("repo")
         .withDocumentationUrl("https://hulu.com")
         .withIcon("http.svg")
-        .withSpec(spec);
+        .withSpec(spec)
+        .withTombstone(false);
   }
 
   @Test
@@ -82,7 +83,7 @@ class DestinationDefinitionsHandlerTest {
   void testListDestinations() throws JsonValidationException, IOException, URISyntaxException {
     final StandardDestinationDefinition destination2 = generateDestination();
 
-    when(configRepository.listStandardDestinationDefinitions()).thenReturn(Lists.newArrayList(destination, destination2));
+    when(configRepository.listStandardDestinationDefinitions(false)).thenReturn(Lists.newArrayList(destination, destination2));
 
     final DestinationDefinitionRead expectedDestinationDefinitionRead1 = new DestinationDefinitionRead()
         .destinationDefinitionId(destination.getDestinationDefinitionId())
