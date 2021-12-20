@@ -6,8 +6,9 @@ package io.airbyte.workers.process;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.config.EnvConfigs;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerException;
-import io.airbyte.workers.WorkerUtils;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
@@ -31,13 +32,15 @@ class AirbyteIntegrationLauncherTest {
       "catalog", "{}",
       "state", "{}");
 
+  private WorkerConfigs workerConfigs;
   private ProcessFactory processFactory;
   private AirbyteIntegrationLauncher launcher;
 
   @BeforeEach
   void setUp() {
+    workerConfigs = new WorkerConfigs(new EnvConfigs());
     processFactory = Mockito.mock(ProcessFactory.class);
-    launcher = new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, FAKE_IMAGE, processFactory);
+    launcher = new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, FAKE_IMAGE, processFactory, workerConfigs.getResourceRequirements());
   }
 
   @Test
@@ -45,7 +48,7 @@ class AirbyteIntegrationLauncherTest {
     launcher.spec(JOB_ROOT);
 
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, Collections.emptyMap(), null,
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SPEC_JOB),
+        workerConfigs.getResourceRequirements(), Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SPEC_JOB), Map.of(),
         "spec");
   }
 
@@ -54,7 +57,7 @@ class AirbyteIntegrationLauncherTest {
     launcher.check(JOB_ROOT, "config", "{}");
 
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_FILES, null,
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.CHECK_JOB),
+        workerConfigs.getResourceRequirements(), Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.CHECK_JOB), Map.of(),
         "check",
         "--config", "config");
   }
@@ -64,7 +67,7 @@ class AirbyteIntegrationLauncherTest {
     launcher.discover(JOB_ROOT, "config", "{}");
 
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_FILES, null,
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.DISCOVER_JOB),
+        workerConfigs.getResourceRequirements(), Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.DISCOVER_JOB), Map.of(),
         "discover",
         "--config", "config");
   }
@@ -74,13 +77,14 @@ class AirbyteIntegrationLauncherTest {
     launcher.read(JOB_ROOT, "config", "{}", "catalog", "{}", "state", "{}");
 
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_CATALOG_STATE_FILES, null,
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+        workerConfigs.getResourceRequirements(),
         Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.READ_STEP),
+        Map.of(),
         Lists.newArrayList(
             "read",
             "--config", "config",
             "--catalog", "catalog",
-            "--state", "state"));
+            "--state", "state").toArray(new String[0]));
   }
 
   @Test
@@ -88,8 +92,9 @@ class AirbyteIntegrationLauncherTest {
     launcher.write(JOB_ROOT, "config", "{}", "catalog", "{}");
 
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, true, CONFIG_CATALOG_FILES, null,
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+        workerConfigs.getResourceRequirements(),
         Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.WRITE_STEP),
+        Map.of(),
         "write",
         "--config", "config",
         "--catalog", "catalog");
