@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.s3.avro;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -14,6 +15,8 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.UUID;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 public class AvroRecordFactory {
@@ -36,6 +39,11 @@ public class AvroRecordFactory {
     jsonRecord.setAll((ObjectNode) recordMessage.getData());
 
     return converter.convertToGenericDataRecord(WRITER.writeValueAsBytes(jsonRecord), schema);
+  }
+
+  public GenericData.Record getAvroRecord(JsonNode formattedData) throws JsonProcessingException {
+    var bytes = WRITER.writeValueAsBytes(formattedData);
+    return converter.convertToGenericDataRecord(bytes, schema);
   }
 
 }
