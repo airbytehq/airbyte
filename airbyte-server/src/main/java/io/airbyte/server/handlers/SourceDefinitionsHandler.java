@@ -153,7 +153,8 @@ public class SourceDefinitionsHandler {
 
   public void deleteSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    // "delete" all sources associated with the source definition as well. This will cascade to connections that depend on any deleted sources.
+    // "delete" all sources associated with the source definition as well. This will cascade to
+    // connections that depend on any deleted sources.
     // Delete sources first in case a failure occurs mid-operation.
 
     final StandardSourceDefinition persistedSourceDefinition =

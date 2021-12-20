@@ -159,7 +159,8 @@ public class DestinationDefinitionsHandler {
 
   public void deleteDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    // "delete" all destinations associated with the destination definition as well. This will cascade to connections that depend on any deleted
+    // "delete" all destinations associated with the destination definition as well. This will cascade
+    // to connections that depend on any deleted
     // destinations. Delete destinations first in case a failure occurs mid-operation.
 
     final StandardDestinationDefinition persistedDestinationDefinition =

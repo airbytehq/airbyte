@@ -136,9 +136,9 @@ public class SourceHandler {
 
     final List<SourceConnection> sourceConnections = configRepository.listSourceConnection()
         .stream()
-        .filter(sc ->
-            sc.getSourceDefinitionId().equals(sourceDefinitionIdRequestBody.getSourceDefinitionId()) && !MoreBooleans.isTruthy(sc.getTombstone())
-        ).toList();
+        .filter(sc -> sc.getSourceDefinitionId().equals(sourceDefinitionIdRequestBody.getSourceDefinitionId())
+            && !MoreBooleans.isTruthy(sc.getTombstone()))
+        .toList();
 
     final List<SourceRead> reads = Lists.newArrayList();
     for (final SourceConnection sourceConnection : sourceConnections) {
