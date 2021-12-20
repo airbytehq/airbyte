@@ -9,10 +9,10 @@ from typing import Mapping
 
 import pytest
 from airbyte_cdk import AirbyteLogger
+
 from source_s3.source import SourceS3
 from unit_tests.abstract_test_parser import memory_limit
 from unit_tests.test_csv_parser import generate_big_file
-
 from .acceptance import TMP_FOLDER
 
 HERE = Path(__file__).resolve().parent
@@ -36,6 +36,7 @@ class TestIntegrationCsvFiles:
                 read_count += 1
         return read_count
 
+    @pytest.mark.skip("test another")
     @pytest.mark.order(1)
     def test_big_file(self, credentials):
         """tests a big csv file (>= 1.0G records)"""

@@ -131,7 +131,7 @@ class AbstractTestIncrementalFileStream(ABC):
                     for file_dict in stream_slice:
                         # TODO: if we ever test other filetypes in these tests this will need fixing
                         file_reader = CsvParser(format)
-                        with file_dict["storagefile"].open(file_reader.is_binary) as f:
+                        with file_dict["storage_file"].open(file_reader.is_binary) as f:
                             expected_columns.extend(list(file_reader.get_inferred_schema(f).keys()))
                     expected_columns = set(expected_columns)  # de-dupe
 

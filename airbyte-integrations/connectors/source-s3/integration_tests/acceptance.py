@@ -30,7 +30,7 @@ def minio_setup():
             "minio/minio",
             f"server {TMP_FOLDER}",
             name="ci_test_minio",
-            auto_remove=True,
+            # auto_remove=True,
             volumes=[f"/{TMP_FOLDER}/minio_data:/{TMP_FOLDER}"],
             detach=True,
             ports={"9000/tcp": ("127.0.0.1", 9000)},
