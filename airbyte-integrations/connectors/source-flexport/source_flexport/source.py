@@ -4,14 +4,17 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import parse_qsl, urlparse
+from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 
+import pendulum
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from requests.auth import AuthBase
 
 class FlexportError(Exception):
     pass
@@ -21,6 +24,12 @@ class FlexportStream(HttpStream, ABC):
     raise_on_http_errors = False
     primary_key = "id"
     page_size = 500
+
+    def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None, start_date: str = None):
+        super().__init__(authenticator=authenticator)
+
+        self._authenticator = authenticator
+        self.start_date = start_date
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         # https://apidocs.flexport.com/reference/pagination
@@ -72,6 +81,44 @@ class FlexportStream(HttpStream, ABC):
         yield from json["data"]["data"]
 
 
+class IncrementalFlexportStream(FlexportStream, ABC):
+    @property
+    def cursor_field(self) -> str:
+        return []
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        current = current_stream_state.get(self.cursor_field, "")
+        latest = latest_record.get(self.cursor_field, "")
+
+        return {
+            self.cursor_field: max(latest, current),
+        }
+
+    def stream_slices(self, stream_state: Mapping[str, Any] = {}, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        from_date = pendulum.parse(stream_state.get(self.cursor_field, self.start_date))
+        end_date = max(from_date, pendulum.tomorrow("UTC"))
+
+        date_diff = end_date - from_date
+        if date_diff.years > 0:
+            interval = pendulum.duration(months=1)
+        elif date_diff.months > 0:
+            interval = pendulum.duration(weeks=1)
+        elif date_diff.weeks > 0:
+            interval = pendulum.duration(days=1)
+        else:
+            interval = pendulum.duration(hours=1)
+
+        while True:
+            to_date = min(from_date + interval, end_date)
+            yield {
+                "from": from_date.isoformat(),
+                "to": to_date.add(seconds=1).isoformat()
+            }
+            from_date = to_date
+            if from_date >= end_date:
+                break
+
+
 class Companies(FlexportStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -93,11 +140,22 @@ class Products(FlexportStream):
         return "products"
 
 
-class Shipments(FlexportStream):
+class Shipments(IncrementalFlexportStream):
+    cursor_field = "updated_at"
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "shipments"
+
+    def request_params(self, stream_slice: Mapping[str, any] = None, **kwargs) -> MutableMapping[str, Any]:
+        return {
+            **super().request_params(stream_slice=stream_slice, **kwargs),
+            "sort": self.cursor_field,
+            "direction": "asc",
+            "f.updated_at.gt": stream_slice["from"],
+            "f.updated_at.lt": stream_slice["to"],
+        }
 
 
 class SourceFlexport(AbstractSource):
@@ -124,5 +182,5 @@ class SourceFlexport(AbstractSource):
             Companies(authenticator=auth),
             Locations(authenticator=auth),
             Products(authenticator=auth),
-            Shipments(authenticator=auth),
+            Shipments(authenticator=auth, start_date=config["start_date"]),
         ]
