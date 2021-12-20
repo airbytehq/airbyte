@@ -294,5 +294,5 @@ def test_not_found_container():
     )
     new_container.remove()
     time.sleep(1)
-    with pytest.raises(NotFound) as exc:
+    with pytest.raises(NotFound):
         list(ConnectorRunner.read(new_container, command=cmd))
