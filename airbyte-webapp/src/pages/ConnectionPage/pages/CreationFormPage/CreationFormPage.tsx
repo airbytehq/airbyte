@@ -91,7 +91,8 @@ function usePreloadData(): {
 const CreationFormPage: React.FC<IProps> = ({}) => {
   const { location, push } = useRouter();
 
-  const locationType = location.pathname.split("/")[2];
+  // TODO: Probably there is a better way to figure it out instead of just checking third elem
+  const locationType = location.pathname.split("/")[3];
 
   const type =
     locationType === "connections"
@@ -123,7 +124,7 @@ const CreationFormPage: React.FC<IProps> = ({}) => {
     push("", {
       state: {
         ...(location.state as Record<string, unknown>),
-        sourceId: id,
+        destinationId: id,
       },
     });
     setCurrentEntityStep(EntityStepsTypes.DESTINATION);

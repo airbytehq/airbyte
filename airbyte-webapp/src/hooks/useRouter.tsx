@@ -30,8 +30,9 @@ function useRouter<T = any, P = any>(): {
       } as T),
     [params, location.search]
   );
-
   return useMemo(() => {
+    console.log(params, location);
+
     return {
       params,
       push: navigate,
