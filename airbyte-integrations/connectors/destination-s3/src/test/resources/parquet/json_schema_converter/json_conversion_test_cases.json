@@ -104,7 +104,7 @@
             {
               "type": "record",
               "name": "user",
-              "namespace": "user",
+              "namespace": "",
               "fields": [
                 {
                   "name": "first_name",
@@ -580,7 +580,7 @@
             {
               "type": "record",
               "name": "user",
-              "namespace": "user",
+              "namespace": "",
               "fields": [
                 {
                   "name": "created_at",
@@ -1133,7 +1133,7 @@
             {
               "type": "record",
               "name": "author",
-              "namespace": "author",
+              "namespace": "",
               "fields": [
                 {
                   "name": "login",
@@ -1182,7 +1182,7 @@
             {
               "type": "record",
               "name": "commit",
-              "namespace": "commit",
+              "namespace": "",
               "fields": [
                 {
                   "name": "author",
@@ -1191,7 +1191,7 @@
                     {
                       "type": "record",
                       "name": "author",
-                      "namespace": "commit.author",
+                      "namespace": "commit",
                       "fields": [
                         {
                           "name": "name",
@@ -1228,7 +1228,7 @@
                             {
                               "type": "record",
                               "name": "pr",
-                              "namespace": "commit.author.pr",
+                              "namespace": "commit.author",
                               "fields": [
                                 {
                                   "name": "id",

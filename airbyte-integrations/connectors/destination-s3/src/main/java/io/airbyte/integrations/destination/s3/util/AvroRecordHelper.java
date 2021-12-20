@@ -12,8 +12,10 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Helper methods for unit tests. This is needed by multiple modules, so it is in the src directory.
@@ -56,7 +58,15 @@ public class AvroRecordHelper {
       ObjectNode objectNode = (ObjectNode) jsonNode;
       Iterator<Map.Entry<String, JsonNode>> iter = objectNode.fields();
       String pathPrefix = currentPath.isEmpty() ? "" : currentPath + "/";
-      jsonNodePathMap.put(jsonNode,pathPrefix);
+      String[] pathFieldsArray = currentPath.split("/");
+      String parent = Arrays.stream(pathFieldsArray)
+              .filter(x -> !x.equals("items"))
+              .filter(x -> !x.equals("properties"))
+              .filter(x -> !x.equals(pathFieldsArray[pathFieldsArray.length - 1]))
+              .collect(Collectors.joining("."));
+      if (!parent.isEmpty()){
+        jsonNodePathMap.put(jsonNode, parent);
+      }
       while (iter.hasNext()) {
         Map.Entry<String, JsonNode> entry = iter.next();
         obtainPaths(pathPrefix + entry.getKey(), entry.getValue(), jsonNodePathMap);
