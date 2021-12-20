@@ -47,6 +47,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   private Process sourceProcess = null;
   private Iterator<AirbyteMessage> messageIterator = null;
+  private Integer exitValue = null;
 
   public DefaultAirbyteSource(final WorkerConfigs workerConfigs, final IntegrationLauncher integrationLauncher) {
     this(workerConfigs, integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER),
@@ -99,11 +100,22 @@ public class DefaultAirbyteSource implements AirbyteSource {
       return false;
     }
 
-    final int exitValue = sourceProcess.exitValue();
+    final int exitValue = getExitValue();
     if (exitValue != 0) {
-      throw new WorkerException("Source process exited with non-zero exit code " + sourceProcess.exitValue());
+      throw new WorkerException("Source process exited with non-zero exit code " + exitValue);
     }
     return true;
+  }
+
+  private int getExitValue() {
+    Preconditions.checkState(sourceProcess != null);
+    Preconditions.checkState(!sourceProcess.isAlive());
+
+    if (exitValue == null) {
+      exitValue = sourceProcess.exitValue();
+    }
+
+    return exitValue;
   }
 
   @Override
@@ -127,8 +139,8 @@ public class DefaultAirbyteSource implements AirbyteSource {
         GRACEFUL_SHUTDOWN_DURATION.toMillis(),
         TimeUnit.MILLISECONDS);
 
-    if (sourceProcess.isAlive() || sourceProcess.exitValue() != 0) {
-      final String message = sourceProcess.isAlive() ? "Source has not terminated " : "Source process exit with code " + sourceProcess.exitValue();
+    if (sourceProcess.isAlive() || getExitValue() != 0) {
+      final String message = sourceProcess.isAlive() ? "Source has not terminated " : "Source process exit with code " + getExitValue();
       throw new WorkerException(message + ". This warning is normal if the job was cancelled.");
     }
   }

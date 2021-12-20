@@ -47,6 +47,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   private Process destinationProcess = null;
   private BufferedWriter writer = null;
   private Iterator<AirbyteMessage> messageIterator = null;
+  private Integer exitValue = null;
 
   public DefaultAirbyteDestination(final WorkerConfigs workerConfigs, final IntegrationLauncher integrationLauncher) {
     this(workerConfigs, integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER));
@@ -112,9 +113,9 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
 
     LOGGER.debug("Closing destination process");
     WorkerUtils.gentleClose(workerConfigs, destinationProcess, 1, TimeUnit.MINUTES);
-    if (destinationProcess.isAlive() || destinationProcess.exitValue() != 0) {
+    if (destinationProcess.isAlive() || getExitValue() != 0) {
       final String message =
-          destinationProcess.isAlive() ? "Destination has not terminated " : "Destination process exit with code " + destinationProcess.exitValue();
+          destinationProcess.isAlive() ? "Destination has not terminated " : "Destination process exit with code " + getExitValue();
       throw new WorkerException(message + ". This warning is normal if the job was cancelled.");
     }
   }
@@ -147,11 +148,22 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
       return false;
     }
 
-    final int exitValue = destinationProcess.exitValue();
+    final int exitValue = getExitValue();
     if (exitValue != 0) {
-      throw new WorkerException("Destination process exited with non-zero exit code " + destinationProcess.exitValue());
+      throw new WorkerException("Destination process exited with non-zero exit code " + exitValue);
     }
     return true;
+  }
+
+  private int getExitValue() {
+    Preconditions.checkState(destinationProcess != null);
+    Preconditions.checkState(!destinationProcess.isAlive());
+
+    if (exitValue == null) {
+      exitValue = destinationProcess.exitValue();
+    }
+
+    return exitValue;
   }
 
   @Override
