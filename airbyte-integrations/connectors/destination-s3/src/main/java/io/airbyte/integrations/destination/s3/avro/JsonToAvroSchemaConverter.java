@@ -194,9 +194,10 @@ public class JsonToAvroSchemaConverter {
       }
       case ARRAY -> {
         final JsonNode items = fieldDefinition.get("items");
-        Preconditions.checkNotNull(items, "Array field %s misses the items property.", fieldName);
-
-        if (items.isObject()) {
+        if (items == null) {
+          LOGGER.warn("Source connector provided schema for ARRAY with missed \"items\", will assume that it's a String type");
+          fieldSchema = Schema.createArray(Schema.createUnion(NULL_SCHEMA, STRING_SCHEMA));
+        } else if (items.isObject()) {
           fieldSchema = Schema.createArray(getNullableFieldTypes(String.format("%s.items", fieldName), items));
         } else if (items.isArray()) {
           final List<Schema> arrayElementTypes = getSchemasFromTypes(fieldName, (ArrayNode) items);
