@@ -176,7 +176,7 @@ public class JsonToAvroSchemaConverter {
       case NUMBER, INTEGER, BOOLEAN -> fieldSchema = Schema.create(fieldType.getAvroType());
       case STRING -> {
         if (fieldDefinition.has("format")) {
-          String format = fieldDefinition.get("format").asText();
+          final String format = fieldDefinition.get("format").asText();
           fieldSchema = switch (format) {
             case "date-time" -> LogicalTypes.timestampMicros().addToSchema(Schema.create(Schema.Type.LONG));
             case "date" -> LogicalTypes.date().addToSchema(Schema.create(Schema.Type.INT));
@@ -194,9 +194,10 @@ public class JsonToAvroSchemaConverter {
       }
       case ARRAY -> {
         final JsonNode items = fieldDefinition.get("items");
-        Preconditions.checkNotNull(items, "Array field %s misses the items property.", fieldName);
-
-        if (items.isObject()) {
+        if (items == null) {
+          LOGGER.warn("Source connector provided schema for ARRAY with missed \"items\", will assume that it's a String type");
+          fieldSchema = Schema.createArray(Schema.createUnion(NULL_SCHEMA, STRING_SCHEMA));
+        } else if (items.isObject()) {
           fieldSchema = Schema.createArray(getNullableFieldTypes(String.format("%s.items", fieldName), items));
         } else if (items.isArray()) {
           final List<Schema> arrayElementTypes = getSchemasFromTypes(fieldName, (ArrayNode) items);

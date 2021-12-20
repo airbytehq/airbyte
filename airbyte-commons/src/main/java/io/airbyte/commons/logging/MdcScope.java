@@ -48,6 +48,7 @@ public class MdcScope implements AutoCloseable {
 
     private Optional<String> maybeLogPrefix = Optional.empty();
     private Optional<Color> maybePrefixColor = Optional.empty();
+    private boolean simple = true;
 
     public Builder setLogPrefix(final String logPrefix) {
       this.maybeLogPrefix = Optional.ofNullable(logPrefix);
@@ -61,15 +62,29 @@ public class MdcScope implements AutoCloseable {
       return this;
     }
 
+    // Use this to disable simple logging for things in an MdcScope.
+    // If you're using this, you're probably starting to use MdcScope outside of container labelling.
+    // If so, consider changing the defaults / builder / naming.
+    public Builder setSimple(final boolean simple) {
+      this.simple = simple;
+
+      return this;
+    }
+
     public MdcScope build() {
       final Map<String, String> extraMdcEntries = new HashMap<>();
 
-      maybeLogPrefix.stream().forEach(logPrefix -> {
+      maybeLogPrefix.ifPresent(logPrefix -> {
         final String potentiallyColoredLog = maybePrefixColor
             .map(color -> LoggingHelper.applyColor(color, logPrefix))
             .orElse(logPrefix);
 
         extraMdcEntries.put(LoggingHelper.LOG_SOURCE_MDC_KEY, potentiallyColoredLog);
+
+        if (simple) {
+          // outputs much less information for this line. see log4j2.xml to see exactly what this does
+          extraMdcEntries.put("simple", "true");
+        }
       });
 
       return new MdcScope(extraMdcEntries);

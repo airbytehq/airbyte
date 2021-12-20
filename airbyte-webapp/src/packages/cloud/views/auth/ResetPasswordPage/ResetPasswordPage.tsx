@@ -6,7 +6,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
 import { LoadingButton, LabeledInput, Link } from "components";
 import { FormTitle } from "../components/FormTitle";
-import { Routes } from "../../../routes";
+import { CloudRoutes } from "../../../cloudRoutes";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
 
@@ -64,7 +64,7 @@ const ResetPasswordPage: React.FC = () => {
               </Field>
             </FieldItem>
             <BottomBlock>
-              <Link to={Routes.Login} $light>
+              <Link to={CloudRoutes.Login} $light>
                 <FormattedMessage id="login.backLogin" />
               </Link>
               <LoadingButton type="submit" isLoading={isSubmitting}>
