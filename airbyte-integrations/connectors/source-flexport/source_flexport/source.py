@@ -93,6 +93,13 @@ class Products(FlexportStream):
         return "products"
 
 
+class Shipments(FlexportStream):
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "shipments"
+
+
 class SourceFlexport(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         headers = {"Authorization": f"Bearer {config['api_key']}"}
@@ -117,4 +124,5 @@ class SourceFlexport(AbstractSource):
             Companies(authenticator=auth),
             Locations(authenticator=auth),
             Products(authenticator=auth),
+            Shipments(authenticator=auth),
         ]
