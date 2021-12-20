@@ -88,7 +88,7 @@ public abstract class LegacyS3StreamCopier implements StreamCopier {
     this.tmpTableName = nameTransformer.getTmpTableName(streamName);
     this.s3Client = client;
     this.s3Config = s3Config;
-    this.filenameGenerator = new StagingFilenameGenerator(streamName, GlobalDataSizeConstants.MAX_BYTE_PARTS_PER_FILE_DEFAULT);
+    this.filenameGenerator = new StagingFilenameGenerator(streamName, GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES);
   }
 
   private String prepareS3StagingFile() {
