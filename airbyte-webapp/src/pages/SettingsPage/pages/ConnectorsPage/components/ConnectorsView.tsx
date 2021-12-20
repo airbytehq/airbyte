@@ -7,12 +7,15 @@ import ConnectorCell from "./ConnectorCell";
 import ImageCell from "./ImageCell";
 import VersionCell from "./VersionCell";
 import { Block, FormContentTitle, Title } from "./PageComponents";
-import { SourceDefinition } from "core/resources/SourceDefinition";
 import UpgradeAllButton from "./UpgradeAllButton";
 import CreateConnector from "./CreateConnector";
 import HeadTitle from "components/HeadTitle";
-import { DestinationDefinition } from "core/resources/DestinationDefinition";
-import { Connector, ConnectorDefinition } from "core/domain/connector";
+import {
+  Connector,
+  ConnectorDefinition,
+  DestinationDefinition,
+  SourceDefinition,
+} from "core/domain/connector";
 import {
   FeatureItem,
   useFeatureService,
