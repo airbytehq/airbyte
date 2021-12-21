@@ -7,7 +7,7 @@ import importlib
 import json
 import os
 import pkgutil
-from typing import Any, ClassVar, Dict, List, Mapping, Set, MutableMapping, Optional, Tuple, Union
+from typing import Any, ClassVar, Dict, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 
 import dpath.util
 import jsonref
