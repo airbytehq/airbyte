@@ -15,8 +15,6 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.UUID;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 public class AvroRecordFactory {

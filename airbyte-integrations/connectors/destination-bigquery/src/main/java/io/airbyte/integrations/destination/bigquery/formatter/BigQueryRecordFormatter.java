@@ -16,7 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The class formats incoming JsonSchema and AirbyteRecord in order to be inline with a corresponding uploader.
+ * The class formats incoming JsonSchema and AirbyteRecord in order to be inline with a
+ * corresponding uploader.
  */
 public abstract class BigQueryRecordFormatter {
 
@@ -60,11 +61,10 @@ public abstract class BigQueryRecordFormatter {
   public void printAndCleanFieldFails() {
     if (!mapOfFailedFields.isEmpty()) {
       mapOfFailedFields.forEach(
-          (error, fieldNames) ->
-              LOGGER.warn(
-                  "Field(s) fail with error {}. Fields : {} ",
-                  error,
-                  String.join(", ", fieldNames)));
+          (error, fieldNames) -> LOGGER.warn(
+              "Field(s) fail with error {}. Fields : {} ",
+              error,
+              String.join(", ", fieldNames)));
       mapOfFailedFields.clear();
     } else {
       LOGGER.info("No field fails during record format.");
