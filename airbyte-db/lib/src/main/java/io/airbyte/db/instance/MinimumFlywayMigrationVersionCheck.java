@@ -4,6 +4,7 @@
 
 package io.airbyte.db.instance;
 
+import io.airbyte.commons.lang.Exceptions;
 import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,17 +32,18 @@ public class MinimumFlywayMigrationVersionCheck {
    * @param timeoutMs
    */
   public static void assertDatabase(DatabaseInstance db, long timeoutMs) {
-    var currWaitingTime = 0;
+    var startTime = System.currentTimeMillis();
     var initialized = false;
     while (!initialized) {
-      if (currWaitingTime >= timeoutMs) {
+      if ((System.currentTimeMillis() - startTime) >= timeoutMs) {
         throw new RuntimeException("Timeout while connecting to the database..");
       }
 
       try {
         initialized = db.isInitialized();
       } catch (IOException e) {
-        currWaitingTime += BaseDatabaseInstance.DEFAULT_CONNECTION_TIMEOUT_MS;
+        LOGGER.info("Waiting for database...");
+        Exceptions.toRuntime(() -> Thread.sleep(1000));
       }
     }
   }
