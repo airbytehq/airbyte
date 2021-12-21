@@ -66,7 +66,6 @@ const CreateSourcePage: React.FC = () => {
           sourceDefinitions={sourceDefinitions}
           hasSuccess={successRequest}
           error={errorStatusRequest}
-          jobInfo={errorStatusRequest?.response}
         />
       </FormPageContent>
     </>

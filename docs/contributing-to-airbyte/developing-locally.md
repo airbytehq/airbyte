@@ -37,12 +37,6 @@ SUB_BUILD=PLATFORM ./gradlew build
 If you're using Mac M1 \(Apple Silicon\) machines, it is possible to compile Airbyte by setting
 some additional environment variables:
 
-Build temporal (This is required until official images are available Refer: https://github.com/temporalio/temporal/issues/1305)
-```bash
-cd airbyte-temporal/scripts
-./build-temporal.sh
-```
-
 ```bash
 export DOCKER_BUILD_PLATFORM=linux/arm64
 export DOCKER_BUILD_ARCH=arm64
