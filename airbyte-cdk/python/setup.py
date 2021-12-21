@@ -46,18 +46,20 @@ setup(
     packages=find_packages(exclude=("unit_tests",)),
     install_requires=[
         "backoff",
+        "dpath==2.0.1",
         "jsonschema~=3.2.0",
         "jsonref~=0.2",
         "pendulum",
         "pydantic~=1.6",
         "PyYAML~=5.4",
         "requests",
+        "sentry-sdk~=1.5.1",
         "vcrpy",
         "Deprecated~=1.2",
     ],
     python_requires=">=3.7.0",
     extras_require={
-        "dev": ["MyPy~=0.812", "pytest", "pytest-cov", "pytest-mock", "requests-mock"],
+        "dev": ["MyPy~=0.812", "pytest", "pytest-cov", "pytest-mock", "requests-mock", "pytest-httpserver"],
         "sphinx-docs": [
             "Sphinx~=4.2",
             "sphinx-rtd-theme~=1.0",
