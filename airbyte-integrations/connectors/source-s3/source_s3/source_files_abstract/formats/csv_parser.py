@@ -13,17 +13,16 @@ import pyarrow as pa
 import six
 from pyarrow import csv as pa_csv
 
+from ...utils import run_in_external_process
+from ..file_info import FileInfo
 from .abstract_file_parser import AbstractFileParser
 from .csv_spec import CsvFormat
-from ..file_info import FileInfo
-from ...utils import run_in_external_process
 
 MAX_CHUNK_SIZE = 50.0 * 1024 ** 2  # in bytes
 TMP_FOLDER = tempfile.mkdtemp()
 
 
 class CsvParser(AbstractFileParser):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.format_model = None
@@ -85,7 +84,7 @@ class CsvParser(AbstractFileParser):
         """
 
         def infer_schema_process(
-                file_sample: str, read_opts: dict, parse_opts: dict, convert_opts: dict
+            file_sample: str, read_opts: dict, parse_opts: dict, convert_opts: dict
         ) -> Tuple[dict, Optional[Exception]]:
             """
             we need to reimport here to be functional on Windows systems since it doesn't have fork()
@@ -104,8 +103,7 @@ class CsvParser(AbstractFileParser):
                     fp.write(file_sample)
                     fp.seek(0)
                     streaming_reader = pa.csv.open_csv(
-                        fp, pa.csv.ReadOptions(**read_opts), pa.csv.ParseOptions(**parse_opts),
-                        pa.csv.ConvertOptions(**convert_opts)
+                        fp, pa.csv.ReadOptions(**read_opts), pa.csv.ParseOptions(**parse_opts), pa.csv.ConvertOptions(**convert_opts)
                     )
                     schema_dict = {field.name: field.type for field in streaming_reader.schema}
 

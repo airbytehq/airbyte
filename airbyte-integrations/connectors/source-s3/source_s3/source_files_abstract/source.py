@@ -14,7 +14,6 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
 
-
 # ideas on extending this to handle multiple streams:
 # - "dataset" is currently the name of the single table/stream. We could allow comma-split table names in this string for many streams.
 # - "path_pattern" currently uses https://facelessuser.github.io/wcmatch/glob/ to match a single string pattern (can be multiple | separated)
@@ -24,7 +23,6 @@ from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
 
 
 class SourceFilesAbstract(AbstractSource, ABC):
-
     @property
     @abstractmethod
     def stream_class(self) -> type:

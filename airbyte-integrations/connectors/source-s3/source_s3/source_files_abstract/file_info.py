@@ -21,8 +21,7 @@ class FileInfo:
         return self.size / 1024 ** 2
 
     def __str__(self):
-        return "Key: %s, LastModified: %s, Size: %.4fMb" % (
-            self.key, self.last_modified.isoformat(), self.size_in_megabytes)
+        return "Key: %s, LastModified: %s, Size: %.4fMb" % (self.key, self.last_modified.isoformat(), self.size_in_megabytes)
 
     def __repr__(self):
         return self.__str__()

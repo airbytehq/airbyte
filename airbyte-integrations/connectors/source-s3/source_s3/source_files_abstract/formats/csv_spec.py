@@ -24,8 +24,7 @@ class CsvFormat(BaseModel):
         description="The character delimiting individual cells in the CSV data. This may only be a 1-character string.",
     )
     quote_char: str = Field(
-        default='"',
-        description="The character used optionally for quoting CSV values. To disallow quoting, make this field blank."
+        default='"', description="The character used optionally for quoting CSV values. To disallow quoting, make this field blank."
     )
     escape_char: Optional[str] = Field(
         default=None,
@@ -35,8 +34,7 @@ class CsvFormat(BaseModel):
         default="utf8",
         description='The character encoding of the CSV data. Leave blank to default to <strong>UTF-8</strong>. See <a href="https://docs.python.org/3/library/codecs.html#standard-encodings" target="_blank">list of python encodings</a> for allowable options.',
     )
-    double_quote: bool = Field(default=True,
-                               description="Whether two quotes in a quoted CSV value denote a single quote in the data.")
+    double_quote: bool = Field(default=True, description="Whether two quotes in a quoted CSV value denote a single quote in the data.")
     newlines_in_values: bool = Field(
         default=False,
         description="Whether newline characters are allowed in CSV values. Turning this on may affect performance. Leave blank to default to False.",
@@ -60,6 +58,6 @@ class CsvFormat(BaseModel):
     infer_datatypes: Optional[bool] = Field(
         default=True,
         description="Configures whether a scheme for the source should be inferred from the current data or not."
-                    "If set to false and a custom schema is set, then the custom_schema is used"
-                    "If a custom schema is not set, and this is set to false, then all fields will be read as strings",
+        "If set to false and a custom schema is set, then the custom_schema is used"
+        "If a custom schema is not set, and this is set to false, then all fields will be read as strings",
     )

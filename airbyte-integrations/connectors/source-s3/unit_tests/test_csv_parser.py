@@ -12,9 +12,9 @@ from typing import Any, List, Mapping, Tuple
 
 import pytest
 from smart_open import open as smart_open
-
 from source_s3.source_files_abstract.formats.csv_parser import CsvParser
-from .abstract_test_parser import AbstractTestParser, memory_limit, create_by_local_file
+
+from .abstract_test_parser import AbstractTestParser, create_by_local_file, memory_limit
 from .conftest import TMP_FOLDER
 
 SAMPLE_DIRECTORY = Path(__file__).resolve().parent.joinpath("sample_files/")
@@ -64,15 +64,13 @@ def generate_csv_file(filename: str, columns: Mapping[str, str], num_rows: int, 
     return filename
 
 
-def generate_big_file(filepath: str, size_in_gigabytes: float, columns_number: int, template_file: str = None) -> Tuple[
-    dict, float]:
+def generate_big_file(filepath: str, size_in_gigabytes: float, columns_number: int, template_file: str = None) -> Tuple[dict, float]:
     temp_files = [filepath + ".1", filepath + ".2"]
     if template_file:
         shutil.copyfile(template_file, filepath)
         schema = None
     else:
-        schema = {f"column {i}": random.choice(["integer", "string", "boolean", "number"]) for i in
-                  range(columns_number)}
+        schema = {f"column {i}": random.choice(["integer", "string", "boolean", "number"]) for i in range(columns_number)}
         generate_csv_file(filepath, schema, 434, ",")
 
     skip_headers = False
@@ -98,7 +96,8 @@ def generate_big_file(filepath: str, size_in_gigabytes: float, columns_number: i
             temp_files.append(temp_files.pop(0))
     # remove temp files
     for temp_file in temp_files:
-        os.remove(temp_file)
+        if os.path.exists(temp_file):
+            os.remove(temp_file)
     return schema, file_size
 
 
@@ -139,8 +138,7 @@ class TestCsvParser(AbstractTestParser):
             "custom_csv_parameters": {
                 # tests custom CSV parameters (odd delimiter, quote_char, escape_char & newlines in values in the file)
                 "AbstractFileParser": CsvParser(
-                    format={"filetype": "csv", "delimiter": "^", "quote_char": "|", "escape_char": "!",
-                            "newlines_in_values": True},
+                    format={"filetype": "csv", "delimiter": "^", "quote_char": "|", "escape_char": "!", "newlines_in_values": True},
                     master_schema={
                         "id": "integer",
                         "name": "string",
@@ -168,8 +166,7 @@ class TestCsvParser(AbstractTestParser):
             "encoding_Big5": {
                 # tests encoding: Big5
                 "AbstractFileParser": CsvParser(
-                    format={"filetype": "csv", "encoding": "big5"},
-                    master_schema={"id": "integer", "name": "string", "valid": "boolean"}
+                    format={"filetype": "csv", "encoding": "big5"}, master_schema={"id": "integer", "name": "string", "valid": "boolean"}
                 ),
                 "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/test_file_3_enc_Big5.csv"),
                 "num_records": 8,
@@ -310,8 +307,7 @@ class TestCsvParser(AbstractTestParser):
             "missing_columns_in_master_schema": {
                 # tests missing columns in master schema
                 # TODO: maybe this should fail read_records, but it does pick up all the columns from file despite missing from master schema
-                "AbstractFileParser": CsvParser(format={"filetype": "csv"},
-                                                master_schema={"id": "integer", "name": "string"}),
+                "AbstractFileParser": CsvParser(format={"filetype": "csv"}, master_schema={"id": "integer", "name": "string"}),
                 "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/test_file_1.csv"),
                 "num_records": 8,
                 "inferred_schema": {

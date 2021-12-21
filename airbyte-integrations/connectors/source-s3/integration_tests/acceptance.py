@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 import os.path
 import shutil
 import tempfile
@@ -25,19 +26,13 @@ def minio_setup():
     client = docker.from_env()
     try:
         container = client.containers.run(
-            image="bitnami/minio:latest",
-            # command=f"server {TMP_FOLDER}",
+            image="minio/minio:RELEASE.2021-10-06T23-36-31Z",
+            command=f"server {TMP_FOLDER}",
             name="ci_test_minio",
             auto_remove=True,
-            volumes=[f"/{TMP_FOLDER}/minio_data:/data"],
+            volumes=[f"/{TMP_FOLDER}/minio_data:/{TMP_FOLDER}"],
             detach=True,
             ports={"9000/tcp": ("127.0.0.1", 9000)},
-            environment={
-                "MINIO_ACCESS_KEY": "123456",
-                "MINIO_SECRET_KEY": "123456key",
-                "MINIO_DEFAULT_BUCKETS": 'test-bucket',
-            }
-
         )
     except APIError as err:
         if err.status_code == 409:
@@ -53,17 +48,18 @@ def minio_setup():
         try:
             data = requests.get(check_url)
         except ConnectionError as err:
-            logger.error(f"minio error: {err}")
-            time.sleep(0.1)
+            logger.warn(f"minio error: {err}")
+            time.sleep(0.5)
             continue
         if data.status_code == 200:
             break
         logger.info("Run a minio/minio container...")
     yield
+
     if os.path.exists(TMP_FOLDER):
         shutil.rmtree(TMP_FOLDER)
-    logger.info("minio was stopped")
-    # container.remove(force=True)
+        logger.info("minio was stopped")
+    container.stop()
 
 
 @pytest.fixture(scope="session", autouse=True)
