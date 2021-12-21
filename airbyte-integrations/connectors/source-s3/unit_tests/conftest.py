@@ -8,7 +8,6 @@ import tempfile
 
 TMP_FOLDER = os.path.join(tempfile.gettempdir(), "test_generated")
 
-
 shutil.rmtree(TMP_FOLDER, ignore_errors=True)
 os.makedirs(TMP_FOLDER, exist_ok=True)
 
@@ -21,4 +20,4 @@ def pytest_generate_tests(metafunc):
 
 def pytest_sessionfinish(session, exitstatus):
     """whole test run finishes."""
-    # shutil.rmtree(TMP_FOLDER, ignore_errors=True)
+    shutil.rmtree(TMP_FOLDER, ignore_errors=True)
