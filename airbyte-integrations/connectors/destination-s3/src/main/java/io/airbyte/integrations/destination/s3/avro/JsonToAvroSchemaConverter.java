@@ -172,7 +172,11 @@ public class JsonToAvroSchemaConverter {
     return assembler.endRecord();
   }
 
-  Schema getSingleFieldType(final String fieldName, final JsonSchemaType fieldType, final JsonNode fieldDefinition, final boolean appendExtraProps, final boolean addStringToLogicalTypes) {
+  Schema getSingleFieldType(final String fieldName,
+                            final JsonSchemaType fieldType,
+                            final JsonNode fieldDefinition,
+                            final boolean appendExtraProps,
+                            final boolean addStringToLogicalTypes) {
     Preconditions
         .checkState(fieldType != JsonSchemaType.NULL, "Null types should have been filtered out");
 
@@ -201,7 +205,8 @@ public class JsonToAvroSchemaConverter {
       }
       case COMBINED -> {
         final Optional<JsonNode> combinedRestriction = getCombinedRestriction(fieldDefinition);
-        final List<Schema> unionTypes = getSchemasFromTypes(fieldName, (ArrayNode) combinedRestriction.get(), appendExtraProps, addStringToLogicalTypes);
+        final List<Schema> unionTypes =
+            getSchemasFromTypes(fieldName, (ArrayNode) combinedRestriction.get(), appendExtraProps, addStringToLogicalTypes);
         fieldSchema = Schema.createUnion(unionTypes);
       }
       case ARRAY -> {
@@ -210,7 +215,8 @@ public class JsonToAvroSchemaConverter {
           LOGGER.warn("Source connector provided schema for ARRAY with missed \"items\", will assume that it's a String type");
           fieldSchema = Schema.createArray(Schema.createUnion(NULL_SCHEMA, STRING_SCHEMA));
         } else if (items.isObject()) {
-          fieldSchema = Schema.createArray(getNullableFieldTypes(String.format("%s.items", fieldName), items, appendExtraProps, addStringToLogicalTypes));
+          fieldSchema =
+              Schema.createArray(getNullableFieldTypes(String.format("%s.items", fieldName), items, appendExtraProps, addStringToLogicalTypes));
         } else if (items.isArray()) {
           final List<Schema> arrayElementTypes = getSchemasFromTypes(fieldName, (ArrayNode) items, appendExtraProps, addStringToLogicalTypes);
           arrayElementTypes.add(0, NULL_SCHEMA);
@@ -227,7 +233,10 @@ public class JsonToAvroSchemaConverter {
     return fieldSchema;
   }
 
-  List<Schema> getSchemasFromTypes(final String fieldName, final ArrayNode types, final boolean appendExtraProps, final boolean addStringToLogicalTypes) {
+  List<Schema> getSchemasFromTypes(final String fieldName,
+                                   final ArrayNode types,
+                                   final boolean appendExtraProps,
+                                   final boolean addStringToLogicalTypes) {
     return MoreIterators.toList(types.elements())
         .stream()
         .flatMap(definition -> getNonNullTypes(fieldName, definition).stream().flatMap(type -> {
@@ -245,7 +254,10 @@ public class JsonToAvroSchemaConverter {
   /**
    * @param fieldDefinition - Json schema field definition. E.g. { type: "number" }.
    */
-  Schema getNullableFieldTypes(final String fieldName, final JsonNode fieldDefinition, final boolean appendExtraProps, final boolean addStringToLogicalTypes) {
+  Schema getNullableFieldTypes(final String fieldName,
+                               final JsonNode fieldDefinition,
+                               final boolean appendExtraProps,
+                               final boolean addStringToLogicalTypes) {
     // Filter out null types, which will be added back in the end.
     final List<Schema> nonNullFieldTypes = getNonNullTypes(fieldName, fieldDefinition)
         .stream()
