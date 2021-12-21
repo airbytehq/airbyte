@@ -18,6 +18,12 @@ RUN add-apt-repository \
        stable"
 RUN apt-get update && apt-get install -y docker-ce-cli jq
 
+# Install kubectl for copying files to kube pods. Eventually should be replaced with a kube java client.
+# See https://github.com/airbytehq/airbyte/issues/8643 for more information on why we are using kubectl for copying.
+RUN curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+RUN echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
+RUN apt-get update && apt-get install -y kubectl
+
 ENV APPLICATION airbyte-workers
 
 WORKDIR /app

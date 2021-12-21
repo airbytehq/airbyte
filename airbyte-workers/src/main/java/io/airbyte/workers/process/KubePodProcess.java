@@ -5,6 +5,7 @@
 package io.airbyte.workers.process;
 
 import com.google.common.collect.MoreCollectors;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
@@ -29,16 +30,12 @@ import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
-import io.kubernetes.client.Copy;
-import io.kubernetes.client.openapi.ApiClient;
-import io.kubernetes.client.openapi.ApiException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ProcessHandle.Info;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.AbstractMap;
@@ -214,8 +211,7 @@ public class KubePodProcess extends Process {
     return containerBuilder.build();
   }
 
-  private static void copyFilesToKubeConfigVolume(final ApiClient officialClient,
-                                                  final String podName,
+  private static void copyFilesToKubeConfigVolume(final String podName,
                                                   final String namespace,
                                                   final Map<String, String> files) {
     final List<Map.Entry<String, String>> fileEntries = new ArrayList<>(files.entrySet());
@@ -223,18 +219,32 @@ public class KubePodProcess extends Process {
     // copy this file last to indicate that the copy has completed
     fileEntries.add(new AbstractMap.SimpleEntry<>(SUCCESS_FILE_NAME, ""));
 
+    Path tmpFile = null;
     for (final Map.Entry<String, String> file : fileEntries) {
       try {
+        tmpFile = Path.of(IOs.writeFileToRandomTmpDir(file.getKey(), file.getValue()));
+
         LOGGER.info("Uploading file: " + file.getKey());
-        final var contents = file.getValue().getBytes(StandardCharsets.UTF_8);
         final var containerPath = Path.of(CONFIG_DIR + "/" + file.getKey());
 
-        // fabric8 kube client upload doesn't work on gke:
-        // https://github.com/fabric8io/kubernetes-client/issues/2217
-        final Copy copy = new Copy(officialClient);
-        copy.copyFileToPod(namespace, podName, INIT_CONTAINER_NAME, contents, containerPath);
-      } catch (final IOException | ApiException e) {
+        // using kubectl cp directly here, because both fabric and the official kube client APIs both have
+        // several issues with copying files. See https://github.com/airbytehq/airbyte/issues/8643 for
+        // detauls.
+        final String command = String.format("kubectl cp %s %s/%s:%s -c %s", tmpFile, namespace, podName, containerPath, INIT_CONTAINER_NAME);
+        LOGGER.info(command);
+
+        final Process proc = Runtime.getRuntime().exec(command);
+        LOGGER.info("Waiting for kubectl cp to complete");
+        proc.waitFor();
+        LOGGER.info("kubectl cp complete, closing process");
+        proc.destroy();
+
+      } catch (final IOException | InterruptedException e) {
         throw new RuntimeException(e);
+      } finally {
+        if (tmpFile != null) {
+          tmpFile.toFile().delete();
+        }
       }
     }
   }
@@ -270,7 +280,6 @@ public class KubePodProcess extends Process {
 
   public KubePodProcess(final boolean isOrchestrator,
                         final String processRunnerHost,
-                        final ApiClient officialClient,
                         final KubernetesClient fabricClient,
                         final Duration statusCheckInterval,
                         final String podName,
@@ -426,7 +435,7 @@ public class KubePodProcess extends Process {
     waitForInitPodToRun(fabricClient, podDefinition);
 
     LOGGER.info("Copying files...");
-    copyFilesToKubeConfigVolume(officialClient, podName, namespace, files);
+    copyFilesToKubeConfigVolume(podName, namespace, files);
 
     LOGGER.info("Waiting until pod is ready...");
     // If a pod gets into a non-terminal error state it should be automatically killed by our
