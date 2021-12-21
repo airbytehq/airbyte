@@ -49,13 +49,11 @@ class SalesforceStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> str:
         response_data = response.json()
-        if len(response_data[
-                   "records"]) == self.page_size and self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
+        if len(response_data["records"]) == self.page_size and self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             return f"WHERE {self.primary_key} >= '{response_data['records'][-1][self.primary_key]}' "
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         """
         Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
@@ -93,10 +91,8 @@ class SalesforceStream(HttpStream, ABC):
             yield from super().read_records(**kwargs)
         except exceptions.HTTPError as error:
             error_data = error.response.json()[0]
-            if error.response.status_code == codes.FORBIDDEN and not error_data.get("errorCode",
-                                                                                    "") == "REQUEST_LIMIT_EXCEEDED":
-                self.logger.error(
-                    f"Cannot receive data for stream '{self.name}', error message: '{error_data.get('message')}'")
+            if error.response.status_code == codes.FORBIDDEN and not error_data.get("errorCode", "") == "REQUEST_LIMIT_EXCEEDED":
+                self.logger.error(f"Cannot receive data for stream '{self.name}', error message: '{error_data.get('message')}'")
             else:
                 raise error
 
@@ -114,8 +110,7 @@ class BulkSalesforceStream(SalesforceStream):
     def path(self, **kwargs) -> str:
         return f"/services/data/{self.sf_api.version}/jobs/query"
 
-    transformer = TypeTransformer(
-        TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
+    transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
 
     @transformer.registerCustomTransform
     def transform_empty_string_to_none(instance, schema):
@@ -138,8 +133,7 @@ class BulkSalesforceStream(SalesforceStream):
         """
         docs: https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/create_job.htm
         """
-        json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA",
-                "lineEnding": "LF"}
+        json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
         try:
             response = self._send_http_request("POST", url, json=json)
             job_id = response.json()["id"]
@@ -151,19 +145,13 @@ class BulkSalesforceStream(SalesforceStream):
                 error_code = error_data.get("errorCode")
                 error_message = error_data.get("message", "")
                 if error_message == "Selecting compound data not supported in Bulk Query" or (
-                        error_code == "INVALIDENTITY" and
-                        "is not supported by the Bulk API" in error_message
+                    error_code == "INVALIDENTITY" and "is not supported by the Bulk API" in error_message
                 ):
-                    self.logger.error(
-                        f"Cannot receive data for stream '{self.name}' using BULK API, error message: '{error_message}'"
-                    )
+                    self.logger.error(f"Cannot receive data for stream '{self.name}' using BULK API, error message: '{error_message}'")
                 elif error.response.status_code == codes.FORBIDDEN and error_code != "REQUEST_LIMIT_EXCEEDED":
-                    self.logger.error(
-                        f"Cannot receive data for stream '{self.name}', error message: '{error_message}'")
-                elif error.response.status_code == codes.BAD_REQUEST and error_message.endswith(
-                        "does not support query"):
-                    self.logger.error(
-                        f"The stream '{self.name}' is not queryable, error message: '{error_message}'")
+                    self.logger.error(f"Cannot receive data for stream '{self.name}', error message: '{error_message}'")
+                elif error.response.status_code == codes.BAD_REQUEST and error_message.endswith("does not support query"):
+                    self.logger.error(f"The stream '{self.name}' is not queryable, error message: '{error_message}'")
                 else:
                     raise error
             else:
@@ -250,18 +238,17 @@ class BulkSalesforceStream(SalesforceStream):
             return f"WHERE {self.primary_key} >= '{last_record[self.primary_key]}' "
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         next_page_token = None
 
         while True:
-            params = self.request_params(stream_state=stream_state, stream_slice=stream_slice,
-                                         next_page_token=next_page_token)
+            params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
             path = self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
             job_full_url = self.execute_job(query=params["q"], url=f"{self.url_base}{path}")
             if not job_full_url:
@@ -302,8 +289,7 @@ class IncrementalSalesforceStream(SalesforceStream, ABC):
             return response_data["records"][-1][self.cursor_field]
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         selected_properties = self.get_json_schema().get("properties", {})
 
@@ -329,8 +315,7 @@ class IncrementalSalesforceStream(SalesforceStream, ABC):
     def cursor_field(self) -> str:
         return self.replication_key
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
-            Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state
         object and returning an updated state object.

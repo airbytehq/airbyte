@@ -174,15 +174,15 @@ class Salesforce:
     version = "v52.0"
 
     def __init__(
-            self,
-            refresh_token: str = None,
-            token: str = None,
-            client_id: str = None,
-            client_secret: str = None,
-            is_sandbox: bool = None,
-            start_date: str = None,
-            api_type: str = None,
-            **kwargs,
+        self,
+        refresh_token: str = None,
+        token: str = None,
+        client_id: str = None,
+        client_secret: str = None,
+        is_sandbox: bool = None,
+        start_date: str = None,
+        api_type: str = None,
+        **kwargs,
     ):
         self.api_type = api_type.upper() if api_type else None
         self.refresh_token = refresh_token
@@ -228,8 +228,7 @@ class Salesforce:
 
     @default_backoff_handler(max_tries=5, factor=15)
     def _make_request(
-            self, http_method: str, url: str, headers: dict = None, body: dict = None, stream: bool = False,
-            params: dict = None
+        self, http_method: str, url: str, headers: dict = None, body: dict = None, stream: bool = False, params: dict = None
     ) -> requests.models.Response:
         try:
             if http_method == "GET":
@@ -251,8 +250,7 @@ class Salesforce:
             "refresh_token": self.refresh_token,
         }
 
-        resp = self._make_request("POST", login_url, body=login_body,
-                                  headers={"Content-Type": "application/x-www-form-urlencoded"})
+        resp = self._make_request("POST", login_url, body=login_body, headers={"Content-Type": "application/x-www-form-urlencoded"})
 
         auth = resp.json()
         self.access_token = auth["access_token"]
@@ -270,8 +268,7 @@ class Salesforce:
 
     def generate_schema(self, stream_name: str = None) -> Mapping[str, Any]:
         response = self.describe(stream_name)
-        schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True,
-                  "properties": {}}
+        schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True, "properties": {}}
         for field in response["fields"]:
             schema["properties"][field["name"]] = self.field_to_property_schema(field)
         return schema

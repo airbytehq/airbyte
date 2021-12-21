@@ -1,10 +1,13 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 import json
 from pathlib import Path
-from typing import Mapping, Any
+from typing import Any, Mapping
 
 import pytest
 from airbyte_cdk.sources.streams import Stream
-
 from source_salesforce.source import SourceSalesforce
 
 HERE = Path(__file__).parent
@@ -48,8 +51,7 @@ def test_not_queryable_stream(input_config):
     self.generate_streams(input_config, stream_names, sf)
     ConfiguredAirbyteCatalog
     AirbyteStream
-    ConfiguredAirbyteStream(
-        input_config)
+    ConfiguredAirbyteStream(input_config)
     raise Exception(source)
 
     # def streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None) -> List[Stream]:

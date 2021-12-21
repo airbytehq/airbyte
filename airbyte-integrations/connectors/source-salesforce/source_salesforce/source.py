@@ -13,8 +13,7 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import split_config
 
 from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
-from .streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, IncrementalSalesforceStream, \
-    SalesforceStream
+from .streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, IncrementalSalesforceStream, SalesforceStream
 
 
 class SourceSalesforce(AbstractSource):
@@ -29,8 +28,7 @@ class SourceSalesforce(AbstractSource):
         return True, None
 
     @classmethod
-    def generate_streams(cls, config: Mapping[str, Any], stream_names: List[str], sf_object: Salesforce) -> List[
-        Stream]:
+    def generate_streams(cls, config: Mapping[str, Any], stream_names: List[str], sf_object: Salesforce) -> List[Stream]:
         """ "Generates a list of stream by their names. It can be used for different tests too"""
         authenticator = TokenAuthenticator(sf_object.access_token)
         streams_kwargs = {}
@@ -44,11 +42,9 @@ class SourceSalesforce(AbstractSource):
         for stream_name in stream_names:
             json_schema = sf_object.generate_schema(stream_name)
             pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)
-            streams_kwargs.update(
-                dict(sf_api=sf_object, pk=pk, stream_name=stream_name, schema=json_schema, authenticator=authenticator))
+            streams_kwargs.update(dict(sf_api=sf_object, pk=pk, stream_name=stream_name, schema=json_schema, authenticator=authenticator))
             if replication_key and stream_name not in UNSUPPORTED_FILTERING_STREAMS:
-                streams.append(
-                    incremental(**streams_kwargs, replication_key=replication_key, start_date=config.get("start_date")))
+                streams.append(incremental(**streams_kwargs, replication_key=replication_key, start_date=config.get("start_date")))
             else:
                 streams.append(full_refresh(**streams_kwargs))
 
@@ -60,8 +56,7 @@ class SourceSalesforce(AbstractSource):
         return self.generate_streams(config, stream_names, sf)
 
     def read(
-            self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog,
-            state: MutableMapping[str, Any] = None
+        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
     ) -> Iterator[AirbyteMessage]:
         """
         Overwritten to dynamically receive only those streams that are necessary for reading for significant speed gains
