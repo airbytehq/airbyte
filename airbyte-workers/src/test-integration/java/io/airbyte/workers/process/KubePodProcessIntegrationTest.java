@@ -209,6 +209,22 @@ public class KubePodProcessIntegrationTest {
     assertNotEquals(0, process.exitValue());
   }
 
+  @Test
+  public void testExitValueWaitsForMainToTerminate() throws Exception {
+    // start a long running main process
+    final Process process = getProcess("sleep 2; exit 13;");
+
+    // immediately close streams
+    process.getInputStream().close();
+    process.getOutputStream().close();
+
+    // waiting for process
+    process.waitFor();
+
+    // the pod exit code should match the main container exit value
+    assertEquals(13, process.exitValue());
+  }
+
   private static String getRandomFile(final int lines) {
     final var sb = new StringBuilder();
     for (int i = 0; i < lines; i++) {

@@ -105,7 +105,7 @@ class WebBackendConnectionsHandlerTest {
     wbHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler, schedulerHandler,
         operationsHandler);
 
-    final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSource();
+    final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
     sourceRead = SourceHelpers.getSourceRead(source, standardSourceDefinition);
 
