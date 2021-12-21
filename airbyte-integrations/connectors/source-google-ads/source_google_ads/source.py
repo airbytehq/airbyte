@@ -3,13 +3,14 @@
 #
 
 
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping, Tuple, Union
 
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.errors import GoogleAdsException
+from pendulum import timezone
+from pendulum.tz.timezone import Timezone
 
 from .custom_query_stream import CustomQuery
 from .google_ads import GoogleAds
@@ -23,13 +24,16 @@ from .streams import (
     ClickView,
     DisplayKeywordPerformanceReport,
     DisplayTopicsPerformanceReport,
+    GeographicReport,
+    KeywordReport,
     ShoppingPerformanceReport,
     UserLocationReport,
 )
 
 
 class SourceGoogleAds(AbstractSource):
-    def get_credentials(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
+    @staticmethod
+    def get_credentials(config: Mapping[str, Any]) -> Mapping[str, Any]:
         credentials = config["credentials"]
 
         # https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid
@@ -37,18 +41,46 @@ class SourceGoogleAds(AbstractSource):
             credentials["login_customer_id"] = config["login_customer_id"]
         return credentials
 
+    @staticmethod
+    def get_account_info(google_api) -> dict:
+        return next(Accounts(api=google_api).read_records(sync_mode=None), {})
+
+    @staticmethod
+    def get_time_zone(account: dict) -> Union[timezone, str]:
+        time_zone_name = account.get("customer.time_zone")
+        if time_zone_name:
+            return Timezone(time_zone_name)
+        return "local"
+
+    @staticmethod
+    def is_manager_account(account: dict) -> bool:
+        return bool(account.get("customer.manager"))
+
+    @staticmethod
+    def is_metrics_in_custom_query(query: str) -> bool:
+        fields = CustomQuery.get_query_fields(query)
+        for field in fields:
+            if field.startswith("metrics"):
+                return True
+        return False
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             logger.info("Checking the config")
             google_api = GoogleAds(credentials=self.get_credentials(config), customer_id=config["customer_id"])
-            account_stream = Accounts(api=google_api)
-            list(account_stream.read_records(sync_mode=SyncMode.full_refresh))
+            account_info = self.get_account_info(google_api)
+            is_manager_account = self.is_manager_account(account_info)
+
             # Check custom query request validity by sending metric request with non-existant time window
-            for q in config.get("custom_queries", []):
-                q = q.get("query")
-                if CustomQuery.cursor_field in q:
+            for query in config.get("custom_queries", []):
+                query = query.get("query")
+
+                if is_manager_account and self.is_metrics_in_custom_query(query):
+                    raise Exception(f"Metrics are not available for manager account. Check fields in your custom query: {query}")
+                if CustomQuery.cursor_field in query:
                     raise Exception(f"Custom query should not contain {CustomQuery.cursor_field}")
-                req_q = CustomQuery.insert_segments_date_expr(q, "1980-01-01", "1980-01-01")
+
+                req_q = CustomQuery.insert_segments_date_expr(query, "1980-01-01", "1980-01-01")
                 google_api.send_request(req_q)
             return True, None
         except GoogleAdsException as error:
@@ -56,24 +88,38 @@ class SourceGoogleAds(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         google_api = GoogleAds(credentials=self.get_credentials(config), customer_id=config["customer_id"])
+        account_info = self.get_account_info(google_api)
+        time_zone = self.get_time_zone(account_info)
         incremental_stream_config = dict(
-            api=google_api, conversion_window_days=config["conversion_window_days"], start_date=config["start_date"]
+            api=google_api, conversion_window_days=config["conversion_window_days"], start_date=config["start_date"], time_zone=time_zone
         )
 
-        custom_query_streams = [
-            CustomQuery(custom_query_config=single_query_config, **incremental_stream_config)
-            for single_query_config in config.get("custom_queries", [])
-        ]
-        return [
-            UserLocationReport(**incremental_stream_config),
-            AccountPerformanceReport(**incremental_stream_config),
-            DisplayTopicsPerformanceReport(**incremental_stream_config),
-            DisplayKeywordPerformanceReport(**incremental_stream_config),
-            ShoppingPerformanceReport(**incremental_stream_config),
-            AdGroupAdReport(**incremental_stream_config),
+        streams = [
             AdGroupAds(api=google_api),
             AdGroups(api=google_api),
             Accounts(api=google_api),
             Campaigns(api=google_api),
             ClickView(**incremental_stream_config),
-        ] + custom_query_streams
+        ]
+
+        custom_query_streams = [
+            CustomQuery(custom_query_config=single_query_config, **incremental_stream_config)
+            for single_query_config in config.get("custom_queries", [])
+        ]
+        streams.extend(custom_query_streams)
+
+        # Metrics streams cannot be requested for a manager account.
+        if not self.is_manager_account(account_info):
+            streams.extend(
+                [
+                    UserLocationReport(**incremental_stream_config),
+                    AccountPerformanceReport(**incremental_stream_config),
+                    DisplayTopicsPerformanceReport(**incremental_stream_config),
+                    DisplayKeywordPerformanceReport(**incremental_stream_config),
+                    ShoppingPerformanceReport(**incremental_stream_config),
+                    AdGroupAdReport(**incremental_stream_config),
+                    GeographicReport(**incremental_stream_config),
+                    KeywordReport(**incremental_stream_config),
+                ]
+            )
+        return streams

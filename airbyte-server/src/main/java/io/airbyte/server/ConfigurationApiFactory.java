@@ -12,10 +12,11 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.Database;
-import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
+import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
+import io.airbyte.workers.WorkerConfigs;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
@@ -30,7 +31,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static JobPersistence jobPersistence;
   private static ConfigPersistence seed;
   private static SchedulerJobClient schedulerJobClient;
-  private static CachingSynchronousSchedulerClient synchronousSchedulerClient;
+  private static SynchronousSchedulerClient synchronousSchedulerClient;
   private static FileTtlManager archiveTtlManager;
   private static Map<String, String> mdc;
   private static Database configsDatabase;
@@ -38,6 +39,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static TrackingClient trackingClient;
   private static WorkerEnvironment workerEnvironment;
   private static LogConfigs logConfigs;
+  private static WorkerConfigs workerConfigs;
   private static Path workspaceRoot;
   private static String webappUrl;
   private static AirbyteVersion airbyteVersion;
@@ -49,7 +51,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
                                final JobPersistence jobPersistence,
                                final ConfigPersistence seed,
                                final SchedulerJobClient schedulerJobClient,
-                               final CachingSynchronousSchedulerClient synchronousSchedulerClient,
+                               final SynchronousSchedulerClient synchronousSchedulerClient,
                                final FileTtlManager archiveTtlManager,
                                final Map<String, String> mdc,
                                final Database configsDatabase,
@@ -57,6 +59,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
                                final TrackingClient trackingClient,
                                final WorkerEnvironment workerEnvironment,
                                final LogConfigs logConfigs,
+                               final WorkerConfigs workerConfigs,
                                final String webappUrl,
                                final AirbyteVersion airbyteVersion,
                                final Path workspaceRoot,
@@ -74,6 +77,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.trackingClient = trackingClient;
     ConfigurationApiFactory.workerEnvironment = workerEnvironment;
     ConfigurationApiFactory.logConfigs = logConfigs;
+    ConfigurationApiFactory.workerConfigs = workerConfigs;
     ConfigurationApiFactory.workspaceRoot = workspaceRoot;
     ConfigurationApiFactory.webappUrl = webappUrl;
     ConfigurationApiFactory.airbyteVersion = airbyteVersion;
@@ -97,6 +101,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.trackingClient,
         ConfigurationApiFactory.workerEnvironment,
         ConfigurationApiFactory.logConfigs,
+        ConfigurationApiFactory.workerConfigs,
         ConfigurationApiFactory.webappUrl,
         ConfigurationApiFactory.airbyteVersion,
         ConfigurationApiFactory.workspaceRoot,
