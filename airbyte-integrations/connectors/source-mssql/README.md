@@ -3,7 +3,7 @@
 ## Performance Test
 
 To run performance tests in commandline:
-```
+```shell
 ./gradlew :airbyte-integrations:connectors:source-mssql:performanceTest [--cpulimit=cpulimit/<limit>] [--memorylimit=memorylimit/<limit>]
 ```
 
