@@ -70,5 +70,5 @@ def upload_file(filename, s3_client, bucket, s3_key,
                 "Expected: 'none' or 'KMS'"
                 .format(encryption_type)
             )
-    LOGGER.info("Uploading {} to bucket {} at {}{}".format(filename, bucket, s3_key, encryption_desc))
+    #LOGGER.info("Uploading {} to bucket {} at {}{}".format(filename, bucket, s3_key, encryption_desc))
     s3_client.upload_file(filename, bucket, s3_key, ExtraArgs=encryption_args)
