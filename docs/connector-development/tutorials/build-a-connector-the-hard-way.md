@@ -74,7 +74,7 @@ Airbyte provides a code generator which bootstraps the scaffolding for our conne
 
 ```bash
 $ cd airbyte-integrations/connector-templates/generator
-$ ./generate.sh 
+$ ./generate.sh
 ```
 
 We'll select the `generic` template and call the connector `stock-ticker-api`:
@@ -210,7 +210,7 @@ def run(args):
         log("Invalid command. Allowable commands: [spec]")
         sys.exit(1)
 
-    # A zero exit code means the process successfully completed    
+    # A zero exit code means the process successfully completed
     sys.exit(0)
 
 
@@ -287,7 +287,7 @@ Lastly we'll extend the `run` method to accept the `check` command and call the 
 def get_input_file_path(path):
     if os.path.isabs(path):
         return path
-    else: 
+    else:
         return os.path.join(os.getcwd(), path)
 ```
 
@@ -1058,8 +1058,8 @@ Armed with the knowledge you gained in this guide, here are some places you can 
 This section is not yet complete and will be completed soon. Please reach out to us on [Slack](https://slack.airbyte.io) or [Github](https://github.com/airbytehq/airbyte) if you need the information promised by these sections immediately.
 
 ### Incremental sync
-Follow the [next tutorial](adding-incremental-sync.md) to implement incremental sync. 
+Follow the [next tutorial](adding-incremental-sync.md) to implement incremental sync.
 
 ### Connector Development Kit
-Like we mention at the beginning of the tutorial, this guide is meant more for understanding than as a blueprint for implementing production connectors. See the [Connector Development Kit](../../../airbyte-cdk/python/docs/tutorials/README.md) for the frameworks you should use to build production-ready connectors. 
+Like we mention at the beginning of the tutorial, this guide is meant more for understanding than as a blueprint for implementing production connectors. See the [Connector Development Kit](../../../airbyte-cdk/python/docs/tutorials/README.md) for the frameworks you should use to build production-ready connectors.
 /
