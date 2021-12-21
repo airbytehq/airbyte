@@ -147,34 +147,6 @@ class CsvParser(AbstractFileParser):
         field_names = next(reader)
         return {field_name.strip(): pyarrow.string() for field_name in field_names}
 
-    def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
-        """
-        https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html
-        PyArrow returns lists of values for each column so we zip() these up into records which we then yield
-        """
-        streaming_reader = pa_csv.open_csv(
-            file,
-            pa.csv.ReadOptions(**self._read_options()),
-            pa.csv.ParseOptions(**self._parse_options()),
-            pa.csv.ConvertOptions(**self._convert_options(self._master_schema)),
-        )
-        still_reading = True
-        while still_reading:
-            try:
-                batch = streaming_reader.read_next_batch()
-            except StopIteration:
-                still_reading = False
-            else:
-                batch_dict = batch.to_pydict()
-                batch_columns = [col_info.name for col_info in batch.schema]
-                # this gives us a list of lists where each nested list holds ordered values for a single column
-                # e.g. [ [1,2,3], ["a", "b", "c"], [True, True, False] ]
-                columnwise_record_values = [batch_dict[column] for column in batch_columns]
-                # we zip this to get row-by-row, e.g. [ [1, "a", True], [2, "b", True], [3, "c", False] ]
-                for record_values in zip(*columnwise_record_values):
-                    # create our record of {col: value, col: value} by dict comprehension, iterating through all cols in batch_columns
-                    yield {batch_columns[i]: record_values[i] for i in range(len(batch_columns))}
-
     def __read_stream_by_chunks(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html
