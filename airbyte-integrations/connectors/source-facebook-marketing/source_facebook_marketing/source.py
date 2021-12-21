@@ -76,7 +76,11 @@ class ConnectorConfig(BaseModel):
         default_factory=pendulum.now,
     )
 
-    include_deleted: bool = Field(default=False, description="Include data from deleted campaigns, ads, and adsets.")
+    fetch_thumbnail_images: bool = Field(
+        default=False, description="In each Ad Creative, fetch the thumbnail_url and store the result in thumbnail_data_url"
+    )
+
+    include_deleted: bool = Field(default=False, description="Include data from deleted campaigns, ads, and adsets")
 
     insights_lookback_window: int = Field(
         default=28,
@@ -87,7 +91,7 @@ class ConnectorConfig(BaseModel):
 
     insights_days_per_job: int = Field(
         default=7,
-        description="Number of days to sync in one job. The more data you have - the smaller you want this parameter to be.",
+        description="Number of days to sync in one job (the more data you have, the smaller this parameter should be)",
         minimum=1,
         maximum=30,
     )
@@ -137,7 +141,7 @@ class SourceFacebookMarketing(AbstractSource):
             Campaigns(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
             AdSets(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
             Ads(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
-            AdCreatives(api=api),
+            AdCreatives(api=api, fetch_thumbnail_images=config.fetch_thumbnail_images),
             AdsInsights(**insights_args),
             AdsInsightsAgeAndGender(**insights_args),
             AdsInsightsCountry(**insights_args),
@@ -204,13 +208,10 @@ class SourceFacebookMarketing(AbstractSource):
 
     def _check_custom_insights_entries(self, insights: List[Mapping[str, Any]]):
 
-        default_fields = list(
-            ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights").get("properties", {}).keys()
-        )
-        default_breakdowns = list(
-            ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights_breakdowns").get("properties", {}).keys()
-        )
-        default_actions_breakdowns = [e for e in default_breakdowns if "action_" in e]
+        loader = ResourceSchemaLoader(package_name_from_class(self.__class__))
+        default_fields = list(loader.get_schema("ads_insights").get("properties", {}).keys())
+        default_breakdowns = list(loader.get_schema("ads_insights_breakdowns").get("properties", {}).keys())
+        default_action_breakdowns = list(loader.get_schema("ads_insights_action_breakdowns").get("properties", {}).keys())
 
         for insight in insights:
             if insight.get("fields"):
@@ -224,7 +225,7 @@ class SourceFacebookMarketing(AbstractSource):
                     message = f"{value} is not a valid breakdown name"
                     raise Exception("Config validation error: " + message) from None
             if insight.get("action_breakdowns"):
-                value_checked, value = self._check_values(default_actions_breakdowns, insight.get("action_breakdowns"))
+                value_checked, value = self._check_values(default_action_breakdowns, insight.get("action_breakdowns"))
                 if not value_checked:
                     message = f"{value} is not a valid action_breakdown name"
                     raise Exception("Config validation error: " + message) from None

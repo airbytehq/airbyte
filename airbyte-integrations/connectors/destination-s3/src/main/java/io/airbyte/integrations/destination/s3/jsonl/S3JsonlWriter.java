@@ -37,6 +37,7 @@ public class S3JsonlWriter extends BaseS3Writer implements S3Writer {
   private final StreamTransferManager uploadManager;
   private final MultiPartOutputStream outputStream;
   private final PrintWriter printWriter;
+  private final String objectKey;
 
   public S3JsonlWriter(final S3DestinationConfig config,
                        final AmazonS3 s3Client,
@@ -45,10 +46,9 @@ public class S3JsonlWriter extends BaseS3Writer implements S3Writer {
     super(config, s3Client, configuredStream);
 
     final String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.JSONL);
-    final String objectKey = String.join("/", outputPrefix, outputFilename);
+    objectKey = String.join("/", outputPrefix, outputFilename);
 
-    LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(),
-        objectKey);
+    LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(), objectKey);
 
     this.uploadManager = S3StreamTransferManagerHelper.getDefault(
         config.getBucketName(), objectKey, s3Client, config.getFormatConfig().getPartSize());
@@ -78,6 +78,11 @@ public class S3JsonlWriter extends BaseS3Writer implements S3Writer {
     printWriter.close();
     outputStream.close();
     uploadManager.abort();
+  }
+
+  @Override
+  public String getOutputPath() {
+    return objectKey;
   }
 
 }

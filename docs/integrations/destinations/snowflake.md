@@ -152,6 +152,8 @@ By default, Airbyte uses batches of `INSERT` commands to add data to a temporary
 
 Internal named stages are storage location objects within a Snowflake database/schema. Because they are database objects, the same security permissions apply as with any other database objects. No need to provide additional properties for internal staging
 
+**Operating on a stage also requires the USAGE privilege on the parent database and schema.**
+
 ### AWS S3
 
 For AWS S3, you will need to create a bucket and provide credentials to access the bucket. We recommend creating a bucket that is only used for Airbyte to stage data to Snowflake. Airbyte needs read/write access to interact with this bucket.
@@ -162,7 +164,7 @@ First you will need to create a GCS bucket.
 
 Then you will need to run the script below:
 
-* You must run the script as the account admin for Snowflake. 
+* You must run the script as the account admin for Snowflake.
 * You should replace `AIRBYTE_ROLE` with the role you used for Airbyte's Snowflake configuration.
 * Replace `YOURBUCKETNAME` with your bucket name
 * The stage name can be modified to any valid name.
@@ -194,6 +196,8 @@ Finally, you need to add read/write permissions to your bucket with that email.
 
 | Version | Date      | Pull Request | Subject |
 | :------ | :-------- | :-----       | :------ |
+| 0.3.21 | 2021-12-15 | [#8781](https://github.com/airbytehq/airbyte/pull/8781) | Updated check method to verify permissions to create/drop stage for internal staging; compatibility fix for Java 17 |
+| 0.3.20 | 2021-12-10 | [#8562](https://github.com/airbytehq/airbyte/pull/8562) | Moving classes around for better dependency management; compatibility fix for Java 17 |
 | 0.3.19 | 2021-12-06 | [#8528](https://github.com/airbytehq/airbyte/pull/8528) | Set Internal Staging as default choice |
 | 0.3.18 | 2021-11-26 | [#8253](https://github.com/airbytehq/airbyte/pull/8253) | Snowflake Internal Staging Support |
 | 0.3.17 | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count |

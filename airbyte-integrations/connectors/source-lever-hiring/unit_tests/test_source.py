@@ -12,7 +12,7 @@ def setup_responses():
     responses.add(
         responses.POST,
         "https://sandbox-lever.auth0.com/oauth/token",
-        json={"access_token": "fake_access_token", "expires_in": 3600},
+        json={"access_token": "fake_access_token", "expires_in": 3600}
     )
 
 

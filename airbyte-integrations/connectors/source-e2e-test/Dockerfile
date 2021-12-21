@@ -4,9 +4,7 @@ WORKDIR /airbyte
 
 ENV APPLICATION source-e2e-test
 
-COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
+ADD build/distributions/${APPLICATION}*.tar /airbyte
 
-RUN tar xf ${APPLICATION}.tar --strip-components=1
-
-LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.version=0.1.1
 LABEL io.airbyte.name=airbyte/source-e2e-test
