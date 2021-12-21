@@ -92,3 +92,5 @@ def link_issue_to_new_card(source_project_id, target_project_id):
 if __name__ == "__main__":
     orgs = requests.get(f"{BASIC_URL}/orgs/airbytehq/projects", headers=AUTHORIZATION).json()
     print(orgs)
+    repos = requests.get(f"{BASIC_URL}/repos/airbytehq/airbyte/projects", headers=AUTHORIZATION).json()
+    print(repos)
