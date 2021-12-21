@@ -125,10 +125,10 @@ class FileStream(Stream, ABC):
     def filepath_iterator(self) -> Iterator[FileInfo]:
         """
         Provider-specific method to iterate through bucket/container/etc. and yield each full filepath.
-        This should supply the 'url' to use in StorageFile(). This is possibly better described as blob or file path.
-            e.g. for AWS: f"s3://{aws_access_key_id}:{aws_secret_access_key}@{self.url}" <- self.url is what we want to yield here
+        This should supply the 'FileInfo' to use in StorageFile(). This is aggrigate all file properties (last_modified, key, size).
+        All this meta options are saved during loading of files' list at once.
 
-        :yield: url filepath to use in StorageFile()
+        :yield: FileInfo object to use in StorageFile()
         """
 
     def pattern_matched_filepath_iterator(self, file_infos: Iterable[FileInfo]) -> Iterator[FileInfo]:
@@ -136,7 +136,7 @@ class FileStream(Stream, ABC):
         iterates through iterable file_infos and yields only those file_infos that match user-provided path patterns
 
         :param file_infos: filepath_iterator(), this is a param rather than method reference in order to unit test this
-        :yield: url filepath to use in StorageFile(), if matching on user-provided path patterns
+        :yield: FileInfo object to use in StorageFile(), if matching on user-provided path patterns
         """
         for file_info in file_infos:
             if globmatch(file_info.key, self._path_pattern, flags=GLOBSTAR | SPLIT):
@@ -145,8 +145,8 @@ class FileStream(Stream, ABC):
     @lru_cache(maxsize=None)
     def get_time_ordered_file_infos(self) -> List[FileInfo]:
         """
-        Iterates through pattern_matched_filepath_iterator(), acquiring last_modified property of each file to return in time ascending order.
-        Uses concurrent.futures to thread this asynchronously in order to improve performance when there are many files (network I/O)
+        Iterates through pattern_matched_filepath_iterator(), acquiring FileInfo objects
+        with last_modified property of each file to return in time ascending order.
         Caches results after first run of method to avoid repeating network calls as this is used more than once
 
         :return: list in time-ascending order

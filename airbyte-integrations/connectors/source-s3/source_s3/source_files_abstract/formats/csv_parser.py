@@ -207,6 +207,8 @@ class CsvParser(AbstractFileParser):
         """
         Read and send data
         """
+        yield from self.__read_stream_by_chunks(file)
+        return
         if file_info.size < MAX_CHUNK_SIZE or not file_info.key.endswith(".csv"):
             yield from self.__read_stream_by_chunks(file)
             return
