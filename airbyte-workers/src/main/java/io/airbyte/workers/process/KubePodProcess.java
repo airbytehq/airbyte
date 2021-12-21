@@ -154,7 +154,7 @@ public class KubePodProcess extends Process {
       initEntrypointStr = String.format("mkfifo %s && ", STDIN_PIPE_FILE) + initEntrypointStr;
     }
 
-    initEntrypointStr = initEntrypointStr + String.format(" && until [ -f %s ]; do sleep 0.1; done;", SUCCESS_FILE_NAME);
+    initEntrypointStr = initEntrypointStr + String.format(" && until [ -f %s ]; do sleep 0.00001; done;", SUCCESS_FILE_NAME);
 
     return new ContainerBuilder()
         .withName(INIT_CONTAINER_NAME)
@@ -211,8 +211,8 @@ public class KubePodProcess extends Process {
     return containerBuilder.build();
   }
 
-  private static void copyFilesToKubeConfigVolume(final String podName,
-                                                  final String namespace,
+  private static void copyFilesToKubeConfigVolume(final KubernetesClient client,
+                                                  final Pod podDefinition,
                                                   final Map<String, String> files) {
     final List<Map.Entry<String, String>> fileEntries = new ArrayList<>(files.entrySet());
 
@@ -231,15 +231,23 @@ public class KubePodProcess extends Process {
         // using kubectl cp directly here, because both fabric and the official kube client APIs have
         // several issues with copying files. See https://github.com/airbytehq/airbyte/issues/8643 for
         // details.
-        final String command = String.format("kubectl cp %s %s/%s:%s -c %s", tmpFile, namespace, podName, containerPath, INIT_CONTAINER_NAME);
+        final String command = String.format("kubectl cp %s %s/%s:%s -c %s", tmpFile, podDefinition.getMetadata().getNamespace(),
+            podDefinition.getMetadata().getName(), containerPath, INIT_CONTAINER_NAME);
         LOGGER.info(command);
 
         proc = Runtime.getRuntime().exec(command);
         LOGGER.info("Waiting for kubectl cp to complete");
-
         final int exitCode = proc.waitFor();
+
         if (exitCode != 0) {
-          throw new IOException("kubectl cp failed with exit code " + exitCode);
+          // Copying the success indicator file to the init container causes the container to immediately
+          // exit, causing the `kubectl cp` command to exit with code 137. This check ensures that an error is
+          // not thrown in this case if the init container exits successfully.
+          if (file.getKey().equals(SUCCESS_FILE_NAME) && waitForInitPodToTerminate(client, podDefinition, 10, TimeUnit.SECONDS) == 0) {
+            LOGGER.info("Init was successful; ignoring non-zero kubectl cp exit code for success indicator file.");
+          } else {
+            throw new IOException("kubectl cp failed with exit code " + exitCode);
+          }
         }
 
         LOGGER.info("kubectl cp complete, closing process");
@@ -270,6 +278,23 @@ public class KubePodProcess extends Process {
     client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
         .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().get(0).getState().getRunning() != null, 5, TimeUnit.MINUTES);
     LOGGER.info("Init container ready..");
+  }
+
+  /**
+   * Waits for the init container to terminate, and returns its exit code.
+   */
+  private static int waitForInitPodToTerminate(final KubernetesClient client,
+                                               final Pod podDefinition,
+                                               final long timeUnitsToWait,
+                                               final TimeUnit timeUnit)
+      throws InterruptedException {
+    LOGGER.info("Waiting for init container to terminate before checking exit value...");
+    client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
+        .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().get(0).getState().getTerminated() != null, timeUnitsToWait, timeUnit);
+    final int exitValue = client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName()).get()
+        .getStatus().getInitContainerStatuses().get(0).getState().getTerminated().getExitCode();
+    LOGGER.info("Init container terminated with exit value {}.", exitValue);
+    return exitValue;
   }
 
   private Toleration[] buildPodTolerations(final List<TolerationPOJO> tolerations) {
@@ -442,7 +467,7 @@ public class KubePodProcess extends Process {
     waitForInitPodToRun(fabricClient, podDefinition);
 
     LOGGER.info("Copying files...");
-    copyFilesToKubeConfigVolume(podName, namespace, files);
+    copyFilesToKubeConfigVolume(fabricClient, podDefinition, files);
 
     LOGGER.info("Waiting until pod is ready...");
     // If a pod gets into a non-terminal error state it should be automatically killed by our
