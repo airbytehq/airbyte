@@ -25,7 +25,8 @@
       "description": "Ocean carrier booking reference number."
     },
     "confirmed_space_released_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "containers": {
       "description": "Expandable API link to the containers of the shipment, represented by the Container object.",

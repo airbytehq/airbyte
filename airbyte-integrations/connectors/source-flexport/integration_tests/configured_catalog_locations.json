@@ -137,7 +137,10 @@
                   "description": "The _object value of the object that the link points to."
                 },
                 "id": {
-                  "type": "integer",
+                  "type": [
+                    "integer",
+                    "string"
+                  ],
                   "description": "The id value of the object that the link points to."
                 }
               }
@@ -152,7 +155,14 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"

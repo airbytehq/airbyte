@@ -22,7 +22,8 @@
     },
     "credited_at": {
       "type": "string",
-      "description": "When the credit was applied. In ISO8601 UTC format with timezone denoted by Z."
+      "description": "When the credit was applied. In ISO8601 UTC format with timezone denoted by Z.",
+      "format": "date-time"
     }
   }
 }

@@ -23,11 +23,13 @@
             },
             "issued_at": {
               "type": "string",
-              "description": "When the invoice was issued. In ISO8601 UTC format with timezone denoted by Z."
+              "description": "When the invoice was issued. In ISO8601 UTC format with timezone denoted by Z.",
+              "format": "date-time"
             },
             "due_date": {
               "type": "string",
-              "description": "Due date of the invoice. Calendar date only, no time."
+              "description": "Due date of the invoice. Calendar date only, no time.",
+              "format": "date"
             },
             "total": {
               "$schema": "http://json-schema.org/draft-07/schema#",
@@ -92,14 +94,16 @@
                 "null",
                 "string"
               ],
-              "description": "When the invoice was voided (if applicable). In ISO8601 UTC format with timezone denoted by Z."
+              "description": "When the invoice was voided (if applicable). In ISO8601 UTC format with timezone denoted by Z.",
+              "format": "date-time"
             },
             "last_updated_at": {
               "type": [
                 "null",
                 "string"
               ],
-              "description": "Time of the last adjustment to in invoice. In ISO8601 UTC format with timezone denoted by Z."
+              "description": "Time of the last adjustment to in invoice. In ISO8601 UTC format with timezone denoted by Z.",
+              "format": "date-time"
             },
             "recipient": {
               "$schema": "http://json-schema.org/draft-07/schema#",
@@ -506,7 +510,8 @@
                   },
                   "credited_at": {
                     "type": "string",
-                    "description": "When the credit was applied. In ISO8601 UTC format with timezone denoted by Z."
+                    "description": "When the credit was applied. In ISO8601 UTC format with timezone denoted by Z.",
+                    "format": "date-time"
                   }
                 }
               }
