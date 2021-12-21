@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerException;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
@@ -22,6 +23,7 @@ import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +32,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -51,12 +54,14 @@ public class KubePodProcessIntegrationTest {
   private static ApiClient officialClient;
   private static KubernetesClient fabricClient;
   private static KubeProcessFactory processFactory;
+  private static final ResourceRequirements DEFAULT_RESOURCE_REQUIREMENTS = new WorkerConfigs(new EnvConfigs()).getResourceRequirements();
 
   private WorkerHeartbeatServer server;
 
   @BeforeAll
   public static void init() throws Exception {
-    openPorts = new ArrayList<>(getOpenPorts(5));
+    openPorts = new ArrayList<>(getOpenPorts(30)); // todo: should we offer port pairs to prevent deadlock? can create test here with fewer to get
+                                                   // this
 
     heartbeatPort = openPorts.get(0);
     heartbeatUrl = getHost() + ":" + heartbeatPort;
@@ -66,7 +71,8 @@ public class KubePodProcessIntegrationTest {
 
     KubePortManagerSingleton.init(new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
     processFactory =
-        new KubeProcessFactory(new WorkerConfigs(new EnvConfigs()), "default", officialClient, fabricClient, heartbeatUrl, getHost(), false);
+        new KubeProcessFactory(new WorkerConfigs(new EnvConfigs()), "default", officialClient, fabricClient, heartbeatUrl, getHost(), false,
+            Duration.ofSeconds(1));
   }
 
   @BeforeEach
@@ -78,6 +84,42 @@ public class KubePodProcessIntegrationTest {
   @AfterEach
   public void teardown() throws Exception {
     server.stop();
+  }
+
+  /**
+   * In the past we've had some issues with transient / stuck pods. The idea here is to run a few at
+   * once, and check that they are all running in hopes of identifying regressions that introduce
+   * flakiness.
+   */
+  @Test
+  public void testConcurrentRunning() throws Exception {
+    final var pool = Executors.newFixedThreadPool(10);
+
+    final var totalJobs = 30;
+    final var successCount = new AtomicInteger(0);
+    final var failCount = new AtomicInteger(0);
+
+    for (int i = 0; i < totalJobs; i++) {
+      pool.submit(() -> {
+        try {
+          final Process process = getProcess("echo hi; sleep 1; echo hi2");
+          process.waitFor();
+
+          // the pod should be dead and in a good state
+          assertFalse(process.isAlive());
+          assertEquals(0, process.exitValue());
+          successCount.incrementAndGet();
+        } catch (Exception e) {
+          e.printStackTrace();
+          failCount.incrementAndGet();
+        }
+      });
+    }
+
+    pool.shutdown();
+    pool.awaitTermination(2, TimeUnit.MINUTES);
+
+    assertEquals(totalJobs, successCount.get());
   }
 
   @Test
@@ -234,7 +276,7 @@ public class KubePodProcessIntegrationTest {
         false,
         files,
         entrypoint,
-        new WorkerConfigs(new EnvConfigs()).getResourceRequirements(),
+        DEFAULT_RESOURCE_REQUIREMENTS,
         Map.of(),
         Map.of());
   }

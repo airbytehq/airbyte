@@ -38,6 +38,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -94,7 +95,7 @@ public class KubePodProcess extends Process {
   private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcess.class);
 
   private static final String INIT_CONTAINER_NAME = "init";
-  private static final Long STATUS_CHECK_INTERVAL_MS = 30 * 1000L;
+  public static final Duration DEFAULT_STATUS_CHECK_INTERVAL = Duration.ofSeconds(30);
   private static final String DEFAULT_MEMORY_LIMIT = "25Mi";
   private static final ResourceRequirements DEFAULT_SIDECAR_RESOURCES = new ResourceRequirements()
       .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_LIMIT);
@@ -130,6 +131,7 @@ public class KubePodProcess extends Process {
   private Long lastStatusCheck = null;
 
   private final ServerSocket stdoutServerSocket;
+  private final Duration statusCheckInterval;
   private final int stdoutLocalPort;
   private final ServerSocket stderrServerSocket;
   private final Map<Integer, Integer> internalToExternalPorts;
@@ -268,6 +270,7 @@ public class KubePodProcess extends Process {
                         final String processRunnerHost,
                         final ApiClient officialClient,
                         final KubernetesClient fabricClient,
+                        final Duration statusCheckInterval,
                         final String podName,
                         final String namespace,
                         final String image,
@@ -290,6 +293,7 @@ public class KubePodProcess extends Process {
                         final String... args)
       throws IOException, InterruptedException {
     this.fabricClient = fabricClient;
+    this.statusCheckInterval = statusCheckInterval;
     this.stdoutLocalPort = stdoutLocalPort;
     this.stderrLocalPort = stderrLocalPort;
 
@@ -587,7 +591,7 @@ public class KubePodProcess extends Process {
     }
 
     // Reuse the last status check result to prevent overloading the Kube Api server.
-    if (lastStatusCheck != null && System.currentTimeMillis() - lastStatusCheck < STATUS_CHECK_INTERVAL_MS) {
+    if (lastStatusCheck != null && System.currentTimeMillis() - lastStatusCheck < statusCheckInterval.toMillis()) {
       throw new IllegalThreadStateException("Kube pod process has not exited yet.");
     }
 
