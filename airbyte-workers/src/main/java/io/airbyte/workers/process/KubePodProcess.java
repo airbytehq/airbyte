@@ -229,7 +229,7 @@ public class KubePodProcess extends Process {
 
         // using kubectl cp directly here, because both fabric and the official kube client APIs both have
         // several issues with copying files. See https://github.com/airbytehq/airbyte/issues/8643 for
-        // detauls.
+        // details.
         final String command = String.format("kubectl cp %s %s/%s:%s -c %s", tmpFile, namespace, podName, containerPath, INIT_CONTAINER_NAME);
         LOGGER.info(command);
 
