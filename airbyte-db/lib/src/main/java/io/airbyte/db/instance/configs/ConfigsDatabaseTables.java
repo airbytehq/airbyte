@@ -10,14 +10,14 @@ import java.util.stream.Stream;
 
 public enum ConfigsDatabaseTables {
 
-  WORKSPACE,
-  ACTOR_DEFINITION,
   ACTOR,
+  ACTOR_DEFINITION,
   ACTOR_OAUTH_PARAMETER,
-  OPERATION,
   CONNECTION,
   CONNECTION_OPERATION,
-  STATE;
+  OPERATION,
+  STATE,
+  WORKSPACE;
 
   public String getTableName() {
     return name().toLowerCase();

@@ -52,6 +52,10 @@ public class ConfigsDatabaseInstance extends BaseDatabaseInstance implements Dat
         connectionString,
         isDatabaseConnected(databaseName));
     return new ExceptionWrappingDatabase(database).transaction(ctx -> {
+      // when we start fresh airbyte instance, we start with airbyte_configs configs table and then flyway
+      // breaks the table into individual table.
+      // state is the last table created by flyway migration.
+      // This is why we check if either of the two tables are present or not
       if (hasTable(ctx, "state") || hasTable(ctx, "airbyte_configs")) {
         LOGGER.info("The {} database is initialized", databaseName);
         return true;
