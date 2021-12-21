@@ -27,7 +27,7 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSourceOperations.class);
 
-  private JDBCType safeGetJdbcType(final int columnTypeInt) {
+  protected JDBCType safeGetJdbcType(final int columnTypeInt) {
     try {
       return JDBCType.valueOf(columnTypeInt);
     } catch (final Exception e) {
@@ -55,6 +55,7 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
       case TIME -> putTime(json, columnName, resultSet, colIndex);
       case TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
       case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(json, columnName, resultSet, colIndex);
+      case ARRAY -> putArray(json, columnName, resultSet, colIndex);
       default -> putDefault(json, columnName, resultSet, colIndex);
     }
   }
@@ -115,6 +116,7 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
       case TIME -> JsonSchemaPrimitive.STRING;
       case TIMESTAMP -> JsonSchemaPrimitive.STRING;
       case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaPrimitive.STRING_BINARY;
+      case ARRAY -> JsonSchemaPrimitive.ARRAY;
       // since column types aren't necessarily meaningful to Airbyte, liberally convert all unrecgonised
       // types to String
       default -> JsonSchemaPrimitive.STRING;

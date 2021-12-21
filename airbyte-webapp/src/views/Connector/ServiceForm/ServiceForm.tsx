@@ -26,7 +26,7 @@ import {
 } from "core/domain/connector";
 import { isDefined } from "utils/common";
 
-type ServiceFormProps = {
+export type ServiceFormProps = {
   formType: "source" | "destination";
   availableServices: ConnectorDefinition[];
   selectedConnector?: ConnectorDefinitionSpecification;
