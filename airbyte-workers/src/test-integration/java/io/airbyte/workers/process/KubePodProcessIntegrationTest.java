@@ -7,7 +7,6 @@ package io.airbyte.workers.process;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -18,13 +17,10 @@ import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerException;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.kubernetes.client.openapi.ApiClient;
-import io.kubernetes.client.util.Config;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -36,7 +32,7 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,13 +45,13 @@ import org.junit.jupiter.api.Timeout;
 @Timeout(value = 5,
          unit = TimeUnit.MINUTES)
 public class KubePodProcessIntegrationTest {
+
   private static final int RANDOM_FILE_LINE_LENGTH = 100;
 
   private static final boolean IS_MINIKUBE = Boolean.parseBoolean(Optional.ofNullable(System.getenv("IS_MINIKUBE")).orElse("false"));
   private static List<Integer> openPorts;
   private static int heartbeatPort;
   private static String heartbeatUrl;
-  private static ApiClient officialClient;
   private static KubernetesClient fabricClient;
   private static KubeProcessFactory processFactory;
   private static final ResourceRequirements DEFAULT_RESOURCE_REQUIREMENTS = new WorkerConfigs(new EnvConfigs()).getResourceRequirements();
@@ -70,12 +66,11 @@ public class KubePodProcessIntegrationTest {
     heartbeatPort = openPorts.get(0);
     heartbeatUrl = getHost() + ":" + heartbeatPort;
 
-    officialClient = Config.defaultClient();
     fabricClient = new DefaultKubernetesClient();
 
     KubePortManagerSingleton.init(new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
     processFactory =
-        new KubeProcessFactory(new WorkerConfigs(new EnvConfigs()), "default", officialClient, fabricClient, heartbeatUrl, getHost(), false,
+        new KubeProcessFactory(new WorkerConfigs(new EnvConfigs()), "default", fabricClient, heartbeatUrl, getHost(), false,
             Duration.ofSeconds(1));
   }
 
@@ -113,7 +108,7 @@ public class KubePodProcessIntegrationTest {
           assertFalse(process.isAlive());
           assertEquals(0, process.exitValue());
           successCount.incrementAndGet();
-        } catch (Exception e) {
+        } catch (final Exception e) {
           e.printStackTrace();
           failCount.incrementAndGet();
         }
@@ -271,28 +266,25 @@ public class KubePodProcessIntegrationTest {
     assertEquals(13, process.exitValue());
   }
 
+  @Test
   public void testCopyLargeFiles() throws Exception {
-    final int numFiles = 3;
-    final int numLinesPerFile = 10000;
+    final int numFiles = 1;
+    final int numLinesPerFile = 200000;
 
     final Map<String, String> files = Maps.newHashMapWithExpectedSize(numFiles);
     for (int i = 0; i < numFiles; i++) {
       files.put("file" + i, getRandomFile(numLinesPerFile));
     }
 
-    final long minimumConfigDirSize = (long)numFiles * numLinesPerFile * RANDOM_FILE_LINE_LENGTH;
+    final long minimumConfigDirSize = (long) numFiles * numLinesPerFile * RANDOM_FILE_LINE_LENGTH;
 
     final Process process = getProcess(
-        "CONFIG_DIR_SIZE=$(du -sb /config | awk '{print $1;}'); echo $CONFIG_DIR_SIZE >> /pipes/stdout; exit 0;",
+        String.format("CONFIG_DIR_SIZE=$(du -sb /config | awk '{print $1;}'); if [ $CONFIG_DIR_SIZE -ge %s ]; then exit 10; else exit 1; fi;",
+            minimumConfigDirSize),
         files);
 
-    final String processOutput = new String(process.getInputStream().readAllBytes());
-    final long actualConfigDirSize = Long.parseLong(processOutput.trim());
     process.waitFor();
-
-    assertTrue(
-        actualConfigDirSize > minimumConfigDirSize,
-        "(actual config directory size) " + actualConfigDirSize + " > " + minimumConfigDirSize + " (minimum expected config directory size)");
+    assertEquals(10, process.exitValue());
   }
 
   private static String getRandomFile(final int lines) {
