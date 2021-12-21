@@ -196,6 +196,7 @@ Finally, you need to add read/write permissions to your bucket with that email.
 
 | Version | Date      | Pull Request | Subject |
 | :------ | :-------- | :-----       | :------ |
+| 0.3.22 | 2021-12-21 | [#9006](https://github.com/airbytehq/airbyte/pull/9006) | Updated jdbc schema naming to follow Snowflake Naming Conventions |
 | 0.3.21 | 2021-12-15 | [#8781](https://github.com/airbytehq/airbyte/pull/8781) | Updated check method to verify permissions to create/drop stage for internal staging; compatibility fix for Java 17 |
 | 0.3.20 | 2021-12-10 | [#8562](https://github.com/airbytehq/airbyte/pull/8562) | Moving classes around for better dependency management; compatibility fix for Java 17 |
 | 0.3.19 | 2021-12-06 | [#8528](https://github.com/airbytehq/airbyte/pull/8528) | Set Internal Staging as default choice |
