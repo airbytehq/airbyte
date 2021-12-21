@@ -32,7 +32,8 @@ def minio_setup():
             auto_remove=True,
             volumes=[f"/{TMP_FOLDER}/minio_data:/{TMP_FOLDER}"],
             detach=True,
-            ports={"9000/tcp": ("127.0.0.1", 9000)},
+            # ports={"9000/tcp": ("127.0.0.1", 9000)},
+            network_mode="host",
         )
     except APIError as err:
         if err.status_code == 409:
