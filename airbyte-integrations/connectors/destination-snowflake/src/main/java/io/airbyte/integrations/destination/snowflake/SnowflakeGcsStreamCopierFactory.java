@@ -11,14 +11,13 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
+import io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsConfig;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsStreamCopierFactory;
 import io.airbyte.protocol.models.DestinationSyncMode;
 
 public class SnowflakeGcsStreamCopierFactory extends GcsStreamCopierFactory {
-
-  private static final int DEFAULT_MAX_BATCH_SIZE_BYTES_SNOWFLAKE = DataSize.of(250L, IEC.MEBIBYTE).toUnit(IEC.BYTE).getValue().intValue();
 
   @Override
   public StreamCopier create(final String stagingFolder,
@@ -41,7 +40,7 @@ public class SnowflakeGcsStreamCopierFactory extends GcsStreamCopierFactory {
         gcsConfig,
         nameTransformer,
         sqlOperations,
-        new StagingFilenameGenerator(streamName, DEFAULT_MAX_BATCH_SIZE_BYTES_SNOWFLAKE));
+        new StagingFilenameGenerator(streamName, GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES));
   }
 
 }
