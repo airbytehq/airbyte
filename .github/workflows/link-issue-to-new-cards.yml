@@ -1,0 +1,21 @@
+name: run-five-minutes
+
+on:
+  schedule:
+    - cron: '*/1 * * * *'
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - run: pip install -r requirements.txt
+      - run: python3 app.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
