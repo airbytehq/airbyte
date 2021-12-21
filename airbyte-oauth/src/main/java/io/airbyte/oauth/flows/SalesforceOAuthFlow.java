@@ -45,7 +45,7 @@ public class SalesforceOAuthFlow extends BaseOAuth2Flow {
                                     final JsonNode inputOAuthConfiguration)
       throws IOException {
     try {
-      return new URIBuilder(String.format(AUTHORIZE_URL, getEnvironment(inputOAuthConfiguration))
+      return new URIBuilder(String.format(AUTHORIZE_URL, getEnvironment(inputOAuthConfiguration)))
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl)
           .addParameter("response_type", "code")
@@ -58,7 +58,7 @@ public class SalesforceOAuthFlow extends BaseOAuth2Flow {
 
   @Override
   protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
-    return String.format(ACCESS_TOKEN_URL, getEnvironment(inputOAuthConfiguration);
+    return String.format(ACCESS_TOKEN_URL, getEnvironment(inputOAuthConfiguration));
   }
 
   @Override
@@ -79,7 +79,7 @@ public class SalesforceOAuthFlow extends BaseOAuth2Flow {
 
   private String getEnvironment(JsonNode inputOAuthConfiguration) {
     var isSandbox = inputOAuthConfiguration.get("is_sandbox").asBoolean();
-    return (isSandbox) ? "test" : "login";
+    return (isSandbox == true) ? "test" : "login";
   }
 
 }
