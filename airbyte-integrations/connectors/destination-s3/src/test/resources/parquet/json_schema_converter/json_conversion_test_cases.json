@@ -7,10 +7,7 @@
       "type": "object",
       "properties": {
         "node_id": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       }
     },
@@ -24,10 +21,7 @@
       "fields": [
         {
           "name": "node_id",
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "default": null
         },
         {
@@ -56,16 +50,10 @@
       "type": "object",
       "properties": {
         "node_id": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "user": {
-          "type": [
-            "null",
-            "object"
-          ],
+          "type": ["null", "object"],
           "properties": {
             "first_name": {
               "type": "string"
@@ -91,10 +79,7 @@
       "fields": [
         {
           "name": "node_id",
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "default": null
         },
         {
@@ -108,18 +93,12 @@
               "fields": [
                 {
                   "name": "first_name",
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "default": null
                 },
                 {
                   "name": "last_name",
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "default": null
                 },
                 {
@@ -169,10 +148,7 @@
       "type": "object",
       "properties": {
         "node_id": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       }
     },
@@ -202,10 +178,7 @@
         },
         {
           "name": "node_id",
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "default": null
         },
         {
@@ -236,10 +209,7 @@
       "type": "object",
       "properties": {
         "node:id": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       }
     },
@@ -255,10 +225,7 @@
         {
           "name": "node_id",
           "doc": "_airbyte_original_name:node:id",
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "default": null
         },
         {
@@ -287,11 +254,7 @@
       "type": "object",
       "properties": {
         "identifier": {
-          "type": [
-            "null",
-            "number",
-            "string"
-          ]
+          "type": ["null", "number", "string"]
         }
       }
     },
@@ -305,11 +268,7 @@
       "fields": [
         {
           "name": "identifier",
-          "type": [
-            "null",
-            "double",
-            "string"
-          ],
+          "type": ["null", "double", "string"],
           "default": null
         },
         {
@@ -346,10 +305,7 @@
       }
     },
     "jsonObject": {
-      "identifier": [
-        "151",
-        "152"
-      ]
+      "identifier": ["151", "152"]
     },
     "avroSchema": {
       "type": "record",
@@ -362,10 +318,7 @@
             "null",
             {
               "type": "array",
-              "items": [
-                "null",
-                "string"
-              ]
+              "items": ["null", "string"]
             }
           ],
           "default": null
@@ -384,10 +337,7 @@
       ]
     },
     "avroObject": {
-      "identifier": [
-        "151",
-        "152"
-      ],
+      "identifier": ["151", "152"],
       "_airbyte_additional_properties": null
     }
   },
@@ -418,12 +368,7 @@
       }
     },
     "jsonObject": {
-      "identifiers": [
-        "151",
-        152,
-        true,
-        false
-      ]
+      "identifiers": ["151", 152, true, false]
     },
     "avroSchema": {
       "type": "record",
@@ -436,12 +381,7 @@
             "null",
             {
               "type": "array",
-              "items": [
-                "null",
-                "string",
-                "int",
-                "boolean"
-              ]
+              "items": ["null", "string", "int", "boolean"]
             }
           ],
           "default": null
@@ -460,12 +400,7 @@
       ]
     },
     "avroObject": {
-      "identifiers": [
-        "151",
-        152,
-        true,
-        false
-      ],
+      "identifiers": ["151", 152, true, false],
       "_airbyte_additional_properties": null
     }
   },
@@ -482,10 +417,7 @@
               "format": "date-time"
             },
             {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             {
               "type": "integer"
@@ -549,10 +481,7 @@
                   "format": "date-time"
                 },
                 {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 {
                   "type": "integer"
@@ -659,13 +588,7 @@
       }
     },
     "jsonObject": {
-      "identifiers": [
-        151,
-        152,
-        "153",
-        true,
-        false
-      ]
+      "identifiers": [151, 152, "153", true, false]
     },
     "avroSchema": {
       "type": "record",
@@ -678,12 +601,7 @@
             "null",
             {
               "type": "array",
-              "items": [
-                "null",
-                "int",
-                "string",
-                "boolean"
-              ]
+              "items": ["null", "int", "string", "boolean"]
             }
           ],
           "default": null
@@ -702,13 +620,7 @@
       ]
     },
     "avroObject": {
-      "identifiers": [
-        151,
-        152,
-        "153",
-        true,
-        false
-      ],
+      "identifiers": [151, 152, "153", true, false],
       "_airbyte_additional_properties": null
     }
   },
@@ -720,10 +632,7 @@
       "type": "object",
       "properties": {
         "5field_name": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       }
     },
@@ -737,10 +646,7 @@
       "fields": [
         {
           "name": "_5field_name",
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "doc": "_airbyte_original_name:5field_name",
           "default": null
         },
@@ -770,10 +676,7 @@
       "type": "object",
       "properties": {
         "node_id": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "_airbyte_additional_properties": {
           "type": "object"
@@ -795,10 +698,7 @@
       "fields": [
         {
           "name": "node_id",
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "default": null
         },
         {
@@ -831,10 +731,7 @@
       "type": "object",
       "properties": {
         "node_id": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "_ab_additional_properties": {
           "type": "object"
@@ -856,10 +753,7 @@
       "fields": [
         {
           "name": "node_id",
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "default": null
         },
         {
@@ -1020,83 +914,47 @@
           "type": "object",
           "properties": {
             "login": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "node_id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           }
         },
         "commit": {
-          "type": [
-            "null",
-            "object"
-          ],
+          "type": ["null", "object"],
           "properties": {
             "author": {
-              "type": [
-                "null",
-                "object"
-              ],
+              "type": ["null", "object"],
               "properties": {
                 "name": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 "email": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 "date": {
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "format": "date-time"
                 },
                 "pr": {
-                  "type": [
-                    "null",
-                    "object"
-                  ],
+                  "type": ["null", "object"],
                   "properties": {
                     "id": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "title": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     }
                   }
                 }
               }
             },
             "message": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           }
         }
@@ -1137,26 +995,17 @@
               "fields": [
                 {
                   "name": "login",
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "default": null
                 },
                 {
                   "name": "id",
-                  "type": [
-                    "null",
-                    "int"
-                  ],
+                  "type": ["null", "int"],
                   "default": null
                 },
                 {
                   "name": "node_id",
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "default": null
                 },
                 {
@@ -1195,18 +1044,12 @@
                       "fields": [
                         {
                           "name": "name",
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "default": null
                         },
                         {
                           "name": "email",
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "default": null
                         },
                         {
@@ -1232,18 +1075,12 @@
                               "fields": [
                                 {
                                   "name": "id",
-                                  "type": [
-                                    "null",
-                                    "string"
-                                  ],
+                                  "type": ["null", "string"],
                                   "default": null
                                 },
                                 {
                                   "name": "title",
-                                  "type": [
-                                    "null",
-                                    "string"
-                                  ],
+                                  "type": ["null", "string"],
                                   "default": null
                                 },
                                 {
@@ -1280,10 +1117,7 @@
                 },
                 {
                   "name": "message",
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "default": null
                 },
                 {

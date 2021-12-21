@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.s3.avro;
 
+import static io.airbyte.integrations.destination.s3.util.AvroRecordHelper.obtainPaths;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Preconditions;
@@ -26,8 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.allegro.schema.json2avro.converter.AdditionalPropertyField;
 
-import static io.airbyte.integrations.destination.s3.util.AvroRecordHelper.obtainPaths;
-
 /**
  * The main function of this class is to convert a JsonSchema to Avro schema. It can also
  * standardize schema names, and keep track of a mapping from the original names to the standardized
@@ -47,8 +47,8 @@ public class JsonToAvroSchemaConverter {
   private static final Schema TIMESTAMP_MILLIS_SCHEMA = LogicalTypes.timestampMillis()
       .addToSchema(Schema.create(Schema.Type.LONG));
 
-    private final Map<String, String> standardizedNames = new HashMap<>();
-    private final Map<JsonNode, String> jsonNodePathMap = new HashMap<>();
+  private final Map<String, String> standardizedNames = new HashMap<>();
+  private final Map<JsonNode, String> jsonNodePathMap = new HashMap<>();
 
   static List<JsonSchemaType> getNonNullTypes(final String fieldName, final JsonNode fieldDefinition) {
     return getTypes(fieldName, fieldDefinition).stream()
@@ -106,9 +106,9 @@ public class JsonToAvroSchemaConverter {
                               final boolean isRootNode) {
     final String stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(name);
     RecordBuilder<Schema> builder = SchemaBuilder.record(stdName);
-      if (isRootNode) {
-          obtainPaths("", jsonSchema, jsonNodePathMap);
-      }
+    if (isRootNode) {
+      obtainPaths("", jsonSchema, jsonNodePathMap);
+    }
     if (!stdName.equals(name)) {
       standardizedNames.put(name, stdName);
       LOGGER.warn("Schema name contains illegal character(s) and is standardized: {} -> {}", name,
@@ -214,7 +214,7 @@ public class JsonToAvroSchemaConverter {
               String.format("Array field %s has invalid items property: %s", fieldName, items));
         }
       }
-        case OBJECT -> fieldSchema = getAvroSchema(fieldDefinition, fieldName, jsonNodePathMap.get(fieldDefinition), false, false);
+      case OBJECT -> fieldSchema = getAvroSchema(fieldDefinition, fieldName, jsonNodePathMap.get(fieldDefinition), false, false);
       default -> throw new IllegalStateException(
           String.format("Unexpected type for field %s: %s", fieldName, fieldType));
     }

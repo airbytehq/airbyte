@@ -11,7 +11,6 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
-
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
@@ -53,18 +52,18 @@ public class AvroRecordHelper {
     return output;
   }
 
-  public static void obtainPaths(String currentPath, JsonNode jsonNode, Map<JsonNode,String> jsonNodePathMap) {
+  public static void obtainPaths(String currentPath, JsonNode jsonNode, Map<JsonNode, String> jsonNodePathMap) {
     if (jsonNode.isObject()) {
       ObjectNode objectNode = (ObjectNode) jsonNode;
       Iterator<Map.Entry<String, JsonNode>> iter = objectNode.fields();
       String pathPrefix = currentPath.isEmpty() ? "" : currentPath + "/";
       String[] pathFieldsArray = currentPath.split("/");
       String parent = Arrays.stream(pathFieldsArray)
-              .filter(x -> !x.equals("items"))
-              .filter(x -> !x.equals("properties"))
-              .filter(x -> !x.equals(pathFieldsArray[pathFieldsArray.length - 1]))
-              .collect(Collectors.joining("."));
-      if (!parent.isEmpty()){
+          .filter(x -> !x.equals("items"))
+          .filter(x -> !x.equals("properties"))
+          .filter(x -> !x.equals(pathFieldsArray[pathFieldsArray.length - 1]))
+          .collect(Collectors.joining("."));
+      if (!parent.isEmpty()) {
         jsonNodePathMap.put(jsonNode, parent);
       }
       while (iter.hasNext()) {
@@ -76,7 +75,7 @@ public class AvroRecordHelper {
 
       for (int i = 0; i < arrayNode.size(); i++) {
         String arrayPath = currentPath + "/" + i;
-        obtainPaths(arrayPath, arrayNode.get(i),jsonNodePathMap);
+        obtainPaths(arrayPath, arrayNode.get(i), jsonNodePathMap);
       }
     }
   }
