@@ -110,7 +110,7 @@ This is the recommended configuration for uploading data to BigQuery. It works b
 * **GCS Bucket Name**
 * **GCS Bucket Path**
 * **GCS Bucket Keep files after migration**
-  * See [this](https://cloud.google.com/storage/docs/creating-buckets) to create an S3 bucket.
+  * See [this](https://cloud.google.com/storage/docs/creating-buckets) for instructions on how to create a GCS bucket.
 * **HMAC Key Access ID**
   * See [this](https://cloud.google.com/storage/docs/authentication/hmackeys) on how to generate an access key.
   * We recommend creating an Airbyte-specific user or service account. This user or account will require read and write permissions to objects in the bucket.
