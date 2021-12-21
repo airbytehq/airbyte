@@ -559,7 +559,7 @@ def read(config, catalog):
             print(json.dumps(output_message))
 ```
 
-After doing some input validation, the code above calls the API to obtain the last 7 days of prices for the input stock ticker, then outputs the prices in ascending order. As always, our output is formatted according to the Airbyte Specification. Let's update our args parser with the following blocks:
+After doing some input validation, the code above calls the API to obtain the last 7 days of prices for the input stock ticker, then outputs the prices in ascending order (this is only for human-readability; real sources should not do this sorting). As always, our output is formatted according to the Airbyte Specification. Let's update our args parser with the following blocks:
 
 ```python
 # Accept the read command
