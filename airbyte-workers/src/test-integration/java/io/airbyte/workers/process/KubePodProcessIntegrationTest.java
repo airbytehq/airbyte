@@ -7,8 +7,10 @@ package io.airbyte.workers.process;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
@@ -22,6 +24,7 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -46,6 +49,7 @@ import org.junit.jupiter.api.Timeout;
 @Timeout(value = 5,
          unit = TimeUnit.MINUTES)
 public class KubePodProcessIntegrationTest {
+  private static final int RANDOM_FILE_LINE_LENGTH = 100;
 
   private static final boolean IS_MINIKUBE = Boolean.parseBoolean(Optional.ofNullable(System.getenv("IS_MINIKUBE")).orElse("false"));
   private static List<Integer> openPorts;
@@ -155,7 +159,7 @@ public class KubePodProcessIntegrationTest {
         while (true) {
           portsTaken.add(KubePortManagerSingleton.getInstance().take());
         }
-      } catch (InterruptedException e) {
+      } catch (final InterruptedException e) {
         e.printStackTrace();
         throw new RuntimeException(e);
       }
@@ -267,10 +271,34 @@ public class KubePodProcessIntegrationTest {
     assertEquals(13, process.exitValue());
   }
 
+  public void testCopyLargeFiles() throws Exception {
+    final int numFiles = 3;
+    final int numLinesPerFile = 10000;
+
+    final Map<String, String> files = Maps.newHashMapWithExpectedSize(numFiles);
+    for (int i = 0; i < numFiles; i++) {
+      files.put("file" + i, getRandomFile(numLinesPerFile));
+    }
+
+    final long minimumConfigDirSize = (long)numFiles * numLinesPerFile * RANDOM_FILE_LINE_LENGTH;
+
+    final Process process = getProcess(
+        "CONFIG_DIR_SIZE=$(du -sb /config | awk '{print $1;}'); echo $CONFIG_DIR_SIZE >> /pipes/stdout; exit 0;",
+        files);
+
+    final String processOutput = new String(process.getInputStream().readAllBytes());
+    final long actualConfigDirSize = Long.parseLong(processOutput.trim());
+    process.waitFor();
+
+    assertTrue(
+        actualConfigDirSize > minimumConfigDirSize,
+        "(actual config directory size) " + actualConfigDirSize + " > " + minimumConfigDirSize + " (minimum expected config directory size)");
+  }
+
   private static String getRandomFile(final int lines) {
     final var sb = new StringBuilder();
     for (int i = 0; i < lines; i++) {
-      sb.append(RandomStringUtils.randomAlphabetic(100));
+      sb.append(RandomStringUtils.randomAlphabetic(RANDOM_FILE_LINE_LENGTH));
       sb.append("\n");
     }
     return sb.toString();
@@ -284,6 +312,10 @@ public class KubePodProcessIntegrationTest {
         "file2", getRandomFile(100),
         "file3", getRandomFile(1000));
 
+    return getProcess(entrypoint, files);
+  }
+
+  private Process getProcess(final String entrypoint, final Map<String, String> files) throws WorkerException {
     return processFactory.create(
         "some-id",
         0,
