@@ -1,7 +1,6 @@
 name: cards-migration
 
-on:
-  - pull_request_target
+on: push
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
