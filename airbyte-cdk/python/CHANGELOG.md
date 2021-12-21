@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.44
+Log http response status code and its content.
+
 ## 0.1.43
 Fix logging of unhandled exceptions: print stacktrace. 
 
