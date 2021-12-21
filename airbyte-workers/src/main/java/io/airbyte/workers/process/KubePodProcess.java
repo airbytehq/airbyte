@@ -236,10 +236,12 @@ public class KubePodProcess extends Process {
 
         proc = Runtime.getRuntime().exec(command);
         LOGGER.info("Waiting for kubectl cp to complete");
+
         final int exitCode = proc.waitFor();
         if (exitCode != 0) {
           throw new IOException("kubectl cp failed with exit code " + exitCode);
         }
+
         LOGGER.info("kubectl cp complete, closing process");
       } catch (final IOException | InterruptedException e) {
         throw new RuntimeException(e);
