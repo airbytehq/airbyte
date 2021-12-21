@@ -1,8 +1,7 @@
 name: cards-migration
 
 on:
-  schedule:
-    - cron: '*/1 * * * *'
+  - pull_request_target
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
