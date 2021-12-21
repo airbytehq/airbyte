@@ -37,10 +37,9 @@ public class TemporalUtils {
         .setTarget(temporalHost)
         .build();
 
-    throw new RuntimeException("oh no I died");
-    // final WorkflowServiceStubs temporalService = WorkflowServiceStubs.newInstance(options);
-    // waitForTemporalServerAndLog(temporalService);
-    // return temporalService;
+    final WorkflowServiceStubs temporalService = WorkflowServiceStubs.newInstance(options);
+    waitForTemporalServerAndLog(temporalService);
+    return temporalService;
   }
 
   public static WorkflowClient createTemporalClient(final String temporalHost) {
