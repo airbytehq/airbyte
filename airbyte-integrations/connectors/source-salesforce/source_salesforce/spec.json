@@ -7,6 +7,12 @@
     "required": ["client_id", "client_secret", "refresh_token", "api_type"],
     "additionalProperties": false,
     "properties": {
+      "auth_type": {
+        "type": "string",
+        "const": "Client",
+        "enum": ["Client"],
+        "default": "Client"
+      },
       "client_id": {
         "title": "Client ID",
         "description": "The Consumer Key that can be found when viewing your app in Salesforce",
@@ -56,6 +62,8 @@
   },
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
+    "predicate_key": ["auth_type"],
+    "predicate_value": "Client",
     "oauth_config_specification": {
       "oauth_user_input_from_connector_config_specification": {
         "type": "object",
