@@ -6,9 +6,6 @@ package io.airbyte.integrations.destination.s3.avro;
 
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
 public class AvroNameTransformer extends ExtendedNameTransformer {
 
   @Override
@@ -28,4 +25,5 @@ public class AvroNameTransformer extends ExtendedNameTransformer {
       return "_" + name;
     }
   }
+
 }
