@@ -437,6 +437,17 @@ worker:
   ##   value: "key=airbyte-server,operator=Equals,value=true,effect=NoSchedule"
   extraEnv: []
 
+## @section Bootloader Parameters
+
+bootloader:
+  ## @param bootloader.image.repository The repository to use for the airbyte bootloader image.
+  ## @param bootloader.image.pullPolicy the pull policy to use for the airbyte bootloader image
+  ## @param bootloader.image.tag The airbyte bootloader image tag. Defaults to the chart's AppVersion
+  image:
+    repository: airbyte/bootloader
+    pullPolicy: IfNotPresent
+    tag: 0.34.0-alpha
+
 ## @section Temporal parameters
 ## TODO: Move to consuming temporal from a dedicated helm chart
 
@@ -542,14 +553,17 @@ logs:
     enabled: false
     bucket: airbyte-dev-logs
     bucketRegion: ""
- 
+
   ## Google Cloud Storage (GCS) Log Location Configuration
-  ## @param gcs.bucket GCS bucket name
-  ## @param gcs.credentials The path the GCS creds are written to
+  ## @param logs.gcs.bucket GCS bucket name
+  ## @param logs.gcs.credentials The path the GCS creds are written to
   gcs:
     bucket: ""
     credentials: ""
 
+## @section Minio chart overwrites
+## @param minio.accessKey.password Minio Access Key
+## @param minio.secretKey.password Minio Secret Key
 minio:
   accessKey:
     password: minio
