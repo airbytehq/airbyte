@@ -9,8 +9,7 @@ import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 
 /**
- * Formatter for GCS Avro uploader.
- * Contains specific filling of default Airbyte attributes.
+ * Formatter for GCS Avro uploader. Contains specific filling of default Airbyte attributes.
  */
 public class GcsAvroBigQueryRecordFormatter extends DefaultBigQueryRecordFormatter {
 
@@ -27,4 +26,5 @@ public class GcsAvroBigQueryRecordFormatter extends DefaultBigQueryRecordFormatt
   protected Object getData(AirbyteRecordMessage recordMessage) {
     return StandardNameTransformer.formatJsonPath(recordMessage.getData()).toString();
   }
+
 }

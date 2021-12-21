@@ -111,7 +111,7 @@ class JsonToAvroConverterTest {
                                      final JsonNode avroSchema,
                                      final JsonNode avroObject)
       throws Exception {
-    final Schema actualAvroSchema = SCHEMA_CONVERTER.getAvroSchema(jsonSchema, schemaName, namespace, appendAirbyteFields);
+    final Schema actualAvroSchema = SCHEMA_CONVERTER.getAvroSchema(jsonSchema, schemaName, namespace, appendAirbyteFields, true);
     assertEquals(
         avroSchema,
         Jsons.deserialize(actualAvroSchema.toString()),
