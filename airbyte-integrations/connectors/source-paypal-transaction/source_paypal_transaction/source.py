@@ -392,10 +392,7 @@ class SourcePaypalTransaction(AbstractSource):
                 "start_date": start_date.isoformat(),
                 "end_date": end_date.isoformat(),
             }
-            records = Transactions(authenticator=authenticator, **config).read_records(
-                sync_mode=None,
-                stream_slice=stream_slice
-            )
+            records = Transactions(authenticator=authenticator, **config).read_records(sync_mode=None, stream_slice=stream_slice)
             # Try to read one value from records iterator
             next(records, None)
             return True, None
