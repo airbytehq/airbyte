@@ -307,6 +307,19 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     long destinationRecords = 0L;
     for (final ConfigWithMetadata<DestinationConnection> configWithMetadata : destinationsWithMetadata) {
       final DestinationConnection destinationConnection = configWithMetadata.getConfig();
+      if (workspaceDoesNotExist(destinationConnection.getWorkspaceId(), ctx)) {
+        LOGGER.warn(
+            "Skipping destination connection " + destinationConnection.getDestinationId() + " because the specified workspace "
+                + destinationConnection.getWorkspaceId()
+                + " doesn't exist and violates foreign key constraint.");
+        continue;
+      } else if (actorDefinitionDoesNotExist(destinationConnection.getDestinationDefinitionId(), ctx)) {
+        LOGGER.warn(
+            "Skipping destination connection " + destinationConnection.getDestinationId() + " because the specified source definition "
+                + destinationConnection.getDestinationDefinitionId()
+                + " doesn't exist and violates foreign key constraint.");
+        continue;
+      }
 
       ctx.insertInto(DSL.table("actor"))
           .set(id, destinationConnection.getDestinationId())
