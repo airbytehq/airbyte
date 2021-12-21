@@ -13,6 +13,7 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.x'
+      - run: pip install requests
       - run: python3 tools/git_hooks/cards_migration.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
