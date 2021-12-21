@@ -10,8 +10,9 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.config.EnvConfigs;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerException;
-import io.airbyte.workers.WorkerUtils;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
@@ -63,8 +64,9 @@ public class KubePodProcessIntegrationTest {
     officialClient = Config.defaultClient();
     fabricClient = new DefaultKubernetesClient();
 
-    processFactory = new KubeProcessFactory("default", officialClient, fabricClient, heartbeatUrl, getHost(),
-        new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
+    KubePortManagerSingleton.init(new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
+    processFactory =
+        new KubeProcessFactory(new WorkerConfigs(new EnvConfigs()), "default", officialClient, fabricClient, heartbeatUrl, getHost(), false);
   }
 
   @BeforeEach
@@ -207,6 +209,22 @@ public class KubePodProcessIntegrationTest {
     assertNotEquals(0, process.exitValue());
   }
 
+  @Test
+  public void testExitValueWaitsForMainToTerminate() throws Exception {
+    // start a long running main process
+    final Process process = getProcess("sleep 2; exit 13;");
+
+    // immediately close streams
+    process.getInputStream().close();
+    process.getOutputStream().close();
+
+    // waiting for process
+    process.waitFor();
+
+    // the pod exit code should match the main container exit value
+    assertEquals(13, process.exitValue());
+  }
+
   private static String getRandomFile(final int lines) {
     final var sb = new StringBuilder();
     for (int i = 0; i < lines; i++) {
@@ -231,7 +249,10 @@ public class KubePodProcessIntegrationTest {
         "busybox:latest",
         false,
         files,
-        entrypoint, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of());
+        entrypoint,
+        new WorkerConfigs(new EnvConfigs()).getResourceRequirements(),
+        Map.of(),
+        Map.of());
   }
 
   private static Set<Integer> getOpenPorts(final int count) {
