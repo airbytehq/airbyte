@@ -319,6 +319,25 @@ class Stream(ABC):
                 if updated_at < self._start_date:
                     continue
             yield record
+    
+    def _read_stream_records(self, getter: Callable, properties_list: List[str], params: MutableMapping[str, Any] = None) -> Tuple[dict, Any]:
+        # TODO: Additional processing was added due to the fact that users receive 414 errors while syncing their streams (issues #3977 and #5835).
+        #  We will need to fix this code when the HubSpot developers add the ability to use a special parameter to get all properties for an entity.
+        #  According to HubSpot Community (https://community.hubspot.com/t5/APIs-Integrations/Get-all-contact-properties-without-explicitly-listing-them/m-p/447950)
+        #  and the official documentation, this does not exist at the moment.
+        stream_records = {}
+        response = None
+
+        for properties in split_properties(properties_list):
+            params.update({"properties": ",".join(properties)})
+            response = getter(params=params)
+            for record in self._transform(self.parse_response(response)):
+                if record["id"] not in stream_records:
+                    stream_records[record["id"]] = record
+                elif stream_records[record["id"]].get("properties"):
+                    stream_records[record["id"]]["properties"].update(record.get("properties", {}))
+        
+        return stream_records, response
 
     def _read(self, getter: Callable, params: MutableMapping[str, Any] = None) -> Iterator:
         next_page_token = None
@@ -328,21 +347,7 @@ class Stream(ABC):
 
             properties_list = list(self.properties.keys())
             if properties_list:
-                # TODO: Additional processing was added due to the fact that users receive 414 errors while syncing their streams (issues #3977 and #5835).
-                #  We will need to fix this code when the HubSpot developers add the ability to use a special parameter to get all properties for an entity.
-                #  According to HubSpot Community (https://community.hubspot.com/t5/APIs-Integrations/Get-all-contact-properties-without-explicitly-listing-them/m-p/447950)
-                #  and the official documentation, this does not exist at the moment.
-                stream_records = {}
-
-                for properties in split_properties(properties_list):
-                    params.update({"properties": ",".join(properties)})
-                    response = getter(params=params)
-                    for record in self._transform(self.parse_response(response)):
-                        if record["id"] not in stream_records:
-                            stream_records[record["id"]] = record
-                        elif stream_records[record["id"]].get("properties"):
-                            stream_records[record["id"]]["properties"].update(record.get("properties", {}))
-
+                stream_records, response = self._read_stream_records(getter=getter, params=params, properties_list=properties_list)
                 yield from [value for key, value in stream_records.items()]
             else:
                 response = getter(params=params)
@@ -437,6 +442,26 @@ class Stream(ABC):
             props[row["name"]] = self._get_field_props(row["type"])
 
         return props
+    
+    def _flat_associations(self, records: Iterable[MutableMapping]) -> Iterable[MutableMapping]:
+        """When result has associations we prefer to have it flat, so we transform this:
+
+        "associations": {
+            "contacts": {
+                "results": [{"id": "201", "type": "company_to_contact"}, {"id": "251", "type": "company_to_contact"}]}
+            }
+        }
+
+        to this:
+
+        "contacts": [201, 251]
+        """
+        for record in records:
+            if "associations" in record:
+                associations = record.pop("associations")
+                for name, association in associations.items():
+                    record[name] = [row["id"] for row in association.get("results", [])]
+            yield record
 
 
 class IncrementalStream(Stream, ABC):
@@ -483,6 +508,9 @@ class IncrementalStream(Stream, ABC):
             cursor = self._field_to_datetime(record[self.updated_at_field])
             latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
 
+        self._update_state(latest_cursor=latest_cursor)
+
+    def _update_state(self, latest_cursor):
         if latest_cursor:
             new_state = max(latest_cursor, self._state) if self._state else latest_cursor
             if new_state != self._state:
@@ -536,17 +564,20 @@ class CRMSearchStream(IncrementalStream, ABC):
         self._include_archived_only = include_archived_only
 
     def list(self, fields) -> Iterable:
+        params = {
+            "archived": str(self._include_archived_only).lower(),
+            "associations": self.associations,
+        }
         if self.state:
-            yield from self._filter_dynamic_fields(self._filter_old_records(
-                self.read(partial(self._api.post, url=self.url))))
+            generator = self.read(partial(self._api.post, url=self.url), params)
         else:
-            yield from self._filter_dynamic_fields(self._filter_old_records(
-                self.read(partial(self._api.get, url=self.url))))
-    
+            generator = self.read(partial(self._api.get, url=self.url), params)
+        yield from self._flat_associations(self._filter_dynamic_fields(self._filter_old_records(generator)))
+
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         """Apply state filter to set of records, update cursor(state) if necessary in the end"""
         latest_cursor = None
-        default_params = {'limit': self.limit, "associations": self.associations, "archived": str(self._include_archived_only).lower()}
+        default_params = {'limit': self.limit}
         params = {**default_params, **params} if params else {**default_params}
         properties_list = list(self.properties.keys())
 
@@ -556,13 +587,17 @@ class CRMSearchStream(IncrementalStream, ABC):
             "operator": "GTE"
         }], "properties": properties_list
         } if self.state else {}
-        params.update({"properties": ",".join(properties_list)})
+
         while True:
+            stream_records = {}
             if self.state:
                 response = getter(data=payload)
+                for record in self._transform(self.parse_response(response)):
+                    stream_records[record["id"]] = record
             else:
-                response = getter(params=params)
-            for record in self._transform(self.parse_response(response)):
+                stream_records, response = self._read_stream_records(getter=getter, params=params, properties_list=properties_list)
+
+            for _, record in stream_records.items():
                 yield record
                 cursor = self._field_to_datetime(record[self.updated_at_field])
                 latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
@@ -572,12 +607,7 @@ class CRMSearchStream(IncrementalStream, ABC):
             else:
                 break
 
-        if latest_cursor:
-            new_state = max(latest_cursor, self._state) if self._state else latest_cursor
-            if new_state != self._state:
-                logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
-                self._state = new_state
-                self._start_date = self._state
+        self._update_state(latest_cursor=latest_cursor)
 
 
 class CRMObjectStream(Stream):
@@ -617,26 +647,6 @@ class CRMObjectStream(Stream):
         }
         generator = self.read(partial(self._api.get, url=self.url), params)
         yield from self._flat_associations(generator)
-
-    def _flat_associations(self, records: Iterable[MutableMapping]) -> Iterable[MutableMapping]:
-        """When result has associations we prefer to have it flat, so we transform this:
-
-        "associations": {
-            "contacts": {
-                "results": [{"id": "201", "type": "company_to_contact"}, {"id": "251", "type": "company_to_contact"}]}
-            }
-        }
-
-        to this:
-
-        "contacts": [201, 251]
-        """
-        for record in records:
-            if "associations" in record:
-                associations = record.pop("associations")
-                for name, association in associations.items():
-                    record[name] = [row["id"] for row in association.get("results", [])]
-            yield record
 
 
 class CRMObjectIncrementalStream(CRMObjectStream, IncrementalStream):
