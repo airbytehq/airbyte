@@ -324,35 +324,40 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     LOGGER.info("actor table populated with " + destinationRecords + " destination records");
   }
 
-  private static boolean workspaceDoesNotExist(UUID workspaceId, DSLContext ctx) {
+  @VisibleForTesting
+  static boolean workspaceDoesNotExist(UUID workspaceId, DSLContext ctx) {
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     return !ctx.fetchExists(select()
         .from(table("workspace"))
         .where(id.eq(workspaceId)));
   }
 
-  private static boolean actorDefinitionDoesNotExist(UUID definitionId, DSLContext ctx) {
+  @VisibleForTesting
+  static boolean actorDefinitionDoesNotExist(UUID definitionId, DSLContext ctx) {
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     return !ctx.fetchExists(select()
         .from(table("actor_definition"))
         .where(id.eq(definitionId)));
   }
 
-  private static boolean actorDoesNotExist(UUID actorId, DSLContext ctx) {
+  @VisibleForTesting
+  static boolean actorDoesNotExist(UUID actorId, DSLContext ctx) {
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     return !ctx.fetchExists(select()
         .from(table("actor"))
         .where(id.eq(actorId)));
   }
 
-  private static boolean connectionDoesNotExist(UUID connectionId, DSLContext ctx) {
+  @VisibleForTesting
+  static boolean connectionDoesNotExist(UUID connectionId, DSLContext ctx) {
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     return !ctx.fetchExists(select()
         .from(table("connection"))
         .where(id.eq(connectionId)));
   }
 
-  private static boolean operationDoesNotExist(UUID operationId, DSLContext ctx) {
+  @VisibleForTesting
+  static boolean operationDoesNotExist(UUID operationId, DSLContext ctx) {
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     return !ctx.fetchExists(select()
         .from(table("operation"))
