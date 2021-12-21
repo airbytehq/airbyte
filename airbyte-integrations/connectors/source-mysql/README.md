@@ -56,6 +56,7 @@ you need to follow a few simple steps.
 2. Follow the TODOs in [create_mysql_benchmarks.sql](src/test-performance/sql/create_mysql_benchmarks.sql) to change the number of tables, and the number of records of different sizes.
 3. Execute the script with your changes for the new database. You can run the script using the MySQL command line client:
    ```shell
-   mysql -h hostname -u user database < path/to/script/mssql-script.sql
+   cd airbyte-integrations/connectors/source-mysql
+   mysql -h hostname -u user database < src/test-performance/sql/create_mysql_benchmarks.sql
    ```   
 4. After the script finishes its work, you will receive the number of tables specified in the script, with names starting with **test_0** and ending with **test_(the number of tables minus 1)**.
