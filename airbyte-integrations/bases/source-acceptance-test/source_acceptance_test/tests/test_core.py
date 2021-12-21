@@ -116,9 +116,9 @@ class TestConnection(BaseTest):
         if inputs.status == ConnectionTestConfig.Status.Succeed:
             output = docker_runner.call_check(config=connector_config)
             con_messages = filter_output(output, Type.CONNECTION_STATUS)
-
+            
             assert len(con_messages) == 1, "Connection status message should be emitted exactly once"
-            assert con_messages[0].connectionStatus.status == Status.SUCCEEDED
+            assert con_messages[0].connectionStatus.status == Status.SUCCEEDED, f"checking should be successfull, {con_messages}"
         elif inputs.status == ConnectionTestConfig.Status.Failed:
             output = docker_runner.call_check(config=connector_config)
             con_messages = filter_output(output, Type.CONNECTION_STATUS)
