@@ -1,4 +1,4 @@
-name: run-five-minutes
+name: cards-migration
 
 on:
   schedule:
@@ -16,6 +16,6 @@ jobs:
         with:
           python-version: '3.x'
       - run: pip install -r requirements.txt
-      - run: python3 app.py
+      - run: python3 tools/git_hooks/cards_migration.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
