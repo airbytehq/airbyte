@@ -218,6 +218,17 @@ class Stream(ABC):
 
     def list(self, fields) -> Iterable:
         yield from self.read(partial(self._api.get, url=self.url))
+    
+    def _filter_dynamic_fields(self, records: Iterable) -> Iterable:
+        """Skip certain fields because they are too dynamic and change every call (timers, etc),
+        see https://github.com/airbytehq/airbyte/issues/2397
+        """
+        for record in records:
+            if isinstance(record, Mapping) and "properties" in record:
+                for key in list(record["properties"].keys()):
+                    if key.startswith("hs_time_in"):
+                        record["properties"].pop(key)
+            yield record
 
     @staticmethod
     def _cast_value(declared_field_types: List, field_name: str, field_value: Any, declared_format: str = None) -> Any:
