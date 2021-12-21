@@ -220,6 +220,7 @@ public class KubePodProcess extends Process {
     fileEntries.add(new AbstractMap.SimpleEntry<>(SUCCESS_FILE_NAME, ""));
 
     Path tmpFile = null;
+    Process proc = null;
     for (final Map.Entry<String, String> file : fileEntries) {
       try {
         tmpFile = Path.of(IOs.writeFileToRandomTmpDir(file.getKey(), file.getValue()));
@@ -227,23 +228,27 @@ public class KubePodProcess extends Process {
         LOGGER.info("Uploading file: " + file.getKey());
         final var containerPath = Path.of(CONFIG_DIR + "/" + file.getKey());
 
-        // using kubectl cp directly here, because both fabric and the official kube client APIs both have
+        // using kubectl cp directly here, because both fabric and the official kube client APIs have
         // several issues with copying files. See https://github.com/airbytehq/airbyte/issues/8643 for
         // details.
         final String command = String.format("kubectl cp %s %s/%s:%s -c %s", tmpFile, namespace, podName, containerPath, INIT_CONTAINER_NAME);
         LOGGER.info(command);
 
-        final Process proc = Runtime.getRuntime().exec(command);
+        proc = Runtime.getRuntime().exec(command);
         LOGGER.info("Waiting for kubectl cp to complete");
-        proc.waitFor();
+        final int exitCode = proc.waitFor();
+        if (exitCode != 0) {
+          throw new IOException("kubectl cp failed with exit code " + exitCode);
+        }
         LOGGER.info("kubectl cp complete, closing process");
-        proc.destroy();
-
       } catch (final IOException | InterruptedException e) {
         throw new RuntimeException(e);
       } finally {
         if (tmpFile != null) {
           tmpFile.toFile().delete();
+        }
+        if (proc != null) {
+          proc.destroy();
         }
       }
     }
