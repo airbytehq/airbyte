@@ -299,7 +299,6 @@ class BigQueryGcsDestinationTest {
 
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.accept(MESSAGE_USERS2);
-    assertThrows(RuntimeException.class, () -> consumer.close()); // check if fails when data was not loaded to GCS bucket by some reason
 
     final List<String> tableNames = catalog.getStreams()
         .stream()
