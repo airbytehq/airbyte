@@ -9,6 +9,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.DestinationCreate;
+import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
@@ -166,6 +167,24 @@ public class DestinationHandler {
       }
 
       reads.add(buildDestinationRead(dci.getDestinationId()));
+    }
+
+    return new DestinationReadList().destinations(reads);
+  }
+
+  public DestinationReadList listDestinationsForDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    final List<DestinationRead> reads = Lists.newArrayList();
+
+    for (final DestinationConnection destinationConnection : configRepository.listDestinationConnection()) {
+      if (!destinationConnection.getDestinationDefinitionId().equals(destinationDefinitionIdRequestBody.getDestinationDefinitionId())) {
+        continue;
+      }
+      if (destinationConnection.getTombstone() != null && destinationConnection.getTombstone()) {
+        continue;
+      }
+
+      reads.add(buildDestinationRead(destinationConnection.getDestinationId()));
     }
 
     return new DestinationReadList().destinations(reads);

@@ -8,12 +8,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.SourceCreate;
+import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
 import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -115,17 +117,32 @@ public class SourceHandler {
 
   public SourceReadList listSourcesForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
+
+    final List<SourceConnection> sourceConnections = configRepository.listSourceConnection()
+        .stream()
+        .filter(sc -> sc.getWorkspaceId().equals(workspaceIdRequestBody.getWorkspaceId()) && !MoreBooleans.isTruthy(sc.getTombstone()))
+        .toList();
+
     final List<SourceRead> reads = Lists.newArrayList();
+    for (final SourceConnection sc : sourceConnections) {
+      reads.add(buildSourceRead(sc.getSourceId()));
+    }
 
-    for (final SourceConnection sci : configRepository.listSourceConnection()) {
-      if (!sci.getWorkspaceId().equals(workspaceIdRequestBody.getWorkspaceId())) {
-        continue;
-      }
-      if (sci.getTombstone()) {
-        continue;
-      }
+    return new SourceReadList().sources(reads);
+  }
 
-      reads.add(buildSourceRead(sci.getSourceId()));
+  public SourceReadList listSourcesForSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+
+    final List<SourceConnection> sourceConnections = configRepository.listSourceConnection()
+        .stream()
+        .filter(sc -> sc.getSourceDefinitionId().equals(sourceDefinitionIdRequestBody.getSourceDefinitionId())
+            && !MoreBooleans.isTruthy(sc.getTombstone()))
+        .toList();
+
+    final List<SourceRead> reads = Lists.newArrayList();
+    for (final SourceConnection sourceConnection : sourceConnections) {
+      reads.add(buildSourceRead(sourceConnection.getSourceId()));
     }
 
     return new SourceReadList().sources(reads);

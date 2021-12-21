@@ -77,7 +77,7 @@
       },
       "transformation_priority": {
         "type": "string",
-        "description": "When running custom transformations or Basic normalization, running queries on interactive mode can hit BQ limits, choosing batch will solve those limitss.",
+        "description": "When running custom transformations or Basic normalization, running queries on interactive mode can hit BQ limits, choosing batch will solve those limits.",
         "title": "Transformation Query Run Type",
         "default": "interactive",
         "enum": ["interactive", "batch"]
