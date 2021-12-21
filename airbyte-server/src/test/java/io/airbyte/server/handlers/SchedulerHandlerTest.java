@@ -430,6 +430,9 @@ class SchedulerHandlerTest {
             .withSourceDefinitionId(source.getSourceDefinitionId()));
     when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE))
         .thenReturn(discoverResponse);
+    when(configRepository.statefulSplitEphemeralSecrets(
+        eq(source.getConfiguration()),
+        any())).thenReturn(source.getConfiguration());
 
     final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceCreate(sourceCoreConfig);
 
@@ -456,6 +459,9 @@ class SchedulerHandlerTest {
             .withSourceDefinitionId(source.getSourceDefinitionId()));
     when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE))
         .thenReturn((SynchronousResponse<AirbyteCatalog>) jobResponse);
+    when(configRepository.statefulSplitEphemeralSecrets(
+        eq(source.getConfiguration()),
+        any())).thenReturn(source.getConfiguration());
     when(completedJob.getSuccessOutput()).thenReturn(Optional.empty());
     when(completedJob.getStatus()).thenReturn(JobStatus.FAILED);
 

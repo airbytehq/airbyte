@@ -10,7 +10,7 @@ from typing import Iterable, List, Mapping, Optional
 
 import docker
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
-from docker.errors import ContainerError
+from docker.errors import ContainerError, NotFound
 from docker.models.containers import Container
 from pydantic import ValidationError
 
@@ -98,11 +98,10 @@ class ConnectorRunner:
             command=cmd,
             working_dir="/data",
             volumes=volumes,
-            auto_remove=True,
+            network_mode="host",
             detach=True,
             **kwargs,
         )
-
         with open(self.output_folder / "raw", "wb+") as f:
             for line in self.read(container, command=cmd):
                 f.write(line.encode())
@@ -140,8 +139,12 @@ class ConnectorRunner:
                 exception += line
             else:
                 yield line
-
-        exit_status = container.wait()
+        try:
+            exit_status = container.wait()
+            container.remove()
+        except NotFound as err:
+            logging.error(f"Waiting error: {err}, logs: {exception or line}")
+            raise
         if exit_status["StatusCode"]:
             error = exit_status["Error"] or exception or line
             logging.error(f"Docker container was failed, " f'code {exit_status["StatusCode"]}, error:\n{error}')

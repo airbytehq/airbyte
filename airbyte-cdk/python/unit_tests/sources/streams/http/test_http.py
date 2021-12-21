@@ -6,7 +6,7 @@
 import json
 from http import HTTPStatus
 from typing import Any, Iterable, Mapping, Optional
-from unittest.mock import ANY
+from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 import requests
@@ -416,6 +416,7 @@ class CacheHttpStreamWithSlices(CacheHttpStream):
         yield response
 
 
+@patch("airbyte_cdk.sources.streams.core.logging", MagicMock())
 def test_using_cache(mocker):
     parent_stream = CacheHttpStreamWithSlices()
     mocker.patch.object(parent_stream, "url_base", "https://google.com/")
