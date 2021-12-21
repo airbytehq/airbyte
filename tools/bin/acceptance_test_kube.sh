@@ -34,7 +34,7 @@ kubectl describe pods | grep "Name\|Node"
 sleep 120s
 
 if [ -n "$CI" ]; then
-  bootloader_logs () { kubectl logs deployment.apps/airbyte-bootloader > /tmp/kubernetes_logs/bootloader.txt; }
+  bootloader_logs () { kubectl logs pod/airbyte-bootloader > /tmp/kubernetes_logs/bootloader.txt; }
   server_logs () { kubectl logs deployment.apps/airbyte-server > /tmp/kubernetes_logs/server.txt; }
   scheduler_logs () { kubectl logs deployment.apps/airbyte-scheduler > /tmp/kubernetes_logs/scheduler.txt; }
   pod_sweeper_logs () { kubectl logs deployment.apps/airbyte-pod-sweeper > /tmp/kubernetes_logs/pod_sweeper.txt; }
