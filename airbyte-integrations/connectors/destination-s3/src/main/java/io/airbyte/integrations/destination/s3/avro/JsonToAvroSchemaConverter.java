@@ -99,8 +99,9 @@ public class JsonToAvroSchemaConverter {
   public Schema getAvroSchema(final JsonNode jsonSchema,
                               final String name,
                               @Nullable final String namespace,
-                              final boolean appendAirbyteFields) {
-    return getAvroSchema(jsonSchema, name, namespace, appendAirbyteFields, true, true);
+                              final boolean appendAirbyteFields,
+                              final boolean isRootNode) {
+    return getAvroSchema(jsonSchema, name, namespace, appendAirbyteFields, true, true, isRootNode);
   }
 
   /**

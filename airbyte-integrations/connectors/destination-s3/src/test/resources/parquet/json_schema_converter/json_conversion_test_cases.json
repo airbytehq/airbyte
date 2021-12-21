@@ -1011,7 +1011,7 @@
   },
   {
     "schemaName": "schema_with_the_same_object_names",
-    "namespace": "namespace16",
+    "namespace": "namespace17",
     "appendAirbyteFields": false,
     "jsonSchema": {
       "type": "object",
