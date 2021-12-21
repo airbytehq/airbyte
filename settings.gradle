@@ -67,6 +67,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-temporal'
     include ':airbyte-tests'
     include ':airbyte-webapp'
+    include ':octavia-cli'
 }
 
 // connectors base
