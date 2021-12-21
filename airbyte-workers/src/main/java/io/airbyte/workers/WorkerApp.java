@@ -163,8 +163,19 @@ public class WorkerApp {
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
     syncWorker.registerActivitiesImplementations(
         replicationActivityImpl,
-        new NormalizationActivityImpl(workerConfigs, jobProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser,
-            databasePassword, databaseUrl, airbyteVersion),
+        new NormalizationActivityImpl(
+            containerOrchestratorEnabled,
+            workerConfigs,
+            jobProcessFactory,
+            orchestratorProcessFactory,
+            secretsHydrator,
+            workspaceRoot,
+            workerEnvironment,
+            logConfigs,
+            databaseUser,
+            databasePassword,
+            databaseUrl,
+            airbyteVersion),
         new DbtTransformationActivityImpl(workerConfigs, jobProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs,
             databaseUser,
             databasePassword, databaseUrl, airbyteVersion),

@@ -95,6 +95,7 @@ services:
     container_name: airbyte-worker
     restart: unless-stopped
     environment:
+      - CONTAINER_ORCHESTRATOR_ENABLED=true
       - WEBAPP_URL=${WEBAPP_URL}
       - DATABASE_USER=${DATABASE_USER}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}

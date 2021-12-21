@@ -7,17 +7,21 @@ package io.airbyte.container_orchestrator;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.workers.DefaultNormalizationWorker;
 import io.airbyte.workers.DefaultReplicationWorker;
+import io.airbyte.workers.NormalizationWorker;
 import io.airbyte.workers.ReplicationWorker;
 import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
@@ -31,6 +35,7 @@ import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
 import io.airbyte.workers.protocols.airbyte.EmptyAirbyteSource;
 import io.airbyte.workers.protocols.airbyte.NamespacingMapper;
+import io.airbyte.workers.temporal.sync.NormalizationLauncherWorker;
 import io.airbyte.workers.temporal.sync.ReplicationLauncherWorker;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -126,6 +131,41 @@ public class ContainerOrchestratorApp {
     LOGGER.info("Replication runner complete!");
   }
 
+  private static void normalizationRunner(Configs configs) throws WorkerException, IOException {
+    LOGGER.info("Starting normalization runner app...");
+
+    final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
+    final ProcessFactory processFactory = getProcessBuilderFactory(configs, workerConfigs);
+
+    LOGGER.info("Attempting to retrieve config files...");
+
+    final JobRunConfig jobRunConfig =
+        Jsons.deserialize(Files.readString(Path.of(ReplicationLauncherWorker.INIT_FILE_JOB_RUN_CONFIG)), JobRunConfig.class);
+
+    final IntegrationLauncherConfig destinationLauncherConfig =
+        Jsons.deserialize(Files.readString(Path.of(ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG)),
+            IntegrationLauncherConfig.class);
+
+    final NormalizationInput normalizationInput =
+        Jsons.deserialize(Files.readString(Path.of(NormalizationLauncherWorker.NORMALIZATION_INPUT)), NormalizationInput.class);
+
+    LOGGER.info("Setting up normalization worker...");
+    final NormalizationWorker normalizationWorker = new DefaultNormalizationWorker(
+        jobRunConfig.getJobId(),
+        Math.toIntExact(jobRunConfig.getAttemptId()),
+        NormalizationRunnerFactory.create(
+            workerConfigs,
+            destinationLauncherConfig.getDockerImage(),
+            processFactory),
+        configs.getWorkerEnvironment());
+
+    LOGGER.info("Running normalization worker...");
+    final Path jobRoot = WorkerUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
+    normalizationWorker.run(normalizationInput, jobRoot);
+
+    LOGGER.info("Normalization runner complete!");
+  }
+
   public static void main(String[] args) throws Exception {
     WorkerHeartbeatServer heartbeatServer = null;
 
@@ -142,6 +182,8 @@ public class ContainerOrchestratorApp {
 
       if (application.equals(ReplicationLauncherWorker.REPLICATION)) {
         replicationRunner(configs);
+      } else if (application.equals(NormalizationLauncherWorker.NORMALIZATION)) {
+        normalizationRunner(configs);
       } else {
         LOGGER.error("Runner failed", new IllegalStateException("Unexpected value: " + application));
         System.exit(1);
