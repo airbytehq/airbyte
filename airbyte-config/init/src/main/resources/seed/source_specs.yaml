@@ -3520,7 +3520,7 @@
         - - "client_secret"
         - - "refresh_token"
         oauthFlowOutputParameters: []
-- dockerImage: "airbyte/source-linkedin-ads:0.1.4"
+- dockerImage: "airbyte/source-linkedin-ads:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/linkedin-ads"
     connectionSpecification:
@@ -3535,15 +3535,16 @@
           type: "string"
           title: "Start Date"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
-          description: "Date in the format 2020-09-17. Any data before this date will\
-            \ not be replicated."
+          description: "UTC date in the format 2020-09-17. Any data before this date\
+            \ will not be replicated."
           examples:
           - "2021-05-17"
         account_ids:
           title: "Account IDs"
           type: "array"
-          description: "Specify the Account IDs separated by space, from which to\
-            \ pull the data. Leave empty to pull from all associated accounts."
+          description: "Specify the Account IDs separated by space, to pull the data\
+            \ from. Leave empty, if you want to pull the data from all associated\
+            \ accounts."
           items:
             type: "integer"
           default: []
@@ -3552,7 +3553,7 @@
           type: "object"
           oneOf:
           - type: "object"
-            title: "oAuth2.0"
+            title: "OAuth2.0"
             required:
             - "client_id"
             - "client_secret"
@@ -3563,15 +3564,18 @@
                 const: "oAuth2.0"
               client_id:
                 type: "string"
-                description: "The API ID of the Gitlab developer application."
+                title: "Client ID"
+                description: "The Client ID of the LinkedIn Ads developer application."
                 airbyte_secret: true
               client_secret:
                 type: "string"
-                description: "The API Secret the Gitlab developer application."
+                title: "Client Secret"
+                description: "The Client Secret the LinkedIn Ads developer application."
                 airbyte_secret: true
               refresh_token:
                 type: "string"
-                description: "The key to refresh the expired access_token."
+                title: "Refresh Token"
+                description: "The key to refresh the expired Access Token."
                 airbyte_secret: true
           - title: "Access Token"
             type: "object"
@@ -3584,7 +3588,7 @@
               access_token:
                 type: "string"
                 title: "Access Token"
-                description: "The token value ganerated using Auth Code"
+                description: "The token value generated using Authentication Code."
                 airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
