@@ -6,7 +6,6 @@
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
-          "additionalProperties": false,
           "properties": {
             "_object": {
               "type": "string",
@@ -24,7 +23,6 @@
             "address": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -80,7 +78,6 @@
             "contacts": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -100,7 +97,6 @@
             "company": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",

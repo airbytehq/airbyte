@@ -6,7 +6,6 @@
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
-          "additionalProperties": false,
           "properties": {
             "_object": {
               "type": "string",
@@ -34,7 +33,6 @@
             "total": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -54,7 +52,6 @@
             "balance": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -99,7 +96,6 @@
             "recipient": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -123,7 +119,6 @@
                     {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
-                      "additionalProperties": false,
                       "properties": {
                         "_object": {
                           "type": "string",
@@ -184,7 +179,6 @@
                   "items": {
                     "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "object",
-                    "additionalProperties": false,
                     "properties": {
                       "_object": {
                         "type": "string",
@@ -207,7 +201,6 @@
             "issuer": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -231,7 +224,6 @@
                     {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
-                      "additionalProperties": false,
                       "properties": {
                         "_object": {
                           "type": "string",
@@ -292,7 +284,6 @@
                   "items": {
                     "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "object",
-                    "additionalProperties": false,
                     "properties": {
                       "_object": {
                         "type": "string",
@@ -318,7 +309,6 @@
               "items": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
-                "additionalProperties": false,
                 "properties": {
                   "_object": {
                     "type": "string",
@@ -340,7 +330,6 @@
                   "amount": {
                     "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "object",
-                    "additionalProperties": false,
                     "properties": {
                       "_object": {
                         "type": "string",
@@ -366,7 +355,6 @@
                       {
                         "$schema": "http://json-schema.org/draft-07/schema#",
                         "type": "object",
-                        "additionalProperties": false,
                         "properties": {
                           "_object": {
                             "type": "string",
@@ -394,7 +382,6 @@
                       {
                         "$schema": "http://json-schema.org/draft-07/schema#",
                         "type": "object",
-                        "additionalProperties": false,
                         "properties": {
                           "_object": {
                             "type": "string",
@@ -422,7 +409,6 @@
               "items": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
-                "additionalProperties": false,
                 "properties": {
                   "_object": {
                     "type": "string",
@@ -432,7 +418,6 @@
                   "amount": {
                     "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "object",
-                    "additionalProperties": false,
                     "properties": {
                       "_object": {
                         "type": "string",
@@ -475,7 +460,6 @@
             "shipments": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
