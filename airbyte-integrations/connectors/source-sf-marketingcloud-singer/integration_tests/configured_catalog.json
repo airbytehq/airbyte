@@ -1,0 +1,12 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "event",
+        "json_schema": {}
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    }
+  ]
+}
