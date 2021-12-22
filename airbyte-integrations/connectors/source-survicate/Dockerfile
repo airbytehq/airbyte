@@ -9,6 +9,7 @@ COPY main.py ./
 COPY setup.py ./
 RUN pip install .
 
+ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
 LABEL io.airbyte.version=0.1.0
