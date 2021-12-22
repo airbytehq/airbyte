@@ -17,7 +17,7 @@ class StagingFilenameGeneratorTest {
   private static final String STREAM_NAME = RandomStringUtils.randomAlphabetic(5).toLowerCase();
   // Equal to GlobalDataSizeConstants.MAX_BYTE_PARTS_PER_FILE / GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES
   // because <insert explanation here>
-  private static final int EXPECTED_ITERATIONS_WITH_STANDARD_BYTE_BUFFER = 60;
+  private static final int EXPECTED_ITERATIONS_WITH_STANDARD_BYTE_BUFFER = 4;
   private static final StagingFilenameGenerator FILENAME_GENERATOR =
       new StagingFilenameGenerator(STREAM_NAME, GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES);
 

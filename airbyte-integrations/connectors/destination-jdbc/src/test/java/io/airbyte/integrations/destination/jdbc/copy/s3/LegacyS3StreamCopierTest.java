@@ -59,7 +59,7 @@ public class LegacyS3StreamCopierTest {
 
   private static final int PART_SIZE = 5;
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-  private static final int EXPECTED_ITERATIONS_WITH_STANDARD_BYTE_BUFFER = 60;
+  private static final int EXPECTED_ITERATIONS_WITH_STANDARD_BYTE_BUFFER = 4;
 
   private AmazonS3Client s3Client;
   private JdbcDatabase db;
@@ -258,7 +258,7 @@ public class LegacyS3StreamCopierTest {
   @Test
   public void copiesCorrectFilesToTable() throws Exception {
     // Generate two files
-    for (int i = 0; i < 61; i++) {
+    for (int i = 0; i < 5; i++) {
       copier.prepareStagingFile();
     }
 
