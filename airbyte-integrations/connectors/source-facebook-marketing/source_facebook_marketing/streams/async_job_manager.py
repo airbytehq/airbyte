@@ -7,7 +7,7 @@ import time
 from collections import deque
 from dataclasses import dataclass, field
 from functools import partial
-from typing import Deque, Tuple, MutableMapping, Any
+from typing import Any, Deque, MutableMapping, Tuple
 
 import pendulum
 from facebook_business.api import FacebookAdsApiBatch, FacebookResponse

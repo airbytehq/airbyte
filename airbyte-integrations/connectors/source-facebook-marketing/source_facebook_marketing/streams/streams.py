@@ -2,8 +2,8 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import logging
 import base64
+import logging
 import time
 import urllib.parse as urlparse
 from abc import ABC
