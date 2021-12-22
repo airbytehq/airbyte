@@ -22,6 +22,19 @@ def test_fromat_value(value, schema, expected_output_type):
 
 
 test_data = [
+    ("api method name", "api_method_name"),
+    ("API Method Name", "api_method_name"),
+    ("modifying user", "modifying_user"),
+    ("Modifying User", "modifying_user"),
+    ("request id", "request_id"),
+    ("Request Id", "request_id"),
+    ("Page URL", "page_url"),
+    ("Client IP Address", "client_ip_address"),
+    ("Marketo Sales Person ID", "marketo_sales_person_id"),
+    ("Merge IDs", "merge_ids"),
+    ("SFDC Type", "sfdc_type"),
+    ("Remove from CRM", "remove_from_crm"),
+    ("SLA Expiration", "sla_expiration"),
     ("updatedAt", "updated_at"),
     ("UpdatedAt", "updated_at"),
     ("base URL", "base_url"),

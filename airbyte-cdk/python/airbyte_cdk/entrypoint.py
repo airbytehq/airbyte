@@ -9,12 +9,14 @@ import logging
 import os.path
 import sys
 import tempfile
-from typing import Iterable, List
+from typing import Any, Dict, Iterable, List
 
 from airbyte_cdk.logger import AirbyteLogFormatter, init_logger
 from airbyte_cdk.models import AirbyteMessage, Status, Type
+from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
 from airbyte_cdk.sources import Source
-from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
+from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, get_secret_values, split_config
+from airbyte_cdk.sources.utils.sentry import AirbyteSentry
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets
 
 logger = init_logger("airbyte")
@@ -59,14 +61,23 @@ class AirbyteEntrypoint(object):
 
         return main_parser.parse_args(args)
 
+    def configure_sentry(self, spec_schema: Dict[str, Any], parsed_args: argparse.Namespace):
+        secret_values = []
+        if "config" in parsed_args:
+            config = self.source.read_config(parsed_args.config)
+            secret_values = get_secret_values(spec_schema, config)
+        source_name = self.source.__module__.split(".")[0]
+        source_name = source_name.split("_", 1)[-1]
+        AirbyteSentry.init(source_tag=source_name, secret_values=secret_values)
+
     def run(self, parsed_args: argparse.Namespace) -> Iterable[str]:
         cmd = parsed_args.command
         if not cmd:
             raise Exception("No command passed")
 
         # todo: add try catch for exceptions with different exit codes
-        source_spec = self.source.spec(self.logger)
-
+        source_spec: ConnectorSpecification = self.source.spec(self.logger)
+        self.configure_sentry(source_spec.connectionSpecification, parsed_args)
         with tempfile.TemporaryDirectory() as temp_dir:
             if cmd == "spec":
                 message = AirbyteMessage(type=Type.SPEC, spec=source_spec)
