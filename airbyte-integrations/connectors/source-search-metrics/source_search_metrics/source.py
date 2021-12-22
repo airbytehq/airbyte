@@ -25,7 +25,7 @@ class SearchMetricsStream(HttpStream, ABC):
         super().__init__(authenticator=config["authenticator"])
         self.config = config
         self.start_date = config["start_date"]
-        self.window_in_days = config["window_in_days"]
+        self.window_in_days = config.get("window_in_days", 30)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
