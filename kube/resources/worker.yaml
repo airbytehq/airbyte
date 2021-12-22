@@ -95,7 +95,7 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: LOG_LEVEL
-            - name: JOB_KUBE_KUBE_NAMESPACE
+            - name: JOB_KUBE_NAMESPACE
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
@@ -179,11 +179,11 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: JOB_KUBE_NODE_SELECTORS
-            - name: JOB_MAIN_CONTAINER_IMAGE_PULL_POLICY
+            - name: JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
-                  key: JOB_MAIN_CONTAINER_IMAGE_PULL_POLICY
+                  key: JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY
           ports:
             - containerPort: 9000 # for heartbeat server
             - containerPort: 9001 # start temporal worker port pool

@@ -25,17 +25,17 @@ public class WorkerConfigs {
   public WorkerConfigs(final Configs configs) {
     this.workerEnvironment = configs.getWorkerEnvironment();
     this.resourceRequirements = new ResourceRequirements()
-        .withCpuRequest(configs.getJobPodMainContainerCpuRequest())
-        .withCpuLimit(configs.getJobPodMainContainerCpuLimit())
-        .withMemoryRequest(configs.getJobPodMainContainerMemoryRequest())
-        .withMemoryLimit(configs.getJobPodMainContainerMemoryLimit());
-    this.workerPodTolerations = configs.getJobPodTolerations();
-    this.workerPodNodeSelectors = configs.getJobPodNodeSelectors();
-    this.jobImagePullSecret = configs.getJobPodMainContainerImagePullSecret();
-    this.jobImagePullPolicy = configs.getJobPodMainContainerImagePullPolicy();
-    this.jobSocatImage = configs.getJobPodSocatImage();
-    this.jobBusyboxImage = configs.getJobPodBusyboxImage();
-    this.jobCurlImage = configs.getJobPodCurlImage();
+        .withCpuRequest(configs.getJobMainContainerCpuRequest())
+        .withCpuLimit(configs.getJobMainContainerCpuLimit())
+        .withMemoryRequest(configs.getJobMainContainerMemoryRequest())
+        .withMemoryLimit(configs.getJobMainContainerMemoryLimit());
+    this.workerPodTolerations = configs.getJobKubeTolerations();
+    this.workerPodNodeSelectors = configs.getJobKubeNodeSelectors();
+    this.jobImagePullSecret = configs.getJobKubeMainContainerImagePullSecret();
+    this.jobImagePullPolicy = configs.getJobKubeMainContainerImagePullPolicy();
+    this.jobSocatImage = configs.getJobKubeSocatImage();
+    this.jobBusyboxImage = configs.getJobKubeBusyboxImage();
+    this.jobCurlImage = configs.getJobKubeCurlImage();
   }
 
   public Configs.WorkerEnvironment getWorkerEnvironment() {
