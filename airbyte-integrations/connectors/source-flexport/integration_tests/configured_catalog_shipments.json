@@ -6,6 +6,7 @@
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "_object": {
               "type": "string",
@@ -29,6 +30,7 @@
                 {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
+                  "additionalProperties": false,
                   "properties": {
                     "_object": {
                       "type": "string",
@@ -82,6 +84,7 @@
             "calculated_weight": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -102,6 +105,7 @@
             "calculated_volume": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -243,6 +247,7 @@
                 {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
+                  "additionalProperties": false,
                   "properties": {
                     "_object": {
                       "type": "string",
@@ -260,6 +265,7 @@
                     "chargeable_weight": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
+                      "additionalProperties": false,
                       "properties": {
                         "_object": {
                           "type": "string",
@@ -280,6 +286,7 @@
                     "chargeable_volume": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
+                      "additionalProperties": false,
                       "properties": {
                         "_object": {
                           "type": "string",
@@ -310,6 +317,7 @@
                 {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
+                  "additionalProperties": false,
                   "properties": {
                     "_object": {
                       "type": "string",
@@ -339,6 +347,7 @@
                     "containers": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
+                      "additionalProperties": false,
                       "properties": {
                         "_object": {
                           "type": "string",
@@ -362,6 +371,7 @@
             "dangerous_goods": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -382,6 +392,7 @@
               "items": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                   "_object": {
                     "type": "string",
@@ -405,6 +416,7 @@
                       {
                         "$schema": "http://json-schema.org/draft-07/schema#",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                           "_object": {
                             "type": "string",
@@ -465,6 +477,7 @@
                     "items": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
+                      "additionalProperties": false,
                       "properties": {
                         "_object": {
                           "type": "string",
@@ -491,6 +504,7 @@
               "items": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                   "_object": {
                     "type": "string",
@@ -514,6 +528,7 @@
                       {
                         "$schema": "http://json-schema.org/draft-07/schema#",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                           "_object": {
                             "type": "string",
@@ -574,6 +589,7 @@
                     "items": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
+                      "additionalProperties": false,
                       "properties": {
                         "_object": {
                           "type": "string",
@@ -600,6 +616,7 @@
               "items": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                   "_object": {
                     "type": "string",
@@ -623,6 +640,7 @@
                       {
                         "$schema": "http://json-schema.org/draft-07/schema#",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                           "_object": {
                             "type": "string",
@@ -683,6 +701,7 @@
                     "items": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
+                      "additionalProperties": false,
                       "properties": {
                         "_object": {
                           "type": "string",
@@ -709,6 +728,7 @@
               "items": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                   "_object": {
                     "type": "string",
@@ -732,6 +752,7 @@
                       {
                         "$schema": "http://json-schema.org/draft-07/schema#",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                           "_object": {
                             "type": "string",
@@ -792,6 +813,7 @@
                     "items": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
+                      "additionalProperties": false,
                       "properties": {
                         "_object": {
                           "type": "string",
@@ -818,6 +840,7 @@
               "items": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                   "_object": {
                     "type": "string",
@@ -841,6 +864,7 @@
                       {
                         "$schema": "http://json-schema.org/draft-07/schema#",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                           "_object": {
                             "type": "string",
@@ -901,6 +925,7 @@
                     "items": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
+                      "additionalProperties": false,
                       "properties": {
                         "_object": {
                           "type": "string",
@@ -927,6 +952,7 @@
               "items": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                   "_object": {
                     "type": "string",
@@ -944,6 +970,7 @@
                   "total_weight": {
                     "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                       "_object": {
                         "type": "string",
@@ -964,6 +991,7 @@
                   "total_volume": {
                     "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                       "_object": {
                         "type": "string",
@@ -988,6 +1016,7 @@
                   "product": {
                     "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                       "_object": {
                         "type": "string",
@@ -1028,6 +1057,7 @@
                         "items": {
                           "$schema": "http://json-schema.org/draft-07/schema#",
                           "type": "object",
+                          "additionalProperties": false,
                           "properties": {
                             "_object": {
                               "type": "string",
@@ -1051,6 +1081,7 @@
                         "items": {
                           "$schema": "http://json-schema.org/draft-07/schema#",
                           "type": "object",
+                          "additionalProperties": false,
                           "properties": {
                             "_object": {
                               "type": "string",
@@ -1078,6 +1109,7 @@
                         "items": {
                           "$schema": "http://json-schema.org/draft-07/schema#",
                           "type": "object",
+                          "additionalProperties": false,
                           "properties": {
                             "_object": {
                               "type": "string",
@@ -1104,6 +1136,7 @@
                         "items": {
                           "$schema": "http://json-schema.org/draft-07/schema#",
                           "type": "object",
+                          "additionalProperties": false,
                           "properties": {
                             "_object": {
                               "type": "string",
@@ -1135,6 +1168,7 @@
             "legs": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -1154,6 +1188,7 @@
             "customs_entries": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -1173,6 +1208,7 @@
             "commercial_invoices": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -1192,6 +1228,7 @@
             "documents": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
