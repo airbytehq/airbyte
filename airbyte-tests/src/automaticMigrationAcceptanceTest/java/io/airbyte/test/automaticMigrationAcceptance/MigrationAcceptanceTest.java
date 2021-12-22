@@ -208,9 +208,12 @@ public class MigrationAcceptanceTest {
       } else if (sourceDefinitionRead.getSourceDefinitionId().toString().equals("decd338e-5647-4c0b-adf4-da0e75f5a750")) {
         final String[] tagBrokenAsArray = sourceDefinitionRead.getDockerImageTag().replace(".", ",").split(",");
         assertEquals(3, tagBrokenAsArray.length);
-        assertTrue(Integer.parseInt(tagBrokenAsArray[0]) >= 0);
-        assertTrue(Integer.parseInt(tagBrokenAsArray[1]) >= 3);
-        assertTrue(Integer.parseInt(tagBrokenAsArray[2]) >= 4);
+        // todo (cgardens) - this is very brittle. depending on when this connector gets updated in
+        // source_definitions.yaml this test can start to break. for now just doing quick fix, but we should
+        // be able to do an actual version comparison like we do with AirbyteVersion.
+        assertTrue(Integer.parseInt(tagBrokenAsArray[0]) >= 0, "actual tag: " + sourceDefinitionRead.getDockerImageTag());
+        assertTrue(Integer.parseInt(tagBrokenAsArray[1]) >= 3, "actual tag: " + sourceDefinitionRead.getDockerImageTag());
+        assertTrue(Integer.parseInt(tagBrokenAsArray[2]) >= 0, "actual tag: " + sourceDefinitionRead.getDockerImageTag());
         assertTrue(sourceDefinitionRead.getName().contains("Postgres"));
         foundPostgresSourceDefinition = true;
       }

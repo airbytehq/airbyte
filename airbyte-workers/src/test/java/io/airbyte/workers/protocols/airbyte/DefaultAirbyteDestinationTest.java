@@ -5,12 +5,14 @@
 package io.airbyte.workers.protocols.airbyte;
 
 import static io.airbyte.commons.logging.LoggingHelper.RESET;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -202,6 +204,20 @@ class DefaultAirbyteDestinationTest {
     when(process.isAlive()).thenReturn(false);
     when(process.exitValue()).thenReturn(1);
     Assertions.assertThrows(WorkerException.class, destination::close);
+  }
+
+  @Test
+  public void testGetExitValue() throws Exception {
+    final AirbyteDestination destination = new DefaultAirbyteDestination(workerConfigs, integrationLauncher);
+    destination.start(DESTINATION_CONFIG, jobRoot);
+
+    when(process.isAlive()).thenReturn(false);
+    when(process.exitValue()).thenReturn(2);
+
+    assertEquals(2, destination.getExitValue());
+    // call a second time to verify that exit value is cached
+    assertEquals(2, destination.getExitValue());
+    verify(process, times(1)).exitValue();
   }
 
 }

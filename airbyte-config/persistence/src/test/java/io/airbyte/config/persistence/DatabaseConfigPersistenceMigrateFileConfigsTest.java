@@ -4,6 +4,7 @@
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -15,6 +16,9 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.config.Configs;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
+import io.airbyte.db.instance.development.DevDatabaseMigrator;
+import io.airbyte.db.instance.development.MigrationDevHelper;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
@@ -37,6 +41,10 @@ public class DatabaseConfigPersistenceMigrateFileConfigsTest extends BaseDatabas
   public static void setup() throws Exception {
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
     configPersistence = spy(new DatabaseConfigPersistence(database));
+    final ConfigsDatabaseMigrator configsDatabaseMigrator =
+        new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
+    final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
+    MigrationDevHelper.runLastMigration(devDatabaseMigrator);
   }
 
   @AfterAll
@@ -53,7 +61,8 @@ public class DatabaseConfigPersistenceMigrateFileConfigsTest extends BaseDatabas
     reset(configs);
     when(configs.getConfigRoot()).thenReturn(ROOT_PATH);
 
-    database.query(ctx -> ctx.truncateTable("airbyte_configs").execute());
+    database.query(ctx -> ctx
+        .execute("TRUNCATE TABLE state, connection_operation, connection, operation, actor_oauth_parameter, actor, actor_definition, workspace"));
 
     reset(configPersistence);
   }
@@ -63,7 +72,7 @@ public class DatabaseConfigPersistenceMigrateFileConfigsTest extends BaseDatabas
   public void testNewDeployment() throws Exception {
     configPersistence.migrateFileConfigs(configs);
 
-    assertRecordCount(0);
+    assertRecordCount(0, ACTOR_DEFINITION);
 
     verify(configPersistence, never()).copyConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
     verify(configPersistence, never()).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
@@ -76,7 +85,7 @@ public class DatabaseConfigPersistenceMigrateFileConfigsTest extends BaseDatabas
 
     configPersistence.migrateFileConfigs(configs);
 
-    assertRecordCount(2);
+    assertRecordCount(2, ACTOR_DEFINITION);
     assertHasSource(SOURCE_GITHUB);
     assertHasDestination(DESTINATION_S3);
 
@@ -91,7 +100,7 @@ public class DatabaseConfigPersistenceMigrateFileConfigsTest extends BaseDatabas
 
     configPersistence.migrateFileConfigs(configs);
 
-    assertRecordCount(1);
+    assertRecordCount(1, ACTOR_DEFINITION);
     assertHasSource(SOURCE_GITHUB);
 
     verify(configPersistence, never()).copyConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));

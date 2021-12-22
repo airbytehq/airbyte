@@ -94,6 +94,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Postgres](sources/postgres.md) | Certified |
 | [PostHog](sources/posthog.md) | Beta |
 | [PrestaShop](sources/presta-shop.md) | Beta |
+| [Qualaroo](sources/qualaroo.md) | Beta |
 | [Quickbooks](sources/quickbooks.md) | Beta |
 | [Recharge](sources/recharge.md) | Beta |
 | [Recurly](sources/recurly.md) | Beta |
