@@ -83,19 +83,15 @@ class AsyncJob:
 
     @property
     def completed(self) -> bool:
-        """Check job status and return True if it is completed successfully
+        """Check job status and return True if it is completed, use failed/succeeded to check if it was successful
 
-        :return: True if completed successfully, False - if task still running
+        :return: True if completed, False - if task still running
         :raises: JobException in case job failed to start, failed or timed out
         """
         if self._finish_time:
             return True
-        try:
-            self._update_job()
-            return self._check_status()
-        except JobException:
-            self._failed = True
-            return True
+        self._update_job()
+        return self._check_status()
 
     def batch_update_request(self) -> FacebookRequest:
         if self._finish_time:
@@ -104,6 +100,7 @@ class AsyncJob:
         return self._job.api_get(pending=True)
 
     def process_batch_result(self, response: FacebookResponse):
+        """Update job status from response"""
         self._job = ObjectParser(reuse_object=self._job).parse_single(response.json())
         self._check_status()
 
@@ -114,6 +111,7 @@ class AsyncJob:
 
     @backoff_policy
     def _update_job(self):
+        """Method to retrieve job's status, separated because of retry handler"""
         if not self._job:
             raise RuntimeError(f"{self}: Incorrect usage of the method - the job is not started")
         self._job = self._job.api_get()
@@ -122,18 +120,19 @@ class AsyncJob:
         """Perform status check
 
         :return: True if the job is completed, False - if the job is still running
-        :raises: errors if job failed or timed out
         """
         job_progress_pct = self._job["async_percent_completion"]
         logger.info(f"{self} is {job_progress_pct}% complete ({self._job['async_status']})")
-        runtime = self.elapsed_time
         job_status = self._job["async_status"]
 
         if job_status == Status.COMPLETED:
-            self._finish_time = pendulum.now()
+            self._finish_time = pendulum.now()  # TODO: is not actual running time, but interval between check_status calls
             return True
         elif job_status in [Status.FAILED, Status.SKIPPED]:
-            raise JobException(f"{self._job} has status {job_status} after {runtime.in_seconds()} seconds.")
+            self._finish_time = pendulum.now()
+            self._failed = True
+            logger.info(f"{self._job} has status {job_status} after {self.elapsed_time.in_seconds()} seconds.")
+            return True
 
         return False
 

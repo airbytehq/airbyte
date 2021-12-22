@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
+import http.client
 import logging
 import sys
 from typing import Any, Iterable, Sequence
@@ -13,6 +13,7 @@ from facebook_business.exceptions import FacebookRequestError
 # The Facebook API error codes indicating rate-limiting are listed at
 # https://developers.facebook.com/docs/graph-api/overview/rate-limiting/
 FACEBOOK_RATE_LIMIT_ERROR_CODES = (4, 17, 32, 613, 80000, 80001, 80002, 80003, 80004, 80005, 80006, 80008)
+FACEBOOK_BATCH_ERROR_CODE = 960
 FACEBOOK_UNKNOWN_ERROR_CODE = 99
 DEFAULT_SLEEP_INTERVAL = pendulum.duration(minutes=1)
 
@@ -39,7 +40,9 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
     def should_retry_api_error(exc):
         if isinstance(exc, FacebookRequestError):
             call_rate_limit_error = exc.api_error_code() in FACEBOOK_RATE_LIMIT_ERROR_CODES
-            return exc.api_transient_error() or exc.api_error_subcode() == FACEBOOK_UNKNOWN_ERROR_CODE or call_rate_limit_error
+            batch_timeout_error = exc.http_status() == http.client.BAD_REQUEST and exc.api_error_code() == FACEBOOK_BATCH_ERROR_CODE
+            unknown_error = exc.api_error_subcode() == FACEBOOK_UNKNOWN_ERROR_CODE
+            return any((exc.api_transient_error(), unknown_error, call_rate_limit_error, batch_timeout_error))
         return True
 
     return backoff.on_exception(

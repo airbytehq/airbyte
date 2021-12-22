@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import urllib.parse as urlparse
 from abc import ABC
 from datetime import datetime
@@ -19,6 +20,7 @@ from source_facebook_marketing.api import API, FacebookAPIException
 
 from .common import batch, deep_merge, retry_pattern
 
+logger = logging.getLogger("airbyte")
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
 
@@ -67,14 +69,15 @@ class FBMarketingStream(Stream, ABC):
             records.append(response.json())
 
         def failure(response: FacebookResponse):
-            raise response.error()
+            logger.info(f"Request failed with response: {response.body()}")
 
         api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
         for request in requests:
             api_batch.add_request(request, success=success, failure=failure)
-        retry_batch = api_batch.execute()
-        if retry_batch:
-            raise FacebookAPIException(f"Batch has failed {len(retry_batch)} requests")
+
+        while api_batch:
+            api_batch = api_batch.execute()
+            logger.info(f"Batch has failed {len(api_batch)} requests, retrying...")
 
         return records
 

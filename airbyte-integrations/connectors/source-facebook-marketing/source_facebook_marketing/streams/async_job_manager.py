@@ -7,7 +7,7 @@ import time
 from collections import deque
 from dataclasses import dataclass, field
 from functools import partial
-from typing import Deque, Tuple
+from typing import Deque, Tuple, MutableMapping, Any
 
 import pendulum
 from facebook_business.api import FacebookAdsApiBatch, FacebookResponse
@@ -42,7 +42,7 @@ class InsightsAsyncJobManager:
     to_date: pendulum.Date
     # Params to be passed to <ACCOUNT_ID>/insights request. Will be extended
     # with "time_range" parameter.
-    job_params: dict
+    job_params: MutableMapping[str, Any]
 
     logger = logging.getLogger("airbyte")
     _jobs_queue: Deque[AsyncJob] = field(default_factory=deque)
@@ -54,7 +54,7 @@ class InsightsAsyncJobManager:
     JOB_STATUS_UPDATE_SLEEP_SECONDS = 30
     # Number of days for single date range window.
     DAYS_PER_JOB = 1
-    # Nubmer of jobs to check in advance and restart if some jobs failed
+    # Number of jobs to check in advance and restart if some jobs failed
     # without waiting until previous jobs processed.
     JOBS_TO_CHECK_INADVANCE = 40
     # Maximum of concurrent jobs that could be scheduled. Since throttling
