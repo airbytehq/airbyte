@@ -14,12 +14,12 @@
     "rules": {
       "cypress/no-unnecessary-waiting": "warn"
     },
-    "extends": [gs
+    "extends": [
       "plugin:cypress/recommended"
     ]
   },
   "devDependencies": {
-    "cypress": "^6.4.0",
-    "eslint-plugin-cypress": "^2.11.2"
+    "cypress": "^9.2.0",
+    "eslint-plugin-cypress": "^2.12.1"
   }
 }

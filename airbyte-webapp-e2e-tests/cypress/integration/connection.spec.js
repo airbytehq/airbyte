@@ -25,7 +25,7 @@ describe("Connection main actions", () => {
 
     cy.get("div[data-id='status-step']").click();
     cy.get("div").contains("5 min").should("exist");
-  });
+});
 
   it("Delete connection", () => {
     cy.createTestConnection("Test delete connection source cypress", "Test delete connection destination cypress");
