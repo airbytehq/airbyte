@@ -47,7 +47,11 @@ export const WorkspaceSettingsView: React.FC = () => {
         title={
           <Header>
             <FormattedMessage id="settings.generalSettings" />
-            <Button type="button" onClick={exitWorkspace}>
+            <Button
+              type="button"
+              onClick={exitWorkspace}
+              data-testid="button.changeWorkspace"
+            >
               <FormattedMessage id="settings.generalSettings.changeWorkspace" />
             </Button>
           </Header>
