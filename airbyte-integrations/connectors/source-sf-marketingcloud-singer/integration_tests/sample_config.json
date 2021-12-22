@@ -1,0 +1,15 @@
+{
+    "client_id": "",
+    "client_secret": "",
+    "tenant_subdomain": "",
+    "start_date": "2021-10-06T00:00:00Z",
+    "request_timeout": 900,
+    "batch_size": 2500,
+
+    "pagination__sent_interval_quantity": 10,
+    "pagination__click_interval_quantity": 30,
+    "pagination__open_interval_quantity": 30,
+    "pagination__bounce_interval_quantity": 30,
+    "pagination__unsub_interval_quantity": 30,
+    "pagination__list_subscriber_interval_quantity": 7
+}
