@@ -575,6 +575,9 @@
                     },
                     "SmallParcelZplPrintDefault": {
                       "type": "boolean"
+                    },
+                    "SmallParcelAutoRateShopOnShip": {
+                      "type": "boolean"
                     }
                   }
                 },

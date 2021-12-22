@@ -58,6 +58,10 @@
                   "type": ["null", "string"],
                   "format": "date-time"
                 },
+                "PackStarted": {
+                  "description": "Set to True when the first package is created",
+                  "type": "boolean"
+                },
                 "PackDoneDate": {
                   "description": "Stored in server time, displayed in warehouse time",
                   "type": ["null", "string"],
