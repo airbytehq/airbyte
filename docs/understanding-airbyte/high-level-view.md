@@ -2,7 +2,13 @@
 description: A high level view of Airbyte's components.
 ---
 
-# High-level View
+# Architecture overview
+
+Airbyte is conceptually composed of two parts: platform and connectors. 
+
+The platform provides all the horizontal services required to configure and run data movement operations e.g: the UI, configuration API, job scheduling, logging, alerting, etc. and is structured as a set of microservices. 
+
+Connectors are independent modules which push/pull data to/from sources and destinations. Connectors are built in accordance with the [Airbyte Specification](./airbyte-specification.md), which describes the interface with which data can be moved between a source and a destination using Airbyte.
 
 ![3.048-Kilometer view](../.gitbook/assets/understanding_airbyte_high_level_architecture.png)
 
