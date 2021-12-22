@@ -26,7 +26,7 @@ Cypress.Commands.add("createTestSource", (name) => {
 
   cy.openNewSourceForm();
   cy.fillPgSourceForm(name);
-  cy.submit();
+  cy.submitButtonClick();
 
   cy.wait("@checkSourceUpdateConnection");
   cy.wait("@createSource");
@@ -41,7 +41,7 @@ Cypress.Commands.add("updateSource", (name, field, value) => {
   cy.openSourcePage();
   cy.openSettingForm(name);
   cy.updateField(field, value);
-  cy.submit();
+  cy.submitButtonClick();
 
   cy.wait("@checkSourceConnection");
   cy.wait("@updateSource");

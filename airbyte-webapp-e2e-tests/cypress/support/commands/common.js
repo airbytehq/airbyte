@@ -1,4 +1,4 @@
-Cypress.Commands.add("submit", () => {
+Cypress.Commands.add("submitButtonClick", () => {
   cy.get("button[type=submit]").click();
 })
 

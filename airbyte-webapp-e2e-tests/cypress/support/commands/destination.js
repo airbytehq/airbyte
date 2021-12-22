@@ -4,7 +4,7 @@ Cypress.Commands.add("createTestDestination", (name) => {
 
   cy.openNewDestinationForm();
   cy.fillTestLocalJsonForm(name);
-  cy.submit();
+  cy.submitButtonClick();
 
   cy.wait("@checkDestinationConnection");
   cy.wait("@createDestination");
@@ -17,7 +17,7 @@ Cypress.Commands.add("updateDestination", (name, field, value) => {
   cy.openDestinationPage();
   cy.openSettingForm(name);
   cy.updateField(field, value);
-  cy.submit();
+  cy.submitButtonClick();
 
   cy.wait("@checkDestinationUpdateConnection");
   cy.wait("@updateDestination");
