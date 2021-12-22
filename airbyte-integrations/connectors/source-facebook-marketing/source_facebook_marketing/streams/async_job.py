@@ -14,7 +14,7 @@ from facebook_business.api import FacebookRequest, FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.api import API
 
-from .common import JobException, retry_pattern
+from .common import retry_pattern
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 logger = logging.getLogger("airbyte")

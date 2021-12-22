@@ -4,7 +4,6 @@
 
 import base64
 import logging
-import time
 import urllib.parse as urlparse
 from abc import ABC
 from datetime import datetime
@@ -19,7 +18,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from cached_property import cached_property
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
-from source_facebook_marketing.api import API, FacebookAPIException
+from source_facebook_marketing.api import API
 
 from .common import batch, deep_merge, retry_pattern
 
