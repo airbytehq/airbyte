@@ -32,16 +32,18 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
   @Override
   public ScheduleRetrieverOutput getTimeToWait(final ScheduleRetrieverInput input) {
     try {
-      final Optional<Job> previousJobOptional = jobPersistence.getLastReplicationJob(input.getConnectionId());
       final StandardSync standardSync = configRepository.getStandardSync(input.getConnectionId());
+
+      if (standardSync.getSchedule() == null) {
+        // Manual syncs wait for their first run
+        return new ScheduleRetrieverOutput(Duration.ofDays(100 * 365));
+      }
+
+      final Optional<Job> previousJobOptional = jobPersistence.getLastReplicationJob(input.getConnectionId());
 
       if (previousJobOptional.isEmpty() && standardSync.getSchedule() != null) {
         // Non-manual syncs don't wait for their first run
         return new ScheduleRetrieverOutput(Duration.ZERO);
-      }
-      if (standardSync.getSchedule() == null) {
-        // Manual syncs wait for their first run
-        return new ScheduleRetrieverOutput(Duration.ofDays(100 * 365));
       }
 
       final Job previousJob = previousJobOptional.get();
