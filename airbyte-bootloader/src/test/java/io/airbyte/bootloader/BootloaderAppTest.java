@@ -19,6 +19,7 @@ import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.val;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -75,7 +76,7 @@ public class BootloaderAppTest {
         mockedConfigs.getConfigDatabaseUrl())
             .getAndInitialize();
     val configsMigrator = new ConfigsDatabaseMigrator(configDatabase, this.getClass().getName());
-    assertEquals("0.30.22.001", configsMigrator.getLatestMigration().getVersion().getVersion());
+    assertEquals("0.32.8.001", configsMigrator.getLatestMigration().getVersion().getVersion());
 
     val jobsPersistence = new DefaultJobPersistence(jobDatabase);
     assertEquals(version, jobsPersistence.getVersion().get());
@@ -103,6 +104,32 @@ public class BootloaderAppTest {
     assertTrue(BootloaderApp.isLegalUpgrade(new AirbyteVersion("0.32.1-alpha"), new AirbyteVersion("0.33.0-alpha")));
     assertTrue(BootloaderApp.isLegalUpgrade(new AirbyteVersion("0.33.0-alpha"), new AirbyteVersion("0.33.1-alpha")));
     assertTrue(BootloaderApp.isLegalUpgrade(new AirbyteVersion("0.33.0-alpha"), new AirbyteVersion("0.34.0-alpha")));
+  }
+
+  @Test
+  void testPostLoadExecutionExecutes() throws Exception {
+    var testTriggered = new AtomicBoolean();
+
+    val container = new PostgreSQLContainer<>("postgres:13-alpine")
+        .withDatabaseName("public")
+        .withUsername("docker")
+        .withPassword("docker");
+    container.start();
+    val version = "0.33.0-alpha";
+
+    val mockedConfigs = mock(Configs.class);
+    when(mockedConfigs.getConfigDatabaseUrl()).thenReturn(container.getJdbcUrl());
+    when(mockedConfigs.getConfigDatabaseUser()).thenReturn(container.getUsername());
+    when(mockedConfigs.getConfigDatabasePassword()).thenReturn(container.getPassword());
+    when(mockedConfigs.getDatabaseUrl()).thenReturn(container.getJdbcUrl());
+    when(mockedConfigs.getDatabaseUser()).thenReturn(container.getUsername());
+    when(mockedConfigs.getDatabasePassword()).thenReturn(container.getPassword());
+    when(mockedConfigs.getAirbyteVersion()).thenReturn(new AirbyteVersion(version));
+    when(mockedConfigs.runDatabaseMigrationOnStartup()).thenReturn(true);
+
+    new BootloaderApp(mockedConfigs, () -> testTriggered.set(true)).load();
+
+    assertTrue(testTriggered.get());
   }
 
 }

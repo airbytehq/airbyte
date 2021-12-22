@@ -203,67 +203,61 @@ This produces the private key in pem format, and the public key remains in the s
 
 ## Data type mapping
 
-Postgres data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/PostresSourceComprehensiveTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
+According to Postgres [documentation](https://www.postgresql.org/docs/14/datatype.html), Postgres data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/PostgresSourceDatatypeTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
-| Postgres Type | Resulting Type | Notes |
-| :--- | :--- | :--- |
-| `bigint` | number |  |
-| `bigserial` | number |  |
-| `bit` | boolean | bit is mapped to boolean type and `read` is failed for n-bit values  |
-| `blob` | boolean |  |
-| `boolean` | boolean |  |
-| `box` | string |  |
-| `bytea` | object | parsed value is encoded by Base64 [#7905](https://github.com/airbytehq/airbyte/issues/7905)|
-| `character` | string |  |
-| `character varying` | string |  |
-| `cidr` | string |  |
-| `circle` | string |  |
-| `citext` | string |  |
-| `date` | string |  |
-| `double precision` | string | Values `-Infinity`, `Infinity`, `Nan` will not be parsed correctly. Parsed values for all of them are null [#7871](https://github.com/airbytehq/airbyte/issues/7871) |
-| `enum` | number |  |
-| `float` | number | Values `-Infinity`, `Infinity`, `Nan` will not be parsed correctly. Parsed values for all of them are null [#7871](https://github.com/airbytehq/airbyte/issues/7871) |
-| `float8` | number | Values `-Infinity`, `Infinity`, `Nan` will not be parsed correctly. Parsed values for all of them are null [#7871](https://github.com/airbytehq/airbyte/issues/7871) |
-| `hstore` | object | may be de-nested depending on the destination you are syncing into |
-| `inet` | string |  |
-| `int` | number |  |
-| `interval` | string |  |
-| `inventory_item` | string |  |
-| `json` | string |  |
-| `jsonb` | string |  |
-| `line` | string |  |
-| `lseg` | string |  |
-| `macaddr` | string |  |
-| `macaddr8` | string |  |
-| `money` | string | When running logical replication (CDC), `money` values larger than 999999999999999 (15 nines) or smaller than -999999999999999 (15 nines)  are transmitted as null; When running default mode `money` value fail when amount is > 1000 [#7870](https://github.com/airbytehq/airbyte/issues/7870) |
-| `mood` | string |  |
-| `numeric` | number |  |
-| `path` | string |  |
-| `point` | number |  |
-| `polygon` | number |  |
-| `real` | number | Values `-Infinity`, `Infinity`, `Nan` will not be parsed correctly. Parsed values for all of them are null [#7871](https://github.com/airbytehq/airbyte/issues/7871) |
-| `serial` | number |  |
-| `smallint` | number |  |
-| `smallserial` | number |  |
-| `text` | string |  |
-| `text[]` | string |  |
-| `time` | string |  |
-| `timez` | string |  |
-| `time with timezone` | string | may be written as a native date type depending on the destination |
-| `time without timezone` | string | may be written as a native date type depending on the destination |
-| `timestamp with timezone` | string | may be written as a native date type depending on the destination |
-| `timestamp without timezone` | string | may be written as a native date type depending on the destination |
-| `tsrange` | string |  |
-| `tsvector` | string |  |
-| `tsquery` | string | is not supported with CDC node. Parsed value is null [#7911](https://github.com/airbytehq/airbyte/issues/7911) |
-| `uuid` | string |  |
-| `varchar` | string |  |
-| `xml` | string |  |
+| Postgres Type                         | Resulting Type | Notes                                                                                                       |
+|:--------------------------------------|:---------------|:------------------------------------------------------------------------------------------------------------|
+| `bigint`                              | number         |                                                                                                             |
+| `bigserial`, `serial8`                | number         |                                                                                                             |
+| `bit`                                 | string         | Fixed-length bit string (e.g. "0100").                                                                      |
+| `bit varying`, `varbit`               | string         | Variable-length bit string (e.g. "0100").                                                                   |
+| `boolean`, `bool`                     | boolean        |                                                                                                             |
+| `box`                                 | string         |                                                                                                             |
+| `bytea`                               | string         | Variable length binary string with hex output format prefixed with "\x" (e.g. "\x6b707a").                  |
+| `character`, `char`                   | string         |                                                                                                             |
+| `character varying`, `varchar`        | string         |                                                                                                             |
+| `cidr`                                | string         |                                                                                                             |
+| `circle`                              | string         |                                                                                                             |
+| `date`                                | string         | Parsed as ISO8601 date time at midnight. Does not support B.C. dates. Issue: [#8903](https://github.com/airbytehq/airbyte/issues/8903). |
+| `double precision`, `float`, `float8` | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902). |
+| `inet`                                | string         |                                                                                                             |
+| `integer`, `int`, `int4`              | number         |                                                                                                             |
+| `interval`                            | string         |                                                                                                             |
+| `json`                                | string         |                                                                                                             |
+| `jsonb`                               | string         |                                                                                                             |
+| `line`                                | string         |                                                                                                             |
+| `lseg`                                | string         |                                                                                                             |
+| `macaddr`                             | string         |                                                                                                             |
+| `macaddr8`                            | string         |                                                                                                             |
+| `money`                               | number         |                                                                                                             |
+| `numeric`, `decimal`                  | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902). |
+| `path`                                | string         |                                                                                                             |
+| `pg_lsn`                              | string         |                                                                                                             |
+| `point`                               | string         |                                                                                                             |
+| `polygon`                             | string         |                                                                                                             |
+| `real`, `float4`                      | number         |                                                                                                             |
+| `smallint`, `int2`                    | number         |                                                                                                             |
+| `smallserial`, `serial2`              | number         |                                                                                                             |
+| `serial`, `serial4`                   | number         |                                                                                                             |
+| `text`                                | string         |                                                                                                             |
+| `time`                                | string         |                                                                                                             |
+| `timetz`                              | string         |                                                                                                             |
+| `timestamp`                           | string         |                                                                                                             |
+| `timestamptz`                         | string         |                                                                                                             |
+| `tsquery`                             | string         | Not supported with CDC node. Parsed value is null. Issue: [#7911](https://github.com/airbytehq/airbyte/issues/7911) |
+| `tsvector`                            | string         |                                                                                                             |
+| `uuid`                                | string         |                                                                                                             |
+| `xml`                                 | string         |                                                                                                             |
+| `enum`                                | string         |                                                                                                             |
+| `tsrange`                             | string         |                                                                                                             |
+| array                                 | string         | E.g. "{10001,10002,10003,10004}".                                                                           |
+| composite type                        | string         |                                                                                                             |
 
 ## Changelog
 
 | Version | Date       | Pull Request                                           | Subject                                                                                                         |
 |:--------|:-----------|:-------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 0.4.0   | 2021-12-13 | [8726](https://github.com/airbytehq/airbyte/pull/8726) | Support all Postgres types                                                                                      |
 | 0.3.17  | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key                                                                        |
 | 0.3.16  | 2021-11-28 | [7995](https://github.com/airbytehq/airbyte/pull/7995) | Fixed money type with amount > 1000                                                                             |
 | 0.3.15  | 2021-11-26 | [8066](https://github.com/airbytehq/airbyte/pull/8266) | Fixed the case, when Views are not listed during schema discovery                                               |
