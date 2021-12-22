@@ -1,0 +1,742 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "customers",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "_id": {
+              "type": "integer"
+            },
+            "ReadOnly": {
+              "description": "these fields are not updatable by the API client",
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "CustomerId": {
+                  "type": "integer"
+                },
+                "CreationDate": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "Deactivated": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "CompanyInfo": {
+              "description": "customer.contact1",
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "ContactId": {
+                  "type": ["null", "integer"]
+                },
+                "CompanyName": {
+                  "type": "string"
+                },
+                "Name": {
+                  "type": "string"
+                },
+                "Title": {
+                  "type": "string"
+                },
+                "Address1": {
+                  "type": "string"
+                },
+                "Address2": {
+                  "type": "string"
+                },
+                "City": {
+                  "type": "string"
+                },
+                "State": {
+                  "type": "string"
+                },
+                "Zip": {
+                  "type": "string"
+                },
+                "Country": {
+                  "type": "string"
+                },
+                "PhoneNumber": {
+                  "type": "string"
+                },
+                "Fax": {
+                  "type": "string"
+                },
+                "EmailAddress": {
+                  "type": "string"
+                },
+                "Dept": {
+                  "type": "string"
+                },
+                "Code": {
+                  "description": "for identifying: if known specify only this; if other fields also specified it is not used to identify",
+                  "type": "string"
+                },
+                "AddressStatus": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "type": "integer",
+                  "enum": [0, 1, 2],
+                  "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
+                }
+              }
+            },
+            "PrimaryContact": {
+              "description": "customer.customercontacts where contact type is primary",
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "ContactId": {
+                  "type": ["null", "integer"]
+                },
+                "CompanyName": {
+                  "type": "string"
+                },
+                "Name": {
+                  "type": "string"
+                },
+                "Title": {
+                  "type": "string"
+                },
+                "Address1": {
+                  "type": "string"
+                },
+                "Address2": {
+                  "type": "string"
+                },
+                "City": {
+                  "type": "string"
+                },
+                "State": {
+                  "type": "string"
+                },
+                "Zip": {
+                  "type": "string"
+                },
+                "Country": {
+                  "type": "string"
+                },
+                "PhoneNumber": {
+                  "type": "string"
+                },
+                "Fax": {
+                  "type": "string"
+                },
+                "EmailAddress": {
+                  "type": "string"
+                },
+                "Dept": {
+                  "type": "string"
+                },
+                "Code": {
+                  "description": "for identifying: if known specify only this; if other fields also specified it is not used to identify",
+                  "type": "string"
+                },
+                "AddressStatus": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "type": "integer",
+                  "enum": [0, 1, 2],
+                  "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
+                }
+              }
+            },
+            "OtherContacts": {
+              "description": "customer.customercontacts where contact type is other than primary",
+              "type": "array",
+              "items": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "Type": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "integer",
+                    "enum": [2, 3, 4, 5],
+                    "description": "2: invoicing; 3: additional; 4: for753; 5: small_parcel_return_label"
+                  },
+                  "ContactId": {
+                    "type": ["null", "integer"]
+                  },
+                  "CompanyName": {
+                    "type": "string"
+                  },
+                  "Name": {
+                    "type": "string"
+                  },
+                  "Title": {
+                    "type": "string"
+                  },
+                  "Address1": {
+                    "type": "string"
+                  },
+                  "Address2": {
+                    "type": "string"
+                  },
+                  "City": {
+                    "type": "string"
+                  },
+                  "State": {
+                    "type": "string"
+                  },
+                  "Zip": {
+                    "type": "string"
+                  },
+                  "Country": {
+                    "type": "string"
+                  },
+                  "PhoneNumber": {
+                    "type": "string"
+                  },
+                  "Fax": {
+                    "type": "string"
+                  },
+                  "EmailAddress": {
+                    "type": "string"
+                  },
+                  "Dept": {
+                    "type": "string"
+                  },
+                  "Code": {
+                    "description": "for identifying: if known specify only this; if other fields also specified it is not used to identify",
+                    "type": "string"
+                  },
+                  "AddressStatus": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "integer",
+                    "enum": [0, 1, 2],
+                    "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
+                  }
+                }
+              }
+            },
+            "WebSite": {
+              "description": "information only, in case you want to see more about the customer's business",
+              "type": "string"
+            },
+            "ExternalId": {
+              "description": "connection of this customer to the same customer on some other system",
+              "type": "string"
+            },
+            "Groups": {
+              "description": "list of groups this customer belongs to",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "Facilities": {
+              "description": "list of facilities this customer's items are stored in, the first is the primary facility",
+              "type": "array",
+              "items": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "Name": {
+                    "type": "string"
+                  },
+                  "Id": {
+                    "type": "integer"
+                  }
+                }
+              }
+            },
+            "PrimaryFacilityIdentifier": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "Name": {
+                  "type": "string"
+                },
+                "Id": {
+                  "type": "integer"
+                }
+              },
+              "description": "same as the first in Facilities; populated by GET, ignored by POST and PUT"
+            },
+            "Options": {
+              "description": "assemblage of all manner of capabilities the system allows for this customer, scraped together from multiple database sources",
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "Alerts": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "ExpirationNotificationThreshold": {
+                      "description": "number of days???",
+                      "type": "integer"
+                    },
+                    "NotifyShipTo": {
+                      "type": "boolean"
+                    },
+                    "FromEmailAddress": {
+                      "type": "string"
+                    },
+                    "SenderName": {
+                      "type": "string"
+                    },
+                    "ReplyToAddress": {
+                      "type": "string"
+                    },
+                    "WebHookParameters": {
+                      "description": "Web Hook configuration at the Customer (C2) level",
+                      "type": "array",
+                      "items": {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "EventTypes": {
+                            "description": "a comma-delimited list of supported event types",
+                            "type": "string"
+                          },
+                          "Url": {
+                            "type": "string"
+                          },
+                          "IncludeResource": {
+                            "type": "boolean"
+                          },
+                          "ResourceApiParameters": {
+                            "description": "as defined in the REL documentation for the subject resource",
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "Storage": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "FuelSurcharge": {
+                      "description": "positive int percentage 0-100",
+                      "type": "number"
+                    },
+                    "SetInvoiceDateToXactionConfirmDate": {
+                      "type": "boolean"
+                    },
+                    "AccountingCustomerName": {
+                      "type": "string"
+                    },
+                    "AutoFillChargesOnConfirm": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "Edi": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "CustInterchangeId": {
+                      "type": "string"
+                    },
+                    "CustInterchangeIdQual": {
+                      "type": "string"
+                    },
+                    "ThreeplInterchangeId": {
+                      "type": "string"
+                    },
+                    "ThreeplInterchangeIdQual": {
+                      "type": "string"
+                    },
+                    "TradingPartnerId": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "Receiving": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "PurchaseOrders": {
+                      "type": "boolean"
+                    },
+                    "CreateMultipleMus": {
+                      "type": "boolean"
+                    },
+                    "DisplayWeightFieldForReceipt": {
+                      "type": "boolean"
+                    },
+                    "ReceiveAgainstAsns": {
+                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "type": "integer",
+                      "enum": [0, 1, 2],
+                      "description": "0: disabled; 1: enabled; 2: blind"
+                    },
+                    "SuggestedPutAwayEnabled": {
+                      "type": "boolean"
+                    },
+                    "AutoFillTrackBys": {
+                      "description": "Should be in Shipping - direct Smart Pack whether to auto fill trackbys",
+                      "type": "boolean"
+                    },
+                    "TrackLocation": {
+                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "type": "integer",
+                      "enum": [0, 1, 2],
+                      "description": "0: disallow; 1: allow; 2: require"
+                    },
+                    "TrackPallets": {
+                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "type": "integer",
+                      "enum": [0, 1, 2],
+                      "description": "0: disallow; 1: allow; 2: require"
+                    },
+                    "TrackSupplier": {
+                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "type": "integer",
+                      "enum": [0, 1, 2],
+                      "description": "0: disallow; 1: allow; 2: require"
+                    },
+                    "InheritOriginalReceiptDateOnTransfer": {
+                      "description": "false: set receipt date to transfer date when receiving inventory via customer-to-customer transfer; true: inherit original receipt date",
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "Shipping": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "NextMasterBolId": {
+                      "description": "Readonly value; see NextMasterBolIdOverride",
+                      "type": "integer"
+                    },
+                    "NextMasterBolIdOverride": {
+                      "description": "To override the system-generated NextMasterBolId",
+                      "type": ["null", "integer"]
+                    },
+                    "BolNumAsTransNum": {
+                      "type": "boolean"
+                    },
+                    "AutoConfirmOrderOnTrackingUpdate": {
+                      "type": "boolean"
+                    },
+                    "FulfillmentInvoicing": {
+                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "type": "integer",
+                      "enum": [0, 1, 2],
+                      "description": "0: disabled; 1: enabled; 2: prepopulated"
+                    },
+                    "OrderQueue": {
+                      "type": "boolean"
+                    },
+                    "AutoPrintCartonLabelDefault": {
+                      "description": "Sets default on or off for Smart Pack's Auto-print labels checkbox",
+                      "type": "boolean"
+                    },
+                    "SmartPackScaleEnabled": {
+                      "type": "boolean"
+                    },
+                    "RequireTrackingNumber": {
+                      "type": "boolean"
+                    },
+                    "UpsAccountNumber": {
+                      "type": "string"
+                    },
+                    "UpsAccountZip": {
+                      "type": "string"
+                    },
+                    "FedExAccountNumber": {
+                      "type": "string"
+                    },
+                    "PrepopulateCarrierInfo": {
+                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "type": "integer",
+                      "enum": [0, 1, 2, 3],
+                      "description": "0: off; 1: on; 2: prepaid_only; 3: third_party_only"
+                    },
+                    "PackingListLogoUrl": {
+                      "description": "on GET: url of image; on POST or PUT: url of image -or- {fileExtension}:{base64-encoded image}",
+                      "type": "string"
+                    },
+                    "PackingListFooterUrl": {
+                      "description": "on GET: url of image; on POST or PUT: url of image -or- {fileExtension}:{base64-encoded image}",
+                      "type": "string"
+                    },
+                    "RounduptoFullMU": {
+                      "type": "boolean"
+                    },
+                    "QuickBooksPaymentTerms": {
+                      "type": "string"
+                    },
+                    "AsnPreCheck": {
+                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "RequireScacForAsn": {
+                          "description": "Prevents sending an ASN when SCAC is not specified",
+                          "type": "boolean"
+                        },
+                        "RequireAttachedDocuments": {
+                          "description": "Prevents sending an ASN when the order has no attached docs",
+                          "type": "boolean"
+                        },
+                        "AsnPreCheckOptions": {
+                          "description": "Prevents sending an ASN when any of the checks associated with the options in this bit flag fail",
+                          "$schema": "http://json-schema.org/draft-07/schema#",
+                          "type": "integer"
+                        },
+                        "OrderLevelFlexFields": {
+                          "description": "Prevents sending an ASN when the listed Flex Fields are not all specified at the order level",
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "OrderItemLevelFlexFields": {
+                          "description": "Prevents sending an ASN when the listed Flex Fields are not all specified at the order item level",
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "Packaging": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "SmallParcelUsps3rdParty": {
+                      "type": "string"
+                    },
+                    "Ucc128ManufacturersId": {
+                      "type": "integer"
+                    },
+                    "UseVendorIdOnBol": {
+                      "type": "boolean"
+                    },
+                    "SpsCloseOnUpdate": {
+                      "type": "boolean"
+                    },
+                    "SmallParcelReturnShippingCost": {
+                      "type": "boolean"
+                    },
+                    "SmallParcelReturnFedExService": {
+                      "type": "string"
+                    },
+                    "SmallParcelUspsReturnType": {
+                      "type": "string"
+                    },
+                    "SmallParcelReturnUpsService": {
+                      "type": "string"
+                    },
+                    "SmallParcelReturnDefaultChecked": {
+                      "type": "boolean"
+                    },
+                    "SmallParcelHighVolumeDefaultChecked": {
+                      "type": "boolean"
+                    },
+                    "SmallParcelHighVolumeZplBatched": {
+                      "type": "boolean"
+                    },
+                    "SmallParcelReferences": {
+                      "type": "string"
+                    },
+                    "SmallParcelIntlDutyBillType": {
+                      "type": "string"
+                    },
+                    "SmallParcelCustomizeDuties": {
+                      "type": "boolean"
+                    },
+                    "SmallParcelDutiesAndTaxes": {
+                      "type": "string"
+                    },
+                    "SmallParcelCreatePackagesOnFind": {
+                      "type": "boolean"
+                    },
+                    "SmallParcelRateShoppingCarrierIds": {
+                      "type": "string"
+                    },
+                    "SmallParcelRateShoppingLogic": {
+                      "type": "string"
+                    },
+                    "SmallParcelZplPrintDefault": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "OtherSystemBehaviors": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "FlexFields": {
+                      "type": "boolean"
+                    },
+                    "AllowDuplicateUPCs": {
+                      "description": "if AllowDuplicateUPCs is true, Unit-of-measure-based UPCs are disabled",
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "UserInterface": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "HideLocationSelectedList": {
+                      "type": "boolean"
+                    },
+                    "ExcludeLocationsWithZeroInventory": {
+                      "type": "boolean"
+                    },
+                    "AutoCheckAutoReallocateOnReceive": {
+                      "type": "boolean"
+                    },
+                    "TransactionConfirmInvoiceCreateDefault": {
+                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "type": "integer",
+                      "enum": [0, 1, 2, 3],
+                      "description": "0: off; 1: on; 2: receivers_only; 3: orders_only"
+                    },
+                    "MobileReceiptQuantityOneDefault": {
+                      "type": "boolean"
+                    },
+                    "ReallocateAtPickTime": {
+                      "type": "boolean"
+                    },
+                    "BrandingImageId": {
+                      "type": "integer"
+                    },
+                    "Dashboard": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "SavedElements": {
+                  "description": "UI assistance for adding saved elements to a transaction and its line items. Since it is merely a UI assistance, it is up to a UI to decide if, how and when it will verify requiredness. In other words, business logic doesn't care.",
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "Orders": {
+                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "Defs": {
+                          "description": "for the transaction itself, listed in customer's preferred display order",
+                          "type": "array",
+                          "items": {
+                            "$schema": "http://json-schema.org/draft-07/schema#",
+                            "description": "a suggested saved element",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "Name": {
+                                "description": "a suggested name",
+                                "type": "string"
+                              },
+                              "Required": {
+                                "description": "whether a UI might want to strongly suggest the user enter this one at some point in a transaction's lifetime",
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        },
+                        "ItemDefs": {
+                          "description": "for the transaction's line items, listed in customer's preferred display order",
+                          "type": "array",
+                          "items": {
+                            "$schema": "http://json-schema.org/draft-07/schema#",
+                            "description": "a suggested saved element",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "Name": {
+                                "description": "a suggested name",
+                                "type": "string"
+                              },
+                              "Required": {
+                                "description": "whether a UI might want to strongly suggest the user enter this one at some point in a transaction's lifetime",
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "Receivers": {
+                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "Defs": {
+                          "description": "for the transaction itself, listed in customer's preferred display order",
+                          "type": "array",
+                          "items": {
+                            "$schema": "http://json-schema.org/draft-07/schema#",
+                            "description": "a suggested saved element",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "Name": {
+                                "description": "a suggested name",
+                                "type": "string"
+                              },
+                              "Required": {
+                                "description": "whether a UI might want to strongly suggest the user enter this one at some point in a transaction's lifetime",
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        },
+                        "ItemDefs": {
+                          "description": "for the transaction's line items, listed in customer's preferred display order",
+                          "type": "array",
+                          "items": {
+                            "$schema": "http://json-schema.org/draft-07/schema#",
+                            "description": "a suggested saved element",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "Name": {
+                                "description": "a suggested name",
+                                "type": "string"
+                              },
+                              "Required": {
+                                "description": "whether a UI might want to strongly suggest the user enter this one at some point in a transaction's lifetime",
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["_id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    }
+  ]
+}
