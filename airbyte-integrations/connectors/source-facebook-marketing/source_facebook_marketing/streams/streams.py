@@ -91,7 +91,6 @@ class FBMarketingStream(Stream, ABC):
 
         while api_batch:
             api_batch = api_batch.execute()
-            logger.info(f"Batch has failed {len(api_batch)} requests, retrying...")
 
         return records
 
