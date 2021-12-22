@@ -48,9 +48,9 @@ class CustomEggInfoCommand(egg_info):
             shutil.rmtree("/tmp/singer-python")
 
 
+#  tap-kustomer installed after source-kustomer-singer requirements (specified in requirements.txt)
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
-    "tap-kustomer==1.0.2",
+    "airbyte-cdk"
 ]
 
 TEST_REQUIREMENTS = [
