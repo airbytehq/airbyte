@@ -95,6 +95,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
     start_row = 0
     dimensions = []
     search_types = ["web", "news", "image", "video"]
+    range_of_days = 3
 
     def path(
         self,
@@ -114,7 +115,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
+    ) -> Iterable[Optional[Mapping[str, Any]]]:  # TODO
         """
         The `stream_slices` implements iterator functionality for `site_urls` and `searchType`. The user can pass many `site_url`,
         and we have to process all of them, we can also pass the` searchType` parameter in the `request body` to get data using some`
@@ -123,7 +124,24 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
 
         for site_url in self._site_urls:
             for search_type in self.search_types:
-                yield {"site_url": site_url, "search_type": search_type}
+                start_date = self._get_start_date(stream_state, site_url, search_type)
+                end_date = pendulum.parse(self._end_date)
+
+                # if start_date > end_date:
+                #     return []
+
+                next_start = start_date
+                period = pendulum.Duration(days=self.range_of_days)
+                while next_start < end_date:
+                    next_end = min(next_start + period, end_date)
+                    # yield next_start, next_end
+                    yield {
+                        "site_url": site_url,
+                        "search_type": search_type,
+                        "start_date": next_start.strftime("%Y-%m-%d"),
+                        "end_date": next_end.strftime("%Y-%m-%d")
+                    }
+                    next_start = next_end + pendulum.Duration(days=1)
 
     def next_page_token(self, response: requests.Response) -> Optional[bool]:
         """
@@ -159,11 +177,11 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         5. For the `startRow` and `rowLimit` check next_page_token method.
         """
 
-        start_date = self._get_start_data(stream_state, stream_slice)
+        # start_date = self._get_start_data(stream_state, stream_slice)
 
         data = {
-            "startDate": start_date,
-            "endDate": self._end_date,
+            "startDate": stream_slice["start_date"],  # start_date
+            "endDate": stream_slice["end_date"],  # self._end_date
             "dimensions": self.dimensions,
             "searchType": stream_slice.get("search_type"),
             "aggregationType": "auto",
@@ -172,21 +190,23 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         }
         return data
 
-    def _get_start_data(
+    def _get_start_date(
         self,
         stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
+        # stream_slice: Mapping[str, Any] = None,
+        site_url: str = None,
+        search_type: str = None
     ) -> str:
-        start_date = self._start_date
+        start_date = pendulum.parse(self._start_date)
 
         if start_date and stream_state:
-            if stream_state.get(unquote_plus(stream_slice["site_url"]), {}).get(stream_slice["search_type"]):
-                stream_state_value = stream_state.get(unquote_plus(stream_slice["site_url"]), {}).get(stream_slice["search_type"])
+            if stream_state.get(unquote_plus(site_url), {}).get(search_type):
+                stream_state_value = stream_state.get(unquote_plus(site_url), {}).get(search_type)
 
                 start_date = max(
                     pendulum.parse(stream_state_value[self.cursor_field]),
-                    pendulum.parse(start_date),
-                ).to_date_string()
+                    start_date,
+                )
 
         return start_date
 
