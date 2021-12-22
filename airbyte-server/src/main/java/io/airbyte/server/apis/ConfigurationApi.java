@@ -120,7 +120,6 @@ import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.helper.ConnectionHelper;
-import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.File;
@@ -174,7 +173,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final AirbyteVersion airbyteVersion,
                           final Path workspaceRoot,
                           final HttpClient httpClient,
-                          final FeatureFlags featureFlags) {
+                          final FeatureFlags featureFlags,
+                          final TemporalWorkerRunFactory temporalWorkerRunFactory) {
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
     this.workerConfigs = workerConfigs;
@@ -189,11 +189,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
     final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
     final Configs configs = new EnvConfigs();
-    final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(
-        TemporalClient.production(configs.getTemporalHost(), workspaceRoot),
-        workspaceRoot,
-        configs.getAirbyteVersionOrWarning(),
-        featureFlags);
+
     schedulerHandler = new SchedulerHandler(
         configRepository,
         schedulerJobClient,

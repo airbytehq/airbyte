@@ -44,6 +44,7 @@ import io.airbyte.server.errors.UncaughtExceptionMapper;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalUtils;
+import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.net.http.HttpClient;
 import java.util.Map;
@@ -114,7 +115,9 @@ public class ServerApp implements ServerRunnable {
     server.join();
   }
 
-  private static void assertDatabasesReady(Configs configs, DatabaseInstance configsDatabaseInstance, DatabaseInstance jobsDatabaseInstance)
+  private static void assertDatabasesReady(final Configs configs,
+                                           final DatabaseInstance configsDatabaseInstance,
+                                           final DatabaseInstance jobsDatabaseInstance)
       throws InterruptedException {
     LOGGER.info("Checking configs database flyway migration version..");
     MinimumFlywayMigrationVersionCheck.assertDatabase(configsDatabaseInstance, MinimumFlywayMigrationVersionCheck.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS);
@@ -180,6 +183,11 @@ public class ServerApp implements ServerRunnable {
         new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+    final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(
+        TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot()),
+        configs.getWorkspaceRoot(),
+        configs.getAirbyteVersionOrWarning(),
+        featureFlags);
 
     LOGGER.info("Starting server...");
 
@@ -200,7 +208,8 @@ public class ServerApp implements ServerRunnable {
         configs.getAirbyteVersion(),
         configs.getWorkspaceRoot(),
         httpClient,
-        featureFlags);
+        featureFlags,
+        temporalWorkerRunFactory);
   }
 
   public static void main(final String[] args) throws Exception {

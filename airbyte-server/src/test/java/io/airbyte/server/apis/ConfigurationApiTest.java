@@ -22,6 +22,7 @@ import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
@@ -53,7 +54,8 @@ public class ConfigurationApiTest {
         new AirbyteVersion("0.1.0-alpha"),
         Path.of(""),
         mock(HttpClient.class),
-        mock(FeatureFlags.class));
+        mock(FeatureFlags.class),
+        mock(TemporalWorkerRunFactory.class));
     assertTrue(configurationApi.canImportDefinitons());
   }
 
