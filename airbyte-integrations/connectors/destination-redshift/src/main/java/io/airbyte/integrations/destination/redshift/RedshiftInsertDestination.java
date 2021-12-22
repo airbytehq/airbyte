@@ -7,8 +7,12 @@ package io.airbyte.integrations.destination.redshift;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.Databases;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,11 +28,33 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination implement
   }
 
   @Override
-  public JsonNode toJdbcConfig(JsonNode redshiftConfig) {
+  public JsonNode toJdbcConfig(final JsonNode redshiftConfig) {
     return getJdbcConfig(redshiftConfig);
   }
 
-  public static JsonNode getJdbcConfig(JsonNode redshiftConfig) {
+  @Override
+  public JdbcDatabase getDatabase(final JsonNode config) {
+    return getJdbcDatabase(config);
+  }
+
+  private static void addSsl(final List<String> additionalProperties) {
+    additionalProperties.add("ssl=true");
+    additionalProperties.add("sslfactory=com.amazon.redshift.ssl.NonValidatingFactory");
+  }
+
+  public static JdbcDatabase getJdbcDatabase(final JsonNode config) {
+    final List<String> additionalProperties = new ArrayList<>();
+    final var jdbcConfig = RedshiftInsertDestination.getJdbcConfig(config);
+    addSsl(additionalProperties);
+    return Databases.createJdbcDatabase(
+        jdbcConfig.get("username").asText(),
+        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        jdbcConfig.get("jdbc_url").asText(),
+        RedshiftInsertDestination.DRIVER_CLASS,
+        String.join(";", additionalProperties));
+  }
+
+  public static JsonNode getJdbcConfig(final JsonNode redshiftConfig) {
     final String schema = Optional.ofNullable(redshiftConfig.get("schema")).map(JsonNode::asText).orElse("public");
 
     return Jsons.jsonNode(ImmutableMap.builder()

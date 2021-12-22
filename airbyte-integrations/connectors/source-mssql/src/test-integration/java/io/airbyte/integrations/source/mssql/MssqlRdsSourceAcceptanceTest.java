@@ -20,9 +20,9 @@ public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
   private JsonNode baseConfig;
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws SQLException {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {
     baseConfig = getStaticConfig();
-    String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
+    final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
 
     final Database database = getDatabase();
     database.query(ctx -> {
@@ -45,7 +45,7 @@ public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
 
   private Database getDatabase() {
     String additionalParameter = "";
-    JsonNode sslMethod = baseConfig.get("ssl_method");
+    final JsonNode sslMethod = baseConfig.get("ssl_method");
     switch (sslMethod.get("ssl_method").asText()) {
       case "unencrypted" -> additionalParameter = "encrypt=false;";
       case "encrypted_trust_server_certificate" -> additionalParameter = "encrypt=true;trustServerCertificate=true;";
@@ -62,8 +62,8 @@ public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
-    String database = config.get("database").asText();
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
+    final String database = config.get("database").asText();
     getDatabase().query(ctx -> {
       ctx.fetch(String.format("ALTER DATABASE %s SET single_user with rollback immediate;", database));
       ctx.fetch(String.format("DROP DATABASE %s;", database));

@@ -6,7 +6,7 @@
       "type": ["null", "integer"]
     },
     "applies_to": {
-      "type": ["null", "integer", "string"]
+      "type": ["null", "string"]
     },
     "applies_to_id": {
       "type": ["null", "integer"]
@@ -75,7 +75,7 @@
       "format": "date-time"
     },
     "external_discount_id": {
-      "type": ["null", "string", "integer"]
+      "type": ["null", "string"]
     },
     "external_discount_source": {
       "type": ["null", "string"]
@@ -87,7 +87,7 @@
       "type": ["null", "boolean"]
     },
     "prerequisite_subtotal_min": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "starts_at": {
       "type": ["null", "string"],
@@ -97,14 +97,14 @@
       "type": ["null", "string"]
     },
     "times_used": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "updated_at": {
       "type": ["null", "string"],
       "format": "date-time"
     },
     "usage_limit": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "value": {
       "type": ["null", "number"]

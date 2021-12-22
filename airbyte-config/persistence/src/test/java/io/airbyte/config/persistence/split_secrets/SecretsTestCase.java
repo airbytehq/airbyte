@@ -47,7 +47,7 @@ public interface SecretsTestCase {
     return Exceptions.toRuntime(() -> getNodeResource(getName(), "updated_partial_config.json"));
   }
 
-  default JsonNode getNodeResource(String testCase, String fileName) throws IOException {
+  default JsonNode getNodeResource(final String testCase, final String fileName) throws IOException {
     return Jsons.deserialize(MoreResources.readResource(testCase + "/" + fileName));
   }
 

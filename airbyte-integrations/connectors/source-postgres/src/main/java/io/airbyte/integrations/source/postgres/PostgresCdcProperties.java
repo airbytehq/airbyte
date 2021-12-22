@@ -9,7 +9,7 @@ import java.util.Properties;
 
 public class PostgresCdcProperties {
 
-  static Properties getDebeziumProperties(JsonNode config) {
+  static Properties getDebeziumProperties(final JsonNode config) {
     final Properties props = new Properties();
     props.setProperty("plugin.name", PostgresUtils.getPluginValue(config.get("replication_method")));
     props.setProperty("connector.class", "io.debezium.connector.postgresql.PostgresConnector");
@@ -19,6 +19,9 @@ public class PostgresCdcProperties {
     props.setProperty("publication.name", config.get("replication_method").get("publication").asText());
 
     props.setProperty("publication.autocreate.mode", "disabled");
+
+    props.setProperty("converters", "datetime");
+    props.setProperty("datetime.type", "io.airbyte.integrations.debezium.internals.PostgresConverter");
 
     return props;
   }

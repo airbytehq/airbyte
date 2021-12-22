@@ -17,19 +17,19 @@ import java.util.UUID;
 
 public class SourceHelpers {
 
-  public static SourceConnection generateSource(UUID sourceDefinitionId) throws IOException {
+  public static SourceConnection generateSource(final UUID sourceDefinitionId) throws IOException {
     return generateSource(sourceDefinitionId, "my default source name", false);
   }
 
-  public static SourceConnection generateSource(UUID sourceDefinitionId, String name) throws IOException {
+  public static SourceConnection generateSource(final UUID sourceDefinitionId, final String name) throws IOException {
     return generateSource(sourceDefinitionId, name, false);
   }
 
-  public static SourceConnection generateSource(UUID sourceDefinitionId, boolean tombstone) throws IOException {
+  public static SourceConnection generateSource(final UUID sourceDefinitionId, final boolean tombstone) throws IOException {
     return generateSource(sourceDefinitionId, "my default source name", tombstone);
   }
 
-  public static SourceConnection generateSource(UUID sourceDefinitionId, String name, boolean tombstone) throws IOException {
+  public static SourceConnection generateSource(final UUID sourceDefinitionId, final String name, final boolean tombstone) throws IOException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID sourceId = UUID.randomUUID();
 
@@ -49,7 +49,7 @@ public class SourceHelpers {
     return Jsons.deserialize(Files.readString(path));
   }
 
-  public static SourceRead getSourceRead(SourceConnection source, StandardSourceDefinition standardSourceDefinition) {
+  public static SourceRead getSourceRead(final SourceConnection source, final StandardSourceDefinition standardSourceDefinition) {
 
     return new SourceRead()
         .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())

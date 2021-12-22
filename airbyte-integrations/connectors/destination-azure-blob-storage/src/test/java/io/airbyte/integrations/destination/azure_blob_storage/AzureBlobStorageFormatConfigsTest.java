@@ -23,17 +23,17 @@ public class AzureBlobStorageFormatConfigsTest {
   @Test
   @DisplayName("When CSV format is specified, it returns CSV format config")
   public void testGetCsvS3FormatConfig() {
-    ObjectNode stubFormatConfig = mapper.createObjectNode();
+    final ObjectNode stubFormatConfig = mapper.createObjectNode();
     stubFormatConfig.put("format_type", AzureBlobStorageFormat.CSV.toString());
     stubFormatConfig.put("flattening", Flattening.ROOT_LEVEL.getValue());
 
-    ObjectNode stubConfig = mapper.createObjectNode();
+    final ObjectNode stubConfig = mapper.createObjectNode();
     stubConfig.set("format", stubFormatConfig);
-    AzureBlobStorageFormatConfig formatConfig = AzureBlobStorageFormatConfigs
+    final AzureBlobStorageFormatConfig formatConfig = AzureBlobStorageFormatConfigs
         .getAzureBlobStorageFormatConfig(stubConfig);
     assertEquals(formatConfig.getFormat(), AzureBlobStorageFormat.CSV);
     assertTrue(formatConfig instanceof AzureBlobStorageCsvFormatConfig);
-    AzureBlobStorageCsvFormatConfig csvFormatConfig = (AzureBlobStorageCsvFormatConfig) formatConfig;
+    final AzureBlobStorageCsvFormatConfig csvFormatConfig = (AzureBlobStorageCsvFormatConfig) formatConfig;
     assertEquals(csvFormatConfig.getFlattening(), Flattening.ROOT_LEVEL);
   }
 

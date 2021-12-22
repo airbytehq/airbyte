@@ -10,7 +10,7 @@ public class JobLogs {
 
   public static String ROOT_PATH = "logs/jobs";
 
-  public static String getLogDirectory(String scope) {
+  public static String getLogDirectory(final String scope) {
     return Paths.get(ROOT_PATH, scope).toString();
   }
 

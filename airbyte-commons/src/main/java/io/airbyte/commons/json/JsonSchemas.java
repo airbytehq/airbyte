@@ -36,17 +36,17 @@ public class JsonSchemas {
    * jar). This method copies all of the json configs out of the jar into a temporary directory so
    * that JsonReferenceProcessor can find them.
    */
-  public static <T> Path prepareSchemas(final String resourceDir, Class<T> klass) {
+  public static <T> Path prepareSchemas(final String resourceDir, final Class<T> klass) {
     try {
-      List<String> filenames;
-      try (Stream<Path> resources = MoreResources.listResources(klass, resourceDir)) {
+      final List<String> filenames;
+      try (final Stream<Path> resources = MoreResources.listResources(klass, resourceDir)) {
         filenames = resources.map(p -> p.getFileName().toString())
             .filter(p -> p.endsWith(".yaml"))
             .collect(Collectors.toList());
       }
 
       final Path configRoot = Files.createTempDirectory("schemas");
-      for (String filename : filenames) {
+      for (final String filename : filenames) {
         IOs.writeFile(
             configRoot,
             filename,
@@ -54,7 +54,7 @@ public class JsonSchemas {
       }
 
       return configRoot;
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }

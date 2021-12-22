@@ -21,11 +21,11 @@ class RootLevelFlatteningSheetGeneratorTest {
   private final static ObjectMapper MAPPER = MoreMappers.initMapper();
   private final static ObjectNode SCHEMA = MAPPER.createObjectNode();
   static {
-    List<String> fields = Lists.newArrayList("C", "B", "A", "c", "b", "a");
+    final List<String> fields = Lists.newArrayList("C", "B", "A", "c", "b", "a");
     Collections.shuffle(fields);
 
-    ObjectNode schemaProperties = MAPPER.createObjectNode();
-    for (String field : fields) {
+    final ObjectNode schemaProperties = MAPPER.createObjectNode();
+    for (final String field : fields) {
       schemaProperties.set(field, MAPPER.createObjectNode());
     }
 
@@ -51,7 +51,7 @@ class RootLevelFlatteningSheetGeneratorTest {
 
   @Test
   public void testGetRecordColumns() {
-    ObjectNode json = MAPPER.createObjectNode();
+    final ObjectNode json = MAPPER.createObjectNode();
     // Field c is missing
     json.put("C", 3);
     json.put("B", "value B");

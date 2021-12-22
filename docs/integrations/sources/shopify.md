@@ -1,3 +1,8 @@
+---
+description: >-
+  Shopify is a proprietary e-commerce platform for online stores and retail point-of-sale systems.
+---
+
 # Shopify
 
 ## Sync overview
@@ -30,10 +35,16 @@ This Source is capable of syncing the following core Streams:
 * [Transactions](https://help.shopify.com/en/api/reference/orders/transaction)
 * [Pages](https://help.shopify.com/en/api/reference/online-store/page)
 * [Price Rules](https://help.shopify.com/en/api/reference/discounts/pricerule)
+* [Locations](https://shopify.dev/api/admin-rest/2021-10/resources/location)
+* [InventoryItems](https://shopify.dev/api/admin-rest/2021-10/resources/inventoryItem)
+* [InventoryLevels](https://shopify.dev/api/admin-rest/2021-10/resources/inventorylevel)
+* [Fulfillment Orders](https://shopify.dev/api/admin-rest/2021-07/resources/fulfillmentorder)
+* [Fulfillments](https://shopify.dev/api/admin-rest/2021-07/resources/fulfillment)
+* [Shop](https://shopify.dev/api/admin-rest/2021-07/resources/shop)
 
 #### NOTE:
 
-For better experience with `Incremental Refresh` the follwing is recomended:
+For better experience with `Incremental Refresh` the following is recommended:
 
 * `Order Refunds`, `Order Risks`, `Transactions` should be synced along with `Orders` stream.
 * `Discount Codes` should be synced along with `Price Rules` stream.
@@ -69,6 +80,9 @@ This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Erro
 
 ## Getting started
 
+This connector support both: `OAuth 2.0` and `API PASSWORD` (for private applications) athentication methods.
+
+### Connect using `API PASSWORD` option:
 1. Go to `https://YOURSTORE.myshopify.com/admin/apps/private`
 2. Enable private development if it isn't enabled.
 3. Create a private application.
@@ -77,10 +91,24 @@ This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Erro
 5. The password under the `Admin API` section is what you'll use as the `api_password` for the integration.
 6. You're ready to set up Shopify in Airbyte!
 
+### Connect using `OAuth 2.0` option:
+1. Select `OAuth 2.0` in `Shopify Authorization Method`
+2. Click on `authenticate`
+2. Proceed the authentication using your credentials for your Shopify account.
+
+
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.26 | 2021-12-14 | [8597](https://github.com/airbytehq/airbyte/pull/8597) | Fix `mismatched number of tables` for base-normalization, increased performance of `order_refunds` stream |
+| 0.1.25 | 2021-12-02 | [8297](https://github.com/airbytehq/airbyte/pull/8297) | Added Shop stream |
+| 0.1.24 | 2021-11-30 | [7783](https://github.com/airbytehq/airbyte/pull/7783) | Reviewed and corrected schemas for all streams |
+| 0.1.23 | 2021-11-15 | [7973](https://github.com/airbytehq/airbyte/pull/7973) | Added `InventoryItems` |
+| 0.1.22 | 2021-10-18 | [7101](https://github.com/airbytehq/airbyte/pull/7107) | Added FulfillmentOrders, Fulfillments streams |
+| 0.1.21 | 2021-10-14 | [7382](https://github.com/airbytehq/airbyte/pull/7382) | Fixed `InventoryLevels` primary key |
+| 0.1.20 | 2021-10-14 | [7063](https://github.com/airbytehq/airbyte/pull/7063) | Added `Location` and `InventoryLevels` as streams |
+| 0.1.19 | 2021-10-11 | [6951](https://github.com/airbytehq/airbyte/pull/6951) | Added support of `OAuth 2.0` authorisation option |
 | 0.1.18 | 2021-09-21 | [6056](https://github.com/airbytehq/airbyte/pull/6056) | Added `pre_tax_price` to the `orders/line_items` schema |
 | 0.1.17 | 2021-09-17 | [5244](https://github.com/airbytehq/airbyte/pull/5244) | Created data type enforcer for converting prices into numbers |
 | 0.1.16 | 2021-09-09 | [5965](https://github.com/airbytehq/airbyte/pull/5945) | Fixed the connector's performance for `Incremental refresh` |

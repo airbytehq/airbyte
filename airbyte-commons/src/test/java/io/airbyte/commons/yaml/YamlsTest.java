@@ -48,6 +48,25 @@ class YamlsTest {
   }
 
   @Test
+  void testSerializeWithoutQuotes() {
+    assertEquals(
+        "---\n"
+            + "str: abc\n"
+            + "num: 999\n"
+            + "numLong: 888\n",
+        Yamls.serializeWithoutQuotes(new ToClass("abc", 999, 888L)));
+
+    assertEquals(
+        "---\n"
+            + "test: abc\n"
+            + "test2: def\n",
+        Yamls.serializeWithoutQuotes(
+            ImmutableMap.of(
+                "test", "abc",
+                "test2", "def")));
+  }
+
+  @Test
   void testSerializeJsonNode() {
     assertEquals(
         "---\n"
@@ -111,19 +130,19 @@ class YamlsTest {
 
   @Test
   void testStreamRead() throws IOException {
-    List<ToClass> classes = Lists.newArrayList(
+    final List<ToClass> classes = Lists.newArrayList(
         new ToClass("1", 1, 1),
         new ToClass("2", 2, 2),
         new ToClass("3", 3, 3));
-    ByteArrayInputStream input = spy(new ByteArrayInputStream(Yamls.serialize(classes).getBytes(StandardCharsets.UTF_8)));
+    final ByteArrayInputStream input = spy(new ByteArrayInputStream(Yamls.serialize(classes).getBytes(StandardCharsets.UTF_8)));
 
-    try (AutoCloseableIterator<JsonNode> iterator = Yamls.deserializeArray(input)) {
+    try (final AutoCloseableIterator<JsonNode> iterator = Yamls.deserializeArray(input)) {
       assertEquals(
           classes,
           MoreStreams.toStream(iterator)
               .map(e -> Jsons.object(e, ToClass.class))
               .collect(Collectors.toList()));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail();
     }
 
@@ -143,21 +162,21 @@ class YamlsTest {
 
     public ToClass() {}
 
-    public ToClass(String str, Integer num, long numLong) {
+    public ToClass(final String str, final Integer num, final long numLong) {
       this.str = str;
       this.num = num;
       this.numLong = numLong;
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
       if (this == o) {
         return true;
       }
       if (o == null || getClass() != o.getClass()) {
         return false;
       }
-      ToClass toClass = (ToClass) o;
+      final ToClass toClass = (ToClass) o;
       return numLong == toClass.numLong
           && Objects.equals(str, toClass.str)
           && Objects.equals(num, toClass.num);

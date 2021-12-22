@@ -8,12 +8,11 @@ import com.google.common.base.Charsets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.workers.protocols.MessageTracker;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class AirbyteMessageTracker implements MessageTracker<AirbyteMessage> {
+public class AirbyteMessageTracker implements MessageTracker {
 
   private final AtomicLong recordCount;
   private final AtomicLong numBytes;
@@ -26,7 +25,7 @@ public class AirbyteMessageTracker implements MessageTracker<AirbyteMessage> {
   }
 
   @Override
-  public void accept(AirbyteMessage message) {
+  public void accept(final AirbyteMessage message) {
     if (message.getType() == AirbyteMessage.Type.RECORD) {
       recordCount.incrementAndGet();
       // todo (cgardens) - pretty wasteful to do an extra serialization just to get size.

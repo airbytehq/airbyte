@@ -23,15 +23,15 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
   private boolean isLocalFileEnabled = false;
 
   @Override
-  public void executeTransaction(JdbcDatabase database, List<String> queries) throws Exception {
+  public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
     database.executeWithinTransaction(queries);
   }
 
   @Override
-  public void insertRecordsInternal(JdbcDatabase database,
-                                    List<AirbyteRecordMessage> records,
-                                    String schemaName,
-                                    String tmpTableName)
+  public void insertRecordsInternal(final JdbcDatabase database,
+                                    final List<AirbyteRecordMessage> records,
+                                    final String schemaName,
+                                    final String tmpTableName)
       throws SQLException {
     if (records.isEmpty()) {
       return;
@@ -39,59 +39,59 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
 
     verifyLocalFileEnabled(database);
     try {
-      File tmpFile = Files.createTempFile(tmpTableName + "-", ".tmp").toFile();
+      final File tmpFile = Files.createTempFile(tmpTableName + "-", ".tmp").toFile();
 
       loadDataIntoTable(database, records, schemaName, tmpTableName, tmpFile);
 
       Files.delete(tmpFile.toPath());
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new SQLException(e);
     }
   }
 
-  private void loadDataIntoTable(JdbcDatabase database,
-                                 List<AirbyteRecordMessage> records,
-                                 String schemaName,
-                                 String tmpTableName,
-                                 File tmpFile)
+  private void loadDataIntoTable(final JdbcDatabase database,
+                                 final List<AirbyteRecordMessage> records,
+                                 final String schemaName,
+                                 final String tmpTableName,
+                                 final File tmpFile)
       throws SQLException {
     database.execute(connection -> {
       try {
         writeBatchToFile(tmpFile, records);
 
-        String absoluteFile = "'" + tmpFile.getAbsolutePath() + "'";
+        final String absoluteFile = "'" + tmpFile.getAbsolutePath() + "'";
 
-        String query = String.format(
+        final String query = String.format(
             "LOAD DATA LOCAL INFILE %s INTO TABLE %s.%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' ESCAPED BY '\\\"' LINES TERMINATED BY '\\r\\n'",
             absoluteFile, schemaName, tmpTableName);
 
-        try (Statement stmt = connection.createStatement()) {
+        try (final Statement stmt = connection.createStatement()) {
           stmt.execute(query);
         }
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new RuntimeException(e);
       }
     });
   }
 
   @Override
-  protected JsonNode formatData(JsonNode data) {
+  protected JsonNode formatData(final JsonNode data) {
     return StandardNameTransformer.formatJsonPath(data);
   }
 
-  void verifyLocalFileEnabled(JdbcDatabase database) throws SQLException {
-    boolean localFileEnabled = isLocalFileEnabled || checkIfLocalFileIsEnabled(database);
+  void verifyLocalFileEnabled(final JdbcDatabase database) throws SQLException {
+    final boolean localFileEnabled = isLocalFileEnabled || checkIfLocalFileIsEnabled(database);
     if (!localFileEnabled) {
       tryEnableLocalFile(database);
     }
     isLocalFileEnabled = true;
   }
 
-  private void tryEnableLocalFile(JdbcDatabase database) throws SQLException {
+  private void tryEnableLocalFile(final JdbcDatabase database) throws SQLException {
     database.execute(connection -> {
-      try (Statement statement = connection.createStatement()) {
+      try (final Statement statement = connection.createStatement()) {
         statement.execute("set global local_infile=true");
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new RuntimeException(
             "The DB user provided to airbyte was unable to switch on the local_infile attribute on the MySQL server. As an admin user, you will need to run \"SET GLOBAL local_infile = true\" before syncing data with Airbyte.",
             e);
@@ -99,14 +99,14 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
     });
   }
 
-  private double getVersion(JdbcDatabase database) throws SQLException {
-    List<String> value = database.resultSetQuery(connection -> connection.createStatement().executeQuery("select version()"),
+  private double getVersion(final JdbcDatabase database) throws SQLException {
+    final List<String> value = database.resultSetQuery(connection -> connection.createStatement().executeQuery("select version()"),
         resultSet -> resultSet.getString("version()")).collect(Collectors.toList());
     return Double.parseDouble(value.get(0).substring(0, 3));
   }
 
-  VersionCompatibility isCompatibleVersion(JdbcDatabase database) throws SQLException {
-    double version = getVersion(database);
+  VersionCompatibility isCompatibleVersion(final JdbcDatabase database) throws SQLException {
+    final double version = getVersion(database);
     return new VersionCompatibility(version, version >= 5.7);
   }
 
@@ -115,15 +115,16 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
     return false;
   }
 
-  private boolean checkIfLocalFileIsEnabled(JdbcDatabase database) throws SQLException {
-    List<String> value = database.resultSetQuery(connection -> connection.createStatement().executeQuery("SHOW GLOBAL VARIABLES LIKE 'local_infile'"),
-        resultSet -> resultSet.getString("Value")).collect(Collectors.toList());
+  private boolean checkIfLocalFileIsEnabled(final JdbcDatabase database) throws SQLException {
+    final List<String> value =
+        database.resultSetQuery(connection -> connection.createStatement().executeQuery("SHOW GLOBAL VARIABLES LIKE 'local_infile'"),
+            resultSet -> resultSet.getString("Value")).collect(Collectors.toList());
 
     return value.get(0).equalsIgnoreCase("on");
   }
 
   @Override
-  public String createTableQuery(JdbcDatabase database, String schemaName, String tableName) {
+  public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     // MySQL requires byte information with VARCHAR. Since we are using uuid as value for the column,
     // 256 is enough
     return String.format(
@@ -140,7 +141,7 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
     private final double version;
     private final boolean isCompatible;
 
-    public VersionCompatibility(double version, boolean isCompatible) {
+    public VersionCompatibility(final double version, final boolean isCompatible) {
       this.version = version;
       this.isCompatible = isCompatible;
     }

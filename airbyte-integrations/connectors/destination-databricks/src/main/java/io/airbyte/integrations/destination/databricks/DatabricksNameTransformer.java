@@ -9,27 +9,27 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 public class DatabricksNameTransformer extends ExtendedNameTransformer {
 
   @Override
-  public String convertStreamName(String input) {
+  public String convertStreamName(final String input) {
     return applyDefaultCase(super.convertStreamName(input));
   }
 
   @Override
-  public String getIdentifier(String name) {
+  public String getIdentifier(final String name) {
     return applyDefaultCase(super.getIdentifier(name));
   }
 
   @Override
-  public String getTmpTableName(String streamName) {
+  public String getTmpTableName(final String streamName) {
     return applyDefaultCase(super.getTmpTableName(streamName));
   }
 
   @Override
-  public String getRawTableName(String streamName) {
+  public String getRawTableName(final String streamName) {
     return applyDefaultCase(super.getRawTableName(streamName));
   }
 
   @Override
-  protected String applyDefaultCase(String input) {
+  protected String applyDefaultCase(final String input) {
     return input.toLowerCase();
   }
 

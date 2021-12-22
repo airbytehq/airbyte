@@ -37,10 +37,10 @@ public class DynamodbWriter {
   private final String outputTableName;
   private final int batchSize = 25;
 
-  public DynamodbWriter(DynamodbDestinationConfig config,
-                        AmazonDynamoDB amazonDynamodb,
-                        ConfiguredAirbyteStream configuredStream,
-                        long uploadTimestamp) {
+  public DynamodbWriter(final DynamodbDestinationConfig config,
+                        final AmazonDynamoDB amazonDynamodb,
+                        final ConfiguredAirbyteStream configuredStream,
+                        final long uploadTimestamp) {
 
     this.config = config;
     this.dynamodb = new DynamoDB(amazonDynamodb);
@@ -54,11 +54,11 @@ public class DynamodbWriter {
     }
 
     final boolean isAppendMode = syncMode != DestinationSyncMode.OVERWRITE;
-    boolean tableExist = true;
+    final boolean tableExist = true;
 
     try {
       if (!isAppendMode) {
-        Table table = dynamodb.getTable(outputTableName);
+        final Table table = dynamodb.getTable(outputTableName);
 
         if (isTableExist(table)) {
           table.delete();
@@ -66,35 +66,35 @@ public class DynamodbWriter {
         }
       }
 
-      var table = createTableIfNotExists(amazonDynamodb, outputTableName);
+      final var table = createTableIfNotExists(amazonDynamodb, outputTableName);
       table.waitForActive();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error(e.getMessage());
     }
 
     this.tableWriteItems = new TableWriteItems(outputTableName);
   }
 
-  private static boolean isTableExist(Table table) {
+  private static boolean isTableExist(final Table table) {
     try {
       table.describe();
-    } catch (ResourceNotFoundException e) {
+    } catch (final ResourceNotFoundException e) {
       return false;
     }
     return true;
   }
 
-  private Table createTableIfNotExists(AmazonDynamoDB amazonDynamodb, String tableName) throws Exception {
-    AttributeDefinition partitionKeyDefinition = new AttributeDefinition()
+  private Table createTableIfNotExists(final AmazonDynamoDB amazonDynamodb, final String tableName) throws Exception {
+    final AttributeDefinition partitionKeyDefinition = new AttributeDefinition()
         .withAttributeName(JavaBaseConstants.COLUMN_NAME_AB_ID)
         .withAttributeType(ScalarAttributeType.S);
-    AttributeDefinition sortKeyDefinition = new AttributeDefinition()
+    final AttributeDefinition sortKeyDefinition = new AttributeDefinition()
         .withAttributeName("sync_time")
         .withAttributeType(ScalarAttributeType.N);
-    KeySchemaElement partitionKeySchema = new KeySchemaElement()
+    final KeySchemaElement partitionKeySchema = new KeySchemaElement()
         .withAttributeName(JavaBaseConstants.COLUMN_NAME_AB_ID)
         .withKeyType(KeyType.HASH);
-    KeySchemaElement sortKeySchema = new KeySchemaElement()
+    final KeySchemaElement sortKeySchema = new KeySchemaElement()
         .withAttributeName("sync_time")
         .withKeyType(KeyType.RANGE);
 
@@ -108,12 +108,12 @@ public class DynamodbWriter {
     return new DynamoDB(amazonDynamodb).getTable(tableName);
   }
 
-  public void write(UUID id, AirbyteRecordMessage recordMessage) {
+  public void write(final UUID id, final AirbyteRecordMessage recordMessage) {
 
-    ObjectMapper mapper = new ObjectMapper();
-    Map<String, Object> dataMap = mapper.convertValue(recordMessage.getData(), new TypeReference<Map<String, Object>>() {});
+    final ObjectMapper mapper = new ObjectMapper();
+    final Map<String, Object> dataMap = mapper.convertValue(recordMessage.getData(), new TypeReference<Map<String, Object>>() {});
 
-    var item = new Item()
+    final var item = new Item()
         .withPrimaryKey(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(), "sync_time", uploadTimestamp)
         .withMap(JavaBaseConstants.COLUMN_NAME_DATA, dataMap)
         .withLong(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
@@ -133,13 +133,13 @@ public class DynamodbWriter {
         if (maxRetries == 0) {
           LOGGER.warn(String.format("Unprocessed items count after retry %d times: %s", 5, Integer.toString(outcome.getUnprocessedItems().size())));
         }
-      } catch (Exception e) {
+      } catch (final Exception e) {
         LOGGER.error(e.getMessage());
       }
     }
   }
 
-  public void close(boolean hasFailed) throws IOException {
+  public void close(final boolean hasFailed) throws IOException {
     if (hasFailed) {
       LOGGER.warn("Failure in writing data to DynamoDB. Aborting...");
     } else {
@@ -155,7 +155,7 @@ public class DynamodbWriter {
             LOGGER.warn(String.format("Unprocessed items count after retry %d times: %s", 5, Integer.toString(outcome.getUnprocessedItems().size())));
           }
         }
-      } catch (Exception e) {
+      } catch (final Exception e) {
         LOGGER.error(e.getMessage());
       }
       LOGGER.info("Data writing completed for DynamoDB.");

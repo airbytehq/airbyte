@@ -44,14 +44,14 @@ public class BigQueryDatabase extends SqlDatabase {
   private final BigQuery bigQuery;
   private final BigQuerySourceOperations sourceOperations;
 
-  public BigQueryDatabase(String projectId, String jsonCreds) {
+  public BigQueryDatabase(final String projectId, final String jsonCreds) {
     this(projectId, jsonCreds, new BigQuerySourceOperations());
   }
 
-  public BigQueryDatabase(String projectId, String jsonCreds, BigQuerySourceOperations sourceOperations) {
+  public BigQueryDatabase(final String projectId, final String jsonCreds, final BigQuerySourceOperations sourceOperations) {
     try {
       this.sourceOperations = sourceOperations;
-      BigQueryOptions.Builder bigQueryBuilder = BigQueryOptions.newBuilder();
+      final BigQueryOptions.Builder bigQueryBuilder = BigQueryOptions.newBuilder();
       ServiceAccountCredentials credentials = null;
       if (jsonCreds != null && !jsonCreds.isEmpty()) {
         credentials = ServiceAccountCredentials
@@ -68,13 +68,13 @@ public class BigQueryDatabase extends SqlDatabase {
               .build())
           .build()
           .getService();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
-  public void execute(String sql) throws SQLException {
+  public void execute(final String sql) throws SQLException {
     final ImmutablePair<Job, String> result = executeQuery(bigQuery, getQueryConfig(sql, Collections.emptyList()));
     if (result.getLeft() == null) {
       throw new SQLException("BigQuery request is failed with error: " + result.getRight() + ". SQL: " + sql);
@@ -82,17 +82,17 @@ public class BigQueryDatabase extends SqlDatabase {
     LOGGER.info("BigQuery successfully finished execution SQL: " + sql);
   }
 
-  public Stream<JsonNode> query(String sql) throws Exception {
+  public Stream<JsonNode> query(final String sql) throws Exception {
     return query(sql, Collections.emptyList());
   }
 
-  public Stream<JsonNode> query(String sql, QueryParameterValue... params) throws Exception {
+  public Stream<JsonNode> query(final String sql, final QueryParameterValue... params) throws Exception {
     return query(sql, (params == null ? Collections.emptyList() : Arrays.asList(params)));
   }
 
   @Override
-  public Stream<JsonNode> query(String sql, String... params) throws Exception {
-    List<QueryParameterValue> parameterValueList;
+  public Stream<JsonNode> query(final String sql, final String... params) throws Exception {
+    final List<QueryParameterValue> parameterValueList;
     if (params == null)
       parameterValueList = Collections.emptyList();
     else
@@ -102,11 +102,11 @@ public class BigQueryDatabase extends SqlDatabase {
     return query(sql, parameterValueList);
   }
 
-  public Stream<JsonNode> query(String sql, List<QueryParameterValue> params) throws Exception {
+  public Stream<JsonNode> query(final String sql, final List<QueryParameterValue> params) throws Exception {
     final ImmutablePair<Job, String> result = executeQuery(bigQuery, getQueryConfig(sql, params));
 
     if (result.getLeft() != null) {
-      FieldList fieldList = result.getLeft().getQueryResults().getSchema().getFields();
+      final FieldList fieldList = result.getLeft().getQueryResults().getSchema().getFields();
       return Streams.stream(result.getLeft().getQueryResults().iterateAll())
           .map(fieldValues -> sourceOperations.rowToJson(new BigQueryResultSet(fieldValues, fieldList)));
     } else
@@ -121,7 +121,7 @@ public class BigQueryDatabase extends SqlDatabase {
      */
   }
 
-  public QueryJobConfiguration getQueryConfig(String sql, List<QueryParameterValue> params) {
+  public QueryJobConfiguration getQueryConfig(final String sql, final List<QueryParameterValue> params) {
     return QueryJobConfiguration
         .newBuilder(sql)
         .setUseLegacySql(false)
@@ -129,7 +129,7 @@ public class BigQueryDatabase extends SqlDatabase {
         .build();
   }
 
-  public ImmutablePair<Job, String> executeQuery(BigQuery bigquery, QueryJobConfiguration queryConfig) {
+  public ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
     final JobId jobId = JobId.of(UUID.randomUUID().toString());
     final Job queryJob = bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build());
     return executeQuery(queryJob);
@@ -141,8 +141,8 @@ public class BigQueryDatabase extends SqlDatabase {
    * @param projectId BigQuery project id
    * @return List of BigQuery tables
    */
-  public List<Table> getProjectTables(String projectId) {
-    List<Table> tableList = new ArrayList<>();
+  public List<Table> getProjectTables(final String projectId) {
+    final List<Table> tableList = new ArrayList<>();
     bigQuery.listDatasets(projectId)
         .iterateAll()
         .forEach(dataset -> bigQuery.listTables(dataset.getDatasetId())
@@ -157,8 +157,8 @@ public class BigQueryDatabase extends SqlDatabase {
    * @param datasetId BigQuery dataset id
    * @return List of BigQuery tables
    */
-  public List<Table> getDatasetTables(String datasetId) {
-    List<Table> tableList = new ArrayList<>();
+  public List<Table> getDatasetTables(final String datasetId) {
+    final List<Table> tableList = new ArrayList<>();
     bigQuery.listTables(datasetId)
         .iterateAll()
         .forEach(table -> tableList.add(bigQuery.getTable(table.getTableId())));
@@ -169,7 +169,7 @@ public class BigQueryDatabase extends SqlDatabase {
     return bigQuery;
   }
 
-  public void cleanDataSet(String dataSetId) {
+  public void cleanDataSet(final String dataSetId) {
     // allows deletion of a dataset that has contents
     final BigQuery.DatasetDeleteOption option = BigQuery.DatasetDeleteOption.deleteContents();
 
@@ -181,7 +181,7 @@ public class BigQueryDatabase extends SqlDatabase {
     }
   }
 
-  private ImmutablePair<Job, String> executeQuery(Job queryJob) {
+  private ImmutablePair<Job, String> executeQuery(final Job queryJob) {
     final Job completedJob = waitForQuery(queryJob);
     if (completedJob == null) {
       throw new RuntimeException("Job no longer exists");
@@ -194,10 +194,10 @@ public class BigQueryDatabase extends SqlDatabase {
     return ImmutablePair.of(completedJob, null);
   }
 
-  private Job waitForQuery(Job queryJob) {
+  private Job waitForQuery(final Job queryJob) {
     try {
       return queryJob.waitFor();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }

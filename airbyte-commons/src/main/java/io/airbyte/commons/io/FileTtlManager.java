@@ -32,7 +32,7 @@ public class FileTtlManager {
   private final long expirationDuration;
   private final TimeUnit expirationTimeUnit;
 
-  public FileTtlManager(long expirationDuration, TimeUnit expirationTimeUnit, long maxSize) {
+  public FileTtlManager(final long expirationDuration, final TimeUnit expirationTimeUnit, final long maxSize) {
     this.expirationDuration = expirationDuration;
     this.expirationTimeUnit = expirationTimeUnit;
     cache = CacheBuilder.newBuilder()
@@ -41,14 +41,14 @@ public class FileTtlManager {
         .removalListener((RemovalNotification<Path, Instant> removalNotification) -> {
           try {
             Files.deleteIfExists(removalNotification.getKey());
-          } catch (IOException e) {
+          } catch (final IOException e) {
             throw new RuntimeException("Failed to delete file at end of ttl: " + removalNotification.getKey(), e);
           }
         })
         .build();
   }
 
-  public void register(Path path) {
+  public void register(final Path path) {
     Preconditions.checkNotNull(path);
     Preconditions.checkArgument(path.toFile().isFile()); // only accept files.
 
@@ -70,7 +70,7 @@ public class FileTtlManager {
         final long minutesRemaining = Math.max(diffBetweenTotalLifeTimeAndTimeElapsed.toMinutes(), 0L);
 
         sb.append(String.format("File name: %s, Size (MB) %s, TTL %s\n", path, FileUtils.byteCountToDisplaySize(Files.size(path)), minutesRemaining));
-      } catch (IOException e) {
+      } catch (final IOException e) {
         throw new RuntimeException(e);
       }
     });

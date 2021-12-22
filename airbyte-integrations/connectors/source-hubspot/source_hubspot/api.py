@@ -5,17 +5,22 @@
 
 import sys
 import time
+import urllib.parse
 from abc import ABC, abstractmethod
 from functools import lru_cache, partial
 from http import HTTPStatus
-from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import backoff
 import pendulum as pendulum
 import requests
+from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
-from base_python.entrypoint import logger
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
+
+# The value is obtained experimentally, HubSpot allows the URL length up to ~16300 symbols,
+# so it was decided to limit the length of the `properties` parameter to 15000 characters.
+PROPERTIES_PARAM_MAX_LENGTH = 15000
 
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
@@ -49,6 +54,22 @@ CUSTOM_FIELD_TYPE_TO_VALUE = {
 CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k, v in CUSTOM_FIELD_TYPE_TO_VALUE.items()}
 
 
+def split_properties(properties_list: List[str]) -> Iterator[Tuple[str]]:
+    summary_length = 0
+    local_properties = []
+    for property_ in properties_list:
+        if len(property_) + summary_length + len(urllib.parse.quote(",")) >= PROPERTIES_PARAM_MAX_LENGTH:
+            yield local_properties
+            local_properties = []
+            summary_length = 0
+
+        local_properties.append(property_)
+        summary_length += len(property_) + len(urllib.parse.quote(","))
+
+    if local_properties:
+        yield local_properties
+
+
 def retry_connection_handler(**kwargs):
     """Retry helper, log each attempt"""
 
@@ -78,7 +99,7 @@ def retry_after_handler(**kwargs):
     def sleep_on_ratelimit(_details):
         _, exc, _ = sys.exc_info()
         if isinstance(exc, HubspotRateLimited):
-            # Hubspot API does not always return Retry-After value for 429 HTTP error
+            # HubSpot API does not always return Retry-After value for 429 HTTP error
             retry_after = int(exc.response.headers.get("Retry-After", 3))
             logger.info(f"Rate limit reached. Sleeping for {retry_after} seconds")
             time.sleep(retry_after + 1)  # extra second to cover any fractions of second
@@ -98,7 +119,7 @@ def retry_after_handler(**kwargs):
 
 
 class API:
-    """Hubspot API interface, authorize, retrieve and post, supports backoff logic"""
+    """HubSpot API interface, authorize, retrieve and post, supports backoff logic"""
 
     BASE_URL = "https://api.hubapi.com"
     USER_AGENT = "Airbyte"
@@ -132,7 +153,7 @@ class API:
             message = response.json().get("message")
 
         if response.status_code == HTTPStatus.FORBIDDEN:
-            """ Once hit the forbidden endpoint, we return the error message from response. """
+            """Once hit the forbidden endpoint, we return the error message from response."""
             pass
         elif response.status_code in (HTTPStatus.UNAUTHORIZED, CLOUDFLARE_ORIGIN_DNS_ERROR):
             raise HubspotInvalidAuth(message, response=response)
@@ -177,6 +198,7 @@ class Stream(ABC):
     page_field = "offset"
     limit_field = "limit"
     limit = 100
+    offset = 0
 
     @property
     @abstractmethod
@@ -196,17 +218,6 @@ class Stream(ABC):
 
     def list(self, fields) -> Iterable:
         yield from self.read(partial(self._api.get, url=self.url))
-
-    def _filter_dynamic_fields(self, records: Iterable) -> Iterable:
-        """Skip certain fields because they are too dynamic and change every call (timers, etc),
-        see https://github.com/airbytehq/airbyte/issues/2397
-        """
-        for record in records:
-            if isinstance(record, Mapping) and "properties" in record:
-                for key in list(record["properties"].keys()):
-                    if key.startswith("hs_time_in"):
-                        record["properties"].pop(key)
-            yield record
 
     @staticmethod
     def _cast_value(declared_field_types: List, field_name: str, field_value: Any, declared_format: str = None) -> Any:
@@ -302,58 +313,85 @@ class Stream(ABC):
             yield record
 
     def _read(self, getter: Callable, params: MutableMapping[str, Any] = None) -> Iterator:
+        next_page_token = None
         while True:
-            response = getter(params=params)
-            if isinstance(response, Mapping):
-                if response.get("status", None) == "error":
-                    """
-                    When the API Key doen't have the permissions to access the endpoint,
-                    we break the read, skip this stream and log warning message for the user.
+            if next_page_token:
+                params.update(next_page_token)
 
-                    Example:
+            properties_list = list(self.properties.keys())
+            if properties_list:
+                # TODO: Additional processing was added due to the fact that users receive 414 errors while syncing their streams (issues #3977 and #5835).
+                #  We will need to fix this code when the HubSpot developers add the ability to use a special parameter to get all properties for an entity.
+                #  According to HubSpot Community (https://community.hubspot.com/t5/APIs-Integrations/Get-all-contact-properties-without-explicitly-listing-them/m-p/447950)
+                #  and the official documentation, this does not exist at the moment.
+                stream_records = {}
 
-                    response.json() = {
-                        'status': 'error',
-                        'message': 'This hapikey (....) does not have proper permissions! (requires any of [automation-access])',
-                        'correlationId': '111111-2222-3333-4444-55555555555'}
-                    """
-                    logger.warn(f"Stream `{self.data_field}` cannot be procced. {response.get('message')}")
-                    break
+                for properties in split_properties(properties_list):
+                    params.update({"properties": ",".join(properties)})
+                    response = getter(params=params)
+                    for record in self._transform(self.parse_response(response)):
+                        if record["id"] not in stream_records:
+                            stream_records[record["id"]] = record
+                        elif stream_records[record["id"]].get("properties"):
+                            stream_records[record["id"]]["properties"].update(record.get("properties", {}))
 
-                if response.get(self.data_field) is None:
-                    """
-                    When the response doen't have the stream's data, raise an exception.
-                    """
-                    raise RuntimeError("Unexpected API response: {} not in {}".format(self.data_field, response.keys()))
-
-                yield from response[self.data_field]
-
-                # pagination
-                if "paging" in response:  # APIv3 pagination
-                    if "next" in response["paging"]:
-                        params["after"] = response["paging"]["next"]["after"]
-                    else:
-                        break
-                else:
-                    if not response.get(self.more_key, False):
-                        break
-                    if self.page_field in response:
-                        params[self.page_filter] = response[self.page_field]
+                yield from [value for key, value in stream_records.items()]
             else:
-                response = list(response)
-                yield from response
+                response = getter(params=params)
+                yield from self._transform(self.parse_response(response))
 
-                # pagination
-                if len(response) < self.limit:
-                    break
-                else:
-                    params[self.page_filter] = params.get(self.page_filter, 0) + self.limit
+            next_page_token = self.next_page_token(response)
+            if not next_page_token:
+                break
 
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
-        default_params = {self.limit_field: self.limit, "properties": ",".join(self.properties.keys())}
+        default_params = {self.limit_field: self.limit}
         params = {**default_params, **params} if params else {**default_params}
+        yield from self._filter_old_records(self._read(getter, params))
 
-        yield from self._filter_dynamic_fields(self._filter_old_records(self._transform(self._read(getter, params))))
+    def parse_response(self, response: Union[Mapping[str, Any], List[dict]]) -> Iterator:
+        if isinstance(response, Mapping):
+            if response.get("status", None) == "error":
+                """
+                When the API Key doen't have the permissions to access the endpoint,
+                we break the read, skip this stream and log warning message for the user.
+
+                Example:
+
+                response.json() = {
+                    'status': 'error',
+                    'message': 'This hapikey (....) does not have proper permissions! (requires any of [automation-access])',
+                    'correlationId': '111111-2222-3333-4444-55555555555'}
+                """
+                logger.warning(f"Stream `{self.entity}` cannot be procced. {response.get('message')}")
+                return
+
+            if response.get(self.data_field) is None:
+                """
+                When the response doen't have the stream's data, raise an exception.
+                """
+                raise RuntimeError("Unexpected API response: {} not in {}".format(self.data_field, response.keys()))
+
+            yield from response[self.data_field]
+
+        else:
+            response = list(response)
+            yield from response
+
+    def next_page_token(self, response: Union[Mapping[str, Any], List[dict]]) -> Optional[Mapping[str, Union[int, str]]]:
+        if isinstance(response, Mapping):
+            if "paging" in response:  # APIv3 pagination
+                if "next" in response["paging"]:
+                    return {"after": response["paging"]["next"]["after"]}
+            else:
+                if not response.get(self.more_key, False):
+                    return
+                if self.page_field in response:
+                    return {self.page_filter: response[self.page_field]}
+        else:
+            if len(response) >= self.limit:
+                self.offset += self.limit
+                return {self.page_filter: self.offset}
 
     @staticmethod
     def _get_field_props(field_type: str) -> Mapping[str, List[str]]:
@@ -398,6 +436,9 @@ class IncrementalStream(Stream, ABC):
 
     state_pk = "timestamp"
     limit = 1000
+    # Flag which enable/disable chunked read in read_chunked method
+    # False -> chunk size is max (only one slice), True -> chunk_size is 30 days
+    need_chunk = True
 
     @property
     @abstractmethod
@@ -408,12 +449,15 @@ class IncrementalStream(Stream, ABC):
     def state(self) -> Optional[Mapping[str, Any]]:
         """Current state, if wasn't set return None"""
         if self._state:
-            return {self.state_pk: str(self._state)}
+            return (
+                {self.state_pk: int(self._state.timestamp() * 1000)} if self.state_pk == "timestamp" else {self.state_pk: str(self._state)}
+            )
         return None
 
     @state.setter
     def state(self, value):
-        self._state = pendulum.parse(value[self.state_pk])
+        state = value[self.state_pk]
+        self._state = pendulum.parse(str(pendulum.from_timestamp(state / 1000))) if isinstance(state, int) else pendulum.parse(state)
         self._start_date = max(self._state, self._start_date)
 
     def __init__(self, *args, **kwargs):
@@ -439,12 +483,13 @@ class IncrementalStream(Stream, ABC):
                 self._start_date = self._state
 
     def read_chunked(
-        self, getter: Callable, params: Mapping[str, Any] = None, chunk_size: pendulum.duration = pendulum.duration(days=1)
+        self, getter: Callable, params: Mapping[str, Any] = None, chunk_size: pendulum.duration = pendulum.duration(days=30)
     ) -> Iterator:
         params = {**params} if params else {}
         now_ts = int(pendulum.now().timestamp() * 1000)
         start_ts = int(self._start_date.timestamp() * 1000)
-        chunk_size = int(chunk_size.total_seconds() * 1000)
+        max_delta = now_ts - start_ts
+        chunk_size = int(chunk_size.total_seconds() * 1000) if self.need_chunk else max_delta
 
         for ts in range(start_ts, now_ts, chunk_size):
             end_ts = ts + chunk_size
@@ -515,6 +560,12 @@ class CRMObjectStream(Stream):
             yield record
 
 
+class CRMObjectIncrementalStream(CRMObjectStream, IncrementalStream):
+    state_pk = "updatedAt"
+    limit = 100
+    need_chunk = False
+
+
 class CampaignStream(Stream):
     """Email campaigns, API v1
     There is some confusion between emails and campaigns in docs, this endpoint returns actual emails
@@ -533,7 +584,7 @@ class CampaignStream(Stream):
             yield {**row, **record}
 
 
-class ContactListStream(Stream):
+class ContactListStream(IncrementalStream):
     """Contact lists, API v1
     Docs: https://legacydocs.hubspot.com/docs/methods/lists/get_lists
     """
@@ -544,6 +595,7 @@ class ContactListStream(Stream):
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
     limit_field = "count"
+    need_chunk = False
 
 
 class DealStageHistoryStream(Stream):
@@ -570,7 +622,7 @@ class DealStageHistoryStream(Stream):
         yield from self.read(partial(self._api.get, url=self.url), params)
 
 
-class DealStream(CRMObjectStream):
+class DealStream(CRMObjectIncrementalStream):
     """Deals, API v3"""
 
     def __init__(self, **kwargs):
@@ -639,15 +691,27 @@ class EngagementStream(Stream):
 
 
 class FormStream(Stream):
-    """Marketing Forms, API v2
+    """Marketing Forms, API v3
     by default non-marketing forms are filtered out of this endpoint
     Docs: https://developers.hubspot.com/docs/api/marketing/forms
     """
 
     entity = "form"
-    url = "/forms/v2/forms"
+    url = "/marketing/v3/forms"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+
+
+class MarketingEmailStream(Stream):
+    """Marketing Email, API v1
+    Docs: https://legacydocs.hubspot.com/docs/methods/cms_email/get-all-marketing-emails
+    """
+
+    url = "/marketing-emails/v1/emails/with-statistics"
+    data_field = "objects"
+    limit = 250
+    updated_at_field = "updated"
+    created_at_field = "created"
 
 
 class OwnerStream(Stream):

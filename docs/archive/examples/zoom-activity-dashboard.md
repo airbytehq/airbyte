@@ -56,7 +56,7 @@ Once you are in, you need to click on the **Develop** dropdown and then click on
 
 Clicking on **Build App** for the first time will display a modal for you to accept the Zoom’s API license and terms of use. Do accept if you agree and you will be presented with the below screen.
 
-![](../../.gitbook/assets/zoom-marketplace-build-screen%20(3)%20(1).png)
+![](../../.gitbook/assets/zoom-marketplace-build-screen%20(3)%20(3)%20(1).png)
 
 Select **JWT** as the app you want to build and click on the **Create** button on the card. You will be presented with a modal to enter the app name; type in `airbyte-zoom`.
 
@@ -106,7 +106,7 @@ This will spin a docker container and persist the data we will be replicating in
 
 Now, let’s supply the above credentials to the Airbyte UI requiring those credentials.
 
-![](../../.gitbook/assets/postgres_credentials%20(3).png)
+![](../../.gitbook/assets/postgres_credentials%20(3)%20(3).png)
 
 Then click on the **Set up destination** button.
 
@@ -114,13 +114,13 @@ After the connection has been made to your PostgreSQL database successfully, Air
 
 Leave all the fields checked.
 
-![](../../.gitbook/assets/schema%20(3).png)
+![](../../.gitbook/assets/schema%20(3)%20(3).png)
 
 Select a **Sync frequency** of **manual** and then click on **Set up connection**.
 
 After successfully making the connection, you will see your PostgreSQL destination. Click on the Launch button to start the data replication.
 
-![](../../.gitbook/assets/launch%20(3)%20(1).png)
+![](../../.gitbook/assets/launch%20(3)%20(3)%20(1).png)
 
 Then click on the **airbyte-zoom-destination** to see the Sync page.
 
@@ -144,7 +144,7 @@ Go ahead and install Tableau on your machine. After the installation is complete
 
 Once your activation is successful, you will see your Tableau dashboard.
 
-![](../../.gitbook/assets/tableau-dashboard%20(3)%20(1).png)
+![](../../.gitbook/assets/tableau-dashboard%20(3)%20(3)%20(1).png)
 
 On the sidebar menu under the **To a Server** section, click on the **More…** menu. You will see a list of datasource connectors you can connect Tableau with.
 
@@ -186,7 +186,7 @@ Next, drag **Created At** to **Columns**.
 
 Currently, we get the Created At in **YEAR**, but per our requirement we want them in Weeks, so right click on the **YEAR\(Created At\)** and choose **Week Number**.
 
-![](../../.gitbook/assets/change-to-per-week%20(3).png)
+![](../../.gitbook/assets/change-to-per-week%20(3)%20(3).png)
 
 Tableau should now look like this:
 
@@ -194,7 +194,7 @@ Tableau should now look like this:
 
 Now, to finish up, we need to add the **meetings\(Count\) measure** Tableau already calculated for us in the **Rows** section. So drag **meetings\(Count\)** onto the Columns section to complete the chart.
 
-![](../../.gitbook/assets/evolution-of-meetings-per-week%20(3)%20(2).png)
+![](../../.gitbook/assets/evolution-of-meetings-per-week%20(3)%20(3)%20(2).png)
 
 And now we are done with the very first chart. Let's save the sheet and create a new Dashboard that we will add this sheet to as well as the others we will be creating.
 
@@ -232,7 +232,7 @@ Then click on apply. Finally, drag the **Created At** fields \(make sure it’s 
 
 To get this chart, we need to create a relationship between the **meetings table** and the `report_meeting_participants` table. You can do this by dragging the `report_meeting_participants` table in as a source alongside the **meetings** table and relate both via the **meeting id**. Then you will be able to create a new worksheet that looks like this:
 
-![](../../.gitbook/assets/meetings-participant-ranked%20(3).png)
+![](../../.gitbook/assets/meetings-participant-ranked%20(3)%20(3).png)
 
 Note: To achieve the ranking, we simply use the sort menu icon on the top menu bar.
 

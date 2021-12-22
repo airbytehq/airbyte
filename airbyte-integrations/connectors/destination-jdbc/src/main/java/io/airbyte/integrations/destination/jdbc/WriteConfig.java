@@ -20,12 +20,12 @@ public class WriteConfig {
   private final String outputTableName;
   private final DestinationSyncMode syncMode;
 
-  public WriteConfig(String streamName,
-                     String namespace,
-                     String outputSchemaName,
-                     String tmpTableName,
-                     String outputTableName,
-                     DestinationSyncMode syncMode) {
+  public WriteConfig(final String streamName,
+                     final String namespace,
+                     final String outputSchemaName,
+                     final String tmpTableName,
+                     final String outputTableName,
+                     final DestinationSyncMode syncMode) {
     this.streamName = streamName;
     this.namespace = namespace;
     this.outputSchemaName = outputSchemaName;

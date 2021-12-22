@@ -12,8 +12,8 @@ class DockerUtilsTest {
 
   @Test
   void testGetTaggedImageName() {
-    String repository = "airbyte/repo";
-    String tag = "12.3";
+    final String repository = "airbyte/repo";
+    final String tag = "12.3";
     assertEquals("airbyte/repo:12.3", DockerUtils.getTaggedImageName(repository, tag));
   }
 

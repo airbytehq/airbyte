@@ -1,4 +1,9 @@
 {
-  "spreadsheet_id": "randomid",
-  "credentials_json": "{\"type\": \"service_account\",\"project_id\": \"airbyte-310409\",\"private_key_id\": \"xyz\",\"private_key\": \"-----BEGIN PRIVATE KEY-----\\n ... -----END PRIVATE KEY-----\\n\",\"client_email\": \"airbyte@airbyte-123456.iam.gserviceaccount.com\",\"client_id\": \"121512124\",\"auth_uri\": \"https://accounts.google.com/o/oauth2/auth\",\"token_uri\": \"https://oauth2.googleapis.com/token\",\"auth_provider_x509_cert_url\": \"https://www.googleapis.com/oauth2/v1/certs\",\"client_x509_cert_url\": \"https://www.googleapis.com/robot/v1/metadata/x509/airbyte%40airbyte-123456.iam.gserviceaccount.com\"}"
+  "spreadsheet_id": "random_id",
+  "credentials": {
+    "auth_type": "Client",
+    "client_id": "CLIENT_ID",
+    "client_secret": "CLIENT_SECRET",
+    "refresh_token": "CLIENT_REFRESH_TOKEN"
+  }
 }

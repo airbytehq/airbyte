@@ -6,11 +6,11 @@ package io.airbyte.server.errors;
 
 public class InternalServerKnownException extends KnownException {
 
-  public InternalServerKnownException(String message) {
+  public InternalServerKnownException(final String message) {
     super(message);
   }
 
-  public InternalServerKnownException(String message, Throwable cause) {
+  public InternalServerKnownException(final String message, final Throwable cause) {
     super(message, cause);
   }
 

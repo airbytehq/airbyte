@@ -11,12 +11,12 @@ import java.util.List;
 
 public class DynamodbOutputTableHelper {
 
-  public static String getOutputTableName(String tableName, AirbyteStream stream) {
+  public static String getOutputTableName(final String tableName, final AirbyteStream stream) {
     return getOutputTableName(tableName, stream.getNamespace(), stream.getName());
   }
 
-  public static String getOutputTableName(String tableName, String namespace, String streamName) {
-    List<String> paths = new LinkedList<>();
+  public static String getOutputTableName(final String tableName, final String namespace, final String streamName) {
+    final List<String> paths = new LinkedList<>();
 
     if (tableName != null) {
       paths.add(tableName);

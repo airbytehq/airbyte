@@ -38,18 +38,18 @@ public class PrometheusBaseExample {
       // summary.observe(rand(0, 5));
     }
 
-    private static double rand(double min, double max) {
+    private static double rand(final double min, final double max) {
       return min + (Math.random() * (max - min));
     }
 
   }
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     try {
       // The second constructor argument ('true') makes this server start as a separate daemon thread.
       // http://prometheus.github.io/client_java/io/prometheus/client/exporter/HTTPServer.html#HTTPServer-int-boolean-
       new HTTPServer(Integer.parseInt("8081"), true);
-    } catch (IOException e) {}
+    } catch (final IOException e) {}
 
     // The following block along with an instance of the instrumented
     // class simulates activity inside instrumented class object, which
@@ -59,7 +59,7 @@ public class PrometheusBaseExample {
         AnInstrumentedClass.doSomething();
 
         Thread.sleep(1000);
-      } catch (InterruptedException e) {
+      } catch (final InterruptedException e) {
         e.printStackTrace();
       }
     }

@@ -15,11 +15,11 @@ public class DynamodbDestinationConfig {
   private final String region;
 
   public DynamodbDestinationConfig(
-                                   String endpoint,
-                                   String tableName,
-                                   String region,
-                                   String accessKeyId,
-                                   String secretAccessKey) {
+                                   final String endpoint,
+                                   final String tableName,
+                                   final String region,
+                                   final String accessKeyId,
+                                   final String secretAccessKey) {
     this.endpoint = endpoint;
     this.tableName = tableName;
     this.region = region;
@@ -27,7 +27,7 @@ public class DynamodbDestinationConfig {
     this.secretAccessKey = secretAccessKey;
   }
 
-  public static DynamodbDestinationConfig getDynamodbDestinationConfig(JsonNode config) {
+  public static DynamodbDestinationConfig getDynamodbDestinationConfig(final JsonNode config) {
     return new DynamodbDestinationConfig(
         config.get("dynamodb_endpoint") == null ? "" : config.get("dynamodb_endpoint").asText(),
         config.get("dynamodb_table_name").asText(),

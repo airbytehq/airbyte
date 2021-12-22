@@ -10,24 +10,24 @@ public interface AzureBlobStorageFormatConfig {
 
   AzureBlobStorageFormat getFormat();
 
-  static String withDefault(JsonNode config, String property, String defaultValue) {
-    JsonNode value = config.get(property);
+  static String withDefault(final JsonNode config, final String property, final String defaultValue) {
+    final JsonNode value = config.get(property);
     if (value == null || value.isNull()) {
       return defaultValue;
     }
     return value.asText();
   }
 
-  static int withDefault(JsonNode config, String property, int defaultValue) {
-    JsonNode value = config.get(property);
+  static int withDefault(final JsonNode config, final String property, final int defaultValue) {
+    final JsonNode value = config.get(property);
     if (value == null || value.isNull()) {
       return defaultValue;
     }
     return value.asInt();
   }
 
-  static boolean withDefault(JsonNode config, String property, boolean defaultValue) {
-    JsonNode value = config.get(property);
+  static boolean withDefault(final JsonNode config, final String property, final boolean defaultValue) {
+    final JsonNode value = config.get(property);
     if (value == null || value.isNull()) {
       return defaultValue;
     }

@@ -9,12 +9,11 @@ from typing import Iterable
 from urllib.parse import urlparse
 
 import google
-import numpy as np
 import pandas as pd
 import smart_open
-from airbyte_protocol import AirbyteStream
+from airbyte_cdk.entrypoint import logger
+from airbyte_cdk.models import AirbyteStream, SyncMode
 from azure.storage.blob import BlobServiceClient
-from base_python.entrypoint import logger
 from botocore import UNSIGNED
 from botocore.config import Config
 from genson import SchemaBuilder
@@ -339,7 +338,7 @@ class Client:
                 fields = set(fields) if fields else None
                 for df in self.load_dataframes(fp):
                     columns = fields.intersection(set(df.columns)) if fields else df.columns
-                    df = df.replace(np.nan, "NaN", regex=True)
+                    df = df.where(pd.notnull(df), None)
                     yield from df[columns].to_dict(orient="records")
 
     def _stream_properties(self):
@@ -352,7 +351,7 @@ class Client:
             for df in df_list:
                 for col in df.columns:
                     fields[col] = self.dtype_to_json_type(df[col].dtype)
-            return {field: {"type": fields[field]} for field in fields}
+            return {field: {"type": [fields[field], "null"]} for field in fields}
 
     @property
     def streams(self) -> Iterable:
@@ -363,4 +362,4 @@ class Client:
             "type": "object",
             "properties": self._stream_properties(),
         }
-        yield AirbyteStream(name=self.stream_name, json_schema=json_schema)
+        yield AirbyteStream(name=self.stream_name, json_schema=json_schema, supported_sync_modes=[SyncMode.full_refresh])

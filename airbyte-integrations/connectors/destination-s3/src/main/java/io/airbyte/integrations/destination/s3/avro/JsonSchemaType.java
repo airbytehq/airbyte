@@ -24,14 +24,14 @@ public enum JsonSchemaType {
   private final boolean isPrimitive;
   private final Schema.Type avroType;
 
-  JsonSchemaType(String jsonSchemaType, boolean isPrimitive, Schema.Type avroType) {
+  JsonSchemaType(final String jsonSchemaType, final boolean isPrimitive, final Schema.Type avroType) {
     this.jsonSchemaType = jsonSchemaType;
     this.isPrimitive = isPrimitive;
     this.avroType = avroType;
   }
 
-  public static JsonSchemaType fromJsonSchemaType(String value) {
-    for (JsonSchemaType type : values()) {
+  public static JsonSchemaType fromJsonSchemaType(final String value) {
+    for (final JsonSchemaType type : values()) {
       if (value.equals(type.jsonSchemaType)) {
         return type;
       }

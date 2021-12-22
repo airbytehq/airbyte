@@ -7,8 +7,8 @@ package io.airbyte.workers.process;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ResourceRequirements;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerException;
-import io.airbyte.workers.WorkerUtils;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
 import java.net.InetAddress;
@@ -30,7 +30,8 @@ public class KubeProcessFactory implements ProcessFactory {
   public static final String SPEC_JOB = "spec";
   public static final String CHECK_JOB = "check";
   public static final String DISCOVER_JOB = "discover";
-  public static final String NORMALIZATION_JOB = "normalize";
+
+  public static final String SYNC_RUNNER = "sync-runner";
 
   public static final String SYNC_STEP = "sync_step";
   public static final String READ_STEP = "read";
@@ -44,20 +45,25 @@ public class KubeProcessFactory implements ProcessFactory {
   private static final String WORKER_POD_LABEL_KEY = "airbyte";
   private static final String WORKER_POD_LABEL_VALUE = "worker-pod";
 
+  private final WorkerConfigs workerConfigs;
   private final String namespace;
   private final ApiClient officialClient;
   private final KubernetesClient fabricClient;
   private final String kubeHeartbeatUrl;
   private final String processRunnerHost;
+  private final boolean isOrchestrator;
 
   /**
    * Sets up a process factory with the default processRunnerHost.
    */
-  public KubeProcessFactory(String namespace,
-                            ApiClient officialClient,
-                            KubernetesClient fabricClient,
-                            String kubeHeartbeatUrl) {
-    this(namespace, officialClient, fabricClient, kubeHeartbeatUrl, Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()));
+  public KubeProcessFactory(final WorkerConfigs workerConfigs,
+                            final String namespace,
+                            final ApiClient officialClient,
+                            final KubernetesClient fabricClient,
+                            final String kubeHeartbeatUrl,
+                            final boolean isOrchestrator) {
+    this(workerConfigs, namespace, officialClient, fabricClient, kubeHeartbeatUrl,
+        Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()), isOrchestrator);
   }
 
   /**
@@ -68,57 +74,65 @@ public class KubeProcessFactory implements ProcessFactory {
    *        itself
    * @param processRunnerHost is the local host or ip of the machine running the process factory.
    *        injectable for testing.
+   * @param isOrchestrator determines if this should run as airbyte-admin
    */
   @VisibleForTesting
-  public KubeProcessFactory(String namespace,
-                            ApiClient officialClient,
-                            KubernetesClient fabricClient,
-                            String kubeHeartbeatUrl,
-                            String processRunnerHost) {
+  public KubeProcessFactory(final WorkerConfigs workerConfigs,
+                            final String namespace,
+                            final ApiClient officialClient,
+                            final KubernetesClient fabricClient,
+                            final String kubeHeartbeatUrl,
+                            final String processRunnerHost,
+                            final boolean isOrchestrator) {
+    this.workerConfigs = workerConfigs;
     this.namespace = namespace;
     this.officialClient = officialClient;
     this.fabricClient = fabricClient;
     this.kubeHeartbeatUrl = kubeHeartbeatUrl;
     this.processRunnerHost = processRunnerHost;
+    this.isOrchestrator = isOrchestrator;
   }
 
   @Override
-  public Process create(String jobId,
-                        int attempt,
-                        final Path jobRoot,
+  public Process create(final String jobId,
+                        final int attempt,
+                        final Path jobRoot, // todo: remove unused
                         final String imageName,
                         final boolean usesStdin,
                         final Map<String, String> files,
                         final String entrypoint,
                         final ResourceRequirements resourceRequirements,
                         final Map<String, String> customLabels,
+                        final Map<Integer, Integer> internalToExternalPorts,
                         final String... args)
       throws WorkerException {
     try {
       // used to differentiate source and destination processes with the same id and attempt
       final String podName = createPodName(imageName, jobId, attempt);
+      LOGGER.info("Attempting to start pod = {}", podName);
 
-      final int stdoutLocalPort = KubePortManagerSingleton.take();
+      final int stdoutLocalPort = KubePortManagerSingleton.getInstance().take();
       LOGGER.info("{} stdoutLocalPort = {}", podName, stdoutLocalPort);
 
-      final int stderrLocalPort = KubePortManagerSingleton.take();
+      final int stderrLocalPort = KubePortManagerSingleton.getInstance().take();
       LOGGER.info("{} stderrLocalPort = {}", podName, stderrLocalPort);
 
-      var allLabels = new HashMap<>(customLabels);
-      var generalKubeLabels = Map.of(
+      final var allLabels = new HashMap<>(customLabels);
+      final var generalKubeLabels = Map.of(
           JOB_LABEL_KEY, jobId,
           ATTEMPT_LABEL_KEY, String.valueOf(attempt),
           WORKER_POD_LABEL_KEY, WORKER_POD_LABEL_VALUE);
       allLabels.putAll(generalKubeLabels);
 
       return new KubePodProcess(
+          isOrchestrator,
           processRunnerHost,
           officialClient,
           fabricClient,
           podName,
           namespace,
           imageName,
-          WorkerUtils.DEFAULT_JOB_IMAGE_PULL_POLICY,
+          workerConfigs.getJobImagePullPolicy(),
           stdoutLocalPort,
           stderrLocalPort,
           kubeHeartbeatUrl,
@@ -126,12 +140,16 @@ public class KubeProcessFactory implements ProcessFactory {
           files,
           entrypoint,
           resourceRequirements,
-          WorkerUtils.DEFAULT_JOBS_IMAGE_PULL_SECRET,
-          WorkerUtils.DEFAULT_WORKER_POD_TOLERATIONS,
-          WorkerUtils.DEFAULT_WORKER_POD_NODE_SELECTORS,
+          workerConfigs.getJobImagePullSecret(),
+          workerConfigs.getWorkerPodTolerations(),
+          workerConfigs.getWorkerPodNodeSelectors(),
           allLabels,
+          workerConfigs.getJobSocatImage(),
+          workerConfigs.getJobBusyboxImage(),
+          workerConfigs.getJobCurlImage(),
+          internalToExternalPorts,
           args);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new WorkerException(e.getMessage(), e);
     }
   }
@@ -148,30 +166,28 @@ public class KubeProcessFactory implements ProcessFactory {
    * easier operations.
    */
   @VisibleForTesting
-  protected static String createPodName(String fullImagePath, String jobId, int attempt) {
-    var versionDelimiter = ":";
-    var noVersion = fullImagePath.split(versionDelimiter)[0];
+  protected static String createPodName(final String fullImagePath, final String jobId, final int attempt) {
+    final var versionDelimiter = ":";
+    final var noVersion = fullImagePath.split(versionDelimiter)[0];
 
-    var dockerDelimiter = "/";
-    var nameParts = noVersion.split(dockerDelimiter);
+    final var dockerDelimiter = "/";
+    final var nameParts = noVersion.split(dockerDelimiter);
     var imageName = nameParts[nameParts.length - 1];
 
-    var randSuffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
-    final String suffix = "worker-" + jobId + "-" + attempt + "-" + randSuffix;
+    final var randSuffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
+    final String suffix = "sync" + "-" + jobId + "-" + attempt + "-" + randSuffix;
 
     var podName = imageName + "-" + suffix;
-
-    var podNameLenLimit = 63;
+    final var podNameLenLimit = 63;
     if (podName.length() > podNameLenLimit) {
-      var extra = podName.length() - podNameLenLimit;
+      final var extra = podName.length() - podNameLenLimit;
       imageName = imageName.substring(extra);
       podName = imageName + "-" + suffix;
     }
-
     final Matcher m = ALPHABETIC.matcher(podName);
-    // Since we add worker-UUID as a suffix a couple of lines up, there will always be a substring
+    // Since we add sync-UUID as a suffix a couple of lines up, there will always be a substring
     // starting with an alphabetic character.
-    // If the image name is a no-op, this function should always return `worker-UUID` at the minimum.
+    // If the image name is a no-op, this function should always return `sync-UUID` at the minimum.
     m.find();
     return podName.substring(m.start());
   }

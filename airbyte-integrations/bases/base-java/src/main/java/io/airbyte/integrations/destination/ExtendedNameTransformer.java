@@ -14,12 +14,12 @@ package io.airbyte.integrations.destination;
 public class ExtendedNameTransformer extends StandardNameTransformer {
 
   @Override
-  public String convertStreamName(String input) {
+  public String convertStreamName(final String input) {
     return super.convertStreamName(input);
   }
 
   // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785)
-  protected String disabled_convertStreamName(String input) {
+  protected String disabled_convertStreamName(final String input) {
     if (useExtendedIdentifiers(input)) {
       return "\"" + input + "\"";
     } else {
@@ -27,11 +27,11 @@ public class ExtendedNameTransformer extends StandardNameTransformer {
     }
   }
 
-  protected String applyDefaultCase(String input) {
+  protected String applyDefaultCase(final String input) {
     return input;
   }
 
-  protected boolean useExtendedIdentifiers(String input) {
+  protected boolean useExtendedIdentifiers(final String input) {
     boolean result = false;
     if (input.matches("[^\\p{Alpha}_].*")) {
       result = true;

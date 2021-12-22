@@ -36,14 +36,15 @@ def test_field_type_format_converting(field_type, expected):
         (1, {"type": ["null", "string"]}),
     ],
 )
-def test_bad_field_type_converting(field_type, expected, capsys):
+def test_bad_field_type_converting(field_type, expected, caplog, capsys):
 
     assert Stream._get_field_props(field_type=field_type) == expected
 
-    logs = capsys.readouterr().out
+    logs = caplog.records
 
-    assert '"WARN"' in logs
-    assert f"Unsupported type {field_type} found" in logs
+    assert logs
+    assert logs[0].levelname == "WARNING"
+    assert logs[0].msg == f"Unsupported type {field_type} found"
 
 
 @pytest.mark.parametrize(

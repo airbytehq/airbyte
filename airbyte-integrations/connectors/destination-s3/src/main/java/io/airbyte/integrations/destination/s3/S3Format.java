@@ -13,7 +13,7 @@ public enum S3Format {
 
   private final String fileExtension;
 
-  S3Format(String fileExtension) {
+  S3Format(final String fileExtension) {
     this.fileExtension = fileExtension;
   }
 

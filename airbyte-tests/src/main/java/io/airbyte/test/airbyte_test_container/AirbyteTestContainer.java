@@ -10,6 +10,7 @@ import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.HealthApi;
 import io.airbyte.api.client.invoker.ApiClient;
 import io.airbyte.api.client.invoker.ApiException;
+import io.airbyte.commons.concurrency.WaitingUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
@@ -19,11 +20,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.DockerComposeContainer;
@@ -58,25 +63,26 @@ public class AirbyteTestContainer {
    * Starts Airbyte docker-compose configuration. Will block until the server is reachable or it times
    * outs.
    */
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  public void start() throws IOException, InterruptedException {
-    final File cleanedDockerComposeFile = prepareDockerComposeFile(dockerComposeFile);
-    dockerComposeContainer = new DockerComposeContainer(cleanedDockerComposeFile).withEnv(env);
-    serviceLogConsumer(dockerComposeContainer, "init");
-    serviceLogConsumer(dockerComposeContainer, "db");
-    serviceLogConsumer(dockerComposeContainer, "seed");
-    serviceLogConsumer(dockerComposeContainer, "scheduler");
-    serviceLogConsumer(dockerComposeContainer, "server");
-    serviceLogConsumer(dockerComposeContainer, "webapp");
-    serviceLogConsumer(dockerComposeContainer, "worker");
-    serviceLogConsumer(dockerComposeContainer, "airbyte-temporal");
-
-    dockerComposeContainer.start();
-
+  public void startBlocking() throws IOException, InterruptedException {
+    startAsync();
     waitForAirbyte();
   }
 
-  private static Map<String, String> prepareDockerComposeEnvVariables(File envFile) throws IOException {
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  public void startAsync() throws IOException, InterruptedException {
+    final File cleanedDockerComposeFile = prepareDockerComposeFile(dockerComposeFile);
+    dockerComposeContainer = new DockerComposeContainer(cleanedDockerComposeFile).withEnv(env);
+    // Only expose logs related to db migrations.
+    serviceLogConsumer(dockerComposeContainer, "init");
+    serviceLogConsumer(dockerComposeContainer, "bootloader");
+    serviceLogConsumer(dockerComposeContainer, "db");
+    serviceLogConsumer(dockerComposeContainer, "seed");
+    serviceLogConsumer(dockerComposeContainer, "server");
+
+    dockerComposeContainer.start();
+  }
+
+  private static Map<String, String> prepareDockerComposeEnvVariables(final File envFile) throws IOException {
     LOGGER.info("Searching for environment in {}", envFile);
     Preconditions.checkArgument(envFile.exists(), "could not find docker compose environment");
 
@@ -88,7 +94,7 @@ public class AirbyteTestContainer {
   /**
    * TestContainers docker compose files cannot have container_names, so we filter them.
    */
-  private static File prepareDockerComposeFile(File originalDockerComposeFile) throws IOException {
+  private static File prepareDockerComposeFile(final File originalDockerComposeFile) throws IOException {
     final File cleanedDockerComposeFile = Files.createTempFile(Path.of("/tmp"), "docker_compose", "acceptance_test").toFile();
 
     try (final Scanner scanner = new Scanner(originalDockerComposeFile)) {
@@ -115,48 +121,61 @@ public class AirbyteTestContainer {
             .setHost("localhost")
             .setPort(8001)
             .setBasePath("/api"));
-
     final HealthApi healthApi = apiClient.getHealthApi();
 
-    ApiException lastException;
-    int i = 0;
-    while (true) {
+    final AtomicReference<ApiException> lastException = new AtomicReference<>();
+    final AtomicInteger attempt = new AtomicInteger();
+    final Supplier<Boolean> condition = () -> {
       try {
         healthApi.getHealthCheck();
-        break;
-      } catch (ApiException e) {
-        lastException = e;
-        LOGGER.info("airbyte not ready yet. attempt: {}", i);
+        return true;
+      } catch (final ApiException e) {
+        lastException.set(e);
+        LOGGER.info("airbyte not ready yet. attempt: {}", attempt.incrementAndGet());
+        return false;
       }
-      if (i == 10) {
-        throw new IllegalStateException("Airbyte took too long to start. Including last exception.", lastException);
-      }
-      Thread.sleep(5000);
-      i++;
+    };
+
+    if (!WaitingUtils.waitForCondition(Duration.ofSeconds(5), Duration.ofMinutes(2), condition)) {
+      throw new IllegalStateException("Airbyte took too long to start. Including last exception.", lastException.get());
     }
   }
 
-  private void serviceLogConsumer(DockerComposeContainer<?> composeContainer, String service) {
-    composeContainer.withLogConsumer(service, logConsumer(customServiceLogListeners.get(service)));
+  private void serviceLogConsumer(final DockerComposeContainer<?> composeContainer, final String service) {
+    composeContainer.withLogConsumer(service, logConsumer(service, customServiceLogListeners.get(service)));
   }
 
   /**
    * Exposes logs generated by docker containers in docker compose temporal test container.
    *
+   *
+   * @param service - name of docker container from which log is emitted.
    * @param customConsumer - each line output by the service in docker compose will be passed ot the
    *        consumer. if null do nothing.
    * @return log consumer
    */
-  private Consumer<OutputFrame> logConsumer(Consumer<String> customConsumer) {
+  private Consumer<OutputFrame> logConsumer(final String service, final Consumer<String> customConsumer) {
     return c -> {
       if (c != null && c.getBytes() != null) {
         final String log = new String(c.getBytes());
         if (customConsumer != null) {
           customConsumer.accept(log);
         }
-        LOGGER.info(log.replace("\n", ""));
+
+        final String message = prependService(service, log.replace("\n", ""));
+        switch (c.getType()) {
+          // prefer matching log levels from docker containers with log levels in logger.
+          case STDOUT -> LOGGER.info(message);
+          case STDERR -> LOGGER.error(message);
+          // assumption that this is an empty frame that connotes the container exiting.
+          case END -> LOGGER.error(service + " stopped!!!");
+        }
       }
     };
+  }
+
+  private String prependService(final String service, final String message) {
+    return service + " - " + message;
   }
 
   /**
@@ -180,7 +199,7 @@ public class AirbyteTestContainer {
 
     try {
       stopRetainVolumesInternal();
-    } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException | NoSuchFieldException e) {
+    } catch (final InvocationTargetException | IllegalAccessException | NoSuchMethodException | NoSuchFieldException e) {
       throw new RuntimeException(e);
     }
   }
@@ -218,28 +237,28 @@ public class AirbyteTestContainer {
     private final Map<String, String> env;
     private final Map<String, Consumer<String>> customServiceLogListeners;
 
-    public Builder(File dockerComposeFile) {
+    public Builder(final File dockerComposeFile) {
       this.dockerComposeFile = dockerComposeFile;
       this.customServiceLogListeners = new HashMap<>();
       this.env = new HashMap<>();
     }
 
-    public Builder setEnv(File envFile) throws IOException {
-      this.env.putAll(prepareDockerComposeEnvVariables(envFile));
+    public Builder setEnv(final Properties env) {
+      this.env.putAll(Maps.fromProperties(env));
       return this;
     }
 
-    public Builder setEnv(Map<String, String> env) {
+    public Builder setEnv(final Map<String, String> env) {
       this.env.putAll(env);
       return this;
     }
 
-    public Builder setEnvVariable(String propertyName, String propertyValue) {
+    public Builder setEnvVariable(final String propertyName, final String propertyValue) {
       this.env.put(propertyName, propertyValue);
       return this;
     }
 
-    public Builder setLogListener(String serviceName, Consumer<String> logConsumer) {
+    public Builder setLogListener(final String serviceName, final Consumer<String> logConsumer) {
       this.customServiceLogListeners.put(serviceName, logConsumer);
       return this;
     }

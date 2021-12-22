@@ -13,12 +13,12 @@ public class RealSecretsHydrator implements SecretsHydrator {
 
   private final ReadOnlySecretPersistence readOnlySecretPersistence;
 
-  public RealSecretsHydrator(ReadOnlySecretPersistence readOnlySecretPersistence) {
+  public RealSecretsHydrator(final ReadOnlySecretPersistence readOnlySecretPersistence) {
     this.readOnlySecretPersistence = readOnlySecretPersistence;
   }
 
   @Override
-  public JsonNode hydrate(JsonNode partialConfig) {
+  public JsonNode hydrate(final JsonNode partialConfig) {
     return SecretsHelpers.combineConfig(partialConfig, readOnlySecretPersistence);
   }
 

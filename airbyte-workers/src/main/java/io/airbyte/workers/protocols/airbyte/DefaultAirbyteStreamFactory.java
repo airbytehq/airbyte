@@ -6,6 +6,7 @@ package io.airbyte.workers.protocols.airbyte;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.protocol.models.AirbyteLogMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.io.BufferedReader;
@@ -28,62 +29,68 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteStreamFactory.class);
 
+  private final MdcScope.Builder containerLogMdcBuilder;
   private final AirbyteProtocolPredicate protocolValidator;
   private final Logger logger;
 
   public DefaultAirbyteStreamFactory() {
-    this(new AirbyteProtocolPredicate(), LOGGER);
+    this(MdcScope.DEFAULT_BUILDER);
   }
 
-  DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate protocolPredicate, final Logger logger) {
+  public DefaultAirbyteStreamFactory(final MdcScope.Builder containerLogMdcBuilder) {
+    this(new AirbyteProtocolPredicate(), LOGGER, containerLogMdcBuilder);
+  }
+
+  DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate protocolPredicate, final Logger logger, final MdcScope.Builder containerLogMdcBuilder) {
     protocolValidator = protocolPredicate;
     this.logger = logger;
+    this.containerLogMdcBuilder = containerLogMdcBuilder;
   }
 
   @Override
-  public Stream<AirbyteMessage> create(BufferedReader bufferedReader) {
+  public Stream<AirbyteMessage> create(final BufferedReader bufferedReader) {
     return bufferedReader
         .lines()
-        .map(s -> {
-          Optional<JsonNode> j = Jsons.tryDeserialize(s);
-          if (j.isEmpty()) {
+        .flatMap(line -> {
+          final Optional<JsonNode> jsonLine = Jsons.tryDeserialize(line);
+          if (jsonLine.isEmpty()) {
             // we log as info all the lines that are not valid json
             // some sources actually log their process on stdout, we
             // want to make sure this info is available in the logs.
-            logger.info(s);
+            try (final var mdcScope = containerLogMdcBuilder.build()) {
+              logger.info(line);
+            }
           }
-          return j;
+          return jsonLine.stream();
         })
-        .filter(Optional::isPresent)
-        .map(Optional::get)
         // filter invalid messages
-        .filter(j -> {
-          boolean res = protocolValidator.test(j);
+        .filter(jsonLine -> {
+          final boolean res = protocolValidator.test(jsonLine);
           if (!res) {
-            logger.error("Validation failed: {}", Jsons.serialize(j));
+            logger.error("Validation failed: {}", Jsons.serialize(jsonLine));
           }
           return res;
         })
-        .map(j -> {
-          Optional<AirbyteMessage> m = Jsons.tryObject(j, AirbyteMessage.class);
+        .flatMap(jsonLine -> {
+          final Optional<AirbyteMessage> m = Jsons.tryObject(jsonLine, AirbyteMessage.class);
           if (m.isEmpty()) {
-            logger.error("Deserialization failed: {}", Jsons.serialize(j));
+            logger.error("Deserialization failed: {}", Jsons.serialize(jsonLine));
           }
-          return m;
+          return m.stream();
         })
-        .filter(Optional::isPresent)
-        .map(Optional::get)
         // filter logs
-        .filter(m -> {
-          boolean isLog = m.getType() == AirbyteMessage.Type.LOG;
+        .filter(airbyteMessage -> {
+          final boolean isLog = airbyteMessage.getType() == AirbyteMessage.Type.LOG;
           if (isLog) {
-            internalLog(m.getLog());
+            try (final var mdcScope = containerLogMdcBuilder.build()) {
+              internalLog(airbyteMessage.getLog());
+            }
           }
           return !isLog;
         });
   }
 
-  private void internalLog(AirbyteLogMessage logMessage) {
+  private void internalLog(final AirbyteLogMessage logMessage) {
     switch (logMessage.getLevel()) {
       case FATAL, ERROR -> logger.error(logMessage.getMessage());
       case WARN -> logger.warn(logMessage.getMessage());

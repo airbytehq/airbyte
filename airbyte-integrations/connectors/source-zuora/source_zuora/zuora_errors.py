@@ -4,20 +4,29 @@
 
 
 import sys
+from typing import Any
 
 import requests
-from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.logger import AirbyteLogger
 
 
 class Error(Exception):
-    """ Base Error class for other exceptions """
+    """Base Error class for other exceptions"""
 
     # Define the instance of the Native Airbyte Logger
     logger = AirbyteLogger()
 
 
+class QueryWindowError(Error):
+    def __init__(self, value: Any):
+        self.message = f"`Query Window` is set to '{value}', please make sure you use float or integer, not string."
+        super().__init__(self.logger.info(self.message))
+        # Exit with non-zero status
+        sys.exit(1)
+
+
 class ZOQLQueryError(Error):
-    """ Base class for  ZOQL EXPORT query errors """
+    """Base class for  ZOQL EXPORT query errors"""
 
     def __init__(self, response: requests.Response = None):
         if response:
@@ -30,7 +39,7 @@ class ZOQLQueryError(Error):
 
 
 class ZOQLQueryFailed(ZOQLQueryError):
-    """ Failed to execute query on the server side """
+    """Failed to execute query on the server side"""
 
 
 class ZOQLQueryFieldCannotResolveCursor(Error):

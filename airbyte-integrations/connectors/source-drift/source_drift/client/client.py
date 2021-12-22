@@ -3,18 +3,30 @@
 #
 
 
-from typing import Iterator, Tuple
+from typing import Dict, Iterator, Tuple
 
-from base_python import BaseClient
+from airbyte_cdk.sources.deprecated.client import BaseClient
 
 from .api import APIClient
 from .common import AuthError, ValidationError
 
 
+class DriftAuthenticator:
+    def __init__(self, config: Dict):
+        self.config = config
+
+    def get_token(self) -> str:
+        access_token = self.config.get("access_token")
+        if access_token:
+            return access_token
+        else:
+            return self.config.get("credentials").get("access_token")
+
+
 class Client(BaseClient):
-    def __init__(self, access_token: str):
+    def __init__(self, **config: Dict):
         super().__init__()
-        self._client = APIClient(access_token)
+        self._client = APIClient(access_token=DriftAuthenticator(config).get_token())
 
     def stream__accounts(self, **kwargs) -> Iterator[dict]:
         yield from self._client.accounts.list()

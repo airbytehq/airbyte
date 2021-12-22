@@ -3,7 +3,6 @@ import { FormattedMessage } from "react-intl";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import { JobInfo } from "core/resources/Scheduler";
-import { SourceDefinition } from "core/resources/SourceDefinition";
 
 import ContentCard from "components/ContentCard";
 import ServiceForm from "views/Connector/ServiceForm";
@@ -12,9 +11,10 @@ import { JobsLogItem } from "components/JobItem";
 import { useSourceDefinitionSpecificationLoad } from "hooks/services/useSourceHook";
 
 import { createFormErrorMessage } from "utils/errorStatusMessage";
-import { useAnalytics } from "hooks/useAnalytics";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import HighlightedText from "./HighlightedText";
 import TitlesBlock from "./TitlesBlock";
+import { SourceDefinition } from "core/domain/connector";
 
 type IProps = {
   onSubmit: (values: {
@@ -39,7 +39,7 @@ const SourceStep: React.FC<IProps> = ({
   afterSelectConnector,
 }) => {
   const [sourceDefinitionId, setSourceDefinitionId] = useState("");
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
 
   const {
     sourceDefinitionSpecification,

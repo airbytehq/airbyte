@@ -84,14 +84,14 @@ class StateManagerTest {
   }
 
   @SuppressWarnings("SameParameterValue")
-  private static Optional<DbStreamState> getState(String cursorField, String cursor) {
+  private static Optional<DbStreamState> getState(final String cursorField, final String cursor) {
     return Optional.of(new DbStreamState()
         .withStreamName(STREAM_NAME1)
         .withCursorField(Lists.newArrayList(cursorField))
         .withCursor(cursor));
   }
 
-  private static Optional<ConfiguredAirbyteStream> getCatalog(String cursorField) {
+  private static Optional<ConfiguredAirbyteStream> getCatalog(final String cursorField) {
     return Optional.of(new ConfiguredAirbyteStream()
         .withStream(new AirbyteStream().withName(STREAM_NAME1))
         .withCursorField(cursorField == null ? Collections.emptyList() : Lists.newArrayList(cursorField)));

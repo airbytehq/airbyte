@@ -1,6 +1,6 @@
 *
 !Dockerfile
-!Dockerfile.test
+!main.py
 !source_google_directory
 !setup.py
 !secrets
