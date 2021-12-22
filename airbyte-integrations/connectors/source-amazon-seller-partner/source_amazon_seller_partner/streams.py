@@ -30,9 +30,6 @@ REPORTS_API_VERSION = "2020-09-04"
 ORDERS_API_VERSION = "v0"
 VENDORS_API_VERSION = "v1"
 
-# 33min. taken from real world experience working with amazon seller partner reports
-REPORTS_MAX_WAIT_SECONDS = 1980
-
 DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 
@@ -47,6 +44,7 @@ class AmazonSPStream(HttpStream, ABC):
         marketplace_ids: List[str],
         period_in_days: Optional[int],
         report_options: Optional[str],
+        max_wait_seconds: Optional[int],
         *args,
         **kwargs,
     ):
@@ -153,6 +151,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         marketplace_ids: List[str],
         period_in_days: Optional[int],
         report_options: Optional[str],
+        max_wait_seconds: Optional[int],
         authenticator: HttpAuthenticator = NoAuth(),
     ):
         self._authenticator = authenticator
@@ -163,6 +162,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         self.marketplace_ids = marketplace_ids
         self.period_in_days = period_in_days
         self._report_options = report_options
+        self.max_wait_seconds = max_wait_seconds
 
     @property
     def url_base(self) -> str:
@@ -314,7 +314,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         report_id = self._create_report(sync_mode, cursor_field, stream_slice, stream_state)["reportId"]
 
         # create and retrieve the report
-        while not is_processed and seconds_waited < REPORTS_MAX_WAIT_SECONDS:
+        while not is_processed and seconds_waited < self.max_wait_seconds:
             report_payload = self._retrieve_report(report_id=report_id)
             seconds_waited = (pendulum.now("utc") - start_time).seconds
             is_processed = report_payload.get("processingStatus") not in ["IN_QUEUE", "IN_PROGRESS"]

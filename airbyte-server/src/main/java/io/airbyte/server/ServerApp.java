@@ -200,7 +200,12 @@ public class ServerApp implements ServerRunnable {
   }
 
   public static void main(final String[] args) throws Exception {
-    getServer(new ServerFactory.Api(), YamlSeedConfigPersistence.getDefault()).start();
+    try {
+      getServer(new ServerFactory.Api(), YamlSeedConfigPersistence.getDefault()).start();
+    } catch (Throwable e) {
+      LOGGER.error("Server failed", e);
+      System.exit(1); // so the app doesn't hang on background threads
+    }
   }
 
 }
