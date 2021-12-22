@@ -4,3 +4,5 @@ The Databricks Connector enables a developer to sync data into a Databricks clus
 
 1. Persist source data in S3 staging files in the Parquet format.
 2. Create delta table based on the Parquet staging files.
+
+See [this](https://docs.airbyte.io/integrations/destinations/databricks) link for the nuances about the connector.

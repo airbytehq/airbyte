@@ -2,6 +2,7 @@ plugins {
     id 'application'
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
+    id 'airbyte-performance-test-java'
 }
 
 application {
@@ -25,10 +26,12 @@ dependencies {
     testImplementation project(":airbyte-json-validation")
     testImplementation project(':airbyte-test-utils')
 
-    testImplementation 'org.testcontainers:postgresql:1.15.1'
+    testImplementation 'org.testcontainers:postgresql:1.15.3'
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
+    performanceTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    performanceTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }

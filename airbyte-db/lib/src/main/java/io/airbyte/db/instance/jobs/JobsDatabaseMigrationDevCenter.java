@@ -20,12 +20,12 @@ public class JobsDatabaseMigrationDevCenter extends MigrationDevCenter {
   }
 
   @Override
-  protected FlywayDatabaseMigrator getMigrator(Database database) {
+  protected FlywayDatabaseMigrator getMigrator(final Database database) {
     return new JobsDatabaseMigrator(database, JobsDatabaseMigrationDevCenter.class.getSimpleName());
   }
 
   @Override
-  protected Database getDatabase(PostgreSQLContainer<?> container) throws IOException {
+  protected Database getDatabase(final PostgreSQLContainer<?> container) throws IOException {
     return new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
   }
 

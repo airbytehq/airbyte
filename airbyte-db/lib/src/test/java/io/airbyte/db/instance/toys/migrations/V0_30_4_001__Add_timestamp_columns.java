@@ -17,8 +17,8 @@ import org.jooq.impl.SQLDataType;
 public class V0_30_4_001__Add_timestamp_columns extends BaseJavaMigration {
 
   @Override
-  public void migrate(Context context) {
-    DSLContext dsl = DSL.using(context.getConnection());
+  public void migrate(final Context context) {
+    final DSLContext dsl = DSL.using(context.getConnection());
     dsl.alterTable(ToysDatabaseInstance.TABLE_NAME)
         .addColumn(field("created_at", SQLDataType.TIMESTAMP.defaultValue(currentTimestamp()).nullable(false)))
         .execute();

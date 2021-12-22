@@ -31,7 +31,7 @@ public class ExecutableTestSource extends SourceAcceptanceTest {
 
     private final Path statePath;
 
-    public TestConfig(String imageName, Path specPath, Path configPath, Path catalogPath, Path statePath) {
+    public TestConfig(final String imageName, final Path specPath, final Path configPath, final Path catalogPath, final Path statePath) {
       this.imageName = imageName;
       this.specPath = specPath;
       this.configPath = configPath;
@@ -100,12 +100,12 @@ public class ExecutableTestSource extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     // no-op, for now
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     // no-op, for now
   }
 

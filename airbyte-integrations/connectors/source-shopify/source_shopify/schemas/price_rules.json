@@ -1,5 +1,5 @@
 {
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
     "allocation_method": {
       "type": ["null", "string"]

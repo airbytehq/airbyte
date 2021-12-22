@@ -18,6 +18,12 @@ _check_tag_exists() {
   DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect "$1" > /dev/null
 }
 
+_error_if_tag_exists() {
+    if _check_tag_exists "$1"; then
+      error "You're trying to push a version that was already released ($1). Make sure you bump it up."
+    fi
+}
+
 cmd_scaffold() {
   echo "Scaffolding connector"
   (
@@ -74,6 +80,9 @@ cmd_publish() {
      publish_spec_to_cache=false
   fi
 
+  # before we start working sanity check that this version has not been published yet, so that we do not spend a lot of
+  # time building, running tests to realize this version is a duplicate.
+  _error_if_tag_exists "$versioned_image"
 
   cmd_build "$path" "$run_tests"
 
@@ -86,16 +95,24 @@ cmd_publish() {
   echo "$versioned_image $versioned_image"
   echo "latest_image $latest_image"
 
-  docker tag "$image_name:dev" "$versioned_image"
-  docker tag "$image_name:dev" "$latest_image"
+  # in case curing the build / tests someone this version has been published.
+  _error_if_tag_exists "$versioned_image"
 
-  if _check_tag_exists "$versioned_image"; then
-    error "You're trying to push a version that was already released ($versioned_image). Make sure you bump it up."
+  if [[ "airbyte/normalization" == "${image_name}" ]]; then
+    echo "Publishing normalization images (version: $versioned_image)"
+    GIT_REVISION=$(git rev-parse HEAD)
+    VERSION=$image_version GIT_REVISION=$GIT_REVISION docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml build
+    VERSION=$image_version GIT_REVISION=$GIT_REVISION docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml push
+    VERSION=latest         GIT_REVISION=$GIT_REVISION docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml build
+    VERSION=latest         GIT_REVISION=$GIT_REVISION docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml push
+  else
+    docker tag "$image_name:dev" "$versioned_image"
+    docker tag "$image_name:dev" "$latest_image"
+
+    echo "Publishing new version ($versioned_image)"
+    docker push "$versioned_image"
+    docker push "$latest_image"
   fi
-
-  echo "Publishing new version ($versioned_image)"
-  docker push "$versioned_image"
-  docker push "$latest_image"
 
   if [[ "true" == "${publish_spec_to_cache}" ]]; then
     echo "Publishing and writing to spec cache."

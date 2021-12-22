@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.scaffold_java_jdbc;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import java.sql.JDBCType;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -40,7 +41,7 @@ class ScaffoldJavaJdbcJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest 
   }
 
   @Override
-  public AbstractJdbcSource getSource() {
+  public AbstractJdbcSource<JDBCType> getSource() {
     return new ScaffoldJavaJdbcSource();
   }
 
@@ -58,6 +59,12 @@ class ScaffoldJavaJdbcJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest 
   @Override
   public String getDriverClass() {
     return ScaffoldJavaJdbcSource.DRIVER_CLASS;
+  }
+
+  @Override
+  public AbstractJdbcSource<JDBCType> getJdbcSource() {
+    // TODO
+    return null;
   }
 
   @AfterAll

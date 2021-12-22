@@ -39,27 +39,23 @@ public class FlywayDatabaseMigrator implements DatabaseMigrator {
    * @param migrationFileLocations Example: "classpath:db/migration". See:
    *        https://flywaydb.org/documentation/concepts/migrations#discovery-1
    */
-  protected FlywayDatabaseMigrator(Database database,
-                                   String dbIdentifier,
-                                   String migrationRunner,
-                                   String migrationFileLocations) {
+  protected FlywayDatabaseMigrator(final Database database,
+                                   final String dbIdentifier,
+                                   final String migrationRunner,
+                                   final String migrationFileLocations) {
     this(database, getConfiguration(database, dbIdentifier, migrationRunner, migrationFileLocations).load());
   }
 
   @VisibleForTesting
-  public FlywayDatabaseMigrator(Database database, Flyway flyway) {
+  public FlywayDatabaseMigrator(final Database database, final Flyway flyway) {
     this.database = database;
     this.flyway = flyway;
   }
 
-  private static String getDefaultMigrationFileLocation(String dbIdentifier) {
-    return String.format("classpath:io/airbyte/db/instance/%s/migrations", dbIdentifier);
-  }
-
-  private static FluentConfiguration getConfiguration(Database database,
-                                                      String dbIdentifier,
-                                                      String migrationRunner,
-                                                      String migrationFileLocations) {
+  private static FluentConfiguration getConfiguration(final Database database,
+                                                      final String dbIdentifier,
+                                                      final String migrationRunner,
+                                                      final String migrationFileLocations) {
     return Flyway.configure()
         .dataSource(database.getDataSource())
         .baselineVersion(BASELINE_VERSION)
@@ -72,31 +68,44 @@ public class FlywayDatabaseMigrator implements DatabaseMigrator {
 
   @Override
   public MigrateResult migrate() {
-    MigrateResult result = flyway.migrate();
+    final MigrateResult result = flyway.migrate();
     result.warnings.forEach(LOGGER::warn);
     return result;
   }
 
   @Override
   public List<MigrationInfo> list() {
-    MigrationInfoService result = flyway.info();
+    final MigrationInfoService result = flyway.info();
     result.getInfoResult().warnings.forEach(LOGGER::warn);
     return Arrays.asList(result.all());
   }
 
   @Override
+  public MigrationInfo getLatestMigration() {
+    return flyway.info().current();
+  }
+
+  @Override
   public BaselineResult createBaseline() {
-    BaselineResult result = flyway.baseline();
+    final BaselineResult result = flyway.baseline();
     result.warnings.forEach(LOGGER::warn);
     return result;
   }
 
   @Override
   public String dumpSchema() throws IOException {
-    return new ExceptionWrappingDatabase(database).query(ctx -> ctx.meta().ddl().queryStream()
+    return getDisclaimer() + new ExceptionWrappingDatabase(database).query(ctx -> ctx.meta().ddl().queryStream()
         .map(query -> query.toString() + ";")
         .filter(statement -> !statement.startsWith("create schema"))
         .collect(Collectors.joining("\n")));
+  }
+
+  protected String getDisclaimer() {
+    return """
+           // The content of the file is just to have a basic idea of the current state of the database and is not fully accurate.\040
+           // It is also not used by any piece of code to generate anything.\040
+           // It doesn't contain the enums created in the database and the default values might also be buggy.\s
+           """ + '\n';
   }
 
   @VisibleForTesting

@@ -1,5 +1,6 @@
-import { ConfigProvider } from "config/types";
-import { CloudConfig } from "./types";
+import type { ConfigProvider } from "config/types";
+import type { CloudConfig } from "./types";
+import { isDefined } from "utils/common";
 
 const CONFIG_PATH = "/config.json";
 
@@ -20,6 +21,22 @@ const fileConfigProvider: ConfigProvider<CloudConfig> = async () => {
   return {};
 };
 
+const cloudWindowConfigProvider: ConfigProvider<CloudConfig> = async () => {
+  return {
+    fullstory: {
+      enabled: isDefined(window.FULLSTORY) && window.FULLSTORY !== "disabled",
+    },
+    intercom: {
+      appId: window.REACT_APP_INTERCOM_APP_ID,
+    },
+    firebase: {
+      apiKey: window.FIREBASE_API_KEY,
+      authDomain: window.FIREBASE_AUTH_DOMAIN,
+    },
+    cloudApiUrl: window.CLOUD_API_URL,
+  };
+};
+
 const cloudEnvConfigProvider: ConfigProvider<CloudConfig> = async () => {
   return {
     cloudApiUrl: process.env.REACT_APP_CLOUD_API_URL,
@@ -27,7 +44,20 @@ const cloudEnvConfigProvider: ConfigProvider<CloudConfig> = async () => {
       apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
       authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
     },
+    fullstory: {
+      orgId: process.env.REACT_APP_FULL_STORY_ORG,
+      enabled:
+        isDefined(process.env.REACT_APP_FULLSTORY) &&
+        process.env.REACT_APP_FULLSTORY !== "disabled",
+    },
+    intercom: {
+      appId: process.env.REACT_APP_INTERCOM_APP_ID,
+    },
   };
 };
 
-export { fileConfigProvider, cloudEnvConfigProvider };
+export {
+  fileConfigProvider,
+  cloudWindowConfigProvider,
+  cloudEnvConfigProvider,
+};

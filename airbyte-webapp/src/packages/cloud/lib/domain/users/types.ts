@@ -3,4 +3,5 @@ export interface User {
   name: string;
   userId: string;
   status?: "invited" | "registered" | "disabled";
+  intercomHash: string;
 }

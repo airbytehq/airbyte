@@ -4,6 +4,9 @@
 
 package io.airbyte.config;
 
+import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.config.helpers.LogConfigs;
+import io.airbyte.config.storage.CloudStorageConfigs;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -11,27 +14,50 @@ import java.util.Set;
 
 public interface Configs {
 
+  // CORE
+  // General
   String getAirbyteRole();
 
-  String getAirbyteVersion();
-
-  String getAirbyteApiHost();
-
-  int getAirbyteApiPort();
+  AirbyteVersion getAirbyteVersion();
 
   String getAirbyteVersionOrWarning();
+
+  String getSpecCacheBucket();
+
+  DeploymentMode getDeploymentMode();
+
+  WorkerEnvironment getWorkerEnvironment();
 
   Path getConfigRoot();
 
   Path getWorkspaceRoot();
 
+  // Docker Only
+  String getWorkspaceDockerMount();
+
+  String getLocalDockerMount();
+
+  String getDockerNetwork();
+
   Path getLocalRoot();
 
+  // Secrets
+  String getSecretStoreGcpProjectId();
+
+  String getSecretStoreGcpCredentials();
+
+  SecretPersistenceType getSecretPersistenceType();
+
+  // Database
   String getDatabaseUser();
 
   String getDatabasePassword();
 
   String getDatabaseUrl();
+
+  String getJobsDatabaseMinimumFlywayMigrationVersion();
+
+  long getJobsDatabaseInitializationTimeoutMs();
 
   String getConfigDatabaseUser();
 
@@ -39,75 +65,73 @@ public interface Configs {
 
   String getConfigDatabaseUrl();
 
-  String getSecretStoreGcpProjectId();
+  String getConfigsDatabaseMinimumFlywayMigrationVersion();
 
-  String getSecretStoreGcpCredentials();
+  long getConfigsDatabaseInitializationTimeoutMs();
 
   boolean runDatabaseMigrationOnStartup();
 
-  int getMaxSyncJobAttempts();
+  // Airbyte Services
+  String getTemporalHost();
 
-  int getMaxSyncTimeoutDays();
+  String getAirbyteApiHost();
+
+  int getAirbyteApiPort();
 
   String getWebappUrl();
 
-  String getWorkspaceDockerMount();
+  // Jobs
+  int getSyncJobMaxAttempts();
 
-  String getLocalDockerMount();
+  int getSyncJobMaxTimeoutDays();
 
-  String getDockerNetwork();
+  List<TolerationPOJO> getJobPodTolerations();
+
+  Map<String, String> getJobPodNodeSelectors();
+
+  String getJobPodMainContainerImagePullPolicy();
+
+  String getJobPodMainContainerImagePullSecret();
+
+  String getJobPodSocatImage();
+
+  String getJobPodBusyboxImage();
+
+  String getJobPodCurlImage();
+
+  String getJobPodKubeNamespace();
+
+  String getJobPodMainContainerCpuRequest();
+
+  String getJobPodMainContainerCpuLimit();
+
+  String getJobPodMainContainerMemoryRequest();
+
+  String getJobPodMainContainerMemoryLimit();
+
+  // Logging/Monitoring/Tracking
+  LogConfigs getLogConfigs();
+
+  CloudStorageConfigs getStateStorageCloudConfigs();
+
+  boolean getPublishMetrics();
 
   TrackingStrategy getTrackingStrategy();
 
-  DeploymentMode getDeploymentMode();
-
-  WorkerEnvironment getWorkerEnvironment();
-
-  String getSpecCacheBucket();
-
-  WorkspaceRetentionConfig getWorkspaceRetentionConfig();
-
-  List<WorkerPodToleration> getWorkerPodTolerations();
-
-  Map<String, String> getWorkerNodeSelectors();
-
+  // APPLICATIONS
+  // Worker
   MaxWorkersConfig getMaxWorkers();
-
-  String getTemporalHost();
 
   Set<Integer> getTemporalWorkerPorts();
 
-  String getKubeNamespace();
+  // Scheduler
+  WorkspaceRetentionConfig getWorkspaceRetentionConfig();
 
   String getSubmitterNumThreads();
 
-  String getJobsImagePullSecret();
+  // Container Orchestrator
 
-  // Resources
-  String getCpuRequest();
-
-  String getCpuLimit();
-
-  String getMemoryRequest();
-
-  String getMemoryLimit();
-
-  // Logging
-  String getS3LogBucket();
-
-  String getS3LogBucketRegion();
-
-  String getAwsAccessKey();
-
-  String getAwsSecretAccessKey();
-
-  String getS3MinioEndpoint();
-
-  String getGcpStorageBucket();
-
-  String getGoogleApplicationCredentials();
-
-  SecretPersistenceType getSecretPersistenceType();
+  boolean getContainerOrchestratorEnabled();
 
   enum TrackingStrategy {
     SEGMENT,

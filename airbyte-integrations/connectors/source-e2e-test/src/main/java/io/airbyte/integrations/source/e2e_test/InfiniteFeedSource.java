@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.e2e_test;
 
+import static java.lang.Thread.sleep;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableMap;
@@ -23,6 +25,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 import org.slf4j.Logger;
@@ -42,14 +45,16 @@ public class InfiniteFeedSource extends BaseConnector implements Source {
   }
 
   @Override
-  public AirbyteCatalog discover(JsonNode config) {
+  public AirbyteCatalog discover(final JsonNode config) {
     return Jsons.clone(CATALOG);
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) {
+  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state) {
     final Predicate<Long> anotherRecordPredicate =
         config.has("max_records") ? recordNumber -> recordNumber < config.get("max_records").asLong() : recordNumber -> true;
+
+    final Optional<Long> sleepTime = Optional.ofNullable(config.get("message_interval")).map(JsonNode::asLong);
 
     final AtomicLong i = new AtomicLong();
 
@@ -58,6 +63,16 @@ public class InfiniteFeedSource extends BaseConnector implements Source {
       @Override
       protected AirbyteMessage computeNext() {
         if (anotherRecordPredicate.test(i.get())) {
+          if (i.get() != 0) {
+            if (sleepTime.isPresent()) {
+              try {
+                LOGGER.info("sleeping for {} ms", sleepTime.get());
+                sleep(sleepTime.get());
+              } catch (final InterruptedException e) {
+                throw new RuntimeException(e);
+              }
+            }
+          }
           i.incrementAndGet();
           LOGGER.info("source emitting record {}:", i.get());
           return new AirbyteMessage()

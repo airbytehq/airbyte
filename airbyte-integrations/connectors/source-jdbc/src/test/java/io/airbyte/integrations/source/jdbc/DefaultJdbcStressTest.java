@@ -9,11 +9,13 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import java.sql.JDBCType;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.AfterAll;
@@ -70,7 +72,7 @@ class DefaultJdbcStressTest extends JdbcStressTest {
   }
 
   @Override
-  public AbstractJdbcSource getSource() {
+  public AbstractJdbcSource<JDBCType> getSource() {
     return new PostgresTestSource();
   }
 
@@ -89,19 +91,19 @@ class DefaultJdbcStressTest extends JdbcStressTest {
     PSQL_DB.close();
   }
 
-  private static class PostgresTestSource extends AbstractJdbcSource implements Source {
+  private static class PostgresTestSource extends AbstractJdbcSource<JDBCType> implements Source {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PostgresTestSource.class);
 
     static final String DRIVER_CLASS = "org.postgresql.Driver";
 
     public PostgresTestSource() {
-      super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration());
+      super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration(), JdbcUtils.getDefaultSourceOperations());
     }
 
     @Override
-    public JsonNode toDatabaseConfig(JsonNode config) {
-      ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+    public JsonNode toDatabaseConfig(final JsonNode config) {
+      final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
           .put("username", config.get("username").asText())
           .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
               config.get("host").asText(),
@@ -120,7 +122,7 @@ class DefaultJdbcStressTest extends JdbcStressTest {
       return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(final String[] args) throws Exception {
       final Source source = new PostgresTestSource();
       LOGGER.info("starting source: {}", PostgresTestSource.class);
       new IntegrationRunner(source).run(args);

@@ -13,8 +13,8 @@ import {
   useCurrentUser,
 } from "packages/cloud/services/auth/AuthService";
 import { RowFieldItem } from "packages/cloud/views/auth/components/FormComponents";
-import { EmailSection } from "./components/EmailSection";
-import { PasswordSection } from "./components/PasswordSection";
+
+import { EmailSection, PasswordSection } from "./components";
 
 const Header = styled.div`
   display: flex;
@@ -74,7 +74,11 @@ const AccountSettingsView: React.FC = () => {
         title={
           <Header>
             <FormattedMessage id="settings.accountSettings.logoutLabel" />
-            <LoadingButton danger onClick={() => logout()}>
+            <LoadingButton
+              danger
+              onClick={() => logout()}
+              data-testid="button.signout"
+            >
               <FormattedMessage id="settings.accountSettings.logoutText" />
             </LoadingButton>
           </Header>

@@ -45,21 +45,11 @@ spec:
             configMapKeyRef:
               name: airbyte-env
               key: TRACKING_STRATEGY
-        - name: PAPERCUPS_STORYTIME
-          valueFrom:
-            configMapKeyRef:
-              name: airbyte-env
-              key: PAPERCUPS_STORYTIME
         - name: FULLSTORY
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
               key: FULLSTORY
-        - name: OPENREPLAY
-          valueFrom:
-            configMapKeyRef:
-              name: airbyte-env
-              key: OPENREPLAY
         - name: IS_DEMO
           valueFrom:
             configMapKeyRef:
@@ -70,6 +60,9 @@ spec:
             configMapKeyRef:
               name: airbyte-env
               key: INTERNAL_API_HOST
+        {{- if .Values.webapp.extraEnv }}
+        {{ .Values.webapp.extraEnv | toYaml | nindent 8 }}
+        {{- end }}
         ports:
         - name: http
           containerPort: 80

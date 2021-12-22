@@ -6,12 +6,12 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk==0.1.3",
-    "pendulum==1.2.0",
-    "requests==2.25.1",
+    "airbyte-cdk~=0.1",
+    "pendulum~=2.1.2",
+    "requests~=2.25",
 ]
 
-TEST_REQUIREMENTS = ["pytest==6.1.2"]
+TEST_REQUIREMENTS = ["pytest~=6.1", "responses==0.13.3", "freezegun==1.1.0"]
 
 
 setup(
@@ -20,6 +20,9 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=MAIN_REQUIREMENTS + TEST_REQUIREMENTS,
+    install_requires=MAIN_REQUIREMENTS,
+    extras_require={
+        "tests": TEST_REQUIREMENTS,
+    },
     package_data={"": ["*.json", "schemas/*.json"]},
 )

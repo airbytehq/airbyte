@@ -42,64 +42,64 @@ public class MigrationDevHelper {
    * This method is used for migration development. Run it to see how your migration changes the
    * database schema.
    */
-  public static void runLastMigration(DevDatabaseMigrator migrator) throws IOException {
+  public static void runLastMigration(final DevDatabaseMigrator migrator) throws IOException {
     migrator.createBaseline();
 
-    List<MigrationInfo> preMigrationInfoList = migrator.list();
+    final List<MigrationInfo> preMigrationInfoList = migrator.list();
     System.out.println("\n==== Pre Migration Info ====\n" + FlywayFormatter.formatMigrationInfoList(preMigrationInfoList));
     System.out.println("\n==== Pre Migration Schema ====\n" + migrator.dumpSchema() + "\n");
 
-    MigrateResult migrateResult = migrator.migrate();
+    final MigrateResult migrateResult = migrator.migrate();
     System.out.println("\n==== Migration Result ====\n" + FlywayFormatter.formatMigrationResult(migrateResult));
 
-    List<MigrationInfo> postMigrationInfoList = migrator.list();
+    final List<MigrationInfo> postMigrationInfoList = migrator.list();
     System.out.println("\n==== Post Migration Info ====\n" + FlywayFormatter.formatMigrationInfoList(postMigrationInfoList));
     System.out.println("\n==== Post Migration Schema ====\n" + migrator.dumpSchema() + "\n");
   }
 
-  public static void createNextMigrationFile(String dbIdentifier, FlywayDatabaseMigrator migrator) throws IOException {
-    String description = "New_migration";
+  public static void createNextMigrationFile(final String dbIdentifier, final FlywayDatabaseMigrator migrator) throws IOException {
+    final String description = "New_migration";
 
-    MigrationVersion nextMigrationVersion = getNextMigrationVersion(migrator);
-    String versionId = nextMigrationVersion.toString().replaceAll("\\.", "_");
+    final MigrationVersion nextMigrationVersion = getNextMigrationVersion(migrator);
+    final String versionId = nextMigrationVersion.toString().replaceAll("\\.", "_");
 
-    String template = MoreResources.readResource("migration_template.txt");
-    String newMigration = template.replace("<db-name>", dbIdentifier)
-        .replace("<version-id>", versionId)
-        .replace("<description>", description)
+    final String template = MoreResources.readResource("migration_template.txt");
+    final String newMigration = template.replace("<db-name>", dbIdentifier)
+        .replaceAll("<version-id>", versionId)
+        .replaceAll("<description>", description)
         .strip();
 
-    String fileName = String.format("V%s__%s.java", versionId, description);
-    String filePath = String.format("src/main/java/io/airbyte/db/instance/%s/migrations/%s", dbIdentifier, fileName);
+    final String fileName = String.format("V%s__%s.java", versionId, description);
+    final String filePath = String.format("src/main/java/io/airbyte/db/instance/%s/migrations/%s", dbIdentifier, fileName);
 
     System.out.println("\n==== New Migration File ====\n" + filePath);
 
-    File file = new File(Path.of(filePath).toUri());
+    final File file = new File(Path.of(filePath).toUri());
     FileUtils.forceMkdirParent(file);
 
-    try (PrintWriter writer = new PrintWriter(file)) {
+    try (final PrintWriter writer = new PrintWriter(file)) {
       writer.println(newMigration);
-    } catch (FileNotFoundException e) {
+    } catch (final FileNotFoundException e) {
       throw new IOException(e);
     }
   }
 
-  public static Optional<MigrationVersion> getSecondToLastMigrationVersion(FlywayDatabaseMigrator migrator) {
-    List<ResolvedMigration> migrations = getAllMigrations(migrator);
+  public static Optional<MigrationVersion> getSecondToLastMigrationVersion(final FlywayDatabaseMigrator migrator) {
+    final List<ResolvedMigration> migrations = getAllMigrations(migrator);
     if (migrations.isEmpty() || migrations.size() == 1) {
       return Optional.empty();
     }
     return Optional.of(migrations.get(migrations.size() - 2).getVersion());
   }
 
-  public static void dumpSchema(String schema, String schemaDumpFile, boolean printSchema) throws IOException {
-    try (PrintWriter writer = new PrintWriter(new File(Path.of(schemaDumpFile).toUri()))) {
+  public static void dumpSchema(final String schema, final String schemaDumpFile, final boolean printSchema) throws IOException {
+    try (final PrintWriter writer = new PrintWriter(new File(Path.of(schemaDumpFile).toUri()))) {
       writer.println(schema);
       if (printSchema) {
         System.out.println("\n==== Schema ====\n" + schema);
         System.out.println("\n==== Dump File ====\nThe schema has been written to: " + schemaDumpFile);
       }
-    } catch (FileNotFoundException e) {
+    } catch (final FileNotFoundException e) {
       throw new IOException(e);
     }
   }
@@ -109,9 +109,9 @@ public class MigrationDevHelper {
    * interface. Reference:
    * https://github.com/flyway/flyway/blob/master/flyway-core/src/main/java/org/flywaydb/core/Flyway.java#L621.
    */
-  private static List<ResolvedMigration> getAllMigrations(FlywayDatabaseMigrator migrator) {
-    Configuration configuration = migrator.getFlyway().getConfiguration();
-    ClassProvider<JavaMigration> scanner = new Scanner<>(
+  private static List<ResolvedMigration> getAllMigrations(final FlywayDatabaseMigrator migrator) {
+    final Configuration configuration = migrator.getFlyway().getConfiguration();
+    final ClassProvider<JavaMigration> scanner = new Scanner<>(
         JavaMigration.class,
         Arrays.asList(configuration.getLocations()),
         configuration.getClassLoader(),
@@ -121,15 +121,15 @@ public class MigrationDevHelper {
         new ResourceNameCache(),
         new LocationScannerCache(),
         configuration.getFailOnMissingLocations());
-    ScanningJavaMigrationResolver resolver = new ScanningJavaMigrationResolver(scanner, configuration);
+    final ScanningJavaMigrationResolver resolver = new ScanningJavaMigrationResolver(scanner, configuration);
     return resolver.resolveMigrations(() -> configuration).stream()
         // There may be duplicated migration from the resolver.
         .distinct()
         .collect(Collectors.toList());
   }
 
-  private static Optional<MigrationVersion> getLastMigrationVersion(FlywayDatabaseMigrator migrator) {
-    List<ResolvedMigration> migrations = getAllMigrations(migrator);
+  private static Optional<MigrationVersion> getLastMigrationVersion(final FlywayDatabaseMigrator migrator) {
+    final List<ResolvedMigration> migrations = getAllMigrations(migrator);
     if (migrations.isEmpty()) {
       return Optional.empty();
     }
@@ -138,16 +138,16 @@ public class MigrationDevHelper {
 
   @VisibleForTesting
   static AirbyteVersion getCurrentAirbyteVersion() {
-    try (BufferedReader reader = new BufferedReader(new FileReader("../../.env"))) {
+    try (final BufferedReader reader = new BufferedReader(new FileReader("../../.env"))) {
       String line;
       while ((line = reader.readLine()) != null) {
         if (line.startsWith("VERSION")) {
           return new AirbyteVersion(line.split("=")[1]);
         }
       }
-    } catch (FileNotFoundException e) {
+    } catch (final FileNotFoundException e) {
       throw new IllegalStateException("Cannot find the .env file");
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
     throw new IllegalStateException("Cannot find current Airbyte version from .env file");
@@ -158,8 +158,8 @@ public class MigrationDevHelper {
    * "0.29.10".
    */
   @VisibleForTesting
-  static AirbyteVersion getAirbyteVersion(MigrationVersion version) {
-    String[] splits = version.getVersion().split("\\.");
+  static AirbyteVersion getAirbyteVersion(final MigrationVersion version) {
+    final String[] splits = version.getVersion().split("\\.");
     return new AirbyteVersion(splits[0], splits[1], splits[2]);
   }
 
@@ -168,7 +168,7 @@ public class MigrationDevHelper {
    * -> "0_29_10",
    */
   @VisibleForTesting
-  static String formatAirbyteVersion(AirbyteVersion version) {
+  static String formatAirbyteVersion(final AirbyteVersion version) {
     return String.format("%s_%s_%s", version.getMajorVersion(), version.getMinorVersion(), version.getPatchVersion());
   }
 
@@ -176,19 +176,19 @@ public class MigrationDevHelper {
    * Extract the migration id. E.g. "0.29.10.001" -> "001".
    */
   @VisibleForTesting
-  static String getMigrationId(MigrationVersion version) {
+  static String getMigrationId(final MigrationVersion version) {
     return version.getVersion().split("\\.")[3];
   }
 
-  private static MigrationVersion getNextMigrationVersion(FlywayDatabaseMigrator migrator) {
-    Optional<MigrationVersion> lastMigrationVersion = getLastMigrationVersion(migrator);
-    AirbyteVersion currentAirbyteVersion = getCurrentAirbyteVersion();
+  private static MigrationVersion getNextMigrationVersion(final FlywayDatabaseMigrator migrator) {
+    final Optional<MigrationVersion> lastMigrationVersion = getLastMigrationVersion(migrator);
+    final AirbyteVersion currentAirbyteVersion = getCurrentAirbyteVersion();
     return getNextMigrationVersion(currentAirbyteVersion, lastMigrationVersion);
   }
 
   @VisibleForTesting
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  static MigrationVersion getNextMigrationVersion(AirbyteVersion currentAirbyteVersion, Optional<MigrationVersion> lastMigrationVersion) {
+  static MigrationVersion getNextMigrationVersion(final AirbyteVersion currentAirbyteVersion, final Optional<MigrationVersion> lastMigrationVersion) {
     // When there is no migration, use the current airbyte version.
     if (lastMigrationVersion.isEmpty()) {
       LOGGER.info("No migration exists. Use the current airbyte version {}", currentAirbyteVersion);
@@ -196,8 +196,8 @@ public class MigrationDevHelper {
     }
 
     // When the current airbyte version is greater, use the airbyte version.
-    MigrationVersion migrationVersion = lastMigrationVersion.get();
-    AirbyteVersion migrationAirbyteVersion = getAirbyteVersion(migrationVersion);
+    final MigrationVersion migrationVersion = lastMigrationVersion.get();
+    final AirbyteVersion migrationAirbyteVersion = getAirbyteVersion(migrationVersion);
     if (currentAirbyteVersion.patchVersionCompareTo(migrationAirbyteVersion) > 0) {
       LOGGER.info(
           "Use the current airbyte version ({}), since it is greater than the last migration version ({})",
@@ -212,11 +212,11 @@ public class MigrationDevHelper {
         "Use the last migration version ({}), since it is greater than or equal to the current airbyte version ({})",
         migrationAirbyteVersion,
         currentAirbyteVersion);
-    String lastMigrationId = getMigrationId(migrationVersion);
+    final String lastMigrationId = getMigrationId(migrationVersion);
     System.out.println("lastMigrationId: " + lastMigrationId);
-    String nextMigrationId = String.format("%03d", Integer.parseInt(lastMigrationId) + 1);
+    final String nextMigrationId = String.format("%03d", Integer.parseInt(lastMigrationId) + 1);
     System.out.println("nextMigrationId: " + nextMigrationId);
-    return MigrationVersion.fromVersion(String.format("%s_%s", migrationAirbyteVersion.getVersion(), nextMigrationId));
+    return MigrationVersion.fromVersion(String.format("%s_%s", migrationAirbyteVersion.serialize(), nextMigrationId));
   }
 
 }

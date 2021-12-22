@@ -87,7 +87,7 @@ public class GoogleSecretManagerPersistence implements SecretPersistence {
       final var secretVersionName = SecretVersionName.of(gcpProjectId, coordinate.getFullCoordinate(), LATEST);
       final var response = client.accessSecretVersion(secretVersionName);
       return Optional.of(response.getPayload().getData().toStringUtf8());
-    } catch (NotFoundException e) {
+    } catch (final NotFoundException e) {
       return Optional.empty();
     }
   }
@@ -114,7 +114,7 @@ public class GoogleSecretManagerPersistence implements SecretPersistence {
     }
   }
 
-  public static SecretManagerServiceClient getSecretManagerServiceClient(String credentialsJson) throws IOException {
+  public static SecretManagerServiceClient getSecretManagerServiceClient(final String credentialsJson) throws IOException {
     final var credentialsByteStream = new ByteArrayInputStream(credentialsJson.getBytes(StandardCharsets.UTF_8));
     final var credentials = ServiceAccountCredentials.fromStream(credentialsByteStream);
     final var clientSettings = SecretManagerServiceSettings.newBuilder()

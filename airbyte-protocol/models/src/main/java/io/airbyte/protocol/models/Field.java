@@ -6,11 +6,11 @@ package io.airbyte.protocol.models;
 
 public class Field extends CommonField<JsonSchemaPrimitive> {
 
-  public Field(String name, JsonSchemaPrimitive type) {
+  public Field(final String name, final JsonSchemaPrimitive type) {
     super(name, type);
   }
 
-  public static Field of(String name, JsonSchemaPrimitive type) {
+  public static Field of(final String name, final JsonSchemaPrimitive type) {
     return new Field(name, type);
   }
 

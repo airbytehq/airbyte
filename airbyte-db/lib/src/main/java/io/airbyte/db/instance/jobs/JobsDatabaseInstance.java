@@ -30,11 +30,11 @@ public class JobsDatabaseInstance extends BaseDatabaseInstance implements Databa
   };
 
   @VisibleForTesting
-  public JobsDatabaseInstance(String username, String password, String connectionString, String schema) {
+  public JobsDatabaseInstance(final String username, final String password, final String connectionString, final String schema) {
     super(username, password, connectionString, schema, DATABASE_LOGGING_NAME, JobsDatabaseSchema.getTableNames(), IS_JOBS_DATABASE_READY);
   }
 
-  public JobsDatabaseInstance(String username, String password, String connectionString) throws IOException {
+  public JobsDatabaseInstance(final String username, final String password, final String connectionString) throws IOException {
     this(username, password, connectionString, MoreResources.readResource(SCHEMA_PATH));
   }
 

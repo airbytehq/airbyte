@@ -71,8 +71,7 @@ The [Close.com API](https://developer.close.com/) uses the same [JSONSchema](htt
 
 ### Performance considerations
 
-The Close.com Connector has rate limit. There are 60 RPS for Organizations.
-You can find detailed info [here](https://developer.close.com/#ratelimits).
+The Close.com Connector has rate limit. There are 60 RPS for Organizations. You can find detailed info [here](https://developer.close.com/#ratelimits).
 
 ## Getting started
 
@@ -89,6 +88,7 @@ We recommend creating a restricted key specifically for Airbyte access. This wil
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.1.0   | 2021-08-10 | [5366](https://github.com/airbytehq/airbyte/pull/5366) | Initial release of Close.com connector for Airbyte |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.0 | 2021-08-10 | [5366](https://github.com/airbytehq/airbyte/pull/5366) | Initial release of Close.com connector for Airbyte |
+

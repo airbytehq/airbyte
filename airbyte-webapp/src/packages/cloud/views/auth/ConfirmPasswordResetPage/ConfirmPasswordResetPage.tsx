@@ -6,11 +6,13 @@ import * as yup from "yup";
 import { LabeledInput, Link, LoadingButton } from "components";
 import useRouterHook from "hooks/useRouter";
 
-import { Routes } from "packages/cloud/routes";
+import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { FormTitle } from "../components/FormTitle";
 
 import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
+import { useNotificationService } from "hooks/services/Notification/NotificationService";
+import { AuthErrorCodes } from "firebase/auth";
 
 const ResetPasswordPageValidationSchema = yup.object().shape({
   newPassword: yup.string().required("form.empty.error"),
@@ -18,6 +20,7 @@ const ResetPasswordPageValidationSchema = yup.object().shape({
 
 const ResetPasswordConfirmPage: React.FC = () => {
   const { confirmPasswordReset } = useAuthService();
+  const { registerNotification } = useNotificationService();
   const { push, query } = useRouterHook<{ oobCode: string }>();
   const formatMessage = useIntl().formatMessage;
 
@@ -33,8 +36,55 @@ const ResetPasswordConfirmPage: React.FC = () => {
         }}
         validationSchema={ResetPasswordPageValidationSchema}
         onSubmit={async ({ newPassword }) => {
-          await confirmPasswordReset(query.oobCode, newPassword);
-          push(Routes.Login);
+          try {
+            await confirmPasswordReset(query.oobCode, newPassword);
+            registerNotification({
+              id: "confirmResetPassword.success",
+              title: formatMessage({ id: "confirmResetPassword.success" }),
+              isError: false,
+            });
+            push(CloudRoutes.Login);
+          } catch (err) {
+            // Error code reference:
+            // https://firebase.google.com/docs/reference/js/v8/firebase.auth.Auth#confirmpasswordreset
+            switch (err.code) {
+              case AuthErrorCodes.EXPIRED_OOB_CODE:
+                registerNotification({
+                  id: "confirmResetPassword.error.expiredActionCode",
+                  title: formatMessage({
+                    id: "confirmResetPassword.error.expiredActionCode",
+                  }),
+                  isError: true,
+                });
+                break;
+              case AuthErrorCodes.INVALID_OOB_CODE:
+                registerNotification({
+                  id: "confirmResetPassword.error.invalidActionCode",
+                  title: formatMessage({
+                    id: "confirmResetPassword.error.invalidActionCode",
+                  }),
+                  isError: true,
+                });
+                break;
+              case AuthErrorCodes.WEAK_PASSWORD:
+                registerNotification({
+                  id: "confirmResetPassword.error.weakPassword",
+                  title: formatMessage({
+                    id: "confirmResetPassword.error.weakPassword",
+                  }),
+                  isError: true,
+                });
+                break;
+              default:
+                registerNotification({
+                  id: "confirmResetPassword.error.default",
+                  title: formatMessage({
+                    id: "confirmResetPassword.error.default",
+                  }),
+                  isError: true,
+                });
+            }
+          }
         }}
         validateOnBlur={true}
         validateOnChange={false}
@@ -47,11 +97,8 @@ const ResetPasswordConfirmPage: React.FC = () => {
                   <LabeledInput
                     {...field}
                     label={
-                      <FormattedMessage id="confirmRestPassword.yourNewPassword" />
+                      <FormattedMessage id="confirmResetPassword.newPassword" />
                     }
-                    placeholder={formatMessage({
-                      id: "confirmRestPassword.yourNewPassword.placeholder",
-                    })}
                     type="password"
                     error={!!meta.error && meta.touched}
                     message={
@@ -64,10 +111,14 @@ const ResetPasswordConfirmPage: React.FC = () => {
               </Field>
             </FieldItem>
             <BottomBlock>
-              <Link to={Routes.Login} $light>
+              <Link to={CloudRoutes.Login} $light>
                 <FormattedMessage id="login.backLogin" />
               </Link>
-              <LoadingButton type="submit" isLoading={isSubmitting}>
+              <LoadingButton
+                type="submit"
+                isLoading={isSubmitting}
+                data-testid="login.resetPassword"
+              >
                 <FormattedMessage id="login.resetPassword" />
               </LoadingButton>
             </BottomBlock>

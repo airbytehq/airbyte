@@ -30,14 +30,14 @@ public class AzureBlobStorageCsvWriter extends BaseAzureBlobStorageWriter implem
   private final CSVPrinter csvPrinter;
   private final BlobOutputStream blobOutputStream;
 
-  public AzureBlobStorageCsvWriter(AzureBlobStorageDestinationConfig config,
-                                   AppendBlobClient appendBlobClient,
-                                   ConfiguredAirbyteStream configuredStream,
-                                   boolean isNewlyCreatedBlob)
+  public AzureBlobStorageCsvWriter(final AzureBlobStorageDestinationConfig config,
+                                   final AppendBlobClient appendBlobClient,
+                                   final ConfiguredAirbyteStream configuredStream,
+                                   final boolean isNewlyCreatedBlob)
       throws IOException {
     super(config, appendBlobClient, configuredStream);
 
-    AzureBlobStorageCsvFormatConfig formatConfig = (AzureBlobStorageCsvFormatConfig) config
+    final AzureBlobStorageCsvFormatConfig formatConfig = (AzureBlobStorageCsvFormatConfig) config
         .getFormatConfig();
 
     this.csvSheetGenerator = CsvSheetGenerator.Factory
@@ -60,7 +60,7 @@ public class AzureBlobStorageCsvWriter extends BaseAzureBlobStorageWriter implem
   }
 
   @Override
-  public void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException {
+  public void write(final UUID id, final AirbyteRecordMessage recordMessage) throws IOException {
     csvPrinter.printRecord(csvSheetGenerator.getDataRow(id, recordMessage));
   }
 

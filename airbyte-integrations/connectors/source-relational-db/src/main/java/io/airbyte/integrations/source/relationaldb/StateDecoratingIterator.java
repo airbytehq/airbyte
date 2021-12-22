@@ -28,12 +28,12 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
   private String maxCursor;
   private boolean hasEmittedState;
 
-  public StateDecoratingIterator(Iterator<AirbyteMessage> messageIterator,
-                                 StateManager stateManager,
-                                 AirbyteStreamNameNamespacePair pair,
-                                 String cursorField,
-                                 String initialCursor,
-                                 JsonSchemaPrimitive cursorType) {
+  public StateDecoratingIterator(final Iterator<AirbyteMessage> messageIterator,
+                                 final StateManager stateManager,
+                                 final AirbyteStreamNameNamespacePair pair,
+                                 final String cursorField,
+                                 final String initialCursor,
+                                 final JsonSchemaPrimitive cursorType) {
     this.messageIterator = messageIterator;
     this.stateManager = stateManager;
     this.pair = pair;

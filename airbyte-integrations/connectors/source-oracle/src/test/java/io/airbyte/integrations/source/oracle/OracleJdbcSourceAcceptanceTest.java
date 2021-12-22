@@ -12,12 +12,12 @@ import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.SourceJdbcUtils;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -106,7 +106,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
           conn.createStatement().executeQuery(String.format("SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s'", schemaName));
       while (resultSet.next()) {
         final String tableName = resultSet.getString("TABLE_NAME");
-        final String tableNameProcessed = tableName.contains(" ") ? SourceJdbcUtils
+        final String tableNameProcessed = tableName.contains(" ") ? sourceOperations
             .enquoteIdentifier(conn, tableName) : tableName;
         conn.createStatement().executeQuery(String.format("DROP TABLE %s.%s", schemaName, tableNameProcessed));
       }
@@ -122,7 +122,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  public AbstractJdbcSource getJdbcSource() {
+  public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new OracleSource();
   }
 
@@ -155,17 +155,17 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     }
   }
 
-  public void executeOracleStatement(final String query) throws SQLException {
-    final Connection conn = DriverManager.getConnection(
-        ORACLE_DB.getJdbcUrl(),
-        ORACLE_DB.getUsername(),
-        ORACLE_DB.getPassword());
-    try (final Statement stmt = conn.createStatement()) {
+  public void executeOracleStatement(final String query) {
+    try (
+        final Connection conn = DriverManager.getConnection(
+            ORACLE_DB.getJdbcUrl(),
+            ORACLE_DB.getUsername(),
+            ORACLE_DB.getPassword());
+        final Statement stmt = conn.createStatement()) {
       stmt.execute(query);
     } catch (final SQLException e) {
       logSQLException(e);
     }
-    conn.close();
   }
 
   public static void logSQLException(final SQLException ex) {

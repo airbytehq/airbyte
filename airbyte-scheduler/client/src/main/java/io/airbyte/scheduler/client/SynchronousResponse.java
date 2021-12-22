@@ -14,20 +14,20 @@ public class SynchronousResponse<T> {
   private final T output;
   private final SynchronousJobMetadata metadata;
 
-  public static <T> SynchronousResponse<T> error(SynchronousJobMetadata metadata) {
+  public static <T> SynchronousResponse<T> error(final SynchronousJobMetadata metadata) {
     return new SynchronousResponse<>(null, metadata);
   }
 
-  public static <T> SynchronousResponse<T> success(T output, SynchronousJobMetadata metadata) {
+  public static <T> SynchronousResponse<T> success(final T output, final SynchronousJobMetadata metadata) {
     return new SynchronousResponse<>(output, metadata);
   }
 
-  public static <T> SynchronousResponse<T> fromTemporalResponse(TemporalResponse<T> temporalResponse,
-                                                                UUID id,
-                                                                ConfigType configType,
-                                                                UUID configId,
-                                                                long createdAt,
-                                                                long endedAt) {
+  public static <T> SynchronousResponse<T> fromTemporalResponse(final TemporalResponse<T> temporalResponse,
+                                                                final UUID id,
+                                                                final ConfigType configType,
+                                                                final UUID configId,
+                                                                final long createdAt,
+                                                                final long endedAt) {
 
     final SynchronousJobMetadata metadata = SynchronousJobMetadata.fromJobMetadata(
         temporalResponse.getMetadata(),

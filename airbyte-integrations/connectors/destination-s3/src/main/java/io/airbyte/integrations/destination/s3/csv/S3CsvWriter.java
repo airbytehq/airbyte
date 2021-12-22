@@ -33,35 +33,107 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
   private final StreamTransferManager uploadManager;
   private final MultiPartOutputStream outputStream;
   private final CSVPrinter csvPrinter;
+  private final String objectKey;
 
-  public S3CsvWriter(S3DestinationConfig config,
-                     AmazonS3 s3Client,
-                     ConfiguredAirbyteStream configuredStream,
-                     Timestamp uploadTimestamp)
+  private S3CsvWriter(final S3DestinationConfig config,
+                      final AmazonS3 s3Client,
+                      final ConfiguredAirbyteStream configuredStream,
+                      final Timestamp uploadTimestamp,
+                      final int uploadThreads,
+                      final int queueCapacity,
+                      final boolean writeHeader,
+                      CSVFormat csvSettings,
+                      final CsvSheetGenerator csvSheetGenerator)
       throws IOException {
     super(config, s3Client, configuredStream);
 
-    S3CsvFormatConfig formatConfig = (S3CsvFormatConfig) config.getFormatConfig();
-    this.csvSheetGenerator = CsvSheetGenerator.Factory.create(configuredStream.getStream().getJsonSchema(),
-        formatConfig);
+    this.csvSheetGenerator = csvSheetGenerator;
 
-    String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.CSV);
-    String objectKey = String.join("/", outputPrefix, outputFilename);
+    final String fileSuffix = "_" + UUID.randomUUID();
+    final String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, fileSuffix, S3Format.CSV);
+    this.objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(),
         objectKey);
 
-    this.uploadManager = S3StreamTransferManagerHelper.getDefault(
-        config.getBucketName(), objectKey, s3Client, config.getFormatConfig().getPartSize());
+    this.uploadManager = S3StreamTransferManagerHelper.getDefault(config.getBucketName(), objectKey, s3Client, config.getFormatConfig().getPartSize())
+        .numUploadThreads(uploadThreads)
+        .queueCapacity(queueCapacity);
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
-    this.csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8),
-        CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
-            .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0])));
+    if (writeHeader) {
+      csvSettings = csvSettings.withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0]));
+    }
+    this.csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8), csvSettings);
+  }
+
+  public static class Builder {
+
+    private final S3DestinationConfig config;
+    private final AmazonS3 s3Client;
+    private final ConfiguredAirbyteStream configuredStream;
+    private final Timestamp uploadTimestamp;
+    private int uploadThreads = S3StreamTransferManagerHelper.DEFAULT_UPLOAD_THREADS;
+    private int queueCapacity = S3StreamTransferManagerHelper.DEFAULT_QUEUE_CAPACITY;
+    private boolean withHeader = true;
+    private CSVFormat csvSettings = CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL);
+    private CsvSheetGenerator csvSheetGenerator;
+
+    public Builder(final S3DestinationConfig config,
+                   final AmazonS3 s3Client,
+                   final ConfiguredAirbyteStream configuredStream,
+                   final Timestamp uploadTimestamp) {
+      this.config = config;
+      this.s3Client = s3Client;
+      this.configuredStream = configuredStream;
+      this.uploadTimestamp = uploadTimestamp;
+    }
+
+    public Builder uploadThreads(final int uploadThreads) {
+      this.uploadThreads = uploadThreads;
+      return this;
+    }
+
+    public Builder queueCapacity(final int queueCapacity) {
+      this.queueCapacity = queueCapacity;
+      return this;
+    }
+
+    public Builder withHeader(final boolean withHeader) {
+      this.withHeader = withHeader;
+      return this;
+    }
+
+    public Builder csvSettings(final CSVFormat csvSettings) {
+      this.csvSettings = csvSettings;
+      return this;
+    }
+
+    public Builder csvSheetGenerator(final CsvSheetGenerator csvSheetGenerator) {
+      this.csvSheetGenerator = csvSheetGenerator;
+      return this;
+    }
+
+    public S3CsvWriter build() throws IOException {
+      if (csvSheetGenerator == null) {
+        final S3CsvFormatConfig formatConfig = (S3CsvFormatConfig) config.getFormatConfig();
+        csvSheetGenerator = CsvSheetGenerator.Factory.create(configuredStream.getStream().getJsonSchema(), formatConfig);
+      }
+      return new S3CsvWriter(config,
+          s3Client,
+          configuredStream,
+          uploadTimestamp,
+          uploadThreads,
+          queueCapacity,
+          withHeader,
+          csvSettings,
+          csvSheetGenerator);
+    }
+
   }
 
   @Override
-  public void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException {
+  public void write(final UUID id, final AirbyteRecordMessage recordMessage) throws IOException {
     csvPrinter.printRecord(csvSheetGenerator.getDataRow(id, recordMessage));
   }
 
@@ -77,6 +149,11 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
     csvPrinter.close();
     outputStream.close();
     uploadManager.abort();
+  }
+
+  @Override
+  public String getOutputPath() {
+    return objectKey;
   }
 
 }

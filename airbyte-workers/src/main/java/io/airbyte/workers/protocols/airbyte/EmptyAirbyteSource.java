@@ -26,7 +26,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
   }
 
   @Override
-  public void start(WorkerSourceConfig sourceConfig, Path jobRoot) throws Exception {
+  public void start(final WorkerSourceConfig sourceConfig, final Path jobRoot) throws Exception {
     // no op.
   }
 
@@ -34,6 +34,11 @@ public class EmptyAirbyteSource implements AirbyteSource {
   @Override
   public boolean isFinished() {
     return hasEmittedState.get();
+  }
+
+  @Override
+  public int getExitValue() {
+    return 0;
   }
 
   @Override

@@ -1,0 +1,84 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/tiktok-marketing",
+  "changelogUrl": "https://docs.airbyte.io/integrations/sources/tiktok-marketing",
+  "connectionSpecification": {
+    "title": "TikTok Marketing Source Spec",
+    "type": "object",
+    "properties": {
+      "environment": {
+        "title": "Environment",
+        "default": "Production",
+        "order": 2,
+        "oneOf": [
+          {
+            "title": "Production",
+            "type": "object",
+            "properties": {
+              "environment": {
+                "title": "Environment",
+                "const": "prod",
+                "type": "string"
+              },
+              "app_id": {
+                "title": "App Id",
+                "description": "The App ID applied by the developer.",
+                "type": "string"
+              },
+              "secret": {
+                "title": "Secret",
+                "description": "The private key of the developer application.",
+                "airbyte_secret": true,
+                "type": "string"
+              }
+            },
+            "required": ["app_id", "secret"]
+          },
+          {
+            "title": "Sandbox",
+            "type": "object",
+            "properties": {
+              "environment": {
+                "title": "Environment",
+                "const": "sandbox",
+                "type": "string"
+              },
+              "advertiser_id": {
+                "title": "Advertiser Id",
+                "description": "The Advertiser ID  which generated for the developer's Sandbox application.",
+                "type": "string"
+              }
+            },
+            "required": ["advertiser_id"]
+          }
+        ],
+        "type": "object"
+      },
+      "access_token": {
+        "title": "Access Token",
+        "description": "The Long-term Authorized Access Token.",
+        "order": 1,
+        "airbyte_secret": true,
+        "type": "string"
+      },
+      "start_date": {
+        "title": "Start Date",
+        "description": "The Start Date in format: YYYY-MM-DD. Any data before this date will not be replicated. If this parameter is not set, all data will be replicated.",
+        "default": "2016-09-01",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "order": 3,
+        "type": "string"
+      },
+      "report_granularity": {
+        "title": "Report Granularity",
+        "description": "Which time granularity should be grouped by; for LIFETIME there will be no grouping. This option is used for reports' streams only.",
+        "default": "DAY",
+        "enum": ["LIFETIME", "DAY", "HOUR"],
+        "order": 4,
+        "type": "string"
+      }
+    },
+    "required": ["access_token"]
+  },
+  "supportsIncremental": true,
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"]
+}

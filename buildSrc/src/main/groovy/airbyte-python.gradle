@@ -64,7 +64,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
             scope = 'VIRTUALENV'
             installVirtualenv = true
             pip 'flake8:3.8.4'
-            pip 'black:20.8b1'
+            pip 'black:21.10b0'
             pip 'mypy:0.812'
             pip 'isort:5.6.4'
             pip 'pytest:6.1.2'

@@ -58,8 +58,6 @@ class ChildStreamMixin:
         for item in self.parent_stream_class(config=self.config).read_records(sync_mode=sync_mode):
             yield {"id": item["id"]}
 
-        yield from []
-
 
 class IncrementalTrelloStream(TrelloStream, ABC):
     cursor_field = "date"
@@ -85,12 +83,18 @@ class IncrementalTrelloStream(TrelloStream, ABC):
 
 class Boards(TrelloStream):
     """Return list of all boards.
-    API Docs: https://developers.intercom.com/intercom-api-reference/reference#list-attached-segments-1
+    API Docs: https://developer.atlassian.com/cloud/trello/rest/api-group-members/#api-members-id-boards-get
     Endpoint: https://api.trello.com/1/members/me/boards
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "members/me/boards"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        board_ids = self.config.get("board_ids", [])
+        for record in super().parse_response(response, **kwargs):
+            if not board_ids or record["id"] in board_ids:
+                yield record
 
 
 class Cards(ChildStreamMixin, TrelloStream):
@@ -101,7 +105,13 @@ class Cards(ChildStreamMixin, TrelloStream):
 
     parent_stream_class = Boards
     limit = 20000
-    extra_params = {"customFieldItems": "true"}
+    extra_params = {
+        "customFieldItems": "true",
+        "pluginData": "true",
+        "actions_display": "true",
+        "members": "true",
+        "list": "true",
+    }
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"boards/{stream_slice['id']}/cards/all"
@@ -185,24 +195,32 @@ class SourceTrello(AbstractSource):
     Source Trello fetch date from web-based, Kanban-style, list-making application.
     """
 
+    @staticmethod
+    def _get_authenticator(config: dict) -> TrelloAuthenticator:
+        key, token = config["key"], config["token"]
+        return TrelloAuthenticator(token=token, key=key)
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
         Testing connection availability for the connector by granting the credentials.
         """
 
         try:
-            url = f"{TrelloStream.url_base}members/me"
+            url = f"{TrelloStream.url_base}members/me/boards"
 
-            authenticator = TrelloAuthenticator(token=config["token"], key=config["key"])
+            authenticator = self._get_authenticator(config)
 
-            session = requests.get(url, headers=authenticator.get_auth_header())
-            session.raise_for_status()
+            response = requests.get(url, headers=authenticator.get_auth_header())
+            response.raise_for_status()
+            available_boards = {row.get("id") for row in response.json()}
+            for board_id in config.get("board_ids", []):
+                if board_id not in available_boards:
+                    return False, f"board_id {board_id} not found"
 
             return True, None
         except requests.exceptions.RequestException as e:
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        config["authenticator"] = TrelloAuthenticator(token=config["token"], key=config["key"])
-
+        config["authenticator"] = self._get_authenticator(config)
         return [Actions(config), Boards(config), Cards(config), Checklists(config), Lists(config), Users(config)]

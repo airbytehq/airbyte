@@ -11,6 +11,7 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.Map;
@@ -26,21 +27,25 @@ public class TestingDestinations extends BaseConnector implements Destination {
 
   public enum TestDestinationType {
     LOGGING,
-    THROTTLED
+    THROTTLED,
+    SILENT,
+    FAILING
   }
 
   public TestingDestinations() {
     this(ImmutableMap.<TestDestinationType, Destination>builder()
         .put(TestDestinationType.LOGGING, new LoggingDestination())
         .put(TestDestinationType.THROTTLED, new ThrottledDestination())
+        .put(TestDestinationType.SILENT, new SilentDestination())
+        .put(TestDestinationType.FAILING, new FailAfterNDestination())
         .build());
   }
 
-  public TestingDestinations(Map<TestDestinationType, Destination> destinationMap) {
+  public TestingDestinations(final Map<TestDestinationType, Destination> destinationMap) {
     this.destinationMap = destinationMap;
   }
 
-  private Destination selectDestination(JsonNode config) {
+  private Destination selectDestination(final JsonNode config) {
     return destinationMap.get(TestDestinationType.valueOf(config.get("type").asText()));
   }
 
@@ -54,10 +59,14 @@ public class TestingDestinations extends BaseConnector implements Destination {
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
-    return selectDestination(config).check(config);
+    try {
+      return selectDestination(config).check(config);
+    } catch (final Exception e) {
+      return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage());
+    }
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Destination destination = new TestingDestinations();
     LOGGER.info("starting destination: {}", TestingDestinations.class);
     new IntegrationRunner(destination).run(args);

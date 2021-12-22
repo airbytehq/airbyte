@@ -18,11 +18,11 @@ public class MySqlCdcProperties {
     // https://debezium.io/documentation/reference/1.4/development/converters.html
     /**
      * {@link io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter}
-     * {@link io.airbyte.integrations.debezium.internals.MySQLDateTimeConverter}
+     * {@link MySQLConverter}
      */
     props.setProperty("converters", "boolean, datetime");
     props.setProperty("boolean.type", "io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter");
-    props.setProperty("datetime.type", "io.airbyte.integrations.debezium.internals.MySQLDateTimeConverter");
+    props.setProperty("datetime.type", "io.airbyte.integrations.debezium.internals.MySQLConverter");
 
     // snapshot config
     // https://debezium.io/documentation/reference/1.4/connectors/mysql.html#mysql-property-snapshot-mode
@@ -34,6 +34,9 @@ public class MySqlCdcProperties {
     props.setProperty("snapshot.locking.mode", "none");
     // https://debezium.io/documentation/reference/1.4/connectors/mysql.html#mysql-property-include-schema-changes
     props.setProperty("include.schema.changes", "false");
+    // This to make sure that binary data represented as a base64-encoded String.
+    // https://debezium.io/documentation/reference/1.4/connectors/mysql.html#mysql-property-binary-handling-mode
+    props.setProperty("binary.handling.mode", "base64");
 
     return props;
   }

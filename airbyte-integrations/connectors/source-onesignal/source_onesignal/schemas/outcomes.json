@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "value": {
+      "type": "integer"
+    },
+    "aggregation": {
+      "type": "string"
+    }
+  }
+}

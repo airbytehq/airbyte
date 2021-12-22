@@ -30,8 +30,8 @@ type IThProps = {
 const TableView = styled(Card).attrs({ as: "table" })`
   border-spacing: 0;
   width: 100%;
-  overflow: hidden;
   max-width: 100%;
+  border-radius: 10px;
 `;
 
 const Tr = styled.tr<{
@@ -58,6 +58,14 @@ const Td = styled.td<{ collapse?: boolean; customWidth?: number }>`
 
   tr:last-child > & {
     border-bottom: none;
+
+    &:first-child {
+      border-radius: 0 0 0 10px;
+    }
+
+    &:last-child {
+      border-radius: 0 0 10px 0;
+    }
   }
 `;
 
@@ -77,6 +85,12 @@ const Th = styled.th<IThProps>`
 
   &:first-child {
     padding-left: 45px;
+    border-radius: 10px 0 0;
+  }
+
+  &:last-child {
+    padding-left: 45px;
+    border-radius: 0 10px 0 0;
   }
 `;
 

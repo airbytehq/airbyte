@@ -12,7 +12,7 @@ public class BigQueryResultSet {
   private final FieldValueList rowValues;
   private final FieldList fieldList;
 
-  public BigQueryResultSet(FieldValueList rowValues, FieldList fieldList) {
+  public BigQueryResultSet(final FieldValueList rowValues, final FieldList fieldList) {
     this.rowValues = rowValues;
     this.fieldList = fieldList;
   }

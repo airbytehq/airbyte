@@ -76,9 +76,29 @@ const ConnectorServiceTypeControl: React.FC<{
   const formatMessage = useIntl().formatMessage;
   const [field, fieldMeta, { setValue }] = useField(property.path);
 
+  // TODO Begin hack
+  // During the Cloud private beta, we let users pick any connector in our catalog.
+  // Later on, we realized we shouldn't have allowed using connectors whose platforms required oauth
+  // But by that point, some users were already leveraging them, so removing them would crash the app for users
+  // instead we'll filter out those connectors from this drop down menu, and retain them in the backend
+  // This way, they will not be available for usage in new connections, but they will be available for users
+  // already leveraging them.
+  // TODO End hack
+  const disallowedOauthConnectors =
+    // I would prefer to use windowConfigProvider.cloud but that function is async
+    window.CLOUD === "true"
+      ? [
+          "200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b", // Snapchat
+          "2470e835-feaf-4db6-96f3-70fd645acc77", // Salesforce Singer
+          "9da77001-af33-4bcd-be46-6252bf9342b9", // Shopify
+        ]
+      : [];
   const sortedDropDownData = useMemo(
     () =>
       availableServices
+        .filter(
+          (item) => !disallowedOauthConnectors.includes(Connector.id(item))
+        )
         .map((item) => ({
           label: item.name,
           value: Connector.id(item),

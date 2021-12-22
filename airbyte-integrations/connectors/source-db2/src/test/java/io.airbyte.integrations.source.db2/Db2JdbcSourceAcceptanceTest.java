@@ -9,8 +9,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.SourceJdbcUtils;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import java.sql.JDBCType;
 import java.util.Collections;
 import java.util.Set;
 import org.junit.jupiter.api.AfterAll;
@@ -63,6 +63,9 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .put("db", db.getDatabaseName())
         .put("username", db.getUsername())
         .put("password", db.getPassword())
+        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+            .put("encryption_method", "unencrypted")
+            .build()))
         .build());
 
     super.setup();
@@ -84,13 +87,13 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     }
     super.database.execute(connection -> connection.createStatement().execute(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            SourceJdbcUtils.enquoteIdentifier(connection, TABLE_NAME_WITH_SPACES))));
+            sourceOperations.enquoteIdentifier(connection, TABLE_NAME_WITH_SPACES))));
     super.database.execute(connection -> connection.createStatement().execute(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            SourceJdbcUtils.enquoteIdentifier(connection, TABLE_NAME_WITH_SPACES + 2))));
+            sourceOperations.enquoteIdentifier(connection, TABLE_NAME_WITH_SPACES + 2))));
     super.database.execute(connection -> connection.createStatement().execute(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME2,
-            SourceJdbcUtils.enquoteIdentifier(connection, TABLE_NAME))));
+            sourceOperations.enquoteIdentifier(connection, TABLE_NAME))));
 
     super.tearDown();
   }
@@ -116,7 +119,7 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  public AbstractJdbcSource getJdbcSource() {
+  public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new Db2Source();
   }
 

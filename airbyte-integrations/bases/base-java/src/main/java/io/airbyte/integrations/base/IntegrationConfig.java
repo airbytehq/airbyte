@@ -16,7 +16,7 @@ public class IntegrationConfig {
   private final Path catalogPath;
   private final Path statePath;
 
-  private IntegrationConfig(Command command, Path configPath, Path catalogPath, Path statePath) {
+  private IntegrationConfig(final Command command, final Path configPath, final Path catalogPath, final Path statePath) {
     this.command = command;
     this.configPath = configPath;
     this.catalogPath = catalogPath;
@@ -27,23 +27,23 @@ public class IntegrationConfig {
     return new IntegrationConfig(Command.SPEC, null, null, null);
   }
 
-  public static IntegrationConfig check(Path config) {
+  public static IntegrationConfig check(final Path config) {
     Preconditions.checkNotNull(config);
     return new IntegrationConfig(Command.CHECK, config, null, null);
   }
 
-  public static IntegrationConfig discover(Path config) {
+  public static IntegrationConfig discover(final Path config) {
     Preconditions.checkNotNull(config);
     return new IntegrationConfig(Command.DISCOVER, config, null, null);
   }
 
-  public static IntegrationConfig read(Path configPath, Path catalogPath, Path statePath) {
+  public static IntegrationConfig read(final Path configPath, final Path catalogPath, final Path statePath) {
     Preconditions.checkNotNull(configPath);
     Preconditions.checkNotNull(catalogPath);
     return new IntegrationConfig(Command.READ, configPath, catalogPath, statePath);
   }
 
-  public static IntegrationConfig write(Path configPath, Path catalogPath) {
+  public static IntegrationConfig write(final Path configPath, final Path catalogPath) {
     Preconditions.checkNotNull(configPath);
     Preconditions.checkNotNull(catalogPath);
     return new IntegrationConfig(Command.WRITE, configPath, catalogPath, null);
@@ -79,14 +79,14 @@ public class IntegrationConfig {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    IntegrationConfig that = (IntegrationConfig) o;
+    final IntegrationConfig that = (IntegrationConfig) o;
     return command == that.command &&
         Objects.equals(configPath, that.configPath) &&
         Objects.equals(catalogPath, that.catalogPath) &&

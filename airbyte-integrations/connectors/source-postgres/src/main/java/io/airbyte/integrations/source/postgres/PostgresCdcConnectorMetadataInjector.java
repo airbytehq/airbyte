@@ -13,13 +13,13 @@ import io.airbyte.integrations.debezium.CdcMetadataInjector;
 public class PostgresCdcConnectorMetadataInjector implements CdcMetadataInjector {
 
   @Override
-  public void addMetaData(ObjectNode event, JsonNode source) {
-    long lsn = source.get("lsn").asLong();
+  public void addMetaData(final ObjectNode event, final JsonNode source) {
+    final long lsn = source.get("lsn").asLong();
     event.put(CDC_LSN, lsn);
   }
 
   @Override
-  public String namespace(JsonNode source) {
+  public String namespace(final JsonNode source) {
     return source.get("schema").asText();
   }
 

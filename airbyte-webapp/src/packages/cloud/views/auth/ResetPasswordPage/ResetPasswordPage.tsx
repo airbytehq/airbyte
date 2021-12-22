@@ -6,9 +6,9 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
 import { LoadingButton, LabeledInput, Link } from "components";
 import { FormTitle } from "../components/FormTitle";
-import { Routes } from "../../../routes";
+import { CloudRoutes } from "../../../cloudRoutes";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
-import useRouterHook from "hooks/useRouter";
+import { useNotificationService } from "hooks/services/Notification/NotificationService";
 
 const ResetPasswordPageValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
@@ -16,7 +16,7 @@ const ResetPasswordPageValidationSchema = yup.object().shape({
 
 const ResetPasswordPage: React.FC = () => {
   const { requirePasswordReset } = useAuthService();
-  const { push } = useRouterHook();
+  const { registerNotification } = useNotificationService();
   const formatMessage = useIntl().formatMessage;
 
   return (
@@ -32,7 +32,11 @@ const ResetPasswordPage: React.FC = () => {
         validationSchema={ResetPasswordPageValidationSchema}
         onSubmit={async ({ email }) => {
           await requirePasswordReset(email);
-          push(Routes.ConfirmPasswordReset);
+          registerNotification({
+            id: "resetPassword.emailSent",
+            title: formatMessage({ id: "login.resetPassword.emailSent" }),
+            isError: false,
+          });
         }}
         validateOnBlur={true}
         validateOnChange={false}
@@ -60,10 +64,14 @@ const ResetPasswordPage: React.FC = () => {
               </Field>
             </FieldItem>
             <BottomBlock>
-              <Link to={Routes.Login} $light>
+              <Link to={CloudRoutes.Login} $light>
                 <FormattedMessage id="login.backLogin" />
               </Link>
-              <LoadingButton type="submit" isLoading={isSubmitting}>
+              <LoadingButton
+                type="submit"
+                isLoading={isSubmitting}
+                data-testid="login.resetPassword"
+              >
                 <FormattedMessage id="login.resetPassword" />
               </LoadingButton>
             </BottomBlock>

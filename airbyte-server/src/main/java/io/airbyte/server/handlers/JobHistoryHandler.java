@@ -11,8 +11,10 @@ import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.JobWithAttemptsRead;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.JobConverter;
@@ -25,13 +27,15 @@ public class JobHistoryHandler {
 
   public static final int DEFAULT_PAGE_SIZE = 200;
   private final JobPersistence jobPersistence;
+  private final JobConverter jobConverter;
 
-  public JobHistoryHandler(JobPersistence jobPersistence) {
+  public JobHistoryHandler(final JobPersistence jobPersistence, final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs) {
+    jobConverter = new JobConverter(workerEnvironment, logConfigs);
     this.jobPersistence = jobPersistence;
   }
 
   @SuppressWarnings("UnstableApiUsage")
-  public JobReadList listJobsFor(JobListRequestBody request) throws IOException {
+  public JobReadList listJobsFor(final JobListRequestBody request) throws IOException {
     Preconditions.checkNotNull(request.getConfigTypes(), "configType cannot be null.");
     Preconditions.checkState(!request.getConfigTypes().isEmpty(), "Must include at least one configType.");
 
@@ -47,15 +51,14 @@ public class JobHistoryHandler {
             : DEFAULT_PAGE_SIZE,
         (request.getPagination() != null && request.getPagination().getRowOffset() != null) ? request.getPagination().getRowOffset() : 0)
         .stream()
-        .map(JobConverter::getJobWithAttemptsRead)
+        .map(attempt -> jobConverter.getJobWithAttemptsRead(attempt))
         .collect(Collectors.toList());
     return new JobReadList().jobs(jobReads);
   }
 
-  public JobInfoRead getJobInfo(JobIdRequestBody jobIdRequestBody) throws IOException {
+  public JobInfoRead getJobInfo(final JobIdRequestBody jobIdRequestBody) throws IOException {
     final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
-
-    return JobConverter.getJobInfoRead(job);
+    return jobConverter.getJobInfoRead(job);
   }
 
 }

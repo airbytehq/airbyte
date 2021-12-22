@@ -17,22 +17,15 @@ jobs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Start AWS Runner
+        id: start-ec2-runner
+        uses: ./.github/actions/start-aws-runner
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-      - name: Start EC2 runner
-        id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2.2.1
-        with:
-          mode: start
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-          ec2-image-id: ami-04bd6e81239f4f3fb
-          ec2-instance-type: c5.2xlarge
-          subnet-id: subnet-0469a9e68a379c1d3
-          security-group-id: sg-0793f3c9413f21970
   gke-kube-acceptance-test:
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
     needs: start-gke-kube-acceptance-test-runner # required to start the main job when the runner is ready
@@ -47,23 +40,17 @@ jobs:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :clock2: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
       - uses: actions/setup-java@v1
         with:
-          java-version: '14'
+          java-version: '17'
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '14.7'
-
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.7'
-
-      - name: Install Pyenv
-        run: python3 -m pip install virtualenv==16.7.9 --user
+          node-version: '16.13.0'
 
       - name: Fix EC-2 Runner
         run: |
@@ -135,7 +122,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2.2.1
+        uses: machulav/ec2-github-runner@v2.3.0
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}

@@ -35,11 +35,11 @@ public class MeiliSearchDestinationAcceptanceTest extends DestinationAcceptanceT
   private JsonNode config;
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws IOException {
+  protected void setup(final TestDestinationEnv testEnv) throws IOException {
     final Path meiliSearchDataDir = Files.createTempDirectory(Path.of("/tmp"), "meilisearch-integration-test");
     meiliSearchDataDir.toFile().deleteOnExit();
 
-    genericContainer = new GenericContainer<>(DockerImageName.parse("getmeili/meilisearch:latest"))
+    genericContainer = new GenericContainer<>(DockerImageName.parse("getmeili/meilisearch:v0.24.0"))
         .withFileSystemBind(meiliSearchDataDir.toString(), "/data.ms");
     genericContainer.setPortBindings(ImmutableList.of(EXPOSED_PORT + ":" + DEFAULT_MEILI_SEARCH_PORT));
     genericContainer.start();
@@ -52,7 +52,7 @@ public class MeiliSearchDestinationAcceptanceTest extends DestinationAcceptanceT
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     genericContainer.stop();
   }
 
@@ -74,10 +74,10 @@ public class MeiliSearchDestinationAcceptanceTest extends DestinationAcceptanceT
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv env,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     final Index index = meiliSearchClient.index(Names.toAlphanumericAndUnderscore(streamName));
     final String responseString = index.getDocuments();

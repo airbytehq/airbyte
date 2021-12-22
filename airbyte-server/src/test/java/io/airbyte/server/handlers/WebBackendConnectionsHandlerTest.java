@@ -22,11 +22,11 @@ import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.ConnectionSchedule;
 import io.airbyte.api.model.ConnectionSchedule.TimeUnitEnum;
+import io.airbyte.api.model.ConnectionSearch;
 import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
-import io.airbyte.api.model.DestinationSearch;
 import io.airbyte.api.model.DestinationSyncMode;
 import io.airbyte.api.model.JobConfigType;
 import io.airbyte.api.model.JobInfoRead;
@@ -43,7 +43,6 @@ import io.airbyte.api.model.ResourceRequirements;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
-import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.SynchronousJobRead;
 import io.airbyte.api.model.WebBackendConnectionCreate;
@@ -55,7 +54,6 @@ import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WebBackendOperationCreateOrUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -71,7 +69,6 @@ import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.SourceDefinitionHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.time.Instant;
@@ -108,7 +105,7 @@ class WebBackendConnectionsHandlerTest {
     wbHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler, schedulerHandler,
         operationsHandler);
 
-    final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSource();
+    final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
     sourceRead = SourceHelpers.getSourceRead(source, standardSourceDefinition);
 
@@ -175,10 +172,10 @@ class WebBackendConnectionsHandlerTest {
         .latestSyncJobStatus(JobStatus.SUCCEEDED)
         .isSyncing(false)
         .resourceRequirements(new ResourceRequirements()
-            .cpuRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuRequest())
-            .cpuLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuLimit())
-            .memoryRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryRequest())
-            .memoryLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryLimit()));
+            .cpuRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
+            .cpuLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
+            .memoryRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest())
+            .memoryLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit()));
 
     final AirbyteCatalog modifiedCatalog = ConnectionHelpers.generateBasicApiCatalog();
 
@@ -206,10 +203,10 @@ class WebBackendConnectionsHandlerTest {
         .latestSyncJobStatus(expected.getLatestSyncJobStatus())
         .isSyncing(expected.getIsSyncing())
         .resourceRequirements(new ResourceRequirements()
-            .cpuRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuRequest())
-            .cpuLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuLimit())
-            .memoryRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryRequest())
-            .memoryLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryLimit()));
+            .cpuRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
+            .cpuLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
+            .memoryRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest())
+            .memoryLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit()));
 
     when(schedulerHandler.resetConnection(any())).thenReturn(new JobInfoRead().job(new JobRead().status(JobStatus.SUCCEEDED)));
   }
@@ -232,7 +229,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  public void testWebBackendSearchConnections() throws ConfigNotFoundException, IOException, JsonValidationException {
+  public void testWebBackendListAllConnectionsForWorkspace() throws ConfigNotFoundException, IOException, JsonValidationException {
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
     workspaceIdRequestBody.setWorkspaceId(sourceRead.getWorkspaceId());
 
@@ -240,60 +237,33 @@ class WebBackendConnectionsHandlerTest {
     connectionReadList.setConnections(Collections.singletonList(connectionRead));
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
     connectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
-    when(connectionsHandler.listConnections()).thenReturn(connectionReadList);
+    when(connectionsHandler.listAllConnectionsForWorkspace(workspaceIdRequestBody)).thenReturn(connectionReadList);
     when(operationsHandler.listOperationsForConnection(connectionIdRequestBody)).thenReturn(operationReadList);
 
-    final WebBackendConnectionSearch webBackendConnectionSearch = new WebBackendConnectionSearch();
-    WebBackendConnectionReadList WebBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
+    final WebBackendConnectionReadList WebBackendConnectionReadList = wbHandler.webBackendListAllConnectionsForWorkspace(workspaceIdRequestBody);
     assertEquals(1, WebBackendConnectionReadList.getConnections().size());
     assertEquals(expected, WebBackendConnectionReadList.getConnections().get(0));
+  }
 
-    webBackendConnectionSearch.setSource(new SourceSearch().sourceId(UUID.randomUUID()));
-    WebBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
-    assertEquals(0, WebBackendConnectionReadList.getConnections().size());
+  @Test
+  public void testWebBackendSearchConnections() throws ConfigNotFoundException, IOException, JsonValidationException {
+    final ConnectionReadList connectionReadList = new ConnectionReadList();
+    connectionReadList.setConnections(Collections.singletonList(connectionRead));
+    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
+    connectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
 
-    webBackendConnectionSearch.setSource(new SourceSearch().sourceId(connectionRead.getSourceId()));
-    WebBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
-    assertEquals(1, WebBackendConnectionReadList.getConnections().size());
+    when(operationsHandler.listOperationsForConnection(connectionIdRequestBody)).thenReturn(operationReadList);
+    when(connectionsHandler.listConnections()).thenReturn(connectionReadList);
+    when(connectionsHandler.matchSearch(new ConnectionSearch(), connectionRead)).thenReturn(true);
 
-    final DestinationSearch destinationSearch = new DestinationSearch();
-    webBackendConnectionSearch.setDestination(destinationSearch);
-    WebBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
-    assertEquals(1, WebBackendConnectionReadList.getConnections().size());
+    final WebBackendConnectionSearch webBackendConnectionSearch = new WebBackendConnectionSearch();
+    WebBackendConnectionReadList webBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
+    assertEquals(1, webBackendConnectionReadList.getConnections().size());
+    assertEquals(expected, webBackendConnectionReadList.getConnections().get(0));
 
-    destinationSearch.connectionConfiguration(Jsons.jsonNode(Collections.singletonMap("apiKey", "not-found")));
-    webBackendConnectionSearch.setDestination(destinationSearch);
-    WebBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
-    assertEquals(0, WebBackendConnectionReadList.getConnections().size());
-
-    destinationSearch.connectionConfiguration(Jsons.jsonNode(Collections.singletonMap("apiKey", "123-abc")));
-    webBackendConnectionSearch.setDestination(destinationSearch);
-    WebBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
-    assertEquals(1, WebBackendConnectionReadList.getConnections().size());
-
-    webBackendConnectionSearch.name("not-existent");
-    WebBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
-    assertEquals(0, WebBackendConnectionReadList.getConnections().size());
-
-    webBackendConnectionSearch.name(connectionRead.getName());
-    WebBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
-    assertEquals(1, WebBackendConnectionReadList.getConnections().size());
-
-    webBackendConnectionSearch.namespaceDefinition(NamespaceDefinitionType.CUSTOMFORMAT);
-    WebBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
-    assertEquals(0, WebBackendConnectionReadList.getConnections().size());
-
-    webBackendConnectionSearch.namespaceDefinition(connectionRead.getNamespaceDefinition());
-    WebBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
-    assertEquals(1, WebBackendConnectionReadList.getConnections().size());
-
-    webBackendConnectionSearch.status(ConnectionStatus.INACTIVE);
-    WebBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
-    assertEquals(0, WebBackendConnectionReadList.getConnections().size());
-
-    webBackendConnectionSearch.status(ConnectionStatus.ACTIVE);
-    WebBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
-    assertEquals(1, WebBackendConnectionReadList.getConnections().size());
+    when(connectionsHandler.matchSearch(new ConnectionSearch(), connectionRead)).thenReturn(false);
+    webBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
+    assertEquals(0, webBackendConnectionReadList.getConnections().size());
   }
 
   @Test
@@ -477,7 +447,7 @@ class WebBackendConnectionsHandlerTest {
             .schedule(expected.getSchedule()));
     when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
 
-    WebBackendConnectionRead connectionRead = wbHandler.webBackendUpdateConnection(updateBody);
+    final WebBackendConnectionRead connectionRead = wbHandler.webBackendUpdateConnection(updateBody);
 
     assertEquals(expected.getSyncCatalog(), connectionRead.getSyncCatalog());
 
@@ -521,7 +491,7 @@ class WebBackendConnectionsHandlerTest {
             .schedule(expected.getSchedule()));
     when(operationsHandler.updateOperation(operationUpdate)).thenReturn(new OperationRead().operationId(operationUpdate.getOperationId()));
     when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
-    WebBackendConnectionRead actualConnectionRead = wbHandler.webBackendUpdateConnection(updateBody);
+    final WebBackendConnectionRead actualConnectionRead = wbHandler.webBackendUpdateConnection(updateBody);
 
     assertEquals(connectionRead.getOperationIds(), actualConnectionRead.getOperationIds());
     verify(operationsHandler, times(1)).updateOperation(operationUpdate);
@@ -559,7 +529,7 @@ class WebBackendConnectionsHandlerTest {
 
     assertEquals(expectedWithNewSchema.getSyncCatalog(), connectionRead.getSyncCatalog());
 
-    ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
+    final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
     verify(schedulerHandler, times(1)).resetConnection(connectionId);
     verify(schedulerHandler, times(1)).syncConnection(connectionId);
   }

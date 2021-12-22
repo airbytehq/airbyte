@@ -10,7 +10,7 @@ The CDK provides an improved developer experience by providing basic implementat
 
 This document is a general introduction to the CDK. Readers should have basic familiarity with the [Airbyte Specification](https://docs.airbyte.io/architecture/airbyte-specification) before proceeding.
 
-If you have any issues with troubleshooting or want to learn more about the CDK from the Airbyte team, head to the #connector-development channel in [our Slack](https://airbytehq.slack.com/ssb/redirect) to inquire further!
+If you have any issues with troubleshooting or want to learn more about the CDK from the Airbyte team, head to the \#connector-development channel in [our Slack](https://airbytehq.slack.com/ssb/redirect) to inquire further!
 
 ## Getting Started
 
@@ -29,23 +29,23 @@ Additionally, you can follow [this tutorial](https://docs.airbyte.io/connector-d
 
 #### Basic Concepts
 
-If you want to learn more about the classes required to implement an Airbyte Source, head to our [basic concepts doc](./basic-concepts.md).
+If you want to learn more about the classes required to implement an Airbyte Source, head to our [basic concepts doc](basic-concepts.md).
 
 #### Full Refresh Streams
 
-If you have questions or are running into issues creating your first full refresh stream, head over to our [full refresh stream doc](./full-refresh-stream.md). If you have questions about implementing a `path` or `parse_response` function, this doc is for you.
+If you have questions or are running into issues creating your first full refresh stream, head over to our [full refresh stream doc](full-refresh-stream.md). If you have questions about implementing a `path` or `parse_response` function, this doc is for you.
 
 #### Incremental Streams
 
-Having trouble figuring out how to write a `stream_slices` function or aren't sure what a `cursor_field` is? Head to our [incremental stream doc](./incremental-stream.md).
+Having trouble figuring out how to write a `stream_slices` function or aren't sure what a `cursor_field` is? Head to our [incremental stream doc](incremental-stream.md).
 
 #### Practical Tips
 
 Airbyte recommends using the CDK template generator to develop with the CDK. The template generates created all the required scaffolding, with convenient TODOs, allowing developers to truly focus on implementing the API.
 
-For tips on useful Python knowledge, see the [Python Concepts](./python-concepts.md) page.
+For tips on useful Python knowledge, see the [Python Concepts](python-concepts.md) page.
 
-You can find a complete tutorial for implementing an HTTP source connector in [this tutorial](../tutorials/cdk-tutorial-python-http)
+You can find a complete tutorial for implementing an HTTP source connector in [this tutorial](../tutorials/cdk-tutorial-python-http/)
 
 ### Example Connectors
 

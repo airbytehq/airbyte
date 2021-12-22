@@ -2,10 +2,10 @@
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/surveymonkey",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "PostHog Spec",
+    "title": "SurveyMonkey Spec",
     "type": "object",
-    "required": ["start_date", "access_token"],
-    "additionalProperties": false,
+    "required": ["start_date"],
+    "additionalProperties": true,
     "properties": {
       "start_date": {
         "title": "Start Date",
@@ -15,10 +15,19 @@
         "examples": ["2021-01-01T00:00:00Z"]
       },
       "access_token": {
+        "title": "Access Token",
         "type": "string",
         "airbyte_secret": true,
         "description": "API Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/surveymonkey\">docs</a> for information on how to generate this key."
       }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": [],
+      "oauthFlowInitParameters": [],
+      "oauthFlowOutputParameters": [["access_token"]]
     }
   }
 }

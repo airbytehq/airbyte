@@ -1,4 +1,5 @@
 {
+  "accept_terms": true,
   "databricks_server_hostname": "required",
   "databricks_http_path": "required",
   "databricks_port": "443",

@@ -37,24 +37,24 @@ public class MySqlSourceTests {
         .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD)
         .withEnv("TZ", "Europe/Moscow");
     container.start();
-    Properties properties = new Properties();
+    final Properties properties = new Properties();
     properties.putAll(ImmutableMap.of("user", "root", "password", TEST_PASSWORD, "serverTimezone", "Europe/Moscow"));
     DriverManager.getConnection(container.getJdbcUrl(), properties);
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
     config = getConfig(container, dbName, "serverTimezone=Europe/Moscow");
 
-    try (Connection connection = DriverManager.getConnection(container.getJdbcUrl(), properties)) {
+    try (final Connection connection = DriverManager.getConnection(container.getJdbcUrl(), properties)) {
       connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
       connection.createStatement().execute("CREATE DATABASE " + config.get("database").asText());
     }
-    AirbyteConnectionStatus check = new MySqlSource().check(config);
+    final AirbyteConnectionStatus check = new MySqlSource().check(config);
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
 
     // cleanup
     container.close();
   }
 
-  private static JsonNode getConfig(MySQLContainer dbContainer, String dbName, String jdbcParams) {
+  private static JsonNode getConfig(final MySQLContainer dbContainer, final String dbName, final String jdbcParams) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", dbContainer.getHost())
         .put("port", dbContainer.getFirstMappedPort())

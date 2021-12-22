@@ -19,12 +19,12 @@ public class SnowflakeDestinationTest {
   @Test
   @DisplayName("When given S3 credentials should use COPY")
   public void useS3CopyStrategyTest() {
-    var stubLoadingMethod = mapper.createObjectNode();
+    final var stubLoadingMethod = mapper.createObjectNode();
     stubLoadingMethod.put("s3_bucket_name", "fake-bucket");
     stubLoadingMethod.put("access_key_id", "test");
     stubLoadingMethod.put("secret_access_key", "test key");
 
-    var stubConfig = mapper.createObjectNode();
+    final var stubConfig = mapper.createObjectNode();
     stubConfig.set("loading_method", stubLoadingMethod);
 
     assertTrue(SnowflakeDestination.isS3Copy(stubConfig));
@@ -33,12 +33,12 @@ public class SnowflakeDestinationTest {
   @Test
   @DisplayName("When given GCS credentials should use COPY")
   public void useGcsCopyStrategyTest() {
-    var stubLoadingMethod = mapper.createObjectNode();
+    final var stubLoadingMethod = mapper.createObjectNode();
     stubLoadingMethod.put("project_id", "my-project");
     stubLoadingMethod.put("bucket_name", "my-bucket");
     stubLoadingMethod.put("credentials_json", "hunter2");
 
-    var stubConfig = mapper.createObjectNode();
+    final var stubConfig = mapper.createObjectNode();
     stubConfig.set("loading_method", stubLoadingMethod);
 
     assertTrue(SnowflakeDestination.isGcsCopy(stubConfig));
@@ -47,8 +47,8 @@ public class SnowflakeDestinationTest {
   @Test
   @DisplayName("When not given S3 credentials should use INSERT")
   public void useInsertStrategyTest() {
-    var stubLoadingMethod = mapper.createObjectNode();
-    var stubConfig = mapper.createObjectNode();
+    final var stubLoadingMethod = mapper.createObjectNode();
+    final var stubConfig = mapper.createObjectNode();
     stubConfig.set("loading_method", stubLoadingMethod);
     assertFalse(SnowflakeDestination.isS3Copy(stubConfig));
   }

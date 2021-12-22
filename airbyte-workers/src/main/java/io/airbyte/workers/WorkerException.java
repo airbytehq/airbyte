@@ -6,11 +6,11 @@ package io.airbyte.workers;
 
 public class WorkerException extends Exception {
 
-  public WorkerException(String message) {
+  public WorkerException(final String message) {
     super(message);
   }
 
-  public WorkerException(String message, Throwable cause) {
+  public WorkerException(final String message, final Throwable cause) {
     super(message, cause);
   }
 

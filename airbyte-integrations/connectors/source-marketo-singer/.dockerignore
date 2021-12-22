@@ -1,7 +1,0 @@
-*
-!Dockerfile
-!Dockerfile.test
-!source_marketo_singer
-!setup.py
-!integration_tests
-!secrets

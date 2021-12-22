@@ -32,7 +32,7 @@ public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMe
   public void start() throws Exception {
     try {
       startTracked();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       hasFailed = true;
       throw e;
     }
@@ -41,10 +41,10 @@ public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMe
   protected abstract void acceptTracked(AirbyteMessage msg) throws Exception;
 
   @Override
-  public void accept(AirbyteMessage msg) throws Exception {
+  public void accept(final AirbyteMessage msg) throws Exception {
     try {
       acceptTracked(msg);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       hasFailed = true;
       throw e;
     }

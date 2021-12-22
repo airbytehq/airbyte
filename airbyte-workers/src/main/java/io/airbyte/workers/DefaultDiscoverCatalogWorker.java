@@ -25,18 +25,22 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDiscoverCatalogWorker.class);
 
+  private final WorkerConfigs workerConfigs;
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
 
   private volatile Process process;
 
-  public DefaultDiscoverCatalogWorker(final IntegrationLauncher integrationLauncher, final AirbyteStreamFactory streamFactory) {
+  public DefaultDiscoverCatalogWorker(final WorkerConfigs workerConfigs,
+                                      final IntegrationLauncher integrationLauncher,
+                                      final AirbyteStreamFactory streamFactory) {
+    this.workerConfigs = workerConfigs;
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
   }
 
-  public DefaultDiscoverCatalogWorker(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory());
+  public DefaultDiscoverCatalogWorker(final WorkerConfigs workerConfigs, final IntegrationLauncher integrationLauncher) {
+    this(workerConfigs, integrationLauncher, new DefaultAirbyteStreamFactory());
   }
 
   @Override
@@ -49,17 +53,17 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
-      Optional<AirbyteCatalog> catalog;
-      try (InputStream stdout = process.getInputStream()) {
+      final Optional<AirbyteCatalog> catalog;
+      try (final InputStream stdout = process.getInputStream()) {
         catalog = streamFactory.create(IOs.newBufferedReader(stdout))
             .filter(message -> message.getType() == Type.CATALOG)
             .map(AirbyteMessage::getCatalog)
             .findFirst();
 
-        WorkerUtils.gentleClose(process, 30, TimeUnit.MINUTES);
+        WorkerUtils.gentleClose(workerConfigs, process, 30, TimeUnit.MINUTES);
       }
 
-      int exitCode = process.exitValue();
+      final int exitCode = process.exitValue();
       if (exitCode == 0) {
         if (catalog.isEmpty()) {
           throw new WorkerException("Integration failed to output a catalog struct.");

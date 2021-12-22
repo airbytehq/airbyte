@@ -12,15 +12,15 @@ Check out our [Roadmap for Core](https://github.com/airbytehq/airbyte/milestones
 
 We understand that we're not "production-ready" for a lot of companies yet. In the end, we just got started in July 2020, so we're at the beginning of the journey. Here is a highlight of the main features we are planning on releasing in the next few months:
 
-**Landing in October or so:**
+**Landing in November or so:**
 
-* Airbyte Cloud release. 
+* Improve stability and performance across the board.
+* Stabilize Airbyte Cloud Architecture.
+* Improve scheduling performance and migrate completely to Temporal.  
 * Adapt automatically to sources' schema changes.
-* Optimize normalization, so it costs less to our users
-* OAuth support for connector configuration \([\#768](https://github.com/airbytehq/airbyte/issues/768)\).
 
 **Coming a bit later:**
- 
+
 * Support for creating destination connectors with the CDK.
 * Our declarative interface \(CLI\).
 * Credential and secrets vaulting \([\#837](https://github.com/airbytehq/airbyte/issues/837)\).
@@ -32,13 +32,13 @@ Our goal is to become "production-ready" for any company whatever their data sta
 
 We also wanted to share with you how we think about the high-level roadmap over the next few months and years. We foresee several high-level phases that we will try to share here.
 
-### **1. Parity on data consolidation (ELT) in warehouses / databases**
+### **1. Parity on data consolidation \(ELT\) in warehouses / databases**
 
 Our first focus is to support batch-type ELT integrations. We feel that we can provide value right away as soon as we support one of the integrations you need. Batch integrations are also easier to build and sustain. So we would rather start with that.
 
 Before we move on to the next phase, we want to make sure we are supporting all the major integrations and that we are in a state where we can address the long tail, with the help of the community.
 
-We also want to fully integrate with the open-source ecosystem, including Airflow, dbt, Kubernetes, GreatExpectations, etc., so teams have the ability to fully build the data infrastructure they need.
+We also want to fully integrate with the ecosystem, including Airflow, dbt, Kubernetes, GreatExpectations, Prefect, Dagster, etc., so teams have the ability to fully build the data infrastructure they need.
 
 ### **2. Reverse-ETL from warehouses / databases**
 

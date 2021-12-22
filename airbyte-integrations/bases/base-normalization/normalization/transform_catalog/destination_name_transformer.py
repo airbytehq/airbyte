@@ -23,6 +23,10 @@ DESTINATION_SIZE_LIMITS = {
     DestinationType.MYSQL.value: 64,
     # https://oracle-base.com/articles/12c/long-identifiers-12cr2
     DestinationType.ORACLE.value: 128,
+    # https://docs.microsoft.com/en-us/sql/odbc/microsoft/column-name-limitations?view=sql-server-ver15
+    DestinationType.MSSQL.value: 64,
+    # https://stackoverflow.com/questions/68358686/what-is-the-maximum-length-of-a-column-in-clickhouse-can-it-be-modified
+    DestinationType.CLICKHOUSE.value: 63,
 }
 
 # DBT also needs to generate suffix to table names, so we need to make sure it has enough characters to do so...
@@ -164,6 +168,8 @@ class DestinationNameTransformer:
             if self.destination_type == DestinationType.ORACLE:
                 # Oracle dbt lib doesn't implemented adapter quote yet.
                 result = f"quote('{result}')"
+            elif self.destination_type == DestinationType.CLICKHOUSE:
+                result = f"quote('{result}')"
             else:
                 result = f"adapter.quote('{result}')"
             if not in_jinja:
@@ -203,11 +209,16 @@ class DestinationNameTransformer:
         elif self.destination_type.value == DestinationType.MYSQL.value:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()
+        elif self.destination_type.value == DestinationType.MSSQL.value:
+            if not is_quoted and not self.needs_quotes(input_name):
+                result = input_name.lower()
         elif self.destination_type.value == DestinationType.ORACLE.value:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()
             else:
                 result = input_name.upper()
+        elif self.destination_type.value == DestinationType.CLICKHOUSE.value:
+            pass
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result

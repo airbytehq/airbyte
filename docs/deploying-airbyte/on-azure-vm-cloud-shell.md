@@ -51,13 +51,18 @@ This step will create a virtual machine and add a user account named `byteuser`.
 download ~/.ssh/id_rsa
 ```
 
+Make sure to update the permissions on the private key, or you'll get an error telling you that permissions for this file are too open.
+```bash
+chmod 600 ./$YOUR_PATH_TO_DOWNLOADS/id_rsa
+```
+
 Above command will generate download link and give you pop-up on right bottom side, click on `Click here to download your file.` to download private key. Note: Save this file, you will need it to connect to your VM in [Connect to Airbyte](on-azure-vm-cloud-shell.md#connect-to-airbyte) step.
 
 ![](../.gitbook/assets/azure_shell_download_ssh_key.png)
 
 ### Connect to virtual machine
 
-* Connect to virtual machine 
+If you get this error: `Could not resolve hostname "XX.XXX.X.XXX": Name or service not known`, just manually enter the publicIp host name when running the ssh command.
 
 ```bash
 # Inside Azure cloud shell
@@ -127,7 +132,7 @@ This part assumes that you have access to a terminal on your workstation
   # Inside your workstation terminal
   # 1. Replace $SSH_KEY with private key path downloaded from earlier steps
   # 2. Replace $INSTANCE_IP with publicIpAddress noted from earlier steps
-  ssh -i $SSH_KEY -L 8000:localhost:8000 -N -f byteuser@$INSTANCE_IP
+  ssh -N -L 8000:localhost:8000 -i $SSH_KEY byteuser@$INSTANCE_IP
   ```
 
 * Just visit [http://localhost:8000](http://localhost:8000) in your browser and start moving some data!

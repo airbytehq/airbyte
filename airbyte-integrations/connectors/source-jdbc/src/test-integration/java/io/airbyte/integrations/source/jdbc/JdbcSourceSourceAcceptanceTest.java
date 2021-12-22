@@ -37,7 +37,7 @@ public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
   private JsonNode config;
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws SQLException {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {
     container = new PostgreSQLContainer<>("postgres:13-alpine");
     container.start();
 
@@ -63,7 +63,7 @@ public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     database.close();
     container.close();
   }

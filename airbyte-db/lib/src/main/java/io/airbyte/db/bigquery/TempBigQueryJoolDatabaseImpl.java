@@ -27,12 +27,12 @@ public class TempBigQueryJoolDatabaseImpl extends Database {
   }
 
   @Override
-  public <T> T query(ContextQueryFunction<T> transform) throws SQLException {
+  public <T> T query(final ContextQueryFunction<T> transform) throws SQLException {
     return transform.query(new FakeDefaultDSLContext(realDatabase));
   }
 
   @Override
-  public <T> T transaction(ContextQueryFunction<T> transform) throws SQLException {
+  public <T> T transaction(final ContextQueryFunction<T> transform) throws SQLException {
     return transform.query(new FakeDefaultDSLContext(realDatabase));
   }
 
@@ -49,16 +49,16 @@ public class TempBigQueryJoolDatabaseImpl extends Database {
 
     private final BigQueryDatabase database;
 
-    public FakeDefaultDSLContext(BigQueryDatabase database) {
+    public FakeDefaultDSLContext(final BigQueryDatabase database) {
       super((SQLDialect) null);
       this.database = database;
     }
 
     @Override
-    public Result<Record> fetch(String sql) throws DataAccessException {
+    public Result<Record> fetch(final String sql) throws DataAccessException {
       try {
         database.execute(sql);
-      } catch (SQLException e) {
+      } catch (final SQLException e) {
         throw new DataAccessException(e.getMessage());
       }
       return null;

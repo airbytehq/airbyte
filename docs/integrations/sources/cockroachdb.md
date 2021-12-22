@@ -42,10 +42,9 @@ CockroachDb data types are mapped to the following data types when synchronizing
 | Feature | Supported | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
-| Incremental Sync| Yes |  |
+| Incremental Sync | Yes |  |
 | Change Data Capture | No |  |
 | SSL Support | Yes |  |
-
 
 ## Getting started
 
@@ -94,6 +93,14 @@ Your database user should now be ready for use with Airbyte.
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.1.2   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.3 | 2021-10-10 | [7819](https://github.com/airbytehq/airbyte/pull/7819) | Fixed Datatype errors during Cockroach DB parsing |
+| 0.1.2 | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |
+
+## Changelog source-cockroachdb-strict-encrypt
+
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.0 | 2021-11-23 | [7457](https://github.com/airbytehq/airbyte/pull/7457) | CockroachDb source: Add only encrypted version for the connector |
+

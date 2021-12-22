@@ -22,7 +22,7 @@ class DefaultAutoCloseableIterator<T> extends AbstractIterator<T> implements Aut
 
   private boolean hasClosed;
 
-  public DefaultAutoCloseableIterator(Iterator<T> iterator, VoidCallable onClose) {
+  public DefaultAutoCloseableIterator(final Iterator<T> iterator, final VoidCallable onClose) {
     Preconditions.checkNotNull(iterator);
     Preconditions.checkNotNull(onClose);
 
