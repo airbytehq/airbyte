@@ -6,7 +6,7 @@ package io.airbyte.workers.temporal.sync;
 
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.logging.LoggingHelper;
+import io.airbyte.commons.logging.LoggingHelper.Color;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ReplicationOutput;
@@ -43,7 +43,7 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
 
   private static final MdcScope.Builder LOG_MDC_BUILDER = new MdcScope.Builder()
       .setLogPrefix("container-orchestrator")
-      .setPrefixColor(LoggingHelper.Color.CYAN_BACKGROUND);
+      .setPrefixColor(Color.CYAN);
 
   public static final String REPLICATION = "replication";
   public static final String INIT_FILE_APPLICATION = "application.txt";
@@ -114,7 +114,7 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
   }
 
   @Override
-  public ReplicationOutput run(StandardSyncInput standardSyncInput, Path jobRoot) throws WorkerException {
+  public ReplicationOutput run(final StandardSyncInput standardSyncInput, final Path jobRoot) throws WorkerException {
     try {
       final Path jobPath = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
 
@@ -177,7 +177,7 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
       } else {
         throw new WorkerException("Running the sync attempt resulted in no readable output!");
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       if (cancelled.get()) {
         throw new WorkerException("Sync was cancelled.", e);
       } else {

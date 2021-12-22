@@ -34,7 +34,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultNormalizationRunner.class);
   private static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
       .setLogPrefix("normalization")
-      .setPrefixColor(Color.GREEN_BACKGROUND);
+      .setPrefixColor(Color.GREEN);
 
   private final WorkerConfigs workerConfigs;
   private final DestinationType destinationType;
