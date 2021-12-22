@@ -6,7 +6,7 @@
     "_object": {
       "type": "string",
       "description": "String representing the object's type. Always /shipment/dangerous_goods for this object.",
-      "pattern": "^\/shipment\/dangerous_goods"
+      "pattern": "^/shipment/dangerous_goods"
     },
     "review_status": {
       "type": ["null", "string"]

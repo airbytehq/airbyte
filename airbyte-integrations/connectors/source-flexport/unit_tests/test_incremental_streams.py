@@ -3,7 +3,6 @@
 #
 
 
-from airbyte_cdk.models import SyncMode
 import pendulum
 import pytest
 from source_flexport.source import IncrementalFlexportStream, Shipments

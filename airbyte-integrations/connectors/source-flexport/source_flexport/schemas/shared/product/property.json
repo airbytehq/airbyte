@@ -6,7 +6,7 @@
     "_object": {
       "type": "string",
       "description": "String representing the object's type. Always /product/property for this object.",
-      "pattern": "^\/product\/property$"
+      "pattern": "^/product/property$"
     },
     "type": {
       "type": "string",

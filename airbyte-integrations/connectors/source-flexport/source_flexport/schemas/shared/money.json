@@ -6,7 +6,7 @@
     "_object": {
       "type": "string",
       "description": "String representing the object's type. Always /money for this object.",
-      "pattern": "^\/money$"
+      "pattern": "^/money$"
     },
     "amount": {
       "type": "string",

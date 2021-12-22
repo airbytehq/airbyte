@@ -6,7 +6,7 @@
     "_object": {
       "type": "string",
       "description": "String representing the object's type. Always /product/classification for this object.",
-      "pattern": "^\/product\/classification$"
+      "pattern": "^/product/classification$"
     },
     "region": {
       "type": "string",

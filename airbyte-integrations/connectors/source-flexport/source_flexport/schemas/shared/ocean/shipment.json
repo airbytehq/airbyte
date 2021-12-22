@@ -6,7 +6,7 @@
     "_object": {
       "type": "string",
       "description": "String representing the object's type. Always /ocean/shipment for this object.",
-      "pattern": "^\/ocean\/shipment$"
+      "pattern": "^/ocean/shipment$"
     },
     "is_lcl": {
       "type": "boolean",

@@ -6,7 +6,7 @@
     "_object": {
       "type": "string",
       "description": "String representing the object`s type. Always /air/shipment for this object.",
-      "pattern": "^\/air\/shipment$"
+      "pattern": "^/air/shipment$"
     },
     "house_airway_bill": {
       "type": "string",

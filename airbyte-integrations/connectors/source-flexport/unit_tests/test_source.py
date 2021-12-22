@@ -3,9 +3,9 @@
 #
 
 import re
-import pytest
 from unittest.mock import MagicMock
 
+import pytest
 from source_flexport.source import FlexportStream, SourceFlexport
 
 

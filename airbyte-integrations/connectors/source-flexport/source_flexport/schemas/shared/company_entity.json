@@ -6,7 +6,7 @@
     "_object": {
       "type": "string",
       "description": "String representing the object's type. Always /company_entity for this object.",
-      "pattern": "^\/company_entity$"
+      "pattern": "^/company_entity$"
     },
     "id": {
       "type": "integer",
@@ -21,7 +21,8 @@
       "oneOf": [
         {
           "type": "null"
-        }, {
+        },
+        {
           "$ref": "address.json"
         }
       ]

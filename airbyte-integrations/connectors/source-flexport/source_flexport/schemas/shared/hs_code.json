@@ -6,7 +6,7 @@
     "_object": {
       "type": "string",
       "description": "String representing the object's type. Always /hs_code for this object.",
-      "pattern": "^\/hs_code$"
+      "pattern": "^/hs_code$"
     },
     "description": {
       "type": "string",

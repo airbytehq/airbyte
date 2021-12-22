@@ -83,25 +83,16 @@
               ]
             },
             "type": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "description": "What the invoice is being issued for. Shipment related charges are type Shipment and non-shipment related charges are type Client"
             },
             "voided_at": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "description": "When the invoice was voided (if applicable). In ISO8601 UTC format with timezone denoted by Z.",
               "format": "date-time"
             },
             "last_updated_at": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "description": "Time of the last adjustment to in invoice. In ISO8601 UTC format with timezone denoted by Z.",
               "format": "date-time"
             },
@@ -144,10 +135,7 @@
                           "description": "Address line 1 (Street address/PO Box)."
                         },
                         "street_address2": {
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "description": "Address line 2 (Apartment/Suite/Unit/Building)."
                         },
                         "city": {
@@ -155,38 +143,23 @@
                           "description": "City/Town."
                         },
                         "state": {
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "description": "State/County/Province/Region."
                         },
                         "country": {
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "description": "Country."
                         },
                         "country_code": {
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "description": "Two-letter country code (ISO 3166-1 Alpha-2)."
                         },
                         "zip": {
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "description": "ZIP or postal code."
                         },
                         "unlocode": {
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
                         },
                         "timezone": {
@@ -194,10 +167,7 @@
                           "description": "Timezone for this address"
                         },
                         "ref": {
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "description": "Your reference for the address, as set in your network tab"
                         }
                       }
@@ -273,10 +243,7 @@
                           "description": "Address line 1 (Street address/PO Box)."
                         },
                         "street_address2": {
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "description": "Address line 2 (Apartment/Suite/Unit/Building)."
                         },
                         "city": {
@@ -284,38 +251,23 @@
                           "description": "City/Town."
                         },
                         "state": {
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "description": "State/County/Province/Region."
                         },
                         "country": {
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "description": "Country."
                         },
                         "country_code": {
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "description": "Two-letter country code (ISO 3166-1 Alpha-2)."
                         },
                         "zip": {
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "description": "ZIP or postal code."
                         },
                         "unlocode": {
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
                         },
                         "timezone": {
@@ -323,10 +275,7 @@
                           "description": "Timezone for this address"
                         },
                         "ref": {
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "description": "Your reference for the address, as set in your network tab"
                         }
                       }
@@ -545,14 +494,8 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"

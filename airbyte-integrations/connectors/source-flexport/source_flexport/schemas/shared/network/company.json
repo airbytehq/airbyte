@@ -6,7 +6,7 @@
     "_object": {
       "type": "string",
       "description": "String representing the object's type. Always /network/company for this object.",
-      "pattern": "^\/network\/company$"
+      "pattern": "^/network/company$"
     },
     "id": {
       "type": "string",

@@ -6,7 +6,7 @@
     "_object": {
       "type": "string",
       "description": "String representing the object's type. Always /shipment for this object.",
-      "pattern": "^\/shipment$"
+      "pattern": "^/shipment$"
     },
     "id": {
       "type": "integer",
@@ -34,12 +34,7 @@
     "freight_type": {
       "type": "string",
       "description": "The type of freight service provided. One of:",
-      "enum": [
-        "port_to_door",
-        "port_to_port",
-        "door_to_door",
-        "door_to_port"
-      ]
+      "enum": ["port_to_door", "port_to_port", "door_to_door", "door_to_port"]
     },
     "updated_at": {
       "type": "string",

@@ -6,7 +6,7 @@
     "_object": {
       "type": "string",
       "description": "String representing the object's type. Always /product for this object.",
-      "pattern": "^\/product$"
+      "pattern": "^/product$"
     },
     "id": {
       "type": "integer",

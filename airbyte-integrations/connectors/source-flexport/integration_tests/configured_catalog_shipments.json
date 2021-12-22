@@ -46,10 +46,7 @@
                       "description": "The _object value of the object that the link points to."
                     },
                     "id": {
-                      "type": [
-                        "integer",
-                        "string"
-                      ],
+                      "type": ["integer", "string"],
                       "description": "The id value of the object that the link points to."
                     }
                   }
@@ -76,10 +73,7 @@
               "format": "date-time"
             },
             "archived_at": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "description": "Date when the shipment was archived, if applicable. In ISO8601 UTC format with timezone denoted by Z.",
               "format": "date-time"
             },
@@ -104,10 +98,7 @@
                 "unit": {
                   "type": "string",
                   "description": "Specifies the unit of measure for this quantity.",
-                  "enum": [
-                    "kg",
-                    "lbs"
-                  ]
+                  "enum": ["kg", "lbs"]
                 }
               }
             },
@@ -128,50 +119,32 @@
                 "unit": {
                   "type": "string",
                   "description": "Specifies the unit of measure for this quantity.",
-                  "enum": [
-                    "cbm",
-                    "cbft"
-                  ]
+                  "enum": ["cbm", "cbft"]
                 }
               }
             },
             "estimated_departure_date": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "description": "Estimated departure date from the first port of the main voyage. In ISO8601 format with timezone denoted by +/-HH:MM.",
               "format": "date-time"
             },
             "actual_departure_date": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "description": "Actual departure date from the first port of the main voyage. In ISO8601 format with timezone denoted by +/-HH:MM.",
               "format": "date-time"
             },
             "target_delivery_date": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "description": "Target date for when the shipment will be fully delivered. This date is set when the shipment''s booking is confirmed. This value may be different from estimated_delivered_in_full_date, which is updated when there is new information about the progress of a shipment. Date only.",
               "format": "date"
             },
             "estimated_arrival_date": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "description": "Estimated arrival date to the last port of the main voyage. In ISO8601 format with timezone denoted by +/-HH:MM.",
               "format": "date-time"
             },
             "actual_arrival_date": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "description": "Actual arrival date to the last port of the main voyage. In ISO8601 format with timezone denoted by +/-HH:MM.",
               "format": "date-time"
             },
@@ -192,17 +165,11 @@
               "type": "string"
             },
             "pieces": {
-              "type": [
-                "null",
-                "integer"
-              ],
+              "type": ["null", "integer"],
               "description": "Total number of pieces in the shipment."
             },
             "it_number": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "description": "Inbond Transit number used for US Customs"
             },
             "created_date": {
@@ -211,34 +178,22 @@
               "format": "date-time"
             },
             "estimated_picked_up_in_full_date": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "description": "Estimated pickup date from the origin location. For ocean shipments with multiple containers, this is the date of last picked up container. In ISO8601 format with timezone denoted by +/-HH:MM.",
               "format": "date-time"
             },
             "actual_picked_up_in_full_date": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "description": "Actual pickup date from the origin location. For ocean shipments with multiple containers, this is the date of last picked up container. In ISO8601 format with timezone denoted by +/-HH:MM.",
               "format": "date-time"
             },
             "estimated_delivered_in_full_date": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "description": "Estimated delivery date to the destination location. For ocean shipments with multiple containers, this is the date of last delivered container. In ISO8601 format with timezone denoted by +/-HH:MM.",
               "format": "date-time"
             },
             "actual_delivered_in_full_date": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "description": "Actual delivery date to the destination location. For ocean shipments with multiple containers, this is the date of last delivered container. In ISO8601 format with timezone denoted by +/-HH:MM.",
               "format": "date-time"
             },
@@ -281,10 +236,7 @@
               "type": "boolean"
             },
             "wants_trade_declaration_service": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "air_shipment": {
               "description": "Air-specific Shipment information. Available only if this is an air shipment. null otherwise.",
@@ -327,10 +279,7 @@
                         "unit": {
                           "type": "string",
                           "description": "Specifies the unit of measure for this quantity.",
-                          "enum": [
-                            "kg",
-                            "lbs"
-                          ]
+                          "enum": ["kg", "lbs"]
                         }
                       }
                     },
@@ -351,10 +300,7 @@
                         "unit": {
                           "type": "string",
                           "description": "Specifies the unit of measure for this quantity.",
-                          "enum": [
-                            "cbm",
-                            "cbft"
-                          ]
+                          "enum": ["cbm", "cbft"]
                         }
                       }
                     }
@@ -387,24 +333,15 @@
                       "description": "House bill of lading number."
                     },
                     "master_bill_number": {
-                      "type": [
-                        "null",
-                        "string"
-                      ],
+                      "type": ["null", "string"],
                       "description": "Master bill of lading number."
                     },
                     "carrier_booking_number": {
-                      "type": [
-                        "null",
-                        "string"
-                      ],
+                      "type": ["null", "string"],
                       "description": "Ocean carrier booking reference number."
                     },
                     "confirmed_space_released_at": {
-                      "type": [
-                        "null",
-                        "string"
-                      ],
+                      "type": ["null", "string"],
                       "format": "date-time"
                     },
                     "containers": {
@@ -442,10 +379,7 @@
                   "pattern": "^/shipment/dangerous_goods"
                 },
                 "review_status": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 "classifications": {
                   "type": "array"
@@ -494,10 +428,7 @@
                             "description": "Address line 1 (Street address/PO Box)."
                           },
                           "street_address2": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "Address line 2 (Apartment/Suite/Unit/Building)."
                           },
                           "city": {
@@ -505,38 +436,23 @@
                             "description": "City/Town."
                           },
                           "state": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "State/County/Province/Region."
                           },
                           "country": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "Country."
                           },
                           "country_code": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "Two-letter country code (ISO 3166-1 Alpha-2)."
                           },
                           "zip": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "ZIP or postal code."
                           },
                           "unlocode": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
                           },
                           "timezone": {
@@ -544,10 +460,7 @@
                             "description": "Timezone for this address"
                           },
                           "ref": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "Your reference for the address, as set in your network tab"
                           }
                         }
@@ -627,10 +540,7 @@
                             "description": "Address line 1 (Street address/PO Box)."
                           },
                           "street_address2": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "Address line 2 (Apartment/Suite/Unit/Building)."
                           },
                           "city": {
@@ -638,38 +548,23 @@
                             "description": "City/Town."
                           },
                           "state": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "State/County/Province/Region."
                           },
                           "country": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "Country."
                           },
                           "country_code": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "Two-letter country code (ISO 3166-1 Alpha-2)."
                           },
                           "zip": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "ZIP or postal code."
                           },
                           "unlocode": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
                           },
                           "timezone": {
@@ -677,10 +572,7 @@
                             "description": "Timezone for this address"
                           },
                           "ref": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "Your reference for the address, as set in your network tab"
                           }
                         }
@@ -760,10 +652,7 @@
                             "description": "Address line 1 (Street address/PO Box)."
                           },
                           "street_address2": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "Address line 2 (Apartment/Suite/Unit/Building)."
                           },
                           "city": {
@@ -771,38 +660,23 @@
                             "description": "City/Town."
                           },
                           "state": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "State/County/Province/Region."
                           },
                           "country": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "Country."
                           },
                           "country_code": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "Two-letter country code (ISO 3166-1 Alpha-2)."
                           },
                           "zip": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "ZIP or postal code."
                           },
                           "unlocode": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
                           },
                           "timezone": {
@@ -810,10 +684,7 @@
                             "description": "Timezone for this address"
                           },
                           "ref": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "Your reference for the address, as set in your network tab"
                           }
                         }
@@ -893,10 +764,7 @@
                             "description": "Address line 1 (Street address/PO Box)."
                           },
                           "street_address2": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "Address line 2 (Apartment/Suite/Unit/Building)."
                           },
                           "city": {
@@ -904,38 +772,23 @@
                             "description": "City/Town."
                           },
                           "state": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "State/County/Province/Region."
                           },
                           "country": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "Country."
                           },
                           "country_code": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "Two-letter country code (ISO 3166-1 Alpha-2)."
                           },
                           "zip": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "ZIP or postal code."
                           },
                           "unlocode": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
                           },
                           "timezone": {
@@ -943,10 +796,7 @@
                             "description": "Timezone for this address"
                           },
                           "ref": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "Your reference for the address, as set in your network tab"
                           }
                         }
@@ -1026,10 +876,7 @@
                             "description": "Address line 1 (Street address/PO Box)."
                           },
                           "street_address2": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "Address line 2 (Apartment/Suite/Unit/Building)."
                           },
                           "city": {
@@ -1037,38 +884,23 @@
                             "description": "City/Town."
                           },
                           "state": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "State/County/Province/Region."
                           },
                           "country": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "Country."
                           },
                           "country_code": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "Two-letter country code (ISO 3166-1 Alpha-2)."
                           },
                           "zip": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "ZIP or postal code."
                           },
                           "unlocode": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
                           },
                           "timezone": {
@@ -1076,10 +908,7 @@
                             "description": "Timezone for this address"
                           },
                           "ref": {
-                            "type": [
-                              "null",
-                              "string"
-                            ],
+                            "type": ["null", "string"],
                             "description": "Your reference for the address, as set in your network tab"
                           }
                         }
@@ -1155,10 +984,7 @@
                       "unit": {
                         "type": "string",
                         "description": "Specifies the unit of measure for this quantity.",
-                        "enum": [
-                          "kg",
-                          "lbs"
-                        ]
+                        "enum": ["kg", "lbs"]
                       }
                     }
                   },
@@ -1179,10 +1005,7 @@
                       "unit": {
                         "type": "string",
                         "description": "Specifies the unit of measure for this quantity.",
-                        "enum": [
-                          "cbm",
-                          "cbft"
-                        ]
+                        "enum": ["cbm", "cbft"]
                       }
                     }
                   },
@@ -1209,31 +1032,19 @@
                         "description": "Name of product."
                       },
                       "description": {
-                        "type": [
-                          "null",
-                          "string"
-                        ],
+                        "type": ["null", "string"],
                         "description": "Description of product."
                       },
                       "sku": {
-                        "type": [
-                          "null",
-                          "string"
-                        ],
+                        "type": ["null", "string"],
                         "description": "SKU of product."
                       },
                       "product_category": {
-                        "type": [
-                          "null",
-                          "string"
-                        ],
+                        "type": ["null", "string"],
                         "description": "The category of the product"
                       },
                       "country_of_origin": {
-                        "type": [
-                          "null",
-                          "string"
-                        ],
+                        "type": ["null", "string"],
                         "description": "Nation in which the product is manufactured"
                       },
                       "client_verified": {
@@ -1339,19 +1150,13 @@
                               "type": "string"
                             },
                             "country_of_origin": {
-                              "type": [
-                                "null",
-                                "string"
-                              ]
+                              "type": ["null", "string"]
                             }
                           }
                         }
                       },
                       "archived_at": {
-                        "type": [
-                          "null",
-                          "string"
-                        ],
+                        "type": ["null", "string"],
                         "description": "A date string representing when the product was archived. Will be null if product is not archived. In ISO8601 UTC format with timezone denoted by Z.",
                         "format": "date-time"
                       }
@@ -1446,55 +1251,34 @@
             },
             "departure_date": {
               "$comment": "deprecated",
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "description": "Departure date from the first port of the main voyage.",
               "format": "date-time"
             },
             "arrival_date": {
               "$comment": "deprecated",
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "description": "Arrival date to the last port of the main voyage.",
               "format": "date-time"
             },
             "picked_up_in_full_date": {
               "$comment": "deprecated",
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "description": "Pickup date from the origin location. For ocean shipments with multiple containers, this is the date of last picked up container.",
               "format": "date-time"
             },
             "delivered_in_full_date": {
               "$comment": "deprecated",
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "description": "Delivery date to the destination location. For ocean shipments with multiple containers, this is the date of last delivered container.",
               "format": "date-time"
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup"

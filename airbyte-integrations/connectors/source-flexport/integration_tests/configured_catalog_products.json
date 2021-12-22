@@ -22,31 +22,19 @@
               "description": "Name of product."
             },
             "description": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "description": "Description of product."
             },
             "sku": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "description": "SKU of product."
             },
             "product_category": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "description": "The category of the product"
             },
             "country_of_origin": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "description": "Nation in which the product is manufactured"
             },
             "client_verified": {
@@ -152,32 +140,20 @@
                     "type": "string"
                   },
                   "country_of_origin": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
+                    "type": ["null", "string"]
                   }
                 }
               }
             },
             "archived_at": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "description": "A date string representing when the product was archived. Will be null if product is not archived. In ISO8601 UTC format with timezone denoted by Z.",
               "format": "date-time"
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"

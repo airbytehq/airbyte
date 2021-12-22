@@ -6,7 +6,7 @@
     "_object": {
       "type": "string",
       "description": "String representing the object's type. Always /quantity/volume for this object.",
-      "pattern": "^\/quantity\/volume"
+      "pattern": "^/quantity/volume"
     },
     "value": {
       "type": "number",

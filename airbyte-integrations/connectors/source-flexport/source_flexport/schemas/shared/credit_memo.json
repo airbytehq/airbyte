@@ -6,7 +6,7 @@
     "_object": {
       "type": "string",
       "description": "String representing the object's type. Always /credit_memo for this object.",
-      "pattern": "^\/credit_memo$"
+      "pattern": "^/credit_memo$"
     },
     "amount": {
       "description": "Amount of the credit",

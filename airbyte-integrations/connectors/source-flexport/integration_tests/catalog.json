@@ -70,10 +70,7 @@
                           "description": "Address line 1 (Street address/PO Box)."
                         },
                         "street_address2": {
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "description": "Address line 2 (Apartment/Suite/Unit/Building)."
                         },
                         "city": {
@@ -81,38 +78,23 @@
                           "description": "City/Town."
                         },
                         "state": {
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "description": "State/County/Province/Region."
                         },
                         "country": {
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "description": "Country."
                         },
                         "country_code": {
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "description": "Two-letter country code (ISO 3166-1 Alpha-2)."
                         },
                         "zip": {
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "description": "ZIP or postal code."
                         },
                         "unlocode": {
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
                         },
                         "timezone": {
@@ -120,10 +102,7 @@
                           "description": "Timezone for this address"
                         },
                         "ref": {
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "description": "Your reference for the address, as set in your network tab"
                         }
                       }
@@ -207,14 +186,8 @@
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh"
-      ],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "locations",
@@ -251,10 +224,7 @@
                 "description": "Address line 1 (Street address/PO Box)."
               },
               "street_address2": {
-                "type": [
-                  "null",
-                  "string"
-                ],
+                "type": ["null", "string"],
                 "description": "Address line 2 (Apartment/Suite/Unit/Building)."
               },
               "city": {
@@ -262,38 +232,23 @@
                 "description": "City/Town."
               },
               "state": {
-                "type": [
-                  "null",
-                  "string"
-                ],
+                "type": ["null", "string"],
                 "description": "State/County/Province/Region."
               },
               "country": {
-                "type": [
-                  "null",
-                  "string"
-                ],
+                "type": ["null", "string"],
                 "description": "Country."
               },
               "country_code": {
-                "type": [
-                  "null",
-                  "string"
-                ],
+                "type": ["null", "string"],
                 "description": "Two-letter country code (ISO 3166-1 Alpha-2)."
               },
               "zip": {
-                "type": [
-                  "null",
-                  "string"
-                ],
+                "type": ["null", "string"],
                 "description": "ZIP or postal code."
               },
               "unlocode": {
-                "type": [
-                  "null",
-                  "string"
-                ],
+                "type": ["null", "string"],
                 "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
               },
               "timezone": {
@@ -301,10 +256,7 @@
                 "description": "Timezone for this address"
               },
               "ref": {
-                "type": [
-                  "null",
-                  "string"
-                ],
+                "type": ["null", "string"],
                 "description": "Your reference for the address, as set in your network tab"
               }
             }
@@ -367,14 +319,8 @@
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh"
-      ],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "products",
@@ -397,31 +343,19 @@
             "description": "Name of product."
           },
           "description": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": ["null", "string"],
             "description": "Description of product."
           },
           "sku": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": ["null", "string"],
             "description": "SKU of product."
           },
           "product_category": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": ["null", "string"],
             "description": "The category of the product"
           },
           "country_of_origin": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": ["null", "string"],
             "description": "Nation in which the product is manufactured"
           },
           "client_verified": {
@@ -527,32 +461,20 @@
                   "type": "string"
                 },
                 "country_of_origin": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 }
               }
             }
           },
           "archived_at": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": ["null", "string"],
             "description": "A date string representing when the product was archived. Will be null if product is not archived. In ISO8601 UTC format with timezone denoted by Z.",
             "format": "date-time"
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh"
-      ],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["id"]]
     }
   ]
 }

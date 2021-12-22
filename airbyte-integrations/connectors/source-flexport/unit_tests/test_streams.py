@@ -2,13 +2,10 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from http import HTTPStatus
-from unittest.mock import MagicMock
-
 import pytest
 import requests
 from requests.exceptions import HTTPError
-from source_flexport.source import FlexportStream, FlexportError
+from source_flexport.source import FlexportError, FlexportStream
 
 
 @pytest.fixture
@@ -49,7 +46,7 @@ def test_next_page_token(patch_base_class, requests_mock, response, expected):
 
     if isinstance(expected, Exception):
         with pytest.raises(type(expected), match=str(expected)):
-           stream.next_page_token(response)
+            stream.next_page_token(response)
     else:
         assert stream.next_page_token(response) == expected
 
@@ -80,6 +77,6 @@ def test_parse_response(patch_base_class, requests_mock, status_code, response, 
 
     if isinstance(expected, Exception):
         with pytest.raises(type(expected), match=str(expected)):
-           list(stream.parse_response(response))
+            list(stream.parse_response(response))
     else:
         assert list(stream.parse_response(response)) == expected

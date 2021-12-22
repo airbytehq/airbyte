@@ -6,18 +6,20 @@
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import parse_qsl, urlparse
-from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 
 import pendulum
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from requests.auth import AuthBase
 
+
 class FlexportError(Exception):
     pass
+
 
 class FlexportStream(HttpStream, ABC):
     url_base = "https://api.flexport.com/"
@@ -113,10 +115,7 @@ class IncrementalFlexportStream(FlexportStream, ABC):
 
         while True:
             to_date = min(from_date + interval, end_date)
-            yield {
-                "from": from_date.isoformat(),
-                "to": to_date.add(seconds=1).isoformat()
-            }
+            yield {"from": from_date.isoformat(), "to": to_date.add(seconds=1).isoformat()}
             from_date = to_date
             if from_date >= end_date:
                 break

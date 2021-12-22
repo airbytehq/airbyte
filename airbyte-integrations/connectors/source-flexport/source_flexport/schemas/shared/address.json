@@ -6,7 +6,7 @@
     "_object": {
       "type": "string",
       "description": "String representing the object's type. Always /address for this object.",
-      "pattern": "^\/address$"
+      "pattern": "^/address$"
     },
     "street_address": {
       "type": "string",
