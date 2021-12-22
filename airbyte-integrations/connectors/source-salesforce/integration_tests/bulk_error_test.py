@@ -9,7 +9,6 @@ from typing import Any, Mapping
 
 import pytest
 from airbyte_cdk.sources.streams import Stream
-
 from source_salesforce.source import SourceSalesforce
 
 HERE = Path(__file__).parent

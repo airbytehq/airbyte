@@ -141,6 +141,18 @@ class BulkSalesforceStream(SalesforceStream):
             return job_id
         except exceptions.HTTPError as error:
             if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
+                # A part of streams can't be used by BULK API. Every API version can have a custom list of
+                # these sobjects. Another part of them can be generated dynamically. That's why we can't track
+                # them preliminarily and there is only one way is to except error with necessary messages about
+                # their limitations. Now we know about 3 different reasons of similar errors:
+                # 1) some SaleForce sobjects(streams) is not supported by the BULK API simply (as is).
+                # 2) Access to a sobject(stream) is not available
+                # 3) sobject is not queryable. It means this sobject can't be called directly.
+                #    We can call it as part of response from another sobject only.  E.g.:
+                #        initial query: "Select Id, Subject from ActivityHistory" -> error
+                #        updated query: "Select Name, (Select Subject,ActivityType from ActivityHistories) from Contact"
+                #    The second variant forces customisation for every case (ActivityHistory, ActivityHistories etc).
+                #    And the main problem is these subqueries doesn't support CSV response format.
                 error_data = error.response.json()[0]
                 error_code = error_data.get("errorCode")
                 error_message = error_data.get("message", "")
