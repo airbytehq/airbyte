@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useMemo } from "react";
 import { useQueryClient } from "react-query";
+import { useResetter } from "rest-hooks";
 
 import { GoogleAuthService } from "packages/cloud/lib/auth/GoogleAuthService";
 import useTypesafeReducer from "hooks/useTypesafeReducer";
@@ -79,8 +80,6 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
   useEffect(() => {
     return auth.onAuthStateChanged(async (currentUser) => {
       if (state.currentUser === null && currentUser) {
-        // token = await currentUser.getIdToken();
-
         let user: User | undefined;
 
         try {
@@ -109,6 +108,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
   }, [state.currentUser, loggedIn, authInited]);
 
   const queryClient = useQueryClient();
+  const reset = useResetter();
 
   const ctx: AuthContextApi = useMemo(
     () => ({
@@ -122,6 +122,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         await authService.signOut();
         loggedOut();
         await queryClient.invalidateQueries();
+        await reset();
       },
       async updateEmail(email, password): Promise<void> {
         await userService.changeEmail(email);
