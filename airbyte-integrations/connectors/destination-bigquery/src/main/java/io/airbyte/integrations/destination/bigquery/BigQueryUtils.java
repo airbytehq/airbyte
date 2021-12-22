@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.getJobErrorMessage;
+import static java.util.Objects.isNull;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -37,6 +38,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -46,6 +49,7 @@ public class BigQueryUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUtils.class);
   private static final String BIG_QUERY_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss.SSSSSS";
+  private static final Pattern datasetIdPattern = Pattern.compile("^(([a-z]([a-z0-9\\-]*[a-z0-9])?):)?([a-zA-Z0-9_]+)$");
 
   public static ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
     final JobId jobId = JobId.of(UUID.randomUUID().toString());
@@ -160,6 +164,27 @@ public class BigQueryUtils {
     return gcsJsonNode;
   }
 
+  public static String getDatasetId(final JsonNode config) {
+    String datasetId = config.get(BigQueryConsts.CONFIG_DATASET_ID).asText();
+    Matcher matcher = datasetIdPattern.matcher(datasetId);
+
+    if (matcher.matches()) {
+      if (!isNull(matcher.group(1))) {
+        final String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
+        if (!(projectId.equals(matcher.group(2)))) {
+          throw new IllegalArgumentException(String.format(
+              "Project ID included in Dataset ID must match Project ID field's value: Project ID is %s, but you specified %s in Dataset ID",
+              projectId,
+              matcher.group(2)));
+        }
+      }
+      return matcher.group(4);
+    }
+    throw new IllegalArgumentException(String.format(
+        "BigQuery Dataset ID format must match '[project-id:]dataset_id': %s",
+        datasetId));
+  }
+
   public static String getDatasetLocation(final JsonNode config) {
     if (config.has(BigQueryConsts.CONFIG_DATASET_LOCATION)) {
       return config.get(BigQueryConsts.CONFIG_DATASET_LOCATION).asText();
@@ -212,7 +237,7 @@ public class BigQueryUtils {
   }
 
   public static String getSchema(final JsonNode config, final ConfiguredAirbyteStream stream) {
-    final String defaultSchema = config.get(BigQueryConsts.CONFIG_DATASET_ID).asText();
+    final String defaultSchema = getDatasetId(config);
     final String srcNamespace = stream.getStream().getNamespace();
     if (srcNamespace == null) {
       return defaultSchema;

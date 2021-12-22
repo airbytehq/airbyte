@@ -14,7 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
 
-public class BigQueryDestinationTest {
+public class BigQueryUtilsTest {
 
   private ImmutableMap.Builder<Object, Object> configMapBuilder;
 
@@ -39,7 +39,7 @@ public class BigQueryDestinationTest {
         .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
         .build());
 
-    String actual = BigQueryDestination.getDatasetId(config);
+    String actual = BigQueryUtils.getDatasetId(config);
 
     assertEquals(expected, actual);
   }
@@ -59,7 +59,7 @@ public class BigQueryDestinationTest {
         .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
         .build());
 
-    Exception exception = assertThrows(IllegalArgumentException.class, () -> BigQueryDestination.getDatasetId(config));
+    Exception exception = assertThrows(IllegalArgumentException.class, () -> BigQueryUtils.getDatasetId(config));
 
     assertEquals(expected, exception.getMessage());
   }
