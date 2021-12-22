@@ -26,6 +26,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onSubmit }) => {
   return (
     <>
       <TitlesBlock
+        testId="onboarding.welcome"
         title={
           userName ? (
             <FormattedMessage

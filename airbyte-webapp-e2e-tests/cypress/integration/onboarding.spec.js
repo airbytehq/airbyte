@@ -6,7 +6,7 @@ describe("Preferences actions", () => {
     cy.fillEmail("test-email-onboarding@test-onboarding-domain.com");
     cy.get("input[name=securityUpdates]").parent().click();
 
-    cy.submit();
+    cy.submitButtonClick();
 
     cy.url().should("match", /.*\/onboarding/);
   });
