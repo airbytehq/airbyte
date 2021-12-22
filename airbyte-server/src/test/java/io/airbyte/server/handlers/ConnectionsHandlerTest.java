@@ -337,10 +337,10 @@ class ConnectionsHandlerTest {
     final ConnectionRead actualConnectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
     final ConnectionRead expectedConnectionRead = ConnectionHelpers.generateExpectedConnectionRead(
-            standardSync.getConnectionId(),
-            standardSync.getSourceId(),
-            standardSync.getDestinationId(),
-            standardSync.getOperationIds())
+        standardSync.getConnectionId(),
+        standardSync.getSourceId(),
+        standardSync.getDestinationId(),
+        standardSync.getOperationIds())
         .schedule(null)
         .syncCatalog(catalog)
         .status(ConnectionStatus.INACTIVE);

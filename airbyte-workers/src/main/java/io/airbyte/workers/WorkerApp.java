@@ -141,19 +141,20 @@ public class WorkerApp {
                 databaseUser,
                 databasePassword, databaseUrl, airbyteVersion));
 
-    NormalizationActivityImpl normalizationActivity = new NormalizationActivityImpl(workerConfigs, jobProcessFactory, secretsHydrator, workspaceRoot
-        , workerEnvironment,
-        logConfigs, databaseUser,
-        databasePassword, databaseUrl, airbyteVersion);
-    DbtTransformationActivityImpl dbtTransformationActivity = new DbtTransformationActivityImpl(workerConfigs, jobProcessFactory, secretsHydrator,
-        workspaceRoot,
-        workerEnvironment, logConfigs,
-        databaseUser,
-        databasePassword, databaseUrl, airbyteVersion);
-    new PersistStateActivityImpl(workspaceRoot, configRepository));
+    final NormalizationActivityImpl normalizationActivity =
+        new NormalizationActivityImpl(workerConfigs, jobProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment,
+            logConfigs, databaseUser,
+            databasePassword, databaseUrl, airbyteVersion);
+    final DbtTransformationActivityImpl dbtTransformationActivity =
+        new DbtTransformationActivityImpl(workerConfigs, jobProcessFactory, secretsHydrator,
+            workspaceRoot,
+            workerEnvironment, logConfigs,
+            databaseUser,
+            databasePassword, databaseUrl, airbyteVersion);
+    new PersistStateActivityImpl(workspaceRoot, configRepository);
     final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(workspaceRoot, configRepository);
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
-    final ReplicationActivityImpl replicationActivityImpl = getReplicationActivityImpl(
+    final ReplicationActivityImpl replicationActivity = getReplicationActivityImpl(
         containerOrchestratorEnabled,
         workerConfigs,
         jobProcessFactory,
@@ -167,7 +168,7 @@ public class WorkerApp {
         databaseUrl,
         airbyteVersion);
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
-<<<<<<<HEAD
+
     syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
 
     final Worker connectionUpdaterWorker =
@@ -188,36 +189,27 @@ public class WorkerApp {
         normalizationActivity,
         dbtTransformationActivity,
         persistStateActivity);
-=======
-    syncWorker.registerActivitiesImplementations(
-        replicationActivityImpl,
-        new NormalizationActivityImpl(workerConfigs, jobProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser,
-            databasePassword, databaseUrl, airbyteVersion),
-        new DbtTransformationActivityImpl(workerConfigs, jobProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs,
-            databaseUser,
-            databasePassword, databaseUrl, airbyteVersion),
-        new PersistStateActivityImpl(workspaceRoot, configRepository));
->>>>>>>ae5b1cfed9c9777d0620b294edcb0f2003067361
 
     factory.start();
   }
 
   /**
-   * Switches behavior based on containerOrchestratorEnabled to decide whether to use new container launching or not.
+   * Switches behavior based on containerOrchestratorEnabled to decide whether to use new container
+   * launching or not.
    */
   private ReplicationActivityImpl getReplicationActivityImpl(
-      final boolean containerOrchestratorEnabled,
-      final WorkerConfigs workerConfigs,
-      final ProcessFactory jobProcessFactory,
-      final ProcessFactory orchestratorProcessFactory,
-      final SecretsHydrator secretsHydrator,
-      final Path workspaceRoot,
-      final WorkerEnvironment workerEnvironment,
-      final LogConfigs logConfigs,
-      final String databaseUser,
-      final String databasePassword,
-      final String databaseUrl,
-      final String airbyteVersion) {
+                                                             final boolean containerOrchestratorEnabled,
+                                                             final WorkerConfigs workerConfigs,
+                                                             final ProcessFactory jobProcessFactory,
+                                                             final ProcessFactory orchestratorProcessFactory,
+                                                             final SecretsHydrator secretsHydrator,
+                                                             final Path workspaceRoot,
+                                                             final WorkerEnvironment workerEnvironment,
+                                                             final LogConfigs logConfigs,
+                                                             final String databaseUser,
+                                                             final String databasePassword,
+                                                             final String databaseUrl,
+                                                             final String airbyteVersion) {
     if (containerOrchestratorEnabled) {
       return new ReplicationActivityImpl(
           containerOrchestratorEnabled,
@@ -326,7 +318,7 @@ public class WorkerApp {
         configs.getConfigDatabaseUser(),
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
-        .getInitialized();
+            .getInitialized();
     final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).withValidation();
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
@@ -336,7 +328,7 @@ public class WorkerApp {
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
         configs.getDatabaseUrl())
-        .getInitialized();
+            .getInitialized();
 
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
     final TrackingClient trackingClient = TrackingClientSingleton.get();
@@ -359,9 +351,12 @@ public class WorkerApp {
         configRepository,
         jobPersistence);
 
+    final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
+
     final ConnectionHelper connectionHelper = new ConnectionHelper(
         configRepository,
-        workspaceHelper);
+        workspaceHelper,
+        workerConfigs);
 
     new WorkerApp(
         workspaceRoot,
@@ -373,20 +368,17 @@ public class WorkerApp {
         configs.getMaxWorkers(),
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
-        new WorkerConfigs(configs),
+        workerConfigs,
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
         configs.getDatabaseUrl(),
         configs.getAirbyteVersionOrWarning(),
-        <<<<<<<HEAD
         jobFactory,
         jobPersistence,
         temporalWorkerRunFactory,
         configs,
-    connectionHelper).start();
-=======
-    configs.getContainerOrchestratorEnabled()).start();
->>>>>>>ae5b1cfed9c9777d0620b294edcb0f2003067361
+        connectionHelper,
+        configs.getContainerOrchestratorEnabled()).start();
   }
 
 }
