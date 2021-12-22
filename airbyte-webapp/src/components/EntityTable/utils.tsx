@@ -1,14 +1,16 @@
 import { Connection } from "core/resources/Connection";
-import { Source } from "core/resources/Source";
-import { Destination } from "core/resources/Destination";
 import Status from "core/statuses";
 import {
   ITableDataItem,
   EntityTableDataItem,
   Status as ConnectionStatus,
 } from "./types";
-import { SourceDefinition } from "core/resources/SourceDefinition";
-import { DestinationDefinition } from "core/resources/DestinationDefinition";
+import {
+  Destination,
+  DestinationDefinition,
+  Source,
+  SourceDefinition,
+} from "core/domain/connector";
 
 // TODO: types in next methods look a bit ugly
 export function getEntityTableData<
