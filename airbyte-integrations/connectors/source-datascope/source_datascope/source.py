@@ -141,6 +141,8 @@ class DatascopeIncrementalStream(DatascopeStream, ABC):
         stream_state = stream_state or {}
         last_date = stream_state.get(self.cursor_field, self.start_date)
         params = { 'form_id': self.form_id, 'token': self.token}
+        if self.schema_type != 'dynamic':
+            params['pagination'] = True
         if last_date:
             params.update(**{'start': last_date})
         if next_page_token:
@@ -156,7 +158,7 @@ class Forms(DatascopeIncrementalStream):
         if self.schema_type == 'dynamic':
             return "v3/answers"
         else:
-            return "answers"
+            return "v3/answers_static"
 
     def get_json_schema(self):
         schema = super().get_json_schema()
