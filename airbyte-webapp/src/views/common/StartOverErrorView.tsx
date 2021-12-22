@@ -8,6 +8,8 @@ import { Button } from "components";
 
 const ResetSection = styled.div`
   margin-top: 30px;
+  display: flex;
+  justify-content: space-around;
 `;
 
 export const StartOverErrorView: React.FC<{

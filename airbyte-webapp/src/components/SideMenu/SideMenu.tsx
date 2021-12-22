@@ -52,7 +52,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ data, onSelect, activeItem }) => {
               testId={route.testId}
               key={route.path}
               name={route.name}
-              isActive={activeItem?.includes(route.path)}
+              isActive={activeItem?.endsWith(route.path)}
               count={route.indicatorCount}
               onClick={() => onSelect(route.path)}
             />

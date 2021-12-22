@@ -24,18 +24,22 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultGetSpecWorker.class);
 
+  private final WorkerConfigs workerConfigs;
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
 
   private Process process;
 
-  public DefaultGetSpecWorker(final IntegrationLauncher integrationLauncher, final AirbyteStreamFactory streamFactory) {
+  public DefaultGetSpecWorker(final WorkerConfigs workerConfigs,
+                              final IntegrationLauncher integrationLauncher,
+                              final AirbyteStreamFactory streamFactory) {
+    this.workerConfigs = workerConfigs;
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
   }
 
-  public DefaultGetSpecWorker(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory());
+  public DefaultGetSpecWorker(final WorkerConfigs workerConfigs, final IntegrationLauncher integrationLauncher) {
+    this(workerConfigs, integrationLauncher, new DefaultAirbyteStreamFactory());
   }
 
   @Override
@@ -56,7 +60,7 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
         // this.
         // retrieving spec should generally be instantaneous, but since docker images might not be pulled
         // it could take a while longer depending on internet conditions as well.
-        WorkerUtils.gentleClose(process, 30, TimeUnit.MINUTES);
+        WorkerUtils.gentleClose(workerConfigs, process, 30, TimeUnit.MINUTES);
       }
 
       final int exitCode = process.exitValue();

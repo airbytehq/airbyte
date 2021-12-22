@@ -20,6 +20,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreLists;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.StandardCheckConnectionInput;
@@ -42,8 +43,8 @@ import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.workers.DbtTransformationRunner;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerException;
-import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
@@ -88,6 +89,7 @@ public abstract class DestinationAcceptanceTest {
   private Path jobRoot;
   protected Path localRoot;
   private ProcessFactory processFactory;
+  private WorkerConfigs workerConfigs;
 
   /**
    * Name of the docker image that the tests will run against.
@@ -302,10 +304,11 @@ public abstract class DestinationAcceptanceTest {
     LOGGER.info("jobRoot: {}", jobRoot);
     LOGGER.info("localRoot: {}", localRoot);
     testEnv = new TestDestinationEnv(localRoot);
+    workerConfigs = new WorkerConfigs(new EnvConfigs());
 
     setup(testEnv);
 
-    processFactory = new DockerProcessFactory(workspaceRoot, workspaceRoot.toString(), localRoot.toString(), "host");
+    processFactory = new DockerProcessFactory(workerConfigs, workspaceRoot, workspaceRoot.toString(), localRoot.toString(), "host", false);
   }
 
   @AfterEach
@@ -459,7 +462,7 @@ public abstract class DestinationAcceptanceTest {
     if (normalizationFromSpec) {
       boolean normalizationRunnerFactorySupportsDestinationImage;
       try {
-        NormalizationRunnerFactory.create(getImageName(), processFactory);
+        NormalizationRunnerFactory.create(workerConfigs, getImageName(), processFactory);
         normalizationRunnerFactorySupportsDestinationImage = true;
       } catch (final IllegalStateException e) {
         normalizationRunnerFactorySupportsDestinationImage = false;
@@ -729,7 +732,8 @@ public abstract class DestinationAcceptanceTest {
     // this test successfully and that we are able to convert a destination 'config.json' into a dbt
     // 'profiles.yml'
     // (we don't actually rely on normalization running anything else here though)
-    final DbtTransformationRunner runner = new DbtTransformationRunner(processFactory, NormalizationRunnerFactory.create(
+    final DbtTransformationRunner runner = new DbtTransformationRunner(workerConfigs, processFactory, NormalizationRunnerFactory.create(
+        workerConfigs,
         getImageName(),
         processFactory));
     runner.start();
@@ -748,12 +752,12 @@ public abstract class DestinationAcceptanceTest {
     //
     // 1. First, it tests if connection to the destination works.
     dbtConfig.withDbtArguments("debug");
-    if (!runner.run(JOB_ID, JOB_ATTEMPT, transformationRoot, config, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, dbtConfig)) {
+    if (!runner.run(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
       throw new WorkerException("dbt debug Failed.");
     }
     // 2. Install any dependencies packages, if any
     dbtConfig.withDbtArguments("deps");
-    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, dbtConfig)) {
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
       throw new WorkerException("dbt deps Failed.");
     }
     // 3. It contains seeds that includes some (fake) raw data from a fictional app as CSVs data sets.
@@ -761,24 +765,24 @@ public abstract class DestinationAcceptanceTest {
     // Note that a typical dbt project does not require this step since dbt assumes your raw data is
     // already in your warehouse.
     dbtConfig.withDbtArguments("seed");
-    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, dbtConfig)) {
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
       throw new WorkerException("dbt seed Failed.");
     }
     // 4. Run the models:
     // Note: If this steps fails, it might mean that you need to make small changes to the SQL in the
     // models folder to adjust for the flavor of SQL of your target database.
     dbtConfig.withDbtArguments("run");
-    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, dbtConfig)) {
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
       throw new WorkerException("dbt run Failed.");
     }
     // 5. Test the output of the models and tables have been properly populated:
     dbtConfig.withDbtArguments("test");
-    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, dbtConfig)) {
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
       throw new WorkerException("dbt test Failed.");
     }
     // 6. Generate dbt documentation for the project:
     dbtConfig.withDbtArguments("docs generate");
-    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, dbtConfig)) {
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
       throw new WorkerException("dbt docs generate Failed.");
     }
     runner.close();
@@ -795,7 +799,8 @@ public abstract class DestinationAcceptanceTest {
 
     final JsonNode config = getConfig();
 
-    final DbtTransformationRunner runner = new DbtTransformationRunner(processFactory, NormalizationRunnerFactory.create(
+    final DbtTransformationRunner runner = new DbtTransformationRunner(workerConfigs, processFactory, NormalizationRunnerFactory.create(
+        workerConfigs,
         getImageName(),
         processFactory));
     runner.start();
@@ -805,12 +810,12 @@ public abstract class DestinationAcceptanceTest {
         .withGitRepoBranch("master")
         .withDockerImage("fishtownanalytics/dbt:0.19.1")
         .withDbtArguments("debug");
-    if (!runner.run(JOB_ID, JOB_ATTEMPT, transformationRoot, config, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, dbtConfig)) {
+    if (!runner.run(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
       throw new WorkerException("dbt debug Failed.");
     }
 
     dbtConfig.withDbtArguments("test");
-    assertFalse(runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, dbtConfig),
+    assertFalse(runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig),
         "dbt test should fail, as we haven't run dbt run on this project yet");
   }
 
@@ -916,17 +921,20 @@ public abstract class DestinationAcceptanceTest {
   }
 
   private ConnectorSpecification runSpec() throws WorkerException {
-    return new DefaultGetSpecWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory))
-        .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
+    return new DefaultGetSpecWorker(
+        workerConfigs, new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
+            .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
   }
 
   private StandardCheckConnectionOutput runCheck(final JsonNode config) throws WorkerException {
-    return new DefaultCheckConnectionWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory))
-        .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
+    return new DefaultCheckConnectionWorker(
+        workerConfigs, new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
+            .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
   }
 
   protected AirbyteDestination getDestination() {
-    return new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory));
+    return new DefaultAirbyteDestination(
+        workerConfigs, new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null));
   }
 
   protected void runSyncAndVerifyStateOutput(final JsonNode config,
@@ -983,12 +991,13 @@ public abstract class DestinationAcceptanceTest {
     }
 
     final NormalizationRunner runner = NormalizationRunnerFactory.create(
+        workerConfigs,
         getImageName(),
         processFactory);
     runner.start();
     final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
     if (!runner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot, destinationConfig.getDestinationConnectionConfiguration(),
-        destinationConfig.getCatalog(), WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS)) {
+        destinationConfig.getCatalog(), null)) {
       throw new WorkerException("Normalization Failed.");
     }
     runner.close();
