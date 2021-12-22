@@ -87,8 +87,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         getDriverClass(),
         jdbcConfig.has("connection_properties") ? jdbcConfig.get("connection_properties").asText() : null);
 
-    database.execute(connection ->
-        connection.createStatement().execute("CREATE DATABASE " + config.get("database") + ";"));
+    database.execute(connection -> connection.createStatement().execute("CREATE DATABASE " + config.get("database") + ";"));
     super.setup();
   }
 
@@ -121,28 +120,28 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   protected AirbyteCatalog getCatalog(final String defaultNamespace) {
     return new AirbyteCatalog().withStreams(Lists.newArrayList(
         CatalogHelpers.createAirbyteStream(
-                TABLE_NAME,
-                defaultNamespace,
-                Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
-                Field.of(COL_NAME, JsonSchemaPrimitive.STRING),
-                Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING))
+            TABLE_NAME,
+            defaultNamespace,
+            Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
+            Field.of(COL_NAME, JsonSchemaPrimitive.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
         CatalogHelpers.createAirbyteStream(
-                TABLE_NAME_WITHOUT_PK,
-                defaultNamespace,
-                Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
-                Field.of(COL_NAME, JsonSchemaPrimitive.STRING),
-                Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING),
-                Field.of(COL_ROW_ID, JsonSchemaPrimitive.NUMBER))
+            TABLE_NAME_WITHOUT_PK,
+            defaultNamespace,
+            Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
+            Field.of(COL_NAME, JsonSchemaPrimitive.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING),
+            Field.of(COL_ROW_ID, JsonSchemaPrimitive.NUMBER))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ROW_ID))),
         CatalogHelpers.createAirbyteStream(
-                TABLE_NAME_COMPOSITE_PK,
-                defaultNamespace,
-                Field.of(COL_FIRST_NAME, JsonSchemaPrimitive.STRING),
-                Field.of(COL_LAST_NAME, JsonSchemaPrimitive.STRING),
-                Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING))
+            TABLE_NAME_COMPOSITE_PK,
+            defaultNamespace,
+            Field.of(COL_FIRST_NAME, JsonSchemaPrimitive.STRING),
+            Field.of(COL_LAST_NAME, JsonSchemaPrimitive.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
