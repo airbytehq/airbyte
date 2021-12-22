@@ -3,5 +3,5 @@
   "name": "DataScope",
   "dockerRepository": "airbyte/datascope",
   "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/datascope",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/datascope"
 }
