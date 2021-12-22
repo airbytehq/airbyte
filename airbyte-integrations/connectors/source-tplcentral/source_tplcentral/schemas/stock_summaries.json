@@ -7,17 +7,7 @@
       "type": "integer"
     },
     "ItemIdentifier": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "Sku": {
-          "type": "string"
-        },
-        "Id": {
-          "type": "integer"
-        }
-      }
+      "$ref": "generic/models/item_identifier.json"
     },
     "Qualifier": {
       "type": "string"

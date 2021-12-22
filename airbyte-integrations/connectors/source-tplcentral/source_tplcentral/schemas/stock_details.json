@@ -14,17 +14,7 @@
       "type": "integer"
     },
     "ItemIdentifier": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "Sku": {
-          "type": "string"
-        },
-        "Id": {
-          "type": "integer"
-        }
-      }
+      "$ref": "generic/models/item_identifier.json"
     },
     "Description": {
       "type": "string"
@@ -57,11 +47,17 @@
       "type": "number"
     },
     "SecondaryReceived": {
-      "type": ["null", "number"]
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "SecondaryAvailable": {
       "description": "unallocated; see IsOnHold for whether it's allocatable",
-      "type": ["null", "number"]
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "LotNumber": {
       "type": "string"
@@ -70,119 +66,38 @@
       "type": "string"
     },
     "ExpirationDate": {
-      "type": ["null", "string"],
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Cost": {
-      "type": ["null", "number"]
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "SupplierIdentifier": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "Name": {
-          "type": "string"
-        },
-        "Id": {
-          "type": "integer"
-        }
-      }
+      "$ref": "generic/models/contact_identifier.json"
     },
     "LocationIdentifier": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "NameKey": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "FacilityIdentifier": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "Name": {
-                  "type": "string"
-                },
-                "Id": {
-                  "type": "integer"
-                }
-              }
-            },
-            "Name": {
-              "type": "string"
-            }
-          }
-        },
-        "Id": {
-          "type": "integer"
-        }
-      }
+      "$ref": "generic/models/location_identifier.json"
     },
     "PalletIdentifier": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "NameKey": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "FacilityIdentifier": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "Name": {
-                  "type": "string"
-                },
-                "Id": {
-                  "type": "integer"
-                }
-              }
-            },
-            "Name": {
-              "type": "string"
-            }
-          }
-        },
-        "Id": {
-          "type": "integer"
-        }
-      }
+      "$ref": "generic/models/pallet_identifier.json"
     },
     "InventoryUnitOfMeasureIdentifier": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "Name": {
-          "type": "string"
-        },
-        "Id": {
-          "type": "integer"
-        }
-      }
+      "$ref": "generic/models/unit_of_measure_identifier.json"
     },
     "SecondaryUnitOfMeasureIdentifier": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "Name": {
-          "type": "string"
-        },
-        "Id": {
-          "type": "integer"
-        }
-      }
+      "$ref": "generic/models/unit_of_measure_identifier.json"
     },
     "InventoryUnitsPerSecondaryUnit": {
-      "type": ["null", "number"]
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "ReceiverId": {
       "type": "integer"
@@ -203,24 +118,20 @@
     "SavedElements": {
       "type": "array",
       "items": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "Name": {
-            "type": "string"
-          },
-          "Value": {
-            "type": "string"
-          }
-        }
+        "$ref": "generic/models/saved_element.json"
       }
     },
     "WeightImperial": {
-      "type": ["null", "number"]
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "WeightMetric": {
-      "type": ["null", "number"]
+      "type": [
+        "null",
+        "number"
+      ]
     }
   }
 }
