@@ -8,11 +8,13 @@
     "additionalProperties": false,
     "properties": {
       "api_key": {
+        "order": 0,
         "type": "string",
         "title": "API Key",
         "airbyte_secret": true
       },
       "start_date": {
+        "order": 1,
         "title": "Start Date",
         "type": "string",
         "format": "date-time"
