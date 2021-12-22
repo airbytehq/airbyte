@@ -127,7 +127,7 @@ public class ConnectionUpdaterWorkflowTest {
           workflowState);
 
       WorkflowClient.start(workflow::run, input);
-      testEnv.sleep(Duration.ofSeconds(122L));
+      testEnv.sleep(Duration.ofSeconds(124L));
       Mockito.verify(mConfigFetchActivity, Mockito.atLeast(2)).getTimeToWait(Mockito.any());
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
@@ -159,7 +159,7 @@ public class ConnectionUpdaterWorkflowTest {
           workflowState);
 
       WorkflowClient.start(workflow::run, input);
-      testEnv.sleep(Duration.ofSeconds(2L));
+      testEnv.sleep(Duration.ofSeconds(4L));
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
       Assertions.assertThat(events)
@@ -191,7 +191,7 @@ public class ConnectionUpdaterWorkflowTest {
 
       WorkflowClient.start(workflow::run, input);
       workflow.submitManualSync();
-      testEnv.sleep(Duration.ofSeconds(2L));
+      testEnv.sleep(Duration.ofSeconds(4L));
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
@@ -231,7 +231,7 @@ public class ConnectionUpdaterWorkflowTest {
 
       WorkflowClient.start(workflow::run, input);
       workflow.connectionUpdated();
-      testEnv.sleep(Duration.ofSeconds(2L));
+      testEnv.sleep(Duration.ofSeconds(4L));
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
@@ -270,9 +270,9 @@ public class ConnectionUpdaterWorkflowTest {
           workflowState);
 
       WorkflowClient.start(workflow::run, input);
-      testEnv.sleep(Duration.ofSeconds(2L));
+      testEnv.sleep(Duration.ofSeconds(4L));
       workflow.cancelJob();
-      testEnv.sleep(Duration.ofSeconds(2L));
+      testEnv.sleep(Duration.ofSeconds(4L));
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
@@ -312,7 +312,7 @@ public class ConnectionUpdaterWorkflowTest {
 
       WorkflowClient.start(workflow::run, input);
       workflow.deleteConnection();
-      testEnv.sleep(Duration.ofSeconds(2L));
+      testEnv.sleep(Duration.ofSeconds(4L));
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
