@@ -109,7 +109,7 @@ def test_parse_response(stream, requests_mock):
     )
     resp = requests.get("https://dummy")
     inputs = {"response": resp}
-    expected_parsed_object = {"bar": {"baz": "baz"}, "foo": "foo"}
+    expected_parsed_object = {"Bar": {"Baz": "baz"}, "Foo": "foo"}
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 
@@ -129,7 +129,7 @@ def test_parse_response_with_primary_key(patch_base_class_upstream_primary_key, 
     )
     resp = requests.get("https://dummy")
     inputs = {"response": resp}
-    expected_parsed_object = {"nested": {"primary_key": 42}, "test_primary_key": 42}
+    expected_parsed_object = {"Nested": {"PrimaryKey": 42}, "test_primary_key": 42}
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 
@@ -149,7 +149,7 @@ def test_parse_response_with_cursor_field(patch_base_class_upstream_cursor_field
     )
     resp = requests.get("https://dummy")
     inputs = {"response": resp}
-    expected_parsed_object = {"nested": {"cursor": 43}, "test_cursor_field": 43}
+    expected_parsed_object = {"Nested": {"Cursor": 43}, "test_cursor_field": 43}
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 
