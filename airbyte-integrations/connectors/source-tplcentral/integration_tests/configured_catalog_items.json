@@ -6,7 +6,6 @@
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
-          "additionalProperties": false,
           "properties": {
             "_id": {
               "type": "integer"
@@ -18,12 +17,10 @@
             "ReadOnly": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "CustomerIdentifier": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
-                  "additionalProperties": false,
                   "properties": {
                     "ExternalId": {
                       "type": "string"
@@ -83,7 +80,6 @@
             "ClassificationIdentifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "Name": {
                   "type": "string"
@@ -119,7 +115,6 @@
               "items": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
-                "additionalProperties": false,
                 "properties": {
                   "Qualifier": {
                     "type": "string"
@@ -132,7 +127,6 @@
               "items": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
-                "additionalProperties": false,
                 "properties": {
                   "Qualifier": {
                     "type": "string"
@@ -146,7 +140,6 @@
             "Kit": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "MaterialNotes": {
                   "type": "string"
@@ -156,12 +149,10 @@
                   "items": {
                     "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "object",
-                    "additionalProperties": false,
                     "properties": {
                       "ItemIdentifier": {
                         "$schema": "http://json-schema.org/draft-07/schema#",
                         "type": "object",
-                        "additionalProperties": false,
                         "properties": {
                           "Sku": {
                             "type": "string"
@@ -188,17 +179,14 @@
             "Options": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "InventoryUnit": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
-                  "additionalProperties": false,
                   "properties": {
                     "UnitIdentifier": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
-                      "additionalProperties": false,
                       "properties": {
                         "Name": {
                           "type": "string"
@@ -227,7 +215,6 @@
                 "SecondaryUnit": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
-                  "additionalProperties": false,
                   "properties": {
                     "InventoryAlso": {
                       "type": "boolean"
@@ -238,7 +225,6 @@
                     "UnitIdentifier": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
-                      "additionalProperties": false,
                       "properties": {
                         "Name": {
                           "type": "string"
@@ -256,12 +242,10 @@
                 "PackageUnit": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
-                  "additionalProperties": false,
                   "properties": {
                     "Imperial": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
-                      "additionalProperties": false,
                       "properties": {
                         "NetWeight": {
                           "type": ["null", "number"]
@@ -283,7 +267,6 @@
                     "Metric": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
-                      "additionalProperties": false,
                       "properties": {
                         "NetWeight": {
                           "type": ["null", "number"]
@@ -308,7 +291,6 @@
                     "UnitIdentifier": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
-                      "additionalProperties": false,
                       "properties": {
                         "Name": {
                           "type": "string"
@@ -326,7 +308,6 @@
                 "TrackBys": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
-                  "additionalProperties": false,
                   "properties": {
                     "TrackLotNumber": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -375,12 +356,10 @@
                 "Pallets": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
-                  "additionalProperties": false,
                   "properties": {
                     "TypeIdentifier": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
-                      "additionalProperties": false,
                       "properties": {
                         "Name": {
                           "type": "string"
@@ -402,7 +381,6 @@
                     "Imperial": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
-                      "additionalProperties": false,
                       "properties": {
                         "Length": {
                           "type": ["null", "number"]
@@ -421,7 +399,6 @@
                     "Metric": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
-                      "additionalProperties": false,
                       "properties": {
                         "Length": {
                           "type": ["null", "number"]
@@ -445,7 +422,6 @@
                 "HazMat": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
-                  "additionalProperties": false,
                   "properties": {
                     "IsHazMat": {
                       "type": "boolean"
@@ -476,7 +452,6 @@
                 "DirectedPutAway": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
-                  "additionalProperties": false,
                   "properties": {
                     "LocationZones": {
                       "type": "string"
@@ -490,17 +465,14 @@
                     "PreferredLocationIdentifier": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
-                      "additionalProperties": false,
                       "properties": {
                         "NameKey": {
                           "$schema": "http://json-schema.org/draft-07/schema#",
                           "type": "object",
-                          "additionalProperties": false,
                           "properties": {
                             "FacilityIdentifier": {
                               "$schema": "http://json-schema.org/draft-07/schema#",
                               "type": "object",
-                              "additionalProperties": false,
                               "properties": {
                                 "Name": {
                                   "type": "string"

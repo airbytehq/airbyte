@@ -6,7 +6,6 @@
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
-          "additionalProperties": false,
           "properties": {
             "_id": {
               "type": "integer"
@@ -28,7 +27,6 @@
             "CustomerIdentifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "ExternalId": {
                   "type": "string"
@@ -44,7 +42,6 @@
             "FacilityIdentifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "Name": {
                   "type": "string"
@@ -57,7 +54,6 @@
             "ItemIdentifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "Sku": {
                   "type": "string"
@@ -83,7 +79,6 @@
             "InventoryUnitOfMeasureIdentifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "Name": {
                   "type": "string"
@@ -96,7 +91,6 @@
             "SecondaryUnitOfMeasureIdentifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "Name": {
                   "type": "string"
@@ -156,7 +150,6 @@
               "items": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
-                "additionalProperties": false,
                 "properties": {
                   "Name": {
                     "type": "string"
@@ -183,7 +176,6 @@
             "SupplierIdentifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "Name": {
                   "type": "string"
@@ -196,17 +188,14 @@
             "LocationIdentifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "NameKey": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
-                  "additionalProperties": false,
                   "properties": {
                     "FacilityIdentifier": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
-                      "additionalProperties": false,
                       "properties": {
                         "Name": {
                           "type": "string"
@@ -229,17 +218,14 @@
             "PalletIdentifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "NameKey": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
-                  "additionalProperties": false,
                   "properties": {
                     "FacilityIdentifier": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
-                      "additionalProperties": false,
                       "properties": {
                         "Name": {
                           "type": "string"
@@ -272,7 +258,6 @@
             "OnHoldUserIdentifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "Name": {
                   "type": "string"

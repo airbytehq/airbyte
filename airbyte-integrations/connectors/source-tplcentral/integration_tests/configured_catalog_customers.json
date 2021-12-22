@@ -6,7 +6,6 @@
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
-          "additionalProperties": false,
           "properties": {
             "_id": {
               "type": "integer"
@@ -14,7 +13,6 @@
             "ReadOnly": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "CustomerId": {
                   "type": "integer"
@@ -32,7 +30,6 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "description": "in GETs: the contact; in POSTs or PUTs: identifies existing contact or properties of new contact ",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "ContactId": {
                   "type": ["null", "integer"]
@@ -92,7 +89,6 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "description": "in GETs: the contact; in POSTs or PUTs: identifies existing contact or properties of new contact ",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "ContactId": {
                   "type": ["null", "integer"]
@@ -154,7 +150,6 @@
               "items": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
-                "additionalProperties": false,
                 "properties": {
                   "Type": {
                     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -238,7 +233,6 @@
               "items": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
-                "additionalProperties": false,
                 "properties": {
                   "Name": {
                     "type": "string"
@@ -252,7 +246,6 @@
             "PrimaryFacilityIdentifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "Name": {
                   "type": "string"
@@ -265,12 +258,10 @@
             "Options": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "additionalProperties": false,
               "properties": {
                 "Alerts": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
-                  "additionalProperties": false,
                   "properties": {
                     "ExpirationNotificationThreshold": {
                       "description": "number of days???",
@@ -294,7 +285,6 @@
                       "items": {
                         "$schema": "http://json-schema.org/draft-07/schema#",
                         "type": "object",
-                        "additionalProperties": false,
                         "properties": {
                           "EventTypes": {
                             "description": "a comma-delimited list of supported event types",
@@ -318,7 +308,6 @@
                 "Storage": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
-                  "additionalProperties": false,
                   "properties": {
                     "FuelSurcharge": {
                       "description": "positive int percentage 0-100",
@@ -338,7 +327,6 @@
                 "Edi": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
-                  "additionalProperties": false,
                   "properties": {
                     "CustInterchangeId": {
                       "type": "string"
@@ -360,7 +348,6 @@
                 "Receiving": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
-                  "additionalProperties": false,
                   "properties": {
                     "PurchaseOrders": {
                       "type": "boolean"
@@ -411,7 +398,6 @@
                 "Shipping": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
-                  "additionalProperties": false,
                   "properties": {
                     "NextMasterBolId": {
                       "description": "Readonly value; see NextMasterBolIdOverride",
@@ -478,7 +464,6 @@
                     "AsnPreCheck": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
-                      "additionalProperties": false,
                       "properties": {
                         "RequireScacForAsn": {
                           "description": "Prevents sending an ASN when SCAC is not specified",
@@ -514,7 +499,6 @@
                 "Packaging": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
-                  "additionalProperties": false,
                   "properties": {
                     "SmallParcelUsps3rdParty": {
                       "type": "string"
@@ -581,7 +565,6 @@
                 "OtherSystemBehaviors": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
-                  "additionalProperties": false,
                   "properties": {
                     "FlexFields": {
                       "type": "boolean"
@@ -595,7 +578,6 @@
                 "UserInterface": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
-                  "additionalProperties": false,
                   "properties": {
                     "HideLocationSelectedList": {
                       "type": "boolean"
@@ -629,12 +611,10 @@
                 "SavedElements": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
-                  "additionalProperties": false,
                   "properties": {
                     "Orders": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
-                      "additionalProperties": false,
                       "properties": {
                         "Defs": {
                           "description": "for the transaction itself, listed in customer's preferred display order",
@@ -643,7 +623,6 @@
                             "$schema": "http://json-schema.org/draft-07/schema#",
                             "description": "a suggested saved element",
                             "type": "object",
-                            "additionalProperties": false,
                             "properties": {
                               "Name": {
                                 "description": "a suggested name",
@@ -663,7 +642,6 @@
                             "$schema": "http://json-schema.org/draft-07/schema#",
                             "description": "a suggested saved element",
                             "type": "object",
-                            "additionalProperties": false,
                             "properties": {
                               "Name": {
                                 "description": "a suggested name",
@@ -681,7 +659,6 @@
                     "Receivers": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
-                      "additionalProperties": false,
                       "properties": {
                         "Defs": {
                           "description": "for the transaction itself, listed in customer's preferred display order",
@@ -690,7 +667,6 @@
                             "$schema": "http://json-schema.org/draft-07/schema#",
                             "description": "a suggested saved element",
                             "type": "object",
-                            "additionalProperties": false,
                             "properties": {
                               "Name": {
                                 "description": "a suggested name",
@@ -710,7 +686,6 @@
                             "$schema": "http://json-schema.org/draft-07/schema#",
                             "description": "a suggested saved element",
                             "type": "object",
-                            "additionalProperties": false,
                             "properties": {
                               "Name": {
                                 "description": "a suggested name",
