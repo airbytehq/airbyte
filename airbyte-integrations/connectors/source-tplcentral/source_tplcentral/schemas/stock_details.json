@@ -47,17 +47,11 @@
       "type": "number"
     },
     "SecondaryReceived": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "SecondaryAvailable": {
       "description": "unallocated; see IsOnHold for whether it's allocatable",
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "LotNumber": {
       "type": "string"
@@ -66,17 +60,11 @@
       "type": "string"
     },
     "ExpirationDate": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "Cost": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "SupplierIdentifier": {
       "$ref": "generic/models/contact_identifier.json"
@@ -94,10 +82,7 @@
       "$ref": "generic/models/unit_of_measure_identifier.json"
     },
     "InventoryUnitsPerSecondaryUnit": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "ReceiverId": {
       "type": "integer"
@@ -122,16 +107,10 @@
       }
     },
     "WeightImperial": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "WeightMetric": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     }
   }
 }

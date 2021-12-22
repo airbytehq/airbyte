@@ -16,10 +16,7 @@
       "type": "integer"
     },
     "OrderItemPickExceptionId": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "Qty": {
       "type": "number"
@@ -31,10 +28,7 @@
       "type": "string"
     },
     "ExpirationDate": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "CreateDate": {

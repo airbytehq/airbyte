@@ -7,22 +7,13 @@
       "$ref": "../../generic/models/pallet_type_identifier.json"
     },
     "Tie": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "High": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "Qty": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "Imperial": {
       "$ref": "../../generic/models/dimension.json"

@@ -7,10 +7,7 @@
       "type": "integer"
     },
     "CreationDate": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "Deactivated": {

@@ -12,7 +12,6 @@
               "type": "integer"
             },
             "ReadOnly": {
-              "description": "these fields are not updatable by the API client",
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
@@ -30,8 +29,8 @@
               }
             },
             "CompanyInfo": {
-              "description": "customer.contact1",
               "$schema": "http://json-schema.org/draft-07/schema#",
+              "description": "in GETs: the contact; in POSTs or PUTs: identifies existing contact or properties of new contact ",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -90,8 +89,8 @@
               }
             },
             "PrimaryContact": {
-              "description": "customer.customercontacts where contact type is primary",
               "$schema": "http://json-schema.org/draft-07/schema#",
+              "description": "in GETs: the contact; in POSTs or PUTs: identifies existing contact or properties of new contact ",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -261,11 +260,9 @@
                 "Id": {
                   "type": "integer"
                 }
-              },
-              "description": "same as the first in Facilities; populated by GET, ignored by POST and PUT"
+              }
             },
             "Options": {
-              "description": "assemblage of all manner of capabilities the system allows for this customer, scraped together from multiple database sources",
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
@@ -492,9 +489,9 @@
                           "type": "boolean"
                         },
                         "AsnPreCheckOptions": {
-                          "description": "Prevents sending an ASN when any of the checks associated with the options in this bit flag fail",
                           "$schema": "http://json-schema.org/draft-07/schema#",
-                          "type": "integer"
+                          "type": "integer",
+                          "description": "0: none; 1: has_weight Prevents sending an ASN when total pkg weight or any individual packages weight is 0; 2: has_volume Prevents sending an ASN when total volume or any individual packages volume is 0; 4: has_packages Prevents sending an ASN when the number of packages is 0; 8: has_carrier Prevents sending an ASN when Carrier is not specified; 16: has_bill_of_lading Prevents sending an ASN when BillOfLading is not specified; 32: has_load_number Prevents sending an ASN when LoadNumber is not specified; 64: has_po_number Prevents sending an ASN when PO Number is not specified; 128: is_closed Prevents sending an ASN when the order is not closed"
                         },
                         "OrderLevelFlexFields": {
                           "description": "Prevents sending an ASN when the listed Flex Fields are not all specified at the order level",
@@ -630,7 +627,6 @@
                   }
                 },
                 "SavedElements": {
-                  "description": "UI assistance for adding saved elements to a transaction and its line items. Since it is merely a UI assistance, it is up to a UI to decide if, how and when it will verify requiredness. In other words, business logic doesn't care.",
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,

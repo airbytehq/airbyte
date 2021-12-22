@@ -7,10 +7,7 @@
       "$ref": "other_customer_contact_type.json"
     },
     "ContactId": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "CompanyName": {
       "type": "string"

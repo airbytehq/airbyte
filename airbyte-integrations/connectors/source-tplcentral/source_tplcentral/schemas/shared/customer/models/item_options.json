@@ -25,10 +25,7 @@
       "$ref": "directed_put_away.json"
     },
     "DaysBetweenCounts": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "AutoHoldOnReceive": {
       "type": "boolean"

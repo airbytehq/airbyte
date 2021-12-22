@@ -25,10 +25,7 @@
       "type": "boolean"
     },
     "MixedExpirationDaysThreshold": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     }
   }
 }

@@ -33,51 +33,33 @@
       "type": "string"
     },
     "EarliestShipDate": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "ShipCancelDate": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "Notes": {
       "type": "string"
     },
     "NumUnits1": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "Unit1Identifier": {
       "$ref": "generic/models/unit_of_measure_identifier.json"
     },
     "NumUnits2": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "Unit2Identifier": {
       "$ref": "generic/models/unit_of_measure_identifier.json"
     },
     "TotalWeight": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "TotalVolume": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "BillingCode": {
       "type": "string"
@@ -86,16 +68,10 @@
       "type": "string"
     },
     "UpsServiceOptionCharge": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "UpsTransportationCharge": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "AddFreightToCod": {
       "type": "boolean"
@@ -108,10 +84,7 @@
       "$ref": "generic/models/channel_identifier.json"
     },
     "RoutePickupDate": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "ShippingNotes": {

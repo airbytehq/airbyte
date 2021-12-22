@@ -4,25 +4,16 @@
   "additionalProperties": false,
   "properties": {
     "FulfillInvShippingAndHandling": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "FulfillInvTax": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "FulfillInvDiscountCode": {
       "type": "string"
     },
     "FulfillInvDiscountAmount": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "FulfillInvGiftMessage": {
       "type": "string"

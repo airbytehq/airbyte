@@ -358,7 +358,6 @@
                   ]
                 },
                 "ImportChannelIdentifier": {
-                  "description": "reference to the channel trhough which this order was imported",
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
@@ -406,10 +405,10 @@
                   }
                 },
                 "Status": {
-                  "description": "For GET of orders and receivers, the value is reliable. For rql for orders, this property is reliable only for \"Canceled\" status; otherwise use the IsClosed property.",
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "integer",
-                  "enum": [0, 1, 2]
+                  "enum": [0, 1, 2],
+                  "description": "0: open (Has not yet been confirmed); 1: closed (Has been confirmed); 2: canceled (Has been canceled)"
                 }
               }
             },
@@ -432,7 +431,6 @@
                         "type": "boolean"
                       },
                       "UnitIdentifier": {
-                        "description": "for convenience, referenced item's primary inventory unit",
                         "$schema": "http://json-schema.org/draft-07/schema#",
                         "type": "object",
                         "additionalProperties": false,
@@ -446,7 +444,6 @@
                         }
                       },
                       "SecondaryUnitIdentifier": {
-                        "description": "for convenience, referenced item's secondary inventory unit if defined",
                         "$schema": "http://json-schema.org/draft-07/schema#",
                         "type": "object",
                         "additionalProperties": false,
@@ -499,13 +496,11 @@
                               "type": "boolean"
                             },
                             "Detail": {
-                              "description": "null unless requested by including AllocationsWithDetail in OrderItemChildren",
                               "$schema": "http://json-schema.org/draft-07/schema#",
                               "type": "object",
                               "additionalProperties": false,
                               "properties": {
                                 "ItemTraits": {
-                                  "description": "unique identifying characteristics of an item in a location",
                                   "$schema": "http://json-schema.org/draft-07/schema#",
                                   "type": "object",
                                   "additionalProperties": false,
@@ -756,8 +751,7 @@
                             "Id": {
                               "type": "integer"
                             }
-                          },
-                          "description": "the package definition to apply to any package created as a result of this OrderItemInPackage"
+                          }
                         }
                       }
                     }
@@ -846,7 +840,6 @@
               "type": "boolean"
             },
             "ExportChannelIdentifier": {
-              "description": "A reference to the channel used to export an Advance Shipping Notice or RoutingRequest; must specify Id (Name alone will fail)",
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
@@ -964,7 +957,6 @@
               }
             },
             "Billing": {
-              "description": "PUT: set to null to make no changes to billing",
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
@@ -978,10 +970,10 @@
                     "additionalProperties": false,
                     "properties": {
                       "ChargeType": {
-                        "description": "charge type",
                         "$schema": "http://json-schema.org/draft-07/schema#",
                         "type": "integer",
-                        "enum": [0, 1, 2, 3, 4, 5, 6, 7, 8]
+                        "enum": [0, 1, 2, 3, 4, 5, 6, 7, 8],
+                        "description": "1: handling; 2: storage; 3: prepaid_freight; 4: third_party_freight; 5: special_charges; 6: materials; 7: auto_calc_storage (used internally for sys-gen'ed charges); 8: auto_calc_handling (used internally for sys-gen'ed charges); 8: maxval (ignore, not a real value)"
                       },
                       "Subtotal": {
                         "type": "number"
@@ -1035,13 +1027,11 @@
               }
             },
             "ShipTo": {
-              "description": "if not found, creates new shipto contact",
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
                 "RetailerInfo": {
-                  "description": "in GETs: the retailer; in POSTs or PUTs: identifies existing retailer or properties of new retailer",
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
@@ -1149,18 +1139,18 @@
                   "type": "string"
                 },
                 "AddressStatus": {
-                  "description": "confirmation status",
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "integer",
-                  "enum": [0, 1, 2]
+                  "enum": [0, 1, 2],
+                  "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
                 }
               }
             },
             "SoldTo": {
-              "description": "if not found, creates new soldto contact",
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
+              "description": "in GETs: the contact; in POSTs or PUTs: identifies existing contact or properties of new contact",
               "properties": {
                 "SameAs": {
                   "description": "PUT or POST: to use same Contact as another contact on the same order; GET: always null",
@@ -1231,18 +1221,18 @@
                   "type": "string"
                 },
                 "AddressStatus": {
-                  "description": "confirmation status",
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "integer",
-                  "enum": [0, 1, 2]
+                  "enum": [0, 1, 2],
+                  "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
                 }
               }
             },
             "BillTo": {
-              "description": "if not found, creates new billto contact",
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
+              "description": "in GETs: the contact; in POSTs or PUTs: identifies existing contact or properties of new contact",
               "properties": {
                 "SameAs": {
                   "description": "PUT or POST: to use same Contact as another contact on the same order; GET: always null",
@@ -1313,10 +1303,10 @@
                   "type": "string"
                 },
                 "AddressStatus": {
-                  "description": "confirmation status",
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "integer",
-                  "enum": [0, 1, 2]
+                  "enum": [0, 1, 2],
+                  "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
                 }
               }
             },

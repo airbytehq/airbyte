@@ -16,10 +16,7 @@
       "type": "boolean"
     },
     "ImportModuleId": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "ExportModuleIds": {
       "type": "string"
@@ -31,26 +28,17 @@
       "type": "boolean"
     },
     "ProcessDate": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "PickDoneDate": {
       "description": "Stored and displayed in warehouse time",
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "PickTicketPrintDate": {
       "description": "Stored and displayed in warehouse time",
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "PackStarted": {
@@ -59,30 +47,18 @@
     },
     "PackDoneDate": {
       "description": "Stored in server time, displayed in warehouse time",
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "LabelsExported": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "InvoiceExportedDate": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "InvoiceDeliveredDate": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "LoadedState": {
@@ -90,40 +66,25 @@
     },
     "LoadOutDoneDate": {
       "description": "Stored and displayed in warehouse time",
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "ReallocatedAfterPickTicketDate": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "RouteSent": {
       "type": "boolean"
     },
     "AsnSentDate": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "AsnSent": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "PkgsExported": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "BatchIdentifier": {
       "$ref": "../../generic/models/batch_identifier.json"
@@ -176,20 +137,14 @@
       "$ref": "../../generic/models/channel_identifier.json"
     },
     "CreationDate": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "CreatedByIdentifier": {
       "$ref": "../../generic/models/user_identifier.json"
     },
     "LastModifiedDate": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "LastModifiedByIdentifier": {

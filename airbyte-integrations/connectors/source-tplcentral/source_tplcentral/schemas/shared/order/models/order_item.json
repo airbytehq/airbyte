@@ -18,17 +18,11 @@
     },
     "Qty": {
       "description": "primary inventory quantity ordered; if not specified, must specify SecondaryQty",
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "SecondaryQty": {
       "description": "optional secondary quantity ordered; if not specified, must specify Qty",
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "LotNumber": {
       "description": "if present, used to allocate matching inventory",
@@ -40,46 +34,28 @@
     },
     "ExpirationDate": {
       "description": "if present, used to allocate matching inventory",
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "WeightImperial": {
       "description": "ship weight of order item, imperial; if specified and metric not specified, business logic computes metric",
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "WeightMetric": {
       "description": "ship weight of order item, metric; if specified and imperial not specified, business logic computes imperial; see WeightImperial for further explanation",
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "Notes": {
       "type": "string"
     },
     "FulfillInvSalePrice": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "FulfillInvDiscountPct": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "FulfillInvDiscountAmt": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "FulfillInvNote": {
       "type": "string"

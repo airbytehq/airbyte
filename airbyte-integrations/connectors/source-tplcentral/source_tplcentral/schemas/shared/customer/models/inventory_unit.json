@@ -7,30 +7,17 @@
       "$ref": "../../generic/models/unit_of_measure_identifier.json"
     },
     "MinimumStock": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "MaximumStock": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "ReorderQuantity": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "InventoryMethod": {
       "type": "integer",
-      "enum": [
-        1,
-        2,
-        3
-      ],
+      "enum": [1, 2, 3],
       "description": "1: FIFO; 2: LIFO; 3: FEFO"
     }
   }

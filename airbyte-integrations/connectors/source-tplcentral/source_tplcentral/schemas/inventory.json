@@ -49,10 +49,7 @@
       "$ref": "generic/models/unit_of_measure_identifier.json"
     },
     "InventoryUnitsPerSecondaryUnit": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "ReceivedQty": {
       "type": "number"
@@ -67,64 +64,34 @@
       "type": "number"
     },
     "SecondaryReceivedQty": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "SecondaryOnHandQty": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "SecondaryAvailableQty": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "SecondaryOnHoldQty": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "WeightImperial": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "WeightImperialOnHand": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "WeightImperialAvailable": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "WeightMetric": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "WeightMetricOnHand": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "WeightMetricAvailable": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "SavedElements": {
       "type": "array",
@@ -139,17 +106,11 @@
       "type": "string"
     },
     "ExpirationDate": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "Cost": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "SupplierIdentifier": {
       "$ref": "generic/models/contact_identifier.json"
@@ -167,10 +128,7 @@
       "type": "string"
     },
     "OnHoldDate": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "OnHoldUserIdentifier": {

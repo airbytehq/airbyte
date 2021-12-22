@@ -10,27 +10,18 @@
       "type": "integer"
     },
     "CreationDate": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "LastModifiedDate": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "Deactivated": {
       "type": "boolean"
     },
     "LastPriceChange": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "HasStorageRates": {

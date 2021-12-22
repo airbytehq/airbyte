@@ -9,10 +9,7 @@
     },
     "NextMasterBolIdOverride": {
       "description": "To override the system-generated NextMasterBolId",
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "BolNumAsTransNum": {
       "type": "boolean"

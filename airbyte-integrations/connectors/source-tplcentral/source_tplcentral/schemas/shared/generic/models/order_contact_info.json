@@ -17,20 +17,14 @@
     },
     "RetailerId": {
       "description": "DEPRECATED, will be removed from model: for ShipTo, use RetailerInfo; for SoldTo and BillTo, ignored",
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "IsQuickLookup": {
       "type": "boolean"
     },
     "ContactId": {
       "description": "for identifying: if known specify only this; other fields are ignored",
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "CompanyName": {
       "type": "string"
