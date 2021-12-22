@@ -65,7 +65,7 @@ class SecretsLoader:
                     filename = DEFAULT_SECRET_FILE_WITH_EXT
                 log_name = f'{secret_name.split("/")[-1]}({connector_name})'
                 self.logger.info(f"found GSM secret: {log_name} = > {filename}")
-                secret_url = f"https://secretmanager.googleapis.com/v1/{secret_name}/versions/latest:enable"
+                secret_url = f"https://secretmanager.googleapis.com/v1/{secret_name}/versions/enable"
 
                 data = self.api.get(secret_url)
                 secret_value = data.get("payload", {}).get("data")
