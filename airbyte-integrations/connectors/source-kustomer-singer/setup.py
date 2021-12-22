@@ -15,7 +15,7 @@ from subprocess import check_call
 def check_singer():
     tmp_dir = "/tmp/singer-python"
     if not os.path.exists(tmp_dir):
-        check_call(f"git clone -b v5.8.1 git@github.com:singer-io/singer-python.git {tmp_dir}".split())
+        check_call(f"git clone -b v5.8.1 https://github.com/singer-io/singer-python.git {tmp_dir}".split())
     setup_py = Path(tmp_dir) / "setup.py"
     setup_py.write_text(setup_py.read_text().replace("jsonschema==", "jsonschema>="))
     check_call(f"pip install -U  {tmp_dir}".split())
@@ -47,9 +47,8 @@ class CustomEggInfoCommand(egg_info):
 
 
 MAIN_REQUIREMENTS = [
-    # "singer-python",
     "tap-kustomer",
-    "airbyte-cdk~=0.1.25",
+    "airbyte-cdk",
 ]
 
 TEST_REQUIREMENTS = [
