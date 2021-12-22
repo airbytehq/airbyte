@@ -12,13 +12,13 @@ import org.jooq.JSONB;
 import org.jooq.exception.DataAccessException;
 import org.junit.jupiter.api.Test;
 
-class ConfigsDatabaseInstanceTest extends AbstractConfigsDatabaseTest {
+class DeprecatedConfigsDatabaseInstanceTest extends AbstractConfigsDatabaseTest {
 
   @Test
   public void testGet() throws Exception {
     // when the database has been initialized and loaded with data (in setup method), the get method
     // should return the database
-    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getInitialized();
+    database = new DeprecatedConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getInitialized();
     // check table
     database.query(ctx -> ctx.fetchExists(select().from(AIRBYTE_CONFIGS)));
   }
@@ -39,7 +39,8 @@ class ConfigsDatabaseInstanceTest extends AbstractConfigsDatabaseTest {
     // when the configs database has been initialized, calling getAndInitialize again will not change
     // anything
     final String testSchema = "CREATE TABLE IF NOT EXISTS airbyte_test_configs(id BIGINT PRIMARY KEY);";
-    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl(), testSchema).getAndInitialize();
+    database = new DeprecatedConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl(), testSchema)
+        .getAndInitialize();
     // the airbyte_test_configs table does not exist
     assertThrows(DataAccessException.class, () -> database.query(ctx -> ctx.fetchExists(select().from("airbyte_test_configs"))));
   }

@@ -205,4 +205,18 @@ class DefaultAirbyteSourceTest {
     Assertions.assertThrows(WorkerException.class, tap::close);
   }
 
+  @Test
+  public void testGetExitValue() throws Exception {
+    final AirbyteSource source = new DefaultAirbyteSource(workerConfigs, integrationLauncher, streamFactory, heartbeatMonitor);
+    source.start(SOURCE_CONFIG, jobRoot);
+
+    when(process.isAlive()).thenReturn(false);
+    when(process.exitValue()).thenReturn(2);
+
+    assertEquals(2, source.getExitValue());
+    // call a second time to verify that exit value is cached
+    assertEquals(2, source.getExitValue());
+    verify(process, times(1)).exitValue();
+  }
+
 }
