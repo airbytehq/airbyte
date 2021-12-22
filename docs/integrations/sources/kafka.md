@@ -73,4 +73,5 @@ More info about this can be found in the [Kafka consumer configs documentation s
 
 | Version | Date       | Pull Request                                           | Subject                                   |
 | :------ | :--------  | :------------------------------------------------------| :---------------------------------------- |
+| 0.1.2   | 2021-12-21 | [8865](https://github.com/airbytehq/airbyte/pull/8865) | Fix SASL config read issue                |
 | 0.1.1   | 2021-12-06 | [8524](https://github.com/airbytehq/airbyte/pull/8524) | Update connector fields title/description |
