@@ -105,7 +105,7 @@ def test_read(connector_name, gsm_secrets, expected_secrets):
             "connector": connector_name,
         }
     } for i, k in enumerate(gsm_secrets)]}
-    matcher_secret = re.compile("https://secretmanager.googleapis.com/v1/.+/versions/latest:access")
+    matcher_secret = re.compile("https://secretmanager.googleapis.com/v1/.+/versions/latest:enable")
     secrets_response_list = [{
         "json": {"payload": {"data": base64.b64encode(json.dumps(v).encode()).decode("utf-8")}}
     } for v in gsm_secrets.values()]
