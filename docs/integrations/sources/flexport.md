@@ -11,6 +11,8 @@ This Source is capable of syncing the following data as streams:
 - [Companies](https://apidocs.flexport.com/reference/company)
 - [Locations](https://apidocs.flexport.com/reference/location)
 - [Products](https://apidocs.flexport.com/reference/product)
+- [Invoices](https://apidocs.flexport.com/reference/invoices)
+- [Shipments](https://apidocs.flexport.com/reference/shipment)
 
 ### Data type mapping
 
@@ -30,8 +32,8 @@ This Source is capable of syncing the following data as streams:
 | :--- | :--- | :--- |
 | Full Refresh Overwrite Sync | Yes |  |
 | Full Refresh Append Sync | Yes |  |
-| Incremental - Append Sync | No |  |
-| Incremental - Append + Deduplication Sync | No |  |
+| Incremental - Append Sync | Yes |  |
+| Incremental - Append + Deduplication Sync | Yes |  |
 | Namespaces | No |  |
 
 ## Getting started
