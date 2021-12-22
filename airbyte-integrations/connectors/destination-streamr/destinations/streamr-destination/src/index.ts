@@ -1,4 +1,4 @@
-import {Command} from 'commander';
+import { Command } from 'commander';
 import {
   AirbyteConfig,
   AirbyteConfiguredCatalog,
@@ -15,12 +15,12 @@ import {
   DestinationSyncMode,
   parseAirbyteMessage,
 } from 'faros-airbyte-cdk';
-import _, {keyBy, sortBy, uniq} from 'lodash';
+import _, { keyBy, sortBy, uniq } from 'lodash';
 import readline from 'readline';
-import {Writable} from 'stream';
-import {Stream, StreamrClient} from 'streamr-client';
-import {Dictionary} from 'ts-essentials';
-import {VError} from 'verror';
+import { Writable } from 'stream';
+import { Stream, StreamrClient } from 'streamr-client';
+import { Dictionary } from 'ts-essentials';
+import { VError } from 'verror';
 
 /** The main entry point. */
 export function mainCommand(options?: {
@@ -38,9 +38,9 @@ export function mainCommand(options?: {
   if (options?.suppressOutput) {
     program.configureOutput({
       // eslint-disable-next-line @typescript-eslint/no-empty-function
-      writeOut: () => {},
+      writeOut: () => { },
       // eslint-disable-next-line @typescript-eslint/no-empty-function
-      writeErr: () => {},
+      writeErr: () => { },
     });
   }
 
@@ -138,7 +138,7 @@ class StreamrDestination extends AirbyteDestination {
   ): AsyncGenerator<AirbyteStateMessage> {
     await this.init(config);
 
-    const {streams, deleteModelEntries} =
+    const { streams, deleteModelEntries } =
       this.initStreamsCheckConverters(catalog);
 
     const stateMessages: AirbyteStateMessage[] = [];
@@ -224,7 +224,7 @@ class StreamrDestination extends AirbyteDestination {
             stats.processedByStream[stream] = count ? count + 1 : 1;
 
             const writeRecord = async (context: any): Promise<any> => {
-              this.streamr.publish(unpacked.record, Date.now()).then(() => {
+              this.streamrClient.publish(config.streamId, unpacked.record, Date.now()).then(() => {
                 writer?.write(context);
                 stats.recordsWritten++;
                 stats.recordsProcessed++;
