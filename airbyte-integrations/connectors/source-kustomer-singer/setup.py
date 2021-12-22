@@ -18,6 +18,8 @@ def check_singer():
         check_call(f"git clone -b v5.8.1 https://github.com/singer-io/singer-python.git {tmp_dir}".split())
     setup_py = Path(tmp_dir) / "setup.py"
     setup_py.write_text(setup_py.read_text().replace("jsonschema==", "jsonschema>="))
+    setup_py.write_text(setup_py.read_text().replace("backoff==", "backoff>="))
+    setup_py.write_text(setup_py.read_text().replace("requests==", "backoff>="))
     check_call(f"pip install -U  {tmp_dir}".split())
 
 
@@ -47,8 +49,8 @@ class CustomEggInfoCommand(egg_info):
 
 
 MAIN_REQUIREMENTS = [
-    "tap-kustomer",
     "airbyte-cdk",
+    "tap-kustomer==1.0.2",
 ]
 
 TEST_REQUIREMENTS = [
