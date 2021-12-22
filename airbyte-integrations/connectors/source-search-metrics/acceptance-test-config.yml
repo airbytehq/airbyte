@@ -19,7 +19,8 @@ tests:
                       "list_competitors",
                       "distribution_keywords_s7",
                       "list_position_spread_historic_s7",
-                      "list_seo_visibility_historic_s7"]
+                      "list_seo_visibility_historic_s7",
+                      "count_domain_keyword"]
 # Incremental commented because incremental streams haven't records
 #  incremental:
 #    - config_path: "secrets/config.json"
