@@ -63,13 +63,13 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
   // set of env vars necessary for the container orchestrator app to run
   public static final Set<String> ENV_VARS_TO_TRANSFER = Set.of(
       EnvConfigs.WORKER_ENVIRONMENT,
-      EnvConfigs.JOB_POD_TOLERATIONS,
-      EnvConfigs.JOB_CURL_IMAGE,
-      EnvConfigs.JOB_BUSYBOX_IMAGE,
-      EnvConfigs.JOB_SOCAT_IMAGE,
+      EnvConfigs.JOB_KUBE_TOLERATIONS,
+      EnvConfigs.JOB_KUBE_CURL_IMAGE,
+      EnvConfigs.JOB_KUBE_BUSYBOX_IMAGE,
+      EnvConfigs.JOB_KUBE_SOCAT_IMAGE,
       EnvConfigs.JOB_MAIN_CONTAINER_IMAGE_PULL_POLICY,
       EnvConfigs.JOB_MAIN_CONTAINER_IMAGE_PULL_SECRET,
-      EnvConfigs.JOB_POD_NODE_SELECTORS,
+      EnvConfigs.JOB_KUBE_NODE_SELECTORS,
       EnvConfigs.DOCKER_NETWORK,
       EnvConfigs.LOCAL_DOCKER_MOUNT,
       EnvConfigs.WORKSPACE_DOCKER_MOUNT,

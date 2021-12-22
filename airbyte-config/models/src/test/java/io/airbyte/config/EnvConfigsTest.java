@@ -164,22 +164,22 @@ class EnvConfigsTest {
 
   @Test
   void testWorkerPodTolerations() {
-    when(function.apply(EnvConfigs.JOB_POD_TOLERATIONS)).thenReturn(null);
+    when(function.apply(EnvConfigs.JOB_KUBE_TOLERATIONS)).thenReturn(null);
     Assertions.assertEquals(config.getJobPodTolerations(), List.of());
 
-    when(function.apply(EnvConfigs.JOB_POD_TOLERATIONS)).thenReturn(";;;");
+    when(function.apply(EnvConfigs.JOB_KUBE_TOLERATIONS)).thenReturn(";;;");
     Assertions.assertEquals(config.getJobPodTolerations(), List.of());
 
-    when(function.apply(EnvConfigs.JOB_POD_TOLERATIONS)).thenReturn("key=k,value=v;");
+    when(function.apply(EnvConfigs.JOB_KUBE_TOLERATIONS)).thenReturn("key=k,value=v;");
     Assertions.assertEquals(config.getJobPodTolerations(), List.of());
 
-    when(function.apply(EnvConfigs.JOB_POD_TOLERATIONS)).thenReturn("key=airbyte-server,operator=Exists,effect=NoSchedule");
+    when(function.apply(EnvConfigs.JOB_KUBE_TOLERATIONS)).thenReturn("key=airbyte-server,operator=Exists,effect=NoSchedule");
     Assertions.assertEquals(config.getJobPodTolerations(), List.of(new TolerationPOJO("airbyte-server", "NoSchedule", null, "Exists")));
 
-    when(function.apply(EnvConfigs.JOB_POD_TOLERATIONS)).thenReturn("key=airbyte-server,operator=Equals,value=true,effect=NoSchedule");
+    when(function.apply(EnvConfigs.JOB_KUBE_TOLERATIONS)).thenReturn("key=airbyte-server,operator=Equals,value=true,effect=NoSchedule");
     Assertions.assertEquals(config.getJobPodTolerations(), List.of(new TolerationPOJO("airbyte-server", "NoSchedule", "true", "Equals")));
 
-    when(function.apply(EnvConfigs.JOB_POD_TOLERATIONS))
+    when(function.apply(EnvConfigs.JOB_KUBE_TOLERATIONS))
         .thenReturn("key=airbyte-server,operator=Exists,effect=NoSchedule;key=airbyte-server,operator=Equals,value=true,effect=NoSchedule");
     Assertions.assertEquals(config.getJobPodTolerations(), List.of(
         new TolerationPOJO("airbyte-server", "NoSchedule", null, "Exists"),
@@ -188,19 +188,19 @@ class EnvConfigsTest {
 
   @Test
   void testWorkerPodNodeSelectors() {
-    when(function.apply(EnvConfigs.JOB_POD_NODE_SELECTORS)).thenReturn(null);
+    when(function.apply(EnvConfigs.JOB_KUBE_NODE_SELECTORS)).thenReturn(null);
     Assertions.assertEquals(config.getJobPodNodeSelectors(), Map.of());
 
-    when(function.apply(EnvConfigs.JOB_POD_NODE_SELECTORS)).thenReturn(",,,");
+    when(function.apply(EnvConfigs.JOB_KUBE_NODE_SELECTORS)).thenReturn(",,,");
     Assertions.assertEquals(config.getJobPodNodeSelectors(), Map.of());
 
-    when(function.apply(EnvConfigs.JOB_POD_NODE_SELECTORS)).thenReturn("key=k,,;$%&^#");
+    when(function.apply(EnvConfigs.JOB_KUBE_NODE_SELECTORS)).thenReturn("key=k,,;$%&^#");
     Assertions.assertEquals(config.getJobPodNodeSelectors(), Map.of("key", "k"));
 
-    when(function.apply(EnvConfigs.JOB_POD_NODE_SELECTORS)).thenReturn("one=two");
+    when(function.apply(EnvConfigs.JOB_KUBE_NODE_SELECTORS)).thenReturn("one=two");
     Assertions.assertEquals(config.getJobPodNodeSelectors(), Map.of("one", "two"));
 
-    when(function.apply(EnvConfigs.JOB_POD_NODE_SELECTORS)).thenReturn("airbyte=server,something=nothing");
+    when(function.apply(EnvConfigs.JOB_KUBE_NODE_SELECTORS)).thenReturn("airbyte=server,something=nothing");
     Assertions.assertEquals(config.getJobPodNodeSelectors(), Map.of("airbyte", "server", "something", "nothing"));
   }
 
