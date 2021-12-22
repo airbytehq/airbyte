@@ -648,9 +648,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes:
-      - "overwrite"
-      - "append"
-- dockerImage: "airbyte/destination-clickhouse:0.1.0"
+    - "overwrite"
+    - "append"
+- dockerImage: "airbyte/destination-clickhouse:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/clickhouse"
     connectionSpecification:
@@ -3942,8 +3942,7 @@
           title: "Database"
           order: 3
         schema:
-          description:
-            "The default Snowflake schema tables are written to if the\
+          description: "The default Snowflake schema tables are written to if the\
             \ source does not specify a namespace. Schema name would be transformed\
             \ to allowed by Snowflake if it not follow Snowflake Naming Conventions\
             \ https://docs.airbyte.io/integrations/destinations/snowflake#notes-about-snowflake-naming-conventions "
