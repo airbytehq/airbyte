@@ -40,7 +40,7 @@ import io.airbyte.server.handlers.helpers.ConnectionMatcher;
 import io.airbyte.server.handlers.helpers.DestinationMatcher;
 import io.airbyte.server.handlers.helpers.SourceMatcher;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.helper.CatalogConverter;
 import io.airbyte.workers.helper.ConnectionHelper;
 import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
@@ -65,15 +65,16 @@ public class ConnectionsHandler {
   private final TemporalWorkerRunFactory temporalWorkerRunFactory;
   private final FeatureFlags featureFlags;
   private final ConnectionHelper connectionHelper;
+  private final WorkerConfigs workerConfigs;
 
-  @VisibleForTesting
-  ConnectionsHandler(final ConfigRepository configRepository,
-                     final Supplier<UUID> uuidGenerator,
-                     final WorkspaceHelper workspaceHelper,
-                     final TrackingClient trackingClient,
-                     final TemporalWorkerRunFactory temporalWorkerRunFactory,
-                     final FeatureFlags featureFlags,
-                     final ConnectionHelper connectionHelper) {
+  @VisibleForTesting ConnectionsHandler(final ConfigRepository configRepository,
+                                        final Supplier<UUID> uuidGenerator,
+                                        final WorkspaceHelper workspaceHelper,
+                                        final TrackingClient trackingClient,
+                                        final TemporalWorkerRunFactory temporalWorkerRunFactory,
+                                        final FeatureFlags featureFlags,
+                                        final ConnectionHelper connectionHelper,
+                                        final WorkerConfigs workerConfigs) {
     this.configRepository = configRepository;
     this.uuidGenerator = uuidGenerator;
     this.workspaceHelper = workspaceHelper;
@@ -81,15 +82,17 @@ public class ConnectionsHandler {
     this.temporalWorkerRunFactory = temporalWorkerRunFactory;
     this.featureFlags = featureFlags;
     this.connectionHelper = connectionHelper;
+    this.workerConfigs = workerConfigs;
   }
 
   public ConnectionsHandler(
-                            final ConfigRepository configRepository,
-                            final WorkspaceHelper workspaceHelper,
-                            final TrackingClient trackingClient,
-                            final TemporalWorkerRunFactory temporalWorkerRunFactory,
-                            final FeatureFlags featureFlags,
-                            final ConnectionHelper connectionHelper) {
+      final ConfigRepository configRepository,
+      final WorkspaceHelper workspaceHelper,
+      final TrackingClient trackingClient,
+      final TemporalWorkerRunFactory temporalWorkerRunFactory,
+      final FeatureFlags featureFlags,
+      final ConnectionHelper connectionHelper,
+      final WorkerConfigs workerConfigs) {
     this(
         configRepository,
         UUID::randomUUID,
@@ -97,7 +100,9 @@ public class ConnectionsHandler {
         trackingClient,
         temporalWorkerRunFactory,
         featureFlags,
-        connectionHelper);
+        connectionHelper,
+        workerConfigs);
+
   }
 
   public ConnectionRead createConnection(final ConnectionCreate connectionCreate)
@@ -128,7 +133,7 @@ public class ConnectionsHandler {
           .withMemoryRequest(connectionCreate.getResourceRequirements().getMemoryRequest())
           .withMemoryLimit(connectionCreate.getResourceRequirements().getMemoryLimit()));
     } else {
-      standardSync.withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+      standardSync.withResourceRequirements(workerConfigs.getResourceRequirements());
     }
 
     // TODO Undesirable behavior: sending a null configured catalog should not be valid?

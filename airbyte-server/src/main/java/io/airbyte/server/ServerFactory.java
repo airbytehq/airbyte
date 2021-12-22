@@ -17,6 +17,7 @@ import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
+import io.airbyte.workers.WorkerConfigs;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
@@ -37,6 +38,7 @@ public interface ServerFactory {
                         TrackingClient trackingClient,
                         WorkerEnvironment workerEnvironment,
                         LogConfigs logConfigs,
+                        WorkerConfigs workerConfigs,
                         String webappUrl,
                         AirbyteVersion airbyteVersion,
                         Path workspaceRoot,
@@ -57,6 +59,7 @@ public interface ServerFactory {
                                  final TrackingClient trackingClient,
                                  final WorkerEnvironment workerEnvironment,
                                  final LogConfigs logConfigs,
+                                 final WorkerConfigs workerConfigs,
                                  final String webappUrl,
                                  final AirbyteVersion airbyteVersion,
                                  final Path workspaceRoot,
@@ -77,6 +80,7 @@ public interface ServerFactory {
           trackingClient,
           workerEnvironment,
           logConfigs,
+          workerConfigs,
           webappUrl,
           airbyteVersion,
           workspaceRoot,

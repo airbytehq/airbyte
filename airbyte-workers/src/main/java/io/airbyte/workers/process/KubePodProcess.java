@@ -4,16 +4,21 @@
 
 package io.airbyte.workers.process;
 
+import com.google.common.collect.MoreCollectors;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.TolerationPOJO;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
+import io.fabric8.kubernetes.api.model.ContainerPort;
+import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
+import io.fabric8.kubernetes.api.model.ContainerStatus;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
 import io.fabric8.kubernetes.api.model.LocalObjectReference;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
+import io.fabric8.kubernetes.api.model.PodFluent;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.ResourceRequirementsBuilder;
 import io.fabric8.kubernetes.api.model.Toleration;
@@ -35,6 +40,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,6 +51,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
@@ -90,7 +97,7 @@ public class KubePodProcess extends Process {
   private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcess.class);
 
   private static final String INIT_CONTAINER_NAME = "init";
-  private static final Long STATUS_CHECK_INTERVAL_MS = 30 * 1000L;
+  public static final Duration DEFAULT_STATUS_CHECK_INTERVAL = Duration.ofSeconds(30);
   private static final String DEFAULT_MEMORY_LIMIT = "25Mi";
   private static final ResourceRequirements DEFAULT_SIDECAR_RESOURCES = new ResourceRequirements()
       .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_LIMIT);
@@ -126,8 +133,10 @@ public class KubePodProcess extends Process {
   private Long lastStatusCheck = null;
 
   private final ServerSocket stdoutServerSocket;
+  private final Duration statusCheckInterval;
   private final int stdoutLocalPort;
   private final ServerSocket stderrServerSocket;
+  private final Map<Integer, Integer> internalToExternalPorts;
   private final int stderrLocalPort;
   private final ExecutorService executorService;
 
@@ -165,10 +174,11 @@ public class KubePodProcess extends Process {
                                    final String entrypointOverride,
                                    final List<VolumeMount> mainVolumeMounts,
                                    final ResourceRequirements resourceRequirements,
+                                   final Map<Integer, Integer> internalToExternalPorts,
                                    final String[] args)
       throws IOException {
     final var argsStr = String.join(" ", args);
-    final var optionalStdin = usesStdin ? String.format("cat %s | ", STDIN_PIPE_FILE) : "";
+    final var optionalStdin = usesStdin ? String.format("< %s", STDIN_PIPE_FILE) : "";
     final var entrypointOverrideValue = entrypointOverride == null ? "" : StringEscapeUtils.escapeXSI(entrypointOverride);
 
     // communicates its completion to the heartbeat check via a file and closes itself if the heartbeat
@@ -182,8 +192,15 @@ public class KubePodProcess extends Process {
         .replaceAll("STDERR_PIPE_FILE", STDERR_PIPE_FILE)
         .replaceAll("STDOUT_PIPE_FILE", STDOUT_PIPE_FILE);
 
+    final List<ContainerPort> containerPorts = internalToExternalPorts.keySet().stream()
+        .map(integer -> new ContainerPortBuilder()
+            .withContainerPort(integer)
+            .build())
+        .collect(Collectors.toList());
+
     final ContainerBuilder containerBuilder = new ContainerBuilder()
         .withName("main")
+        .withPorts(containerPorts)
         .withImage(image)
         .withImagePullPolicy(imagePullPolicy)
         .withCommand("sh", "-c", mainCommand)
@@ -216,7 +233,6 @@ public class KubePodProcess extends Process {
         // https://github.com/fabric8io/kubernetes-client/issues/2217
         final Copy copy = new Copy(officialClient);
         copy.copyFileToPod(namespace, podName, INIT_CONTAINER_NAME, contents, containerPath);
-
       } catch (final IOException | ApiException e) {
         throw new RuntimeException(e);
       }
@@ -252,9 +268,11 @@ public class KubePodProcess extends Process {
         .toArray(Toleration[]::new);
   }
 
-  public KubePodProcess(final String processRunnerHost,
+  public KubePodProcess(final boolean isOrchestrator,
+                        final String processRunnerHost,
                         final ApiClient officialClient,
                         final KubernetesClient fabricClient,
+                        final Duration statusCheckInterval,
                         final String podName,
                         final String namespace,
                         final String image,
@@ -273,15 +291,18 @@ public class KubePodProcess extends Process {
                         final String socatImage,
                         final String busyboxImage,
                         final String curlImage,
+                        final Map<Integer, Integer> internalToExternalPorts,
                         final String... args)
       throws IOException, InterruptedException {
     this.fabricClient = fabricClient;
+    this.statusCheckInterval = statusCheckInterval;
     this.stdoutLocalPort = stdoutLocalPort;
     this.stderrLocalPort = stderrLocalPort;
 
-    stdoutServerSocket = new ServerSocket(stdoutLocalPort);
-    stderrServerSocket = new ServerSocket(stderrLocalPort);
-    executorService = Executors.newFixedThreadPool(2);
+    this.stdoutServerSocket = new ServerSocket(stdoutLocalPort);
+    this.stderrServerSocket = new ServerSocket(stderrLocalPort);
+    this.internalToExternalPorts = internalToExternalPorts;
+    this.executorService = Executors.newFixedThreadPool(2);
     setupStdOutAndStdErrListeners();
 
     if (entrypointOverride != null) {
@@ -330,6 +351,7 @@ public class KubePodProcess extends Process {
         entrypointOverride,
         List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount),
         resourceRequirements,
+        internalToExternalPorts,
         args);
 
     final io.fabric8.kubernetes.api.model.ResourceRequirements sidecarResources = getResourceRequirementsBuilder(DEFAULT_SIDECAR_RESOURCES).build();
@@ -376,14 +398,19 @@ public class KubePodProcess extends Process {
     final List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr, callHeartbeatServer)
         : List.of(main, relayStdout, relayStderr, callHeartbeatServer);
 
-    final Pod pod = new PodBuilder()
+    PodFluent.SpecNested<PodBuilder> podBuilder = new PodBuilder()
         .withApiVersion("v1")
         .withNewMetadata()
         .withName(podName)
         .withLabels(labels)
         .endMetadata()
-        .withNewSpec()
-        .withTolerations(buildPodTolerations(tolerations))
+        .withNewSpec();
+
+    if (isOrchestrator) {
+      podBuilder = podBuilder.withServiceAccount("airbyte-admin").withAutomountServiceAccountToken(true);
+    }
+
+    final Pod pod = podBuilder.withTolerations(buildPodTolerations(tolerations))
         .withImagePullSecrets(new LocalObjectReference(imagePullSecret)) // An empty string turns this into a no-op setting.
         .withNodeSelector(nodeSelectors.isEmpty() ? null : nodeSelectors)
         .withRestartPolicy("Never")
@@ -547,10 +574,15 @@ public class KubePodProcess extends Process {
 
   private boolean isTerminal(final Pod pod) {
     if (pod.getStatus() != null) {
-      return pod.getStatus()
+      // Check if "main" container has terminated, as that defines whether the parent process has
+      // terminated.
+      final ContainerStatus mainContainerStatus = pod.getStatus()
           .getContainerStatuses()
           .stream()
-          .anyMatch(e -> e.getState() != null && e.getState().getTerminated() != null);
+          .filter(containerStatus -> containerStatus.getName().equals("main"))
+          .collect(MoreCollectors.onlyElement());
+
+      return mainContainerStatus.getState() != null && mainContainerStatus.getState().getTerminated() != null;
     } else {
       return false;
     }
@@ -566,7 +598,7 @@ public class KubePodProcess extends Process {
     }
 
     // Reuse the last status check result to prevent overloading the Kube Api server.
-    if (lastStatusCheck != null && System.currentTimeMillis() - lastStatusCheck < STATUS_CHECK_INTERVAL_MS) {
+    if (lastStatusCheck != null && System.currentTimeMillis() - lastStatusCheck < statusCheckInterval.toMillis()) {
       throw new IllegalThreadStateException("Kube pod process has not exited yet.");
     }
 
@@ -588,14 +620,16 @@ public class KubePodProcess extends Process {
       throw new IllegalThreadStateException("Kube pod process has not exited yet.");
     }
 
-    returnCode = refreshedPod.getStatus().getContainerStatuses()
+    final ContainerStatus mainContainerStatus = refreshedPod.getStatus().getContainerStatuses()
         .stream()
-        .filter(containerStatus -> containerStatus.getState() != null && containerStatus.getState().getTerminated() != null)
-        .map(containerStatus -> {
-          return containerStatus.getState().getTerminated().getExitCode();
-        })
-        .reduce(Integer::sum)
-        .orElseThrow();
+        .filter(containerStatus -> containerStatus.getName().equals("main"))
+        .collect(MoreCollectors.onlyElement());
+
+    if (mainContainerStatus.getState() == null || mainContainerStatus.getState().getTerminated() == null) {
+      throw new IllegalThreadStateException("Main container in kube pod has not terminated yet.");
+    }
+
+    returnCode = mainContainerStatus.getState().getTerminated().getExitCode();
 
     LOGGER.info("Exit code for pod {} is {}", name, returnCode);
     return returnCode;

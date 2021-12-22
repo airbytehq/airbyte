@@ -722,7 +722,7 @@ public class AcceptanceTests {
         "E2E Test Destination -" + UUID.randomUUID(),
         workspaceId,
         destinationDefinition.getDestinationDefinitionId(),
-        Jsons.jsonNode(ImmutableMap.of("type", "LOGGING")));
+        Jsons.jsonNode(ImmutableMap.of("type", "SILENT")));
 
     final String connectionName = "test-connection";
     final UUID sourceId = source.getSourceId();

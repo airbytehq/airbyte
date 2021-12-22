@@ -26,6 +26,7 @@ import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.DestinationSearch;
 import io.airbyte.api.model.NamespaceDefinitionType;
+import io.airbyte.api.model.ResourceRequirements;
 import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
@@ -35,6 +36,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DataType;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.SourceConnection;
@@ -51,7 +53,7 @@ import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.helper.ConnectionHelper;
 import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import java.io.IOException;
@@ -68,6 +70,7 @@ class ConnectionsHandlerTest {
   private ConfigRepository configRepository;
   private Supplier<UUID> uuidGenerator;
 
+  private WorkerConfigs workerConfigs;
   private ConnectionsHandler connectionsHandler;
   private UUID workspaceId;
   private UUID sourceDefinitionId;
@@ -97,6 +100,8 @@ class ConnectionsHandlerTest {
   @SuppressWarnings("unchecked")
   @BeforeEach
   void setUp() throws IOException, JsonValidationException, ConfigNotFoundException {
+    workerConfigs = new WorkerConfigs(new EnvConfigs());
+
     workspaceId = UUID.randomUUID();
     sourceDefinitionId = UUID.randomUUID();
     sourceId = UUID.randomUUID();
@@ -124,7 +129,7 @@ class ConnectionsHandlerTest {
         .withOperationIds(List.of(operationId))
         .withManual(false)
         .withSchedule(ConnectionHelpers.generateBasicSchedule())
-        .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+        .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS);
     standardSyncDeleted = new StandardSync()
         .withConnectionId(connectionId)
         .withName("presto to hudi2")
@@ -138,7 +143,7 @@ class ConnectionsHandlerTest {
         .withOperationIds(List.of(operationId))
         .withManual(false)
         .withSchedule(ConnectionHelpers.generateBasicSchedule())
-        .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+        .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS);
 
     standardSyncOperation = new StandardSyncOperation()
         .withOperationId(operationId)
@@ -150,7 +155,7 @@ class ConnectionsHandlerTest {
     trackingClient = mock(TrackingClient.class);
     featureFlags = mock(FeatureFlags.class);
 
-    connectionHelper = new ConnectionHelper(configRepository, workspaceHelper);
+    connectionHelper = new ConnectionHelper(configRepository, workspaceHelper, workerConfigs);
 
     connectionsHandler = new ConnectionsHandler(
         configRepository,
@@ -159,7 +164,8 @@ class ConnectionsHandlerTest {
         trackingClient,
         temporalWorkflowHandler,
         featureFlags,
-        connectionHelper);
+        connectionHelper,
+        workerConfigs);
 
     when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(deletedSourceId)).thenReturn(workspaceId);
@@ -300,7 +306,12 @@ class ConnectionsHandlerTest {
         .operationIds(standardSync.getOperationIds())
         .status(ConnectionStatus.INACTIVE)
         .schedule(null)
-        .syncCatalog(catalog);
+        .syncCatalog(catalog)
+        .resourceRequirements(new ResourceRequirements()
+            .cpuLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
+            .cpuRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
+            .memoryLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit())
+            .memoryRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest()));
 
     final ConfiguredAirbyteCatalog configuredCatalog = ConnectionHelpers.generateBasicConfiguredAirbyteCatalog();
     configuredCatalog.getStreams().get(0).getStream().withName("azkaban_users");
@@ -317,7 +328,7 @@ class ConnectionsHandlerTest {
         .withStatus(StandardSync.Status.INACTIVE)
         .withCatalog(configuredCatalog)
         .withManual(true)
-        .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+        .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS);
 
     when(configRepository.getStandardSync(standardSync.getConnectionId()))
         .thenReturn(standardSync)
@@ -326,10 +337,10 @@ class ConnectionsHandlerTest {
     final ConnectionRead actualConnectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
     final ConnectionRead expectedConnectionRead = ConnectionHelpers.generateExpectedConnectionRead(
-        standardSync.getConnectionId(),
-        standardSync.getSourceId(),
-        standardSync.getDestinationId(),
-        standardSync.getOperationIds())
+            standardSync.getConnectionId(),
+            standardSync.getSourceId(),
+            standardSync.getDestinationId(),
+            standardSync.getOperationIds())
         .schedule(null)
         .syncCatalog(catalog)
         .status(ConnectionStatus.INACTIVE);
@@ -417,7 +428,7 @@ class ConnectionsHandlerTest {
         .withDestinationId(destinationId)
         .withOperationIds(List.of(operationId))
         .withManual(true)
-        .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+        .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS);
     final ConnectionRead connectionRead2 = ConnectionHelpers.connectionReadFromStandardSync(standardSync2);
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
         .withName("source-test")

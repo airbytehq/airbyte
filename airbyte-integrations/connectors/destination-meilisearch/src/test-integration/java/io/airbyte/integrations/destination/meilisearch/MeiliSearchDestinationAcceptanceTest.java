@@ -39,7 +39,7 @@ public class MeiliSearchDestinationAcceptanceTest extends DestinationAcceptanceT
     final Path meiliSearchDataDir = Files.createTempDirectory(Path.of("/tmp"), "meilisearch-integration-test");
     meiliSearchDataDir.toFile().deleteOnExit();
 
-    genericContainer = new GenericContainer<>(DockerImageName.parse("getmeili/meilisearch:latest"))
+    genericContainer = new GenericContainer<>(DockerImageName.parse("getmeili/meilisearch:v0.24.0"))
         .withFileSystemBind(meiliSearchDataDir.toString(), "/data.ms");
     genericContainer.setPortBindings(ImmutableList.of(EXPOSED_PORT + ":" + DEFAULT_MEILI_SEARCH_PORT));
     genericContainer.start();

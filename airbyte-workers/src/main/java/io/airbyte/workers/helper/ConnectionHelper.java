@@ -19,7 +19,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.WorkerConfigs;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -31,6 +31,7 @@ public class ConnectionHelper {
 
   private final ConfigRepository configRepository;
   private final WorkspaceHelper workspaceHelper;
+  private final WorkerConfigs workerConfigs;
 
   public void deleteConnection(final UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConnectionRead connectionRead = buildConnectionRead(connectionId);
@@ -52,6 +53,7 @@ public class ConnectionHelper {
   public ConnectionRead updateConnection(final ConnectionUpdate connectionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // retrieve and update sync
+    // retrieve and update sync
     final StandardSync persistedSync = configRepository.getStandardSync(connectionUpdate.getConnectionId());
 
     validateWorkspace(persistedSync.getSourceId(), persistedSync.getDestinationId(), new HashSet<>(connectionUpdate.getOperationIds()));
@@ -72,7 +74,7 @@ public class ConnectionHelper {
           .withMemoryRequest(connectionUpdate.getResourceRequirements().getMemoryRequest())
           .withMemoryLimit(connectionUpdate.getResourceRequirements().getMemoryLimit()));
     } else {
-      newConnection.withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+      newConnection.withResourceRequirements(workerConfigs.getResourceRequirements());
     }
 
     // update sync schedule
@@ -149,11 +151,12 @@ public class ConnectionHelper {
           .memoryRequest(standardSync.getResourceRequirements().getMemoryRequest())
           .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit()));
     } else {
+      final io.airbyte.config.ResourceRequirements resourceRequirements = workerConfigs.getResourceRequirements();
       connectionRead.resourceRequirements(new ResourceRequirements()
-          .cpuRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuRequest())
-          .cpuLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuLimit())
-          .memoryRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryRequest())
-          .memoryLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryLimit()));
+          .cpuRequest(resourceRequirements.getCpuRequest())
+          .cpuLimit(resourceRequirements.getCpuLimit())
+          .memoryRequest(resourceRequirements.getMemoryRequest())
+          .memoryLimit(resourceRequirements.getMemoryLimit()));
     }
     return connectionRead;
   }
