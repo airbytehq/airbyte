@@ -374,6 +374,8 @@ class DbtIntegrationTest(object):
             return "airbyte/normalization-oracle:dev"
         elif DestinationType.CLICKHOUSE.value == destination_type.value:
             return "airbyte/normalization-clickhouse:dev"
+        elif DestinationType.SNOWFLAKE.value == destination_type.value:
+            return "airbyte/normalization-snowflake:dev"
         else:
             return "airbyte/normalization:dev"
 
