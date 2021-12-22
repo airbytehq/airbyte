@@ -3,7 +3,9 @@ FROM airbyte/integration-base-java:dev
 WORKDIR /airbyte
 ENV APPLICATION destination-gcs
 
-ADD build/distributions/${APPLICATION}*.tar /airbyte
+COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
-LABEL io.airbyte.version=0.1.15
+RUN tar xf ${APPLICATION}.tar --strip-components=1
+
+LABEL io.airbyte.version=0.1.17
 LABEL io.airbyte.name=airbyte/destination-gcs

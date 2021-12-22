@@ -4,12 +4,14 @@
 
 import random
 import string
+import time
 from functools import partial
 from typing import Iterable
 from unittest.mock import Mock
 
+import docker
 import pytest
-from docker.errors import ContainerError
+from docker.errors import ContainerError, NotFound
 from source_acceptance_test.utils.compare import make_hashable
 from source_acceptance_test.utils.connector_runner import ConnectorRunner
 
@@ -176,6 +178,7 @@ class MockContainer:
     def __init__(self, status: dict, iter_logs: Iterable):
         self.wait = Mock(return_value=status)
         self.logs = Mock(return_value=iter(iter_logs))
+        self.remove = Mock()
 
         class Image:
             pass
@@ -249,3 +252,47 @@ def test_failed_reading(traceback, container_error, last_line, expected_error):
         )
 
     assert expected_error == exc.value.stderr
+
+
+@pytest.mark.parametrize(
+    "command,wait_timeout,expected_count",
+    (
+        (
+            "cnt=0; while [ $cnt -lt 10 ]; do cnt=$((cnt+1)); sleep 0.5; echo something; done",
+            0,
+            10,
+        ),
+        # Sometimes a container can finish own work before python tries to read it
+        ("echo something;", 3, 1),
+    ),
+)
+def test_docker_runner(command, wait_timeout, expected_count):
+    client = docker.from_env()
+    new_container = client.containers.run(
+        image="busybox",
+        command=f"""sh -c '{command}'""",
+        detach=True,
+    )
+    if wait_timeout:
+        time.sleep(wait_timeout)
+    lines = list(ConnectorRunner.read(new_container, command=command))
+    assert set(lines) == set(["something\n"])
+    assert len(lines) == expected_count
+
+    for container in client.containers.list(all=True):
+        assert container.id != new_container.id, "Container should be removed after reading"
+
+
+def test_not_found_container():
+    """Case when a container was removed before its reading"""
+    client = docker.from_env()
+    cmd = """sh -c 'echo finished; exit 0'"""
+    new_container = client.containers.run(
+        image="busybox",
+        command=cmd,
+        detach=True,
+    )
+    new_container.remove()
+    time.sleep(1)
+    with pytest.raises(NotFound):
+        list(ConnectorRunner.read(new_container, command=cmd))

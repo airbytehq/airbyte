@@ -70,7 +70,7 @@ class ShopifyStream(HttpStream, ABC):
             # for other cases
             for record in records:
                 yield self._transformer.transform(record)
-            
+
     @property
     @abstractmethod
     def data_field(self) -> str:
@@ -148,7 +148,7 @@ class ChildSubstream(IncrementalShopifyStream):
     ::  @ slice_key - defines the name of the property in stream slices dict.
     ::  @ nested_record - the name of the field inside of parent stream record. Default is `id`.
     ::  @ nested_record_field_name - the name of the field inside of nested_record.
-    ::  @ nested_substream - the name of the nested entity inside of parent stream, helps to reduce the number of 
+    ::  @ nested_substream - the name of the nested entity inside of parent stream, helps to reduce the number of
           API Calls, if present, see `OrderRefunds` stream for more.
     """
 

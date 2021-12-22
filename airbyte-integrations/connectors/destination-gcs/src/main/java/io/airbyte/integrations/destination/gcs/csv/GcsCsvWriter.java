@@ -7,8 +7,11 @@ package io.airbyte.integrations.destination.gcs.csv;
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.writer.BaseGcsWriter;
+import io.airbyte.integrations.destination.gcs.writer.CommonWriter;
+import io.airbyte.integrations.destination.gcs.writer.GscWriter;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.csv.CsvSheetGenerator;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
@@ -27,7 +30,7 @@ import org.apache.commons.csv.QuoteMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GcsCsvWriter extends BaseGcsWriter implements S3Writer {
+public class GcsCsvWriter extends BaseGcsWriter implements S3Writer, GscWriter, CommonWriter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GcsCsvWriter.class);
 
@@ -35,7 +38,7 @@ public class GcsCsvWriter extends BaseGcsWriter implements S3Writer {
   private final StreamTransferManager uploadManager;
   private final MultiPartOutputStream outputStream;
   private final CSVPrinter csvPrinter;
-  private final String gcsCsvFileLocation; // this used in destination-bigquery (GCS upload type)
+  private final String gcsFileLocation;
   private final String objectKey;
 
   public GcsCsvWriter(final GcsDestinationConfig config,
@@ -50,7 +53,7 @@ public class GcsCsvWriter extends BaseGcsWriter implements S3Writer {
 
     final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.CSV);
     objectKey = String.join("/", outputPrefix, outputFilename);
-    gcsCsvFileLocation = String.format("gs://%s/%s", config.getBucketName(), objectKey);
+    gcsFileLocation = String.format("gs://%s/%s", config.getBucketName(), objectKey);
 
     LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
         objectKey);
@@ -70,6 +73,11 @@ public class GcsCsvWriter extends BaseGcsWriter implements S3Writer {
   }
 
   @Override
+  public void write(JsonNode formattedData) throws IOException {
+    csvPrinter.printRecord(csvSheetGenerator.getDataRow(formattedData));
+  }
+
+  @Override
   protected void closeWhenSucceed() throws IOException {
     csvPrinter.close();
     outputStream.close();
@@ -83,12 +91,18 @@ public class GcsCsvWriter extends BaseGcsWriter implements S3Writer {
     uploadManager.abort();
   }
 
-  public String getGcsCsvFileLocation() {
-    return gcsCsvFileLocation;
+  @Override
+  public String getFileLocation() {
+    return gcsFileLocation;
   }
 
   public CSVPrinter getCsvPrinter() {
     return csvPrinter;
+  }
+
+  @Override
+  public S3Format getFileFormat() {
+    return S3Format.CSV;
   }
 
   @Override
