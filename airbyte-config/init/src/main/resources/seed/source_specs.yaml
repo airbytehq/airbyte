@@ -827,7 +827,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-braintree:0.1.0"
+- dockerImage: "airbyte/source-braintree:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/braintree"
     connectionSpecification:
@@ -870,23 +870,18 @@
           - "production"
           - "qa"
           - "development"
-          allOf:
-          - $ref: "#/definitions/Environment"
-      required:
-      - "merchant_id"
-      - "public_key"
-      - "private_key"
-      - "environment"
-      definitions:
-        Environment:
           title: "Environment"
-          description: "An enumeration."
           enum:
           - "Development"
           - "Sandbox"
           - "Qa"
           - "Production"
           type: "string"
+      required:
+      - "merchant_id"
+      - "public_key"
+      - "private_key"
+      - "environment"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
