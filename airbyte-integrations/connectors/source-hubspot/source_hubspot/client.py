@@ -12,7 +12,7 @@ from source_hubspot.api import (
     API,
     CampaignStream,
     ContactListStream,
-    CRMObjectStream,
+    CRMObjectIncrementalStream,
     DealPipelineStream,
     DealStream,
     EmailEventStream,
@@ -31,31 +31,30 @@ class Client(BaseClient):
     def __init__(self, start_date, credentials, **kwargs):
         self._start_date = start_date
         self._api = API(credentials=credentials)
-        skip_dynamic_fields = kwargs.get("skip_dynamic_fields", False)
 
-        common_params = dict(api=self._api, start_date=self._start_date, skip_dynamic_fields=skip_dynamic_fields)
+        common_params = dict(api=self._api, start_date=self._start_date)
         self._apis = {
             "campaigns": CampaignStream(**common_params),
-            "companies": CRMObjectStream(entity="company", associations=["contacts"], **common_params),
+            "companies": CRMObjectIncrementalStream(entity="company", associations=["contacts"], **common_params),
             "contact_lists": ContactListStream(**common_params),
-            "contacts": CRMObjectStream(entity="contact", **common_params),
+            "contacts": CRMObjectIncrementalStream(entity="contact", **common_params),
             "deal_pipelines": DealPipelineStream(**common_params),
             "deals": DealStream(associations=["contacts"], **common_params),
             "email_events": EmailEventStream(**common_params),
             "engagements": EngagementStream(**common_params),
             "forms": FormStream(**common_params),
-            "line_items": CRMObjectStream(entity="line_item", **common_params),
+            "line_items": CRMObjectIncrementalStream(entity="line_item", **common_params),
             "marketing_emails": MarketingEmailStream(**common_params),
             "owners": OwnerStream(**common_params),
-            "products": CRMObjectStream(entity="product", **common_params),
+            "products": CRMObjectIncrementalStream(entity="product", **common_params),
             "subscription_changes": SubscriptionChangeStream(**common_params),
-            "tickets": CRMObjectStream(entity="ticket", **common_params),
+            "tickets": CRMObjectIncrementalStream(entity="ticket", **common_params),
             "workflows": WorkflowStream(**common_params),
         }
 
         credentials_title = credentials.get("credentials_title")
         if credentials_title == "API Key Credentials":
-            self._apis["quotes"] = CRMObjectStream(entity="quote", **common_params)
+            self._apis["quotes"] = CRMObjectIncrementalStream(entity="quote", **common_params)
 
         super().__init__(**kwargs)
 
