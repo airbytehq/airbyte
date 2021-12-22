@@ -49,7 +49,7 @@ class CustomEggInfoCommand(egg_info):
 
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk"
+    "airbyte-cdk",
     "tap-kustomer==1.0.2"
 ]
 
