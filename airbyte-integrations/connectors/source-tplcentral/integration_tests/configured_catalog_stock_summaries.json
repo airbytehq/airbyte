@@ -6,6 +6,7 @@
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "_item_identifier_id": {
               "type": "integer"
@@ -13,6 +14,7 @@
             "ItemIdentifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "Sku": {
                   "type": "string"
