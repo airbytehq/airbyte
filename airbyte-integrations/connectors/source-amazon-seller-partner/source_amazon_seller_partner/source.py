@@ -50,6 +50,12 @@ class ConnectorConfig(BaseModel):
         description="Additional information passed to reports. This varies by report type. Must be a valid json string.",
         examples=['{"GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT": {"reportPeriod": "WEEK"}}', '{"GET_SOME_REPORT": {"custom": "true"}}'],
     )
+    max_wait_seconds: int = Field(
+        500,
+        title="Max wait time for reports (in seconds)",
+        description="Sometimes report can take up to 30 minutes to generate. This will set the limit for how long to wait for a successful report.",
+        examples=["500", "1980"],
+    )
     refresh_token: str = Field(
         description="The Refresh Token obtained via OAuth flow authorization.",
         title="Refresh Token",
@@ -105,6 +111,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             "marketplace_ids": [marketplace_id],
             "period_in_days": config.period_in_days,
             "report_options": config.report_options,
+            "max_wait_seconds": config.max_wait_seconds,
         }
         return stream_kwargs
 

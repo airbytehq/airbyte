@@ -4,7 +4,9 @@ WORKDIR /airbyte
 
 ENV APPLICATION source-mysql
 
-ADD build/distributions/${APPLICATION}*.tar /airbyte
+COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
+
+RUN tar xf ${APPLICATION}.tar --strip-components=1
 
 LABEL io.airbyte.version=0.5.1
 
