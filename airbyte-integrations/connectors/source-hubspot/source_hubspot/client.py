@@ -37,9 +37,9 @@ class Client(BaseClient):
             "campaigns": CampaignStream(**common_params),
             "companies": CRMObjectIncrementalStream(entity="company", associations=["contacts"], **common_params),
             "contact_lists": ContactListStream(**common_params),
-            "contacts": CRMObjectIncrementalStream(entity="contact", **common_params),
+            "contacts": CRMObjectIncrementalStream(entity="contact", associations=["companies"], **common_params),
             "deal_pipelines": DealPipelineStream(**common_params),
-            "deals": DealStream(associations=["contacts"], **common_params),
+            "deals": DealStream(associations=["contacts", "companies"], **common_params),
             "email_events": EmailEventStream(**common_params),
             "engagements": EngagementStream(**common_params),
             "forms": FormStream(**common_params),
@@ -48,7 +48,7 @@ class Client(BaseClient):
             "owners": OwnerStream(**common_params),
             "products": CRMObjectIncrementalStream(entity="product", **common_params),
             "subscription_changes": SubscriptionChangeStream(**common_params),
-            "tickets": CRMObjectIncrementalStream(entity="ticket", **common_params),
+            "tickets": CRMObjectIncrementalStream(entity="ticket", associations=["companies"], **common_params),
             "workflows": WorkflowStream(**common_params),
         }
 
