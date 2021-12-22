@@ -45,3 +45,13 @@ class BraintreeConfig(BaseModel):
     @validator("environment", pre=True)
     def to_camel_case(cls, v):
         return camelize(v)
+
+    @classmethod
+    def schema(cls, **kwargs):
+        schema = super().schema(**kwargs)
+        if "definitions" in schema:
+            schema["definitions"]["Environment"].pop("description")
+            schema["properties"]["environment"].update(schema["definitions"]["Environment"])
+            schema["properties"]["environment"].pop("allOf", None)
+            del schema["definitions"]
+        return schema
