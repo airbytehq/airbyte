@@ -9,5 +9,5 @@ public interface GlobalDataSizeConstants {
   /** This constant determines the max possible size of file(e.g. 15 GB / 256 megabytes ≈ 58 chunks of file)
   see StagingFilenameGenerator.java:28
   */
-  long MAX_FILE_SIZE = DataSize.of(15L, IEC.GIBIBYTE).toUnit(IEC.BYTE).getValue().longValue();
+  long MAX_FILE_SIZE = DataSize.of(1L, IEC.GIBIBYTE).toUnit(IEC.BYTE).getValue().longValue();
 }
