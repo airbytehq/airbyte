@@ -22,7 +22,7 @@
 - name: Amazon Seller Partner
   sourceDefinitionId: e55879a8-0ef8-4557-abcf-ab34c53ec460
   dockerRepository: airbyte/source-amazon-seller-partner
-  dockerImageTag: 0.2.6
+  dockerImageTag: 0.2.7
   sourceType: api
   documentationUrl: https://docs.airbyte.io/integrations/sources/amazon-seller-partner
   icon: amazonsellerpartner.svg
@@ -98,7 +98,7 @@
 - name: Braintree
   sourceDefinitionId: 63cea06f-1c75-458d-88fe-ad48c7cb27fd
   dockerRepository: airbyte/source-braintree
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/braintree
   icon: braintree.svg
   sourceType: api
