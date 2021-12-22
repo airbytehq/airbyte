@@ -27,17 +27,6 @@ class SnowflakeDestinationIntegrationTest {
   private final SnowflakeSQLNameTransformer namingResolver = new SnowflakeSQLNameTransformer();
 
   @Test
-  void testCheckFailsWithInvalidPermissions() throws Exception {
-    // TODO(sherifnada) this test case is assumes config.json does not have permission to access the
-    // schema
-    // this connector should be updated with multiple credentials, each with a clear purpose (valid,
-    // invalid: insufficient permissions, invalid: wrong password, etc..)
-    final JsonNode credentialsJsonString = Jsons.deserialize(new String(Files.readAllBytes(Paths.get("secrets/insert_config.json"))));
-    final AirbyteConnectionStatus check = new SnowflakeDestination().check(credentialsJsonString);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, check.getStatus());
-  }
-
-  @Test
   public void testInvalidSchemaName() throws IOException {
     final JsonNode config = Jsons.deserialize(new String(Files.readAllBytes(Paths.get("secrets/insert_config.json"))));
     final String schemaName = "schemaName with whitespace "+ Strings.addRandomSuffix("integration_test", "_", 5);
