@@ -10,6 +10,7 @@ import zlib
 from abc import ABC, abstractmethod
 from io import StringIO
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
+from urllib.parse import urljoin
 
 import pendulum
 import requests
@@ -45,12 +46,13 @@ class AmazonSPStream(HttpStream, ABC):
         replication_start_date: str,
         marketplace_ids: List[str],
         period_in_days: Optional[int],
+        report_options: Optional[str],
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
-        self._url_base = url_base
+        self._url_base = url_base.rstrip("/") + "/"
         self._replication_start_date = replication_start_date
         self.marketplace_ids = marketplace_ids
         self._session.auth = aws_signature
@@ -139,7 +141,7 @@ class ReportsAmazonSPStream(Stream, ABC):
     """
 
     primary_key = None
-    path_prefix = f"/reports/{REPORTS_API_VERSION}"
+    path_prefix = f"reports/{REPORTS_API_VERSION}"
     sleep_seconds = 30
     data_field = "payload"
 
@@ -150,15 +152,17 @@ class ReportsAmazonSPStream(Stream, ABC):
         replication_start_date: str,
         marketplace_ids: List[str],
         period_in_days: Optional[int],
+        report_options: Optional[str],
         authenticator: HttpAuthenticator = NoAuth(),
     ):
         self._authenticator = authenticator
         self._session = requests.Session()
-        self._url_base = url_base
+        self._url_base = url_base.rstrip("/") + "/"
         self._session.auth = aws_signature
         self._replication_start_date = replication_start_date
         self.marketplace_ids = marketplace_ids
         self.period_in_days = period_in_days
+        self._report_options = report_options
 
     @property
     def url_base(self) -> str:
@@ -195,7 +199,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         """
         Override to make http_method configurable per method call
         """
-        args = {"method": http_method, "url": self.url_base + path, "headers": headers, "params": params}
+        args = {"method": http_method, "url": urljoin(self.url_base, path), "headers": headers, "params": params}
         if http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:
                 raise RequestBodyException(
@@ -281,8 +285,15 @@ class ReportsAmazonSPStream(Stream, ABC):
             payload,
         )
 
-        document_records = csv.DictReader(StringIO(document), delimiter="\t")
+        document_records = self.parse_document(document)
         yield from document_records
+
+    @staticmethod
+    def parse_document(document):
+        return csv.DictReader(StringIO(document), delimiter="\t")
+
+    def report_options(self) -> Mapping[str, Any]:
+        return json_lib.loads(self._report_options).get(self.name)
 
     def read_records(
         self,
@@ -375,6 +386,70 @@ class FbaShipmentsReports(ReportsAmazonSPStream):
 
 class VendorInventoryHealthReports(ReportsAmazonSPStream):
     name = "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT"
+
+
+class BrandAnalyticsSearchTermsReports(ReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.co.uk/help/hub/reference/G5NXWNY8HUD3VDCW
+    """
+
+    name = "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT"
+
+    @staticmethod
+    def parse_document(document):
+        parsed = json_lib.loads(document)
+        return parsed.get("dataByDepartmentAndSearchTerm", {})
+
+    def _report_data(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        data = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
+        options = self.report_options()
+        if options is not None:
+            data.update(self._augmented_data(options))
+
+        return data
+
+    @staticmethod
+    def _augmented_data(report_options) -> Mapping[str, Any]:
+        if report_options.get("reportPeriod") is None:
+            return {}
+        else:
+            now = pendulum.now("utc")
+            if report_options["reportPeriod"] == "DAY":
+                now = now.subtract(days=1)
+                data_start_time = now.start_of("day")
+                data_end_time = now.end_of("day")
+            elif report_options["reportPeriod"] == "WEEK":
+                now = now.subtract(weeks=1)
+
+                # According to report api docs
+                # dataStartTime must be a Sunday and dataEndTime must be the following Saturday
+                pendulum.week_starts_at(pendulum.SUNDAY)
+                pendulum.week_ends_at(pendulum.SATURDAY)
+
+                data_start_time = now.start_of("week")
+                data_end_time = now.end_of("week")
+
+                # Reset week start and end
+                pendulum.week_starts_at(pendulum.MONDAY)
+                pendulum.week_ends_at(pendulum.SUNDAY)
+            elif report_options["reportPeriod"] == "MONTH":
+                now = now.subtract(months=1)
+                data_start_time = now.start_of("month")
+                data_end_time = now.end_of("month")
+            else:
+                raise Exception([{"message": "This reportPeriod is not implemented."}])
+
+            return {
+                "dataStartTime": data_start_time.strftime(DATE_TIME_FORMAT),
+                "dataEndTime": data_end_time.strftime(DATE_TIME_FORMAT),
+                "reportOptions": report_options,
+            }
 
 
 class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
@@ -470,7 +545,7 @@ class Orders(IncrementalAmazonSPStream):
     page_size_field = "MaxResultsPerPage"
 
     def path(self, **kwargs) -> str:
-        return f"/orders/{ORDERS_API_VERSION}/orders"
+        return f"orders/{ORDERS_API_VERSION}/orders"
 
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
@@ -508,7 +583,7 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
         ).strftime(self.time_format)
 
     def path(self, **kwargs) -> str:
-        return f"/vendor/directFulfillment/shipping/{VENDORS_API_VERSION}/shippingLabels"
+        return f"vendor/directFulfillment/shipping/{VENDORS_API_VERSION}/shippingLabels"
 
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs

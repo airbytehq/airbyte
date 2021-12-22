@@ -17,6 +17,14 @@ services:
       context: airbyte-config/init
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
+  bootloader:
+    platform: linux/amd64
+    image: airbyte/bootloader:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-bootloader
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
   db:
     platform: linux/amd64
     image: airbyte/db:${VERSION}
@@ -62,15 +70,5 @@ services:
     build:
       dockerfile: Dockerfile
       context: airbyte-webapp
-      labels:
-        io.airbyte.git-revision: ${GIT_REVISION}
-  migration:
-    platform: ${DOCKER_BUILD_PLATFORM}
-    image: airbyte/migration:${VERSION}
-    build:
-      dockerfile: Dockerfile
-      args:
-        JDK_VERSION: ${JDK_VERSION}
-      context: airbyte-migration
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
