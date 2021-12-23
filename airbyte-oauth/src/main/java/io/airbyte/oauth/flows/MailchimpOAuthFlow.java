@@ -24,7 +24,6 @@ import org.apache.http.client.utils.URIBuilder;
 public class MailchimpOAuthFlow extends BaseOAuth2Flow {
 
   private static final String ACCESS_TOKEN_URL = "https://login.mailchimp.com/oauth2/token";
-  private static final String ACCESS_TOKEN_URL = "https://login.mailchimp.com/oauth2/token";
 
   public MailchimpOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
