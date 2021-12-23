@@ -224,8 +224,8 @@ public class WorkerApp {
       final KubernetesClient fabricClient = new DefaultKubernetesClient();
       final String localIp = InetAddress.getLocalHost().getHostAddress();
       final String kubeHeartbeatUrl = localIp + ":" + KUBE_HEARTBEAT_PORT;
-      LOGGER.info("Using Kubernetes namespace: {}", configs.getJobPodKubeNamespace());
-      return new KubeProcessFactory(workerConfigs, configs.getJobPodKubeNamespace(), fabricClient, kubeHeartbeatUrl, false);
+      LOGGER.info("Using Kubernetes namespace: {}", configs.getJobKubeNamespace());
+      return new KubeProcessFactory(workerConfigs, configs.getJobKubeNamespace(), fabricClient, kubeHeartbeatUrl, false);
     } else {
       return new DockerProcessFactory(
           workerConfigs,
@@ -244,8 +244,8 @@ public class WorkerApp {
       final KubernetesClient fabricClient = new DefaultKubernetesClient();
       final String localIp = InetAddress.getLocalHost().getHostAddress();
       final String kubeHeartbeatUrl = localIp + ":" + KUBE_HEARTBEAT_PORT;
-      LOGGER.info("Using Kubernetes namespace: {}", configs.getJobPodKubeNamespace());
-      return new KubeProcessFactory(workerConfigs, configs.getJobPodKubeNamespace(), fabricClient, kubeHeartbeatUrl, true);
+      LOGGER.info("Using Kubernetes namespace: {}", configs.getJobKubeNamespace());
+      return new KubeProcessFactory(workerConfigs, configs.getJobKubeNamespace(), fabricClient, kubeHeartbeatUrl, true);
     } else {
       return new DockerProcessFactory(
           workerConfigs,

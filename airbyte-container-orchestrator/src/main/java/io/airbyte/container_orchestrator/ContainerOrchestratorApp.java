@@ -164,13 +164,13 @@ public class ContainerOrchestratorApp {
       final KubernetesClient fabricClient = new DefaultKubernetesClient();
       final String localIp = InetAddress.getLocalHost().getHostAddress();
       final String kubeHeartbeatUrl = localIp + ":" + WorkerApp.KUBE_HEARTBEAT_PORT;
-      LOGGER.info("Using Kubernetes namespace: {}", configs.getJobPodKubeNamespace());
+      LOGGER.info("Using Kubernetes namespace: {}", configs.getJobKubeNamespace());
 
       // this needs to have two ports for the source and two ports for the destination (all four must be
       // exposed)
       KubePortManagerSingleton.init(ReplicationLauncherWorker.PORTS);
 
-      return new KubeProcessFactory(workerConfigs, configs.getJobPodKubeNamespace(), fabricClient, kubeHeartbeatUrl, false);
+      return new KubeProcessFactory(workerConfigs, configs.getJobKubeNamespace(), fabricClient, kubeHeartbeatUrl, false);
     } else {
       return new DockerProcessFactory(
           workerConfigs,
