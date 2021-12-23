@@ -14,6 +14,7 @@ kind load docker-image airbyte/scheduler:dev --name chart-testing &
 kind load docker-image airbyte/webapp:dev --name chart-testing &
 kind load docker-image airbyte/worker:dev --name chart-testing &
 kind load docker-image airbyte/db:dev --name chart-testing &
+kind load docker-image airbyte/container-orchestrator:dev --name chart-testing &
 kind load docker-image airbyte/bootloader:dev --name chart-testing &
 wait
 
@@ -32,25 +33,29 @@ kubectl describe pods | grep "Name\|Node"
 # allocates a lot of time to start kube. takes a while for postgres+temporal to work things out
 sleep 120s
 
-server_logs () { echo "server logs:" && kubectl logs deployment.apps/airbyte-server; }
-scheduler_logs () { echo "scheduler logs:" && kubectl logs deployment.apps/airbyte-scheduler; }
-pod_sweeper_logs () { echo "pod sweeper logs:" && kubectl logs deployment.apps/airbyte-pod-sweeper; }
-worker_logs () { echo "worker logs:" && kubectl logs deployment.apps/airbyte-worker; }
-db_logs () { echo "db logs:" && kubectl logs deployment.apps/airbyte-db; }
-temporal_logs () { echo "temporal logs:" && kubectl logs deployment.apps/airbyte-temporal; }
-describe_pods () { echo "describe pods:" && kubectl describe pods; }
-describe_nodes () { echo "describe nodes:" && kubectl describe nodes; }
-print_all_logs () {
-  server_logs;
-  scheduler_logs;
-  worker_logs;
-  db_logs;
-  temporal_logs;
-  pod_sweeper_logs;
-  describe_nodes;
-  describe_pods;
-}
-trap "echo 'kube logs:' && print_all_logs" EXIT
+if [ -n "$CI" ]; then
+  bootloader_logs () { kubectl logs pod/airbyte-bootloader > /tmp/kubernetes_logs/bootloader.txt; }
+  server_logs () { kubectl logs deployment.apps/airbyte-server > /tmp/kubernetes_logs/server.txt; }
+  scheduler_logs () { kubectl logs deployment.apps/airbyte-scheduler > /tmp/kubernetes_logs/scheduler.txt; }
+  pod_sweeper_logs () { kubectl logs deployment.apps/airbyte-pod-sweeper > /tmp/kubernetes_logs/pod_sweeper.txt; }
+  worker_logs () { kubectl logs deployment.apps/airbyte-worker > /tmp/kubernetes_logs/worker.txt; }
+  db_logs () { kubectl logs deployment.apps/airbyte-db > /tmp/kubernetes_logs/db.txt; }
+  temporal_logs () { kubectl logs deployment.apps/airbyte-temporal > /tmp/kubernetes_logs/temporal.txt; }
+  describe_pods () { kubectl describe pods > /tmp/kubernetes_logs/describe_pods.txt; }
+  describe_nodes () { kubectl describe nodes > /tmp/kubernetes_logs/describe_nodes.txt; }
+  write_all_logs () {
+    bootloader_logs;
+    server_logs;
+    scheduler_logs;
+    worker_logs;
+    db_logs;
+    temporal_logs;
+    pod_sweeper_logs;
+    describe_nodes;
+    describe_pods;
+  }
+  trap "mkdir -p /tmp/kubernetes_logs && write_all_logs" EXIT
+fi
 
 kubectl port-forward svc/airbyte-server-svc 8001:8001 &
 

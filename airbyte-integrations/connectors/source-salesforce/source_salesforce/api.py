@@ -5,7 +5,9 @@
 from typing import Any, List, Mapping, Optional, Tuple
 
 import requests
+from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from requests.exceptions import HTTPError
 
 from .exceptions import TypeSalesforceException
 from .rate_limiting import default_backoff_handler
@@ -169,6 +171,7 @@ UNSUPPORTED_FILTERING_STREAMS = [
 
 
 class Salesforce:
+    logger = AirbyteLogger()
     version = "v52.0"
 
     def __init__(
@@ -230,12 +233,15 @@ class Salesforce:
     def _make_request(
         self, http_method: str, url: str, headers: dict = None, body: dict = None, stream: bool = False, params: dict = None
     ) -> requests.models.Response:
-        if http_method == "GET":
-            resp = self.session.get(url, headers=headers, stream=stream, params=params)
-        elif http_method == "POST":
-            resp = self.session.post(url, headers=headers, data=body)
-        resp.raise_for_status()
-
+        try:
+            if http_method == "GET":
+                resp = self.session.get(url, headers=headers, stream=stream, params=params)
+            elif http_method == "POST":
+                resp = self.session.post(url, headers=headers, data=body)
+            resp.raise_for_status()
+        except HTTPError as err:
+            self.logger.warn(f"http error body: {err.response.text}")
+            raise
         return resp
 
     def login(self):

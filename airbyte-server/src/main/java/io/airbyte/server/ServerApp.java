@@ -39,6 +39,7 @@ import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
 import io.airbyte.server.errors.KnownExceptionMapper;
 import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.serviceclient.WorkflowServiceStubs;
@@ -191,6 +192,7 @@ public class ServerApp implements ServerRunnable {
         trackingClient,
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
+        new WorkerConfigs(configs),
         configs.getWebappUrl(),
         configs.getAirbyteVersion(),
         configs.getWorkspaceRoot(),
@@ -198,7 +200,12 @@ public class ServerApp implements ServerRunnable {
   }
 
   public static void main(final String[] args) throws Exception {
-    getServer(new ServerFactory.Api(), YamlSeedConfigPersistence.getDefault()).start();
+    try {
+      getServer(new ServerFactory.Api(), YamlSeedConfigPersistence.getDefault()).start();
+    } catch (Throwable e) {
+      LOGGER.error("Server failed", e);
+      System.exit(1); // so the app doesn't hang on background threads
+    }
   }
 
 }
