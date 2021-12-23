@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.1.45
+Integrate Sentry for performance and errors tracking.
+
+## 0.1.44
+Log http response status code and its content.
+
+## 0.1.43
+Fix logging of unhandled exceptions: print stacktrace. 
+
+## 0.1.42
+Add base pydantic model for connector config and schemas.
+
+## 0.1.41
+Fix build error
+
+## 0.1.40
+Filter airbyte_secrets values at logger and other logging refactorings.  
+
 ## 0.1.39
 Add `__init__.py` to mark the directory `airbyte_cdk/utils` as a package.
 
