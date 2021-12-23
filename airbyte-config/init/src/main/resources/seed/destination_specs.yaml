@@ -492,6 +492,8 @@
                   \ more memory. Allowed values: min=5MB, max=525MB Default: 5MB."
                 type: "integer"
                 default: 5
+                minimum: 5
+                maximum: 525
                 examples:
                 - 5
               keep_files_in_gcs-bucket:
@@ -3569,6 +3571,8 @@
                   \ more memory. Allowed values: min=5MB, max=525MB Default: 5MB."
                 type: "integer"
                 default: 5
+                minimum: 5
+                maximum: 525
                 examples:
                 - 5
           - title: "CSV: Comma-Separated Values"
