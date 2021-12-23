@@ -11,6 +11,8 @@ import static java.util.stream.Collectors.toList;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import com.microsoft.sqlserver.jdbc.SQLServerDatabaseMetaData;
+import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -30,15 +32,20 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
 import java.io.File;
+import java.sql.DatabaseMetaData;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +59,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public static final String CDC_LSN = "_ab_cdc_lsn";
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
+  private static final String HIERARCHYID = "hierarchyid";
 
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new MssqlSource(), HOST_KEY, PORT_KEY);
@@ -62,13 +70,62 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   @Override
+  public AutoCloseableIterator<JsonNode> queryTableFullRefresh(JdbcDatabase database,
+      List<String> columnNames, String schemaName, String tableName) {
+    LOGGER.info("Queueing query for table: {}", tableName);
+
+    List<String> namesToReplaceList = new ArrayList<>();
+    try {
+      SQLServerResultSetMetaData sqlServerResultSetMetaData = (SQLServerResultSetMetaData) database
+          .queryMetadata(String.format("SELECT %s FROM %s",
+              enquoteIdentifierList(columnNames),
+              getFullTableName(schemaName, tableName)));
+
+      for (int i = 1; i <= sqlServerResultSetMetaData.getColumnCount(); i++) {
+        if (HIERARCHYID.equals(sqlServerResultSetMetaData.getColumnTypeName(i))) {
+          namesToReplaceList.add(sqlServerResultSetMetaData.getColumnName(i));
+        }
+      }
+
+    } catch (SQLException e) {
+      LOGGER.error("Failed to fetch metadata to prepare a proper request.", e);
+    }
+
+    List<String> preparedColumnNames = columnNames.stream()
+        .map(
+            el -> namesToReplaceList.contains(el) ? String.format("%s.ToString() as \"%s\"", el, el)
+                : el)
+        .collect(toList());
+
+    return queryTable(database,
+        String.format("SELECT %s FROM %s",
+            enquoteIdentifierList(preparedColumnNames),
+            getFullTableName(schemaName, tableName)));
+  }
+
+  protected String enquoteIdentifierList(final List<String> identifiers) {
+    final StringJoiner joiner = new StringJoiner(",");
+    for (final String identifier : identifiers) {
+      // do not quote fields that uses a native sql functions on requests
+      if (identifier.contains("()")) {
+        joiner.add(identifier);
+      } else {
+        joiner.add(getIdentifierWithQuoting(identifier));
+      }
+    }
+    return joiner.toString();
+  }
+
+
+  @Override
   public JsonNode toDatabaseConfig(final JsonNode mssqlConfig) {
     final List<String> additionalParameters = new ArrayList<>();
 
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
-        mssqlConfig.get("host").asText(),
-        mssqlConfig.get("port").asText(),
-        mssqlConfig.get("database").asText()));
+    final StringBuilder jdbcUrl = new StringBuilder(
+        String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
+            mssqlConfig.get("host").asText(),
+            mssqlConfig.get("port").asText(),
+            mssqlConfig.get("database").asText()));
 
     if (mssqlConfig.has("ssl_method")) {
       readSsl(mssqlConfig, additionalParameters);
@@ -117,8 +174,10 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   @Override
-  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
-    final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(super.getCheckOperations(config));
+  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config)
+      throws Exception {
+    final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(
+        super.getCheckOperations(config));
 
     if (isCdc(config)) {
       checkOperations.add(database -> assertCdcEnabledInDb(config, database));
@@ -130,13 +189,15 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     return checkOperations;
   }
 
-  protected void assertCdcEnabledInDb(final JsonNode config, final JdbcDatabase database) throws SQLException {
+  protected void assertCdcEnabledInDb(final JsonNode config, final JdbcDatabase database)
+      throws SQLException {
     final List<JsonNode> queryResponse = database.query(connection -> {
       final String sql = "SELECT name, is_cdc_enabled FROM sys.databases WHERE name = ?";
       final PreparedStatement ps = connection.prepareStatement(sql);
       ps.setString(1, config.get("database").asText());
-      LOGGER.info(String.format("Checking that cdc is enabled on database '%s' using the query: '%s'",
-          config.get("database").asText(), sql));
+      LOGGER
+          .info(String.format("Checking that cdc is enabled on database '%s' using the query: '%s'",
+              config.get("database").asText(), sql));
       return ps;
     }, sourceOperations::rowToJson).collect(toList());
     if (queryResponse.size() < 1) {
@@ -151,17 +212,21 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     }
   }
 
-  protected void assertCdcSchemaQueryable(final JsonNode config, final JdbcDatabase database) throws SQLException {
+  protected void assertCdcSchemaQueryable(final JsonNode config, final JdbcDatabase database)
+      throws SQLException {
     final List<JsonNode> queryResponse = database.query(connection -> {
-      final String sql = "USE " + config.get("database").asText() + "; SELECT * FROM cdc.change_tables";
+      final String sql =
+          "USE " + config.get("database").asText() + "; SELECT * FROM cdc.change_tables";
       final PreparedStatement ps = connection.prepareStatement(sql);
-      LOGGER.info(String.format("Checking user '%s' can query the cdc schema and that we have at least 1 cdc enabled table using the query: '%s'",
+      LOGGER.info(String.format(
+          "Checking user '%s' can query the cdc schema and that we have at least 1 cdc enabled table using the query: '%s'",
           config.get("username").asText(), sql));
       return ps;
     }, sourceOperations::rowToJson).collect(toList());
     // Ensure at least one available CDC table
     if (queryResponse.size() < 1) {
-      throw new RuntimeException("No cdc-enabled tables found. Please check the documentation on how to enable CDC on MS SQL Server.");
+      throw new RuntimeException(
+          "No cdc-enabled tables found. Please check the documentation on how to enable CDC on MS SQL Server.");
     }
   }
 
@@ -171,7 +236,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       final List<JsonNode> queryResponse = database.query(connection -> {
         final String sql = "SELECT status_desc FROM sys.dm_server_services WHERE [servicename] LIKE 'SQL Server Agent%'";
         final PreparedStatement ps = connection.prepareStatement(sql);
-        LOGGER.info(String.format("Checking that the SQL Server Agent is running using the query: '%s'", sql));
+        LOGGER.info(String
+            .format("Checking that the SQL Server Agent is running using the query: '%s'", sql));
         return ps;
       }, sourceOperations::rowToJson).collect(toList());
       if (!(queryResponse.get(0).get("status_desc").toString().contains("Running"))) {
@@ -180,8 +246,10 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
             queryResponse.get(0).get("status_desc").toString()));
       }
     } catch (final Exception e) {
-      if (e.getCause() != null && e.getCause().getClass().equals(com.microsoft.sqlserver.jdbc.SQLServerException.class)) {
-        LOGGER.warn(String.format("Skipping check for whether the SQL Server Agent is running, SQLServerException thrown: '%s'",
+      if (e.getCause() != null && e.getCause().getClass()
+          .equals(com.microsoft.sqlserver.jdbc.SQLServerException.class)) {
+        LOGGER.warn(String.format(
+            "Skipping check for whether the SQL Server Agent is running, SQLServerException thrown: '%s'",
             e.getMessage()));
       } else {
         throw e;
@@ -189,12 +257,14 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     }
   }
 
-  protected void assertSnapshotIsolationAllowed(final JsonNode config, final JdbcDatabase database) throws SQLException {
+  protected void assertSnapshotIsolationAllowed(final JsonNode config, final JdbcDatabase database)
+      throws SQLException {
     final List<JsonNode> queryResponse = database.query(connection -> {
       final String sql = "SELECT name, snapshot_isolation_state FROM sys.databases WHERE name = ?";
       final PreparedStatement ps = connection.prepareStatement(sql);
       ps.setString(1, config.get("database").asText());
-      LOGGER.info(String.format("Checking that snapshot isolation is enabled on database '%s' using the query: '%s'",
+      LOGGER.info(String.format(
+          "Checking that snapshot isolation is enabled on database '%s' using the query: '%s'",
           config.get("database").asText(), sql));
       return ps;
     }, sourceOperations::rowToJson).collect(toList());
@@ -212,33 +282,38 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   @Override
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
-                                                                             final ConfiguredAirbyteCatalog catalog,
-                                                                             final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-                                                                             final StateManager stateManager,
-                                                                             final Instant emittedAt) {
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
+      final JdbcDatabase database,
+      final ConfiguredAirbyteCatalog catalog,
+      final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+      final StateManager stateManager,
+      final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("using CDC: {}", true);
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
           MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get("database").asText()),
           MssqlCdcProperties.getDebeziumProperties(), catalog, true);
-      return handler.getIncrementalIterators(new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
-          new MssqlCdcStateHandler(stateManager), new MssqlCdcConnectorMetadataInjector(), emittedAt);
+      return handler.getIncrementalIterators(
+          new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
+          new MssqlCdcStateHandler(stateManager), new MssqlCdcConnectorMetadataInjector(),
+          emittedAt);
     } else {
       LOGGER.info("using CDC: {}", false);
-      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
+      return super
+          .getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }
   }
 
   private static boolean isCdc(final JsonNode config) {
     return config.hasNonNull("replication_method")
         && ReplicationMethod.valueOf(config.get("replication_method").asText())
-            .equals(ReplicationMethod.CDC);
+        .equals(ReplicationMethod.CDC);
   }
 
   private static boolean shouldUseCDC(final ConfiguredAirbyteCatalog catalog) {
-    final Optional<SyncMode> any = catalog.getStreams().stream().map(ConfiguredAirbyteStream::getSyncMode)
+    final Optional<SyncMode> any = catalog.getStreams().stream()
+        .map(ConfiguredAirbyteStream::getSyncMode)
         .filter(syncMode -> syncMode == SyncMode.INCREMENTAL).findAny();
     return any.isPresent();
   }
@@ -287,7 +362,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         additionalParameters.add("encrypt=true");
 
         // trust store location code found at https://stackoverflow.com/a/56570588
-        final String trustStoreLocation = Optional.ofNullable(System.getProperty("javax.net.ssl.trustStore"))
+        final String trustStoreLocation = Optional
+            .ofNullable(System.getProperty("javax.net.ssl.trustStore"))
             .orElseGet(() -> System.getProperty("java.home") + "/lib/security/cacerts");
         final File trustStoreFile = new File(trustStoreLocation);
         if (!trustStoreFile.exists()) {
@@ -298,10 +374,12 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         final String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
         additionalParameters.add("trustStore=" + trustStoreLocation);
         if (trustStorePassword != null && !trustStorePassword.isEmpty()) {
-          additionalParameters.add("trustStorePassword=" + config.get("trustStorePassword").asText());
+          additionalParameters
+              .add("trustStorePassword=" + config.get("trustStorePassword").asText());
         }
         if (config.has("hostNameInCertificate")) {
-          additionalParameters.add("hostNameInCertificate=" + config.get("hostNameInCertificate").asText());
+          additionalParameters
+              .add("hostNameInCertificate=" + config.get("hostNameInCertificate").asText());
         }
       }
     }
