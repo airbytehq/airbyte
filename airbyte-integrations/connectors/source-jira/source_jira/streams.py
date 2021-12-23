@@ -286,6 +286,11 @@ class Filters(JiraStream):
     def path(self, **kwargs) -> str:
         return "filter/search"
 
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(**kwargs)
+        params["expand"] = "description,owner,jql,viewUrl,searchUrl,favourite,favouritedCount,sharePermissions,isWritable,subscriptions"
+        return params
+
 
 class FilterSharing(JiraStream):
     """
