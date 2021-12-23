@@ -10,14 +10,14 @@
       "dataset_name": {
         "type": "string",
         "title": "Dataset Name",
-        "description": "The Name of the final table where to replicate this file (should include only letters, numbers dash and underscores)."
+        "description": "The Name of the final table to replicate this file into (should include letters, numbers dash and underscores only)."
       },
       "format": {
         "type": "string",
         "enum": ["csv", "json", "jsonl", "excel", "feather", "parquet"],
         "default": "csv",
         "title": "File Format",
-        "description": "The Format of the file which should be replicated (Warning: some format may be experimental, please refer to docs)."
+        "description": "The Format of the file which should be replicated (Warning: some formats may be experimental, please refer to the docs)."
       },
       "reader_options": {
         "type": "string",
@@ -52,6 +52,7 @@
             "properties": {
               "storage": {
                 "type": "string",
+                "title": "Storage",
                 "const": "GCS"
               },
               "service_account_json": {
@@ -67,6 +68,7 @@
             "properties": {
               "storage": {
                 "type": "string",
+                "title": "Storage",
                 "const": "S3"
               },
               "aws_access_key_id": {
@@ -88,6 +90,7 @@
             "properties": {
               "storage": {
                 "type": "string",
+                "title": "Storage",
                 "const": "AzBlob"
               },
               "storage_account": {
