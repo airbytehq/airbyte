@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.scheduler.app.worker_run;
+package io.airbyte.workers.worker_run;
 
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.JobOutput;
