@@ -128,6 +128,14 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
                 end_date = pendulum.parse(self._end_date).date()
                 end_date = min(end_date, pendulum.now().date())
 
+                if start_date > end_date:
+                    yield from [{
+                        "site_url": site_url,
+                        "search_type": search_type,
+                        "start_date": end_date.to_date_string(),
+                        "end_date": end_date.to_date_string()
+                    }]
+
                 next_start = start_date
                 period = pendulum.Duration(days=self.range_of_days)
                 while next_start <= end_date:
