@@ -37,7 +37,7 @@ class SnowflakeDestinationIntegrationTest {
   }
 
   @Test
-  public void testInvalidSchemaNameWithoutNameTransformer() {
+  public void testInvalidSchemaName() {
     assertDoesNotThrow(this::syncWithNamingResolver);
     assertThrows(SQLException.class, this::syncWithoutNamingResolver);
 
