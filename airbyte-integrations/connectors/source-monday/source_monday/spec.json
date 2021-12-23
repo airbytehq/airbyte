@@ -11,8 +11,7 @@
         "type": "string",
         "title": "Subdomain (Optional)",
         "description": "Slug/subdomain of the account, or the first part of the URL that comes before .monday.com",
-        "default": "",
-        "airbyte_secret": true
+        "default": ""
       },
       "auth_type": {
         "type": "string",
