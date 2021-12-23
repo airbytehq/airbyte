@@ -125,8 +125,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         for site_url in self._site_urls:
             for search_type in self.search_types:
                 start_date = self._get_start_date(stream_state, site_url, search_type)
-                end_date = pendulum.parse(self._end_date).date()
-                end_date = min(end_date, pendulum.now().date())
+                end_date = self._get_end_date()
 
                 if start_date > end_date:
                     yield from [{
@@ -146,6 +145,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
                         "start_date": next_start.to_date_string(),
                         "end_date": next_end.to_date_string()
                     }
+                    # add 1 day for the next slice's start date not to duplicate data from previous slice's end date.
                     next_start = next_end + pendulum.Duration(days=1)
 
     def next_page_token(self, response: requests.Response) -> Optional[bool]:
@@ -192,6 +192,11 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
             "rowLimit": ROW_LIMIT,
         }
         return data
+
+    def _get_end_date(self) -> pendulum.date:
+        end_date = pendulum.parse(self._end_date).date()
+        # limit `end_date` value with current date
+        return min(end_date, pendulum.now().date())
 
     def _get_start_date(
         self,
