@@ -47,6 +47,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   private Process sourceProcess = null;
   private Iterator<AirbyteMessage> messageIterator = null;
+  private Integer exitValue = null;
 
   public DefaultAirbyteSource(final WorkerConfigs workerConfigs, final IntegrationLauncher integrationLauncher) {
     this(workerConfigs, integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER),
@@ -98,6 +99,18 @@ public class DefaultAirbyteSource implements AirbyteSource {
   }
 
   @Override
+  public int getExitValue() throws IllegalStateException {
+    Preconditions.checkState(sourceProcess != null, "Source process is null, cannot retrieve exit value.");
+    Preconditions.checkState(!sourceProcess.isAlive(), "Source process is still alive, cannot retrieve exit value.");
+
+    if (exitValue == null) {
+      exitValue = sourceProcess.exitValue();
+    }
+
+    return exitValue;
+  }
+
+  @Override
   public Optional<AirbyteMessage> attemptRead() {
     Preconditions.checkState(sourceProcess != null);
 
@@ -118,8 +131,8 @@ public class DefaultAirbyteSource implements AirbyteSource {
         GRACEFUL_SHUTDOWN_DURATION.toMillis(),
         TimeUnit.MILLISECONDS);
 
-    if (sourceProcess.isAlive() || sourceProcess.exitValue() != 0) {
-      final String message = sourceProcess.isAlive() ? "Source has not terminated " : "Source process exit with code " + sourceProcess.exitValue();
+    if (sourceProcess.isAlive() || getExitValue() != 0) {
+      final String message = sourceProcess.isAlive() ? "Source has not terminated " : "Source process exit with code " + getExitValue();
       throw new WorkerException(message + ". This warning is normal if the job was cancelled.");
     }
   }

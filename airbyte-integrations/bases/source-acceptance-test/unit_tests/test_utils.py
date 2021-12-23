@@ -4,12 +4,14 @@
 
 import random
 import string
+import time
 from functools import partial
 from typing import Iterable
 from unittest.mock import Mock
 
+import docker
 import pytest
-from docker.errors import ContainerError
+from docker.errors import ContainerError, NotFound
 from source_acceptance_test.utils.compare import make_hashable
 from source_acceptance_test.utils.connector_runner import ConnectorRunner
 
@@ -176,6 +178,7 @@ class MockContainer:
     def __init__(self, status: dict, iter_logs: Iterable):
         self.wait = Mock(return_value=status)
         self.logs = Mock(return_value=iter(iter_logs))
+        self.remove = Mock()
 
         class Image:
             pass
@@ -188,7 +191,7 @@ def binary_generator(lengths, last_line=None):
     for length in lengths:
         data += "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(length)) + "\n"
     data = data.encode()
-    chunk_size = random.randint(512, 1024)
+    chunk_size = random.randint(2, 32)
 
     while len(data) > chunk_size:
         yield data[:chunk_size]
@@ -199,8 +202,8 @@ def binary_generator(lengths, last_line=None):
 
 
 def test_successful_logs_reading():
-    line_count = 1234
-    line_lengths = [random.randint(0, 1024 * 20) for _ in range(line_count)]
+    line_count = 100
+    line_lengths = [random.randint(0, 256) for _ in range(line_count)]
     lines = [
         line for line in ConnectorRunner.read(container=MockContainer(status={"StatusCode": 0}, iter_logs=binary_generator(line_lengths)))
     ]
@@ -234,10 +237,11 @@ def test_successful_logs_reading():
             "Last Container Logs Line",
         ),
     ),
+    ids=["interal_error", "traceback", "last_line"],
 )
 def test_failed_reading(traceback, container_error, last_line, expected_error):
     line_count = 10
-    line_lengths = [random.randint(0, 523) for _ in range(line_count)]
+    line_lengths = [random.randint(0, 32) for _ in range(line_count)]
 
     with pytest.raises(ContainerError) as exc:
         list(
@@ -249,3 +253,60 @@ def test_failed_reading(traceback, container_error, last_line, expected_error):
         )
 
     assert expected_error == exc.value.stderr
+
+
+@pytest.mark.parametrize(
+    "command,wait_timeout,expected_count",
+    (
+        (
+            "cnt=0; while [ $cnt -lt 10 ]; do cnt=$((cnt+1)); echo something; done",
+            0,
+            10,
+        ),
+        # Sometimes a container can finish own work before python tries to read it
+        ("echo something;", 0.1, 1),
+    ),
+    ids=["standard", "waiting"],
+)
+def test_docker_runner(command, wait_timeout, expected_count):
+    client = docker.from_env()
+    new_container = client.containers.run(
+        image="busybox",
+        command=f"""sh -c '{command}'""",
+        detach=True,
+    )
+    if wait_timeout:
+        time.sleep(wait_timeout)
+    lines = list(ConnectorRunner.read(new_container, command=command))
+    assert set(lines) == set(["something\n"])
+    assert len(lines) == expected_count
+
+    for container in client.containers.list(all=True):
+        assert container.id != new_container.id, "Container should be removed after reading"
+
+
+def wait_status(container, expected_statuses):
+    """Waits expected_statuses for 5 sec"""
+    for _ in range(500):
+        if container.status in expected_statuses:
+            return
+        time.sleep(0.01)
+    assert False, f"container of the image {container.image} has the status '{container.status}', "
+    f"expected statuses: {expected_statuses}"
+
+
+def test_not_found_container():
+    """Case when a container was removed before its reading"""
+    client = docker.from_env()
+    cmd = """sh -c 'sleep 100; exit 0'"""
+    new_container = client.containers.run(
+        image="busybox",
+        command=cmd,
+        detach=True,
+        auto_remove=True,
+    )
+    wait_status(new_container, ["running", "created"])
+    new_container.remove(force=True)
+
+    with pytest.raises(NotFound):
+        list(ConnectorRunner.read(new_container, command=cmd))

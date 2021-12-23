@@ -314,6 +314,25 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/source_definitions/delete:
+    post:
+      tags:
+        - source_definition
+      summary: Delete a source definition
+      operationId: deleteSourceDefinition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceDefinitionIdRequestBody"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/source_definition_specifications/get:
     post:
       tags:
@@ -626,6 +645,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DestinationDefinitionRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destination_definitions/delete:
+    post:
+      tags:
+        - destination_definition
+      summary: Delete a destination definition
+      operationId: deleteDestinationDefinition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationDefinitionIdRequestBody"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":

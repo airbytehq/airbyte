@@ -6,6 +6,7 @@ from decimal import Decimal
 from typing import Any, Dict, Optional, Type
 
 import pydantic
+from airbyte_cdk.sources.utils.schema_helpers import expand_refs
 from pydantic import BaseModel
 from pydantic.typing import resolve_annotations
 
@@ -60,6 +61,12 @@ class CatalogModel(BaseModel, metaclass=AllOptional):
                     elif "$ref" in prop:
                         ref = prop.pop("$ref")
                         prop["oneOf"] = [{"type": "null"}, {"$ref": ref}]
+
+    @classmethod
+    def schema(cls, **kwargs) -> Dict[str, Any]:
+        schema = super().schema(**kwargs)
+        expand_refs(schema)
+        return schema
 
 
 class AddOn(CatalogModel):

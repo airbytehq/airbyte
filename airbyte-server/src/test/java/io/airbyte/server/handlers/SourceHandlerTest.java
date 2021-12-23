@@ -15,6 +15,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.SourceCreate;
+import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionSpecificationRead;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
@@ -191,6 +192,26 @@ class SourceHandlerTest {
         .thenReturn(sourceConnection.getConfiguration());
 
     final SourceReadList actualSourceReadList = sourceHandler.listSourcesForWorkspace(workspaceIdRequestBody);
+
+    assertEquals(expectedSourceRead, actualSourceReadList.getSources().get(0));
+    verify(secretsProcessor).maskSecrets(sourceConnection.getConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification());
+  }
+
+  @Test
+  void testListSourcesForSourceDefinition() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final SourceRead expectedSourceRead = SourceHelpers.getSourceRead(sourceConnection, standardSourceDefinition);
+    final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody =
+        new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceConnection.getSourceDefinitionId());
+
+    when(configRepository.getSourceConnection(sourceConnection.getSourceId())).thenReturn(sourceConnection);
+    when(configRepository.listSourceConnection()).thenReturn(Lists.newArrayList(sourceConnection));
+    when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
+        .thenReturn(standardSourceDefinition);
+    when(configRepository.getSourceDefinitionFromSource(sourceConnection.getSourceId())).thenReturn(standardSourceDefinition);
+    when(secretsProcessor.maskSecrets(sourceConnection.getConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification()))
+        .thenReturn(sourceConnection.getConfiguration());
+
+    final SourceReadList actualSourceReadList = sourceHandler.listSourcesForSourceDefinition(sourceDefinitionIdRequestBody);
 
     assertEquals(expectedSourceRead, actualSourceReadList.getSources().get(0));
     verify(secretsProcessor).maskSecrets(sourceConnection.getConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification());
