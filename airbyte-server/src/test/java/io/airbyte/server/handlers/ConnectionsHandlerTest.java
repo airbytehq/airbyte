@@ -31,6 +31,7 @@ import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DataType;
@@ -43,13 +44,18 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.workers.helper.ConnectionHelper;
+import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -82,6 +88,14 @@ class ConnectionsHandlerTest {
   private StandardSyncOperation standardSyncOperation;
   private WorkspaceHelper workspaceHelper;
   private TrackingClient trackingClient;
+  private TemporalWorkerRunFactory temporalWorkflowHandler;
+  private SyncJobFactory jobFactory;
+  private JobPersistence jobPersistence;
+  private LogConfigs logConfigs;
+  private FeatureFlags featureFlags;
+
+  // TODO: bmoric move to a mock
+  private ConnectionHelper connectionHelper;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -139,12 +153,26 @@ class ConnectionsHandlerTest {
     uuidGenerator = mock(Supplier.class);
     workspaceHelper = mock(WorkspaceHelper.class);
     trackingClient = mock(TrackingClient.class);
-    connectionsHandler = new ConnectionsHandler(configRepository, uuidGenerator, workspaceHelper, trackingClient, workerConfigs);
+    featureFlags = mock(FeatureFlags.class);
+
+    connectionHelper = new ConnectionHelper(configRepository, workspaceHelper, workerConfigs);
+
+    connectionsHandler = new ConnectionsHandler(
+        configRepository,
+        uuidGenerator,
+        workspaceHelper,
+        trackingClient,
+        temporalWorkflowHandler,
+        featureFlags,
+        connectionHelper,
+        workerConfigs);
 
     when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(deletedSourceId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(destinationId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(operationId)).thenReturn(workspaceId);
+
+    when(featureFlags.usesNewScheduler()).thenReturn(false);
   }
 
   @Test

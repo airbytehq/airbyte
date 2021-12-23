@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.server.converters;
+package io.airbyte.workers.helper;
 
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.text.Names;
@@ -54,10 +54,11 @@ public class CatalogConverter {
         .destinationSyncMode(io.airbyte.api.model.DestinationSyncMode.APPEND)
         .primaryKey(stream.getSourceDefinedPrimaryKey())
         .selected(true);
-    if (stream.getSupportedSyncModes().size() > 0)
+    if (stream.getSupportedSyncModes().size() > 0) {
       result.setSyncMode(stream.getSupportedSyncModes().get(0));
-    else
+    } else {
       result.setSyncMode(io.airbyte.api.model.SyncMode.INCREMENTAL);
+    }
     return result;
   }
 
