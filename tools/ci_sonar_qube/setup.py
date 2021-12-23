@@ -7,11 +7,11 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = ["requests", "ci_common_utils"]
 
-TEST_REQUIREMENTS = ["requests-mock"]
+TEST_REQUIREMENTS = ["requests-mock",  "pytest"]
 
 setup(
     version="0.0.0",
-    name="ci_credentials",
+    name="ci_sonar_qube",
     description="Load and extract CI secrets for test suites",
     author="Airbyte",
     author_email="contact@airbyte.io",
@@ -23,7 +23,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'ci_credentials = ci_credentials.main:main',
+            'ci_sonar_qube = ci_sonar_qube.main:main',
         ],
     },
 )
