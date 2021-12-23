@@ -115,7 +115,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:  # TODO
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         The `stream_slices` implements iterator functionality for `site_urls` and `searchType`. The user can pass many `site_url`,
         and we have to process all of them, we can also pass the` searchType` parameter in the `request body` to get data using some`
@@ -125,21 +125,18 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         for site_url in self._site_urls:
             for search_type in self.search_types:
                 start_date = self._get_start_date(stream_state, site_url, search_type)
-                end_date = pendulum.parse(self._end_date)
-
-                # if start_date > end_date:
-                #     return []
+                end_date = pendulum.parse(self._end_date).date()
+                end_date = min(end_date, pendulum.now().date())
 
                 next_start = start_date
                 period = pendulum.Duration(days=self.range_of_days)
                 while next_start < end_date:
                     next_end = min(next_start + period, end_date)
-                    # yield next_start, next_end
                     yield {
                         "site_url": site_url,
                         "search_type": search_type,
-                        "start_date": next_start.strftime("%Y-%m-%d"),
-                        "end_date": next_end.strftime("%Y-%m-%d")
+                        "start_date": next_start.to_date_string(),
+                        "end_date": next_end.to_date_string()
                     }
                     next_start = next_end + pendulum.Duration(days=1)
 
@@ -177,11 +174,9 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         5. For the `startRow` and `rowLimit` check next_page_token method.
         """
 
-        # start_date = self._get_start_data(stream_state, stream_slice)
-
         data = {
-            "startDate": stream_slice["start_date"],  # start_date
-            "endDate": stream_slice["end_date"],  # self._end_date
+            "startDate": stream_slice["start_date"],
+            "endDate": stream_slice["end_date"],
             "dimensions": self.dimensions,
             "searchType": stream_slice.get("search_type"),
             "aggregationType": "auto",
@@ -193,10 +188,9 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
     def _get_start_date(
         self,
         stream_state: Mapping[str, Any] = None,
-        # stream_slice: Mapping[str, Any] = None,
         site_url: str = None,
         search_type: str = None
-    ) -> str:
+    ) -> pendulum.date:
         start_date = pendulum.parse(self._start_date)
 
         if start_date and stream_state:
@@ -208,7 +202,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
                     start_date,
                 )
 
-        return start_date
+        return start_date.date()
 
     def parse_response(
         self,
