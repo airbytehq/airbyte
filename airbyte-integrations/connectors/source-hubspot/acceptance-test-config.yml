@@ -26,14 +26,14 @@ tests:
       # and therefore the start date is set at 2021-10-10 for `config_oauth.json`,
       # but the campaign was created on 2021-01-11
       empty_streams: ["campaigns", "workflows"]
-  # incremental: fixme (eugene): '<=' not supported between instances of 'int' and 'str'
-  # See https://github.com/airbytehq/airbyte/issues/6509
-  #    - config_path: "secrets/config.json"
-  #      configured_catalog_path: "sample_files/configured_catalog.json"
-  #      future_state_path: "integration_tests/abnormal_state.json"
-  #      cursor_paths:
-  #        subscription_changes: ["timestamp"]
-  #        email_events: ["timestamp"]
+  incremental:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "sample_files/configured_catalog.json"
+      future_state_path: "integration_tests/abnormal_state.json"
+      cursor_paths:
+        subscription_changes: ["timestamp"]
+        email_events: ["timestamp"]
+        contact_lists: ["timestamp"]
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "sample_files/full_refresh_catalog.json"

@@ -7,16 +7,18 @@ from datetime import datetime, timedelta
 from unittest.mock import Mock
 
 from source_recurly.streams import (
-    BaseRecurlyStream,
-    RecurlyAccountCouponRedemptionsStream,
-    RecurlyExportDatesStream,
-    RecurlyMeasuredUnitsStream,
+    BEGIN_TIME_PARAM,
+    DEFAULT_CURSOR,
+    BaseStream,
+    AccountCouponRedemptions,
+    ExportDates,
+    MeasuredUnits,
 )
 
 METHOD_NAME = "list_resource"
 
 
-class RecurlyTestStream(BaseRecurlyStream):
+class TestStream(BaseStream):
     name = "test"
     client_method_name = METHOD_NAME
 
@@ -28,10 +30,10 @@ class TestStreams(unittest.TestCase):
 
         self.sync_mode_mock = Mock()
 
-        self.params = {"order": "asc", "sort": BaseRecurlyStream.DEFAULT_CURSOR}
+        self.params = {"order": "asc", "sort": DEFAULT_CURSOR}
 
     def test_read_records(self):
-        stream = RecurlyTestStream(client=self.client_mock)
+        stream = TestStream(client=self.client_mock)
 
         next(iter(stream.read_records(self.sync_mode_mock)))
 
@@ -41,16 +43,16 @@ class TestStreams(unittest.TestCase):
 
     def test_read_records_with_begin_time(self):
         begin_time_mock = Mock()
-        stream = RecurlyTestStream(client=self.client_mock, begin_time=begin_time_mock)
+        stream = TestStream(client=self.client_mock, begin_time=begin_time_mock)
 
         next(iter(stream.read_records(self.sync_mode_mock)))
 
-        params = {**self.params, BaseRecurlyStream.BEGIN_TIME_PARAM: begin_time_mock}
+        params = {**self.params, BEGIN_TIME_PARAM: begin_time_mock}
 
         getattr(self.client_mock, METHOD_NAME).assert_called_once_with(params=params)
 
     def test_get_updated_state(self):
-        stream = RecurlyTestStream(client=self.client_mock)
+        stream = TestStream(client=self.client_mock)
 
         cursor_field = stream.cursor_field
 
@@ -65,7 +67,7 @@ class TestStreams(unittest.TestCase):
         assert stream.get_updated_state(current_state, latest_record) == expected_date
 
     def test_account_coupon_redemptions_read_records(self):
-        stream = RecurlyAccountCouponRedemptionsStream(client=self.client_mock)
+        stream = AccountCouponRedemptions(client=self.client_mock)
         account_id_mock = Mock()
         account_mock = Mock(id=account_id_mock)
         self.client_mock.list_accounts.return_value.items.return_value = iter([account_mock])
@@ -77,13 +79,13 @@ class TestStreams(unittest.TestCase):
         self.client_mock.list_account_coupon_redemptions.assert_called_once_with(account_id=account_id_mock, params=self.params)
 
     def test_export_dates_read_records(self):
-        stream = RecurlyExportDatesStream(client=self.client_mock)
+        stream = ExportDates(client=self.client_mock)
 
         next(iter(stream.read_records(self.sync_mode_mock)))
 
         self.client_mock.get_export_dates.assert_called_once()
 
     def test_measured_unit_client_method_name(self):
-        stream = RecurlyMeasuredUnitsStream(client=self.client_mock)
+        stream = MeasuredUnits(client=self.client_mock)
 
         assert stream.client_method_name == "list_measured_unit"

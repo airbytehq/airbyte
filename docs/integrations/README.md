@@ -79,6 +79,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Notion](sources/notion.md) | Alpha |
 | [Okta](sources/okta.md) | Beta |
 | [OneSignal](sources/onesignal.md) | Alpha |
+| [OpenWeather](sources/openweather.md) | Alpha |
 | [Oracle DB](sources/oracle.md) | Certified |
 | [Oracle PeopleSoft](sources/oracle-peoplesoft.md) | Beta |
 | [Oracle Siebel CRM](sources/oracle-siebel-crm.md) | Beta |
@@ -92,6 +93,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Postgres](sources/postgres.md) | Certified |
 | [PostHog](sources/posthog.md) | Beta |
 | [PrestaShop](sources/presta-shop.md) | Beta |
+| [Qualaroo](sources/qualaroo.md) | Beta |
 | [Quickbooks](sources/quickbooks.md) | Beta |
 | [Recharge](sources/recharge.md) | Beta |
 | [Recurly](sources/recurly.md) | Beta |
@@ -138,6 +140,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [AzureBlobStorage](destinations/azureblobstorage.md) | Alpha |
 | [BigQuery](destinations/bigquery.md) | Certified |
 | [Chargify \(Keen\)](destinations/chargify.md) | Alpha |
+| [ClickHouse](destinations/clickhouse.md) | Alpha |
 | [Databricks](destinations/databricks.md) | Beta |
 | [Elasticsearch](destinations/elasticsearch.md) | Alpha |
 | [Google Cloud Storage \(GCS\)](destinations/gcs.md) | Alpha |
@@ -155,7 +158,9 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Oracle](destinations/oracle.md) | Alpha |
 | [Postgres](destinations/postgres.md) | Certified |
 | [Pulsar](destinations/pulsar.md) | Alpha |
+| [RabbitMQ](destinations/rabbitmq.md) | Alpha |
 | [Redshift](destinations/redshift.md) | Certified |
+| [Rockset](destinations/rockset.md) | Alpha |
 | [S3](destinations/s3.md) | Certified |
 | [SFTP JSON](./destinations/sftp-json.md)| Alpha |
 | [SQL Server \(MSSQL\)](destinations/mssql.md) | Alpha |

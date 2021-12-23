@@ -48,7 +48,7 @@
         "order": 3
       },
       "schema": {
-        "description": "The default Snowflake schema tables are written to if the source does not specify a namespace.",
+        "description": "The default Snowflake schema tables are written to if the source does not specify a namespace. Schema name would be transformed to allowed by Snowflake if it not follow Snowflake Naming Conventions https://docs.airbyte.io/integrations/destinations/snowflake#notes-about-snowflake-naming-conventions ",
         "examples": ["AIRBYTE_SCHEMA"],
         "type": "string",
         "title": "Default Schema",

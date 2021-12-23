@@ -10,15 +10,15 @@ from airbyte_cdk.sources.streams import Stream
 from recurly import ApiError, Client
 
 from .streams import (
-    RecurlyAccountCouponRedemptionsStream,
-    RecurlyAccountsStream,
-    RecurlyCouponsStream,
-    RecurlyExportDatesStream,
-    RecurlyInvoicesStream,
-    RecurlyMeasuredUnitsStream,
-    RecurlyPlansStream,
-    RecurlySubscriptionsStream,
-    RecurlyTransactionsStream,
+    AccountCouponRedemptions,
+    Accounts,
+    Coupons,
+    ExportDates,
+    Invoices,
+    MeasuredUnits,
+    Plans,
+    Subscriptions,
+    Transactions,
 )
 
 
@@ -46,15 +46,15 @@ class SourceRecurly(AbstractSource):
         args = {"client": client, "begin_time": config.get("begin_time")}
 
         return [
-            RecurlyAccountsStream(**args),
-            RecurlyCouponsStream(**args),
-            RecurlyAccountCouponRedemptionsStream(**args),
-            RecurlyInvoicesStream(**args),
-            RecurlyMeasuredUnitsStream(**args),
-            RecurlyPlansStream(**args),
-            RecurlySubscriptionsStream(**args),
-            RecurlyTransactionsStream(**args),
-            RecurlyExportDatesStream(**args),
+            Accounts(**args),
+            Coupons(**args),
+            AccountCouponRedemptions(**args),
+            Invoices(**args),
+            MeasuredUnits(**args),
+            Plans(**args),
+            Subscriptions(**args),
+            Transactions(**args),
+            ExportDates(**args),
         ]
 
     def _client(self, api_key: str) -> Client:
