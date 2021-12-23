@@ -164,6 +164,7 @@ public class ConnectionsHandler {
       } catch (final Exception e) {
         LOGGER.error("Start of the temporal connection manager workflow failed", e);
         configRepository.deleteStandardSyncDefinition(standardSync.getConnectionId());
+        throw e;
       }
     }
 
