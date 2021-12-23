@@ -10,7 +10,7 @@ The platform provides all the horizontal services required to configure and run 
 
 Connectors are independent modules which push/pull data to/from sources and destinations. Connectors are built in accordance with the [Airbyte Specification](./airbyte-specification.md), which describes the interface with which data can be moved between a source and a destination using Airbyte. Connectors are packaged as Docker images, which allows total flexibility over the technologies used to implement them. 
 
-A more concrete diagram can be seen below 
+A more concrete diagram can be seen below:
 
 ![3.048-Kilometer view](../.gitbook/assets/understanding_airbyte_high_level_architecture.png)
 
