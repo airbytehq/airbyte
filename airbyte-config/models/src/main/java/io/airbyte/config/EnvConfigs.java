@@ -112,7 +112,7 @@ public class EnvConfigs implements Configs {
   private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB = 5000;
-  private static final int DEFAULT_DATABASE_INTILIZATION_TIMEOUT_MS = 60 * 1000;
+  private static final int DEFAULT_DATABASE_INITIALIZATION_TIMEOUT_MS = 60 * 1000;
 
   public static final long DEFAULT_MAX_SPEC_WORKERS = 5;
   public static final long DEFAULT_MAX_CHECK_WORKERS = 5;
@@ -289,7 +289,7 @@ public class EnvConfigs implements Configs {
 
   @Override
   public long getJobsDatabaseInitializationTimeoutMs() {
-    return getEnvOrDefault(JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS, DEFAULT_DATABASE_INTILIZATION_TIMEOUT_MS);
+    return getEnvOrDefault(JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS, DEFAULT_DATABASE_INITIALIZATION_TIMEOUT_MS);
   }
 
   @Override
@@ -317,7 +317,7 @@ public class EnvConfigs implements Configs {
 
   @Override
   public long getConfigsDatabaseInitializationTimeoutMs() {
-    return getEnvOrDefault(JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS, DEFAULT_DATABASE_INTILIZATION_TIMEOUT_MS);
+    return getEnvOrDefault(CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS, DEFAULT_DATABASE_INITIALIZATION_TIMEOUT_MS);
   }
 
   @Override

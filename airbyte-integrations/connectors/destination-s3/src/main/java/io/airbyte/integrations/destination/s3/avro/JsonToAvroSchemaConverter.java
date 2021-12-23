@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.s3.avro;
 
+import static io.airbyte.integrations.destination.s3.util.AvroRecordHelper.obtainPaths;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Preconditions;
@@ -46,6 +48,7 @@ public class JsonToAvroSchemaConverter {
       .addToSchema(Schema.create(Schema.Type.LONG));
 
   private final Map<String, String> standardizedNames = new HashMap<>();
+  private final Map<JsonNode, String> jsonNodePathMap = new HashMap<>();
 
   static List<JsonSchemaType> getNonNullTypes(final String fieldName, final JsonNode fieldDefinition) {
     return getTypes(fieldName, fieldDefinition).stream()
@@ -96,8 +99,9 @@ public class JsonToAvroSchemaConverter {
   public Schema getAvroSchema(final JsonNode jsonSchema,
                               final String name,
                               @Nullable final String namespace,
-                              final boolean appendAirbyteFields) {
-    return getAvroSchema(jsonSchema, name, namespace, appendAirbyteFields, true, true);
+                              final boolean appendAirbyteFields,
+                              final boolean isRootNode) {
+    return getAvroSchema(jsonSchema, name, namespace, appendAirbyteFields, true, true, isRootNode);
   }
 
   /**
@@ -108,9 +112,13 @@ public class JsonToAvroSchemaConverter {
                               @Nullable final String namespace,
                               final boolean appendAirbyteFields,
                               final boolean appendExtraProps,
-                              final boolean addStringToLogicalTypes) {
+                              final boolean addStringToLogicalTypes,
+                              final boolean isRootNode) {
     final String stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(name);
     RecordBuilder<Schema> builder = SchemaBuilder.record(stdName);
+    if (isRootNode) {
+      obtainPaths("", jsonSchema, jsonNodePathMap);
+    }
     if (!stdName.equals(name)) {
       standardizedNames.put(name, stdName);
       LOGGER.warn("Schema name contains illegal character(s) and is standardized: {} -> {}", name,
@@ -226,7 +234,8 @@ public class JsonToAvroSchemaConverter {
               String.format("Array field %s has invalid items property: %s", fieldName, items));
         }
       }
-      case OBJECT -> fieldSchema = getAvroSchema(fieldDefinition, fieldName, null, false, appendExtraProps, addStringToLogicalTypes);
+      case OBJECT -> fieldSchema =
+          getAvroSchema(fieldDefinition, fieldName, jsonNodePathMap.get(fieldDefinition), false, appendExtraProps, addStringToLogicalTypes, false);
       default -> throw new IllegalStateException(
           String.format("Unexpected type for field %s: %s", fieldName, fieldType));
     }
