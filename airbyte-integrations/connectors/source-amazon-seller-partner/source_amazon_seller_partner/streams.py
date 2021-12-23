@@ -518,30 +518,31 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
     Field definitions: https://sellercentral.amazon.com/help/hub/reference/G202125660
     """
 
+    # The list of MarketplaceIds can be found here https://docs.developer.amazonservices.com/en_UK/dev_guide/DG_Endpoints.html
     MARKETPLACE_DATE_FORMAT_MAP = dict(
         # eu
-        A2VIGQ35RCS4UG = "D/M/YY", # AE
-        A1PA6795UKMFR9 = "D/M/YY", # DE
-        A1C3SOZRARQ6R3 = "D/M/YY", # PL
-        ARBP9OOSHTCHU = "D/M/YY", # EG
-        A1RKKUPIHCS9HS = "D/M/YY", # ES
-        A13V1IB3VIYZZH = "D/M/YY", # FR
-        A21TJRUUN4KGV = "D/M/YY", # IN
-        APJ6JRA9NG5V4 = "D/M/YY", # IT
-        A1805IZSGTT6HS = "D/M/YY", # NL
-        A17E79C6D8DWNP = "D/M/YY", # SA
-        A2NODRKZP88ZB9 = "D/M/YY", # SE
-        A33AVAJ2PDY3EV = "D/M/YY", # TR
-        A1F83G8C2ARO7P = "D/M/YY", # UK
+        A2VIGQ35RCS4UG="D/M/YY",  # AE
+        A1PA6795UKMFR9="D/M/YY",  # DE
+        A1C3SOZRARQ6R3="D/M/YY",  # PL
+        ARBP9OOSHTCHU="D/M/YY",  # EG
+        A1RKKUPIHCS9HS="D/M/YY",  # ES
+        A13V1IB3VIYZZH="D/M/YY",  # FR
+        A21TJRUUN4KGV="D/M/YY",  # IN
+        APJ6JRA9NG5V4="D/M/YY",  # IT
+        A1805IZSGTT6HS="D/M/YY",  # NL
+        A17E79C6D8DWNP="D/M/YY",  # SA
+        A2NODRKZP88ZB9="D/M/YY",  # SE
+        A33AVAJ2PDY3EV="D/M/YY",  # TR
+        A1F83G8C2ARO7P="D/M/YY",  # UK
         # fe
-        A39IBJ37TRP1C6 = "D/M/YY", # AU
-        A1VC38T7YXB528 = "YY/M/D", # JP
-        A19VAU5U5O7RUS = "D/M/YY", # SG
+        A39IBJ37TRP1C6="D/M/YY",  # AU
+        A1VC38T7YXB528="YY/M/D",  # JP
+        A19VAU5U5O7RUS="D/M/YY",  # SG
         # na
-        ATVPDKIKX0DER = "M/D/YY", # US
-        A2Q3Y263D00KWC = "D/M/YY", # BR
-        A2EUQ1WTGCTBG2 = "M/D/YY", # CA
-        A1AM78C64UM0Y8 = "D/M/YY", # MX
+        ATVPDKIKX0DER="M/D/YY",  # US
+        A2Q3Y263D00KWC="D/M/YY",  # BR
+        A2EUQ1WTGCTBG2="M/D/YY",  # CA
+        A1AM78C64UM0Y8="D/M/YY",  # MX
     )
 
     name = "GET_SELLER_FEEDBACK_DATA"
@@ -563,6 +564,7 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
                 return transformed_value
 
             return original_value
+
         return transform_function
 
 
