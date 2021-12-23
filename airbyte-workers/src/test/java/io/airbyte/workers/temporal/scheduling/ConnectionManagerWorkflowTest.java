@@ -191,7 +191,7 @@ public class ConnectionManagerWorkflowTest {
 
       WorkflowClient.start(workflow::run, input);
       workflow.submitManualSync();
-      testEnv.sleep(Duration.ofSeconds(4L));
+      testEnv.sleep(Duration.ofSeconds(50L));
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
