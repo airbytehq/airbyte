@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "title": "Birthday Merge Field Segment",
+  "description": "Segment by a contact's birthday.",
+  "required": ["field", "op"],
+  "properties": {
+    "condition_type": {
+      "type": "string",
+      "x-value": "BirthdayMerge",
+      "enum": ["BirthdayMerge"]
+    },
+    "field": {
+      "type": "string",
+      "title": "Segment Field",
+      "description": "A date merge field to segment.",
+      "example": "MMERGE4"
+    },
+    "op": {
+      "type": "string",
+      "enum": ["is", "not", "blank", "blank_not"],
+      "title": "Segment Operator",
+      "description": "Whether the member's birthday merge information is/is not a certain date or is/is not blank.",
+      "example": "is"
+    },
+    "value": {
+      "type": "string",
+      "title": "Segment Value",
+      "description": "A date to segment against (mm/dd).",
+      "example": "01/30"
+    }
+  }
+}

@@ -18,7 +18,9 @@ After replication of data from a source connector \(Extract\) to a destination c
 
 ## Public Git repository
 
-In the connection settings page, I can add new Transformations steps to apply after [normalization](../../understanding-airbyte/basic-normalization.md). For example, I want to run my custom dbt project [jaffle\_shop](https://github.com/fishtown-analytics/jaffle_shop), whenever my sync is done replicating and normalizing my data.
+In the connection settings page, I can add new Transformations steps to apply after [normalization](../../understanding-airbyte/basic-normalization.md). For example, I want to run my custom dbt project jaffle_shop, whenever my sync is done replicating and normalizing my data.
+
+You can find the jaffle shop test repository by clicking [here](https://github.com/dbt-labs/jaffle_shop).
 
 ![](../../.gitbook/assets/custom-dbt-transformations-seed.png)
 

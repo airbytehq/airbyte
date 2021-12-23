@@ -28,7 +28,12 @@
     }
   ],
   "snowflake": [
-    { "TMP_TEST_DATA_CHECK_ROW_COUNTS": "tmp_test_data_check_row_counts" }
+    {
+      "NESTED_STREAMS_FIRST_RUN_ROW_COUNTS": "nested_streams_first_run_row_counts"
+    },
+    {
+      "NESTED_STREAMS_SECOND_RUN_ROW_COUNTS": "nested_streams_second_run_row_counts"
+    }
   ],
   "redshift": [],
   "mysql": [

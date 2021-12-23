@@ -7,6 +7,7 @@ package io.airbyte.server.handlers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import io.airbyte.api.model.AdvancedAuth;
 import io.airbyte.api.model.AuthSpecification;
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.CheckConnectionRead.StatusEnum;
@@ -28,7 +29,9 @@ import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -36,11 +39,13 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.State;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.client.SchedulerJobClient;
+import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.models.Job;
@@ -51,7 +56,6 @@ import io.airbyte.server.converters.CatalogConverter;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.converters.OauthModelConverter;
-import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.TemporalUtils;
@@ -72,13 +76,15 @@ public class SchedulerHandler {
   private final ConfigRepository configRepository;
   private final SchedulerJobClient schedulerJobClient;
   private final SynchronousSchedulerClient synchronousSchedulerClient;
-  private final SpecFetcher specFetcher;
   private final ConfigurationUpdate configurationUpdate;
   private final JsonSchemaValidator jsonSchemaValidator;
   private final JobPersistence jobPersistence;
   private final JobNotifier jobNotifier;
   private final WorkflowServiceStubs temporalService;
   private final OAuthConfigSupplier oAuthConfigSupplier;
+  private final JobConverter jobConverter;
+  private final WorkerEnvironment workerEnvironment;
+  private final LogConfigs logConfigs;
 
   public SchedulerHandler(final ConfigRepository configRepository,
                           final SchedulerJobClient schedulerJobClient,
@@ -86,18 +92,21 @@ public class SchedulerHandler {
                           final JobPersistence jobPersistence,
                           final JobNotifier jobNotifier,
                           final WorkflowServiceStubs temporalService,
-                          final OAuthConfigSupplier oAuthConfigSupplier) {
+                          final OAuthConfigSupplier oAuthConfigSupplier,
+                          final WorkerEnvironment workerEnvironment,
+                          final LogConfigs logConfigs) {
     this(
         configRepository,
         schedulerJobClient,
         synchronousSchedulerClient,
-        new ConfigurationUpdate(configRepository, new SpecFetcher(synchronousSchedulerClient)),
+        new ConfigurationUpdate(configRepository),
         new JsonSchemaValidator(),
-        new SpecFetcher(synchronousSchedulerClient),
         jobPersistence,
         jobNotifier,
         temporalService,
-        oAuthConfigSupplier);
+        oAuthConfigSupplier,
+        workerEnvironment,
+        logConfigs);
   }
 
   @VisibleForTesting
@@ -106,21 +115,24 @@ public class SchedulerHandler {
                    final SynchronousSchedulerClient synchronousSchedulerClient,
                    final ConfigurationUpdate configurationUpdate,
                    final JsonSchemaValidator jsonSchemaValidator,
-                   final SpecFetcher specFetcher,
                    final JobPersistence jobPersistence,
                    final JobNotifier jobNotifier,
                    final WorkflowServiceStubs temporalService,
-                   final OAuthConfigSupplier oAuthConfigSupplier) {
+                   final OAuthConfigSupplier oAuthConfigSupplier,
+                   final WorkerEnvironment workerEnvironment,
+                   final LogConfigs logConfigs) {
     this.configRepository = configRepository;
     this.schedulerJobClient = schedulerJobClient;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
     this.configurationUpdate = configurationUpdate;
     this.jsonSchemaValidator = jsonSchemaValidator;
-    this.specFetcher = specFetcher;
     this.jobPersistence = jobPersistence;
     this.jobNotifier = jobNotifier;
     this.temporalService = temporalService;
     this.oAuthConfigSupplier = oAuthConfigSupplier;
+    this.workerEnvironment = workerEnvironment;
+    this.logConfigs = logConfigs;
+    this.jobConverter = new JobConverter(workerEnvironment, logConfigs);
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(final SourceIdRequestBody sourceIdRequestBody)
@@ -137,7 +149,7 @@ public class SchedulerHandler {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceConfig.getSourceDefinitionId());
     final var partialConfig = configRepository.statefulSplitEphemeralSecrets(
         sourceConfig.getConnectionConfiguration(),
-        specFetcher.getSpec(sourceDef));
+        sourceDef.getSpec());
 
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
@@ -177,7 +189,7 @@ public class SchedulerHandler {
     final StandardDestinationDefinition destDef = configRepository.getStandardDestinationDefinition(destinationConfig.getDestinationDefinitionId());
     final var partialConfig = configRepository.statefulSplitEphemeralSecrets(
         destinationConfig.getConnectionConfiguration(),
-        specFetcher.getSpec(destDef));
+        destDef.getSpec());
 
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
@@ -216,19 +228,23 @@ public class SchedulerHandler {
   public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceCreate(final SourceCoreConfig sourceCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceCreate.getSourceDefinitionId());
+    final var partialConfig = configRepository.statefulSplitEphemeralSecrets(
+        sourceCreate.getConnectionConfiguration(),
+        sourceDef.getSpec());
+
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
     final SourceConnection source = new SourceConnection()
         .withSourceDefinitionId(sourceCreate.getSourceDefinitionId())
-        .withConfiguration(sourceCreate.getConnectionConfiguration());
+        .withConfiguration(partialConfig);
     final SynchronousResponse<AirbyteCatalog> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName);
     return discoverJobToOutput(response);
   }
 
-  private static SourceDiscoverSchemaRead discoverJobToOutput(final SynchronousResponse<AirbyteCatalog> response) {
+  private SourceDiscoverSchemaRead discoverJobToOutput(final SynchronousResponse<AirbyteCatalog> response) {
     final SourceDiscoverSchemaRead sourceDiscoverSchemaRead = new SourceDiscoverSchemaRead()
-        .jobInfo(JobConverter.getSynchronousJobRead(response));
+        .jobInfo(jobConverter.getSynchronousJobRead(response));
 
     if (response.isSuccess()) {
       sourceDiscoverSchemaRead.catalog(CatalogConverter.toApi(response.getOutput()));
@@ -241,31 +257,31 @@ public class SchedulerHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID sourceDefinitionId = sourceDefinitionIdRequestBody.getSourceDefinitionId();
     final StandardSourceDefinition source = configRepository.getStandardSourceDefinition(sourceDefinitionId);
-    final SynchronousResponse<ConnectorSpecification> response = specFetcher.getSpecJobResponse(source);
-    final ConnectorSpecification spec = response.getOutput();
+    final ConnectorSpecification spec = source.getSpec();
     final SourceDefinitionSpecificationRead specRead = new SourceDefinitionSpecificationRead()
-        .jobInfo(JobConverter.getSynchronousJobRead(response))
+        .jobInfo(jobConverter.getSynchronousJobRead(SynchronousJobMetadata.mock(ConfigType.GET_SPEC)))
         .connectionSpecification(spec.getConnectionSpecification())
         .documentationUrl(spec.getDocumentationUrl().toString())
         .sourceDefinitionId(sourceDefinitionId);
 
     final Optional<AuthSpecification> authSpec = OauthModelConverter.getAuthSpec(spec);
-    if (authSpec.isPresent()) {
-      specRead.setAuthSpecification(authSpec.get());
-    }
+    authSpec.ifPresent(specRead::setAuthSpecification);
+
+    final Optional<AdvancedAuth> advancedAuth = OauthModelConverter.getAdvancedAuth(spec);
+    advancedAuth.ifPresent(specRead::setAdvancedAuth);
 
     return specRead;
   }
 
-  public DestinationDefinitionSpecificationRead getDestinationSpecification(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
+  public DestinationDefinitionSpecificationRead getDestinationSpecification(
+                                                                            final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID destinationDefinitionId = destinationDefinitionIdRequestBody.getDestinationDefinitionId();
     final StandardDestinationDefinition destination = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
-    final SynchronousResponse<ConnectorSpecification> response = specFetcher.getSpecJobResponse(destination);
-    final ConnectorSpecification spec = response.getOutput();
+    final ConnectorSpecification spec = destination.getSpec();
 
     final DestinationDefinitionSpecificationRead specRead = new DestinationDefinitionSpecificationRead()
-        .jobInfo(JobConverter.getSynchronousJobRead(response))
+        .jobInfo(jobConverter.getSynchronousJobRead(SynchronousJobMetadata.mock(ConfigType.GET_SPEC)))
         .supportedDestinationSyncModes(Enums.convertListTo(spec.getSupportedDestinationSyncModes(), DestinationSyncMode.class))
         .connectionSpecification(spec.getConnectionSpecification())
         .documentationUrl(spec.getDocumentationUrl().toString())
@@ -274,9 +290,10 @@ public class SchedulerHandler {
         .destinationDefinitionId(destinationDefinitionId);
 
     final Optional<AuthSpecification> authSpec = OauthModelConverter.getAuthSpec(spec);
-    if (authSpec.isPresent()) {
-      specRead.setAuthSpecification(authSpec.get());
-    }
+    authSpec.ifPresent(specRead::setAuthSpecification);
+
+    final Optional<AdvancedAuth> advancedAuth = OauthModelConverter.getAdvancedAuth(spec);
+    advancedAuth.ifPresent(specRead::setAdvancedAuth);
 
     return specRead;
   }
@@ -320,7 +337,7 @@ public class SchedulerHandler {
         destinationImageName,
         standardSyncOperations);
 
-    return JobConverter.getJobInfoRead(job);
+    return jobConverter.getJobInfoRead(job);
   }
 
   public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody)
@@ -341,7 +358,7 @@ public class SchedulerHandler {
 
     final Job job = schedulerJobClient.createOrGetActiveResetConnectionJob(destination, standardSync, destinationImageName, standardSyncOperations);
 
-    return JobConverter.getJobInfoRead(job);
+    return jobConverter.getJobInfoRead(job);
   }
 
   public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
@@ -366,7 +383,7 @@ public class SchedulerHandler {
 
     final Job job = jobPersistence.getJob(jobId);
     jobNotifier.failJob("job was cancelled", job);
-    return JobConverter.getJobInfoRead(job);
+    return jobConverter.getJobInfoRead(job);
   }
 
   private void cancelTemporalWorkflowIfPresent(final long jobId) throws IOException {
@@ -390,7 +407,7 @@ public class SchedulerHandler {
 
   private CheckConnectionRead reportConnectionStatus(final SynchronousResponse<StandardCheckConnectionOutput> response) {
     final CheckConnectionRead checkConnectionRead = new CheckConnectionRead()
-        .jobInfo(JobConverter.getSynchronousJobRead(response));
+        .jobInfo(jobConverter.getSynchronousJobRead(response));
 
     if (response.isSuccess()) {
       checkConnectionRead
@@ -408,13 +425,13 @@ public class SchedulerHandler {
   private ConnectorSpecification getSpecFromSourceDefinitionId(final UUID sourceDefId)
       throws IOException, JsonValidationException, ConfigNotFoundException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceDefId);
-    return specFetcher.getSpec(sourceDef);
+    return sourceDef.getSpec();
   }
 
   private ConnectorSpecification getSpecFromDestinationDefinitionId(final UUID destDefId)
       throws IOException, JsonValidationException, ConfigNotFoundException {
     final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destDefId);
-    return specFetcher.getSpec(destinationDef);
+    return destinationDef.getSpec();
   }
 
 }

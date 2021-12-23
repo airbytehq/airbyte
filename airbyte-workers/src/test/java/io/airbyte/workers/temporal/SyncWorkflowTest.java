@@ -22,14 +22,16 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.TestConfigHelpers;
-import io.airbyte.workers.temporal.SyncWorkflow.DbtTransformationActivity;
-import io.airbyte.workers.temporal.SyncWorkflow.DbtTransformationActivityImpl;
-import io.airbyte.workers.temporal.SyncWorkflow.NormalizationActivity;
-import io.airbyte.workers.temporal.SyncWorkflow.NormalizationActivityImpl;
-import io.airbyte.workers.temporal.SyncWorkflow.PersistStateActivity;
-import io.airbyte.workers.temporal.SyncWorkflow.PersistStateActivityImpl;
-import io.airbyte.workers.temporal.SyncWorkflow.ReplicationActivity;
-import io.airbyte.workers.temporal.SyncWorkflow.ReplicationActivityImpl;
+import io.airbyte.workers.temporal.sync.DbtTransformationActivity;
+import io.airbyte.workers.temporal.sync.DbtTransformationActivityImpl;
+import io.airbyte.workers.temporal.sync.NormalizationActivity;
+import io.airbyte.workers.temporal.sync.NormalizationActivityImpl;
+import io.airbyte.workers.temporal.sync.PersistStateActivity;
+import io.airbyte.workers.temporal.sync.PersistStateActivityImpl;
+import io.airbyte.workers.temporal.sync.ReplicationActivity;
+import io.airbyte.workers.temporal.sync.ReplicationActivityImpl;
+import io.airbyte.workers.temporal.sync.SyncWorkflow;
+import io.airbyte.workers.temporal.sync.SyncWorkflowImpl;
 import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.workflowservice.v1.RequestCancelWorkflowExecutionRequest;
 import io.temporal.api.workflowservice.v1.WorkflowServiceGrpc.WorkflowServiceBlockingStub;
@@ -38,6 +40,7 @@ import io.temporal.client.WorkflowFailedException;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
+import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,10 +49,9 @@ import org.junit.jupiter.api.Test;
 class SyncWorkflowTest {
 
   // TEMPORAL
-  private static final String TASK_QUEUE = "a";
 
   private TestWorkflowEnvironment testEnv;
-  private Worker worker;
+  private Worker syncWorker;
   private WorkflowClient client;
   private ReplicationActivityImpl replicationActivity;
   private NormalizationActivityImpl normalizationActivity;
@@ -83,8 +85,8 @@ class SyncWorkflowTest {
   @BeforeEach
   public void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
-    worker = testEnv.newWorker(TASK_QUEUE);
-    worker.registerWorkflowImplementationTypes(SyncWorkflow.WorkflowImpl.class);
+    syncWorker = testEnv.newWorker(TemporalJobType.SYNC.name());
+    syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
 
     client = testEnv.getWorkflowClient();
 
@@ -107,11 +109,12 @@ class SyncWorkflowTest {
     persistStateActivity = mock(PersistStateActivityImpl.class);
   }
 
-  // bundle up all of the temporal worker setup / execution into one method.
+  // bundle up all the temporal worker setup / execution into one method.
   private StandardSyncOutput execute() {
-    worker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
+    syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
     testEnv.start();
-    final SyncWorkflow workflow = client.newWorkflowStub(SyncWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(TASK_QUEUE).build());
+    final SyncWorkflow workflow =
+        client.newWorkflowStub(SyncWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(TemporalJobType.SYNC.name()).build());
 
     return workflow.run(JOB_RUN_CONFIG, SOURCE_LAUNCHER_CONFIG, DESTINATION_LAUNCHER_CONFIG, syncInput, sync.getConnectionId());
   }
@@ -127,7 +130,7 @@ class SyncWorkflowTest {
     final StandardSyncOutput actualOutput = execute();
     assertEquals(replicationSuccessOutput, actualOutput);
 
-    verifyReplication(replicationActivity, syncInput);
+    verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
     verifyPersistState(persistStateActivity, sync, actualOutput);
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(), operatorDbtInput);
@@ -143,7 +146,7 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    verifyReplication(replicationActivity, syncInput);
+    verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
     verifyNoInteractions(persistStateActivity);
     verifyNoInteractions(normalizationActivity);
     verifyNoInteractions(dbtTransformationActivity);
@@ -164,7 +167,7 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    verifyReplication(replicationActivity, syncInput);
+    verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput);
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyNoInteractions(dbtTransformationActivity);
@@ -183,7 +186,7 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    verifyReplication(replicationActivity, syncInput);
+    verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
     verifyNoInteractions(persistStateActivity);
     verifyNoInteractions(normalizationActivity);
     verifyNoInteractions(dbtTransformationActivity);
@@ -207,7 +210,7 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    verifyReplication(replicationActivity, syncInput);
+    verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput);
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyNoInteractions(dbtTransformationActivity);
@@ -230,7 +233,7 @@ class SyncWorkflowTest {
     testEnv.getWorkflowService().blockingStub().requestCancelWorkflowExecution(cancelRequest);
   }
 
-  private static void verifyReplication(final ReplicationActivity replicationActivity, final StandardSyncInput syncInput) {
+  private static void verifyReplication(final ReplicationActivity replicationActivity, final StandardSyncInput syncInput, final UUID connectionId) {
     verify(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,

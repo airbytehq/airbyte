@@ -73,7 +73,7 @@ SUB_BUILD=CONNECTORS_BASE ./gradlew format
 This command just builds the docker images that are used as artifacts in the platform. It bypasses running tests.
 
 ```text
-SUB_BUILD=PLATFORM ./gradlew composeBuild
+SUB_BUILD=PLATFORM ./gradlew build
 ```
 
 #### Running Tests
@@ -95,9 +95,9 @@ These tests currently all live in `airbyte-tests`
 
 **Frontend Acceptance Tests**
 
-These are acceptance tests for the frontend. They are run with `SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-e2e-testing:e2etest`. Like the Platform Acceptance Tests, they expect Airbyte to be running locally. See the [script](https://github.com/airbytehq/airbyte/blob/master/tools/bin/e2e_test.sh) that is used by the CI.
+These are acceptance tests for the frontend. They are run with `SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-webapp-e2e-tests:e2etest`. Like the Platform Acceptance Tests, they expect Airbyte to be running locally. See the [script](https://github.com/airbytehq/airbyte/blob/master/tools/bin/e2e_test.sh) that is used by the CI.
 
-These tests currently all live in `airbyte-e2e-testing`.
+These tests currently all live in `airbyte-webapp-e2e-tests`.
 
 **Future Work**
 

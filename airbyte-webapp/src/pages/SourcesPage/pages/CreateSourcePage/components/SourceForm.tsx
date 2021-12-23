@@ -1,16 +1,14 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import ContentCard from "components/ContentCard";
-import ServiceForm from "views/Connector/ServiceForm";
 import useRouter from "hooks/useRouter";
 import { useSourceDefinitionSpecificationLoad } from "hooks/services/useSourceHook";
-import { JobInfo } from "core/resources/Scheduler";
-import { JobsLogItem } from "components/JobItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { SourceDefinition } from "core/resources/SourceDefinition";
-import { useAnalytics } from "hooks/useAnalytics";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { LogsRequestError } from "core/request/LogsRequestError";
+import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { SourceDefinition } from "core/domain/connector";
 
 type IProps = {
   onSubmit: (values: {
@@ -23,7 +21,6 @@ type IProps = {
   sourceDefinitions: SourceDefinition[];
   hasSuccess?: boolean;
   error?: { message?: string; status?: number } | null;
-  jobInfo?: JobInfo;
 };
 
 const SourceForm: React.FC<IProps> = ({
@@ -31,11 +28,10 @@ const SourceForm: React.FC<IProps> = ({
   sourceDefinitions,
   error,
   hasSuccess,
-  jobInfo,
   afterSelectConnector,
 }) => {
   const { location } = useRouter();
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
 
   const [sourceDefinitionId, setSourceDefinitionId] = useState(
     location.state?.sourceDefinitionId || ""
@@ -77,26 +73,25 @@ const SourceForm: React.FC<IProps> = ({
   const errorMessage = error ? createFormErrorMessage(error) : null;
 
   return (
-    <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>
-      <ServiceForm
-        onServiceSelect={onDropDownSelect}
-        onSubmit={onSubmitForm}
-        formType="source"
-        availableServices={sourceDefinitions}
-        selectedConnector={sourceDefinitionSpecification}
-        hasSuccess={hasSuccess}
-        fetchingConnectorError={sourceDefinitionError}
-        errorMessage={errorMessage}
-        isLoading={isLoading}
-        formValues={
-          sourceDefinitionId
-            ? { serviceType: sourceDefinitionId, name: "" }
-            : undefined
-        }
-        allowChangeConnector
-      />
-      <JobsLogItem jobInfo={jobInfo} />
-    </ContentCard>
+    <ConnectorCard
+      onServiceSelect={onDropDownSelect}
+      onSubmit={onSubmitForm}
+      formType="source"
+      availableServices={sourceDefinitions}
+      selectedConnector={sourceDefinitionSpecification}
+      hasSuccess={hasSuccess}
+      fetchingConnectorError={sourceDefinitionError}
+      errorMessage={errorMessage}
+      isLoading={isLoading}
+      formValues={
+        sourceDefinitionId
+          ? { serviceType: sourceDefinitionId, name: "" }
+          : undefined
+      }
+      allowChangeConnector
+      title={<FormattedMessage id="onboarding.sourceSetUp" />}
+      jobInfo={LogsRequestError.extractJobInfo(error)}
+    />
   );
 };
 

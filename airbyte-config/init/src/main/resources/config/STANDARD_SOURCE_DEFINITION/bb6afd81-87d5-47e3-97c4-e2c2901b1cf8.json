@@ -2,6 +2,7 @@
   "sourceDefinitionId": "bb6afd81-87d5-47e3-97c4-e2c2901b1cf8",
   "name": "OneSignal",
   "dockerRepository": "airbyte/source-onesignal",
-  "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/onesignal"
+  "dockerImageTag": "0.1.2",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/onesignal",
+  "icon": "onesignal.svg"
 }

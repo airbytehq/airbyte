@@ -22,10 +22,7 @@
       "readOnly": true
     },
     "type": {
-      "type": "string",
-      "title": "Type",
-      "description": "There are four types of campaigns you can create in Mailchimp. A/B Split campaigns have been deprecated and variate campaigns should be used instead.",
-      "enum": ["regular", "plaintext", "absplit", "rss", "variate"]
+      "$ref": "campaignType.json"
     },
     "create_time": {
       "type": "string",
@@ -46,10 +43,7 @@
       "readOnly": true
     },
     "status": {
-      "type": "string",
-      "title": "Status",
-      "description": "The current status of the campaign.",
-      "enum": ["save", "paused", "schedule", "sending", "sent", "canceled", "canceling", "archived"]
+      "$ref": "campaignStatus.json"
     },
     "emails_sent": {
       "type": "integer",
@@ -116,9 +110,7 @@
           "readOnly": true
         },
         "segment_opts": {
-          "type": "object",
-          "title": "Segmentation Options",
-          "description": "An object representing all segmentation options. This object should contain a saved_segment_id to use an existing segment, or you can create a new segment by including both match and conditions options."
+          "$ref": "segmentationOptions.json"
         }
       }
     },

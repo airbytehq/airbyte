@@ -20,6 +20,9 @@ public class PostgresCdcProperties {
 
     props.setProperty("publication.autocreate.mode", "disabled");
 
+    props.setProperty("converters", "datetime");
+    props.setProperty("datetime.type", "io.airbyte.integrations.debezium.internals.PostgresConverter");
+
     return props;
   }
 

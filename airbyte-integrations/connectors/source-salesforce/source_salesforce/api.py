@@ -5,7 +5,9 @@
 from typing import Any, List, Mapping, Optional, Tuple
 
 import requests
+from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from requests.exceptions import HTTPError
 
 from .exceptions import TypeSalesforceException
 from .rate_limiting import default_backoff_handler
@@ -168,6 +170,7 @@ UNSUPPORTED_FILTERING_STREAMS = [
 
 
 class Salesforce:
+    logger = AirbyteLogger()
     version = "v52.0"
 
     def __init__(
@@ -179,6 +182,7 @@ class Salesforce:
         is_sandbox: bool = None,
         start_date: str = None,
         api_type: str = None,
+        **kwargs,
     ):
         self.api_type = api_type.upper() if api_type else None
         self.refresh_token = refresh_token
@@ -226,12 +230,15 @@ class Salesforce:
     def _make_request(
         self, http_method: str, url: str, headers: dict = None, body: dict = None, stream: bool = False, params: dict = None
     ) -> requests.models.Response:
-        if http_method == "GET":
-            resp = self.session.get(url, headers=headers, stream=stream, params=params)
-        elif http_method == "POST":
-            resp = self.session.post(url, headers=headers, data=body)
-        resp.raise_for_status()
-
+        try:
+            if http_method == "GET":
+                resp = self.session.get(url, headers=headers, stream=stream, params=params)
+            elif http_method == "POST":
+                resp = self.session.post(url, headers=headers, data=body)
+            resp.raise_for_status()
+        except HTTPError as err:
+            self.logger.warn(f"http error body: {err.response.text}")
+            raise
         return resp
 
     def login(self):
@@ -252,16 +259,16 @@ class Salesforce:
     def describe(self, sobject: str = None) -> Mapping[str, Any]:
         """Describes all objects or a specific object"""
         headers = self._get_standard_headers()
+
         endpoint = "sobjects" if not sobject else f"sobjects/{sobject}/describe"
 
         url = f"{self.instance_url}/services/data/{self.version}/{endpoint}"
         resp = self._make_request("GET", url, headers=headers)
-
         return resp.json()
 
-    def generate_schema(self, stream_name: str) -> Mapping[str, Any]:
-        schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True, "properties": {}}
+    def generate_schema(self, stream_name: str = None) -> Mapping[str, Any]:
         response = self.describe(stream_name)
+        schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True, "properties": {}}
         for field in response["fields"]:
             schema["properties"][field["name"]] = self.field_to_property_schema(field)
         return schema
@@ -315,7 +322,11 @@ class Salesforce:
         elif sf_type == "boolean":
             property_schema["type"] = ["boolean", "null"]
         elif sf_type in LOOSE_TYPES:
-            property_schema["type"] = ["array", "boolean", "integer", "number", "object", "string", "null"]
+            """
+            LOOSE_TYPES can return data of completely different types (more than 99% of them are `strings`),
+            and in order to avoid conflicts in schemas and destinations, we cast this data to the `string` type.
+            """
+            property_schema["type"] = ["string", "null"]
         elif sf_type == "location":
             property_schema = {
                 "type": ["object", "null"],

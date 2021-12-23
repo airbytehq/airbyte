@@ -15,6 +15,7 @@ import io.airbyte.commons.logging.MdcScope.Builder;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
@@ -24,6 +25,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,32 +34,32 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteSource.class);
 
   private static final Duration HEARTBEAT_FRESH_DURATION = Duration.of(5, ChronoUnit.MINUTES);
-  private static final Duration CHECK_HEARTBEAT_DURATION = Duration.of(10, ChronoUnit.SECONDS);
-  // todo (cgardens) - keep the graceful shutdown consistent with current behavior for release. make
-  // sure everything is working well before we reduce this to something more reasonable.
-  private static final Duration GRACEFUL_SHUTDOWN_DURATION = Duration.of(10, ChronoUnit.HOURS);
-  private static final Duration FORCED_SHUTDOWN_DURATION = Duration.of(1, ChronoUnit.MINUTES);
+  private static final Duration GRACEFUL_SHUTDOWN_DURATION = Duration.of(1, ChronoUnit.MINUTES);
 
-  private static final MdcScope CONTAINER_LOG_MDC = new Builder()
+  private static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
       .setLogPrefix("source")
-      .setPrefixColor(Color.BLUE)
-      .build();
+      .setPrefixColor(Color.BLUE_BACKGROUND);
 
+  private final WorkerConfigs workerConfigs;
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
   private final HeartbeatMonitor heartbeatMonitor;
 
   private Process sourceProcess = null;
   private Iterator<AirbyteMessage> messageIterator = null;
+  private Integer exitValue = null;
 
-  public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC), new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION));
+  public DefaultAirbyteSource(final WorkerConfigs workerConfigs, final IntegrationLauncher integrationLauncher) {
+    this(workerConfigs, integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER),
+        new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION));
   }
 
   @VisibleForTesting
-  DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
+  DefaultAirbyteSource(final WorkerConfigs workerConfigs,
+                       final IntegrationLauncher integrationLauncher,
                        final AirbyteStreamFactory streamFactory,
                        final HeartbeatMonitor heartbeatMonitor) {
+    this.workerConfigs = workerConfigs;
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
     this.heartbeatMonitor = heartbeatMonitor;
@@ -75,7 +77,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
         sourceConfig.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME,
         sourceConfig.getState() == null ? null : Jsons.serialize(sourceConfig.getState().getState()));
     // stdout logs are logged elsewhere since stdout also contains data
-    LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error, "airbyte-source", CONTAINER_LOG_MDC);
+    LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error, "airbyte-source", CONTAINER_LOG_MDC_BUILDER);
 
     messageIterator = streamFactory.create(IOs.newBufferedReader(sourceProcess.getInputStream()))
         .peek(message -> heartbeatMonitor.beat())
@@ -97,6 +99,18 @@ public class DefaultAirbyteSource implements AirbyteSource {
   }
 
   @Override
+  public int getExitValue() throws IllegalStateException {
+    Preconditions.checkState(sourceProcess != null, "Source process is null, cannot retrieve exit value.");
+    Preconditions.checkState(!sourceProcess.isAlive(), "Source process is still alive, cannot retrieve exit value.");
+
+    if (exitValue == null) {
+      exitValue = sourceProcess.exitValue();
+    }
+
+    return exitValue;
+  }
+
+  @Override
   public Optional<AirbyteMessage> attemptRead() {
     Preconditions.checkState(sourceProcess != null);
 
@@ -111,15 +125,14 @@ public class DefaultAirbyteSource implements AirbyteSource {
     }
 
     LOGGER.debug("Closing source process");
-    WorkerUtils.gentleCloseWithHeartbeat(
+    WorkerUtils.gentleClose(
+        workerConfigs,
         sourceProcess,
-        heartbeatMonitor,
-        GRACEFUL_SHUTDOWN_DURATION,
-        CHECK_HEARTBEAT_DURATION,
-        FORCED_SHUTDOWN_DURATION);
+        GRACEFUL_SHUTDOWN_DURATION.toMillis(),
+        TimeUnit.MILLISECONDS);
 
-    if (sourceProcess.isAlive() || sourceProcess.exitValue() != 0) {
-      final String message = sourceProcess.isAlive() ? "Source has not terminated " : "Source process exit with code " + sourceProcess.exitValue();
+    if (sourceProcess.isAlive() || getExitValue() != 0) {
+      final String message = sourceProcess.isAlive() ? "Source has not terminated " : "Source process exit with code " + getExitValue();
       throw new WorkerException(message + ". This warning is normal if the job was cancelled.");
     }
   }

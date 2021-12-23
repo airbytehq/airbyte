@@ -10,6 +10,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
+import io.airbyte.integrations.destination.jdbc.copy.s3.LegacyS3StreamCopier;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetWriter;
@@ -23,18 +24,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This implementation is similar to
- * {@link io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier}. The difference is that
- * this implementation creates Parquet staging files, instead of CSV ones.
- * <p/>
+ * This implementation is similar to {@link LegacyS3StreamCopier}. The difference is that this
+ * implementation creates Parquet staging files, instead of CSV ones.
+ * <p>
+ * </p>
  * It does the following operations:
+ * <ul>
  * <li>1. Parquet writer writes data stream into staging parquet file in
- * s3://<bucket-name>/<bucket-path>/<staging-folder>.</li>
+ * s3://bucket-name/bucket-path/staging-folder.</li>
  * <li>2. Create a tmp delta table based on the staging parquet file.</li>
  * <li>3. Create the destination delta table based on the tmp delta table schema in
- * s3://<bucket>/<stream-name>.</li>
+ * s3://bucket/stream-name.</li>
  * <li>4. Copy the staging parquet file into the destination delta table.</li>
  * <li>5. Delete the tmp delta table, and the staging parquet file.</li>
+ * </ul>
  */
 public class DatabricksStreamCopier implements StreamCopier {
 
@@ -90,7 +93,7 @@ public class DatabricksStreamCopier implements StreamCopier {
         s3Config.getBucketName(), s3Config.getBucketPath(), databricksConfig.getDatabaseSchema(), streamName);
 
     LOGGER.info("[Stream {}] Database schema: {}", streamName, schemaName);
-    LOGGER.info("[Stream {}] Parquet schema: {}", streamName, parquetWriter.getParquetSchema());
+    LOGGER.info("[Stream {}] Parquet schema: {}", streamName, parquetWriter.getSchema());
     LOGGER.info("[Stream {}] Tmp table {} location: {}", streamName, tmpTableName, tmpTableLocation);
     LOGGER.info("[Stream {}] Data table {} location: {}", streamName, destTableName, destTableLocation);
 

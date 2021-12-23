@@ -1,8 +1,6 @@
 *
 !Dockerfile
-!Dockerfile.test
+!main.py
 !source_hubspot
 !setup.py
 !secrets
-!acceptance-test-config.yml
-!acceptance-test.sh
