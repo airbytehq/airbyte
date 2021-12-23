@@ -2862,6 +2862,6 @@
       }
     }
   },
-  "additionalProperties": true,
+  "additionalProperties": false,
   "description": "Details of a filter."
 }
