@@ -22,6 +22,8 @@ const useDocumentation = (documentationUrl: string): UseDocumentationResult => {
       enabled: !!documentationUrl,
       refetchOnMount: false,
       refetchOnWindowFocus: false,
+      retry: false,
+      suspense: false,
     }
   );
 };
