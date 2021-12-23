@@ -215,17 +215,17 @@ class SourceFacebookMarketing(AbstractSource):
 
         for insight in insights:
             if insight.get("fields"):
-                value_checked, value = self._check_values(default_fields, insight.get("fields"))
+                value_checked, value = self._check_values(default_fields, insight["fields"])
                 if not value_checked:
                     message = f"{value} is not a valid field name"
                     raise Exception("Config validation error: " + message) from None
             if insight.get("breakdowns"):
-                value_checked, value = self._check_values(default_breakdowns, insight.get("breakdowns"))
+                value_checked, value = self._check_values(default_breakdowns, insight["breakdowns"])
                 if not value_checked:
                     message = f"{value} is not a valid breakdown name"
                     raise Exception("Config validation error: " + message) from None
             if insight.get("action_breakdowns"):
-                value_checked, value = self._check_values(default_action_breakdowns, insight.get("action_breakdowns"))
+                value_checked, value = self._check_values(default_action_breakdowns, insight["action_breakdowns"])
                 if not value_checked:
                     message = f"{value} is not a valid action_breakdown name"
                     raise Exception("Config validation error: " + message) from None
