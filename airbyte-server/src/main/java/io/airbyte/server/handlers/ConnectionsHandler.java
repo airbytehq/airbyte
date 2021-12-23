@@ -67,15 +67,14 @@ public class ConnectionsHandler {
   private final ConnectionHelper connectionHelper;
   private final WorkerConfigs workerConfigs;
 
-  @VisibleForTesting
-  ConnectionsHandler(final ConfigRepository configRepository,
-                     final Supplier<UUID> uuidGenerator,
-                     final WorkspaceHelper workspaceHelper,
-                     final TrackingClient trackingClient,
-                     final TemporalWorkerRunFactory temporalWorkerRunFactory,
-                     final FeatureFlags featureFlags,
-                     final ConnectionHelper connectionHelper,
-                     final WorkerConfigs workerConfigs) {
+  @VisibleForTesting ConnectionsHandler(final ConfigRepository configRepository,
+                                        final Supplier<UUID> uuidGenerator,
+                                        final WorkspaceHelper workspaceHelper,
+                                        final TrackingClient trackingClient,
+                                        final TemporalWorkerRunFactory temporalWorkerRunFactory,
+                                        final FeatureFlags featureFlags,
+                                        final ConnectionHelper connectionHelper,
+                                        final WorkerConfigs workerConfigs) {
     this.configRepository = configRepository;
     this.uuidGenerator = uuidGenerator;
     this.workspaceHelper = workspaceHelper;
@@ -87,13 +86,13 @@ public class ConnectionsHandler {
   }
 
   public ConnectionsHandler(
-                            final ConfigRepository configRepository,
-                            final WorkspaceHelper workspaceHelper,
-                            final TrackingClient trackingClient,
-                            final TemporalWorkerRunFactory temporalWorkerRunFactory,
-                            final FeatureFlags featureFlags,
-                            final ConnectionHelper connectionHelper,
-                            final WorkerConfigs workerConfigs) {
+      final ConfigRepository configRepository,
+      final WorkspaceHelper workspaceHelper,
+      final TrackingClient trackingClient,
+      final TemporalWorkerRunFactory temporalWorkerRunFactory,
+      final FeatureFlags featureFlags,
+      final ConnectionHelper connectionHelper,
+      final WorkerConfigs workerConfigs) {
     this(
         configRepository,
         UUID::randomUUID,
@@ -160,7 +159,12 @@ public class ConnectionsHandler {
     trackNewConnection(standardSync);
 
     if (featureFlags.usesNewScheduler()) {
-      temporalWorkerRunFactory.createNewSchedulerWorkflow(connectionId);
+      try {
+        temporalWorkerRunFactory.createNewSchedulerWorkflow(connectionId);
+      } catch (final Exception e) {
+        LOGGER.error("Start of the temporal connection manager workflow failed", e);
+        configRepository.deleteStandardSyncDefinition(standardSync.getConnectionId());
+      }
     }
 
     return connectionHelper.buildConnectionRead(connectionId);

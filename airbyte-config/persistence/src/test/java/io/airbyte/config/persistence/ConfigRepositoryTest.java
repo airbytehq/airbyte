@@ -291,7 +291,7 @@ class ConfigRepositoryTest {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     when(configPersistence.getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, DESTINATION_DEFINITION_ID.toString(),
         StandardDestinationDefinition.class))
-            .thenReturn(destinationDefinition);
+        .thenReturn(destinationDefinition);
 
     assertEquals(destinationDefinition, configRepository.getStandardDestinationDefinition(DESTINATION_DEFINITION_ID));
   }
@@ -406,6 +406,14 @@ class ConfigRepositoryTest {
     verify(configPersistence, never()).deleteConfig(
         ConfigSchema.STANDARD_DESTINATION_DEFINITION,
         destDefToStay.getDestinationDefinitionId().toString());
+  }
+
+  @Test
+  void testDeleteStandardSync() throws IOException, ConfigNotFoundException {
+    final UUID connectionId = UUID.randomUUID();
+    configRepository.deleteStandardSyncDefinition(connectionId);
+
+    verify(configPersistence).deleteConfig(ConfigSchema.STANDARD_SYNC, connectionId.toString());
   }
 
   @Test
