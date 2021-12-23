@@ -128,12 +128,14 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
                 end_date = self._get_end_date()
 
                 if start_date > end_date:
-                    yield from [{
-                        "site_url": site_url,
-                        "search_type": search_type,
-                        "start_date": end_date.to_date_string(),
-                        "end_date": end_date.to_date_string()
-                    }]
+                    yield from [
+                        {
+                            "site_url": site_url,
+                            "search_type": search_type,
+                            "start_date": end_date.to_date_string(),
+                            "end_date": end_date.to_date_string(),
+                        }
+                    ]
 
                 next_start = start_date
                 period = pendulum.Duration(days=self.range_of_days)
@@ -143,7 +145,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
                         "site_url": site_url,
                         "search_type": search_type,
                         "start_date": next_start.to_date_string(),
-                        "end_date": next_end.to_date_string()
+                        "end_date": next_end.to_date_string(),
                     }
                     # add 1 day for the next slice's start date not to duplicate data from previous slice's end date.
                     next_start = next_end + pendulum.Duration(days=1)
@@ -198,12 +200,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         # limit `end_date` value with current date
         return min(end_date, pendulum.now().date())
 
-    def _get_start_date(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        site_url: str = None,
-        search_type: str = None
-    ) -> pendulum.date:
+    def _get_start_date(self, stream_state: Mapping[str, Any] = None, site_url: str = None, search_type: str = None) -> pendulum.date:
         start_date = pendulum.parse(self._start_date)
 
         if start_date and stream_state:
