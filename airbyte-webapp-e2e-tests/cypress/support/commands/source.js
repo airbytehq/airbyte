@@ -1,5 +1,5 @@
 Cypress.Commands.add("fillPgSourceForm", (name) => {
-  cy.intercept("/source_definition_specifications/get").as(
+  cy.intercept("/api/v1/source_definition_specifications/get").as(
     "getSourceSpecifications"
   );
 
@@ -19,29 +19,29 @@ Cypress.Commands.add("fillPgSourceForm", (name) => {
 });
 
 Cypress.Commands.add("createTestSource", (name) => {
-  cy.intercept("/scheduler/sources/check_connection").as(
+  cy.intercept("/api/v1/scheduler/sources/check_connection").as(
     "checkSourceUpdateConnection"
   );
-  cy.intercept("/sources/create").as("createSource");
+  cy.intercept("/api/v1/sources/create").as("createSource");
 
   cy.openNewSourceForm();
   cy.fillPgSourceForm(name);
-  cy.submit();
+  cy.submitButtonClick();
 
   cy.wait("@checkSourceUpdateConnection");
   cy.wait("@createSource");
 });
 
 Cypress.Commands.add("updateSource", (name, field, value) => {
-  cy.intercept("/sources/check_connection_for_update").as(
+  cy.intercept("/api/v1/sources/check_connection_for_update").as(
     "checkSourceConnection"
   );
-  cy.intercept("/sources/update").as("updateSource");
+  cy.intercept("/api/v1/sources/update").as("updateSource");
 
   cy.openSourcePage();
   cy.openSettingForm(name);
   cy.updateField(field, value);
-  cy.submit();
+  cy.submitButtonClick();
 
   cy.wait("@checkSourceConnection");
   cy.wait("@updateSource");

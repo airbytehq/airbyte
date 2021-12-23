@@ -35,21 +35,11 @@
         "description": "Environment specifies where the data will come from.",
         "name": "Environment",
         "examples": ["sandbox", "production", "qa", "development"],
-        "allOf": [
-          {
-            "$ref": "#/definitions/Environment"
-          }
-        ]
-      }
-    },
-    "required": ["merchant_id", "public_key", "private_key", "environment"],
-    "definitions": {
-      "Environment": {
         "title": "Environment",
-        "description": "An enumeration.",
         "enum": ["Development", "Sandbox", "Qa", "Production"],
         "type": "string"
       }
-    }
+    },
+    "required": ["merchant_id", "public_key", "private_key", "environment"]
   }
 }
