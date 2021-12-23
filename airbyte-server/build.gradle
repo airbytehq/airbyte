@@ -4,6 +4,9 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '7.1.0'
 }
 
+// This is published as a shadow jar as the Airbyte Server jar is currently used
+// as a delivery mechanism for the common Airbyte libraries and clients. Proper
+// publishing is blocked on some gradle work.
 shadowJar {
     zip64 true
     mergeServiceFiles()
