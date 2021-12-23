@@ -163,7 +163,7 @@ class EnvConfigsTest {
   }
 
   @Test
-  void testWorkerPodTolerations() {
+  void testworkerKubeTolerations() {
     when(function.apply(EnvConfigs.JOB_KUBE_TOLERATIONS)).thenReturn(null);
     Assertions.assertEquals(config.getJobKubeTolerations(), List.of());
 
@@ -187,7 +187,7 @@ class EnvConfigsTest {
   }
 
   @Test
-  void testWorkerPodNodeSelectors() {
+  void testworkerKubeNodeSelectors() {
     when(function.apply(EnvConfigs.JOB_KUBE_NODE_SELECTORS)).thenReturn(null);
     Assertions.assertEquals(config.getJobKubeNodeSelectors(), Map.of());
 
