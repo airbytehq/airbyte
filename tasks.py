@@ -53,9 +53,10 @@ TASK_COMMANDS: Dict[str, List[str]] = {
         f"mypy {{source_path}} --config-file={CONFIG_FILE}",
     ],
     "test": [
+        f"cp -rf {os.path.join(CONNECTORS_DIR, os.pardir, 'bases', 'source-acceptance-test')} {{venv}}/",
         "pip install build",
-        f"python -m build {os.path.join(CONNECTORS_DIR, os.pardir, 'bases', 'source-acceptance-test')}",
-        f"pip install {os.path.join(CONNECTORS_DIR, os.pardir, 'bases', 'source-acceptance-test', 'dist', 'source_acceptance_test-*.whl')}",
+        f"python -m build {os.path.join('{venv}', 'source-acceptance-test')}",
+        f"pip install {os.path.join('{venv}', 'source-acceptance-test', 'dist', 'source_acceptance_test-*.whl')}",
         "pip install .",
         "pip install .[tests]",
         "pip install pytest-cov",
@@ -109,16 +110,19 @@ def _run_task(ctx: invoke.Context, connector_string: str, task_name: str, multi_
 
     commands = []
 
-    commands.extend([cmd.format(source_path=source_path, **kwargs) for cmd in TASK_COMMANDS[task_name]])
+    commands.extend([cmd.format(source_path=source_path, venv=venv_name, **kwargs) for cmd in TASK_COMMANDS[task_name]])
 
-    exit_code = 0
-    with ctx.prefix(f"source {activator}"):
-        for command in commands:
-            if ctx.run(command).return_code:
-                exit_code = 1
-                break
+    exit_code: int = 0
 
-    shutil.rmtree(venv_name)
+    try:
+        with ctx.prefix(f"source {activator}"):
+            for command in commands:
+                if ctx.run(command, warn=True).return_code:
+                    exit_code = 1
+                    break
+    finally:
+        shutil.rmtree(venv_name, ignore_errors=True)
+
     return exit_code
 
 
@@ -134,6 +138,7 @@ def apply_task_for_connectors(ctx: invoke.Context, connectors_names: str, task_n
     connectors = set(connectors) & CONNECTORS_NAMES
 
     if multi_envs:
+        print(f"Running {task_name} for the following connectors: {connectors}")
 
         task_args = [(ctx, connector, task_name) for connector in connectors]
         exit_code: int = 0
@@ -147,11 +152,6 @@ def apply_task_for_connectors(ctx: invoke.Context, connectors_names: str, task_n
         source_path = " ".join([f"{os.path.join(CONNECTORS_DIR, f'source-{connector}')}" for connector in connectors])
         _run_task(ctx, source_path, task_name, multi_envs=False, **kwargs)
 
-    # Remove the residual files of the SAT build after executing the program
-    try:
-        shutil.rmtree(os.path.join(CONNECTORS_DIR, os.pardir, 'bases', 'source-acceptance-test', 'dist'))
-    except:
-        pass
 ###########################################################################################################################################
 # TASKS
 ###########################################################################################################################################
