@@ -2455,7 +2455,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-search-console:0.1.8"
+- dockerImage: "airbyte/source-google-search-console:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-search-console"
     connectionSpecification:
@@ -2477,6 +2477,7 @@
           examples:
           - "https://example1.com"
           - "https://example2.com"
+          order: 0
         start_date:
           type: "string"
           description: "The date from which you'd like to replicate data in the format\
@@ -2484,6 +2485,7 @@
           examples:
           - "2021-01-01"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          order: 1
         end_date:
           type: "string"
           description: "The date from which you'd like to replicate data in the format\
@@ -2491,9 +2493,11 @@
           examples:
           - "2021-12-12"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          order: 2
         authorization:
           type: "object"
           title: "Authentication Type"
+          order: 3
           oneOf:
           - title: "Authenticate via Google (Oauth)"
             type: "object"
