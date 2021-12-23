@@ -3,12 +3,10 @@ import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 
-import { Source } from "core/resources/Source";
-import { Destination } from "core/resources/Destination";
+import { Source, Destination } from "core/domain/connector/types";
 import { FormattedMessage } from "react-intl";
-import { H6 } from "components/base";
-import Link from "components/Link";
-import { Routes } from "pages/routes";
+import { H6, Link } from "components";
+import { RoutePaths } from "pages/routes";
 import StepsMenu from "components/StepsMenu";
 import useRouter from "hooks/useRouter";
 
@@ -45,18 +43,17 @@ const ConnectionPageTitle: React.FC<IProps> = ({
   source,
   destination,
   currentStep,
-  connectionId,
 }) => {
   const { push } = useRouter<{ id: string }>();
 
   const steps = [
     {
       id: "status",
-      name: <FormattedMessage id={"sources.status"} />,
+      name: <FormattedMessage id="sources.status" />,
     },
     {
       id: "replication",
-      name: <FormattedMessage id={"connection.replication"} />,
+      name: <FormattedMessage id="connection.replication" />,
     },
     // {
     //   id: "transformation",
@@ -64,19 +61,15 @@ const ConnectionPageTitle: React.FC<IProps> = ({
     // },
     {
       id: "settings",
-      name: <FormattedMessage id={"sources.settings"} />,
+      name: <FormattedMessage id="sources.settings" />,
     },
   ];
 
   const onSelectStep = (id: string) => {
-    if (id === "settings") {
-      push(`${Routes.Connections}/${connectionId}${Routes.Settings}`);
-    } else if (id === "replication") {
-      push(`${Routes.Connections}/${connectionId}${Routes.Replication}`);
-    } else if (id === "transformation") {
-      push(`${Routes.Connections}/${connectionId}${Routes.Transformation}`);
+    if (id === "status") {
+      push("");
     } else {
-      push(`${Routes.Connections}/${connectionId}`);
+      push(id);
     }
   };
 
@@ -86,12 +79,12 @@ const ConnectionPageTitle: React.FC<IProps> = ({
         <FormattedMessage id="connection.title" />
       </H6>
       <Links>
-        <ConnectorsLink to={`${Routes.Source}/${source.sourceId}`}>
+        <ConnectorsLink to={`../../${RoutePaths.Source}/${source.sourceId}`}>
           {source.name}
         </ConnectorsLink>
         <FontAwesomeIcon icon={faArrowRight} />
         <ConnectorsLink
-          to={`${Routes.Destination}/${destination.destinationId}`}
+          to={`../../${RoutePaths.Destination}/${destination.destinationId}`}
         >
           {destination.name}
         </ConnectorsLink>

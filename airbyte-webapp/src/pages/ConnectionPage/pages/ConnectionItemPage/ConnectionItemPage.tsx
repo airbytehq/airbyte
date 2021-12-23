@@ -1,12 +1,9 @@
 import React, { Suspense } from "react";
 import { useResource } from "rest-hooks";
 import { Navigate, Route, Routes } from "react-router-dom";
-
-import { RoutePaths } from "pages/routes";
-import { Link, LoadingPage, MainPageWithScroll } from "components";
-import PageTitle from "components/PageTitle";
+import { LoadingPage, MainPageWithScroll } from "components";
 import HeadTitle from "components/HeadTitle";
-import StepsMenu from "components/StepsMenu";import useRouter from "hooks/useRouter";
+import useRouter from "hooks/useRouter";
 import StatusView from "./components/StatusView";
 import TransformationView from "./components/TransformationView";
 import SettingsView from "./components/SettingsView";
@@ -20,7 +17,7 @@ import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsServic
 import ReplicationView from "./components/ReplicationView";
 
 const ConnectionItemPage: React.FC = () => {
-  const { params, push } = useRouter<{ id: string }>();
+  const { params } = useRouter<{ id: string }>();
   const { id } = params;
   const currentStep = params["*"] || "status";
   const connection = useResource(ConnectionResource.detailShape(), {
@@ -47,25 +44,6 @@ const ConnectionItemPage: React.FC = () => {
       : null
   );
 
-  const steps = [
-    {
-      id: "status",
-      name: <FormattedMessage id={"sources.status"} />,
-    },
-    {
-      id: "settings",
-      name: <FormattedMessage id={"sources.settings"} />,
-    },
-  ];
-
-  const onSelectStep = (id: string) => {
-    if (id === "settings") {
-      push(`${RoutePaths.Settings}`);
-    } else {
-      push("");
-    }
-  };
-
   const analyticsService = useAnalyticsService();
 
   const frequency = FrequencyConfig.find((item) =>
@@ -81,32 +59,6 @@ const ConnectionItemPage: React.FC = () => {
       connector_destination_definition_id: destination.destinationDefinitionId,
       frequency: frequency?.text,
     });
-  };
-
-  const renderStep = () => {
-    if (currentStep === "status") {
-      return (
-        <StatusView
-          connection={connection}
-          frequencyText={frequency?.text}
-          sourceDefinition={sourceDefinition}
-          destinationDefinition={destinationDefinition}
-        />
-      );
-    }
-    if (currentStep === "replication") {
-      return (
-        <ReplicationView
-          onAfterSaveSchema={onAfterSaveSchema}
-          connectionId={connection.connectionId}
-        />
-      );
-    }
-    if (currentStep === "transformation") {
-      return <TransformationView />;
-    }
-
-    return <SettingsView connectionId={connection.connectionId} />;
   };
 
   return (
@@ -137,7 +89,7 @@ const ConnectionItemPage: React.FC = () => {
       <Suspense fallback={<LoadingPage />}>
         <Routes>
           <Route
-            index
+            path="status"
             element={
               <StatusView
                 connection={connection}
@@ -147,17 +99,19 @@ const ConnectionItemPage: React.FC = () => {
               />
             }
           />
+          <Route path="transformation" element={<TransformationView />} />
           <Route
-            path="settings"
+            path="replication"
             element={
-              <SettingsView
+              <ReplicationView
                 onAfterSaveSchema={onAfterSaveSchema}
                 connectionId={connection.connectionId}
-                sourceDefinition={sourceDefinition}
-                destinationDefinition={destinationDefinition}
-                frequencyText={frequency?.text}
               />
             }
+          />{" "}
+          <Route
+            path="settings"
+            element={<SettingsView connectionId={connection.connectionId} />}
           />
           <Route index element={<Navigate to="status" />} />
         </Routes>

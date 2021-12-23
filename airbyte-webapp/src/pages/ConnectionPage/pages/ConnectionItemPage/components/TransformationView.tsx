@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import ContentCard from "components/ContentCard";
+import { ContentCard } from "components";
 
 type TransformationViewProps = {};
 
