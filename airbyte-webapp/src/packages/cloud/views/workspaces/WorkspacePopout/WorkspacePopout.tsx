@@ -90,7 +90,7 @@ const WorkspacesList: React.FC<MenuWithRequestButtonProps> = ({
       <BottomElement>
         <Block onClick={exitWorkspace}>
           <ExitIcon />
-          <TextBlock>
+          <TextBlock data-testid="workspaces.viewAllWorkspaces">
             <FormattedMessage id="workspaces.viewAllWorkspaces" />
           </TextBlock>
         </Block>
