@@ -53,11 +53,13 @@ TASK_COMMANDS: Dict[str, List[str]] = {
         f"mypy {{source_path}} --config-file={CONFIG_FILE}",
     ],
     "test": [
+        "pip install build",
+        f"python -m build {os.path.join(CONNECTORS_DIR, os.pardir, 'bases', 'source-acceptance-test')}",
+        f"pip install {os.path.join(CONNECTORS_DIR, os.pardir, 'bases', 'source-acceptance-test', 'dist', 'source_acceptance_test-*.whl')}",
         "pip install .",
-        f"pip install {os.path.join(CONNECTORS_DIR, os.pardir, 'bases', 'source-acceptance-test')}",
         "pip install .[tests]",
         "pip install pytest-cov",
-        f"pytest -v --cov={{source_path}} unit_tests",
+        f"pytest -v --cov={{source_path}} --cov-report xml unit_tests",
     ],
 }
 
@@ -145,14 +147,18 @@ def apply_task_for_connectors(ctx: invoke.Context, connectors_names: str, task_n
         source_path = " ".join([f"{os.path.join(CONNECTORS_DIR, f'source-{connector}')}" for connector in connectors])
         _run_task(ctx, source_path, task_name, multi_envs=False, **kwargs)
 
-
+    # Remove the residual files of the SAT build after executing the program
+    try:
+        shutil.rmtree(os.path.join(CONNECTORS_DIR, os.pardir, 'bases', 'source-acceptance-test', 'dist'))
+    except:
+        pass
 ###########################################################################################################################################
 # TASKS
 ###########################################################################################################################################
 
 _arg_help_connectors = (
     "Comma-separated connectors' names without 'source-' prefix (ex.: -c github,google-ads,s3). "
-    "The default is a list of all found connectors."
+    "The default is a list of all found connectors excluding the ones with `-singer` suffix."
 )
 
 
@@ -189,7 +195,7 @@ def flake(ctx, connectors=None):
     apply_task_for_connectors(ctx, connectors, "flake")
 
 
-@task(help={"connectors": _arg_help_connectors, "write": "Write changes into the files (runs 'black' without '--check' option)"})
+@task(help={"connectors": _arg_help_connectors, "write": "Write changes into the files (runs 'isort' without '--check' option)"})
 def isort(ctx, connectors=None, write=False):
     """
     Run 'isort' checks for one or more given connector(s) code.
