@@ -95,7 +95,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
     start_row = 0
     dimensions = []
     search_types = ["web", "news", "image", "video"]
-    range_of_days = 2
+    range_of_days = 1
 
     def path(
         self,
@@ -130,8 +130,9 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
 
                 next_start = start_date
                 period = pendulum.Duration(days=self.range_of_days)
-                while next_start < end_date:
+                while next_start <= end_date:
                     next_end = min(next_start + period, end_date)
+                    print(f"\n\n\n Start: {next_start.to_date_string()}  End: {next_end.to_date_string()} \n\n\n")
                     yield {
                         "site_url": site_url,
                         "search_type": search_type,
