@@ -82,7 +82,6 @@
         },
         "email": {
           "type": ["null", "string"],
-          "format": "email",
           "description": "The email address used for communicating with this customer.",
           "maxLength": 255
         },
@@ -564,7 +563,6 @@
               },
               "email": {
                 "type": ["null", "string"],
-                "format": "email",
                 "description": "The email address used for communicating with this customer.",
                 "maxLength": 255
               },
@@ -1016,7 +1014,6 @@
               },
               "email": {
                 "type": ["null", "string"],
-                "format": "email",
                 "description": "The email address used for communicating with this customer.",
                 "maxLength": 255
               },
@@ -1579,7 +1576,6 @@
               },
               "email": {
                 "type": ["null", "string"],
-                "format": "email",
                 "description": "The email address used for communicating with this customer.",
                 "maxLength": 255
               },
@@ -1757,7 +1753,6 @@
                   },
                   "email": {
                     "type": ["null", "string"],
-                    "format": "email",
                     "description": "The email address used for communicating with this customer.",
                     "maxLength": 255
                   },
