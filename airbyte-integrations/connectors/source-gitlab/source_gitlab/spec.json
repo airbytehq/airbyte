@@ -2,7 +2,7 @@
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/gitlab",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Source Gitlab Singer Spec",
+    "title": "Source GitLab Singer Spec",
     "type": "object",
     "required": ["api_url", "private_token", "start_date"],
     "additionalProperties": false,
@@ -10,26 +10,31 @@
       "api_url": {
         "type": "string",
         "examples": ["gitlab.com"],
-        "description": "Please enter your basic URL from Gitlab instance"
+        "title": "API URL",
+        "description": "Please enter your basic URL from GitLab instance."
       },
       "private_token": {
         "type": "string",
-        "description": "Log into your Gitlab account and then generate a personal Access Token.",
+        "title": "Privat Token",
+        "description": "Log into your GitLab account and then generate a personal Access Token.",
         "airbyte_secret": true
       },
       "groups": {
         "type": "string",
         "examples": ["airbyte.io"],
-        "description": "Space-delimited list of groups. e.g. airbyte.io"
+        "title": "Groups",
+        "description": "Space-delimited list of groups. e.g. airbyte.io."
       },
       "projects": {
         "type": "string",
+        "title": "Projects",
         "examples": ["airbyte.io/documentation"],
-        "description": "Space-delimited list of projects. e.g. airbyte.io/documentation meltano/tap-gitlab"
+        "description": "Space-delimited list of projects. e.g. airbyte.io/documentation meltano/tap-gitlab."
       },
       "start_date": {
         "type": "string",
-        "description": "The date from which you'd like to replicate data for Gitlab API, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
+        "title": "Start Date",
+        "description": "The date from which you'd like to replicate data for GitLab API, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
         "examples": ["2021-03-01T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
       }
