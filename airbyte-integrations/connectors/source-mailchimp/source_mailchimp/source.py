@@ -19,9 +19,9 @@ from .streams import Campaigns, EmailActivity, Lists
 class MailChimpAuthenticator:
     @staticmethod
     def get_auth(config: Mapping[str, Any]) -> AuthBase:
-        authorization = config.get("authorization", {})
+        authorization = config.get("credentials", {})
         auth_type = authorization.get("auth_type")
-        if auth_type == "Apikey" or not authorization:
+        if auth_type == "apikey" or not authorization:
             # API keys have the format <key>-<data_center>.
             # See https://mailchimp.com/developer/marketing/docs/fundamentals/#api-structure
             apikey = authorization.get("apikey") or config.get("apikey")
@@ -32,7 +32,7 @@ class MailChimpAuthenticator:
             auth = TokenAuthenticator(token=b64_encoded, auth_method="Basic")
             auth.data_center = apikey.split("-").pop()
 
-        elif auth_type == "Oauth":
+        elif auth_type == "oauth2.0":
             auth = TokenAuthenticator(token=authorization["access_token"], auth_method="Bearer")
             auth.data_center = authorization["server_prefix"]
 
@@ -46,7 +46,7 @@ class MailChimpAuthenticator:
 class SourceMailchimp(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
-            authorization = config.get("authorization", {})
+            authorization = config.get("credentials", {})
             apikey = authorization.get("apikey") or config.get("apikey")
             username = authorization.get("username") or config.get("username")
             access_token = authorization.get("access_token")
