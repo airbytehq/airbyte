@@ -62,7 +62,8 @@ class JsonToAvroConverterTest {
 
     @Override
     public Stream<? extends Arguments> provideArguments(final ExtensionContext context) throws Exception {
-      final JsonNode testCases = Jsons.deserialize(MoreResources.readResource("parquet/json_schema_converter/type_conversion_test_cases.json"));
+      final JsonNode testCases =
+          Jsons.deserialize(MoreResources.readResource("parquet/json_schema_converter/type_conversion_test_cases.json"));
       return MoreIterators.toList(testCases.elements()).stream().map(testCase -> Arguments.of(
           testCase.get("fieldName").asText(),
           testCase.get("jsonFieldSchema"),
@@ -76,7 +77,7 @@ class JsonToAvroConverterTest {
   public void testFieldTypeConversion(final String fieldName, final JsonNode jsonFieldSchema, final JsonNode avroFieldType) {
     assertEquals(
         avroFieldType,
-        Jsons.deserialize(SCHEMA_CONVERTER.getNullableFieldTypes(fieldName, jsonFieldSchema).toString()),
+        Jsons.deserialize(SCHEMA_CONVERTER.getNullableFieldTypes(fieldName, jsonFieldSchema, true, true).toString()),
         String.format("Test for %s failed", fieldName));
   }
 
@@ -110,7 +111,7 @@ class JsonToAvroConverterTest {
                                      final JsonNode avroSchema,
                                      final JsonNode avroObject)
       throws Exception {
-    final Schema actualAvroSchema = SCHEMA_CONVERTER.getAvroSchema(jsonSchema, schemaName, namespace, appendAirbyteFields);
+    final Schema actualAvroSchema = SCHEMA_CONVERTER.getAvroSchema(jsonSchema, schemaName, namespace, appendAirbyteFields, true);
     assertEquals(
         avroSchema,
         Jsons.deserialize(actualAvroSchema.toString()),

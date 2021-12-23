@@ -26,7 +26,13 @@
         },
         {
           "name": "_airbyte_additional_properties",
-          "type": ["null", { "type": "map", "values": "string" }],
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
           "default": null
         }
       ]
@@ -97,7 +103,13 @@
                 },
                 {
                   "name": "_airbyte_additional_properties",
-                  "type": ["null", { "type": "map", "values": "string" }],
+                  "type": [
+                    "null",
+                    {
+                      "type": "map",
+                      "values": "string"
+                    }
+                  ],
                   "default": null
                 }
               ]
@@ -107,7 +119,13 @@
         },
         {
           "name": "_airbyte_additional_properties",
-          "type": ["null", { "type": "map", "values": "string" }],
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
           "default": null
         }
       ]
@@ -165,7 +183,13 @@
         },
         {
           "name": "_airbyte_additional_properties",
-          "type": ["null", { "type": "map", "values": "string" }],
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
           "default": null
         }
       ]
@@ -206,7 +230,13 @@
         },
         {
           "name": "_airbyte_additional_properties",
-          "type": ["null", { "type": "map", "values": "string" }],
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
           "default": null
         }
       ]
@@ -243,7 +273,13 @@
         },
         {
           "name": "_airbyte_additional_properties",
-          "type": ["null", { "type": "map", "values": "string" }],
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
           "default": null
         }
       ]
@@ -289,7 +325,13 @@
         },
         {
           "name": "_airbyte_additional_properties",
-          "type": ["null", { "type": "map", "values": "string" }],
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
           "default": null
         }
       ]
@@ -346,7 +388,13 @@
         },
         {
           "name": "_airbyte_additional_properties",
-          "type": ["null", { "type": "map", "values": "string" }],
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
           "default": null
         }
       ]
@@ -390,7 +438,10 @@
           "name": "created_at",
           "type": [
             "null",
-            { "type": "long", "logicalType": "timestamp-micros" },
+            {
+              "type": "long",
+              "logicalType": "timestamp-micros"
+            },
             "string",
             "int"
           ],
@@ -398,7 +449,13 @@
         },
         {
           "name": "_airbyte_additional_properties",
-          "type": ["null", { "type": "map", "values": "string" }],
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
           "default": null
         }
       ]
@@ -458,7 +515,10 @@
                   "name": "created_at",
                   "type": [
                     "null",
-                    { "type": "long", "logicalType": "timestamp-micros" },
+                    {
+                      "type": "long",
+                      "logicalType": "timestamp-micros"
+                    },
                     "string",
                     "int"
                   ],
@@ -466,7 +526,13 @@
                 },
                 {
                   "name": "_airbyte_additional_properties",
-                  "type": ["null", { "type": "map", "values": "string" }],
+                  "type": [
+                    "null",
+                    {
+                      "type": "map",
+                      "values": "string"
+                    }
+                  ],
                   "default": null
                 }
               ]
@@ -476,7 +542,13 @@
         },
         {
           "name": "_airbyte_additional_properties",
-          "type": ["null", { "type": "map", "values": "string" }],
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
           "default": null
         }
       ]
@@ -499,7 +571,14 @@
           "type": "array",
           "items": [
             {
-              "oneOf": [{ "type": "integer" }, { "type": "string" }]
+              "oneOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "string"
+                }
+              ]
             },
             {
               "type": "boolean"
@@ -529,7 +608,13 @@
         },
         {
           "name": "_airbyte_additional_properties",
-          "type": ["null", { "type": "map", "values": "string" }],
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
           "default": null
         }
       ]
@@ -567,7 +652,13 @@
         },
         {
           "name": "_airbyte_additional_properties",
-          "type": ["null", { "type": "map", "values": "string" }],
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
           "default": null
         }
       ]
@@ -612,7 +703,13 @@
         },
         {
           "name": "_airbyte_additional_properties",
-          "type": ["null", { "type": "map", "values": "string" }],
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
           "default": null
         }
       ]
@@ -661,7 +758,13 @@
         },
         {
           "name": "_airbyte_additional_properties",
-          "type": ["null", { "type": "map", "values": "string" }],
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
           "default": null
         }
       ]
@@ -694,7 +797,13 @@
       "fields": [
         {
           "name": "_airbyte_additional_properties",
-          "type": ["null", { "type": "map", "values": "string" }],
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
           "default": null
         }
       ]
@@ -742,22 +851,357 @@
           "name": "date_time_field",
           "type": [
             "null",
-            { "type": "long", "logicalType": "timestamp-micros" },
+            {
+              "type": "long",
+              "logicalType": "timestamp-micros"
+            },
             "string"
           ],
           "default": null
         },
         {
           "name": "date_field",
-          "type": ["null", { "type": "int", "logicalType": "date" }, "string"],
+          "type": [
+            "null",
+            {
+              "type": "int",
+              "logicalType": "date"
+            },
+            "string"
+          ],
           "default": null
         },
         {
           "name": "time_field",
           "type": [
             "null",
-            { "type": "long", "logicalType": "time-micros" },
+            {
+              "type": "long",
+              "logicalType": "time-micros"
+            },
             "string"
+          ],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "date_time_field": 1609459261000000,
+      "date_field": 18628,
+      "time_field": 44581541000,
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "schema_with_the_same_object_names",
+    "namespace": "namespace17",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "author": {
+          "type": "object",
+          "properties": {
+            "login": {
+              "type": ["null", "string"]
+            },
+            "id": {
+              "type": ["null", "integer"]
+            },
+            "node_id": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "commit": {
+          "type": ["null", "object"],
+          "properties": {
+            "author": {
+              "type": ["null", "object"],
+              "properties": {
+                "name": {
+                  "type": ["null", "string"]
+                },
+                "email": {
+                  "type": ["null", "string"]
+                },
+                "date": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "pr": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "id": {
+                      "type": ["null", "string"]
+                    },
+                    "title": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            },
+            "message": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "jsonObject": {
+      "author": {
+        "login": "test",
+        "id": 12345,
+        "node_id": "abc123"
+      },
+      "commit": {
+        "message": "test commit message",
+        "author": {
+          "name": "Test Author",
+          "email": "test@example.com",
+          "date": "2021-01-01T01:01:01+01:00",
+          "pr": {
+            "id": "random id",
+            "title": "Conversion test"
+          }
+        }
+      }
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "schema_with_the_same_object_names",
+      "namespace": "namespace17",
+      "fields": [
+        {
+          "name": "author",
+          "type": [
+            "null",
+            {
+              "type": "record",
+              "name": "author",
+              "namespace": "",
+              "fields": [
+                {
+                  "name": "login",
+                  "type": ["null", "string"],
+                  "default": null
+                },
+                {
+                  "name": "id",
+                  "type": ["null", "int"],
+                  "default": null
+                },
+                {
+                  "name": "node_id",
+                  "type": ["null", "string"],
+                  "default": null
+                },
+                {
+                  "name": "_airbyte_additional_properties",
+                  "type": [
+                    "null",
+                    {
+                      "type": "map",
+                      "values": "string"
+                    }
+                  ],
+                  "default": null
+                }
+              ]
+            }
+          ],
+          "default": null
+        },
+        {
+          "name": "commit",
+          "type": [
+            "null",
+            {
+              "type": "record",
+              "name": "commit",
+              "namespace": "",
+              "fields": [
+                {
+                  "name": "author",
+                  "type": [
+                    "null",
+                    {
+                      "type": "record",
+                      "name": "author",
+                      "namespace": "commit",
+                      "fields": [
+                        {
+                          "name": "name",
+                          "type": ["null", "string"],
+                          "default": null
+                        },
+                        {
+                          "name": "email",
+                          "type": ["null", "string"],
+                          "default": null
+                        },
+                        {
+                          "name": "date",
+                          "type": [
+                            "null",
+                            {
+                              "type": "long",
+                              "logicalType": "timestamp-micros"
+                            },
+                            "string"
+                          ],
+                          "default": null
+                        },
+                        {
+                          "name": "pr",
+                          "type": [
+                            "null",
+                            {
+                              "type": "record",
+                              "name": "pr",
+                              "namespace": "commit.author",
+                              "fields": [
+                                {
+                                  "name": "id",
+                                  "type": ["null", "string"],
+                                  "default": null
+                                },
+                                {
+                                  "name": "title",
+                                  "type": ["null", "string"],
+                                  "default": null
+                                },
+                                {
+                                  "name": "_airbyte_additional_properties",
+                                  "type": [
+                                    "null",
+                                    {
+                                      "type": "map",
+                                      "values": "string"
+                                    }
+                                  ],
+                                  "default": null
+                                }
+                              ]
+                            }
+                          ],
+                          "default": null
+                        },
+                        {
+                          "name": "_airbyte_additional_properties",
+                          "type": [
+                            "null",
+                            {
+                              "type": "map",
+                              "values": "string"
+                            }
+                          ],
+                          "default": null
+                        }
+                      ]
+                    }
+                  ],
+                  "default": null
+                },
+                {
+                  "name": "message",
+                  "type": ["null", "string"],
+                  "default": null
+                },
+                {
+                  "name": "_airbyte_additional_properties",
+                  "type": [
+                    "null",
+                    {
+                      "type": "map",
+                      "values": "string"
+                    }
+                  ],
+                  "default": null
+                }
+              ]
+            }
+          ],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "author": {
+        "login": "test",
+        "id": 12345,
+        "node_id": "abc123",
+        "_airbyte_additional_properties": null
+      },
+      "commit": {
+        "author": {
+          "name": "Test Author",
+          "email": "test@example.com",
+          "date": 1609459261000000,
+          "pr": {
+            "id": "random id",
+            "title": "Conversion test",
+            "_airbyte_additional_properties": null
+          },
+          "_airbyte_additional_properties": null
+        },
+        "message": "test commit message",
+        "_airbyte_additional_properties": null
+      },
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "array_without_items_in_schema",
+    "namespace": "namespace16",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "identifier": {
+          "type": "array"
+        }
+      }
+    },
+    "jsonObject": {
+      "identifier": ["151", 152, true, { "id": 153 }]
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "array_without_items_in_schema",
+      "namespace": "namespace16",
+      "fields": [
+        {
+          "name": "identifier",
+          "type": [
+            "null",
+            {
+              "type": "array",
+              "items": ["null", "string"]
+            }
           ],
           "default": null
         },
@@ -769,9 +1213,7 @@
       ]
     },
     "avroObject": {
-      "date_time_field": 1609459261000000,
-      "date_field": 18628,
-      "time_field": 44581541000,
+      "identifier": ["151", "152", "true", "{\"id\":153}"],
       "_airbyte_additional_properties": null
     }
   }

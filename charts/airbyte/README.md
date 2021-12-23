@@ -29,7 +29,7 @@
 | `webapp.replicaCount`        | Number of webapp replicas                                        | `1`              |
 | `webapp.image.repository`    | The repository to use for the airbyte webapp image.              | `airbyte/webapp` |
 | `webapp.image.pullPolicy`    | the pull policy to use for the airbyte webapp image              | `IfNotPresent`   |
-| `webapp.image.tag`           | The airbyte webapp image tag. Defaults to the chart's AppVersion | `0.34.1-alpha`  |
+| `webapp.image.tag`           | The airbyte webapp image tag. Defaults to the chart's AppVersion | `0.35.1-alpha`   |
 | `webapp.podAnnotations`      | Add extra annotations to the webapp pod(s)                       | `{}`             |
 | `webapp.service.type`        | The service type to use for the webapp service                   | `ClusterIP`      |
 | `webapp.service.port`        | The service port to expose the webapp on                         | `80`             |
@@ -55,7 +55,7 @@
 | `scheduler.replicaCount`       | Number of scheduler replicas                                        | `1`                 |
 | `scheduler.image.repository`   | The repository to use for the airbyte scheduler image.              | `airbyte/scheduler` |
 | `scheduler.image.pullPolicy`   | the pull policy to use for the airbyte scheduler image              | `IfNotPresent`      |
-| `scheduler.image.tag`          | The airbyte scheduler image tag. Defaults to the chart's AppVersion | `0.34.1-alpha`     |
+| `scheduler.image.tag`          | The airbyte scheduler image tag. Defaults to the chart's AppVersion | `0.35.1-alpha`      |
 | `scheduler.podAnnotations`     | Add extra annotations to the scheduler pod                          | `{}`                |
 | `scheduler.resources.limits`   | The resources limits for the scheduler container                    | `{}`                |
 | `scheduler.resources.requests` | The requested resources for the scheduler container                 | `{}`                |
@@ -86,7 +86,7 @@
 | `server.replicaCount`                       | Number of server replicas                                        | `1`              |
 | `server.image.repository`                   | The repository to use for the airbyte server image.              | `airbyte/server` |
 | `server.image.pullPolicy`                   | the pull policy to use for the airbyte server image              | `IfNotPresent`   |
-| `server.image.tag`                          | The airbyte server image tag. Defaults to the chart's AppVersion | `0.34.1-alpha`  |
+| `server.image.tag`                          | The airbyte server image tag. Defaults to the chart's AppVersion | `0.35.1-alpha`   |
 | `server.podAnnotations`                     | Add extra annotations to the server pod                          | `{}`             |
 | `server.livenessProbe.enabled`              | Enable livenessProbe on the server                               | `true`           |
 | `server.livenessProbe.initialDelaySeconds`  | Initial delay seconds for livenessProbe                          | `30`             |
@@ -120,7 +120,7 @@
 | `worker.replicaCount`                       | Number of worker replicas                                        | `1`              |
 | `worker.image.repository`                   | The repository to use for the airbyte worker image.              | `airbyte/worker` |
 | `worker.image.pullPolicy`                   | the pull policy to use for the airbyte worker image              | `IfNotPresent`   |
-| `worker.image.tag`                          | The airbyte worker image tag. Defaults to the chart's AppVersion | `0.34.1-alpha`  |
+| `worker.image.tag`                          | The airbyte worker image tag. Defaults to the chart's AppVersion | `0.35.1-alpha`   |
 | `worker.podAnnotations`                     | Add extra annotations to the worker pod(s)                       | `{}`             |
 | `worker.livenessProbe.enabled`              | Enable livenessProbe on the worker                               | `true`           |
 | `worker.livenessProbe.initialDelaySeconds`  | Initial delay seconds for livenessProbe                          | `30`             |
@@ -140,6 +140,15 @@
 | `worker.tolerations`                        | Tolerations for worker pod assignment.                           | `[]`             |
 | `worker.log.level`                          | The log level to log at.                                         | `INFO`           |
 | `worker.extraEnv`                           | Additional env vars for worker pod(s).                           | `[]`             |
+
+
+### Bootloader Parameters
+
+| Name                          | Description                                                          | Value                |
+| ----------------------------- | -------------------------------------------------------------------- | -------------------- |
+| `bootloader.image.repository` | The repository to use for the airbyte bootloader image.              | `airbyte/bootloader` |
+| `bootloader.image.pullPolicy` | the pull policy to use for the airbyte bootloader image              | `IfNotPresent`       |
+| `bootloader.image.tag`        | The airbyte bootloader image tag. Defaults to the chart's AppVersion | `0.34.0-alpha`       |
 
 
 ### Temporal parameters
@@ -188,5 +197,15 @@
 | `logs.s3.enabled`            | Switch to enable or disable custom S3 Log location     | `false`            |
 | `logs.s3.bucket`             | Bucket name where logs should be stored                | `airbyte-dev-logs` |
 | `logs.s3.bucketRegion`       | Region of the bucket (must be empty if using minio)    | `""`               |
+| `logs.gcs.bucket`            | GCS bucket name                                        | `""`               |
+| `logs.gcs.credentials`       | The path the GCS creds are written to                  | `""`               |
+
+
+### Minio chart overwrites
+
+| Name                       | Description      | Value      |
+| -------------------------- | ---------------- | ---------- |
+| `minio.accessKey.password` | Minio Access Key | `minio`    |
+| `minio.secretKey.password` | Minio Secret Key | `minio123` |
 
 

@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jooq.Record1;
 import org.jooq.Result;
+import org.jooq.Table;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -114,8 +115,8 @@ public abstract class BaseDatabaseConfigPersistenceTest {
     assertEquals(getMapWithSet(expected), getMapWithSet(actual));
   }
 
-  protected void assertRecordCount(final int expectedCount) throws Exception {
-    final Result<Record1<Integer>> recordCount = database.query(ctx -> ctx.select(count(asterisk())).from(table("airbyte_configs")).fetch());
+  protected void assertRecordCount(final int expectedCount, final Table table) throws Exception {
+    final Result<Record1<Integer>> recordCount = database.query(ctx -> ctx.select(count(asterisk())).from(table).fetch());
     assertEquals(expectedCount, recordCount.get(0).value1());
   }
 
