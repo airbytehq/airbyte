@@ -301,27 +301,51 @@ def test_download_data_filter_null_bytes(stream_bulk_config, stream_bulk_api):
 
 
 @pytest.mark.parametrize(
-    "streams_criteria,number_of_filtered_streams",
+    "streams_criteria,predicted_filtered_streams",
     [
-        ([{"criteria": "exacts", "value": "FakeStream30"}], 1),
-        ([{"criteria": "not exacts", "value": "Fakestream30"}], 99),
-        ([{"criteria": "starts with", "value": "fakeStream3"}], 11),
-        ([{"criteria": "starts not with", "value": "mystream"}], 100),
-        ([{"criteria": "ends with", "value": "stream10"}], 1),
-        ([{"criteria": "ends not with", "value": "0"}], 90),
-        ([{"criteria": "contains", "value": "keStr"}], 100),
-        ([{"criteria": "contains", "value": "eam10"}], 1),
-        ([{"criteria": "not contains", "value": "string"}], 100),
-        ([{"criteria": "not contains", "value": "Mystream"}], 100),
-        ([{"criteria": "not contains", "value": "stream23"}], 99),
+        ([{"criteria": "exacts", "value": "Account"}], ["Account"]),
+        (
+            [{"criteria": "not exacts", "value": "CustomStreamHistory"}],
+            ["Account", "AIApplications", "Leads", "LeadHistory", "Orders", "OrderHistory", "CustomStream"],
+        ),
+        ([{"criteria": "starts with", "value": "lead"}], ["Leads", "LeadHistory"]),
+        (
+            [{"criteria": "starts not with", "value": "custom"}],
+            ["Account", "AIApplications", "Leads", "LeadHistory", "Orders", "OrderHistory"],
+        ),
+        ([{"criteria": "ends with", "value": "story"}], ["LeadHistory", "OrderHistory", "CustomStreamHistory"]),
+        ([{"criteria": "ends not with", "value": "s"}], ["Account", "LeadHistory", "OrderHistory", "CustomStream", "CustomStreamHistory"]),
+        ([{"criteria": "contains", "value": "applicat"}], ["AIApplications"]),
+        ([{"criteria": "contains", "value": "hist"}], ["LeadHistory", "OrderHistory", "CustomStreamHistory"]),
+        (
+            [{"criteria": "not contains", "value": "stream"}],
+            ["Account", "AIApplications", "Leads", "LeadHistory", "Orders", "OrderHistory"],
+        ),
+        (
+            [{"criteria": "not contains", "value": "Account"}],
+            ["AIApplications", "Leads", "LeadHistory", "Orders", "OrderHistory", "CustomStream", "CustomStreamHistory"],
+        ),
     ],
 )
-def test_discover_with_streams_criteria_param(streams_criteria, number_of_filtered_streams, stream_rest_config):
+def test_discover_with_streams_criteria_param(streams_criteria, predicted_filtered_streams, stream_rest_config):
     updated_config = {**stream_rest_config, **{"streams_criteria": streams_criteria}}
     sf_object = Salesforce(**stream_rest_config)
     sf_object.login = Mock()
     sf_object.access_token = Mock()
     sf_object.instance_url = "https://fase-account.salesforce.com"
-    sf_object.describe = Mock(return_value={"sobjects": [{"name": f"FakeStream{i}"} for i in range(100)]})
+    sf_object.describe = Mock(
+        return_value={
+            "sobjects": [
+                {"name": "Account"},
+                {"name": "AIApplications"},
+                {"name": "Leads"},
+                {"name": "LeadHistory"},
+                {"name": "Orders"},
+                {"name": "OrderHistory"},
+                {"name": "CustomStream"},
+                {"name": "CustomStreamHistory"},
+            ]
+        }
+    )
     filtered_streams = sf_object.get_validated_streams(config=updated_config)
-    assert len(filtered_streams) == number_of_filtered_streams
+    assert sorted(filtered_streams) == sorted(predicted_filtered_streams)
