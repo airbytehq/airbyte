@@ -113,33 +113,33 @@ public class SchedulerApp {
   }
 
   public void start() throws IOException {
-    final ExecutorService workerThreadPool = Executors.newFixedThreadPool(submitterNumThreads, THREAD_FACTORY);
-    final ScheduledExecutorService scheduleJobsPool = Executors.newSingleThreadScheduledExecutor();
-    final ScheduledExecutorService executeJobsPool = Executors.newSingleThreadScheduledExecutor();
-    final ScheduledExecutorService cleanupJobsPool = Executors.newSingleThreadScheduledExecutor();
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-    final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(
-        temporalClient,
-        workspaceRoot,
-        airbyteVersionOrWarnings,
-        featureFlags);
-    final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now, jobNotifier, maxSyncJobAttempts);
-    final TrackingClient trackingClient = TrackingClientSingleton.get();
-    final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository, trackingClient);
-    final JobSubmitter jobSubmitter = new JobSubmitter(
-        workerThreadPool,
-        jobPersistence,
-        temporalWorkerRunFactory,
-        new JobTracker(configRepository, jobPersistence, trackingClient),
-        jobNotifier, workerEnvironment, logConfigs, configRepository);
-
-    final Map<String, String> mdc = MDC.getCopyOfContextMap();
-
-    // We cancel jobs that where running before the restart. They are not being monitored by the worker
-    // anymore.
-    cleanupZombies(jobPersistence, jobNotifier);
-
     if (!featureFlags.usesNewScheduler()) {
+      final ExecutorService workerThreadPool = Executors.newFixedThreadPool(submitterNumThreads, THREAD_FACTORY);
+      final ScheduledExecutorService scheduleJobsPool = Executors.newSingleThreadScheduledExecutor();
+      final ScheduledExecutorService executeJobsPool = Executors.newSingleThreadScheduledExecutor();
+      final ScheduledExecutorService cleanupJobsPool = Executors.newSingleThreadScheduledExecutor();
+      final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(
+          temporalClient,
+          workspaceRoot,
+          airbyteVersionOrWarnings,
+          featureFlags);
+      final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now, jobNotifier, maxSyncJobAttempts);
+      final TrackingClient trackingClient = TrackingClientSingleton.get();
+      final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository, trackingClient);
+      final JobSubmitter jobSubmitter = new JobSubmitter(
+          workerThreadPool,
+          jobPersistence,
+          temporalWorkerRunFactory,
+          new JobTracker(configRepository, jobPersistence, trackingClient),
+          jobNotifier, workerEnvironment, logConfigs, configRepository);
+
+      final Map<String, String> mdc = MDC.getCopyOfContextMap();
+
+      // We cancel jobs that where running before the restart. They are not being monitored by the worker
+      // anymore.
+      cleanupZombies(jobPersistence, jobNotifier);
+
       LOGGER.error("Start running the old scheduler");
       scheduleJobsPool.scheduleWithFixedDelay(
           () -> {
@@ -169,10 +169,10 @@ public class SchedulerApp {
           CLEANING_DELAY.toSeconds(),
           CLEANING_DELAY.toSeconds(),
           TimeUnit.SECONDS);
-    }
 
-    Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofSeconds(GRACEFUL_SHUTDOWN_SECONDS), workerThreadPool,
-        scheduleJobsPool, executeJobsPool, cleanupJobsPool));
+      Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofSeconds(GRACEFUL_SHUTDOWN_SECONDS), workerThreadPool,
+          scheduleJobsPool, executeJobsPool, cleanupJobsPool));
+    }
   }
 
   private void cleanupZombies(final JobPersistence jobPersistence, final JobNotifier jobNotifier) throws IOException {

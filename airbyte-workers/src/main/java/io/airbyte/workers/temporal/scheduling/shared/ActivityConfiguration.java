@@ -10,6 +10,12 @@ import io.temporal.activity.ActivityCancellationType;
 import io.temporal.activity.ActivityOptions;
 import java.time.Duration;
 
+/**
+ * Shared temporal workflow configuration in order to ensure that
+ * {@link io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow} and
+ * {@link io.airbyte.workers.temporal.sync.SyncWorkflow} configurations are on sync, expecialy for
+ * the grace period.
+ */
 public class ActivityConfiguration {
 
   private static final int MAX_SYNC_TIMEOUT_DAYS = new EnvConfigs().getSyncJobMaxTimeoutDays();

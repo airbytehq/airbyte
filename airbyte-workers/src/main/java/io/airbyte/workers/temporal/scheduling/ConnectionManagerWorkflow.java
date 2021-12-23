@@ -40,7 +40,7 @@ public interface ConnectionManagerWorkflow {
 
   /**
    * Cancel a running workflow and then delete the connection and finally make the workflow to stop
-   * instead of continuing as new
+   * instead of continuing as new.
    */
   @SignalMethod
   void deleteConnection();
@@ -48,13 +48,13 @@ public interface ConnectionManagerWorkflow {
   /**
    * Signal that the connection config has been updated. If nothing was currently running, it will
    * continue the workflow as new, which will reload the config. Nothing will happend if a sync is
-   * running
+   * running.
    */
   @SignalMethod
   void connectionUpdated();
 
   /**
-   * Return the current state of the workflow
+   * Return the current state of the workflow.
    */
   @QueryMethod
   WorkflowState getState();
@@ -70,7 +70,7 @@ public interface ConnectionManagerWorkflow {
   }
 
   /**
-   * Return which job and attempt is currently run by the workflow
+   * Return which job and attempt is currently run by the workflow.
    */
   @QueryMethod
   JobInformation getJobInformation();
