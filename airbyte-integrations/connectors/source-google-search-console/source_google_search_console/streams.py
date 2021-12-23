@@ -132,7 +132,6 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
                 period = pendulum.Duration(days=self.range_of_days)
                 while next_start <= end_date:
                     next_end = min(next_start + period, end_date)
-                    print(f"\n\n\n Start: {next_start.to_date_string()}  End: {next_end.to_date_string()} \n\n\n")
                     yield {
                         "site_url": site_url,
                         "search_type": search_type,
