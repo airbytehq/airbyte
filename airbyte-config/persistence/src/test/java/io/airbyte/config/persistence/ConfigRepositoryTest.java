@@ -291,7 +291,7 @@ class ConfigRepositoryTest {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     when(configPersistence.getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, DESTINATION_DEFINITION_ID.toString(),
         StandardDestinationDefinition.class))
-        .thenReturn(destinationDefinition);
+            .thenReturn(destinationDefinition);
 
     assertEquals(destinationDefinition, configRepository.getStandardDestinationDefinition(DESTINATION_DEFINITION_ID));
   }

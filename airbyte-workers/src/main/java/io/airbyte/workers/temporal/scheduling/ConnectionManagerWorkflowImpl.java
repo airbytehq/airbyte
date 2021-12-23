@@ -141,40 +141,48 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
             maybeJobId.get()));
       } else {
         // report success
-        jobCreationAndStatusUpdateActivity.jobSuccess(new JobSuccessInput(
-            maybeJobId.get(),
-            maybeAttemptId.get()));
-
-        connectionUpdaterInput.setJobId(null);
-        connectionUpdaterInput.setAttemptNumber(1);
-        connectionUpdaterInput.setFromFailure(false);
+        reportSuccess(connectionUpdaterInput);
       }
       continueAsNew(connectionUpdaterInput);
     } catch (final Exception e) {
       log.error("The connection update workflow has failed, will create a new attempt.", e);
 
-      jobCreationAndStatusUpdateActivity.attemptFailure(new AttemptFailureInput(
-          connectionUpdaterInput.getJobId(),
-          connectionUpdaterInput.getAttemptId()));
-
-      final int maxAttempt = configFetchActivity.getMaxAttempt().getMaxAttempt();
-      final int attemptNumber = connectionUpdaterInput.getAttemptNumber();
-
-      if (maxAttempt > attemptNumber) {
-        // restart from failure
-        connectionUpdaterInput.setAttemptNumber(attemptNumber + 1);
-        connectionUpdaterInput.setFromFailure(true);
-      } else {
-        jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(
-            connectionUpdaterInput.getJobId()));
-
-        Workflow.await(Duration.ofMinutes(1), () -> skipScheduling());
-
-        connectionUpdaterInput.setJobId(null);
-        connectionUpdaterInput.setAttemptNumber(1);
-        connectionUpdaterInput.setFromFailure(false);
-      }
+      reportFailure(connectionUpdaterInput);
       continueAsNew(connectionUpdaterInput);
+    }
+  }
+
+  private void reportSuccess(final ConnectionUpdaterInput connectionUpdaterInput) {
+    jobCreationAndStatusUpdateActivity.jobSuccess(new JobSuccessInput(
+        maybeJobId.get(),
+        maybeAttemptId.get()));
+
+    connectionUpdaterInput.setJobId(null);
+    connectionUpdaterInput.setAttemptNumber(1);
+    connectionUpdaterInput.setFromFailure(false);
+  }
+
+  private void reportFailure(final ConnectionUpdaterInput connectionUpdaterInput) {
+    jobCreationAndStatusUpdateActivity.attemptFailure(new AttemptFailureInput(
+        connectionUpdaterInput.getJobId(),
+        connectionUpdaterInput.getAttemptId()));
+
+    final int maxAttempt = configFetchActivity.getMaxAttempt().getMaxAttempt();
+    final int attemptNumber = connectionUpdaterInput.getAttemptNumber();
+
+    if (maxAttempt > attemptNumber) {
+      // restart from failure
+      connectionUpdaterInput.setAttemptNumber(attemptNumber + 1);
+      connectionUpdaterInput.setFromFailure(true);
+    } else {
+      jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(
+          connectionUpdaterInput.getJobId()));
+
+      Workflow.await(Duration.ofMinutes(1), () -> skipScheduling());
+
+      connectionUpdaterInput.setJobId(null);
+      connectionUpdaterInput.setAttemptNumber(1);
+      connectionUpdaterInput.setFromFailure(false);
     }
   }
 

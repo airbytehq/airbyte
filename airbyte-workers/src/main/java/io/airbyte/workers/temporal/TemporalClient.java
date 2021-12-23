@@ -42,9 +42,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import lombok.Value;
@@ -58,6 +55,11 @@ public class TemporalClient {
   private final WorkflowServiceStubs service;
   private final Configs configs;
 
+  /**
+   * This is use to sleep between 2 temporal queries. The query are needed to ensure that the cancel
+   * and start manual sync methods wait before returning. Since temporal signals are async, we need to
+   * use the queries to make sure that we are in a state in which we want to continue with.
+   */
   private static final int DELAY_BETWEEN_QUERY_MS = 10;
 
   public static TemporalClient production(final String temporalHost, final Path workspaceRoot, final Configs configs) {
@@ -156,13 +158,8 @@ public class TemporalClient {
     final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, null, null, false, 1, null);
     signalRequest.add(connectionManagerWorkflow::run, input);
 
-    final ExecutorService threadpool = Executors.newFixedThreadPool(Integer.parseInt(configs.getSubmitterNumThreads()));
+    WorkflowClient.start(connectionManagerWorkflow::run, input);
 
-    final Future<Void> futureTask = threadpool.submit(() -> {
-      connectionManagerWorkflow.run(input);
-
-      return null;
-    });
     log.info("Scheduler temporal wf started");
   }
 
@@ -296,7 +293,8 @@ public class TemporalClient {
     return connectionManagerWorkflow;
   }
 
-  @VisibleForTesting <T> TemporalResponse<T> execute(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
+  @VisibleForTesting
+  <T> TemporalResponse<T> execute(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
     final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig);
     final Path logPath = WorkerUtils.getLogPath(jobRoot);
 
@@ -314,7 +312,8 @@ public class TemporalClient {
   }
 
   /**
-   * Check if a workflow is currently running. It is using the temporal pagination (see: https://temporalio.slack.com/archives/CTRCR8RBP/p1638926310308200)
+   * Check if a workflow is currently running. It is using the temporal pagination (see:
+   * https://temporalio.slack.com/archives/CTRCR8RBP/p1638926310308200)
    */
   public boolean isWorkflowRunning(final String workflowName) {
     ByteString token;
