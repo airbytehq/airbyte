@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.Configs;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
@@ -65,6 +66,7 @@ class TemporalClientTest {
   private TemporalClient temporalClient;
   private Path logPath;
   private WorkflowServiceStubs workflowServiceStubs;
+  private Configs configs;
 
   @BeforeEach
   void setup() throws IOException {
@@ -72,7 +74,7 @@ class TemporalClientTest {
     logPath = workspaceRoot.resolve(String.valueOf(JOB_ID)).resolve(String.valueOf(ATTEMPT_ID)).resolve(LogClientSingleton.LOG_FILENAME);
     workflowClient = mock(WorkflowClient.class);
     workflowServiceStubs = mock(WorkflowServiceStubs.class);
-    temporalClient = new TemporalClient(workflowClient, workspaceRoot, workflowServiceStubs);
+    temporalClient = new TemporalClient(workflowClient, workspaceRoot, workflowServiceStubs, configs);
   }
 
   @Nested

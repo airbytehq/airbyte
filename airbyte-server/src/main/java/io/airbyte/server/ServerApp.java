@@ -175,7 +175,7 @@ public class ServerApp implements ServerRunnable {
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
 
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(configs.getTemporalHost());
-    final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot());
+    final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot(), configs);
     final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
     final SchedulerJobClient schedulerJobClient =
         new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence, configRepository));
@@ -184,7 +184,7 @@ public class ServerApp implements ServerRunnable {
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
     final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(
-        TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot()),
+        TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot(), configs),
         configs.getWorkspaceRoot(),
         configs.getAirbyteVersionOrWarning(),
         featureFlags);
@@ -215,7 +215,7 @@ public class ServerApp implements ServerRunnable {
   public static void main(final String[] args) throws Exception {
     try {
       getServer(new ServerFactory.Api(), YamlSeedConfigPersistence.getDefault()).start();
-    } catch (Throwable e) {
+    } catch (final Throwable e) {
       LOGGER.error("Server failed", e);
       System.exit(1); // so the app doesn't hang on background threads
     }

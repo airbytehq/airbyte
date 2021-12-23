@@ -42,11 +42,6 @@ public class TemporalUtils {
     return temporalService;
   }
 
-  public static WorkflowClient createTemporalClient(final String temporalHost) {
-    final WorkflowServiceStubs temporalService = createTemporalService(temporalHost);
-    return WorkflowClient.newInstance(temporalService);
-  }
-
   public static final RetryOptions NO_RETRY = RetryOptions.newBuilder().setMaximumAttempts(1).build();
 
   public static final String DEFAULT_NAMESPACE = "default";

@@ -14,10 +14,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @WorkflowInterface
-public interface ConnectionUpdaterWorkflow {
+public interface ConnectionManagerWorkflow {
 
   /**
-   * Workflow method to launch a {@link ConnectionUpdaterWorkflow}. It will launch a workflow
+   * Workflow method to launch a {@link ConnectionManagerWorkflow}. It will launch a workflow
    * responsible for scheduling the syncs. This workflow will run and then continue as new. So it will
    * be up until deleted.
    */

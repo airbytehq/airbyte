@@ -39,7 +39,7 @@ import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow {
+public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow {
 
   public long NON_RUNNING_JOB_ID;
   public int NON_RUNNING_ATTEMPT_ID;
@@ -58,7 +58,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
 
   private CancellationScope syncWorkflowCancellationScope;
 
-  public ConnectionUpdaterWorkflowImpl() {}
+  public ConnectionManagerWorkflowImpl() {}
 
   @Override
   public void run(final ConnectionUpdaterInput connectionUpdaterInput) throws RetryableException {

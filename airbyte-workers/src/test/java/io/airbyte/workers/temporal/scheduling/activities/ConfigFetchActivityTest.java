@@ -8,6 +8,7 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.Schedule.TimeUnit;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.models.Job;
@@ -50,6 +51,12 @@ public class ConfigFetchActivityTest {
       .withSchedule(new Schedule()
           .withTimeUnit(TimeUnit.MINUTES)
           .withUnits(5L));
+
+  private final static StandardSync standardSyncWithScheduleDisable = new StandardSync()
+      .withSchedule(new Schedule()
+          .withTimeUnit(TimeUnit.MINUTES)
+          .withUnits(5L))
+      .withStatus(Status.INACTIVE);
   private static final StandardSync standardSyncWithoutSchedule = new StandardSync();
 
   @Nested
@@ -77,11 +84,25 @@ public class ConfigFetchActivityTest {
     @DisplayName("Test that the job will wait for a long time if it is manual")
     public void testManual() throws IOException, JsonValidationException, ConfigNotFoundException {
       configFetchActivity = new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, mConfigs, () -> Instant.now().getEpochSecond());
-      Mockito.when(mJobPersistence.getLastReplicationJob(connectionId))
-          .thenReturn(Optional.of(mJob));
 
       Mockito.when(mConfigRepository.getStandardSync(connectionId))
           .thenReturn(standardSyncWithoutSchedule);
+
+      final ScheduleRetrieverInput input = new ScheduleRetrieverInput(connectionId);
+
+      final ScheduleRetrieverOutput output = configFetchActivity.getTimeToWait(input);
+
+      Assertions.assertThat(output.getTimeToWait())
+          .hasDays(100 * 365);
+    }
+
+    @Test
+    @DisplayName("Test that the job will wait for a long time if it is disabled")
+    public void testDisable() throws IOException, JsonValidationException, ConfigNotFoundException {
+      configFetchActivity = new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, mConfigs, () -> Instant.now().getEpochSecond());
+
+      Mockito.when(mConfigRepository.getStandardSync(connectionId))
+          .thenReturn(standardSyncWithScheduleDisable);
 
       final ScheduleRetrieverInput input = new ScheduleRetrieverInput(connectionId);
 

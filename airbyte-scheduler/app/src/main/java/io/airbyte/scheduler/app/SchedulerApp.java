@@ -117,15 +117,15 @@ public class SchedulerApp {
     final ScheduledExecutorService scheduleJobsPool = Executors.newSingleThreadScheduledExecutor();
     final ScheduledExecutorService executeJobsPool = Executors.newSingleThreadScheduledExecutor();
     final ScheduledExecutorService cleanupJobsPool = Executors.newSingleThreadScheduledExecutor();
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
     final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(
         temporalClient,
         workspaceRoot,
         airbyteVersionOrWarnings,
-        new EnvVariableFeatureFlags());
+        featureFlags);
     final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now, jobNotifier, maxSyncJobAttempts);
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository, trackingClient);
-    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
     final JobSubmitter jobSubmitter = new JobSubmitter(
         workerThreadPool,
         jobPersistence,
@@ -140,7 +140,7 @@ public class SchedulerApp {
     cleanupZombies(jobPersistence, jobNotifier);
 
     if (!featureFlags.usesNewScheduler()) {
-      LOGGER.error("Start running the old schedule ___________________");
+      LOGGER.error("Start running the old scheduler");
       scheduleJobsPool.scheduleWithFixedDelay(
           () -> {
             MDC.setContextMap(mdc);
@@ -267,7 +267,7 @@ public class SchedulerApp {
         configRepository,
         new WorkspaceHelper(configRepository, jobPersistence),
         TrackingClientSingleton.get());
-    final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot);
+    final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot, configs);
 
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
     MetricSingleton.initializeMonitoringServiceDaemon("8082", mdc, configs.getPublishMetrics());

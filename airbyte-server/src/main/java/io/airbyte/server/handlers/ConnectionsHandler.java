@@ -314,7 +314,6 @@ public class ConnectionsHandler {
     if (featureFlags.usesNewScheduler()) {
       temporalWorkerRunFactory.deleteConnection(connectionIdRequestBody.getConnectionId());
     } else {
-
       final ConnectionRead connectionRead = getConnection(connectionIdRequestBody);
       deleteConnection(connectionRead);
     }

@@ -42,7 +42,7 @@ import io.airbyte.workers.temporal.check.connection.CheckConnectionActivityImpl;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflowImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogActivityImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflowImpl;
-import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterWorkflowImpl;
+import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowImpl;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivityImpl;
 import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActivityImpl;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivityImpl;
@@ -171,7 +171,7 @@ public class WorkerApp {
 
     final Worker connectionUpdaterWorker =
         factory.newWorker(TemporalJobType.CONNECTION_UPDATER.toString(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
-    connectionUpdaterWorker.registerWorkflowImplementationTypes(ConnectionUpdaterWorkflowImpl.class, SyncWorkflowImpl.class);
+    connectionUpdaterWorker.registerWorkflowImplementationTypes(ConnectionManagerWorkflowImpl.class, SyncWorkflowImpl.class);
     connectionUpdaterWorker.registerActivitiesImplementations(
         new GenerateInputActivityImpl(
             jobPersistence),
@@ -333,7 +333,7 @@ public class WorkerApp {
         configRepository,
         new OAuthConfigSupplier(configRepository, trackingClient));
 
-    final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot);
+    final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot, configs);
 
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 

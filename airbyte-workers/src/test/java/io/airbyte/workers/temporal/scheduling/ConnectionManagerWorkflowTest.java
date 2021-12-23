@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class ConnectionUpdaterWorkflowTest {
+public class ConnectionManagerWorkflowTest {
 
   private static final ConfigFetchActivity mConfigFetchActivity =
       Mockito.mock(ConfigFetchActivity.class, Mockito.withSettings().withoutAnnotations());
@@ -51,7 +51,7 @@ public class ConnectionUpdaterWorkflowTest {
   private TestWorkflowEnvironment testEnv;
   private Worker worker;
   private WorkflowClient client;
-  private ConnectionUpdaterWorkflow workflow;
+  private ConnectionManagerWorkflow workflow;
 
   @BeforeEach
   public void setUp() {
@@ -94,7 +94,7 @@ public class ConnectionUpdaterWorkflowTest {
       testEnv = TestWorkflowEnvironment.newInstance();
       worker = testEnv.newWorker(TemporalJobType.CONNECTION_UPDATER.name());
       // Register your workflow implementations
-      worker.registerWorkflowImplementationTypes(ConnectionUpdaterWorkflowImpl.class, EmptySyncWorkflow.class);
+      worker.registerWorkflowImplementationTypes(ConnectionManagerWorkflowImpl.class, EmptySyncWorkflow.class);
 
       client = testEnv.getWorkflowClient();
 
@@ -104,7 +104,7 @@ public class ConnectionUpdaterWorkflowTest {
 
       workflow = client
           .newWorkflowStub(
-              ConnectionUpdaterWorkflow.class,
+              ConnectionManagerWorkflow.class,
               WorkflowOptions.newBuilder()
                   .setTaskQueue(TemporalJobType.CONNECTION_UPDATER.name())
                   .build());
@@ -345,7 +345,7 @@ public class ConnectionUpdaterWorkflowTest {
       testEnv = TestWorkflowEnvironment.newInstance();
       worker = testEnv.newWorker(TemporalJobType.CONNECTION_UPDATER.name());
       // Register your workflow implementations
-      worker.registerWorkflowImplementationTypes(ConnectionUpdaterWorkflowImpl.class, SleepingSyncWorkflow.class);
+      worker.registerWorkflowImplementationTypes(ConnectionManagerWorkflowImpl.class, SleepingSyncWorkflow.class);
 
       client = testEnv.getWorkflowClient();
 
@@ -355,7 +355,7 @@ public class ConnectionUpdaterWorkflowTest {
 
       workflow = client
           .newWorkflowStub(
-              ConnectionUpdaterWorkflow.class,
+              ConnectionManagerWorkflow.class,
               WorkflowOptions.newBuilder()
                   .setTaskQueue(TemporalJobType.CONNECTION_UPDATER.name())
                   .build());
