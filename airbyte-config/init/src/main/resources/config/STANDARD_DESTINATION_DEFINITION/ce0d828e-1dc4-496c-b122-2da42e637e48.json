@@ -2,6 +2,6 @@
   "destinationDefinitionId": "ce0d828e-1dc4-496c-b122-2da42e637e48",
   "name": "Clickhouse",
   "dockerRepository": "airbyte/destination-clickhouse",
-  "dockerImageTag": "0.1.0",
+  "dockerImageTag": "0.1.1",
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/clickhouse"
 }
