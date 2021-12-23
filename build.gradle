@@ -355,6 +355,7 @@ subprojects {
 }
 
 task('generate-docker') {
+    dependsOn(':airbyte-bootloader:assemble')
     dependsOn(':airbyte-workers:assemble')
     dependsOn(':airbyte-webapp:assemble')
     dependsOn(':airbyte-server:assemble')
