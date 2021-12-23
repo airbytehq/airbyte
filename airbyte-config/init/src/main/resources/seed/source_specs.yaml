@@ -7377,7 +7377,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-zendesk-support:0.1.10"
+- dockerImage: "airbyte/source-zendesk-support:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-support"
     connectionSpecification:
@@ -7392,6 +7392,7 @@
       properties:
         start_date:
           type: "string"
+          title: "Start Date"
           description: "The date from which you'd like to replicate data for Zendesk\
             \ Support API, in the format YYYY-MM-DDT00:00:00Z. All data generated\
             \ after this date will be replicated."
@@ -7402,12 +7403,12 @@
           type: "string"
           description: "The subdomain for your Zendesk Support"
         auth_method:
-          title: "ZenDesk Authorization Method"
+          title: "Authorization Method"
           type: "object"
           default: "api_token"
-          description: "Zendesk service provides 2 auth method: API token and oAuth2.\
+          description: "Zendesk service provides 2 auth method: API token and OAuth2.\
             \ Now only the first one is available. Another one will be added in the\
-            \ future"
+            \ future."
           oneOf:
           - title: "API Token"
             type: "object"
@@ -7422,13 +7423,13 @@
               email:
                 title: "Email"
                 type: "string"
-                description: "The user email for your Zendesk account"
+                description: "The user email for your Zendesk account."
               api_token:
                 title: "API Token"
                 type: "string"
                 description: "The value of the API token generated. See the <a href=\"\
                   https://docs.airbyte.io/integrations/sources/zendesk-support\">docs</a>\
-                  \ for more information"
+                  \ for more information."
                 airbyte_secret: true
           - title: "OAuth2.0"
             type: "object"
@@ -7444,7 +7445,7 @@
                 type: "string"
                 description: "The value of the Access token generated. See the <a\
                   \ href=\"https://docs.airbyte.io/integrations/sources/zendesk-support\"\
-                  >docs</a> for more information"
+                  >docs</a> for more information."
                 airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
