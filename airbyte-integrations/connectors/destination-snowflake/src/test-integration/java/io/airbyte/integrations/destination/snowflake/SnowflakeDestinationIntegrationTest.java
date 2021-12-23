@@ -20,8 +20,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class SnowflakeDestinationIntegrationTest {
   private final SnowflakeSQLNameTransformer namingResolver = new SnowflakeSQLNameTransformer();
@@ -38,13 +37,13 @@ class SnowflakeDestinationIntegrationTest {
   }
 
   @Test
-  public void testInvalidSchemaNameWithoutNameTransformer() throws IOException {
-    final JsonNode config = getConfig();
-    assertThrows(SQLException.class, () -> syncWithoutNamingResolver(config));
+  public void testInvalidSchemaNameWithoutNameTransformer() {
+    assertDoesNotThrow(this::syncWithNamingResolver);
+    assertThrows(SQLException.class, this::syncWithoutNamingResolver);
+
   }
 
-  @Test
-  public void testInvalidSchemaNameWithNameTransformer() throws IOException, SQLException {
+  public void syncWithNamingResolver() throws IOException, SQLException {
     final JsonNode config = getConfig();
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", namingResolver.getIdentifier(config.get("schema").asText()));
     Connection connection =null;
@@ -60,7 +59,8 @@ class SnowflakeDestinationIntegrationTest {
     }
   }
 
-  private void syncWithoutNamingResolver(JsonNode config) throws SQLException {
+  private void syncWithoutNamingResolver() throws SQLException, IOException {
+    JsonNode config = getConfig();
     String schemaName = config.get("schema").asText();
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
 
