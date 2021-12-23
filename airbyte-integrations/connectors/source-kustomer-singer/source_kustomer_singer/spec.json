@@ -8,25 +8,16 @@
     "additionalProperties": true,
     "properties": {
       "api_token": {
+        "title": "API Token",
         "type": "string",
         "description": "The API token for your Kustomer account",
         "airbyte_secret": true
       },
       "start_date": {
+        "title": "Start Date",
         "type": "string",
+        "description": "The date from which you'd like to replicate the data",
         "examples": ["2019-01-01T00:00:00Z"]
-      },
-      "user_agent": {
-        "type": "string",
-        "examples": "tap-kustomer <api_user_email@your_company.com>"
-      },
-      "date_window_size": {
-        "type": "string",
-        "description": "The integer number of days (between the from and to dates) for date-windowing through the date-filtered endpoints"
-      },
-      "page_size_limit": {
-        "type": "string",
-        "description": "The integer number of records to return per API request"
       }
     }
   }

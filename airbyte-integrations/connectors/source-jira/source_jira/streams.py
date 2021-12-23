@@ -2,13 +2,13 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import re
 import urllib.parse as urlparse
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qs
 
 import pendulum
-import re
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -286,6 +286,11 @@ class Filters(JiraStream):
 
     def path(self, **kwargs) -> str:
         return "filter/search"
+
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(**kwargs)
+        params["expand"] = "description,owner,jql,viewUrl,searchUrl,favourite,favouritedCount,sharePermissions,isWritable,subscriptions"
+        return params
 
 
 class FilterSharing(JiraStream):
@@ -888,7 +893,7 @@ class PullRequests(IncrementalJiraStream):
         return f"https://{self._domain}/rest/dev-status/1.0/"
 
     def path(self, **kwargs) -> str:
-        return f"issue/detail"
+        return "issue/detail"
 
     # Currently, only GitHub pull requests are supported by this stream. The
     # requirements for supporting other systems are unclear.
@@ -910,13 +915,17 @@ class PullRequests(IncrementalJiraStream):
                 matches += int(match.group("count"))
         return matches > 0
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
         field_ids_by_name = self.issue_fields_stream.field_ids_by_name()
         dev_field_ids = field_ids_by_name.get("Development", [])
         for issue in self.issues_stream.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state):
             for dev_field_id in dev_field_ids:
                 if self.has_pull_requests(issue["fields"][dev_field_id]):
-                    yield from super().read_records(stream_slice={"id": issue["id"], self.cursor_field: issue["fields"][self.cursor_field]}, **kwargs)
+                    yield from super().read_records(
+                        stream_slice={"id": issue["id"], self.cursor_field: issue["fields"][self.cursor_field]}, **kwargs
+                    )
                     break
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:

@@ -28,6 +28,8 @@ def reports_stream():
         marketplace_ids=["id"],
         authenticator=NoAuth(),
         period_in_days=0,
+        report_options=None,
+        max_wait_seconds=500,
     )
     return stream
 

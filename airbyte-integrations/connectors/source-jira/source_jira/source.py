@@ -104,11 +104,11 @@ class SourceJira(AbstractSource):
         incremental_args = {**args, "start_date": config.get("start_date", "")}
         render_fields = config.get("render_fields", False)
         issues_stream = Issues(
-                **incremental_args,
-                additional_fields=config.get("additional_fields", []),
-                expand_changelog=config.get("expand_issue_changelog", False),
-                render_fields=render_fields
-            )
+            **incremental_args,
+            additional_fields=config.get("additional_fields", []),
+            expand_changelog=config.get("expand_issue_changelog", False),
+            render_fields=render_fields
+        )
         issue_fields_stream = IssueFields(**args)
         experimental_streams = []
         if config.get("enable_experimental_streams", False):

@@ -4,10 +4,7 @@ plugins {
 
 dependencies {
     implementation 'io.fabric8:kubernetes-client:5.9.0'
-    implementation 'io.kubernetes:client-java-api:10.0.0'
-    implementation 'io.kubernetes:client-java:10.0.0'
-    implementation 'io.kubernetes:client-java-extended:10.0.0'
-    implementation 'io.temporal:temporal-sdk:1.0.4'
+    implementation 'io.temporal:temporal-sdk:1.6.0'
 
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-api')
