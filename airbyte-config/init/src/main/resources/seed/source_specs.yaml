@@ -3109,7 +3109,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-jira:0.2.15"
+- dockerImage: "airbyte/source-jira:0.2.16"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/jira"
     connectionSpecification:
@@ -3124,18 +3124,21 @@
       properties:
         api_token:
           type: "string"
+          title: "API Token"
           description: "Jira API Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/jira\"\
             >docs</a> for more information on how to generate this key."
           airbyte_secret: true
         domain:
           type: "string"
+          title: "Domain"
           examples:
           - "domainname.atlassian.net"
           pattern: "^[a-zA-Z0-9._-]*\\.atlassian\\.net$"
-          description: "Domain for your Jira account, e.g. airbyteio.atlassian.net"
+          description: "The Domain for your Jira account, e.g. airbyteio.atlassian.net"
         email:
           type: "string"
-          description: "The user email for your Jira account"
+          title: "Email"
+          description: "The user email for your Jira account."
         projects:
           type: "array"
           title: "Projects"
@@ -3145,7 +3148,7 @@
           - "PROJ1"
           - "PROJ2"
           description: "Comma-separated list of Jira project keys to replicate data\
-            \ for"
+            \ for."
         start_date:
           type: "string"
           title: "Start Date"
@@ -3162,20 +3165,20 @@
           items:
             type: "string"
           description: "Comma-separated list of additional fields to include in replicating\
-            \ issues"
+            \ issues."
           examples:
           - "Field A"
           - "Field B"
         expand_issue_changelog:
           type: "boolean"
           title: "Expand Issue Changelog"
-          description: "Expand the changelog when replicating issues"
+          description: "Expand the changelog when replicating issues."
           default: false
         render_fields:
           type: "boolean"
           title: "Render Issue Fields"
-          description: "Render issue fields in HTML format in addition to Jira's JSON-like\
-            \ format"
+          description: "Render issue fields in HTML format in addition to Jira JSON-like\
+            \ format."
           default: false
     supportsNormalization: false
     supportsDBT: false
