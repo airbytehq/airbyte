@@ -371,7 +371,7 @@ public class EnvConfigs implements Configs {
    * <p>
    * key=airbyte-server,operator=Exists,effect=NoSchedule;key=airbyte-server,operator=Equals,value=true,effect=NoSchedule
    *
-   * @return list of WorkerPodToleration parsed from env
+   * @return list of WorkerKubeToleration parsed from env
    */
   @Override
   public List<TolerationPOJO> getJobKubeTolerations() {

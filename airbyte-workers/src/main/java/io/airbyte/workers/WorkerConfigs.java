@@ -46,7 +46,7 @@ public class WorkerConfigs {
     return resourceRequirements;
   }
 
-  public List<TolerationPOJO> getWorkerTolerations() {
+  public List<TolerationPOJO> getWorkerKubeTolerations() {
     return workerKubeTolerations;
   }
 
