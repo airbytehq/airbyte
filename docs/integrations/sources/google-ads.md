@@ -24,6 +24,9 @@ This source is capable of syncing the following tables and their data:
 * [ad\_groups](https://developers.google.com/google-ads/api/fields/v8/ad_group)
 * [campaigns](https://developers.google.com/google-ads/api/fields/v8/campaign)
 * [click\_view](https://developers.google.com/google-ads/api/reference/rpc/v8/ClickView)
+* [keyword](https://developers.google.com/google-ads/api/fields/v8/keyword_view)
+* [geographic](https://developers.google.com/google-ads/api/fields/v8/geographic_view)
+
 
 #### Report Tables
 
@@ -99,6 +102,8 @@ This source is constrained by whatever API limits are set for the Google Ads tha
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| `0.1.20` | 2021-12-22 | [9071](https://github.com/airbytehq/airbyte/pull/9071) | Fix: Keyword schema enum |
+| `0.1.19` | 2021-12-14 | [8431](https://github.com/airbytehq/airbyte/pull/8431) | Add new streams: Geographic and Keyword |
 | `0.1.18` | 2021-12-09 | [8225](https://github.com/airbytehq/airbyte/pull/8225) | Include time_zone to sync. Remove streams for manager account. |
 | `0.1.16` | 2021-11-22 | [8178](https://github.com/airbytehq/airbyte/pull/8178) | clarify setup fields |
 | `0.1.15` | 2021-10-07 | [6684](https://github.com/airbytehq/airbyte/pull/6684) | Add new stream `click_view` |

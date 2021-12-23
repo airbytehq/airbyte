@@ -1,15 +1,17 @@
 import React, { Suspense } from "react";
 import { useResource } from "rest-hooks";
+import { Navigate, Route, Routes } from "react-router-dom";
 
+import { RoutePaths } from "pages/routes";
+import { Link, LoadingPage, MainPageWithScroll } from "components";
+import PageTitle from "components/PageTitle";
 import HeadTitle from "components/HeadTitle";
-import useRouter from "hooks/useRouter";
+import StepsMenu from "components/StepsMenu";import useRouter from "hooks/useRouter";
 import StatusView from "./components/StatusView";
 import TransformationView from "./components/TransformationView";
 import SettingsView from "./components/SettingsView";
 import ConnectionPageTitle from "./components/ConnectionPageTitle";
 import ConnectionResource from "core/resources/Connection";
-import LoadingPage from "components/LoadingPage";
-import MainPageWithScroll from "components/MainPageWithScroll";
 import FrequencyConfig from "config/FrequencyConfig.json";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
@@ -17,23 +19,13 @@ import { equal } from "utils/objects";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import ReplicationView from "./components/ReplicationView";
 
-type ConnectionItemPageProps = {
-  currentStep: "status" | "settings" | "replication" | "transformation";
-};
-
-const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
-  currentStep,
-}) => {
-  const { query } = useRouter<{ id: string }>();
-
-  const analyticsService = useAnalyticsService();
+const ConnectionItemPage: React.FC = () => {
+  const { params, push } = useRouter<{ id: string }>();
+  const { id } = params;
+  const currentStep = params["*"] || "status";
   const connection = useResource(ConnectionResource.detailShape(), {
-    connectionId: query.id,
+    connectionId: id,
   });
-
-  const frequency = FrequencyConfig.find((item) =>
-    equal(item.config, connection.schedule)
-  );
 
   const { source, destination } = connection;
 
@@ -53,6 +45,31 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
           destinationDefinitionId: destination.destinationDefinitionId,
         }
       : null
+  );
+
+  const steps = [
+    {
+      id: "status",
+      name: <FormattedMessage id={"sources.status"} />,
+    },
+    {
+      id: "settings",
+      name: <FormattedMessage id={"sources.settings"} />,
+    },
+  ];
+
+  const onSelectStep = (id: string) => {
+    if (id === "settings") {
+      push(`${RoutePaths.Settings}`);
+    } else {
+      push("");
+    }
+  };
+
+  const analyticsService = useAnalyticsService();
+
+  const frequency = FrequencyConfig.find((item) =>
+    equal(item.config, connection.schedule)
   );
 
   const onAfterSaveSchema = () => {
@@ -117,7 +134,34 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
         />
       }
     >
-      <Suspense fallback={<LoadingPage />}>{renderStep()}</Suspense>
+      <Suspense fallback={<LoadingPage />}>
+        <Routes>
+          <Route
+            index
+            element={
+              <StatusView
+                connection={connection}
+                sourceDefinition={sourceDefinition}
+                destinationDefinition={destinationDefinition}
+                frequencyText={frequency?.text}
+              />
+            }
+          />
+          <Route
+            path="settings"
+            element={
+              <SettingsView
+                onAfterSaveSchema={onAfterSaveSchema}
+                connectionId={connection.connectionId}
+                sourceDefinition={sourceDefinition}
+                destinationDefinition={destinationDefinition}
+                frequencyText={frequency?.text}
+              />
+            }
+          />
+          <Route index element={<Navigate to="status" />} />
+        </Routes>
+      </Suspense>
     </MainPageWithScroll>
   );
 };

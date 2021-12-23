@@ -9,11 +9,19 @@ In Airbyte, all interactions with connectors are run as jobs performed by a Work
 
 ## Worker Responsibilities
 
-The worker has 4 main responsibilities in its lifecycle. 1. Spin up any connector docker containers that are needed for the job. 2. They facilitate message passing to or from a connector docker container \(more on this [below](jobs.md#message-passing)\). 3. Shut down any connector docker containers that it started. 4. Return the output of the job. \(See [Airbyte Specification](airbyte-specification.md) to understand the output of each worker type.\)
+The worker has 4 main responsibilities in its lifecycle. 
+
+1. Spin up any connector docker containers that are needed for the job. 
+2. They facilitate message passing to or from a connector docker container \(more on this [below](jobs.md#message-passing)\). 
+3. Shut down any connector docker containers that it started. 
+4. Return the output of the job. \(See [Airbyte Specification](airbyte-specification.md) to understand the output of each worker type.\)
 
 ## Message Passing
 
-There are 2 flavors of workers: 1. There are workers that interact with a single connector \(e.g. spec, check, discover\) 2. There are workers that interact with 2 connectors \(e.g. sync, reset\)
+There are 2 flavors of workers: 
+
+1. There are workers that interact with a single connector \(e.g. spec, check, discover\) 
+2. There are workers that interact with 2 connectors \(e.g. sync, reset\)
 
 In the first case, the worker is generally extracting data from the connector and reporting it back to the scheduler. It does this by listening to STDOUT of the connector. In the second case, the worker is facilitating passing data \(via record messages\) from the source to the destination. It does this by listening on STDOUT of the source and writing to STDIN on the destination.
 
