@@ -6,6 +6,7 @@ package io.airbyte.workers.temporal.scheduling.activities;
 
 import io.airbyte.config.Configs;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -34,7 +35,7 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
     try {
       final StandardSync standardSync = configRepository.getStandardSync(input.getConnectionId());
 
-      if (standardSync.getSchedule() == null) {
+      if (standardSync.getSchedule() == null || standardSync.getStatus() == Status.INACTIVE) {
         // Manual syncs wait for their first run
         return new ScheduleRetrieverOutput(Duration.ofDays(100 * 365));
       }

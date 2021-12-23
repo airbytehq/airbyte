@@ -89,6 +89,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.airbyteVersion = airbyteVersion;
     ConfigurationApiFactory.httpClient = httpClient;
     ConfigurationApiFactory.featureFlags = featureFlags;
+    ConfigurationApiFactory.temporalWorkerRunFactory = temporalWorkerRunFactory;
   }
 
   @Override
