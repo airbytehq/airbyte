@@ -7,6 +7,13 @@
     "required": ["api_token"],
     "additionalProperties": true,
     "properties": {
+      "subdomain": {
+        "type": "string",
+        "title": "Subdomain (Optional)",
+        "description": "Slug/subdomain of the account, or the first part of the URL that comes before .monday.com",
+        "default": "",
+        "airbyte_secret": true
+      },
       "auth_type": {
         "type": "string",
         "const": "Client",
@@ -17,12 +24,6 @@
         "type": "string",
         "title": "Personal Access Token",
         "description": "Access Token for making authenticated requests.",
-        "airbyte_secret": true
-      },
-      "subdomain": {
-        "type": "string",
-        "title": "Subdomain",
-        "description": "Slug/subdomain of the account, or the first part of the URL that comes before .monday.com",
         "airbyte_secret": true
       }
     }
