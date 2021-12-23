@@ -104,14 +104,11 @@ class CockroachDbSourceTest {
   void setup() throws Exception {
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
-    final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs
-        .writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
-    CockroachDBContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
     final JsonNode config = getConfig(PSQL_DB, dbName);
     final Database database = getDatabaseFromConfig(config);
     database.query(ctx -> {
+      ctx.fetch("CREATE DATABASE " + dbName + ";");
       ctx.fetch(
           "CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
       ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
