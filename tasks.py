@@ -147,7 +147,7 @@ def apply_task_for_connectors(ctx: invoke.Context, connectors_names: str, task_n
                 if result:
                     exit_code = 1
 
-        invoke.Exit(code=exit_code)
+        raise invoke.Exit(code=exit_code)
     else:
         source_path = " ".join([f"{os.path.join(CONNECTORS_DIR, f'source-{connector}')}" for connector in connectors])
         _run_task(ctx, source_path, task_name, multi_envs=False, **kwargs)
