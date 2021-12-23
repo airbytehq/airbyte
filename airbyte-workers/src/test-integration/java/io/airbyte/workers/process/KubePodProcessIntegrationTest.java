@@ -9,18 +9,20 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.ResourceRequirements;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerException;
-import io.airbyte.workers.WorkerUtils;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.kubernetes.client.openapi.ApiClient;
-import io.kubernetes.client.util.Config;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -29,7 +31,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.lang.RandomStringUtils;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,28 +46,32 @@ import org.junit.jupiter.api.Timeout;
          unit = TimeUnit.MINUTES)
 public class KubePodProcessIntegrationTest {
 
+  private static final int RANDOM_FILE_LINE_LENGTH = 100;
+
   private static final boolean IS_MINIKUBE = Boolean.parseBoolean(Optional.ofNullable(System.getenv("IS_MINIKUBE")).orElse("false"));
   private static List<Integer> openPorts;
   private static int heartbeatPort;
   private static String heartbeatUrl;
-  private static ApiClient officialClient;
   private static KubernetesClient fabricClient;
   private static KubeProcessFactory processFactory;
+  private static final ResourceRequirements DEFAULT_RESOURCE_REQUIREMENTS = new WorkerConfigs(new EnvConfigs()).getResourceRequirements();
 
   private WorkerHeartbeatServer server;
 
   @BeforeAll
   public static void init() throws Exception {
-    openPorts = new ArrayList<>(getOpenPorts(5));
+    openPorts = new ArrayList<>(getOpenPorts(30)); // todo: should we offer port pairs to prevent deadlock? can create test here with fewer to get
+                                                   // this
 
     heartbeatPort = openPorts.get(0);
     heartbeatUrl = getHost() + ":" + heartbeatPort;
 
-    officialClient = Config.defaultClient();
     fabricClient = new DefaultKubernetesClient();
 
-    processFactory = new KubeProcessFactory("default", officialClient, fabricClient, heartbeatUrl, getHost(),
-        new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
+    KubePortManagerSingleton.init(new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
+    processFactory =
+        new KubeProcessFactory(new WorkerConfigs(new EnvConfigs()), "default", fabricClient, heartbeatUrl, getHost(), false,
+            Duration.ofSeconds(1));
   }
 
   @BeforeEach
@@ -76,6 +83,42 @@ public class KubePodProcessIntegrationTest {
   @AfterEach
   public void teardown() throws Exception {
     server.stop();
+  }
+
+  /**
+   * In the past we've had some issues with transient / stuck pods. The idea here is to run a few at
+   * once, and check that they are all running in hopes of identifying regressions that introduce
+   * flakiness.
+   */
+  @Test
+  public void testConcurrentRunning() throws Exception {
+    final var pool = Executors.newFixedThreadPool(10);
+
+    final var totalJobs = 30;
+    final var successCount = new AtomicInteger(0);
+    final var failCount = new AtomicInteger(0);
+
+    for (int i = 0; i < totalJobs; i++) {
+      pool.submit(() -> {
+        try {
+          final Process process = getProcess("echo hi; sleep 1; echo hi2");
+          process.waitFor();
+
+          // the pod should be dead and in a good state
+          assertFalse(process.isAlive());
+          assertEquals(0, process.exitValue());
+          successCount.incrementAndGet();
+        } catch (final Exception e) {
+          e.printStackTrace();
+          failCount.incrementAndGet();
+        }
+      });
+    }
+
+    pool.shutdown();
+    pool.awaitTermination(2, TimeUnit.MINUTES);
+
+    assertEquals(totalJobs, successCount.get());
   }
 
   @Test
@@ -111,7 +154,7 @@ public class KubePodProcessIntegrationTest {
         while (true) {
           portsTaken.add(KubePortManagerSingleton.getInstance().take());
         }
-      } catch (InterruptedException e) {
+      } catch (final InterruptedException e) {
         e.printStackTrace();
         throw new RuntimeException(e);
       }
@@ -207,10 +250,47 @@ public class KubePodProcessIntegrationTest {
     assertNotEquals(0, process.exitValue());
   }
 
+  @Test
+  public void testExitValueWaitsForMainToTerminate() throws Exception {
+    // start a long running main process
+    final Process process = getProcess("sleep 2; exit 13;");
+
+    // immediately close streams
+    process.getInputStream().close();
+    process.getOutputStream().close();
+
+    // waiting for process
+    process.waitFor();
+
+    // the pod exit code should match the main container exit value
+    assertEquals(13, process.exitValue());
+  }
+
+  @Test
+  public void testCopyLargeFiles() throws Exception {
+    final int numFiles = 1;
+    final int numLinesPerFile = 200000;
+
+    final Map<String, String> files = Maps.newHashMapWithExpectedSize(numFiles);
+    for (int i = 0; i < numFiles; i++) {
+      files.put("file" + i, getRandomFile(numLinesPerFile));
+    }
+
+    final long minimumConfigDirSize = (long) numFiles * numLinesPerFile * RANDOM_FILE_LINE_LENGTH;
+
+    final Process process = getProcess(
+        String.format("CONFIG_DIR_SIZE=$(du -sb /config | awk '{print $1;}'); if [ $CONFIG_DIR_SIZE -ge %s ]; then exit 10; else exit 1; fi;",
+            minimumConfigDirSize),
+        files);
+
+    process.waitFor();
+    assertEquals(10, process.exitValue());
+  }
+
   private static String getRandomFile(final int lines) {
     final var sb = new StringBuilder();
     for (int i = 0; i < lines; i++) {
-      sb.append(RandomStringUtils.randomAlphabetic(100));
+      sb.append(RandomStringUtils.randomAlphabetic(RANDOM_FILE_LINE_LENGTH));
       sb.append("\n");
     }
     return sb.toString();
@@ -224,6 +304,10 @@ public class KubePodProcessIntegrationTest {
         "file2", getRandomFile(100),
         "file3", getRandomFile(1000));
 
+    return getProcess(entrypoint, files);
+  }
+
+  private Process getProcess(final String entrypoint, final Map<String, String> files) throws WorkerException {
     return processFactory.create(
         "some-id",
         0,
@@ -231,7 +315,10 @@ public class KubePodProcessIntegrationTest {
         "busybox:latest",
         false,
         files,
-        entrypoint, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of());
+        entrypoint,
+        DEFAULT_RESOURCE_REQUIREMENTS,
+        Map.of(),
+        Map.of());
   }
 
   private static Set<Integer> getOpenPorts(final int count) {

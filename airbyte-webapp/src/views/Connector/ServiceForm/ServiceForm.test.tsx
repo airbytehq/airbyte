@@ -17,6 +17,8 @@ jest.mock(
     }
 );
 
+jest.setTimeout(10000);
+
 const schema: AirbyteJSONSchema = {
   type: "object",
   properties: {

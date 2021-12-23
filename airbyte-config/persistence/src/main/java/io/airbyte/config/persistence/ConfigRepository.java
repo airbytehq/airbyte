@@ -119,7 +119,11 @@ public class ConfigRepository {
 
   public StandardSourceDefinition getStandardSourceDefinition(final UUID sourceDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionId.toString(), StandardSourceDefinition.class);
+
+    return persistence.getConfig(
+        ConfigSchema.STANDARD_SOURCE_DEFINITION,
+        sourceDefinitionId.toString(),
+        StandardSourceDefinition.class);
   }
 
   public StandardSourceDefinition getSourceDefinitionFromSource(final UUID sourceId) {
@@ -150,8 +154,16 @@ public class ConfigRepository {
     }
   }
 
-  public List<StandardSourceDefinition> listStandardSourceDefinitions() throws JsonValidationException, IOException {
-    return persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
+  public List<StandardSourceDefinition> listStandardSourceDefinitions(final boolean includeTombstone) throws JsonValidationException, IOException {
+    final List<StandardSourceDefinition> sourceDefinitions = new ArrayList<>();
+    for (final StandardSourceDefinition sourceDefinition : persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION,
+        StandardSourceDefinition.class)) {
+      if (!MoreBooleans.isTruthy(sourceDefinition.getTombstone()) || includeTombstone) {
+        sourceDefinitions.add(sourceDefinition);
+      }
+    }
+
+    return sourceDefinitions;
   }
 
   public void writeStandardSourceDefinition(final StandardSourceDefinition sourceDefinition) throws JsonValidationException, IOException {
@@ -201,8 +213,18 @@ public class ConfigRepository {
     }
   }
 
-  public List<StandardDestinationDefinition> listStandardDestinationDefinitions() throws JsonValidationException, IOException {
-    return persistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class);
+  public List<StandardDestinationDefinition> listStandardDestinationDefinitions(final boolean includeTombstone)
+      throws JsonValidationException, IOException {
+    final List<StandardDestinationDefinition> destinationDefinitions = new ArrayList<>();
+
+    for (final StandardDestinationDefinition destinationDefinition : persistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION,
+        StandardDestinationDefinition.class)) {
+      if (!MoreBooleans.isTruthy(destinationDefinition.getTombstone()) || includeTombstone) {
+        destinationDefinitions.add(destinationDefinition);
+      }
+    }
+
+    return destinationDefinitions;
   }
 
   public void writeStandardDestinationDefinition(final StandardDestinationDefinition destinationDefinition)

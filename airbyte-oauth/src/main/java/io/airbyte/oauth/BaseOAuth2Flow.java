@@ -289,7 +289,8 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
     return List.of("credentials");
   }
 
-  private static void validateInputOAuthConfiguration(final OAuthConfigSpecification oauthConfigSpecification, final JsonNode inputOAuthConfiguration)
+  protected static void validateInputOAuthConfiguration(final OAuthConfigSpecification oauthConfigSpecification,
+                                                        final JsonNode inputOAuthConfiguration)
       throws JsonValidationException {
     if (oauthConfigSpecification != null && oauthConfigSpecification.getOauthUserInputFromConnectorConfigSpecification() != null) {
       final JsonSchemaValidator validator = new JsonSchemaValidator();

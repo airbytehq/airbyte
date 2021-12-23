@@ -1,19 +1,17 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import ContentCard from "components/ContentCard";
-import ServiceForm from "views/Connector/ServiceForm";
-import { JobsLogItem } from "components/JobItem";
+import { LogsRequestError } from "core/request/LogsRequestError";
 
 import { useDestinationDefinitionSpecificationLoad } from "hooks/services/useDestinationHook";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
-import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
+import { DestinationDefinition } from "core/domain/connector";
 
+import { ConnectorCard } from "views/Connector/ConnectorCard";
 import TitlesBlock from "./TitlesBlock";
 import HighlightedText from "./HighlightedText";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { DestinationDefinition } from "core/domain/connector";
 
 type IProps = {
   availableServices: DestinationDefinition[];
@@ -25,7 +23,6 @@ type IProps = {
   }) => void;
   hasSuccess?: boolean;
   error?: null | { message?: string; status?: number };
-  jobInfo?: JobInfo;
   afterSelectConnector?: () => void;
 };
 
@@ -34,7 +31,6 @@ const DestinationStep: React.FC<IProps> = ({
   availableServices,
   hasSuccess,
   error,
-  jobInfo,
   afterSelectConnector,
 }) => {
   const [destinationDefinitionId, setDestinationDefinitionId] = useState("");
@@ -91,20 +87,19 @@ const DestinationStep: React.FC<IProps> = ({
       >
         <FormattedMessage id="onboarding.createFirstDestination.text" />
       </TitlesBlock>
-      <ContentCard full>
-        <ServiceForm
-          formType="destination"
-          allowChangeConnector
-          onServiceSelect={onDropDownSelect}
-          onSubmit={onSubmitForm}
-          hasSuccess={hasSuccess}
-          availableServices={availableServices}
-          errorMessage={errorMessage}
-          selectedConnector={destinationDefinitionSpecification}
-          isLoading={isLoading}
-        />
-        <JobsLogItem jobInfo={jobInfo} />
-      </ContentCard>
+      <ConnectorCard
+        full
+        jobInfo={LogsRequestError.extractJobInfo(error)}
+        formType="destination"
+        allowChangeConnector
+        onServiceSelect={onDropDownSelect}
+        onSubmit={onSubmitForm}
+        hasSuccess={hasSuccess}
+        availableServices={availableServices}
+        errorMessage={errorMessage}
+        selectedConnector={destinationDefinitionSpecification}
+        isLoading={isLoading}
+      />
     </>
   );
 };
