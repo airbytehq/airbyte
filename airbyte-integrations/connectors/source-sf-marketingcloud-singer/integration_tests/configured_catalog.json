@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "event",
+        "name": "email",
         "json_schema": {}
       },
       "sync_mode": "full_refresh",
