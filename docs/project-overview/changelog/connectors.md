@@ -29,7 +29,7 @@ New features:
 **MongoDB v2** Source: improve read performance. 
 **Pipedrive** Source: specify schema for "persons" stream. 
 **PostgreSQL** Source: exclude tables on which user doesn't have select privileges.
-**Survey Monkey** Source: improve connection check.
+**SurveyMonkey** Source: improve connection check.
 
 ## 11/17/2021
 
