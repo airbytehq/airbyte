@@ -7,6 +7,8 @@ package io.airbyte.server;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
@@ -42,6 +44,7 @@ import io.airbyte.server.errors.UncaughtExceptionMapper;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalUtils;
+import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.net.http.HttpClient;
 import java.util.Map;
@@ -112,7 +115,9 @@ public class ServerApp implements ServerRunnable {
     server.join();
   }
 
-  private static void assertDatabasesReady(Configs configs, DatabaseInstance configsDatabaseInstance, DatabaseInstance jobsDatabaseInstance)
+  private static void assertDatabasesReady(final Configs configs,
+                                           final DatabaseInstance configsDatabaseInstance,
+                                           final DatabaseInstance jobsDatabaseInstance)
       throws InterruptedException {
     LOGGER.info("Checking configs database flyway migration version..");
     MinimumFlywayMigrationVersionCheck.assertDatabase(configsDatabaseInstance, MinimumFlywayMigrationVersionCheck.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS);
@@ -170,13 +175,19 @@ public class ServerApp implements ServerRunnable {
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
 
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(configs.getTemporalHost());
-    final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot());
+    final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot(), configs);
     final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
     final SchedulerJobClient schedulerJobClient =
         new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence, configRepository));
     final DefaultSynchronousSchedulerClient syncSchedulerClient =
         new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+    final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(
+        TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot(), configs),
+        configs.getWorkspaceRoot(),
+        configs.getAirbyteVersionOrWarning(),
+        featureFlags);
 
     LOGGER.info("Starting server...");
 
@@ -196,13 +207,15 @@ public class ServerApp implements ServerRunnable {
         configs.getWebappUrl(),
         configs.getAirbyteVersion(),
         configs.getWorkspaceRoot(),
-        httpClient);
+        httpClient,
+        featureFlags,
+        temporalWorkerRunFactory);
   }
 
   public static void main(final String[] args) throws Exception {
     try {
       getServer(new ServerFactory.Api(), YamlSeedConfigPersistence.getDefault()).start();
-    } catch (Throwable e) {
+    } catch (final Throwable e) {
       LOGGER.error("Server failed", e);
       System.exit(1); // so the app doesn't hang on background threads
     }

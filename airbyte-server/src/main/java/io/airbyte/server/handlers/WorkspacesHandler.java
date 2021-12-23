@@ -7,6 +7,7 @@ package io.airbyte.server.handlers;
 import com.github.slugify.Slugify;
 import com.google.common.base.Strings;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.Notification;
@@ -103,7 +104,8 @@ public class WorkspacesHandler {
 
     // disable all connections associated with this workspace
     for (final ConnectionRead connectionRead : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
-      connectionsHandler.deleteConnection(connectionRead);
+      final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
+      connectionsHandler.deleteConnection(connectionIdRequestBody);
     }
 
     // disable all destinations associated with this workspace
