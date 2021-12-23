@@ -176,7 +176,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-bigquery:0.6.1-rc1"
+- dockerImage: "airbyte/destination-bigquery:0.6.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
