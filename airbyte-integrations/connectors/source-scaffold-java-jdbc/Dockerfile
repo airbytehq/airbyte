@@ -4,7 +4,9 @@ WORKDIR /airbyte
 
 ENV APPLICATION source-scaffold-java-jdbc
 
-ADD build/distributions/${APPLICATION}*.tar /airbyte
+COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
+
+RUN tar xf ${APPLICATION}.tar --strip-components=1
 
 # Airbyte's build system uses these labels to know what to name and tag the docker images produced by this Dockerfile.
 LABEL io.airbyte.version=0.1.0
