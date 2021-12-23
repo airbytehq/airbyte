@@ -27,12 +27,37 @@ class SnowflakeDestinationIntegrationTest {
   private final SnowflakeSQLNameTransformer namingResolver = new SnowflakeSQLNameTransformer();
 
   @Test
-  public void testInvalidSchemaName() throws IOException {
-    final JsonNode config = Jsons.deserialize(new String(Files.readAllBytes(Paths.get("secrets/insert_config.json"))));
-    final String schemaName = "schemaName with whitespace "+ Strings.addRandomSuffix("integration_test", "_", 5);
-    ((ObjectNode) config).put("schema", schemaName);
-    assertThrows(SQLException.class, () -> syncWithoutNamingResolver(config));
+  void testCheckFailsWithInvalidPermissions() throws Exception {
+    // TODO(sherifnada) this test case is assumes config.json does not have permission to access the
+    // schema
+    // this connector should be updated with multiple credentials, each with a clear purpose (valid,
+    // invalid: insufficient permissions, invalid: wrong password, etc..)
+    final JsonNode credentialsJsonString = Jsons.deserialize(new String(Files.readAllBytes(Paths.get("secrets/config.json"))));
+    final AirbyteConnectionStatus check = new SnowflakeDestination().check(credentialsJsonString);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, check.getStatus());
+  }
 
+  @Test
+  public void testInvalidSchemaNameWithoutNameTransformer() throws IOException {
+    final JsonNode config = getConfig();
+    assertThrows(SQLException.class, () -> syncWithoutNamingResolver(config));
+  }
+
+  @Test
+  public void testInvalidSchemaNameWithNameTransformer() throws IOException, SQLException {
+    final JsonNode config = getConfig();
+    final String createSchemaQuery = String.format("CREATE SCHEMA %s", namingResolver.getIdentifier(config.get("schema").asText()));
+    Connection connection =null;
+    try {
+      connection = SnowflakeDatabase.getConnection(config);
+      connection.createStatement().execute(createSchemaQuery);
+    }finally {
+      if (connection != null) {
+        final String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", namingResolver.getIdentifier(config.get("schema").asText()));
+        connection.createStatement().execute(dropSchemaQuery);
+        connection.close();
+      }
+    }
   }
 
   private void syncWithoutNamingResolver(JsonNode config) throws SQLException {
@@ -65,4 +90,10 @@ class SnowflakeDestinationIntegrationTest {
     return DriverManager.getConnection(connectUrl, properties);
   }
 
+  private JsonNode getConfig() throws IOException {
+    final JsonNode config = Jsons.deserialize(new String(Files.readAllBytes(Paths.get("secrets/insert_config.json"))));
+    final String schemaName = "schemaName with whitespace " + Strings.addRandomSuffix("integration_test", "_", 5);
+    ((ObjectNode) config).put("schema", schemaName);
+    return config;
+  }
 }
