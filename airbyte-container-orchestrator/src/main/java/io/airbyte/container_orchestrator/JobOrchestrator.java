@@ -11,18 +11,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-/**
- * This class makes it easier to specify
- *
- * @param <T> input type
- */
-public interface JobOrchestrator<T> {
+public interface JobOrchestrator<INPUT> {
 
   String getOrchestratorName();
 
-  Class<T> getInputClass();
+  Class<INPUT> getInputClass();
 
-  default T readInput() throws IOException {
+  default INPUT readInput() throws IOException {
     return readAndDeserializeFile(OrchestratorConstants.INIT_FILE_INPUT, getInputClass());
   }
 
