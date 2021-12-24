@@ -1,10 +1,11 @@
 name: Sonar Scan
 on:
   push:
+  pull_request:
+    types: [assigned, opened, synchronize, reopened]
 
 jobs:
   detect-changes:
-    if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     outputs:
       changes: ${{ steps.detect-changed-modules.outputs.changes }}
