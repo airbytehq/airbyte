@@ -33,7 +33,7 @@ public class NormalizationLauncherWorker implements Worker<NormalizationInput, V
   private static final Logger LOGGER = LoggerFactory.getLogger(NormalizationLauncherWorker.class);
 
   private static final MdcScope.Builder LOG_MDC_BUILDER = new MdcScope.Builder()
-      .setLogPrefix("container-orchestrator")
+      .setLogPrefix("normalization-orchestrator")
       .setPrefixColor(LoggingHelper.Color.CYAN_BACKGROUND);
 
   public static final String NORMALIZATION = "normalization";

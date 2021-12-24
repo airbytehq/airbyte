@@ -42,7 +42,7 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
   private static final Logger LOGGER = LoggerFactory.getLogger(ReplicationLauncherWorker.class);
 
   private static final MdcScope.Builder LOG_MDC_BUILDER = new MdcScope.Builder()
-      .setLogPrefix("container-orchestrator")
+      .setLogPrefix("replication-orchestrator")
       .setPrefixColor(LoggingHelper.Color.CYAN_BACKGROUND);
 
   public static final String REPLICATION = "replication";
