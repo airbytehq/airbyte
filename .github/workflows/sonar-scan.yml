@@ -1,8 +1,6 @@
 name: Sonar Scan
 on:
   push:
-  pull_request:
-
 
 jobs:
   detect-changes:
