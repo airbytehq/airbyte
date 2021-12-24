@@ -46,7 +46,7 @@ jobs:
   run-ci-java-tests:
     needs: switch-lang-job
     name:  Run Java CI tests for ${{ matrix.module }}
-    if: ${{ needs.switch-lang-job.outputs.lang == 'py' }}
+    if: ${{ needs.switch-lang-job.outputs.lang == 'java' }}
     runs-on: ubuntu-latest
     environment: more-secrets
     env:
