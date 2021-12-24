@@ -9,7 +9,7 @@ jobs:
     - id: detect-changed-modules
 
       run: |
-         CHANGES="[{\"module\":\"foo\",\"lang\":\"py\", \"folder\":\"./test1\"},{\"module\":\"bar\",\"lang\":\"java\", \"folder\":\"./test2\"}]"
+         CHANGES="[{\"module\":\"foo\",\"lang\":\"py\"},{\"module\":\"bar\",\"lang\":\"java\"}]"
          echo "::set-output name=changes::{\"include\":${CHANGES}}"
   run-ci-tests:
     needs: detect-changes
@@ -20,11 +20,11 @@ jobs:
     env:
       MODULE_NAME: ${{ matrix.module }}
       MODULE_LANG: ${{ matrix.lang }}
-      MODULE_FOLDER:  ${{ matrix.folder }}
+
     steps:
     - name: Print settings
     - run: |
-         echo "Module: ${{ env.MODULE_NAME }}, Lang: ${{ env.MODULE_LANG }}, Folder: ${{ env.MODULE_FOLDER }}"
+         echo "Module: ${{ env.MODULE_NAME }}, Lang: ${{ env.MODULE_LANG }}"
 
 #name: Sonar Scan
 #on:
