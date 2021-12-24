@@ -21,16 +21,15 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSqlOperations.class);
   protected static final int REDSHIFT_VARCHAR_MAX_BYTE_SIZE = 65535;
+  private RedshiftDataTmpTableMode redshiftDataTmpTableMode;
+
+  public RedshiftSqlOperations(RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
+    this.redshiftDataTmpTableMode = redshiftDataTmpTableMode;
+  }
 
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
-    return String.format(
-        "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
-            + "%s VARCHAR PRIMARY KEY,\n"
-            + "%s VARCHAR(max),\n"
-            + "%s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
-            + ");\n",
-        schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+    return redshiftDataTmpTableMode.getTmpTableSqlStatement(schemaName, tableName);
   }
 
   @Override

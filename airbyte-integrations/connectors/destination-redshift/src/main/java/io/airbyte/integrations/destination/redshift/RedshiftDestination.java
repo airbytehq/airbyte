@@ -35,6 +35,8 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     super(DestinationType.class, RedshiftDestination::getTypeFromConfig, getTypeToDestination());
   }
 
+
+
   public static DestinationType getTypeFromConfig(final JsonNode config) {
     if (isCopy(config)) {
       return DestinationType.COPY_S3;
@@ -43,10 +45,10 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     }
   }
 
+
   public static Map<DestinationType, Destination> getTypeToDestination() {
     final RedshiftInsertDestination insertDestination = new RedshiftInsertDestination();
     final RedshiftCopyS3Destination copyS3Destination = new RedshiftCopyS3Destination();
-
     return ImmutableMap.of(
         DestinationType.INSERT, insertDestination,
         DestinationType.COPY_S3, copyS3Destination);

@@ -11,8 +11,10 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +24,11 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination implement
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftDestination.class);
 
   public static final String DRIVER_CLASS = "com.amazon.redshift.jdbc.Driver";
+
+  @Override
+  public ConnectorSpecification spec() throws Exception {
+    return super.spec();
+  }
 
   public RedshiftInsertDestination() {
     super(DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations());
