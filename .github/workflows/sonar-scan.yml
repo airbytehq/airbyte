@@ -15,7 +15,7 @@ jobs:
          CHANGES="[{\"module\":\"connectors/source-salesforces\",\"lang\":\"py\", \"folder\":\"path3\"}, {\"module\":\"connectors/source-s3\",\"lang\":\"py\", \"folder\":\"path1\"},{\"module\":\"connectors/destination-s3\",\"lang\":\"java\", \"folder\":\"path2\"}]"
          echo "::set-output name=changes::{ \"include\": $CHANGES }"
 
-  switch-lang-job:
+  run-ci-tests:
     needs: detect-changes
     name:  Forward ${{ matrix.module }} to ${{ matrix.lang }} flow
     runs-on: ubuntu-latest
@@ -31,74 +31,31 @@ jobs:
 #    # these for local dev
 #    env:
 #      MODULE_NAME: connectors/source-s3
-#      MODULE_LANG: py
+#      MODULE_LANG: java
 #      MODULE_FOLDER: "path2"
 #      ENV_NAME: "local"
 
-    outputs:
-      lang: ${{ env.MODULE_LANG }}
-      module: ${{ env.MODULE_NAME }}
-      folder: ${{ env.MODULE_FOLDER }}
-      env_name: ${{ env.ENV_NAME }}
     steps:
     - name: Print Settings
       run: |
          echo "Module: ${{ env.MODULE_NAME }}, Lang: ${{ env.MODULE_LANG }}, Folder: ${{ env.MODULE_FOLDER }}"
+    - name: Run Python Tests
+      id: run-python-tests
+      if: ${{ env.MODULE_LANG == 'py' }}
+      uses: ./.github/actions/ci-py-tests
+      with:
+        module-name: ${{ env.MODULE_NAME }}
+        module-folder: ${{ env.MODULE_FOLDER }}
+        sonar-token: ${{ secrets.SONAR_TOKEN }}
+        sonar-host: ${{ secrets.SONAR_HOST_URL }}
+    - name: Run Java Tests
+      id: run-java-tests
+      if: ${{ env.MODULE_LANG == 'java' }}
+      uses: ./.github/actions/ci-java-tests
+      with:
+        module-name: ${{ env.MODULE_NAME }}
+        module-folder: ${{ env.MODULE_FOLDER }}
+        sonar-token: ${{ secrets.SONAR_TOKEN }}
+        sonar-host: ${{ secrets.SONAR_HOST_URL }}
 
-  run-ci-java-tests:
-    needs: switch-lang-job
-    name:  Run Java tests
-    if: ${{ needs.switch-lang-job.outputs.lang == 'java' }}
-    runs-on: ubuntu-latest
-    environment: more-secrets
-    env:
-      MODULE_NAME: ${{ needs.switch-lang-job.outputs.module }}
-      MODULE_FOLDER:  ${{ needs.switch-lang-job.outputs.folder }}
-    steps:
-    - name: Java Settings
-      run: |
-         echo "Java Module: ${{ env.MODULE_NAME }}, Folder: ${{ env.MODULE_FOLDER }}"
-         echo "Tests logic is not implemented for JAVA now"
 
-  run-ci-py-tests:
-    needs: switch-lang-job
-    name:  Run Python tests
-    if: ${{ needs.switch-lang-job.outputs.lang == 'py' }}
-    runs-on: ubuntu-latest
-    environment: more-secrets
-    env:
-      MODULE_NAME: ${{ needs.switch-lang-job.outputs.module }}
-      MODULE_FOLDER:  ${{ needs.switch-lang-job.outputs.folder }}
-      ENV_NAME: ${{ needs.switch-lang-job.outputs.env_name }}
-
-    steps:
-    - name: Python Settings
-      run: |
-         echo "Py Module: ${{ env.MODULE_NAME }}, Folder: ${{ env.MODULE_FOLDER }}"
-#    - name: Checkout repo
-#      if: ${{ env.ENV_NAME == 'github' }}
-#      uses: actions/checkout@v2
-#      with:
-#        fetch-depth: 0
-##      - uses: sonarsource/sonarqube-scan-action@master
-##        with:
-##          projectBaseDir: airbyte-integrations/connectors
-##          # -Dsonar.tests=.
-##          # -Dsonar.test.inclusions=**/unit_tests/**
-##          args: >
-##            -Dsonar.projectKey=airbite-python-connectors
-##            -Dsonar.exclusions=**/*.java
-##            -Dsonar.verbose=true
-##            -Dsonar.language=py
-##            -Dsonar.sourceEncoding=UTF-8
-##        env:
-##          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-##          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-#
-#        # If you wish to fail your job when the Quality Gate is red, uncomment the
-#        # following lines. This would typically be used to fail a deployment.
-#        # - uses: sonarsource/sonarqube-quality-gate-action@master
-#        #   timeout-minutes: 5
-#        #   env:
-#        #    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-#

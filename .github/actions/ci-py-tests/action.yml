@@ -1,0 +1,68 @@
+name: "Runner CI Python Tests"
+description: "Runner CI Python Tests"
+inputs:
+  module-name:
+    required: true
+  module-folder:
+    required: true
+  sonar-host:
+    required: true
+  sonar-secret:
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Test PYTHON!!!!"
+      shell: bash
+      run: |
+        echo "TESSS"
+#    - name: Configure AWS credentials
+#      uses: aws-actions/configure-aws-credentials@v1
+#      with:
+#        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+#        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+#        aws-region: us-east-2
+#    - name: Start EC2 runner
+#      id: start-ec2-runner
+#      uses: machulav/ec2-github-runner@v2.3.0
+#      with:
+#        mode: start
+#        github-token: ${{ inputs.github-token }}
+#        ec2-image-id: ${{ inputs.ec2-image-id }}
+#        ec2-instance-type: ${{ inputs.ec2-instance-type }}
+#        subnet-id: ${{ inputs.subnet-id }}
+#        security-group-id: ${{ inputs.security-group-id }}
+#        aws-resource-tags: >
+#          [
+#            {"Key": "BuildType", "Value": "oss"},
+#            {"Key": "Repository", "Value": "${{ github.repository }}"},
+#            {"Key": "Branch", "Value": "${{ github.ref }}"}
+#          ]
+#    - name: Checkout repo
+#      if: ${{ env.ENV_NAME == 'github' }}
+#      uses: actions/checkout@v2
+#      with:
+#        fetch-depth: 0
+##      - uses: sonarsource/sonarqube-scan-action@master
+##        with:
+##          projectBaseDir: airbyte-integrations/connectors
+##          # -Dsonar.tests=.
+##          # -Dsonar.test.inclusions=**/unit_tests/**
+##          args: >
+##            -Dsonar.projectKey=airbite-python-connectors
+##            -Dsonar.exclusions=**/*.java
+##            -Dsonar.verbose=true
+##            -Dsonar.language=py
+##            -Dsonar.sourceEncoding=UTF-8
+##        env:
+##          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+##          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+#
+#        # If you wish to fail your job when the Quality Gate is red, uncomment the
+#        # following lines. This would typically be used to fail a deployment.
+#        # - uses: sonarsource/sonarqube-quality-gate-action@master
+#        #   timeout-minutes: 5
+#        #   env:
+#        #    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#
