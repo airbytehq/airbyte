@@ -7,7 +7,7 @@ inputs:
     required: true
   sonar-host:
     required: true
-  sonar-secret:
+  sonar-token:
     required: true
 
 runs:
