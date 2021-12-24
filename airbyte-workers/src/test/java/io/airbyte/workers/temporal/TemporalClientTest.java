@@ -222,5 +222,7 @@ class TemporalClientTest {
       verify(temporalClient, times(1)).submitConnectionUpdaterAsync(nonMigratedId);
       verifyNoInteractions(temporalClient);
     }
+
   }
+
 }
