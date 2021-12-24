@@ -3,16 +3,16 @@ import shutil
 import tempfile
 from glob import glob
 from multiprocessing import Pool
-from typing import Dict, Iterable, List, Set
+from typing import Any, Dict, Iterable, List, Set
 
 import invoke
 import virtualenv
 from invoke import task
 
-
 CONNECTORS_DIR: str = os.path.abspath(os.path.curdir)
 
-CONFIG_FILE: str = os.path.join(CONNECTORS_DIR, "pyproject.toml")
+ROOT_DIR = os.path.dirname(os.path.dirname(CONNECTORS_DIR))
+CONFIG_FILE: str = os.path.join(ROOT_DIR, "pyproject.toml")
 
 # TODO: Get it from a single place with `pre-commit` (or make pre-commit to use these tasks)
 TOOLS_VERSIONS: Dict[str, str] = {
@@ -39,12 +39,12 @@ TASK_COMMANDS: Dict[str, List[str]] = {
     "flake": [
         f"pip install mccabe~={TOOLS_VERSIONS['mccabe']}",
         f"pip install pyproject-flake8~={TOOLS_VERSIONS['flake']}",
-        f"pflake8 -v {{source_path}}",
+        "pflake8 -v {source_path}",
     ],
     "isort": [
         f"pip install colorama~={TOOLS_VERSIONS['colorama']}",
         f"pip install isort~={TOOLS_VERSIONS['isort']}",
-        f"isort -v {{check_option}} {{source_path}}/.",
+        "isort -v {check_option} {source_path}/.",
     ],
     "mypy": [
         "pip install .",
@@ -59,7 +59,7 @@ TASK_COMMANDS: Dict[str, List[str]] = {
         "pip install .",
         "pip install .[tests]",
         "pip install pytest-cov",
-        f"pytest -v --cov={{source_path}} --cov-report xml unit_tests",
+        "pytest -v --cov={source_path} --cov-report xml unit_tests",
     ],
 }
 
@@ -92,9 +92,9 @@ def _run_single_connector_task(args: Iterable) -> int:
     return _run_task(*args)
 
 
-def _run_task(ctx: invoke.Context, connector_string: str, task_name: str, multi_envs=True, **kwargs) -> int:
+def _run_task(ctx: invoke.Context, connector_string: str, task_name: str, multi_envs: bool = True, **kwargs: Any) -> int:
     """
-    Run task for
+    Run task in its own environment.
     """
     if multi_envs:
         source_path = f"source_{connector_string.replace('-', '_')}"
@@ -128,7 +128,7 @@ def _run_task(ctx: invoke.Context, connector_string: str, task_name: str, multi_
     return exit_code
 
 
-def apply_task_for_connectors(ctx: invoke.Context, connectors_names: str, task_name: str, multi_envs=False, **kwargs):
+def apply_task_for_connectors(ctx: invoke.Context, connectors_names: str, task_name: str, multi_envs: bool = False, **kwargs: Any) -> None:
     """
     Run task commands for every connector or for once for a set of connectors, depending on task needs (`multi_envs` param).
     If `multi_envs == True` task for every connector runs in its own subprocess.
@@ -155,6 +155,7 @@ def apply_task_for_connectors(ctx: invoke.Context, connectors_names: str, task_n
 
     raise invoke.Exit(code=exit_code)
 
+
 ###########################################################################################################################################
 # TASKS
 ###########################################################################################################################################
@@ -166,7 +167,7 @@ _arg_help_connectors = (
 
 
 @task(help={"connectors": _arg_help_connectors})
-def all_checks(ctx, connectors=None):
+def all_checks(ctx, connectors=None):  # type: ignore[no-untyped-def]
     """
     Run following checks one by one with default parameters: black, flake, isort, mypy, test, coverage.
     Zero exit code indicates about successful passing of all checks.
@@ -180,7 +181,7 @@ def all_checks(ctx, connectors=None):
 
 
 @task(help={"connectors": _arg_help_connectors, "write": "Write changes into the files (runs 'black' without '--check' option)"})
-def black(ctx, connectors=None, write=False):
+def black(ctx, connectors=None, write=False):  # type: ignore[no-untyped-def]
     """
     Run 'black' checks for one or more given connector(s) code.
     Zero exit code indicates about successful passing of all checks.
@@ -190,7 +191,7 @@ def black(ctx, connectors=None, write=False):
 
 
 @task(help={"connectors": _arg_help_connectors})
-def flake(ctx, connectors=None):
+def flake(ctx, connectors=None):  # type: ignore[no-untyped-def]
     """
     Run 'flake8' checks for one or more given connector(s) code.
     Zero exit code indicates about successful passing of all checks.
@@ -199,7 +200,7 @@ def flake(ctx, connectors=None):
 
 
 @task(help={"connectors": _arg_help_connectors, "write": "Write changes into the files (runs 'isort' without '--check' option)"})
-def isort(ctx, connectors=None, write=False):
+def isort(ctx, connectors=None, write=False):  # type: ignore[no-untyped-def]
     """
     Run 'isort' checks for one or more given connector(s) code.
     Zero exit code indicates about successful passing of all checks.
@@ -209,7 +210,7 @@ def isort(ctx, connectors=None, write=False):
 
 
 @task(help={"connectors": _arg_help_connectors})
-def mypy(ctx, connectors=None):
+def mypy(ctx, connectors=None):  # type: ignore[no-untyped-def]
     """
     Run MyPy checks for one or more given connector(s) code.
     A virtual environment is being created for every one.
@@ -219,7 +220,7 @@ def mypy(ctx, connectors=None):
 
 
 @task(help={"connectors": _arg_help_connectors})
-def test(ctx, connectors=None):
+def test(ctx, connectors=None):  # type: ignore[no-untyped-def]
     """
     Run unittests for one or more given connector(s).
     A virtual environment is being created for every one.
@@ -229,7 +230,7 @@ def test(ctx, connectors=None):
 
 
 @task(help={"connectors": _arg_help_connectors})
-def coverage(ctx, connectors=None):
+def coverage(ctx, connectors=None):  # type: ignore[no-untyped-def]
     """
     Check test coverage of code for one or more given connector(s).
     A virtual environment is being created for every one.
