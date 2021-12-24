@@ -167,17 +167,16 @@ public abstract class JdbcDatabase extends SqlDatabase {
     }, sourceOperations::rowToJson);
   }
 
-
   public ResultSetMetaData queryMetadata(final String sql, final String... params) throws SQLException {
     try (final Stream<ResultSetMetaData> q = query(c -> {
-          PreparedStatement statement = c.prepareStatement(sql);
-          int i = 1;
-          for (String param : params) {
-            statement.setString(i, param);
-            ++i;
-          }
-          return statement;
-        },
+      PreparedStatement statement = c.prepareStatement(sql);
+      int i = 1;
+      for (String param : params) {
+        statement.setString(i, param);
+        ++i;
+      }
+      return statement;
+    },
         ResultSet::getMetaData)) {
       return q.findFirst().get();
     }

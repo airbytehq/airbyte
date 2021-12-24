@@ -295,26 +295,16 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addInsertValues("CAST( 'ABC' AS VARBINARY)", "null")
             .addExpectedValues("ABC", null)
             .build());
-//
-//    // TODO BUG: airbyte returns binary representation instead of readable one
-//    // create table dbo_1_hierarchyid1 (test_column hierarchyid);
-//    // insert dbo_1_hierarchyid1 values ('/1/1/');
-//    // select test_column ,test_column.ToString() AS [Node Text],test_column.GetLevel() [Node Level]
-//    // from dbo_1_hierarchyid1;
-//    // It's supposed to use additional MsSQL methods in Select request to fetch it properly
-//    // https://docs.microsoft.com/en-us/sql/t-sql/data-types/hierarchyid-data-type-method-reference?view=sql-server-ver15#data-type-conversion
-    //There is no support hierarchyid for even in the native SQL Server jdbc driver in DataTypes
-    //The only way to get it as a test is to query it as "test_column.ToString() as test_column", but in this case it
-    // will be returned as NVARCHAR and you wouldn't be able to recognize it's a hierarchyid
+
+    // create table dbo_1_hierarchyid1 (test_column hierarchyid);
+    // insert dbo_1_hierarchyid1 values ('/1/1/');
+    // select test_column ,test_column.ToString() AS [Node Text],test_column.GetLevel() [Node Level]
+    // from dbo_1_hierarchyid1;
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("hierarchyid")
             .airbyteType(JsonSchemaPrimitive.STRING)
-//            .addInsertValues("null")
-//            .addNullExpectedValue()
-            // .addInsertValues("null","'/1/1/'")
             .addInsertValues("'/1/1/'", "null")
-            // .addExpectedValues(null, "/1/1/")
             .addExpectedValues("/1/1/", null)
             .build());
 

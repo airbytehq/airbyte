@@ -6,7 +6,6 @@ package io.airbyte.db;
 
 import java.sql.Date;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;

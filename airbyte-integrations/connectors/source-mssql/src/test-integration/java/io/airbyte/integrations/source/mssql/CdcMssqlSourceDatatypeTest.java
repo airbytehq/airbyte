@@ -428,8 +428,8 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'a'", "'abc'", "N'Миші йдуть на південь, не питай чому;'", "N'櫻花分店'",
                 "''", "null", "N'\\xF0\\x9F\\x9A\\x80'")
-            //TODO: BUG - These all come through as nulls, Debezium doesn't mention sql_variant at all so
-            //assume unsupported
+            // TODO: BUG - These all come through as nulls, Debezium doesn't mention sql_variant at all so
+            // assume unsupported
             // .addExpectedValues("a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
             // null, "\\xF0\\x9F\\x9A\\x80")
             .createTablePatternSql(CREATE_TABLE_SQL)

@@ -9,12 +9,9 @@ import io.debezium.spi.converter.CustomConverter;
 import io.debezium.spi.converter.RelationalColumn;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.Properties;
 import org.apache.kafka.connect.data.SchemaBuilder;
-import org.apache.kafka.connect.data.Time;
-import org.apache.logging.log4j.core.config.plugins.convert.DateTypeConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,12 +28,11 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
   private final String SMALLMONEY_TYPE = "SMALLMONEY";
 
   @Override
-  public void configure(Properties props) {
-  }
+  public void configure(Properties props) {}
 
   @Override
   public void converterFor(final RelationalColumn field,
-      final ConverterRegistration<SchemaBuilder> registration) {
+                           final ConverterRegistration<SchemaBuilder> registration) {
     if (DATE_TYPE.equalsIgnoreCase(field.typeName())
         || DATETIME_TYPE.equalsIgnoreCase(field.typeName())
         || DATETIME2_TYPE.equalsIgnoreCase(field.typeName())
@@ -51,7 +47,7 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
   }
 
   private void registerDate(final RelationalColumn field,
-      final ConverterRegistration<SchemaBuilder> registration) {
+                            final ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.string(), input -> {
       if (Objects.isNull(input)) {
         return DebeziumConverterUtils.convertDefaultValue(field);
@@ -62,7 +58,7 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
   }
 
   private void registerTime(final RelationalColumn field,
-      final ConverterRegistration<SchemaBuilder> registration) {
+                            final ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.string(), input -> {
       if (Objects.isNull(input)) {
         return DebeziumConverterUtils.convertDefaultValue(field);
@@ -79,7 +75,7 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
   }
 
   private void registerMoney(final RelationalColumn field,
-      final ConverterRegistration<SchemaBuilder> registration) {
+                             final ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.float64(), input -> {
       if (Objects.isNull(input)) {
         return DebeziumConverterUtils.convertDefaultValue(field);

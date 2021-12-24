@@ -11,11 +11,11 @@ import static java.util.stream.Collectors.toList;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
-import com.microsoft.sqlserver.jdbc.SQLServerDatabaseMetaData;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
@@ -32,20 +32,18 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
 import java.io.File;
-import java.sql.DatabaseMetaData;
+import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,15 +69,87 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   public AutoCloseableIterator<JsonNode> queryTableFullRefresh(JdbcDatabase database,
-      List<String> columnNames, String schemaName, String tableName) {
+                                                               List<String> columnNames,
+                                                               String schemaName,
+                                                               String tableName) {
     LOGGER.info("Queueing query for table: {}", tableName);
 
+    List<String> newIdentifiersList = handleFunctionsIfAnyInIdentifierList(database,
+        columnNames,
+        schemaName, tableName, "\"");
+    String preparedSqlQuery = String
+        .format("SELECT %s FROM %s", enquoteIdentifierList(newIdentifiersList),
+            getFullTableName(schemaName, tableName));
+
+    LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
+    return queryTable(database, preparedSqlQuery);
+  }
+
+  @Override
+  public AutoCloseableIterator<JsonNode> queryTableIncremental(JdbcDatabase database,
+                                                               List<String> columnNames,
+                                                               String schemaName,
+                                                               String tableName,
+                                                               String cursorField,
+                                                               JDBCType cursorFieldType,
+                                                               String cursor) {
+    LOGGER.info("Queueing query for table: {}", tableName);
+    return AutoCloseableIterators.lazyIterator(() -> {
+      try {
+        final Stream<JsonNode> stream = database.query(
+            connection -> {
+              LOGGER.info("Preparing query for table: {}", tableName);
+
+              final String identifierQuoteString = connection.getMetaData()
+                  .getIdentifierQuoteString();
+              List<String> newColumnNames = handleFunctionsIfAnyInIdentifierList(database,
+                  columnNames, schemaName, tableName, identifierQuoteString);
+
+              final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
+                  handleFunctionsIfAnyInIdentifierList(connection, newColumnNames),
+                  sourceOperations
+                      .getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
+                  sourceOperations.enquoteIdentifier(connection, cursorField));
+              LOGGER.info("Prepared SQL query for queryTableIncremental is: " + sql);
+
+              final PreparedStatement preparedStatement = connection.prepareStatement(sql);
+              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursor);
+              LOGGER.info("Executing query for table: {}", tableName);
+              return preparedStatement;
+            },
+            sourceOperations::rowToJson);
+        return AutoCloseableIterators.fromStream(stream);
+      } catch (final SQLException e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
+
+  /**
+   * There is no support hierarchyid even in the native SQL Server jdbc driver in DataTypes The only
+   * way to get it as a text is to query it as "test_column.ToString() as test_column". So we
+   * need to make a pre-request to get actual types and then wrap required fields with toString()
+   * function
+   *
+   * @param database
+   * @param columnNames
+   * @param schemaName
+   * @param tableName
+   * @param enquoteSymbol
+   * @return the list with Column names updated to handle functions (if nay) properly
+   */
+  private List<String> handleFunctionsIfAnyInIdentifierList(JdbcDatabase database,
+                                                            List<String> columnNames,
+                                                            String schemaName,
+                                                            String tableName,
+                                                            String enquoteSymbol) {
     List<String> namesToReplaceList = new ArrayList<>();
     try {
       SQLServerResultSetMetaData sqlServerResultSetMetaData = (SQLServerResultSetMetaData) database
-          .queryMetadata(String.format("SELECT %s FROM %s",
-              enquoteIdentifierList(columnNames),
-              getFullTableName(schemaName, tableName)));
+          .queryMetadata(String
+              .format("SELECT TOP 1 %s FROM %s", // only first row is enough to get field's type
+                  enquoteIdentifierList(columnNames),
+                  getFullTableName(schemaName, tableName)));
 
       for (int i = 1; i <= sqlServerResultSetMetaData.getColumnCount(); i++) {
         if (HIERARCHYID.equals(sqlServerResultSetMetaData.getColumnTypeName(i))) {
@@ -91,16 +161,33 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       LOGGER.error("Failed to fetch metadata to prepare a proper request.", e);
     }
 
-    List<String> preparedColumnNames = columnNames.stream()
+    // iterate through names and replace Hierarchyid field for query is with toString() function
+    // Eventually would get columns like this: testColumn.toString as "testColumn"
+    // toString function in SQL server is the only way to get human readable value, but not mssql
+    // specific HEX value
+    return columnNames.stream()
         .map(
-            el -> namesToReplaceList.contains(el) ? String.format("%s.ToString() as \"%s\"", el, el)
+            el -> namesToReplaceList.contains(el) ? String
+                .format("%s.ToString() as %s%s%s", el, enquoteSymbol, el, enquoteSymbol)
                 : el)
         .collect(toList());
+  }
 
-    return queryTable(database,
-        String.format("SELECT %s FROM %s",
-            enquoteIdentifierList(preparedColumnNames),
-            getFullTableName(schemaName, tableName)));
+  public String handleFunctionsIfAnyInIdentifierList(final Connection connection,
+                                                     final List<String> identifiers)
+      throws SQLException {
+
+    final StringJoiner joiner = new StringJoiner(",");
+    for (final String col : identifiers) {
+      if (col.contains("()")) {
+        joiner.add(col); // this query field's name is already prepared for function and quoted
+      } else {
+        final String s = sourceOperations.enquoteIdentifier(connection, col);
+        joiner.add(s);
+      }
+
+    }
+    return joiner.toString();
   }
 
   protected String enquoteIdentifierList(final List<String> identifiers) {
@@ -108,14 +195,14 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     for (final String identifier : identifiers) {
       // do not quote fields that uses a native sql functions on requests
       if (identifier.contains("()")) {
-        joiner.add(identifier);
+        joiner
+            .add(identifier); // this query field's name is already prepared for function and quoted
       } else {
         joiner.add(getIdentifierWithQuoting(identifier));
       }
     }
     return joiner.toString();
   }
-
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode mssqlConfig) {
@@ -283,11 +370,11 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
-      final JdbcDatabase database,
-      final ConfiguredAirbyteCatalog catalog,
-      final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-      final StateManager stateManager,
-      final Instant emittedAt) {
+                                                                             final JdbcDatabase database,
+                                                                             final ConfiguredAirbyteCatalog catalog,
+                                                                             final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                                                             final StateManager stateManager,
+                                                                             final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("using CDC: {}", true);
@@ -300,15 +387,14 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
           emittedAt);
     } else {
       LOGGER.info("using CDC: {}", false);
-      return super
-          .getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
+      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }
   }
 
   private static boolean isCdc(final JsonNode config) {
     return config.hasNonNull("replication_method")
         && ReplicationMethod.valueOf(config.get("replication_method").asText())
-        .equals(ReplicationMethod.CDC);
+            .equals(ReplicationMethod.CDC);
   }
 
   private static boolean shouldUseCDC(final ConfiguredAirbyteCatalog catalog) {

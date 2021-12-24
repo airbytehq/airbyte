@@ -4,9 +4,6 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
-
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.sqlserver.jdbc.Geography;
 import com.microsoft.sqlserver.jdbc.Geometry;
@@ -19,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MssqlSourceOperations extends JdbcSourceOperations {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlSourceOperations.class);
 
   @Override
@@ -37,10 +35,7 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
       putGeometry(json, columnName, resultSet, colIndex);
     } else if (columnTypeName.equalsIgnoreCase("geography")) {
       putGeography(json, columnName, resultSet, colIndex);
-    } else if (columnTypeName.equalsIgnoreCase("hierarchyid")) {
-      putHierarchyid(json, columnName, resultSet, colIndex);
     } else {
-      // https://www.postgresql.org/docs/14/datatype.html
       switch (columnType) {
         case BIT, BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
         case TINYINT, SMALLINT -> putShortInt(json, columnName, resultSet, colIndex);
@@ -62,37 +57,29 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  public JDBCType getFieldType(final JsonNode field) {
-      final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText();
-      if (typeName.equalsIgnoreCase("hierarchyid")) {
-        return JDBCType.VARCHAR;
-      } else {
-        return super.getFieldType(field);
-      }
-  }
-
-
-  @Override
-  protected void putBinary(final ObjectNode node, final String columnName,
-      final ResultSet resultSet, final int index) throws SQLException {
+  protected void putBinary(final ObjectNode node,
+                           final String columnName,
+                           final ResultSet resultSet,
+                           final int index)
+      throws SQLException {
     byte[] bytes = resultSet.getBytes(index);
     String value = new String(bytes);
     node.put(columnName, value);
   }
 
-  protected void putHierarchyid(final ObjectNode node, final String columnName,
-      final ResultSet resultSet, final int index) throws SQLException {
-    String value = "0x" + resultSet.getString(index);
-    node.put(columnName, value);
-  }
-
-  protected void putGeometry(final ObjectNode node, final String columnName,
-      final ResultSet resultSet, final int index) throws SQLException {
+  protected void putGeometry(final ObjectNode node,
+                             final String columnName,
+                             final ResultSet resultSet,
+                             final int index)
+      throws SQLException {
     node.put(columnName, Geometry.deserialize(resultSet.getBytes(index)).toString());
   }
 
-  protected void putGeography(final ObjectNode node, final String columnName,
-      final ResultSet resultSet, final int index) throws SQLException {
+  protected void putGeography(final ObjectNode node,
+                              final String columnName,
+                              final ResultSet resultSet,
+                              final int index)
+      throws SQLException {
     node.put(columnName, Geography.deserialize(resultSet.getBytes(index)).toString());
   }
 
