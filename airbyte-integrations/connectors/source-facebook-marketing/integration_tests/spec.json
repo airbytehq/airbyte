@@ -32,6 +32,12 @@
         "type": "string",
         "format": "date-time"
       },
+      "fetch_thumbnail_images": {
+        "title": "Fetch Thumbnail Images",
+        "description": "In each Ad Creative, fetch the thumbnail_url and store the result in thumbnail_data_url",
+        "default": false,
+        "type": "boolean"
+      },
       "include_deleted": {
         "title": "Include Deleted",
         "description": "Include data from deleted campaigns, ads and adsets.",

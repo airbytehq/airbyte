@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import base64
 import time
 import urllib.parse as urlparse
 from abc import ABC
@@ -12,6 +13,7 @@ from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optio
 import airbyte_cdk.sources.utils.casing as casing
 import backoff
 import pendulum
+import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import package_name_from_class
@@ -41,6 +43,18 @@ def remove_params_from_url(url: str, params: List[str]) -> str:
     return urlparse.urlunparse(
         [parsed.scheme, parsed.netloc, parsed.path, parsed.params, urlparse.urlencode(filtered, doseq=True), parsed.fragment]
     )
+
+
+def fetch_thumbnail_data_url(url: str) -> str:
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            type = response.headers["content-type"]
+            data = base64.b64encode(response.content)
+            return f"data:{type};base64,{data.decode('ascii')}"
+    except requests.exceptions.RequestException:
+        pass
+    return None
 
 
 class FBMarketingStream(Stream, ABC):
@@ -198,6 +212,10 @@ class AdCreatives(FBMarketingStream):
     entity_prefix = "adcreative"
     batch_size = 50
 
+    def __init__(self, fetch_thumbnail_images: bool = False, **kwargs):
+        super().__init__(**kwargs)
+        self._fetch_thumbnail_images = fetch_thumbnail_images
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -207,17 +225,23 @@ class AdCreatives(FBMarketingStream):
     ) -> Iterable[Mapping[str, Any]]:
         """Read records using batch API"""
         records = self._read_records(params=self.request_params(stream_state=stream_state))
-        requests = [record.api_get(fields=self.fields, pending=True) for record in records]
+        # "thumbnail_data_url" is a field in our stream's schema because we
+        # output it (see fix_thumbnail_urls below), but it's not a field that
+        # we can request from Facebook
+        request_fields = [f for f in self.fields if f != "thumbnail_data_url"]
+        requests = [record.api_get(fields=request_fields, pending=True) for record in records]
         for requests_batch in batch(requests, size=self.batch_size):
             for record in self.execute_in_batch(requests_batch):
-                yield self.clear_urls(record)
+                yield self.fix_thumbnail_urls(record)
 
-    @staticmethod
-    def clear_urls(record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        """Some URLs has random values, these values doesn't affect validity of URLs, but breaks SAT"""
+    def fix_thumbnail_urls(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        """Cleans and, if enabled, fetches thumbnail URLs for each creative."""
+        # The thumbnail_url contains some extra query parameters that don't affect the validity of the URL, but break SAT
         thumbnail_url = record.get("thumbnail_url")
         if thumbnail_url:
             record["thumbnail_url"] = remove_params_from_url(thumbnail_url, ["_nc_hash", "d"])
+            if self._fetch_thumbnail_images:
+                record["thumbnail_data_url"] = fetch_thumbnail_data_url(thumbnail_url)
         return record
 
     @backoff_policy
@@ -402,10 +426,13 @@ class AdsInsights(FBMarketingIncrementalStream):
         """Add fields from breakdowns to the stream schema
         :return: A dict of the JSON schema representing this stream.
         """
-        schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
+        loader = ResourceSchemaLoader(package_name_from_class(self.__class__))
+        schema = loader.get_schema("ads_insights")
         if self._fields:
             schema["properties"] = {k: v for k, v in schema["properties"].items() if k in self._fields}
-        schema["properties"].update(self._schema_for_breakdowns())
+        if self.breakdowns:
+            breakdowns_properties = loader.get_schema("ads_insights_breakdowns")["properties"]
+            schema["properties"].update({prop: breakdowns_properties[prop] for prop in self.breakdowns})
         return schema
 
     @cached_property
@@ -415,25 +442,6 @@ class AdsInsights(FBMarketingIncrementalStream):
             return self._fields
         schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
         return list(schema.get("properties", {}).keys())
-
-    def _schema_for_breakdowns(self) -> Mapping[str, Any]:
-        """Breakdown fields and their type"""
-        schemas = {
-            "age": {"type": ["null", "integer", "string"]},
-            "gender": {"type": ["null", "string"]},
-            "country": {"type": ["null", "string"]},
-            "dma": {"type": ["null", "string"]},
-            "region": {"type": ["null", "string"]},
-            "impression_device": {"type": ["null", "string"]},
-            "placement": {"type": ["null", "string"]},
-            "platform_position": {"type": ["null", "string"]},
-            "publisher_platform": {"type": ["null", "string"]},
-        }
-        breakdowns = self.breakdowns[:]
-        if "platform_position" in breakdowns:
-            breakdowns.append("placement")
-
-        return {breakdown: schemas[breakdown] for breakdown in self.breakdowns}
 
     def _date_ranges(self, stream_state: Mapping[str, Any]) -> Iterator[dict]:
         """Iterate over period between start_date/state and now
