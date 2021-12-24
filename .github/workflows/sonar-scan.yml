@@ -42,6 +42,7 @@ jobs:
         run: |
           echo "MODULE: ${{ env.MODULE_NAME }}, LANG: ${{ env.LANG }}, BASE_FOLDER: ${{ env.BASE_FOLDER }}"
           echo "CHANGES: ${{ needs.detect-changes.outputs.changes }}"
+
 ##      - uses: actions/checkout@v2
 ##        with:
 ##          fetch-depth: 0
