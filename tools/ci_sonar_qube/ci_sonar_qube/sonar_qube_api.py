@@ -47,12 +47,12 @@ class SonarQubeApi:
         url = self.generate_url(endpoint)
         return self.__parse_response(url, requests.get(url, auth=self.__auth))
 
-    @staticmethod
-    def module2project(module_name: str) -> str:
+    @classmethod
+    def module2project(cls, module_name: str) -> str:
         """"""
         parts = module_name.split("/")
         if len(parts) != 2:
-            self.logger.critical("module name must have the format: <component/module")
+            cls.logger.critical("module name must have the format: <component/module")
         return f"{AIRBYTE_PROJECT_PREFIX}:{parts[0].lower()}:{parts[0].lower().replace('_', '-')}"
 
     def __search_project(self, project_name: str) -> Optional[Mapping[str, Any]]:
@@ -76,7 +76,7 @@ class SonarQubeApi:
             "project": project_name,
             "visibility": "private",
         }
-        self.__post(f"projects/create", body)
+        self.__post("projects/create", body)
         self.logger.info(f"The project '{project_name}' was created")
         return True
 
@@ -89,6 +89,6 @@ class SonarQubeApi:
         body = {
             "project": project_name,
         }
-        self.__post(f"projects/delete", body)
+        self.__post("projects/delete", body)
         self.logger.info(f"The project '{project_name}' was removed")
         return True

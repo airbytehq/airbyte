@@ -17,23 +17,23 @@ jobs:
 
   run-ci-tests:
     needs: detect-changes
-    name:  Run test for ${{ matrix.module }}
+    name:  Run tests for ${{ matrix.module }}
     runs-on: ubuntu-latest
     environment: more-secrets
-    # this option must be uncommented for github env
-    strategy:
-      matrix: ${{fromJson(needs.detect-changes.outputs.changes)}}
-    env:
-      MODULE_NAME: ${{ matrix.module }}
-      MODULE_LANG: ${{ matrix.lang }}
-      MODULE_FOLDER: ${{ matrix.folder }}
-      ENV_NAME: "github"
-#    # these for local dev
+#    # this option must be uncommented for github env
+#    strategy:
+#      matrix: ${{fromJson(needs.detect-changes.outputs.changes)}}
 #    env:
-#      MODULE_NAME: connectors/source-s3
-#      MODULE_LANG: java
-#      MODULE_FOLDER: "path2"
-#      ENV_NAME: "local"
+#      MODULE_NAME: ${{ matrix.module }}
+#      MODULE_LANG: ${{ matrix.lang }}
+#      MODULE_FOLDER: ${{ matrix.folder }}
+#      ENV_NAME: "github"
+    # these for local dev
+    env:
+      MODULE_NAME: connectors/source-s3
+      MODULE_LANG: py
+      MODULE_FOLDER: "path2"
+      ENV_NAME: "local"
 
     steps:
     - name: Print Settings
@@ -44,23 +44,15 @@ jobs:
       uses: actions/checkout@v2
       with:
         repository: ${{ github.event.inputs.repo }}
-    - name: Run Python Tests
+    - name: Run Tests Runner
       id: run-python-tests
-      if: ${{ env.MODULE_LANG == 'py' }}
-      uses: ./.github/actions/ci-py-tests
+      uses: ./.github/actions/ci-tests-runner
       with:
         module-name: ${{ env.MODULE_NAME }}
         module-folder: ${{ env.MODULE_FOLDER }}
+        module-lang: ${{ env.MODULE_LANG }}
         sonar-token: ${{ secrets.SONAR_TOKEN }}
         sonar-host: ${{ secrets.SONAR_HOST_URL }}
-    - name: Run Java Tests
-      id: run-java-tests
-      if: ${{ env.MODULE_LANG == 'java' }}
-      uses: ./.github/actions/ci-java-tests
-      with:
-        module-name: ${{ env.MODULE_NAME }}
-        module-folder: ${{ env.MODULE_FOLDER }}
-        sonar-token: ${{ secrets.SONAR_TOKEN }}
-        sonar-host: ${{ secrets.SONAR_HOST_URL }}
+
 
 

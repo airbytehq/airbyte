@@ -16,7 +16,6 @@ def main() -> int:
     command.add_argument('--remove_module', help='Name of removable module project', type=str)
 
     args = parser.parse_args()
-    
     api = SonarQubeApi(host=args.host, token=args.token)
     if args.create_project or args.create_module:
         project_name = api.module2project(args.create_module) if args.create_module else args.create_project

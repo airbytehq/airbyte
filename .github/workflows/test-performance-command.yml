@@ -31,7 +31,7 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
         with:
-          repository: ${{ github.event.inputs.repo }}
+          fetch-depth: 0
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner

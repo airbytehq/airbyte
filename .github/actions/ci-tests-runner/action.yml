@@ -1,9 +1,11 @@
-name: "Runner CI Python Tests"
-description: "Runner CI Python Tests"
+name: "Setup CI Tests Env"
+description: "Setup CI Tests Env for all module types"
 inputs:
   module-name:
     required: true
   module-folder:
+    required: true
+  module-lang:
     required: true
   sonar-host:
     required: true
@@ -14,10 +16,39 @@ runs:
   using: "composite"
   steps:
 
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
+
     - name: Run tests of CI
       shell: bash
       run: |
-          echo "TEEEEEESSSSSTTT"
+        # all CI python packages have the prefix "ci_"
+        pip install --quiet tox==3.24.4
+        tox -r -c ./tools/tox_ci.ini
+        pip install --quiet -e ./tools/ci_*
+
+    - name: Run Python Tests
+      id: run-python-tests
+      if: ${{ env.MODULE_LANG == 'py' }}
+      uses: ./.github/actions/ci-py-tests
+      with:
+        module-name: ${{ inputs.module-name }}
+        module-folder: ${{ inputs.module-folder }}
+        sonar-token: ${{ inputs.sonar-token }}
+        sonar-host: ${{ inputs.sonar-host }}
+
+    - name: Run Java Tests
+      id: run-java-tests
+      if: ${{ env.MODULE_LANG == 'java' }}
+      uses: ./.github/actions/ci-java-tests
+      with:
+        module-name: ${{ inputs.module-name }}
+        module-folder: ${{ inputs.module-folder }}
+        sonar-token: ${{ inputs.sonar-token }}
+        sonar-host: ${{ inputs.sonar-host }}
+
 #      - name: Write Integration Test Credentials for ${{ github.event.inputs.connector }}
 #        run: |
 #          source venv/bin/activate
