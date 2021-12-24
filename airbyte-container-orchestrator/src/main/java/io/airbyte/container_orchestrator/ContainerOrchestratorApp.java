@@ -15,6 +15,7 @@ import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.process.WorkerHeartbeatServer;
 import io.airbyte.workers.temporal.sync.NormalizationLauncherWorker;
+import io.airbyte.workers.temporal.sync.OrchestratorConstants;
 import io.airbyte.workers.temporal.sync.ReplicationLauncherWorker;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -47,7 +48,7 @@ public class ContainerOrchestratorApp {
       // read files that contain all necessary configuration
       final String application = Files.readString(Path.of(ReplicationLauncherWorker.INIT_FILE_APPLICATION));
       final Map<String, String> envMap =
-          (Map<String, String>) Jsons.deserialize(Files.readString(Path.of(ReplicationLauncherWorker.INIT_FILE_ENV_MAP)), Map.class);
+          (Map<String, String>) Jsons.deserialize(Files.readString(Path.of(OrchestratorConstants.INIT_FILE_ENV_MAP)), Map.class);
 
       final Configs configs = new EnvConfigs(envMap::get);
 
