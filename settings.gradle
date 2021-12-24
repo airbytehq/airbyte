@@ -97,6 +97,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-integrations:connectors:destination-snowflake'
     include ':airbyte-integrations:connectors:destination-oracle'
     include ':airbyte-integrations:connectors:destination-mssql'
+    include ':airbyte-integrations:connectors:destination-clickhouse'
 
     //Needed by destination-bigquery
     include ':airbyte-integrations:connectors:destination-s3'
