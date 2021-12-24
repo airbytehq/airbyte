@@ -57,7 +57,6 @@
 Indexes:
     "workspace_pkey" PRIMARY KEY, btree (id)
 Referenced by:
-    TABLE "actor_oauth_parameter" CONSTRAINT "actor_oauth_parameter_workspace_id_fkey" FOREIGN KEY (workspace_id) REFERENCES workspace(id) ON DELETE CASCADE
     TABLE "actor" CONSTRAINT "actor_workspace_id_fkey" FOREIGN KEY (workspace_id) REFERENCES workspace(id) ON DELETE CASCADE
     TABLE "operation" CONSTRAINT "operation_workspace_id_fkey" FOREIGN KEY (workspace_id) REFERENCES workspace(id) ON DELETE CASCADE
 
@@ -126,8 +125,6 @@ Indexes:
     "actor_oauth_parameter_pkey" PRIMARY KEY, btree (id)
 Foreign-key constraints:
     "actor_oauth_parameter_actor_definition_id_fkey" FOREIGN KEY (actor_definition_id) REFERENCES actor_definition(id) ON DELETE CASCADE
-    "actor_oauth_parameter_workspace_id_fkey" FOREIGN KEY (workspace_id) REFERENCES workspace(id) ON DELETE CASCADE
-
 
 
 
