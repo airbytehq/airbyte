@@ -433,7 +433,7 @@ worker:
   ## Example:
   ##
   ## extraEnv:
-  ## - name: JOB_POD_TOLERATIONS
+  ## - name: JOB_KUBE_TOLERATIONS
   ##   value: "key=airbyte-server,operator=Equals,value=true,effect=NoSchedule"
   extraEnv: []
 
