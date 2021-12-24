@@ -8,31 +8,16 @@
     "additionalProperties": true,
     "properties": {
       "api_token": {
+        "title": "API Token",
         "type": "string",
-        "title": "API Key",
-        "description": "Kustomer API Key. See the <a href=\"https://developer.kustomer.com/kustomer-api-docs/reference/authentication\">docs</a>" on how to obtain this",
+        "description": "Kustomer API Token. See the <a href=\"https://developer.kustomer.com/kustomer-api-docs/reference/authentication\">docs</a> on how to obtain this",
         "airbyte_secret": true
       },
       "start_date": {
         "title": "Start Date",
-        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated",
         "type": "string",
+        "description": "The date from which you'd like to replicate the data",
         "examples": ["2019-01-01T00:00:00Z"]
-      },
-      "user_agent": {
-        "type": "string",
-        "title": "User Agent",
-        "examples": "tap-kustomer <api_user_email@your_company.com>"
-      },
-      "date_window_size": {
-        "type": "string",
-        "title": "Date Window Size",
-        "description": "The integer number of days (between the from and to dates) for date-windowing through the date-filtered endpoints (default 60 days)."
-      },
-      "page_size_limit": {
-        "type": "string",
-        "title": "Page Size Limit",
-        "description": "The integer number of records to return per API request"
       }
     }
   }
