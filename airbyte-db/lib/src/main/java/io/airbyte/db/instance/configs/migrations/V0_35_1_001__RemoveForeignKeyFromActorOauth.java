@@ -10,6 +10,7 @@ import static org.jooq.impl.DSL.currentOffsetDateTime;
 import static org.jooq.impl.DSL.select;
 import static org.jooq.impl.DSL.table;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigWithMetadata;
@@ -42,12 +43,18 @@ public class V0_35_1_001__RemoveForeignKeyFromActorOauth extends BaseJavaMigrati
     // As database schema changes, the generated jOOQ code can be deprecated. So
     // old migration may not compile if there is any generated code.
     final DSLContext ctx = DSL.using(context.getConnection());
+    migrate(ctx);
+  }
+
+  @VisibleForTesting
+  public static void migrate(DSLContext ctx) {
     dropForeignKeyConstraintFromActorOauthTable(ctx);
     populateActorOauthParameter(ctx);
   }
 
   private static void dropForeignKeyConstraintFromActorOauthTable(final DSLContext ctx) {
     ctx.alterTable("actor_oauth_parameter").dropForeignKey("actor_oauth_parameter_workspace_id_fkey").execute();
+    LOGGER.info("actor_oauth_parameter_workspace_id_fkey constraint dropped");
   }
 
   private static void populateActorOauthParameter(final DSLContext ctx) {
