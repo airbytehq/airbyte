@@ -9,18 +9,21 @@
     "properties": {
       "api_token": {
         "type": "string",
+        "title": "API Token",
         "description": "Jira API Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/jira\">docs</a> for more information on how to generate this key.",
         "airbyte_secret": true
       },
       "domain": {
         "type": "string",
+        "title": "Domain",
         "examples": ["domainname.atlassian.net"],
         "pattern": "^[a-zA-Z0-9._-]*\\.atlassian\\.net$",
-        "description": "Domain for your Jira account, e.g. airbyteio.atlassian.net"
+        "description": "The Domain for your Jira account, e.g. airbyteio.atlassian.net"
       },
       "email": {
         "type": "string",
-        "description": "The user email for your Jira account"
+        "title": "Email",
+        "description": "The user email for your Jira account."
       },
       "projects": {
         "type": "array",
@@ -29,7 +32,7 @@
           "type": "string"
         },
         "examples": ["PROJ1", "PROJ2"],
-        "description": "Comma-separated list of Jira project keys to replicate data for"
+        "description": "Comma-separated list of Jira project keys to replicate data for."
       },
       "start_date": {
         "type": "string",
@@ -44,19 +47,19 @@
         "items": {
           "type": "string"
         },
-        "description": "Comma-separated list of additional fields to include in replicating issues",
+        "description": "Comma-separated list of additional fields to include in replicating issues.",
         "examples": ["Field A", "Field B"]
       },
       "expand_issue_changelog": {
         "type": "boolean",
         "title": "Expand Issue Changelog",
-        "description": "Expand the changelog when replicating issues",
+        "description": "Expand the changelog when replicating issues.",
         "default": false
       },
       "render_fields": {
         "type": "boolean",
         "title": "Render Issue Fields",
-        "description": "Render issue fields in HTML format in addition to Jira's JSON-like format",
+        "description": "Render issue fields in HTML format in addition to Jira JSON-like format.",
         "default": false
       }
     }

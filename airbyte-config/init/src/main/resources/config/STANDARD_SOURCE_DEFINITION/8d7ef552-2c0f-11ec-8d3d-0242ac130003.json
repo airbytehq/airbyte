@@ -1,0 +1,8 @@
+{
+  "sourceDefinitionId": "8d7ef552-2c0f-11ec-8d3d-0242ac130003",
+  "name": "SearchMetrics",
+  "dockerRepository": "airbyte/source-search-metrics",
+  "dockerImageTag": "0.1.1",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/search-metrics",
+  "icon": "searchmetrics.svg"
+}

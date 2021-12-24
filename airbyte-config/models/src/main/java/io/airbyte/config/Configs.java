@@ -6,6 +6,7 @@ package io.airbyte.config;
 
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.helpers.LogConfigs;
+import io.airbyte.config.storage.CloudStorageConfigs;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -54,11 +55,19 @@ public interface Configs {
 
   String getDatabaseUrl();
 
+  String getJobsDatabaseMinimumFlywayMigrationVersion();
+
+  long getJobsDatabaseInitializationTimeoutMs();
+
   String getConfigDatabaseUser();
 
   String getConfigDatabasePassword();
 
   String getConfigDatabaseUrl();
+
+  String getConfigsDatabaseMinimumFlywayMigrationVersion();
+
+  long getConfigsDatabaseInitializationTimeoutMs();
 
   boolean runDatabaseMigrationOnStartup();
 
@@ -76,32 +85,34 @@ public interface Configs {
 
   int getSyncJobMaxTimeoutDays();
 
-  List<TolerationPOJO> getJobPodTolerations();
+  List<TolerationPOJO> getJobKubeTolerations();
 
-  Map<String, String> getJobPodNodeSelectors();
+  Map<String, String> getJobKubeNodeSelectors();
 
-  String getJobPodMainContainerImagePullPolicy();
+  String getJobKubeMainContainerImagePullPolicy();
 
-  String getJobPodMainContainerImagePullSecret();
+  String getJobKubeMainContainerImagePullSecret();
 
-  String getJobPodSocatImage();
+  String getJobKubeSocatImage();
 
-  String getJobPodBusyboxImage();
+  String getJobKubeBusyboxImage();
 
-  String getJobPodCurlImage();
+  String getJobKubeCurlImage();
 
-  String getJobPodKubeNamespace();
+  String getJobKubeNamespace();
 
-  String getJobPodMainContainerCpuRequest();
+  String getJobMainContainerCpuRequest();
 
-  String getJobPodMainContainerCpuLimit();
+  String getJobMainContainerCpuLimit();
 
-  String getJobPodMainContainerMemoryRequest();
+  String getJobMainContainerMemoryRequest();
 
-  String getJobPodMainContainerMemoryLimit();
+  String getJobMainContainerMemoryLimit();
 
   // Logging/Monitoring/Tracking
   LogConfigs getLogConfigs();
+
+  CloudStorageConfigs getStateStorageCloudConfigs();
 
   boolean getPublishMetrics();
 
@@ -117,6 +128,10 @@ public interface Configs {
   WorkspaceRetentionConfig getWorkspaceRetentionConfig();
 
   String getSubmitterNumThreads();
+
+  // Container Orchestrator
+
+  boolean getContainerOrchestratorEnabled();
 
   enum TrackingStrategy {
     SEGMENT,
