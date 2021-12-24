@@ -15,11 +15,8 @@ jobs:
       - name: Detect Changed Modules
         id: detect-changed-modules
         run: |
-          CHANGES='[
-             {"module": "connectors/source-s3", "lang": "py", "folder": "./airbyte-integrations/connectors/source-s3"},
-             {"module": "connectors/destination-mongodb", "lang": "java", "folder": "./airbyte-integrations/connectors/destination-mongod"}
-          ]'
-          echo ::set-output name=changes::{"include":${CHANGES}}
+          CHANGES='[{"module": "connectors/source-s3", "lang": "py", "folder": "./airbyte-integrations/connectors/source-s3"},{"module": "connectors/destination-mongodb", "lang": "java", "folder": "./airbyte-integrations/connectors/destination-mongodb"}]'
+          echo "::set-output name=changes::{\"include\":${CHANGES} }"
 
   run-ci-tests:
     name: Run CI tests for ${{ env.MODULE_NAME }}
@@ -41,7 +38,7 @@ jobs:
       - name: Print Settings
         run: |
           echo "MODULE: ${{ env.MODULE_NAME }}, LANG: ${{ env.LANG }}, BASE_FOLDER: ${{ env.BASE_FOLDER }}"
-          echo "CHANGES: ${{ needs.detect-changes.outputs.changes }}"
+          echo "CHANGES: ${{ fromJSON(needs.detect-changes.outputs.changes) }}"
 
 ##      - uses: actions/checkout@v2
 ##        with:
