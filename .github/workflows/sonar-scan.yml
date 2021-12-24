@@ -47,35 +47,34 @@ jobs:
 
   run-ci-java-tests:
     needs: switch-lang-job
-    name:  Run Java tests for ${{ needs.switch-lang-job.outputs.module }}
+    name:  Run Java tests
     if: ${{ needs.switch-lang-job.outputs.lang == 'java' }}
     runs-on: ubuntu-latest
     environment: more-secrets
     env:
       MODULE_NAME: ${{ needs.switch-lang-job.outputs.module }}
       MODULE_FOLDER:  ${{ needs.switch-lang-job.outputs.folder }}
-
     steps:
     - name: Print Settings
       run: |
          echo "Java Module: ${{ env.MODULE_NAME }}, Folder: ${{ env.MODULE_FOLDER }}"
          echo "Tests logic is not implemented for JAVA now"
 
-  run-ci-py-tests:
-    needs: switch-lang-job
-    name:  Run Python tests for ${{ env.MODULE_NAME }}
-    if: ${{ needs.switch-lang-job.outputs.lang == 'py' }}
-    runs-on: ubuntu-latest
-    environment: more-secrets
-    env:
-      MODULE_NAME: ${{ needs.switch-lang-job.outputs.module }}
-      MODULE_FOLDER:  ${{ needs.switch-lang-job.outputs.folder }}
-      ENV_NAME: ${{ needs.switch-lang-job.outputs.env_name }}
-
-    steps:
-    - name: Python Settings
-      run: |
-         echo "Py Module: ${{ env.MODULE_NAME }}, Folder: ${{ env.MODULE_FOLDER }}"
+#  run-ci-py-tests:
+#    needs: switch-lang-job
+#    name:  Run Python tests for ${{ env.MODULE_NAME }}
+#    if: ${{ needs.switch-lang-job.outputs.lang == 'py' }}
+#    runs-on: ubuntu-latest
+#    environment: more-secrets
+#    env:
+#      MODULE_NAME: ${{ needs.switch-lang-job.outputs.module }}
+#      MODULE_FOLDER:  ${{ needs.switch-lang-job.outputs.folder }}
+#      ENV_NAME: ${{ needs.switch-lang-job.outputs.env_name }}
+#
+#    steps:
+#    - name: Python Settings
+#      run: |
+#         echo "Py Module: ${{ env.MODULE_NAME }}, Folder: ${{ env.MODULE_FOLDER }}"
 #    - name: Checkout repo
 #      if: ${{ env.ENV_NAME == 'github' }}
 #      uses: actions/checkout@v2
