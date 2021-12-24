@@ -159,7 +159,7 @@ public class ConnectionManagerWorkflowTest {
           workflowState);
 
       WorkflowClient.start(workflow::run, input);
-      testEnv.sleep(Duration.ofSeconds(4L));
+      testEnv.sleep(Duration.ofSeconds(50L));
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
       Assertions.assertThat(events)
@@ -231,7 +231,7 @@ public class ConnectionManagerWorkflowTest {
 
       WorkflowClient.start(workflow::run, input);
       workflow.connectionUpdated();
-      testEnv.sleep(Duration.ofSeconds(4L));
+      testEnv.sleep(Duration.ofSeconds(50L));
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
@@ -270,9 +270,9 @@ public class ConnectionManagerWorkflowTest {
           workflowState);
 
       WorkflowClient.start(workflow::run, input);
-      testEnv.sleep(Duration.ofSeconds(4L));
+      testEnv.sleep(Duration.ofSeconds(50L));
       workflow.cancelJob();
-      testEnv.sleep(Duration.ofSeconds(4L));
+      testEnv.sleep(Duration.ofSeconds(2L));
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
@@ -312,7 +312,7 @@ public class ConnectionManagerWorkflowTest {
 
       WorkflowClient.start(workflow::run, input);
       workflow.deleteConnection();
-      testEnv.sleep(Duration.ofSeconds(4L));
+      testEnv.sleep(Duration.ofSeconds(50L));
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
