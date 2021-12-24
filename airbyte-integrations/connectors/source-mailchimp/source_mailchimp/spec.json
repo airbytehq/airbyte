@@ -14,19 +14,12 @@
           {
             "title": "OAuth2.0",
             "type": "object",
-            "required": [
-              "auth_type",
-              "client_id",
-              "client_secret",
-              "access_token"
-            ],
+            "required": ["auth_type", "client_id", "client_secret", "access_token"],
             "properties": {
               "auth_type": {
                 "type": "string",
                 "const": "oauth2.0",
-                "enum": [
-                  "oauth2.0"
-                ],
+                "enum": ["oauth2.0"],
                 "default": "oauth2.0",
                 "order": 0
               },
@@ -53,17 +46,12 @@
           {
             "type": "object",
             "title": "API Key",
-            "required": [
-              "auth_type",
-              "apikey"
-            ],
+            "required": ["auth_type", "apikey"],
             "properties": {
               "auth_type": {
                 "type": "string",
                 "const": "apikey",
-                "enum": [
-                  "apikey"
-                ],
+                "enum": ["apikey"],
                 "default": "apikey",
                 "order": 1
               },
