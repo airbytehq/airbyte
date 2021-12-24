@@ -190,6 +190,7 @@ public class ConnectionManagerWorkflowTest {
           workflowState);
 
       WorkflowClient.start(workflow::run, input);
+      testEnv.sleep(Duration.ofSeconds(2L));
       workflow.submitManualSync();
       testEnv.sleep(Duration.ofSeconds(50L));
 
@@ -230,6 +231,7 @@ public class ConnectionManagerWorkflowTest {
           workflowState);
 
       WorkflowClient.start(workflow::run, input);
+      testEnv.sleep(Duration.ofSeconds(2L));
       workflow.connectionUpdated();
       testEnv.sleep(Duration.ofSeconds(50L));
 
