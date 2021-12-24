@@ -27,16 +27,16 @@ jobs:
       - detect-changes
     runs-on: ubuntu-latest
     environment: more-secrets
-#    strategy:
-#      matrix: ${{ fromJSON(needs.detect-changes.outputs.changes) }}
-
+    strategy:
+      matrix: ${{ fromJSON(needs.detect-changes.outputs.changes) }}
     env:
-#      MODULE_NAME: ${{ matrix.module }}
-#      LANG: ${{ matrix.lang }}
-#      BASE_FOLDER: ${{ matrix.folder }}
-      MODULE_NAME: connectors/source-s3
-      LANG: py
-      BASE_FOLDER: ./airbyte-integrations/connectors/source-s3
+      MODULE_NAME: ${{ matrix.module }}
+      LANG: ${{ matrix.lang }}
+      BASE_FOLDER: ${{ matrix.folder }}
+#    env:
+#      MODULE_NAME: connectors/source-s3
+#      LANG: py
+#      BASE_FOLDER: ./airbyte-integrations/connectors/source-s3
     steps:
       - name: Print Settings
         run: |
