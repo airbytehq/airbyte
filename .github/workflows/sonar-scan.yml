@@ -28,7 +28,7 @@ jobs:
       MODULE_LANG: ${{ matrix.lang }}
       MODULE_FOLDER: ${{ matrix.folder }}
       ENV_NAME: "github"
-    # these for local dev
+#    # these for local dev
 #    env:
 #      MODULE_NAME: connectors/source-s3
 #      MODULE_LANG: py
@@ -43,7 +43,7 @@ jobs:
       if: ${{ env.ENV_NAME == 'github' }}
       uses: actions/checkout@v2
       with:
-        repository: ${{ github.event.inputs.repo }}
+        fetch-depth: 0
     - name: Run Tests Runner
       id: run-python-tests
       uses: ./.github/actions/ci-tests-runner
