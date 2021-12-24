@@ -19,12 +19,20 @@ jobs:
     needs: detect-changes
     name:  Run CI tests for ${{ matrix.module }}
     runs-on: ubuntu-latest
+    environment: more-secrets
     strategy:
       matrix: ${{fromJson(needs.detect-changes.outputs.changes)}}
     env:
       MODULE_NAME: ${{ matrix.module }}
       MODULE_LANG: ${{ matrix.lang }}
       MODULE_FOLDER: ${{ matrix.folder }}
+      ENV_NAME: "github"
+
+#    env:
+#      MODULE_NAME: connectors/source-s3
+#      MODULE_LANG: py
+#      MODULE_FOLDER: "path2"
+#      ENV_NAME: "local"
 
     steps:
     - name: Print Settings
@@ -32,53 +40,15 @@ jobs:
          echo "Module: ${{ env.MODULE_NAME }}, Lang: ${{ env.MODULE_LANG }}, Folder: ${{ env.MODULE_FOLDER }}"
     - name: Do something for Java
       if: ${{ env.MODULE_LANG == 'java' }}
-      run: "this is JAVA"
+      run: echo "this is JAVA"
     - name: Do something for Python
       if: ${{ env.MODULE_LANG == 'py' }}
-      run: "this is Python"
-#name: Sonar Scan
-#on:
-#  push:
-#    branches:
-#      - h-chlor-patch-1 # test local branch
-#      - master # or the name of your main branch
-#jobs:
-#  detect-changes:
-#    name: Detect Changed Modules
-#    timeout-minutes: 1
-#    runs-on: ubuntu-latest
-#    outputs:
-#      changes: ${{ steps.detect-changed-modules.outputs.changes }}
-#    steps:
-#      - name: Detect Changed Modules
-#        id: detect-changed-modules
-##        run: |
-##          CHANGES='[{"module": "connectors/source-s3", "lang": "py"}]'
-##          echo ::set-output name=changes::{"include":${CHANGES} }
-#        run: echo "::set-output name=changes::{\"include\":[{\"module\":\"foo\",\"lang\":\"Debug\", \"folder\":\"path1\"},{\"module\":\"bar\",\"lang\":\"Release\", \"folder\":\"path2\"}]}"
-#
-#
-#  run-ci-tests:
-#    name: Run CI tests for ${{ env.MODULE_NAME }}
-#    needs:
-#      - detect-changes
-#    runs-on: ubuntu-latest
-#    environment: more-secrets
-#    strategy:
-#      matrix: ${{ fromJSON(needs.detect-changes.outputs.changes) }}
-#
-#    env:
-#      MODULE_NAME: ${{ matrix.module }}
-#      LANG: ${{ matrix.lang }}
-#      BASE_FOLDER: ${{ matrix.folder }}
-#    steps:
-#      - name: test1
-#        run: |
-#          echo "LANG ${{ matrix }}"
-#          echo "LANG ${{ env.LANG }}, MODULE ${{ env.MODULE_NAME }}, CHANGES $ ${{needs.detect-changes.outputs.changes}}"
-##      - uses: actions/checkout@v2
-##        with:
-##          fetch-depth: 0
+      run: echo "this is Python"
+    - name: Do something for Python
+      if: ${{ env.ENV_NAME == 'github' }}
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
 ##      - uses: sonarsource/sonarqube-scan-action@master
 ##        with:
 ##          projectBaseDir: airbyte-integrations/connectors
