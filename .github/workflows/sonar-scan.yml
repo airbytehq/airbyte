@@ -7,7 +7,10 @@ jobs:
       changes: ${{ steps.detect-changed-modules.outputs.changes }}
     steps:
     - id: detect-changed-modules
-      run: echo "::set-output name=changes::{\"include\":[{\"module\":\"foo\",\"lang\":\"Debug\"},{\"module\":\"bar\",\"lang\":\"Release\"}]}"
+
+      run: |
+         CHANGES="[{\"module\":\"foo\",\"lang\":\"Debug\"},{\"module\":\"bar\",\"lang\":\"Release\"}]"
+         echo "::set-output name=changes::{\"include\":${CHANGES}}"
   run-ci-tests:
     needs: detect-changes
     name:  Run CI tests for ${{ matrix.module }}
