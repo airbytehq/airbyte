@@ -31,9 +31,13 @@ import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
 import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
+import io.airbyte.scheduler.models.Job;
+import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
+import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.server.errors.InvalidInputExceptionMapper;
@@ -193,8 +197,16 @@ public class ServerApp implements ServerRunnable {
         configs.getWorkspaceRoot(),
         configs.getAirbyteVersionOrWarning(),
         featureFlags);
+    final JobNotifier jobNotifier = new JobNotifier(
+        configs.getWebappUrl(),
+        configRepository,
+        new WorkspaceHelper(configRepository, jobPersistence),
+        TrackingClientSingleton.get());
 
-    migrateExistingConnection(configRepository, temporalWorkerRunFactory);
+    if (featureFlags.usesNewScheduler()) {
+      cleanupZombies(jobPersistence, jobNotifier);
+      migrateExistingConnection(configRepository, temporalWorkerRunFactory);
+    }
 
     LOGGER.info("Starting server...");
 
@@ -226,6 +238,32 @@ public class ServerApp implements ServerRunnable {
         configRepository.listStandardSyncs().stream().map(standardSync -> standardSync.getConnectionId()).collect(Collectors.toSet());
     temporalWorkerRunFactory.migrateSyncIfNeeded(connectionIds);
     LOGGER.info("Done migrating to the new scheduler...");
+  }
+
+  /**
+   * Copy paste from {@link io.airbyte.scheduler.app.SchedulerApp} which will be removed in a near future
+   *
+   * @param jobPersistence
+   * @param jobNotifier
+   * @throws IOException
+   */
+  private static void cleanupZombies(final JobPersistence jobPersistence, final JobNotifier jobNotifier) throws IOException {
+    for (final Job zombieJob : jobPersistence.listJobsWithStatus(JobStatus.RUNNING)) {
+      jobNotifier.failJob("zombie job was failed", zombieJob);
+
+      final int currentAttemptNumber = zombieJob.getAttemptsCount() - 1;
+
+      LOGGER.warn(
+          "zombie clean up - job attempt was failed. job id: {}, attempt number: {}, type: {}, scope: {}",
+          zombieJob.getId(),
+          currentAttemptNumber,
+          zombieJob.getConfigType(),
+          zombieJob.getScope());
+
+      jobPersistence.failAttempt(
+          zombieJob.getId(),
+          currentAttemptNumber);
+    }
   }
 
   public static void main(final String[] args) throws Exception {
