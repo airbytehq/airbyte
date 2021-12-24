@@ -9,7 +9,7 @@ jobs:
     - id: detect-changed-modules
 
       run: |
-         CHANGES="[{\"module\":\"foo\",\"lang\":\"py\"},{\"module\":\"bar\",\"lang\":\"java\"}]"
+         CHANGES="[{\"module\":\"foo\",\"lang\":\"Debug\"},{\"module\":\"bar\",\"lang\":\"Release\"}]"
          echo "::set-output name=changes::{\"include\":${CHANGES}}"
   run-ci-tests:
     needs: detect-changes
@@ -17,14 +17,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix: ${{fromJson(needs.detect-changes.outputs.changes)}}
-    env:
-      MODULE_NAME: ${{ matrix.module }}
-      MODULE_LANG: ${{ matrix.lang }}
-
+#    env:
+#      MODULE_NAME: ${{ matrix.module }}
     steps:
     - name: Print settings
     - run: |
-         echo "Module: ${{ env.MODULE_NAME }}, Lang: ${{ env.MODULE_LANG }}"
+         echo ${{ matrix.module }}, ${{ matrix.lang }}
 
 #name: Sonar Scan
 #on:
