@@ -46,7 +46,7 @@ public class ContainerOrchestratorApp {
 
     try {
       // read files that contain all necessary configuration
-      final String application = Files.readString(Path.of(ReplicationLauncherWorker.INIT_FILE_APPLICATION));
+      final String application = Files.readString(Path.of(OrchestratorConstants.INIT_FILE_APPLICATION));
       final Map<String, String> envMap =
           (Map<String, String>) Jsons.deserialize(Files.readString(Path.of(OrchestratorConstants.INIT_FILE_ENV_MAP)), Map.class);
 
@@ -101,7 +101,7 @@ public class ContainerOrchestratorApp {
 
       // this needs to have two ports for the source and two ports for the destination (all four must be
       // exposed)
-      KubePortManagerSingleton.init(ReplicationLauncherWorker.PORTS);
+      KubePortManagerSingleton.init(OrchestratorConstants.PORTS);
 
       return new KubeProcessFactory(workerConfigs, configs.getJobKubeNamespace(), fabricClient, kubeHeartbeatUrl, false);
     } else {
