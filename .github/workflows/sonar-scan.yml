@@ -9,7 +9,8 @@ jobs:
     - id: detect-changed-modules
 
       run: |
-         echo "::set-output name=changes::{\"include\":[{\"module\":\"connectors/source-s3\",\"lang\":\"py\", \"folder\":\"path1\"},{\"module\":\"connectors/destination-s3\",\"lang\":\"java\", \"folder\":\"path2\"}]}"
+         CHANGES="[{\"module\":\"connectors/source-s3\",\"lang\":\"py\", \"folder\":\"path1\"},{\"module\":\"connectors/destination-s3\",\"lang\":\"java\", \"folder\":\"path2\"}]"
+         echo "::set-output name=changes::{\"include\": $CHANGES }"
   run-ci-tests:
     needs: detect-changes
     name:  Run CI tests for ${{ matrix.module }}
