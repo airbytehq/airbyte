@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.jdbc.copy;
 
+import static io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES;
+
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
@@ -28,8 +30,6 @@ import org.slf4j.LoggerFactory;
 public class CopyConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CopyConsumerFactory.class);
-
-  private static final int MAX_BATCH_SIZE_BYTES = 1024 * 1024 * 1024 / 4; // 256 MiB
 
   public static <T> AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
                                                   final JdbcDatabase database,
@@ -56,7 +56,7 @@ public class CopyConsumerFactory {
         onCloseFunction(pairToCopier, database, sqlOperations, pairToIgnoredRecordCount),
         catalog,
         sqlOperations::isValidData,
-        MAX_BATCH_SIZE_BYTES);
+        DEFAULT_MAX_BATCH_SIZE_BYTES);
   }
 
   private static <T> Map<AirbyteStreamNameNamespacePair, StreamCopier> createWriteConfigs(final ExtendedNameTransformer namingResolver,
