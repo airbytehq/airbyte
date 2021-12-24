@@ -12,14 +12,16 @@ inputs:
   sonar-token:
     required: true
 
+env:
+  MODULE_NAME: ${{ inputs.module-name }}
+  MODULE_LANG: ${{ inputs.module-lang }}
+  MODULE_FOLDER: ${{ inputs.module-folder }}
+  SONAR_HOST:  ${{ inputs.sonar-host }}
+  SONAR_TOKEN: ${{ inputs.sonar-token }}
+
 runs:
   using: "composite"
-  env:
-    MODULE_NAME: ${{ inputs.module-name }}
-    MODULE_LANG: ${{ inputs.module-lang }}
-    MODULE_FOLDER: ${{ inputs.module-folder }}
-    SONAR_HOST:  ${{ inputs.sonar-host }}
-    SONAR_TOKEN: ${{ inputs.sonar-token }}
+
   steps:
 
     - name: Set up Python
