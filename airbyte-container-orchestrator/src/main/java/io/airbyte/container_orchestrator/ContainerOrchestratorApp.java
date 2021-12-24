@@ -56,6 +56,8 @@ import org.slf4j.LoggerFactory;
  */
 public class ContainerOrchestratorApp {
 
+  // todo: publish logs itself instead of reporting via stdout to the parent
+
   private static final Logger LOGGER = LoggerFactory.getLogger(ContainerOrchestratorApp.class);
 
   private static void replicationRunner(final Configs configs) throws IOException, WorkerException {

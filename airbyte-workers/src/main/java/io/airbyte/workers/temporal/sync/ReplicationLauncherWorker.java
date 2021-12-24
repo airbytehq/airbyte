@@ -93,6 +93,9 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
 
   private Process process;
 
+  // todo: update in other launcher workers, not just this one
+  // todo: make this worker idempotent
+
   public ReplicationLauncherWorker(
                                    final IntegrationLauncherConfig sourceLauncherConfig,
                                    final IntegrationLauncherConfig destinationLauncherConfig,
