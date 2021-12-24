@@ -14,7 +14,7 @@ jobs:
         run: pip install -r requirements.txt
       - name: Run tests and collect coverage
         run: |
-          invoke test -c airtable,braintree,salesforce,facebook-marketing,azure-table,github,gitlab,exchange-rates
+          invoke test
       - name: Upload coverage to Codecov
         if: ${{ always() }}
         uses: codecov/codecov-action@v2
