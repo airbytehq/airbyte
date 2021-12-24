@@ -33,4 +33,11 @@ public class OrchestratorConstants {
   public static final String INIT_FILE_ENV_MAP = "envMap.json";
   public static final String INIT_FILE_INPUT = "input.json";
 
+  // define two ports for stdout/stderr usage on the container orchestrator pod
+  public static final int PORT1 = 9877;
+  public static final int PORT2 = 9878;
+  public static final int PORT3 = 9879;
+  public static final int PORT4 = 9880;
+  public static final Set<Integer> PORTS = Set.of(PORT1, PORT2, PORT3, PORT4);
+
 }

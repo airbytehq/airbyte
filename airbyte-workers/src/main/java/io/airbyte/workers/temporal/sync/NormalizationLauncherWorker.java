@@ -20,7 +20,6 @@ import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import java.nio.file.Path;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -40,13 +39,6 @@ public class NormalizationLauncherWorker implements Worker<NormalizationInput, V
   public static final String INIT_FILE_APPLICATION = "application.txt";
   public static final String INIT_FILE_JOB_RUN_CONFIG = "jobRunConfig.json";
   public static final String INIT_FILE_DESTINATION_LAUNCHER_CONFIG = "destinationLauncherConfig.json";
-
-  // define two ports for stdout/stderr usage on the container orchestrator pod
-  public static final int PORT1 = 9877;
-  public static final int PORT2 = 9878;
-  public static final int PORT3 = 9879;
-  public static final int PORT4 = 9880;
-  public static final Set<Integer> PORTS = Set.of(PORT1, PORT2, PORT3, PORT4);
 
   private final WorkerConfigs workerConfigs;
   private final ProcessFactory processFactory;
@@ -103,10 +95,10 @@ public class NormalizationLauncherWorker implements Worker<NormalizationInput, V
           Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_RUNNER),
           Map.of(
               WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT,
-              PORT1, PORT1,
-              PORT2, PORT2,
-              PORT3, PORT3,
-              PORT4, PORT4));
+              OrchestratorConstants.PORT1, OrchestratorConstants.PORT1,
+              OrchestratorConstants.PORT2, OrchestratorConstants.PORT2,
+              OrchestratorConstants.PORT3, OrchestratorConstants.PORT3,
+              OrchestratorConstants.PORT4, OrchestratorConstants.PORT4));
 
       LineGobbler.gobble(process.getInputStream(), LOGGER::info, LOG_MDC_BUILDER);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error, LOG_MDC_BUILDER);

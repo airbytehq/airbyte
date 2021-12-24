@@ -22,7 +22,6 @@ import io.airbyte.workers.process.ProcessFactory;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -49,14 +48,6 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
   public static final String INIT_FILE_JOB_RUN_CONFIG = "jobRunConfig.json";
   public static final String INIT_FILE_SOURCE_LAUNCHER_CONFIG = "sourceLauncherConfig.json";
   public static final String INIT_FILE_DESTINATION_LAUNCHER_CONFIG = "destinationLauncherConfig.json";
-
-  // todo: move this to own class
-  // define two ports for stdout/stderr usage on the container orchestrator pod
-  public static final int PORT1 = 9877;
-  public static final int PORT2 = 9878;
-  public static final int PORT3 = 9879;
-  public static final int PORT4 = 9880;
-  public static final Set<Integer> PORTS = Set.of(PORT1, PORT2, PORT3, PORT4);
 
   private final AtomicBoolean cancelled = new AtomicBoolean(false);
   private final IntegrationLauncherConfig sourceLauncherConfig;
@@ -121,10 +112,10 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
           Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_RUNNER),
           Map.of(
               WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT,
-              PORT1, PORT1,
-              PORT2, PORT2,
-              PORT3, PORT3,
-              PORT4, PORT4));
+              OrchestratorConstants.PORT1, OrchestratorConstants.PORT1,
+              OrchestratorConstants.PORT2, OrchestratorConstants.PORT2,
+              OrchestratorConstants.PORT3, OrchestratorConstants.PORT3,
+              OrchestratorConstants.PORT4, OrchestratorConstants.PORT4));
 
       final AtomicReference<ReplicationOutput> output = new AtomicReference<>();
 
