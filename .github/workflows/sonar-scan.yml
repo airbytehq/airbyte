@@ -5,32 +5,63 @@ on:
       - h-chlor-patch-1 # test local branch
       - master # or the name of your main branch
 jobs:
-  sonar-scan:
-    name: Sonar Scan Python Connectors
+  detect-changes:
+    name: Detect Changed Modules
+    timeout-minutes: 1
+    runs-on: ubuntu-latest
+    outputs:
+      changes: ${{ steps.detect-changed-modules.outputs.changes }}
+    steps:
+      - name: Detect Changed Modules
+        id: detect-changed-modules
+        run: |
+          CHANGES='[{"module": "connectors/source-s3", "lang": "py"}]}}'
+          echo ::set-output name=changes::{"include":${CHANGES} }
+
+  run-ci-tests:
+    name: Run CI tests for ${{ matrix.module }}
+    needs:
+      - detect-changes
     runs-on: ubuntu-latest
     environment: more-secrets
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - uses: sonarsource/sonarqube-scan-action@master
-        with:
-          projectBaseDir: airbyte-integrations/connectors
-          # -Dsonar.tests=.
-          # -Dsonar.test.inclusions=**/unit_tests/**
-          args: >
-            -Dsonar.projectKey=airbite-python-connectors
-            -Dsonar.exclusions=**/*.java
-            -Dsonar.verbose=true
-            -Dsonar.language=py
-            -Dsonar.sourceEncoding=UTF-8
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+    strategy:
+#       matrix:
+#          module:
+#          - connectors/source-s3
+#          - еууу
+#          include:
+#          - module: connectors/source-s3
+#            lang: py
+      matrix: ${{ fromJSON(needs.detect-changes.outputs.changes) }}
 
-        # If you wish to fail your job when the Quality Gate is red, uncomment the
-        # following lines. This would typically be used to fail a deployment.
-        # - uses: sonarsource/sonarqube-quality-gate-action@master
-        #   timeout-minutes: 5
-        #   env:
-        #    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    env:
+      MODULE_NAME: ${{ matrix.module }}
+      LANG: ${{ matrix.lang }}
+    steps:
+      - name: test1
+        run: echo "LANG ${{ env.LANG }}, MODULE ${{ env.MODULE_NAME }}, CHANGES $ ${{needs.detect-changes.outputs.changes}}"
+##      - uses: actions/checkout@v2
+##        with:
+##          fetch-depth: 0
+##      - uses: sonarsource/sonarqube-scan-action@master
+##        with:
+##          projectBaseDir: airbyte-integrations/connectors
+##          # -Dsonar.tests=.
+##          # -Dsonar.test.inclusions=**/unit_tests/**
+##          args: >
+##            -Dsonar.projectKey=airbite-python-connectors
+##            -Dsonar.exclusions=**/*.java
+##            -Dsonar.verbose=true
+##            -Dsonar.language=py
+##            -Dsonar.sourceEncoding=UTF-8
+##        env:
+##          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+##          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+#
+#        # If you wish to fail your job when the Quality Gate is red, uncomment the
+#        # following lines. This would typically be used to fail a deployment.
+#        # - uses: sonarsource/sonarqube-quality-gate-action@master
+#        #   timeout-minutes: 5
+#        #   env:
+#        #    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#
