@@ -55,7 +55,7 @@ class Responses(SurveyStream):
         super(SurveyStream, self).__init__(**kwargs)
         self._survey_id = survey_id
         self._start_datetime = start_datetime
-        self._page_number = 1    
+        self._page_number = 1
 
     def path(self, **kwargs) -> str:
         return "visitors"
