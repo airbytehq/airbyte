@@ -9,11 +9,10 @@ import invoke
 import virtualenv
 from invoke import task
 
-ROOT_PROJECT_DIR: str = os.path.abspath(os.path.curdir)
 
-CONFIG_FILE: str = os.path.join(ROOT_PROJECT_DIR, "pyproject.toml")
+CONNECTORS_DIR: str = os.path.abspath(os.path.curdir)
 
-CONNECTORS_DIR: str = os.path.join(ROOT_PROJECT_DIR, "airbyte-integrations", "connectors")
+CONFIG_FILE: str = os.path.join(CONNECTORS_DIR, "pyproject.toml")
 
 # TODO: Get it from a single place with `pre-commit` (or make pre-commit to use these tasks)
 TOOLS_VERSIONS: Dict[str, str] = {
@@ -117,7 +116,10 @@ def _run_task(ctx: invoke.Context, connector_string: str, task_name: str, multi_
     try:
         with ctx.prefix(f"source {activator}"):
             for command in commands:
-                if ctx.run(command, warn=True).return_code:
+                result = ctx.run(command, warn=True)
+                if result.return_code:
+                    print(command)
+                    print(result)
                     exit_code = 1
                     break
     finally:
@@ -134,23 +136,24 @@ def apply_task_for_connectors(ctx: invoke.Context, connectors_names: str, task_n
     # TODO: Separate outputs to avoid a mess.
 
     connectors = connectors_names.split(",") if connectors_names else CONNECTORS_NAMES
-
     connectors = set(connectors) & CONNECTORS_NAMES
+
+    exit_code: int = 0
 
     if multi_envs:
         print(f"Running {task_name} for the following connectors: {connectors}")
 
         task_args = [(ctx, connector, task_name) for connector in connectors]
-        exit_code: int = 0
         with Pool() as pool:
             for result in pool.imap_unordered(_run_single_connector_task, task_args):
                 if result:
                     exit_code = 1
 
-        raise invoke.Exit(code=exit_code)
     else:
         source_path = " ".join([f"{os.path.join(CONNECTORS_DIR, f'source-{connector}')}" for connector in connectors])
-        _run_task(ctx, source_path, task_name, multi_envs=False, **kwargs)
+        exit_code = _run_task(ctx, source_path, task_name, multi_envs=False, **kwargs)
+
+    raise invoke.Exit(code=exit_code)
 
 ###########################################################################################################################################
 # TASKS
@@ -233,5 +236,9 @@ def coverage(ctx, connectors=None):
     "test" command is being run before this one.
     Zero exit code indicates about enough coverage level.
     """
-    test(ctx, connectors=connectors)
-    apply_task_for_connectors(ctx, connectors, "coverage", multi_envs=True)
+    try:
+        test(ctx, connectors=connectors)
+    except invoke.Exit as e:
+        if e.code:
+            raise
+        apply_task_for_connectors(ctx, connectors, "coverage", multi_envs=True)
