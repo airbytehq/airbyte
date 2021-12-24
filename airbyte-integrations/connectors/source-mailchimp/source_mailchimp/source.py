@@ -18,7 +18,7 @@ from .streams import Campaigns, EmailActivity, Lists
 
 class MailChimpAuthenticator:
     @staticmethod
-    def get_server_prefix(access_token):
+    def get_server_prefix(access_token: str) -> str:
         try:
             response = requests.get("https://login.mailchimp.com/oauth2/metadata",
                                     headers={'Authorization': "OAuth {}".format(access_token)})
