@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.jdbc;
 
+import static io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants.MAX_FILE_SIZE;
+
 /**
  * The staging file is uploaded to cloud storage in multiple parts. This class keeps track of the
  * filename, and returns a new one when the old file has had enough parts.
@@ -11,7 +13,6 @@ package io.airbyte.integrations.destination.jdbc;
 public class StagingFilenameGenerator {
 
   private final String streamName;
-  private final int maxPartsPerFile;
 
   // the file suffix will change after the max number of file
   // parts have been generated for the current suffix;
@@ -21,9 +22,18 @@ public class StagingFilenameGenerator {
   // file suffix; its value range will be [1, maxPartsPerFile]
   private int currentFileSuffixPartCount = 0;
 
-  public StagingFilenameGenerator(final String streamName, final int maxPartsPerFile) {
+  // This variable is responsible to set the size of chunks size (In MB). After chunks created in
+  // S3 or GCS they will be uploaded to Snowflake or Redshift. These service have some limitations for the uploading file.
+  // So we make the calculation to determine how many parts we can put to the single chunk file.
+  private final long iterations;
+
+  /**
+   * @param streamName - the name of table will be processed
+   * @param chunkSize - the number of optimal chunk size for the service.
+   */
+  public StagingFilenameGenerator(final String streamName, final long chunkSize) {
     this.streamName = streamName;
-    this.maxPartsPerFile = maxPartsPerFile;
+    this.iterations = MAX_FILE_SIZE / chunkSize;
   }
 
   /**
@@ -32,7 +42,7 @@ public class StagingFilenameGenerator {
    * maxPartsPerFile.
    */
   public String getStagingFilename() {
-    if (currentFileSuffixPartCount < maxPartsPerFile) {
+    if (currentFileSuffixPartCount < iterations) {
       // when the number of parts for the file has not reached the max,
       // keep using the same file (i.e. keep the suffix)
       currentFileSuffixPartCount += 1;

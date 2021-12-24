@@ -5,9 +5,13 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import com.google.cloud.storage.Storage;
+import io.aesy.datasize.ByteUnit.IEC;
+import io.aesy.datasize.DataSize;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
+import io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsConfig;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsStreamCopierFactory;
@@ -35,7 +39,8 @@ public class SnowflakeGcsStreamCopierFactory extends GcsStreamCopierFactory {
         db,
         gcsConfig,
         nameTransformer,
-        sqlOperations);
+        sqlOperations,
+        new StagingFilenameGenerator(streamName, GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES));
   }
 
 }
