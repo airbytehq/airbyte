@@ -1,7 +1,12 @@
 name: Sonar Scan
-on: push
+on:
+  push:
+  pull_request:
+    types: [assigned, opened, synchronize, reopened]
+
 jobs:
   detect-changes:
+    if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     outputs:
       changes: ${{ steps.detect-changed-modules.outputs.changes }}
@@ -26,7 +31,12 @@ jobs:
     - name: Print Settings
       run: |
          echo "Module: ${{ env.MODULE_NAME }}, Lang: ${{ env.MODULE_LANG }}, Folder: ${{ env.MODULE_FOLDER }}"
-
+    - name: Do something for Java
+      if: ${{ env.MODULE_LANG == 'java' }}
+      run: "this is JAVA"
+    - name: Do something for Python
+      if: ${{ env.MODULE_LANG == 'py' }}
+      run: "this is Python"
 #name: Sonar Scan
 #on:
 #  push:
