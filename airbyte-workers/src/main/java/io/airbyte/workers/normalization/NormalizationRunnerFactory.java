@@ -35,13 +35,16 @@ public class NormalizationRunnerFactory {
           .put("airbyte/destination-clickhouse-strict-encrypt", ImmutablePair.of("airbyte/normalization-clickhouse", DestinationType.CLICKHOUSE))
           .build();
 
-  public static NormalizationRunner create(final WorkerConfigs workerConfigs, final String connectorImageName, final ProcessFactory processFactory) {
+  public static NormalizationRunner create(final WorkerConfigs workerConfigs,
+                                           final String connectorImageName,
+                                           final ProcessFactory processFactory,
+                                           final String normalizationVersion) {
     final var valuePair = getNormalizationInfoForConnector(connectorImageName);
     return new DefaultNormalizationRunner(
         workerConfigs,
         valuePair.getRight(),
         processFactory,
-        String.format("%s:%s", valuePair.getLeft(), NORMALIZATION_VERSION));
+        String.format("%s:%s", valuePair.getLeft(), normalizationVersion));
   }
 
   public static ImmutablePair<String, DestinationType> getNormalizationInfoForConnector(final String connectorImageName) {
