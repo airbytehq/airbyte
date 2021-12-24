@@ -1,0 +1,24 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "projects",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "list_market_share_s7",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    }
+  ]
+}

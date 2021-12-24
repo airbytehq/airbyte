@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
@@ -27,7 +26,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
-import io.airbyte.test.utils.CockroachDBContainerHelper;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +39,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.CockroachContainer;
-import org.testcontainers.utility.MountableFile;
 
 class CockroachDbSourceTest {
 
@@ -104,14 +101,10 @@ class CockroachDbSourceTest {
   void setup() throws Exception {
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
-    final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs
-        .writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
-    CockroachDBContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
-
     final JsonNode config = getConfig(PSQL_DB, dbName);
     final Database database = getDatabaseFromConfig(config);
     database.query(ctx -> {
+      ctx.fetch("CREATE DATABASE " + dbName + ";");
       ctx.fetch(
           "CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
       ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
@@ -145,11 +138,15 @@ class CockroachDbSourceTest {
   }
 
   private JsonNode getConfig(final CockroachContainer psqlDb, final String dbName) {
+    return getConfig(psqlDb, dbName, psqlDb.getUsername());
+  }
+
+  private JsonNode getConfig(final CockroachContainer psqlDb, final String dbName, final String username) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort() - 1)
         .put("database", dbName)
-        .put("username", psqlDb.getUsername())
+        .put("username", username)
         .put("password", psqlDb.getPassword())
         .put("ssl", false)
         .build());
@@ -207,6 +204,39 @@ class CockroachDbSourceTest {
       assertTrue(expectedStream.isPresent());
       assertEquals(expectedStream.get(), actualStream);
     });
+  }
+
+  @Test
+  void testDiscoverWithPermissions() throws Exception {
+    JsonNode config = getConfig(PSQL_DB, dbName);
+    final Database database = getDatabaseFromConfig(config);
+    database.query(ctx -> {
+      ctx.fetch(
+          "CREATE USER cock;");
+      ctx.fetch(
+          "CREATE TABLE id_and_name_perm1(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
+      ctx.fetch(
+          "CREATE TABLE id_and_name_perm2(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
+      ctx.fetch(
+          "CREATE TABLE id_and_name_perm3(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
+      ctx.fetch("grant all on database " + dbName + " to cock;");
+      ctx.fetch("grant all on table " + dbName + ".public.id_and_name_perm1 to cock;");
+      ctx.fetch("grant select on table " + dbName + ".public.id_and_name_perm2 to cock;");
+      return null;
+    });
+
+    List<String> expected = List.of("id_and_name_perm1", "id_and_name_perm2");
+
+    AirbyteCatalog airbyteCatalog = new CockroachDbSource().discover(getConfig(PSQL_DB, dbName, "cock"));
+    final List<String> actualNamesWithPermission =
+        airbyteCatalog
+            .getStreams()
+            .stream()
+            .map(AirbyteStream::getName)
+            .toList();
+
+    assertEquals(expected.size(), actualNamesWithPermission.size());
+    assertEquals(expected, actualNamesWithPermission);
   }
 
   @Test
