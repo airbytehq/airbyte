@@ -15,9 +15,9 @@ jobs:
       run: |
          CHANGES="[{\"module\":\"connectors/source-s3\",\"lang\":\"py\", \"folder\":\"path1\"},{\"module\":\"connectors/destination-s3\",\"lang\":\"java\", \"folder\":\"path2\"}]"
          echo "::set-output name=changes::{ \"include\": $CHANGES }"
-  run-ci-tests:
+  switch-lang-job:
     needs: detect-changes
-    name:  Run CI tests for ${{ matrix.module }}
+    name:  Switch flow of ${{ matrix.module }} to ${{ matrix.lang }}
     runs-on: ubuntu-latest
     environment: more-secrets
     strategy:
@@ -32,23 +32,60 @@ jobs:
 #      MODULE_NAME: connectors/source-s3
 #      MODULE_LANG: py
 #      MODULE_FOLDER: "path2"
-#      ENV_NAME: "local"
+
+    outputs:
+      lang: ${{ env.MODULE_LANG }}
+      module: ${{ env.MODULE_NAME }}
+      folder: ${{ env.MODULE_FOLDER }}
+    steps:
+    - name: Print Settings
+      id: save-lang
+      run: |
+         echo "Module: ${{ env.MODULE_NAME }}, Lang: ${{ env.MODULE_LANG }}, Folder: ${{ env.MODULE_FOLDER }}"
+
+  run-ci-java-tests:
+    needs: switch-lang-job
+    name:  Run Java CI tests for ${{ matrix.module }}
+    if: ${{ needs.switch-lang-job.outputs.lang == 'py' }}
+    runs-on: ubuntu-latest
+    environment: more-secrets
+    env:
+      MODULE_NAME: ${{ needs.switch-lang-job.outputs.module }}
+      MODULE_FOLDER:  ${{ needs.switch-lang-job.outputs.folder }}
 
     steps:
     - name: Print Settings
       run: |
-         echo "Module: ${{ env.MODULE_NAME }}, Lang: ${{ env.MODULE_LANG }}, Folder: ${{ env.MODULE_FOLDER }}"
-    - name: Do something for Java
-      if: ${{ env.MODULE_LANG == 'java' }}
-      run: echo "this is JAVA"
-    - name: Do something for Python
-      if: ${{ env.MODULE_LANG == 'py' }}
-      run: echo "this is Python"
-    - name: Do something for Python
-      if: ${{ env.ENV_NAME == 'github' }}
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
+         echo "Py Module: ${{ env.MODULE_NAME }}, Folder: ${{ env.MODULE_FOLDER }}"
+         echo "Tests logic is not implemented for JAVA now"
+
+  run-ci-py-tests:
+    needs: switch-lang-job
+    name:  Run Python CI tests for ${{ matrix.module }}
+    if: ${{ needs.switch-lang-job.outputs.lang == 'py' }}
+    runs-on: ubuntu-latest
+    environment: more-secrets
+    env:
+      MODULE_NAME: ${{ needs.switch-lang-job.outputs.module }}
+      MODULE_FOLDER:  ${{ needs.switch-lang-job.outputs.folder }}
+      ENV_NAME: "local"
+
+    steps:
+    - name: Print Settings
+      run: |
+         echo "Py Module: ${{ env.MODULE_NAME }}, Folder: ${{ env.MODULE_FOLDER }}"
+
+#    - name: Do something for Java
+#      if: ${{ env.MODULE_LANG == 'java' }}
+#      run: echo "this is JAVA"
+#    - name: Do something for Python
+#      if: ${{ env.MODULE_LANG == 'py' }}
+#      run: echo "this is Python"
+#    - name: Do something for Python
+#      if: ${{ env.ENV_NAME == 'github' }}
+#      uses: actions/checkout@v2
+#      with:
+#        fetch-depth: 0
 ##      - uses: sonarsource/sonarqube-scan-action@master
 ##        with:
 ##          projectBaseDir: airbyte-integrations/connectors
