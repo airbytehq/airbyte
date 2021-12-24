@@ -31,8 +31,18 @@ class SourceSurvicate(AbstractSource):
         return [Responses(config["survey_id"], start_datetime, authenticator=auth)]
 
 
-class SurvicateStream(HttpStream, ABC):
-    """The base class for all Survicate streams."""
+class SurveyStream(HttpStream, ABC):
+    """The base class for all survey-based streams."""
+
+    _survey_id = None
+
+    @property
+    def url_base(self) -> str:
+        return f"https://data-api.survicate.com/v1/surveys/{self._survey_id}/"
+
+
+class Responses(SurveyStream):
+    """Survey responses stream."""
 
     primary_key = "response_uuid"
     # We are assuming the API results are sorted by this field,
@@ -42,22 +52,22 @@ class SurvicateStream(HttpStream, ABC):
     state_checkpoint_interval = 100
 
     def __init__(self, survey_id: str, start_datetime: datetime, **kwargs):
-        super(SurvicateStream, self).__init__(**kwargs)
+        super(SurveyStream, self).__init__(**kwargs)
         self._survey_id = survey_id
         self._start_datetime = start_datetime
         self._page_number = 1
 
-    @property
-    def url_base(self) -> str:
-        return f"https://data-api.survicate.com/v1/surveys/{self._survey_id}/"
+    def path(self, **kwargs) -> str:
+        return "visitors"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        response_data = response.json()
-        if response_data:
+        if response.json():
             # Survicate doesn't indicate what page we are on
             # So, we have to store our own page counter and increment it
             self._page_number += 1
             return {'page': self._page_number}
+
+        return None
 
     def request_params(
         self,
@@ -65,8 +75,7 @@ class SurvicateStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-
-        params = {}
+        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token)
         since_dt = stream_state.get(self.cursor_field, None)
         if since_dt:
             params['since'] = since_dt
@@ -86,20 +95,12 @@ class SurvicateStream(HttpStream, ABC):
         else:
             if self.cursor_field in current_stream_state and isinstance(current_stream_state[self.cursor_field], str):
                 # Handle initial state loaded from JSON which is in str format
-                # TODO: Is there a cleaner way to handle this?
                 current_stream_state[self.cursor_field] = _parse_datetime(current_stream_state[self.cursor_field])
             current_stream_state[self.cursor_field] = max(
                 _parse_datetime(latest_record[self.cursor_field]), current_stream_state.get(self.cursor_field, self._start_datetime)
             )
 
         return current_stream_state
-
-
-class Responses(SurvicateStream):
-    """Survey responses stream."""
-
-    def path(self, **kwargs) -> str:
-        return "visitors"
 
     def parse_response(
         self,
@@ -108,32 +109,41 @@ class Responses(SurvicateStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        survey_responses_parsed = []
-        survey_responses_raw = response.json()
-        for sr_raw in survey_responses_raw:
-            sr_parsed = {k.strip(): v for k, v in sr_raw.items()}
+        print(f'parsing {len(response.json())} responses')
+        for r in response.json():
+            response_clean = {k.strip(): v for k, v in r.items()}
             # Process different question/answer values
-            # TODO: Are there question types we should handle specially?
-            for qa in sr_raw['answers']:
+            for qa in response_clean['answers']:
                 if 'content' not in qa:
                     # Question has no answer content
                     continue
-                sr_parsed[qa['question'].strip()] = qa['content']
-            del sr_parsed['answers']
+                response_clean[qa['question'].strip()] = qa['content']
+            del response_clean['answers']
             # Process custom attributes
-            for k,v in sr_raw['custom_attributes'].items():
-                sr_parsed[k.strip()] = v
-            del sr_parsed['custom_attributes']
-            survey_responses_parsed.append(sr_parsed)
-        return survey_responses_parsed
+            for k,v in response_clean['custom_attributes'].items():
+                response_clean[k.strip()] = v
+            del response_clean['custom_attributes']
+            yield response_clean
+
 
     def get_json_schema(self) -> Dict:
-        """Get the JSON schema by appending any fields in the latest record to our existing schema def."""
+        """Get the JSON schema by appending any fields in a sample record to our existing schema def."""
         schema = super().get_json_schema()
-        # This is sooo ugly
-        # We have to get all records and read the last one in order to  get the most up-to-date schema representation
-        *_, last = self.read_records(SyncMode.incremental)
-        for k in last.keys():
+
+        # Manually send the request
+        # If we call `read_records` it will end up incrementing our page counter
+        # We don't want this to happen when we are just fetching records to infer the schema
+        request_headers = self.request_headers({})
+        request = self._create_prepared_request(
+            path=self.path(),
+            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            params=self.request_params({}),
+        )
+        response = self._send_request(request, {})
+        record = next(self.parse_response(response, {}))
+
+        # Add inferred properties
+        for k in record.keys():
             kk = k.strip()
             if kk not in schema:
                 schema['properties'][kk] = {"type": "date" if kk.endswith("date") else "string"}
