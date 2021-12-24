@@ -1,21 +1,24 @@
-name: buildtestsssss
+name: Sonar Scan
 on: push
 jobs:
-  job1:
+  detect-changes:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      changes: ${{ steps.detect-changed-modules.outputs.changes }}
     steps:
-    - id: set-matrix
-      run: echo "::set-output name=matrix::{\"include\":[{\"project\":\"foo\",\"config\":\"Debug\"},{\"project\":\"bar\",\"config\":\"Release\"}]}"
-  job2:
-    needs: job1
+    - id: detect-changed-modules
+      run: echo "::set-output name=changes::{\"include\":[{\"module\":\"foo\",\"lang\":\"Debug\"},{\"module\":\"bar\",\"lang\":\"Release\"}]}"
+  run-ci-tests:
+    needs: detect-changes
+    name:  Run CI tests for ${{ env.MODULE_NAME }}
     runs-on: ubuntu-latest
     strategy:
-      matrix: ${{fromJson(needs.job1.outputs.matrix)}}
+      matrix: ${{fromJson(needs.detect-changes.outputs.changes)}}
+    env:
+      MODULE_NAME: ${{ matrix.module }}
     steps:
-    - run: echo ${{ matrix.project }}
-    - run: echo ${{ matrix.config }}
+    - run: |
+         echo ${{ matrix.project }}, ${{ matrix.config }}
 
 #name: Sonar Scan
 #on:
