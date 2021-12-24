@@ -13,7 +13,7 @@
         {
           "title": "OAuth2.0",
           "type": "object",
-          "required": ["auth_type", "client_id", "client_secret", "access_token", "server_prefix"],
+          "required": ["auth_type", "client_id", "client_secret", "access_token"],
           "properties": {
             "auth_type": {
               "type": "string",
@@ -39,19 +39,13 @@
               "type": "string",
               "description": "An access token generated using the above client ID and secret.",
               "airbyte_secret": true
-            },
-            "server_prefix": {
-              "title": "Server Prefix",
-              "type": "string",
-              "description": "A server prefix generated using the above client ID and secret.",
-              "airbyte_secret": true
             }
           }
         },
         {
           "type": "object",
           "title": "API Key",
-          "required": ["auth_type", "apikey", "username"],
+          "required": ["auth_type", "apikey"],
           "properties": {
             "auth_type": {
               "type": "string",
@@ -64,15 +58,11 @@
               "type": "string",
               "description": "API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/mailchimp\">docs</a> for information on how to generate this key.",
               "airbyte_secret": true
-            },
-            "username": {
-              "type": "string",
-              "description": "The Username or email you use to sign into Mailchimp."
             }
           }
         }
       ]
-  }
+    }
   },
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
