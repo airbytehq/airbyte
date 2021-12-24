@@ -44,8 +44,6 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
       .setPrefixColor(LoggingHelper.Color.CYAN_BACKGROUND);
 
   public static final String REPLICATION = "replication";
-  public static final String INIT_FILE_APPLICATION = "application.txt";
-  public static final String INIT_FILE_JOB_RUN_CONFIG = "jobRunConfig.json";
   public static final String INIT_FILE_SOURCE_LAUNCHER_CONFIG = "sourceLauncherConfig.json";
   public static final String INIT_FILE_DESTINATION_LAUNCHER_CONFIG = "destinationLauncherConfig.json";
 
@@ -93,12 +91,12 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
           .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
       final Map<String, String> fileMap = Map.of(
-          INIT_FILE_APPLICATION, REPLICATION,
-          INIT_FILE_JOB_RUN_CONFIG, Jsons.serialize(jobRunConfig),
-          INIT_FILE_SOURCE_LAUNCHER_CONFIG, Jsons.serialize(sourceLauncherConfig),
-          INIT_FILE_DESTINATION_LAUNCHER_CONFIG, Jsons.serialize(destinationLauncherConfig),
+          OrchestratorConstants.INIT_FILE_APPLICATION, REPLICATION,
+          OrchestratorConstants.INIT_FILE_JOB_RUN_CONFIG, Jsons.serialize(jobRunConfig),
           OrchestratorConstants.INIT_FILE_INPUT, Jsons.serialize(syncInput),
-          OrchestratorConstants.INIT_FILE_ENV_MAP, Jsons.serialize(envMap));
+          OrchestratorConstants.INIT_FILE_ENV_MAP, Jsons.serialize(envMap),
+          INIT_FILE_SOURCE_LAUNCHER_CONFIG, Jsons.serialize(sourceLauncherConfig),
+          INIT_FILE_DESTINATION_LAUNCHER_CONFIG, Jsons.serialize(destinationLauncherConfig));
 
       process = processFactory.create(
           "runner-" + UUID.randomUUID().toString().substring(0, 10),

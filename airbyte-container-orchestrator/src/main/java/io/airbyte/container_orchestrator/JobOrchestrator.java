@@ -6,11 +6,16 @@ package io.airbyte.container_orchestrator;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.temporal.sync.ReplicationLauncherWorker;
+import io.airbyte.workers.temporal.sync.OrchestratorConstants;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * This class makes it easier to specify
+ *
+ * @param <T> input type
+ */
 public interface JobOrchestrator<T> {
 
   String getOrchestratorName();
@@ -18,11 +23,11 @@ public interface JobOrchestrator<T> {
   Class<T> getInputClass();
 
   default T readInput() throws IOException {
-    return readAndDeserializeFile(ReplicationLauncherWorker.INIT_FILE_INPUT, getInputClass());
+    return readAndDeserializeFile(OrchestratorConstants.INIT_FILE_INPUT, getInputClass());
   }
 
   default JobRunConfig readJobRunConfig() throws IOException {
-    return readAndDeserializeFile(ReplicationLauncherWorker.INIT_FILE_JOB_RUN_CONFIG, JobRunConfig.class);
+    return readAndDeserializeFile(OrchestratorConstants.INIT_FILE_JOB_RUN_CONFIG, JobRunConfig.class);
   }
 
   void runJob() throws Exception;

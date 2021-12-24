@@ -36,8 +36,6 @@ public class NormalizationLauncherWorker implements Worker<NormalizationInput, V
       .setPrefixColor(LoggingHelper.Color.CYAN_BACKGROUND);
 
   public static final String NORMALIZATION = "normalization";
-  public static final String INIT_FILE_APPLICATION = "application.txt";
-  public static final String INIT_FILE_JOB_RUN_CONFIG = "jobRunConfig.json";
   public static final String INIT_FILE_DESTINATION_LAUNCHER_CONFIG = "destinationLauncherConfig.json";
 
   private final WorkerConfigs workerConfigs;
@@ -77,11 +75,11 @@ public class NormalizationLauncherWorker implements Worker<NormalizationInput, V
           .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
       final Map<String, String> fileMap = Map.of(
-          INIT_FILE_APPLICATION, NORMALIZATION,
-          INIT_FILE_JOB_RUN_CONFIG, Jsons.serialize(jobRunConfig),
-          INIT_FILE_DESTINATION_LAUNCHER_CONFIG, Jsons.serialize(destinationLauncherConfig),
+          OrchestratorConstants.INIT_FILE_APPLICATION, NORMALIZATION,
+          OrchestratorConstants.INIT_FILE_JOB_RUN_CONFIG, Jsons.serialize(jobRunConfig),
           OrchestratorConstants.INIT_FILE_INPUT, Jsons.serialize(normalizationInput),
-          OrchestratorConstants.INIT_FILE_ENV_MAP, Jsons.serialize(envMap));
+          OrchestratorConstants.INIT_FILE_ENV_MAP, Jsons.serialize(envMap),
+          INIT_FILE_DESTINATION_LAUNCHER_CONFIG, Jsons.serialize(destinationLauncherConfig));
 
       process = processFactory.create(
           "runner-" + UUID.randomUUID().toString().substring(0, 10),
