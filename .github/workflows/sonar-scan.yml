@@ -10,7 +10,7 @@ jobs:
       run: echo "::set-output name=changes::{\"include\":[{\"module\":\"foo\",\"lang\":\"Debug\"},{\"module\":\"bar\",\"lang\":\"Release\"}]}"
   run-ci-tests:
     needs: detect-changes
-    name:  Run CI tests for ${{ env.MODULE_NAME }}
+    name:  Run CI tests for ${{ matrix.module }}
     runs-on: ubuntu-latest
     strategy:
       matrix: ${{fromJson(needs.detect-changes.outputs.changes)}}
