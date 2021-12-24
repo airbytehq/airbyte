@@ -14,9 +14,11 @@ jobs:
     steps:
       - name: Detect Changed Modules
         id: detect-changed-modules
-        run: |
-          CHANGES='[{"module": "connectors/source-s3", "lang": "py"}]'
-          echo ::set-output name=changes::{"include":${CHANGES} }
+#        run: |
+#          CHANGES='[{"module": "connectors/source-s3", "lang": "py"}]'
+#          echo ::set-output name=changes::{"include":${CHANGES} }
+        run: echo "::set-output name=changes::{\"include\":[{\"module\":\"foo\",\"lang\":\"Debug\", \"folder\":\"path1\"},{\"module\":\"bar\",\"lang\":\"Release\", \"folder\":\"path2\"}]}"
+
 
   run-ci-tests:
     name: Run CI tests for ${{ env.MODULE_NAME }}
@@ -33,7 +35,9 @@ jobs:
       BASE_FOLDER: ${{ matrix.folder }}
     steps:
       - name: test1
-        run: echo "LANG ${{ env.LANG }}, MODULE ${{ env.MODULE_NAME }}, CHANGES $ ${{needs.detect-changes.outputs.changes}}"
+        run: |
+          echo "LANG ${{ matrix }}"
+          echo "LANG ${{ env.LANG }}, MODULE ${{ env.MODULE_NAME }}, CHANGES $ ${{needs.detect-changes.outputs.changes}}"
 ##      - uses: actions/checkout@v2
 ##        with:
 ##          fetch-depth: 0
