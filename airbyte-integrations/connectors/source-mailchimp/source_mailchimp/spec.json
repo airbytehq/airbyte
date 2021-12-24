@@ -6,62 +6,76 @@
     "type": "object",
     "required": [],
     "additionalProperties": true,
-    "credentials": {
-      "type": "object",
-      "title": "Authentication Type",
-      "oneOf": [
-        {
-          "title": "OAuth2.0",
-          "type": "object",
-          "required": ["auth_type", "client_id", "client_secret", "access_token"],
-          "properties": {
-            "auth_type": {
-              "type": "string",
-              "const": "oauth2.0",
-              "enum": ["oauth2.0"],
-              "default": "oauth2.0",
-              "order": 0
-            },
-            "client_id": {
-              "title": "Client ID",
-              "type": "string",
-              "description": "The Client ID of your OAuth application.",
-              "airbyte_secret": true
-            },
-            "client_secret": {
-              "title": "Client Secret",
-              "type": "string",
-              "description": "The Client Secret of your OAuth application.",
-              "airbyte_secret": true
-            },
-            "access_token": {
-              "title": "Access Token",
-              "type": "string",
-              "description": "An access token generated using the above client ID and secret.",
-              "airbyte_secret": true
+    "properties": {
+      "credentials": {
+        "type": "object",
+        "title": "Authentication Method",
+        "oneOf": [
+          {
+            "title": "OAuth2.0",
+            "type": "object",
+            "required": [
+              "auth_type",
+              "client_id",
+              "client_secret",
+              "access_token"
+            ],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "oauth2.0",
+                "enum": [
+                  "oauth2.0"
+                ],
+                "default": "oauth2.0",
+                "order": 0
+              },
+              "client_id": {
+                "title": "Client ID",
+                "type": "string",
+                "description": "The Client ID of your OAuth application.",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "title": "Client Secret",
+                "type": "string",
+                "description": "The Client Secret of your OAuth application.",
+                "airbyte_secret": true
+              },
+              "access_token": {
+                "title": "Access Token",
+                "type": "string",
+                "description": "An access token generated using the above client ID and secret.",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "API Key",
+            "required": [
+              "auth_type",
+              "apikey"
+            ],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "apikey",
+                "enum": [
+                  "apikey"
+                ],
+                "default": "apikey",
+                "order": 1
+              },
+              "apikey": {
+                "type": "string",
+                "description": "API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/mailchimp\">docs</a> for information on how to generate this key.",
+                "airbyte_secret": true
+              }
             }
           }
-        },
-        {
-          "type": "object",
-          "title": "API Key",
-          "required": ["auth_type", "apikey"],
-          "properties": {
-            "auth_type": {
-              "type": "string",
-              "const": "apikey",
-              "enum": ["apikey"],
-              "default": "apikey",
-              "order": 1
-            },
-            "apikey": {
-              "type": "string",
-              "description": "API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/mailchimp\">docs</a> for information on how to generate this key.",
-              "airbyte_secret": true
-            }
-          }
-        }
-      ]
+        ]
+      }
     }
   },
   "advanced_auth": {
