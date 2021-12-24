@@ -52,6 +52,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-youtube-analytics", new YouTubeAnalyticsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-drift", new DriftOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-zendesk-chat", new ZendeskChatOAuthFlow(configRepository, httpClient))
         .build();
   }
 
