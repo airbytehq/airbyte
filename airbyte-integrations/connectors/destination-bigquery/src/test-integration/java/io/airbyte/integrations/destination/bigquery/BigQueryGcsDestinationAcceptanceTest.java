@@ -45,6 +45,7 @@ public class BigQueryGcsDestinationAcceptanceTest extends BigQueryDestinationAcc
         .put(BigQueryConsts.METHOD, BigQueryConsts.GCS_STAGING)
         .put(BigQueryConsts.GCS_BUCKET_NAME, gcsConfigFromSecretFile.get(BigQueryConsts.GCS_BUCKET_NAME))
         .put(BigQueryConsts.GCS_BUCKET_PATH, gcsConfigFromSecretFile.get(BigQueryConsts.GCS_BUCKET_PATH).asText() + System.currentTimeMillis())
+        .put(BigQueryConsts.PART_SIZE, gcsConfigFromSecretFile.get(BigQueryConsts.PART_SIZE))
         .put(BigQueryConsts.CREDENTIAL, credential)
         .build());
 
