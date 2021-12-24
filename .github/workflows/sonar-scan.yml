@@ -9,7 +9,7 @@ jobs:
     - id: detect-changed-modules
 
       run: |
-         echo "::set-output name=changes::{\"include\":[{\"module\":\"connectors/source-s3\",\"lang\":\"py\"},{\"module\":\"connectors/destination-s3\",\"lang\":\"java\"}]}"
+         echo "::set-output name=changes::{\"include\":[{\"module\":\"connectors/source-s3\",\"lang\":\"py\", \"folder\":\"path1\"},{\"module\":\"connectors/destination-s3\",\"lang\":\"java\", \"folder\":\"path2\"}]}"
   run-ci-tests:
     needs: detect-changes
     name:  Run CI tests for ${{ matrix.module }}
@@ -19,9 +19,11 @@ jobs:
     env:
       MODULE_NAME: ${{ matrix.module }}
       MODULE_LANG: ${{ matrix.lang }}
+      MODULE_FOLDER: ${{ matrix.folder }}
     steps:
-    - run: |
-         echo ${{ env.MODULE_NAME }}, ${{ env.MODULE_LANG }}
+    - name: Print Settings
+      run: |
+         echo "Module: ${{ env.MODULE_NAME }}, Lang: ${{ env.MODULE_LANG }}, Folder: ${{ env.MODULE_FOLDER }}"
 
 #name: Sonar Scan
 #on:
