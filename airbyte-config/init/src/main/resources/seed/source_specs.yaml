@@ -5304,7 +5304,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-posthog:0.1.4"
+- dockerImage: "airbyte/source-posthog:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/posthog"
     connectionSpecification:
