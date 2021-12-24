@@ -138,11 +138,15 @@ class CockroachDbSourceTest {
   }
 
   private JsonNode getConfig(final CockroachContainer psqlDb, final String dbName) {
+    return getConfig(psqlDb, dbName, psqlDb.getUsername());
+  }
+
+  private JsonNode getConfig(final CockroachContainer psqlDb, final String dbName, final String username) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort() - 1)
         .put("database", dbName)
-        .put("username", psqlDb.getUsername())
+        .put("username", username)
         .put("password", psqlDb.getPassword())
         .put("ssl", false)
         .build());
@@ -200,6 +204,39 @@ class CockroachDbSourceTest {
       assertTrue(expectedStream.isPresent());
       assertEquals(expectedStream.get(), actualStream);
     });
+  }
+
+  @Test
+  void testDiscoverWithPermissions() throws Exception {
+    JsonNode config = getConfig(PSQL_DB, dbName);
+    final Database database = getDatabaseFromConfig(config);
+    database.query(ctx -> {
+      ctx.fetch(
+          "CREATE USER cock;");
+      ctx.fetch(
+          "CREATE TABLE id_and_name_perm1(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
+      ctx.fetch(
+          "CREATE TABLE id_and_name_perm2(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
+      ctx.fetch(
+          "CREATE TABLE id_and_name_perm3(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
+      ctx.fetch("grant all on database " + dbName + " to cock;");
+      ctx.fetch("grant all on table " + dbName + ".public.id_and_name_perm1 to cock;");
+      ctx.fetch("grant select on table " + dbName + ".public.id_and_name_perm2 to cock;");
+      return null;
+    });
+
+    List<String> expected = List.of("id_and_name_perm1", "id_and_name_perm2");
+
+    AirbyteCatalog airbyteCatalog = new CockroachDbSource().discover(getConfig(PSQL_DB, dbName, "cock"));
+    final List<String> actualNamesWithPermission =
+        airbyteCatalog
+            .getStreams()
+            .stream()
+            .map(AirbyteStream::getName)
+            .toList();
+
+    assertEquals(expected.size(), actualNamesWithPermission.size());
+    assertEquals(expected, actualNamesWithPermission);
   }
 
   @Test
