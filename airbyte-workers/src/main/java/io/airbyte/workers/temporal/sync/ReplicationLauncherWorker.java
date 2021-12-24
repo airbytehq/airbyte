@@ -50,7 +50,7 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
   public static final String INIT_FILE_JOB_RUN_CONFIG = "jobRunConfig.json";
   public static final String INIT_FILE_SOURCE_LAUNCHER_CONFIG = "sourceLauncherConfig.json";
   public static final String INIT_FILE_DESTINATION_LAUNCHER_CONFIG = "destinationLauncherConfig.json";
-  public static final String INIT_FILE_SYNC_INPUT = "syncInput.json";
+  public static final String INIT_FILE_INPUT = "input.json";
   public static final String INIT_FILE_ENV_MAP = "envMap.json";
 
   // todo: move this to own class
@@ -131,7 +131,7 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
           INIT_FILE_JOB_RUN_CONFIG, Jsons.serialize(jobRunConfig),
           INIT_FILE_SOURCE_LAUNCHER_CONFIG, Jsons.serialize(sourceLauncherConfig),
           INIT_FILE_DESTINATION_LAUNCHER_CONFIG, Jsons.serialize(destinationLauncherConfig),
-          INIT_FILE_SYNC_INPUT, Jsons.serialize(syncInput),
+          INIT_FILE_INPUT, Jsons.serialize(syncInput),
           INIT_FILE_ENV_MAP, Jsons.serialize(envMap));
 
       process = processFactory.create(

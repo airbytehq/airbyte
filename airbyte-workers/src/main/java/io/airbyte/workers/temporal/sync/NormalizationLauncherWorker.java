@@ -40,7 +40,6 @@ public class NormalizationLauncherWorker implements Worker<NormalizationInput, V
   public static final String INIT_FILE_APPLICATION = "application.txt";
   public static final String INIT_FILE_JOB_RUN_CONFIG = "jobRunConfig.json";
   public static final String INIT_FILE_DESTINATION_LAUNCHER_CONFIG = "destinationLauncherConfig.json";
-  public static final String NORMALIZATION_INPUT = "normalizationInput.json";
   public static final String INIT_FILE_ENV_MAP = "envMap.json";
 
   // define two ports for stdout/stderr usage on the container orchestrator pod
@@ -90,7 +89,7 @@ public class NormalizationLauncherWorker implements Worker<NormalizationInput, V
           INIT_FILE_APPLICATION, NORMALIZATION,
           INIT_FILE_JOB_RUN_CONFIG, Jsons.serialize(jobRunConfig),
           INIT_FILE_DESTINATION_LAUNCHER_CONFIG, Jsons.serialize(destinationLauncherConfig),
-          NORMALIZATION_INPUT, Jsons.serialize(normalizationInput),
+          ReplicationLauncherWorker.INIT_FILE_INPUT, Jsons.serialize(normalizationInput), // todo: move shared constants to separate class
           INIT_FILE_ENV_MAP, Jsons.serialize(envMap));
 
       process = processFactory.create(
