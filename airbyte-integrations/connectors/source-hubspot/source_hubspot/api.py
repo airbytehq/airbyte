@@ -598,6 +598,29 @@ class ContactListStream(IncrementalStream):
     need_chunk = False
 
 
+class ContactsListMembershipsStream(Stream):
+    """Contact lists, API v1
+    Docs: https://legacydocs.hubspot.com/docs/methods/lists/get_lists
+    """
+
+    url = "/contacts/v1/lists/all/contacts/all"
+    updated_at_field = "timestamp"
+    more_key = "has-more"
+    data_field = "contacts"
+    page_filter = "vidOffset"
+    page_field = "vid-offset"
+
+    def _transform(self, records: Iterable) -> Iterable:
+        for record in super()._transform(records):
+            canonical_vid = record.get("canonical-vid")
+            for item in record.get("list-memberships", []):
+                yield {"canonical-vid": canonical_vid, **item}
+
+    def list(self, fields) -> Iterable:
+        params = {"showListMemberships": True}
+        yield from self.read(partial(self._api.get, url=self.url), params)
+
+
 class DealStageHistoryStream(Stream):
     """Deal stage history, API v1
     Deal stage history is exposed by the v1 API, but not the v3 API.
