@@ -20,6 +20,7 @@ jobs:
       MODULE_NAME: ${{ matrix.module }}
       MODULE_LANG: ${{ matrix.lang }}
       MODULE_FOLDER: ${{ matrix.folder }}
+
     steps:
     - name: Print Settings
       run: |
