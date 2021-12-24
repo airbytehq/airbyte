@@ -15,31 +15,33 @@ jobs:
       - name: Detect Changed Modules
         id: detect-changed-modules
         run: |
-          CHANGES='[{"module": "connectors/source-s3", "lang": "py"}]}}'
-          echo ::set-output name=changes::{"include":${CHANGES} }
+          CHANGES='[
+             {"module": "connectors/source-s3", "lang": "py", "folder": "./airbyte-integrations/connectors/source-s3"},
+             {"module": "connectors/destination-mongodb", "lang": "java", "folder": "./airbyte-integrations/connectors/destination-mongod"}
+          ]'
+          echo ::set-output name=changes::{"include":${CHANGES}}
 
   run-ci-tests:
-    name: Run CI tests for ${{ matrix.module }}
+    name: Run CI tests for ${{ env.MODULE_NAME }}
     needs:
       - detect-changes
     runs-on: ubuntu-latest
     environment: more-secrets
-    strategy:
-#       matrix:
-#          module:
-#          - connectors/source-s3
-#          - еууу
-#          include:
-#          - module: connectors/source-s3
-#            lang: py
-      matrix: ${{ fromJSON(needs.detect-changes.outputs.changes) }}
+#    strategy:
+#      matrix: ${{ fromJSON(needs.detect-changes.outputs.changes) }}
 
     env:
-      MODULE_NAME: ${{ matrix.module }}
-      LANG: ${{ matrix.lang }}
+#      MODULE_NAME: ${{ matrix.module }}
+#      LANG: ${{ matrix.lang }}
+#      BASE_FOLDER: ${{ matrix.folder }}
+      MODULE_NAME: connectors/source-s3
+      LANG: py
+      BASE_FOLDER: ./airbyte-integrations/connectors/source-s3
     steps:
-      - name: test1
-        run: echo "LANG ${{ env.LANG }}, MODULE ${{ env.MODULE_NAME }}, CHANGES $ ${{needs.detect-changes.outputs.changes}}"
+      - name: Print Settings
+        run: |
+          echo "MODULE: ${{ env.MODULE_NAME }}, LANG: ${{ env.LANG }}, BASE_FOLDER: ${{ env.BASE_FOLDER }}"
+          echo "CHANGES: ${{ needs.detect-changes.outputs.changes }}"
 ##      - uses: actions/checkout@v2
 ##        with:
 ##          fetch-depth: 0
