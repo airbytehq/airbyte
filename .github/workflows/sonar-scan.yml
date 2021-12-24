@@ -15,7 +15,7 @@ jobs:
       - name: Detect Changed Modules
         id: detect-changed-modules
         run: |
-          CHANGES='[{"module": "connectors/source-s3", "lang": "py", "folder": "./airbyte-integrations/connectors/source-s3"}]}}'
+          CHANGES='[{"module": "connectors/source-s3", "lang": "py"}]'
           echo ::set-output name=changes::{"include":${CHANGES} }
 
   run-ci-tests:
