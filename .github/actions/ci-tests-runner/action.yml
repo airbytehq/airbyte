@@ -12,16 +12,8 @@ inputs:
   sonar-token:
     required: true
 
-env:
-  MODULE_NAME: ${{ inputs.module-name }}
-  MODULE_LANG: ${{ inputs.module-lang }}
-  MODULE_FOLDER: ${{ inputs.module-folder }}
-  SONAR_HOST:  ${{ inputs.sonar-host }}
-  SONAR_TOKEN: ${{ inputs.sonar-token }}
-
 runs:
   using: "composite"
-
   steps:
 
     - name: Set up Python
@@ -42,16 +34,16 @@ runs:
       if: ${{ env.MODULE_LANG == 'py' }}
       uses: ./.github/actions/ci-py-tests
       with:
-        module-name: ${{ env.MODULE_NAME }}
-        module-folder: ${{ env.MODULE_FOLDER }}
+        module-name: ${{ inputs.module-name }}
+        module-folder: ${{ inputs.module-folder }}
 
     - name: Run Java Tests
       id: run-java-tests
       if: ${{ env.MODULE_LANG == 'java' }}
       uses: ./.github/actions/ci-java-tests
       with:
-        module-name: ${{ env.MODULE_NAME }}
-        module-folder: ${{ env.MODULE_FOLDER }}
+        module-name: ${{ inputs.module-name }}
+        module-folder: ${{ inputs.module-folder }}
 
 #      - name: Write Integration Test Credentials for ${{ github.event.inputs.connector }}
 #        run: |
