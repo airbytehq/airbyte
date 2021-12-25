@@ -4,13 +4,13 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -19,10 +19,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class SnowflakeDestinationIntegrationTest {
+
   private final SnowflakeSQLNameTransformer namingResolver = new SnowflakeSQLNameTransformer();
 
   @Test
@@ -46,11 +46,11 @@ class SnowflakeDestinationIntegrationTest {
   public void syncWithNamingResolver() throws IOException, SQLException {
     final JsonNode config = getConfig();
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", namingResolver.getIdentifier(config.get("schema").asText()));
-    Connection connection =null;
+    Connection connection = null;
     try {
       connection = SnowflakeDatabase.getConnection(config);
       connection.createStatement().execute(createSchemaQuery);
-    }finally {
+    } finally {
       if (connection != null) {
         final String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", namingResolver.getIdentifier(config.get("schema").asText()));
         connection.createStatement().execute(dropSchemaQuery);
@@ -82,8 +82,8 @@ class SnowflakeDestinationIntegrationTest {
     properties.put("database", config.get("database").asText());
     properties.put("role", config.get("role").asText());
     properties.put("schema", useNameTransformer
-            ? namingResolver.getIdentifier(config.get("schema").asText())
-            : config.get("schema").asText());
+        ? namingResolver.getIdentifier(config.get("schema").asText())
+        : config.get("schema").asText());
 
     properties.put("JDBC_QUERY_RESULT_FORMAT", "JSON");
 
@@ -96,4 +96,5 @@ class SnowflakeDestinationIntegrationTest {
     ((ObjectNode) config).put("schema", schemaName);
     return config;
   }
+
 }
