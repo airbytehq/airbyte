@@ -236,10 +236,6 @@ def test_processed_order_details_stream_slices(patch_incremental_base_class, moc
 
     assert list(stream_slices) == list(expected_slices)
 
-    actual_state = parent_stream_slices.call_args.kwargs["stream_state"]
-    if actual_state:
-        assert actual_state["dProcessedOn"] == stream_state["ProcessedDateTime"]
-
 
 def test_processed_order_details_request_body_data(patch_incremental_base_class):
     stream = ProcessedOrderDetails()
