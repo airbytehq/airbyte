@@ -6,8 +6,6 @@ package io.airbyte.integrations.destination.jdbc;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import io.aesy.datasize.ByteUnit.IEC;
-import io.aesy.datasize.DataSize;
 import io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
@@ -15,7 +13,8 @@ import org.junit.jupiter.api.Test;
 class StagingFilenameGeneratorTest {
 
   private static final String STREAM_NAME = RandomStringUtils.randomAlphabetic(5).toLowerCase();
-  // Equal to GlobalDataSizeConstants.MAX_BYTE_PARTS_PER_FILE / GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES
+  // Equal to GlobalDataSizeConstants.MAX_BYTE_PARTS_PER_FILE /
+  // GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES
   // because <insert explanation here>
   private static final int EXPECTED_ITERATIONS_WITH_STANDARD_BYTE_BUFFER = 4;
   private static final StagingFilenameGenerator FILENAME_GENERATOR =
