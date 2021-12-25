@@ -1,20 +1,32 @@
 import React, { Suspense } from "react";
 import { useResource } from "rest-hooks";
 import { Navigate, Route, Routes } from "react-router-dom";
+
 import { LoadingPage, MainPageWithScroll } from "components";
 import HeadTitle from "components/HeadTitle";
+
 import useRouter from "hooks/useRouter";
-import StatusView from "./components/StatusView";
-import TransformationView from "./components/TransformationView";
-import SettingsView from "./components/SettingsView";
-import ConnectionPageTitle from "./components/ConnectionPageTitle";
-import ConnectionResource from "core/resources/Connection";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+
 import FrequencyConfig from "config/FrequencyConfig.json";
+
+import ConnectionResource from "core/resources/Connection";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import { equal } from "utils/objects";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import ReplicationView from "./components/ReplicationView";
+
+import StatusView from "./components/StatusView";
+import TransformationView from "views/Connection/TransformationView";
+import SettingsView from "./components/SettingsView";
+import ConnectionPageTitle from "./components/ConnectionPageTitle";
+
+export const ConnectionSettingsRoutes = {
+  STATUS: "status",
+  TRANSFORMATION: "transformation",
+  REPLICATION: "replication",
+  SETTINGS: "settings",
+} as const;
 
 const ConnectionItemPage: React.FC = () => {
   const { params } = useRouter<{ id: string }>();
@@ -82,14 +94,13 @@ const ConnectionItemPage: React.FC = () => {
           source={source}
           destination={destination}
           currentStep={currentStep}
-          connectionId={connection.connectionId}
         />
       }
     >
       <Suspense fallback={<LoadingPage />}>
         <Routes>
           <Route
-            path="status"
+            path={ConnectionSettingsRoutes.STATUS}
             element={
               <StatusView
                 connection={connection}
@@ -99,21 +110,27 @@ const ConnectionItemPage: React.FC = () => {
               />
             }
           />
-          <Route path="transformation" element={<TransformationView />} />
           <Route
-            path="replication"
+            path={ConnectionSettingsRoutes.TRANSFORMATION}
+            element={<TransformationView />}
+          />
+          <Route
+            path={ConnectionSettingsRoutes.REPLICATION}
             element={
               <ReplicationView
                 onAfterSaveSchema={onAfterSaveSchema}
                 connectionId={connection.connectionId}
               />
             }
-          />{" "}
+          />
           <Route
-            path="settings"
+            path={ConnectionSettingsRoutes.SETTINGS}
             element={<SettingsView connectionId={connection.connectionId} />}
           />
-          <Route index element={<Navigate to="status" />} />
+          <Route
+            index
+            element={<Navigate to={ConnectionSettingsRoutes.STATUS} />}
+          />
         </Routes>
       </Suspense>
     </MainPageWithScroll>

@@ -3,22 +3,22 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
+import { useAsyncFn } from "react-use";
 
 import { Button } from "components";
-import ContentCard from "components/ContentCard";
 import useConnection, {
   useConnectionLoad,
   ValuesProps,
 } from "hooks/services/useConnectionHook";
 import ConnectionForm from "views/Connection/ConnectionForm";
-import TransferForm from "views/Connection/ConnectionForm/TransferForm";
+import TransferFormCard from "views/Connection/ConnectionForm/TransferFormCard";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
 import LoadingSchema from "components/LoadingSchema";
 
 import { equal } from "utils/objects";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
-import { useAsyncFn } from "react-use";
+import { CollapsibleCard } from "views/Connection/CollapsibleCard";
 
 type IProps = {
   onAfterSaveSchema: () => void;
@@ -59,10 +59,6 @@ const Message = styled.div`
 
 const Note = styled.span`
   color: ${({ theme }) => theme.dangerColor};
-`;
-
-const Card = styled(ContentCard)`
-  margin-bottom: 10px;
 `;
 
 const ReplicationView: React.FC<IProps> = ({
@@ -164,10 +160,9 @@ const ReplicationView: React.FC<IProps> = ({
 
   return (
     <Content>
-      <Card title={<FormattedMessage id="connection.transfer" />}>
-        <TransferForm connection={connection} />
-      </Card>
-      <ContentCard
+      <TransferFormCard connection={connection} />
+      <CollapsibleCard
+        collapsible={true}
         title={
           <Title>
             <TitleContainer hasButton={!activeUpdatingSchemaMode}>
@@ -192,7 +187,7 @@ const ReplicationView: React.FC<IProps> = ({
         ) : (
           <LoadingSchema />
         )}
-      </ContentCard>
+      </CollapsibleCard>
       {isModalOpen ? (
         <ResetDataModal
           onClose={() => setIsUpdateModalOpen(false)}

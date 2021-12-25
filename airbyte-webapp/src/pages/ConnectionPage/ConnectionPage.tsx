@@ -2,7 +2,7 @@ import React, { Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
 
 import { RoutePaths } from "../routes";
-import LoadingPage from "components/LoadingPage";
+import { LoadingPage } from "components";
 import ConnectionItemPage from "./pages/ConnectionItemPage";
 import CreationFormPage from "./pages/CreationFormPage";
 import AllConnectionsPage from "./pages/AllConnectionsPage";

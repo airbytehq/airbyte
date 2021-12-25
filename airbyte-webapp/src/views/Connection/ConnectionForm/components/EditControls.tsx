@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import { Button, Spinner } from "components";
+import { Button, LoadingButton } from "components";
 
 type IProps = {
   isSubmitting: boolean;
@@ -28,7 +28,7 @@ const Buttons = styled.div`
   margin-top: 16px;
 `;
 
-const ControlButton = styled(Button)`
+const ControlButton = styled(LoadingButton)`
   margin-left: 10px;
 `;
 
@@ -40,13 +40,6 @@ const Success = styled.span`
 
 const Error = styled(Success)`
   color: ${({ theme }) => theme.dangerColor};
-`;
-
-const SpinnerContainer = styled.div`
-  margin: -13px 0 0 10px;
-  display: inline-block;
-  position: relative;
-  top: 10px;
 `;
 
 const Line = styled.div`
@@ -66,13 +59,6 @@ const EditControls: React.FC<IProps> = ({
   withLine,
 }) => {
   const showStatusMessage = () => {
-    if (isSubmitting) {
-      return (
-        <SpinnerContainer>
-          <Spinner small />
-        </SpinnerContainer>
-      );
-    }
     if (errorMessage) {
       return <Error>{errorMessage}</Error>;
     }
@@ -105,6 +91,7 @@ const EditControls: React.FC<IProps> = ({
           </Button>
           <ControlButton
             type="submit"
+            isLoading={isSubmitting}
             disabled={
               (isSubmitting || !dirty) && (!editSchemeMode || isSubmitting)
             }

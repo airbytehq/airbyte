@@ -2,19 +2,20 @@ import React from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { FormattedMessage } from "react-intl";
 
 import { Source, Destination } from "core/domain/connector/types";
-import { FormattedMessage } from "react-intl";
 import { H6, Link } from "components";
 import { RoutePaths } from "pages/routes";
 import StepsMenu from "components/StepsMenu";
 import useRouter from "hooks/useRouter";
 
+import { ConnectionSettingsRoutes } from "../ConnectionItemPage";
+
 type IProps = {
   source: Source;
   destination: Destination;
-  connectionId: string;
-  currentStep: "status" | "settings" | "replication" | "transformation";
+  currentStep: keyof typeof ConnectionSettingsRoutes;
 };
 
 const Title = styled.div`
@@ -55,10 +56,10 @@ const ConnectionPageTitle: React.FC<IProps> = ({
       id: "replication",
       name: <FormattedMessage id="connection.replication" />,
     },
-    // {
-    //   id: "transformation",
-    //   name: <FormattedMessage id={"connectionForm.transformation.title"} />,
-    // },
+    {
+      id: "transformation",
+      name: <FormattedMessage id={"connectionForm.transformation.title"} />,
+    },
     {
       id: "settings",
       name: <FormattedMessage id="sources.settings" />,
@@ -79,12 +80,12 @@ const ConnectionPageTitle: React.FC<IProps> = ({
         <FormattedMessage id="connection.title" />
       </H6>
       <Links>
-        <ConnectorsLink to={`../../${RoutePaths.Source}/${source.sourceId}`}>
+        <ConnectorsLink to={`../../../${RoutePaths.Source}/${source.sourceId}`}>
           {source.name}
         </ConnectorsLink>
         <FontAwesomeIcon icon={faArrowRight} />
         <ConnectorsLink
-          to={`../../${RoutePaths.Destination}/${destination.destinationId}`}
+          to={`../../../${RoutePaths.Destination}/${destination.destinationId}`}
         >
           {destination.name}
         </ConnectorsLink>
