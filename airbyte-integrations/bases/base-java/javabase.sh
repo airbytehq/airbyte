@@ -3,7 +3,7 @@
 set -e
 
 # if port exists - then we're in cloud and no need to add anything
-if [[ -z $KUBERNETES_PORT ]]; then
+if [[ $IS_CAPTURE_HEAP_DUMP_ON_ERROR = true ]]; then
 
   arrayOfSupportedConnectors=("source-postgres" "source-mssql" "source-mysql" )
 
