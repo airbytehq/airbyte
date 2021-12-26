@@ -103,7 +103,7 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         stream_data = response.json()
-        next_page_token = stream_data.get(self.next_page_token_field)
+        next_page_token = stream_data.get("payload").get(self.next_page_token_field)
         if next_page_token:
             return {self.next_page_token_field: next_page_token}
 
@@ -551,8 +551,8 @@ class Orders(IncrementalAmazonSPStream):
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
-        if not next_page_token:
-            params.update({"MarketplaceIds": ",".join(self.marketplace_ids)})
+        #if not next_page_token:
+        params.update({"MarketplaceIds": ",".join(self.marketplace_ids)})
         return params
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
