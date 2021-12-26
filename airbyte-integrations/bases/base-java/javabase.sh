@@ -2,7 +2,7 @@
 
 set -e
 
-# if port exists - then we're in cloud and no need to add anything
+# if IS_CAPTURE_HEAP_DUMP_ON_ERROR is set to true, then will capture Heap dump on OutOfMemory error
 if [[ $IS_CAPTURE_HEAP_DUMP_ON_ERROR = true ]]; then
 
   arrayOfSupportedConnectors=("source-postgres" "source-mssql" "source-mysql" )
