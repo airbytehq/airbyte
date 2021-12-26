@@ -6,7 +6,7 @@ repos:
     rev: v0.8.8
     hooks:
       - id: licenseheaders
-        args: ["--tmpl=LICENSE_SHORT", "--ext=py", "--dry", "-f"]
+        args: ["--tmpl=LICENSE_SHORT", "--ext=py", "-f"]
 
   - repo: https://github.com/ambv/black
     rev: 21.11b1
@@ -17,7 +17,7 @@ repos:
     rev: 5.10.1
     hooks:
       - id: isort
-        args: ["--check", "--dont-follow-links", "--jobs=-1"]
+        args: ["--dont-follow-links", "--jobs=-1"]
         additional_dependencies: ["colorama"]
 
   - repo: https://github.com/pre-commit/mirrors-prettier
