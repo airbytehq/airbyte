@@ -231,10 +231,29 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
     return database.query(connection -> {
       final PreparedStatement ps = connection.prepareStatement(
+          // c.relkind = 'm' means Materialized View
+          // c.relacl is null or s[2] = 'r' means either null (all grants) or "r" - grants for read
+          // coalesce ('SELECT') as privilege_type\n" is set as it to match Union query, verification is done
+          // is "where" clause
           "SELECT DISTINCT table_catalog, table_schema, table_name, privilege_type\n"
               + "FROM   information_schema.table_privileges\n"
-              + "WHERE  grantee = ? AND privilege_type = 'SELECT'");
-      ps.setString(1, database.getDatabaseConfig().get("username").asText());
+              + "WHERE  grantee = ? AND privilege_type = 'SELECT'"
+              + "union all\n"
+              + "select \n"
+              + "\tr.rolname as table_catalog,\n"
+              + "\tn.nspname as table_schema,\n"
+              + "\tc.relname as table_name,\n"
+              + "    coalesce ('SELECT') as privilege_type\n"
+              + "from \n"
+              + "    pg_class c\n"
+              + "    join pg_namespace n on n.oid = relnamespace\n"
+              + "    join pg_roles r on r.oid = relowner,\n"
+              + "    unnest(coalesce(relacl::text[], format('{%s=arwdDxt/%s}', rolname, rolname)::text[])) acl, \n"
+              + "    regexp_split_to_array(acl, '=|/') s\n"
+              + "   where r.rolname = ? and  nspname = 'public' and c.relkind = 'm' and (c.relacl is null or s[2] = 'r');");
+      final String username = database.getDatabaseConfig().get("username").asText();
+      ps.setString(1, username);
+      ps.setString(2, username);
       return ps;
     }, sourceOperations::rowToJson)
         .collect(toSet())
