@@ -43,7 +43,7 @@ class JsonFormat(BaseModel):
 
     compression: str = Field(
         default="infer",
-        description="For on-the-fly decompression of on-disk data. If ‘infer’, then use gzip, bz2, zip or xz if path_or_buf is a string ending in ‘.gz’, ‘.bz2’, ‘.zip’, or ‘xz’, respectively, and no decompression otherwise. If using ‘zip’, the ZIP file must contain only one data file to be read in. Set to None for no decompression.",
+        description='For on-the-fly decompression of on-disk data. If "infer", then use gzip, bz2, zip or xz if path_or_buf is a string ending in ".gz", ".bz2", ".zip", or "xz", respectively, and no decompression otherwise. If using "zip", the ZIP file must contain only one data file to be read in. Set to None for no decompression.',
     )
 
     encoding: str = Field(default="utf8", description="The encoding to use to decode py3 bytes.")

@@ -33,6 +33,7 @@
         "title": "Format",
         "default": "csv",
         "type": "object",
+        "description": "Format of files to move",
         "oneOf": [
           {
             "title": "csv",
@@ -132,12 +133,75 @@
                 "type": "integer"
               }
             }
+          },
+          {
+            "title": "json",
+            "description": "This connector utilises <a href=\"https://pandas.pydata.org/docs/reference/api/pandas.io.json.read_json.html\" target=\"_blank\">Pandas</a> for JSON parsing.",
+            "type": "object",
+            "properties": {
+              "filetype": {
+                "title": "Filetype",
+                "const": "json",
+                "type": "string"
+              },
+              "orient": {
+                "title": "Orient",
+                "description": "Indication of expected JSON string format. Compatible JSON strings can be produced by to_json() with a corresponding orient value. Allowed values are {'split','records','index', 'columns','values', 'table'}",
+                "default": "columns",
+                "type": "string"
+              },
+              "convert_dates": {
+                "title": "Convert Dates",
+                "description": "A list of columns to parse for dates; If True, then try to parse date-like columns, default is True.",
+                "default": true,
+                "anyOf": [
+                  { "type": "boolean" },
+                  { "type": "array", "items": { "type": "string" } }
+                ]
+              },
+              "keep_default_dates": {
+                "title": "Keep Default Dates",
+                "description": "If parsing dates (convert_dates is not False), then try to parse the default datelike columns. A column label is datelike if one of these conditions is verified:\n            * it ends with '_at',\n            * it ends with '_time',\n            * it begins with 'timestamp',\n            * it is 'modified',\n            * it is 'date'\n            ",
+                "default": true,
+                "type": "boolean"
+              },
+              "lines": {
+                "title": "Lines",
+                "description": "Read the file as a json object per line.",
+                "default": true,
+                "type": "boolean"
+              },
+              "chunk_size": {
+                "title": "Chunk Size",
+                "description": "If lines is True, returns a JsonReader iterator to read batches of `chunk_size` lines instead of the whole file at once.",
+                "default": 100,
+                "type": "integer"
+              },
+              "compression": {
+                "title": "Compression",
+                "description": "For on-the-fly decompression of on-disk data. If \"infer\", then use gzip, bz2, zip or xz if path_or_buf is a string ending in \".gz\", \".bz2\", \".zip\", or \"xz\", respectively, and no decompression otherwise. If using \"zip\", the ZIP file must contain only one data file to be read in. Set to None for no decompression.",
+                "default": "infer",
+                "type": "string"
+              },
+              "encoding": {
+                "title": "Encoding",
+                "description": "The encoding to use to decode py3 bytes.",
+                "default": "utf8",
+                "type": "string"
+              },
+              "nrows": {
+                "title": "Nrows",
+                "description": "The number of lines from the line-delimited jsonfile that has to be read. This can only be passed if lines=True. If this is None, all the rows will be returned.",
+                "type": "integer"
+              }
+            }
           }
         ]
       },
       "provider": {
         "title": "S3: Amazon Web Services",
         "type": "object",
+        "description": "How to connect to AWS S3",
         "properties": {
           "bucket": {
             "title": "Bucket",

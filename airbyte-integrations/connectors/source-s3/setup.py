@@ -12,12 +12,12 @@ MAIN_REQUIREMENTS = [
     "wcmatch==8.2",
     "dill==0.3.4",
     "pytz",
+    "pandas==1.3.1",
 ]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
     "source-acceptance-test",
-    "pandas==1.3.1",
 ]
 
 setup(
