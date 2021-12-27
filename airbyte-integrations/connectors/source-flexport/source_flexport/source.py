@@ -65,16 +65,23 @@ class FlexportStream(HttpStream, ABC):
         http_error = None
         try:
             response.raise_for_status()
-        except Exception as exc:
+        except requests.HTTPError as exc:
             http_error = exc
 
-        flexport_error = json.get("error")
-        if flexport_error:
-            if "code" in flexport_error and "message" in flexport_error:
-                raise FlexportError(f"{flexport_error['code']}: {flexport_error['message']}") from http_error
+        flexport_error = None
+        try:
+            flexport_error = json.get("error")
+        except:
+            raise FlexportError("Unexpected response") from http_error
 
-            if not http_error:
-                raise FlexportError(f"Unexpected error: {flexport_error}")
+        if flexport_error:
+            try:
+                if "code" in flexport_error and "message" in flexport_error:
+                    raise FlexportError(f"{flexport_error['code']}: {flexport_error['message']}") from http_error
+            except TypeError:
+                pass
+
+            raise FlexportError(f"Unexpected error: {flexport_error}") from http_error
 
         if http_error:
             raise http_error
