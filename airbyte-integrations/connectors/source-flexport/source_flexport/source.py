@@ -48,9 +48,7 @@ class FlexportStream(HttpStream, ABC):
                 "per": qs["per"],
             }
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
+    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         if next_page_token:
             return next_page_token
 
