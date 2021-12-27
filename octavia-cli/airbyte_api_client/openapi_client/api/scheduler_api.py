@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -12,7 +15,13 @@
 import re  # noqa: F401
 import sys  # noqa: F401
 
-from openapi_client.api_client import ApiClient, Endpoint as _Endpoint
+from openapi_client.api_client import ApiClient
+from openapi_client.api_client import Endpoint as _Endpoint
+from openapi_client.model.check_connection_read import CheckConnectionRead
+from openapi_client.model.destination_core_config import DestinationCoreConfig
+from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from openapi_client.model.source_core_config import SourceCoreConfig
+from openapi_client.model.source_discover_schema_read import SourceDiscoverSchemaRead
 from openapi_client.model_utils import (  # noqa: F401
     check_allowed_values,
     check_validations,
@@ -20,13 +29,8 @@ from openapi_client.model_utils import (  # noqa: F401
     datetime,
     file_type,
     none_type,
-    validate_and_convert_types
+    validate_and_convert_types,
 )
-from openapi_client.model.check_connection_read import CheckConnectionRead
-from openapi_client.model.destination_core_config import DestinationCoreConfig
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.source_core_config import SourceCoreConfig
-from openapi_client.model.source_discover_schema_read import SourceDiscoverSchemaRead
 
 
 class SchedulerApi(object):
@@ -42,160 +46,111 @@ class SchedulerApi(object):
         self.api_client = api_client
         self.execute_destination_check_connection_endpoint = _Endpoint(
             settings={
-                'response_type': (CheckConnectionRead,),
-                'auth': [],
-                'endpoint_path': '/v1/scheduler/destinations/check_connection',
-                'operation_id': 'execute_destination_check_connection',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (CheckConnectionRead,),
+                "auth": [],
+                "endpoint_path": "/v1/scheduler/destinations/check_connection",
+                "operation_id": "execute_destination_check_connection",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'destination_core_config',
+                "all": [
+                    "destination_core_config",
                 ],
-                'required': [
-                    'destination_core_config',
+                "required": [
+                    "destination_core_config",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "destination_core_config": (DestinationCoreConfig,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "destination_core_config": "body",
                 },
-                'openapi_types': {
-                    'destination_core_config':
-                        (DestinationCoreConfig,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'destination_core_config': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.execute_source_check_connection_endpoint = _Endpoint(
             settings={
-                'response_type': (CheckConnectionRead,),
-                'auth': [],
-                'endpoint_path': '/v1/scheduler/sources/check_connection',
-                'operation_id': 'execute_source_check_connection',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (CheckConnectionRead,),
+                "auth": [],
+                "endpoint_path": "/v1/scheduler/sources/check_connection",
+                "operation_id": "execute_source_check_connection",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'source_core_config',
+                "all": [
+                    "source_core_config",
                 ],
-                'required': [
-                    'source_core_config',
+                "required": [
+                    "source_core_config",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "source_core_config": (SourceCoreConfig,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "source_core_config": "body",
                 },
-                'openapi_types': {
-                    'source_core_config':
-                        (SourceCoreConfig,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'source_core_config': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.execute_source_discover_schema_endpoint = _Endpoint(
             settings={
-                'response_type': (SourceDiscoverSchemaRead,),
-                'auth': [],
-                'endpoint_path': '/v1/scheduler/sources/discover_schema',
-                'operation_id': 'execute_source_discover_schema',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (SourceDiscoverSchemaRead,),
+                "auth": [],
+                "endpoint_path": "/v1/scheduler/sources/discover_schema",
+                "operation_id": "execute_source_discover_schema",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'source_core_config',
+                "all": [
+                    "source_core_config",
                 ],
-                'required': [
-                    'source_core_config',
+                "required": [
+                    "source_core_config",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "source_core_config": (SourceCoreConfig,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "source_core_config": "body",
                 },
-                'openapi_types': {
-                    'source_core_config':
-                        (SourceCoreConfig,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'source_core_config': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
 
-    def execute_destination_check_connection(
-        self,
-        destination_core_config,
-        **kwargs
-    ):
+    def execute_destination_check_connection(self, destination_core_config, **kwargs):
         """Run check connection for a given destination configuration  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -233,34 +188,17 @@ class SchedulerApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['destination_core_config'] = \
-            destination_core_config
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["destination_core_config"] = destination_core_config
         return self.execute_destination_check_connection_endpoint.call_with_http_info(**kwargs)
 
-    def execute_source_check_connection(
-        self,
-        source_core_config,
-        **kwargs
-    ):
+    def execute_source_check_connection(self, source_core_config, **kwargs):
         """Run check connection for a given source configuration  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -298,34 +236,17 @@ class SchedulerApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['source_core_config'] = \
-            source_core_config
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["source_core_config"] = source_core_config
         return self.execute_source_check_connection_endpoint.call_with_http_info(**kwargs)
 
-    def execute_source_discover_schema(
-        self,
-        source_core_config,
-        **kwargs
-    ):
+    def execute_source_discover_schema(self, source_core_config, **kwargs):
         """Run discover schema for a given source a source configuration  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -363,26 +284,12 @@ class SchedulerApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['source_core_config'] = \
-            source_core_config
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["source_core_config"] = source_core_config
         return self.execute_source_discover_schema_endpoint.call_with_http_info(**kwargs)
-

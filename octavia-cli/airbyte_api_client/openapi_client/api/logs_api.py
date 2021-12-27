@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -12,7 +15,11 @@
 import re  # noqa: F401
 import sys  # noqa: F401
 
-from openapi_client.api_client import ApiClient, Endpoint as _Endpoint
+from openapi_client.api_client import ApiClient
+from openapi_client.api_client import Endpoint as _Endpoint
+from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from openapi_client.model.logs_request_body import LogsRequestBody
+from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 from openapi_client.model_utils import (  # noqa: F401
     check_allowed_values,
     check_validations,
@@ -20,11 +27,8 @@ from openapi_client.model_utils import (  # noqa: F401
     datetime,
     file_type,
     none_type,
-    validate_and_convert_types
+    validate_and_convert_types,
 )
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.logs_request_body import LogsRequestBody
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 
 
 class LogsApi(object):
@@ -40,61 +44,41 @@ class LogsApi(object):
         self.api_client = api_client
         self.get_logs_endpoint = _Endpoint(
             settings={
-                'response_type': (file_type,),
-                'auth': [],
-                'endpoint_path': '/v1/logs/get',
-                'operation_id': 'get_logs',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (file_type,),
+                "auth": [],
+                "endpoint_path": "/v1/logs/get",
+                "operation_id": "get_logs",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'logs_request_body',
+                "all": [
+                    "logs_request_body",
                 ],
-                'required': [
-                    'logs_request_body',
+                "required": [
+                    "logs_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "logs_request_body": (LogsRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "logs_request_body": "body",
                 },
-                'openapi_types': {
-                    'logs_request_body':
-                        (LogsRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'logs_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'text/plain',
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["text/plain", "application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
 
-    def get_logs(
-        self,
-        logs_request_body,
-        **kwargs
-    ):
+    def get_logs(self, logs_request_body, **kwargs):
         """Get logs  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -132,26 +116,12 @@ class LogsApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['logs_request_body'] = \
-            logs_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["logs_request_body"] = logs_request_body
         return self.get_logs_endpoint.call_with_http_info(**kwargs)
-

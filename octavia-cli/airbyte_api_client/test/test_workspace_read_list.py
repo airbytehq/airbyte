@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -14,7 +17,8 @@ import unittest
 
 import openapi_client
 from openapi_client.model.workspace_read import WorkspaceRead
-globals()['WorkspaceRead'] = WorkspaceRead
+
+globals()["WorkspaceRead"] = WorkspaceRead
 from openapi_client.model.workspace_read_list import WorkspaceReadList
 
 
@@ -34,5 +38,5 @@ class TestWorkspaceReadList(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

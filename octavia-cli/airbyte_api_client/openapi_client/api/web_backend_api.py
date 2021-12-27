@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -12,16 +15,8 @@
 import re  # noqa: F401
 import sys  # noqa: F401
 
-from openapi_client.api_client import ApiClient, Endpoint as _Endpoint
-from openapi_client.model_utils import (  # noqa: F401
-    check_allowed_values,
-    check_validations,
-    date,
-    datetime,
-    file_type,
-    none_type,
-    validate_and_convert_types
-)
+from openapi_client.api_client import ApiClient
+from openapi_client.api_client import Endpoint as _Endpoint
 from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
 from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 from openapi_client.model.web_backend_connection_create import WebBackendConnectionCreate
@@ -31,6 +26,15 @@ from openapi_client.model.web_backend_connection_request_body import WebBackendC
 from openapi_client.model.web_backend_connection_search import WebBackendConnectionSearch
 from openapi_client.model.web_backend_connection_update import WebBackendConnectionUpdate
 from openapi_client.model.workspace_id_request_body import WorkspaceIdRequestBody
+from openapi_client.model_utils import (  # noqa: F401
+    check_allowed_values,
+    check_validations,
+    date,
+    datetime,
+    file_type,
+    none_type,
+    validate_and_convert_types,
+)
 
 
 class WebBackendApi(object):
@@ -46,310 +50,216 @@ class WebBackendApi(object):
         self.api_client = api_client
         self.web_backend_create_connection_endpoint = _Endpoint(
             settings={
-                'response_type': (WebBackendConnectionRead,),
-                'auth': [],
-                'endpoint_path': '/v1/web_backend/connections/create',
-                'operation_id': 'web_backend_create_connection',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (WebBackendConnectionRead,),
+                "auth": [],
+                "endpoint_path": "/v1/web_backend/connections/create",
+                "operation_id": "web_backend_create_connection",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'web_backend_connection_create',
+                "all": [
+                    "web_backend_connection_create",
                 ],
-                'required': [
-                    'web_backend_connection_create',
+                "required": [
+                    "web_backend_connection_create",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "web_backend_connection_create": (WebBackendConnectionCreate,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "web_backend_connection_create": "body",
                 },
-                'openapi_types': {
-                    'web_backend_connection_create':
-                        (WebBackendConnectionCreate,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'web_backend_connection_create': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.web_backend_get_connection_endpoint = _Endpoint(
             settings={
-                'response_type': (WebBackendConnectionRead,),
-                'auth': [],
-                'endpoint_path': '/v1/web_backend/connections/get',
-                'operation_id': 'web_backend_get_connection',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (WebBackendConnectionRead,),
+                "auth": [],
+                "endpoint_path": "/v1/web_backend/connections/get",
+                "operation_id": "web_backend_get_connection",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'web_backend_connection_request_body',
+                "all": [
+                    "web_backend_connection_request_body",
                 ],
-                'required': [
-                    'web_backend_connection_request_body',
+                "required": [
+                    "web_backend_connection_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "web_backend_connection_request_body": (WebBackendConnectionRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "web_backend_connection_request_body": "body",
                 },
-                'openapi_types': {
-                    'web_backend_connection_request_body':
-                        (WebBackendConnectionRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'web_backend_connection_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.web_backend_list_all_connections_for_workspace_endpoint = _Endpoint(
             settings={
-                'response_type': (WebBackendConnectionReadList,),
-                'auth': [],
-                'endpoint_path': '/v1/web_backend/connections/list_all',
-                'operation_id': 'web_backend_list_all_connections_for_workspace',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (WebBackendConnectionReadList,),
+                "auth": [],
+                "endpoint_path": "/v1/web_backend/connections/list_all",
+                "operation_id": "web_backend_list_all_connections_for_workspace",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'workspace_id_request_body',
+                "all": [
+                    "workspace_id_request_body",
                 ],
-                'required': [
-                    'workspace_id_request_body',
+                "required": [
+                    "workspace_id_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "workspace_id_request_body": (WorkspaceIdRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "workspace_id_request_body": "body",
                 },
-                'openapi_types': {
-                    'workspace_id_request_body':
-                        (WorkspaceIdRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'workspace_id_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.web_backend_list_connections_for_workspace_endpoint = _Endpoint(
             settings={
-                'response_type': (WebBackendConnectionReadList,),
-                'auth': [],
-                'endpoint_path': '/v1/web_backend/connections/list',
-                'operation_id': 'web_backend_list_connections_for_workspace',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (WebBackendConnectionReadList,),
+                "auth": [],
+                "endpoint_path": "/v1/web_backend/connections/list",
+                "operation_id": "web_backend_list_connections_for_workspace",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'workspace_id_request_body',
+                "all": [
+                    "workspace_id_request_body",
                 ],
-                'required': [
-                    'workspace_id_request_body',
+                "required": [
+                    "workspace_id_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "workspace_id_request_body": (WorkspaceIdRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "workspace_id_request_body": "body",
                 },
-                'openapi_types': {
-                    'workspace_id_request_body':
-                        (WorkspaceIdRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'workspace_id_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.web_backend_search_connections_endpoint = _Endpoint(
             settings={
-                'response_type': (WebBackendConnectionReadList,),
-                'auth': [],
-                'endpoint_path': '/v1/web_backend/connections/search',
-                'operation_id': 'web_backend_search_connections',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (WebBackendConnectionReadList,),
+                "auth": [],
+                "endpoint_path": "/v1/web_backend/connections/search",
+                "operation_id": "web_backend_search_connections",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'web_backend_connection_search',
+                "all": [
+                    "web_backend_connection_search",
                 ],
-                'required': [
-                    'web_backend_connection_search',
+                "required": [
+                    "web_backend_connection_search",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "web_backend_connection_search": (WebBackendConnectionSearch,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "web_backend_connection_search": "body",
                 },
-                'openapi_types': {
-                    'web_backend_connection_search':
-                        (WebBackendConnectionSearch,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'web_backend_connection_search': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.web_backend_update_connection_endpoint = _Endpoint(
             settings={
-                'response_type': (WebBackendConnectionRead,),
-                'auth': [],
-                'endpoint_path': '/v1/web_backend/connections/update',
-                'operation_id': 'web_backend_update_connection',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (WebBackendConnectionRead,),
+                "auth": [],
+                "endpoint_path": "/v1/web_backend/connections/update",
+                "operation_id": "web_backend_update_connection",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'web_backend_connection_update',
+                "all": [
+                    "web_backend_connection_update",
                 ],
-                'required': [
-                    'web_backend_connection_update',
+                "required": [
+                    "web_backend_connection_update",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "web_backend_connection_update": (WebBackendConnectionUpdate,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "web_backend_connection_update": "body",
                 },
-                'openapi_types': {
-                    'web_backend_connection_update':
-                        (WebBackendConnectionUpdate,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'web_backend_connection_update': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
 
-    def web_backend_create_connection(
-        self,
-        web_backend_connection_create,
-        **kwargs
-    ):
+    def web_backend_create_connection(self, web_backend_connection_create, **kwargs):
         """Create a connection  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -387,34 +297,17 @@ class WebBackendApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['web_backend_connection_create'] = \
-            web_backend_connection_create
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["web_backend_connection_create"] = web_backend_connection_create
         return self.web_backend_create_connection_endpoint.call_with_http_info(**kwargs)
 
-    def web_backend_get_connection(
-        self,
-        web_backend_connection_request_body,
-        **kwargs
-    ):
+    def web_backend_get_connection(self, web_backend_connection_request_body, **kwargs):
         """Get a connection  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -452,34 +345,17 @@ class WebBackendApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['web_backend_connection_request_body'] = \
-            web_backend_connection_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["web_backend_connection_request_body"] = web_backend_connection_request_body
         return self.web_backend_get_connection_endpoint.call_with_http_info(**kwargs)
 
-    def web_backend_list_all_connections_for_workspace(
-        self,
-        workspace_id_request_body,
-        **kwargs
-    ):
+    def web_backend_list_all_connections_for_workspace(self, workspace_id_request_body, **kwargs):
         """Returns all connections for a workspace.  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -517,34 +393,17 @@ class WebBackendApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['workspace_id_request_body'] = \
-            workspace_id_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["workspace_id_request_body"] = workspace_id_request_body
         return self.web_backend_list_all_connections_for_workspace_endpoint.call_with_http_info(**kwargs)
 
-    def web_backend_list_connections_for_workspace(
-        self,
-        workspace_id_request_body,
-        **kwargs
-    ):
+    def web_backend_list_connections_for_workspace(self, workspace_id_request_body, **kwargs):
         """Returns all non-deleted connections for a workspace.  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -582,34 +441,17 @@ class WebBackendApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['workspace_id_request_body'] = \
-            workspace_id_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["workspace_id_request_body"] = workspace_id_request_body
         return self.web_backend_list_connections_for_workspace_endpoint.call_with_http_info(**kwargs)
 
-    def web_backend_search_connections(
-        self,
-        web_backend_connection_search,
-        **kwargs
-    ):
+    def web_backend_search_connections(self, web_backend_connection_search, **kwargs):
         """Search connections  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -647,34 +489,17 @@ class WebBackendApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['web_backend_connection_search'] = \
-            web_backend_connection_search
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["web_backend_connection_search"] = web_backend_connection_search
         return self.web_backend_search_connections_endpoint.call_with_http_info(**kwargs)
 
-    def web_backend_update_connection(
-        self,
-        web_backend_connection_update,
-        **kwargs
-    ):
+    def web_backend_update_connection(self, web_backend_connection_update, **kwargs):
         """Update a connection  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -712,26 +537,12 @@ class WebBackendApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['web_backend_connection_update'] = \
-            web_backend_connection_update
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["web_backend_connection_update"] = web_backend_connection_update
         return self.web_backend_update_connection_endpoint.call_with_http_info(**kwargs)
-

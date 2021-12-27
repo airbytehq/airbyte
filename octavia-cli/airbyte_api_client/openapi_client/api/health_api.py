@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -12,7 +15,9 @@
 import re  # noqa: F401
 import sys  # noqa: F401
 
-from openapi_client.api_client import ApiClient, Endpoint as _Endpoint
+from openapi_client.api_client import ApiClient
+from openapi_client.api_client import Endpoint as _Endpoint
+from openapi_client.model.health_check_read import HealthCheckRead
 from openapi_client.model_utils import (  # noqa: F401
     check_allowed_values,
     check_validations,
@@ -20,9 +25,8 @@ from openapi_client.model_utils import (  # noqa: F401
     datetime,
     file_type,
     none_type,
-    validate_and_convert_types
+    validate_and_convert_types,
 )
-from openapi_client.model.health_check_read import HealthCheckRead
 
 
 class HealthApi(object):
@@ -38,51 +42,30 @@ class HealthApi(object):
         self.api_client = api_client
         self.get_health_check_endpoint = _Endpoint(
             settings={
-                'response_type': (HealthCheckRead,),
-                'auth': [],
-                'endpoint_path': '/v1/health',
-                'operation_id': 'get_health_check',
-                'http_method': 'GET',
-                'servers': None,
+                "response_type": (HealthCheckRead,),
+                "auth": [],
+                "endpoint_path": "/v1/health",
+                "operation_id": "get_health_check",
+                "http_method": "GET",
+                "servers": None,
             },
-            params_map={
-                'all': [
-                ],
-                'required': [],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
-            },
+            params_map={"all": [], "required": [], "nullable": [], "enum": [], "validation": []},
             root_map={
-                'validations': {
-                },
-                'allowed_values': {
-                },
-                'openapi_types': {
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                },
-                'collection_format_map': {
-                }
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {},
+                "attribute_map": {},
+                "location_map": {},
+                "collection_format_map": {},
             },
             headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [],
+                "accept": ["application/json"],
+                "content_type": [],
             },
-            api_client=api_client
+            api_client=api_client,
         )
 
-    def get_health_check(
-        self,
-        **kwargs
-    ):
+    def get_health_check(self, **kwargs):
         """Health Check  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -118,24 +101,11 @@ class HealthApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
         return self.get_health_check_endpoint.call_with_http_info(**kwargs)
-

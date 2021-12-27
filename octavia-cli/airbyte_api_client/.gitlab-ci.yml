@@ -6,9 +6,9 @@ stages:
 .tests:
   stage: test
   script:
-   - pip install -r requirements.txt
-   - pip install -r test-requirements.txt
-   - pytest --cov=openapi_client
+    - pip install -r requirements.txt
+    - pip install -r test-requirements.txt
+    - pytest --cov=openapi_client
 
 test-3.6:
   extends: .tests

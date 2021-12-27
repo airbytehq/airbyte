@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -12,16 +15,8 @@
 import re  # noqa: F401
 import sys  # noqa: F401
 
-from openapi_client.api_client import ApiClient, Endpoint as _Endpoint
-from openapi_client.model_utils import (  # noqa: F401
-    check_allowed_values,
-    check_validations,
-    date,
-    datetime,
-    file_type,
-    none_type,
-    validate_and_convert_types
-)
+from openapi_client.api_client import ApiClient
+from openapi_client.api_client import Endpoint as _Endpoint
 from openapi_client.model.check_connection_read import CheckConnectionRead
 from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
 from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
@@ -33,6 +28,15 @@ from openapi_client.model.source_read_list import SourceReadList
 from openapi_client.model.source_search import SourceSearch
 from openapi_client.model.source_update import SourceUpdate
 from openapi_client.model.workspace_id_request_body import WorkspaceIdRequestBody
+from openapi_client.model_utils import (  # noqa: F401
+    check_allowed_values,
+    check_validations,
+    date,
+    datetime,
+    file_type,
+    none_type,
+    validate_and_convert_types,
+)
 
 
 class SourceApi(object):
@@ -48,460 +52,321 @@ class SourceApi(object):
         self.api_client = api_client
         self.check_connection_to_source_endpoint = _Endpoint(
             settings={
-                'response_type': (CheckConnectionRead,),
-                'auth': [],
-                'endpoint_path': '/v1/sources/check_connection',
-                'operation_id': 'check_connection_to_source',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (CheckConnectionRead,),
+                "auth": [],
+                "endpoint_path": "/v1/sources/check_connection",
+                "operation_id": "check_connection_to_source",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'source_id_request_body',
+                "all": [
+                    "source_id_request_body",
                 ],
-                'required': [
-                    'source_id_request_body',
+                "required": [
+                    "source_id_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "source_id_request_body": (SourceIdRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "source_id_request_body": "body",
                 },
-                'openapi_types': {
-                    'source_id_request_body':
-                        (SourceIdRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'source_id_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.check_connection_to_source_for_update_endpoint = _Endpoint(
             settings={
-                'response_type': (CheckConnectionRead,),
-                'auth': [],
-                'endpoint_path': '/v1/sources/check_connection_for_update',
-                'operation_id': 'check_connection_to_source_for_update',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (CheckConnectionRead,),
+                "auth": [],
+                "endpoint_path": "/v1/sources/check_connection_for_update",
+                "operation_id": "check_connection_to_source_for_update",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'source_update',
+                "all": [
+                    "source_update",
                 ],
-                'required': [
-                    'source_update',
+                "required": [
+                    "source_update",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "source_update": (SourceUpdate,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "source_update": "body",
                 },
-                'openapi_types': {
-                    'source_update':
-                        (SourceUpdate,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'source_update': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.create_source_endpoint = _Endpoint(
             settings={
-                'response_type': (SourceRead,),
-                'auth': [],
-                'endpoint_path': '/v1/sources/create',
-                'operation_id': 'create_source',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (SourceRead,),
+                "auth": [],
+                "endpoint_path": "/v1/sources/create",
+                "operation_id": "create_source",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'source_create',
+                "all": [
+                    "source_create",
                 ],
-                'required': [
-                    'source_create',
+                "required": [
+                    "source_create",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "source_create": (SourceCreate,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "source_create": "body",
                 },
-                'openapi_types': {
-                    'source_create':
-                        (SourceCreate,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'source_create': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.delete_source_endpoint = _Endpoint(
             settings={
-                'response_type': None,
-                'auth': [],
-                'endpoint_path': '/v1/sources/delete',
-                'operation_id': 'delete_source',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": None,
+                "auth": [],
+                "endpoint_path": "/v1/sources/delete",
+                "operation_id": "delete_source",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'source_id_request_body',
+                "all": [
+                    "source_id_request_body",
                 ],
-                'required': [
-                    'source_id_request_body',
+                "required": [
+                    "source_id_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "source_id_request_body": (SourceIdRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "source_id_request_body": "body",
                 },
-                'openapi_types': {
-                    'source_id_request_body':
-                        (SourceIdRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'source_id_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.discover_schema_for_source_endpoint = _Endpoint(
             settings={
-                'response_type': (SourceDiscoverSchemaRead,),
-                'auth': [],
-                'endpoint_path': '/v1/sources/discover_schema',
-                'operation_id': 'discover_schema_for_source',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (SourceDiscoverSchemaRead,),
+                "auth": [],
+                "endpoint_path": "/v1/sources/discover_schema",
+                "operation_id": "discover_schema_for_source",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'source_id_request_body',
+                "all": [
+                    "source_id_request_body",
                 ],
-                'required': [
-                    'source_id_request_body',
+                "required": [
+                    "source_id_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "source_id_request_body": (SourceIdRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "source_id_request_body": "body",
                 },
-                'openapi_types': {
-                    'source_id_request_body':
-                        (SourceIdRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'source_id_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.get_source_endpoint = _Endpoint(
             settings={
-                'response_type': (SourceRead,),
-                'auth': [],
-                'endpoint_path': '/v1/sources/get',
-                'operation_id': 'get_source',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (SourceRead,),
+                "auth": [],
+                "endpoint_path": "/v1/sources/get",
+                "operation_id": "get_source",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'source_id_request_body',
+                "all": [
+                    "source_id_request_body",
                 ],
-                'required': [
-                    'source_id_request_body',
+                "required": [
+                    "source_id_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "source_id_request_body": (SourceIdRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "source_id_request_body": "body",
                 },
-                'openapi_types': {
-                    'source_id_request_body':
-                        (SourceIdRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'source_id_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.list_sources_for_workspace_endpoint = _Endpoint(
             settings={
-                'response_type': (SourceReadList,),
-                'auth': [],
-                'endpoint_path': '/v1/sources/list',
-                'operation_id': 'list_sources_for_workspace',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (SourceReadList,),
+                "auth": [],
+                "endpoint_path": "/v1/sources/list",
+                "operation_id": "list_sources_for_workspace",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'workspace_id_request_body',
+                "all": [
+                    "workspace_id_request_body",
                 ],
-                'required': [
-                    'workspace_id_request_body',
+                "required": [
+                    "workspace_id_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "workspace_id_request_body": (WorkspaceIdRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "workspace_id_request_body": "body",
                 },
-                'openapi_types': {
-                    'workspace_id_request_body':
-                        (WorkspaceIdRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'workspace_id_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.search_sources_endpoint = _Endpoint(
             settings={
-                'response_type': (SourceReadList,),
-                'auth': [],
-                'endpoint_path': '/v1/sources/search',
-                'operation_id': 'search_sources',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (SourceReadList,),
+                "auth": [],
+                "endpoint_path": "/v1/sources/search",
+                "operation_id": "search_sources",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'source_search',
+                "all": [
+                    "source_search",
                 ],
-                'required': [
-                    'source_search',
+                "required": [
+                    "source_search",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "source_search": (SourceSearch,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "source_search": "body",
                 },
-                'openapi_types': {
-                    'source_search':
-                        (SourceSearch,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'source_search': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.update_source_endpoint = _Endpoint(
             settings={
-                'response_type': (SourceRead,),
-                'auth': [],
-                'endpoint_path': '/v1/sources/update',
-                'operation_id': 'update_source',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (SourceRead,),
+                "auth": [],
+                "endpoint_path": "/v1/sources/update",
+                "operation_id": "update_source",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'source_update',
+                "all": [
+                    "source_update",
                 ],
-                'required': [
-                    'source_update',
+                "required": [
+                    "source_update",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "source_update": (SourceUpdate,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "source_update": "body",
                 },
-                'openapi_types': {
-                    'source_update':
-                        (SourceUpdate,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'source_update': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
 
-    def check_connection_to_source(
-        self,
-        source_id_request_body,
-        **kwargs
-    ):
+    def check_connection_to_source(self, source_id_request_body, **kwargs):
         """Check connection to the source  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -539,34 +404,17 @@ class SourceApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['source_id_request_body'] = \
-            source_id_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["source_id_request_body"] = source_id_request_body
         return self.check_connection_to_source_endpoint.call_with_http_info(**kwargs)
 
-    def check_connection_to_source_for_update(
-        self,
-        source_update,
-        **kwargs
-    ):
+    def check_connection_to_source_for_update(self, source_update, **kwargs):
         """Check connection for a proposed update to a source  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -604,34 +452,17 @@ class SourceApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['source_update'] = \
-            source_update
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["source_update"] = source_update
         return self.check_connection_to_source_for_update_endpoint.call_with_http_info(**kwargs)
 
-    def create_source(
-        self,
-        source_create,
-        **kwargs
-    ):
+    def create_source(self, source_create, **kwargs):
         """Create a source  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -669,34 +500,17 @@ class SourceApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['source_create'] = \
-            source_create
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["source_create"] = source_create
         return self.create_source_endpoint.call_with_http_info(**kwargs)
 
-    def delete_source(
-        self,
-        source_id_request_body,
-        **kwargs
-    ):
+    def delete_source(self, source_id_request_body, **kwargs):
         """Delete a source  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -734,34 +548,17 @@ class SourceApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['source_id_request_body'] = \
-            source_id_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["source_id_request_body"] = source_id_request_body
         return self.delete_source_endpoint.call_with_http_info(**kwargs)
 
-    def discover_schema_for_source(
-        self,
-        source_id_request_body,
-        **kwargs
-    ):
+    def discover_schema_for_source(self, source_id_request_body, **kwargs):
         """Discover the schema catalog of the source  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -799,34 +596,17 @@ class SourceApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['source_id_request_body'] = \
-            source_id_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["source_id_request_body"] = source_id_request_body
         return self.discover_schema_for_source_endpoint.call_with_http_info(**kwargs)
 
-    def get_source(
-        self,
-        source_id_request_body,
-        **kwargs
-    ):
+    def get_source(self, source_id_request_body, **kwargs):
         """Get source  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -864,34 +644,17 @@ class SourceApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['source_id_request_body'] = \
-            source_id_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["source_id_request_body"] = source_id_request_body
         return self.get_source_endpoint.call_with_http_info(**kwargs)
 
-    def list_sources_for_workspace(
-        self,
-        workspace_id_request_body,
-        **kwargs
-    ):
+    def list_sources_for_workspace(self, workspace_id_request_body, **kwargs):
         """List sources for workspace  # noqa: E501
 
         List sources for workspace. Does not return deleted sources.  # noqa: E501
@@ -930,34 +693,17 @@ class SourceApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['workspace_id_request_body'] = \
-            workspace_id_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["workspace_id_request_body"] = workspace_id_request_body
         return self.list_sources_for_workspace_endpoint.call_with_http_info(**kwargs)
 
-    def search_sources(
-        self,
-        source_search,
-        **kwargs
-    ):
+    def search_sources(self, source_search, **kwargs):
         """Search sources  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -995,34 +741,17 @@ class SourceApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['source_search'] = \
-            source_search
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["source_search"] = source_search
         return self.search_sources_endpoint.call_with_http_info(**kwargs)
 
-    def update_source(
-        self,
-        source_update,
-        **kwargs
-    ):
+    def update_source(self, source_update, **kwargs):
         """Update a source  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -1060,26 +789,12 @@ class SourceApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['source_update'] = \
-            source_update
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["source_update"] = source_update
         return self.update_source_endpoint.call_with_http_info(**kwargs)
-

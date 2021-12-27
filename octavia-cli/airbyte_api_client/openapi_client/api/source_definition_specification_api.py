@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -12,7 +15,12 @@
 import re  # noqa: F401
 import sys  # noqa: F401
 
-from openapi_client.api_client import ApiClient, Endpoint as _Endpoint
+from openapi_client.api_client import ApiClient
+from openapi_client.api_client import Endpoint as _Endpoint
+from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from openapi_client.model.source_definition_id_request_body import SourceDefinitionIdRequestBody
+from openapi_client.model.source_definition_specification_read import SourceDefinitionSpecificationRead
 from openapi_client.model_utils import (  # noqa: F401
     check_allowed_values,
     check_validations,
@@ -20,12 +28,8 @@ from openapi_client.model_utils import (  # noqa: F401
     datetime,
     file_type,
     none_type,
-    validate_and_convert_types
+    validate_and_convert_types,
 )
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.source_definition_id_request_body import SourceDefinitionIdRequestBody
-from openapi_client.model.source_definition_specification_read import SourceDefinitionSpecificationRead
 
 
 class SourceDefinitionSpecificationApi(object):
@@ -41,60 +45,41 @@ class SourceDefinitionSpecificationApi(object):
         self.api_client = api_client
         self.get_source_definition_specification_endpoint = _Endpoint(
             settings={
-                'response_type': (SourceDefinitionSpecificationRead,),
-                'auth': [],
-                'endpoint_path': '/v1/source_definition_specifications/get',
-                'operation_id': 'get_source_definition_specification',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (SourceDefinitionSpecificationRead,),
+                "auth": [],
+                "endpoint_path": "/v1/source_definition_specifications/get",
+                "operation_id": "get_source_definition_specification",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'source_definition_id_request_body',
+                "all": [
+                    "source_definition_id_request_body",
                 ],
-                'required': [
-                    'source_definition_id_request_body',
+                "required": [
+                    "source_definition_id_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "source_definition_id_request_body": (SourceDefinitionIdRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "source_definition_id_request_body": "body",
                 },
-                'openapi_types': {
-                    'source_definition_id_request_body':
-                        (SourceDefinitionIdRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'source_definition_id_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
 
-    def get_source_definition_specification(
-        self,
-        source_definition_id_request_body,
-        **kwargs
-    ):
+    def get_source_definition_specification(self, source_definition_id_request_body, **kwargs):
         """Get specification for a SourceDefinition.  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -132,26 +117,12 @@ class SourceDefinitionSpecificationApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['source_definition_id_request_body'] = \
-            source_definition_id_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["source_definition_id_request_body"] = source_definition_id_request_body
         return self.get_source_definition_specification_endpoint.call_with_http_info(**kwargs)
-

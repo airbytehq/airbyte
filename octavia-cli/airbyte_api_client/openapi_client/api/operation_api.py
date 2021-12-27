@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -12,16 +15,8 @@
 import re  # noqa: F401
 import sys  # noqa: F401
 
-from openapi_client.api_client import ApiClient, Endpoint as _Endpoint
-from openapi_client.model_utils import (  # noqa: F401
-    check_allowed_values,
-    check_validations,
-    date,
-    datetime,
-    file_type,
-    none_type,
-    validate_and_convert_types
-)
+from openapi_client.api_client import ApiClient
+from openapi_client.api_client import Endpoint as _Endpoint
 from openapi_client.model.check_operation_read import CheckOperationRead
 from openapi_client.model.connection_id_request_body import ConnectionIdRequestBody
 from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
@@ -32,6 +27,15 @@ from openapi_client.model.operation_read import OperationRead
 from openapi_client.model.operation_read_list import OperationReadList
 from openapi_client.model.operation_update import OperationUpdate
 from openapi_client.model.operator_configuration import OperatorConfiguration
+from openapi_client.model_utils import (  # noqa: F401
+    check_allowed_values,
+    check_validations,
+    date,
+    datetime,
+    file_type,
+    none_type,
+    validate_and_convert_types,
+)
 
 
 class OperationApi(object):
@@ -47,310 +51,216 @@ class OperationApi(object):
         self.api_client = api_client
         self.check_operation_endpoint = _Endpoint(
             settings={
-                'response_type': (CheckOperationRead,),
-                'auth': [],
-                'endpoint_path': '/v1/operations/check',
-                'operation_id': 'check_operation',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (CheckOperationRead,),
+                "auth": [],
+                "endpoint_path": "/v1/operations/check",
+                "operation_id": "check_operation",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'operator_configuration',
+                "all": [
+                    "operator_configuration",
                 ],
-                'required': [
-                    'operator_configuration',
+                "required": [
+                    "operator_configuration",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "operator_configuration": (OperatorConfiguration,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "operator_configuration": "body",
                 },
-                'openapi_types': {
-                    'operator_configuration':
-                        (OperatorConfiguration,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'operator_configuration': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.create_operation_endpoint = _Endpoint(
             settings={
-                'response_type': (OperationRead,),
-                'auth': [],
-                'endpoint_path': '/v1/operations/create',
-                'operation_id': 'create_operation',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (OperationRead,),
+                "auth": [],
+                "endpoint_path": "/v1/operations/create",
+                "operation_id": "create_operation",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'operation_create',
+                "all": [
+                    "operation_create",
                 ],
-                'required': [
-                    'operation_create',
+                "required": [
+                    "operation_create",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "operation_create": (OperationCreate,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "operation_create": "body",
                 },
-                'openapi_types': {
-                    'operation_create':
-                        (OperationCreate,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'operation_create': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.delete_operation_endpoint = _Endpoint(
             settings={
-                'response_type': None,
-                'auth': [],
-                'endpoint_path': '/v1/operations/delete',
-                'operation_id': 'delete_operation',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": None,
+                "auth": [],
+                "endpoint_path": "/v1/operations/delete",
+                "operation_id": "delete_operation",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'operation_id_request_body',
+                "all": [
+                    "operation_id_request_body",
                 ],
-                'required': [
-                    'operation_id_request_body',
+                "required": [
+                    "operation_id_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "operation_id_request_body": (OperationIdRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "operation_id_request_body": "body",
                 },
-                'openapi_types': {
-                    'operation_id_request_body':
-                        (OperationIdRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'operation_id_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.get_operation_endpoint = _Endpoint(
             settings={
-                'response_type': (OperationRead,),
-                'auth': [],
-                'endpoint_path': '/v1/operations/get',
-                'operation_id': 'get_operation',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (OperationRead,),
+                "auth": [],
+                "endpoint_path": "/v1/operations/get",
+                "operation_id": "get_operation",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'operation_id_request_body',
+                "all": [
+                    "operation_id_request_body",
                 ],
-                'required': [
-                    'operation_id_request_body',
+                "required": [
+                    "operation_id_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "operation_id_request_body": (OperationIdRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "operation_id_request_body": "body",
                 },
-                'openapi_types': {
-                    'operation_id_request_body':
-                        (OperationIdRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'operation_id_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.list_operations_for_connection_endpoint = _Endpoint(
             settings={
-                'response_type': (OperationReadList,),
-                'auth': [],
-                'endpoint_path': '/v1/operations/list',
-                'operation_id': 'list_operations_for_connection',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (OperationReadList,),
+                "auth": [],
+                "endpoint_path": "/v1/operations/list",
+                "operation_id": "list_operations_for_connection",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'connection_id_request_body',
+                "all": [
+                    "connection_id_request_body",
                 ],
-                'required': [
-                    'connection_id_request_body',
+                "required": [
+                    "connection_id_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "connection_id_request_body": (ConnectionIdRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "connection_id_request_body": "body",
                 },
-                'openapi_types': {
-                    'connection_id_request_body':
-                        (ConnectionIdRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'connection_id_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.update_operation_endpoint = _Endpoint(
             settings={
-                'response_type': (OperationRead,),
-                'auth': [],
-                'endpoint_path': '/v1/operations/update',
-                'operation_id': 'update_operation',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (OperationRead,),
+                "auth": [],
+                "endpoint_path": "/v1/operations/update",
+                "operation_id": "update_operation",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'operation_update',
+                "all": [
+                    "operation_update",
                 ],
-                'required': [
-                    'operation_update',
+                "required": [
+                    "operation_update",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "operation_update": (OperationUpdate,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "operation_update": "body",
                 },
-                'openapi_types': {
-                    'operation_update':
-                        (OperationUpdate,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'operation_update': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
 
-    def check_operation(
-        self,
-        operator_configuration,
-        **kwargs
-    ):
+    def check_operation(self, operator_configuration, **kwargs):
         """Check if an operation to be created is valid  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -388,34 +298,17 @@ class OperationApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['operator_configuration'] = \
-            operator_configuration
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["operator_configuration"] = operator_configuration
         return self.check_operation_endpoint.call_with_http_info(**kwargs)
 
-    def create_operation(
-        self,
-        operation_create,
-        **kwargs
-    ):
+    def create_operation(self, operation_create, **kwargs):
         """Create an operation to be applied as part of a connection pipeline  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -453,34 +346,17 @@ class OperationApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['operation_create'] = \
-            operation_create
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["operation_create"] = operation_create
         return self.create_operation_endpoint.call_with_http_info(**kwargs)
 
-    def delete_operation(
-        self,
-        operation_id_request_body,
-        **kwargs
-    ):
+    def delete_operation(self, operation_id_request_body, **kwargs):
         """Delete an operation  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -518,34 +394,17 @@ class OperationApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['operation_id_request_body'] = \
-            operation_id_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["operation_id_request_body"] = operation_id_request_body
         return self.delete_operation_endpoint.call_with_http_info(**kwargs)
 
-    def get_operation(
-        self,
-        operation_id_request_body,
-        **kwargs
-    ):
+    def get_operation(self, operation_id_request_body, **kwargs):
         """Returns an operation  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -583,34 +442,17 @@ class OperationApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['operation_id_request_body'] = \
-            operation_id_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["operation_id_request_body"] = operation_id_request_body
         return self.get_operation_endpoint.call_with_http_info(**kwargs)
 
-    def list_operations_for_connection(
-        self,
-        connection_id_request_body,
-        **kwargs
-    ):
+    def list_operations_for_connection(self, connection_id_request_body, **kwargs):
         """Returns all operations for a connection.  # noqa: E501
 
         List operations for connection.  # noqa: E501
@@ -649,34 +491,17 @@ class OperationApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['connection_id_request_body'] = \
-            connection_id_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["connection_id_request_body"] = connection_id_request_body
         return self.list_operations_for_connection_endpoint.call_with_http_info(**kwargs)
 
-    def update_operation(
-        self,
-        operation_update,
-        **kwargs
-    ):
+    def update_operation(self, operation_update, **kwargs):
         """Update an operation  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -714,26 +539,12 @@ class OperationApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['operation_update'] = \
-            operation_update
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["operation_update"] = operation_update
         return self.update_operation_endpoint.call_with_http_info(**kwargs)
-

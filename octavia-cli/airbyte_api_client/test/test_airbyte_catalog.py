@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -14,7 +17,8 @@ import unittest
 
 import openapi_client
 from openapi_client.model.airbyte_stream_and_configuration import AirbyteStreamAndConfiguration
-globals()['AirbyteStreamAndConfiguration'] = AirbyteStreamAndConfiguration
+
+globals()["AirbyteStreamAndConfiguration"] = AirbyteStreamAndConfiguration
 from openapi_client.model.airbyte_catalog import AirbyteCatalog
 
 
@@ -34,5 +38,5 @@ class TestAirbyteCatalog(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

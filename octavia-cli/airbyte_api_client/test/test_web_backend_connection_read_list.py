@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -14,7 +17,8 @@ import unittest
 
 import openapi_client
 from openapi_client.model.web_backend_connection_read import WebBackendConnectionRead
-globals()['WebBackendConnectionRead'] = WebBackendConnectionRead
+
+globals()["WebBackendConnectionRead"] = WebBackendConnectionRead
 from openapi_client.model.web_backend_connection_read_list import WebBackendConnectionReadList
 
 
@@ -34,5 +38,5 @@ class TestWebBackendConnectionReadList(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

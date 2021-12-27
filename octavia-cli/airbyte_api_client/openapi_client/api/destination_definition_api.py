@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -12,16 +15,8 @@
 import re  # noqa: F401
 import sys  # noqa: F401
 
-from openapi_client.api_client import ApiClient, Endpoint as _Endpoint
-from openapi_client.model_utils import (  # noqa: F401
-    check_allowed_values,
-    check_validations,
-    date,
-    datetime,
-    file_type,
-    none_type,
-    validate_and_convert_types
-)
+from openapi_client.api_client import ApiClient
+from openapi_client.api_client import Endpoint as _Endpoint
 from openapi_client.model.destination_definition_create import DestinationDefinitionCreate
 from openapi_client.model.destination_definition_id_request_body import DestinationDefinitionIdRequestBody
 from openapi_client.model.destination_definition_read import DestinationDefinitionRead
@@ -29,6 +24,15 @@ from openapi_client.model.destination_definition_read_list import DestinationDef
 from openapi_client.model.destination_definition_update import DestinationDefinitionUpdate
 from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
 from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from openapi_client.model_utils import (  # noqa: F401
+    check_allowed_values,
+    check_validations,
+    date,
+    datetime,
+    file_type,
+    none_type,
+    validate_and_convert_types,
+)
 
 
 class DestinationDefinitionApi(object):
@@ -44,291 +48,192 @@ class DestinationDefinitionApi(object):
         self.api_client = api_client
         self.create_destination_definition_endpoint = _Endpoint(
             settings={
-                'response_type': (DestinationDefinitionRead,),
-                'auth': [],
-                'endpoint_path': '/v1/destination_definitions/create',
-                'operation_id': 'create_destination_definition',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (DestinationDefinitionRead,),
+                "auth": [],
+                "endpoint_path": "/v1/destination_definitions/create",
+                "operation_id": "create_destination_definition",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'destination_definition_create',
+                "all": [
+                    "destination_definition_create",
                 ],
-                'required': [],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "required": [],
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "destination_definition_create": (DestinationDefinitionCreate,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "destination_definition_create": "body",
                 },
-                'openapi_types': {
-                    'destination_definition_create':
-                        (DestinationDefinitionCreate,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'destination_definition_create': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.delete_destination_definition_endpoint = _Endpoint(
             settings={
-                'response_type': None,
-                'auth': [],
-                'endpoint_path': '/v1/destination_definitions/delete',
-                'operation_id': 'delete_destination_definition',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": None,
+                "auth": [],
+                "endpoint_path": "/v1/destination_definitions/delete",
+                "operation_id": "delete_destination_definition",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'destination_definition_id_request_body',
+                "all": [
+                    "destination_definition_id_request_body",
                 ],
-                'required': [
-                    'destination_definition_id_request_body',
+                "required": [
+                    "destination_definition_id_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "destination_definition_id_request_body": (DestinationDefinitionIdRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "destination_definition_id_request_body": "body",
                 },
-                'openapi_types': {
-                    'destination_definition_id_request_body':
-                        (DestinationDefinitionIdRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'destination_definition_id_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.get_destination_definition_endpoint = _Endpoint(
             settings={
-                'response_type': (DestinationDefinitionRead,),
-                'auth': [],
-                'endpoint_path': '/v1/destination_definitions/get',
-                'operation_id': 'get_destination_definition',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (DestinationDefinitionRead,),
+                "auth": [],
+                "endpoint_path": "/v1/destination_definitions/get",
+                "operation_id": "get_destination_definition",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'destination_definition_id_request_body',
+                "all": [
+                    "destination_definition_id_request_body",
                 ],
-                'required': [
-                    'destination_definition_id_request_body',
+                "required": [
+                    "destination_definition_id_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "destination_definition_id_request_body": (DestinationDefinitionIdRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "destination_definition_id_request_body": "body",
                 },
-                'openapi_types': {
-                    'destination_definition_id_request_body':
-                        (DestinationDefinitionIdRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'destination_definition_id_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.list_destination_definitions_endpoint = _Endpoint(
             settings={
-                'response_type': (DestinationDefinitionReadList,),
-                'auth': [],
-                'endpoint_path': '/v1/destination_definitions/list',
-                'operation_id': 'list_destination_definitions',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (DestinationDefinitionReadList,),
+                "auth": [],
+                "endpoint_path": "/v1/destination_definitions/list",
+                "operation_id": "list_destination_definitions",
+                "http_method": "POST",
+                "servers": None,
             },
-            params_map={
-                'all': [
-                ],
-                'required': [],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
-            },
+            params_map={"all": [], "required": [], "nullable": [], "enum": [], "validation": []},
             root_map={
-                'validations': {
-                },
-                'allowed_values': {
-                },
-                'openapi_types': {
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                },
-                'collection_format_map': {
-                }
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {},
+                "attribute_map": {},
+                "location_map": {},
+                "collection_format_map": {},
             },
             headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [],
+                "accept": ["application/json"],
+                "content_type": [],
             },
-            api_client=api_client
+            api_client=api_client,
         )
         self.list_latest_destination_definitions_endpoint = _Endpoint(
             settings={
-                'response_type': (DestinationDefinitionReadList,),
-                'auth': [],
-                'endpoint_path': '/v1/destination_definitions/list_latest',
-                'operation_id': 'list_latest_destination_definitions',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (DestinationDefinitionReadList,),
+                "auth": [],
+                "endpoint_path": "/v1/destination_definitions/list_latest",
+                "operation_id": "list_latest_destination_definitions",
+                "http_method": "POST",
+                "servers": None,
             },
-            params_map={
-                'all': [
-                ],
-                'required': [],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
-            },
+            params_map={"all": [], "required": [], "nullable": [], "enum": [], "validation": []},
             root_map={
-                'validations': {
-                },
-                'allowed_values': {
-                },
-                'openapi_types': {
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                },
-                'collection_format_map': {
-                }
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {},
+                "attribute_map": {},
+                "location_map": {},
+                "collection_format_map": {},
             },
             headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [],
+                "accept": ["application/json"],
+                "content_type": [],
             },
-            api_client=api_client
+            api_client=api_client,
         )
         self.update_destination_definition_endpoint = _Endpoint(
             settings={
-                'response_type': (DestinationDefinitionRead,),
-                'auth': [],
-                'endpoint_path': '/v1/destination_definitions/update',
-                'operation_id': 'update_destination_definition',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (DestinationDefinitionRead,),
+                "auth": [],
+                "endpoint_path": "/v1/destination_definitions/update",
+                "operation_id": "update_destination_definition",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'destination_definition_update',
+                "all": [
+                    "destination_definition_update",
                 ],
-                'required': [
-                    'destination_definition_update',
+                "required": [
+                    "destination_definition_update",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "destination_definition_update": (DestinationDefinitionUpdate,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "destination_definition_update": "body",
                 },
-                'openapi_types': {
-                    'destination_definition_update':
-                        (DestinationDefinitionUpdate,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'destination_definition_update': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
 
-    def create_destination_definition(
-        self,
-        **kwargs
-    ):
+    def create_destination_definition(self, **kwargs):
         """Creates a destinationsDefinition  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -365,32 +270,16 @@ class DestinationDefinitionApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
         return self.create_destination_definition_endpoint.call_with_http_info(**kwargs)
 
-    def delete_destination_definition(
-        self,
-        destination_definition_id_request_body,
-        **kwargs
-    ):
+    def delete_destination_definition(self, destination_definition_id_request_body, **kwargs):
         """Delete a destination definition  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -428,34 +317,17 @@ class DestinationDefinitionApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['destination_definition_id_request_body'] = \
-            destination_definition_id_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["destination_definition_id_request_body"] = destination_definition_id_request_body
         return self.delete_destination_definition_endpoint.call_with_http_info(**kwargs)
 
-    def get_destination_definition(
-        self,
-        destination_definition_id_request_body,
-        **kwargs
-    ):
+    def get_destination_definition(self, destination_definition_id_request_body, **kwargs):
         """Get destinationDefinition  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -493,33 +365,17 @@ class DestinationDefinitionApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['destination_definition_id_request_body'] = \
-            destination_definition_id_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["destination_definition_id_request_body"] = destination_definition_id_request_body
         return self.get_destination_definition_endpoint.call_with_http_info(**kwargs)
 
-    def list_destination_definitions(
-        self,
-        **kwargs
-    ):
+    def list_destination_definitions(self, **kwargs):
         """List all the destinationDefinitions the current Airbyte deployment is configured to use  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -555,31 +411,16 @@ class DestinationDefinitionApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
         return self.list_destination_definitions_endpoint.call_with_http_info(**kwargs)
 
-    def list_latest_destination_definitions(
-        self,
-        **kwargs
-    ):
+    def list_latest_destination_definitions(self, **kwargs):
         """List the latest destinationDefinitions Airbyte supports  # noqa: E501
 
         Guaranteed to retrieve the latest information on supported destinations.  # noqa: E501
@@ -616,32 +457,16 @@ class DestinationDefinitionApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
         return self.list_latest_destination_definitions_endpoint.call_with_http_info(**kwargs)
 
-    def update_destination_definition(
-        self,
-        destination_definition_update,
-        **kwargs
-    ):
+    def update_destination_definition(self, destination_definition_update, **kwargs):
         """Update destinationDefinition  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -679,26 +504,12 @@ class DestinationDefinitionApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['destination_definition_update'] = \
-            destination_definition_update
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["destination_definition_update"] = destination_definition_update
         return self.update_destination_definition_endpoint.call_with_http_info(**kwargs)
-

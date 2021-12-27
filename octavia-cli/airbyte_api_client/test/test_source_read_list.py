@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -14,7 +17,8 @@ import unittest
 
 import openapi_client
 from openapi_client.model.source_read import SourceRead
-globals()['SourceRead'] = SourceRead
+
+globals()["SourceRead"] = SourceRead
 from openapi_client.model.source_read_list import SourceReadList
 
 
@@ -34,5 +38,5 @@ class TestSourceReadList(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

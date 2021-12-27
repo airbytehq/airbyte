@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -14,7 +17,8 @@ import unittest
 
 import openapi_client
 from openapi_client.model.o_auth2_specification import OAuth2Specification
-globals()['OAuth2Specification'] = OAuth2Specification
+
+globals()["OAuth2Specification"] = OAuth2Specification
 from openapi_client.model.auth_specification import AuthSpecification
 
 
@@ -34,5 +38,5 @@ class TestAuthSpecification(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

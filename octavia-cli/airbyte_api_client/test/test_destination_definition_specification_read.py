@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -17,10 +20,11 @@ from openapi_client.model.advanced_auth import AdvancedAuth
 from openapi_client.model.auth_specification import AuthSpecification
 from openapi_client.model.destination_sync_mode import DestinationSyncMode
 from openapi_client.model.synchronous_job_read import SynchronousJobRead
-globals()['AdvancedAuth'] = AdvancedAuth
-globals()['AuthSpecification'] = AuthSpecification
-globals()['DestinationSyncMode'] = DestinationSyncMode
-globals()['SynchronousJobRead'] = SynchronousJobRead
+
+globals()["AdvancedAuth"] = AdvancedAuth
+globals()["AuthSpecification"] = AuthSpecification
+globals()["DestinationSyncMode"] = DestinationSyncMode
+globals()["SynchronousJobRead"] = SynchronousJobRead
 from openapi_client.model.destination_definition_specification_read import DestinationDefinitionSpecificationRead
 
 
@@ -40,5 +44,5 @@ class TestDestinationDefinitionSpecificationRead(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

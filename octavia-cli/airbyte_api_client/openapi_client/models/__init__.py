@@ -1,4 +1,8 @@
 # flake8: noqa
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 
 # import all models into this package
 # if you have many models here with many references from one model to another this may

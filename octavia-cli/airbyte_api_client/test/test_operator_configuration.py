@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -16,9 +19,10 @@ import openapi_client
 from openapi_client.model.operator_dbt import OperatorDbt
 from openapi_client.model.operator_normalization import OperatorNormalization
 from openapi_client.model.operator_type import OperatorType
-globals()['OperatorDbt'] = OperatorDbt
-globals()['OperatorNormalization'] = OperatorNormalization
-globals()['OperatorType'] = OperatorType
+
+globals()["OperatorDbt"] = OperatorDbt
+globals()["OperatorNormalization"] = OperatorNormalization
+globals()["OperatorType"] = OperatorType
 from openapi_client.model.operator_configuration import OperatorConfiguration
 
 
@@ -38,5 +42,5 @@ class TestOperatorConfiguration(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

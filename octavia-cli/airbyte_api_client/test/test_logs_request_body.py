@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -14,7 +17,8 @@ import unittest
 
 import openapi_client
 from openapi_client.model.log_type import LogType
-globals()['LogType'] = LogType
+
+globals()["LogType"] = LogType
 from openapi_client.model.logs_request_body import LogsRequestBody
 
 
@@ -34,5 +38,5 @@ class TestLogsRequestBody(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

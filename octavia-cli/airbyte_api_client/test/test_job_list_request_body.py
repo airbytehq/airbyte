@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -15,8 +18,9 @@ import unittest
 import openapi_client
 from openapi_client.model.job_config_type import JobConfigType
 from openapi_client.model.pagination import Pagination
-globals()['JobConfigType'] = JobConfigType
-globals()['Pagination'] = Pagination
+
+globals()["JobConfigType"] = JobConfigType
+globals()["Pagination"] = Pagination
 from openapi_client.model.job_list_request_body import JobListRequestBody
 
 
@@ -36,5 +40,5 @@ class TestJobListRequestBody(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

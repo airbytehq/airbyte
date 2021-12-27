@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -19,12 +22,13 @@ from openapi_client.model.connection_status import ConnectionStatus
 from openapi_client.model.namespace_definition_type import NamespaceDefinitionType
 from openapi_client.model.operation_create import OperationCreate
 from openapi_client.model.resource_requirements import ResourceRequirements
-globals()['AirbyteCatalog'] = AirbyteCatalog
-globals()['ConnectionSchedule'] = ConnectionSchedule
-globals()['ConnectionStatus'] = ConnectionStatus
-globals()['NamespaceDefinitionType'] = NamespaceDefinitionType
-globals()['OperationCreate'] = OperationCreate
-globals()['ResourceRequirements'] = ResourceRequirements
+
+globals()["AirbyteCatalog"] = AirbyteCatalog
+globals()["ConnectionSchedule"] = ConnectionSchedule
+globals()["ConnectionStatus"] = ConnectionStatus
+globals()["NamespaceDefinitionType"] = NamespaceDefinitionType
+globals()["OperationCreate"] = OperationCreate
+globals()["ResourceRequirements"] = ResourceRequirements
 from openapi_client.model.web_backend_connection_create import WebBackendConnectionCreate
 
 
@@ -44,5 +48,5 @@ class TestWebBackendConnectionCreate(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

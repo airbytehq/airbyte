@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -14,7 +17,8 @@ import unittest
 
 import openapi_client
 from openapi_client.model.notification import Notification
-globals()['Notification'] = Notification
+
+globals()["Notification"] = Notification
 from openapi_client.model.workspace_update import WorkspaceUpdate
 
 
@@ -34,5 +38,5 @@ class TestWorkspaceUpdate(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -14,7 +17,8 @@ import unittest
 
 import openapi_client
 from openapi_client.model.invalid_input_property import InvalidInputProperty
-globals()['InvalidInputProperty'] = InvalidInputProperty
+
+globals()["InvalidInputProperty"] = InvalidInputProperty
 from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
 
 
@@ -34,5 +38,5 @@ class TestInvalidInputExceptionInfo(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -12,6 +15,7 @@
 import re  # noqa: F401
 import sys  # noqa: F401
 
+from openapi_client.exceptions import ApiAttributeError
 from openapi_client.model_utils import (  # noqa: F401
     ApiTypeError,
     ModelComposed,
@@ -26,13 +30,14 @@ from openapi_client.model_utils import (  # noqa: F401
     none_type,
     validate_get_composed_info,
 )
+
 from ..model_utils import OpenApiModel
-from openapi_client.exceptions import ApiAttributeError
 
 
 def lazy_import():
     from openapi_client.model.notification import Notification
-    globals()['Notification'] = Notification
+
+    globals()["Notification"] = Notification
 
 
 class WorkspaceCreate(ModelNormal):
@@ -59,11 +64,9 @@ class WorkspaceCreate(ModelNormal):
           as additional properties values.
     """
 
-    allowed_values = {
-    }
+    allowed_values = {}
 
-    validations = {
-    }
+    validations = {}
 
     @cached_property
     def additional_properties_type():
@@ -72,7 +75,17 @@ class WorkspaceCreate(ModelNormal):
         of type self, this must run after the class is loaded
         """
         lazy_import()
-        return (bool, date, datetime, dict, float, int, list, str, none_type,)  # noqa: E501
+        return (
+            bool,
+            date,
+            datetime,
+            dict,
+            float,
+            int,
+            list,
+            str,
+            none_type,
+        )  # noqa: E501
 
     _nullable = False
 
@@ -88,32 +101,30 @@ class WorkspaceCreate(ModelNormal):
         """
         lazy_import()
         return {
-            'name': (str,),  # noqa: E501
-            'email': (str,),  # noqa: E501
-            'anonymous_data_collection': (bool,),  # noqa: E501
-            'news': (bool,),  # noqa: E501
-            'security_updates': (bool,),  # noqa: E501
-            'notifications': ([Notification],),  # noqa: E501
-            'display_setup_wizard': (bool,),  # noqa: E501
+            "name": (str,),  # noqa: E501
+            "email": (str,),  # noqa: E501
+            "anonymous_data_collection": (bool,),  # noqa: E501
+            "news": (bool,),  # noqa: E501
+            "security_updates": (bool,),  # noqa: E501
+            "notifications": ([Notification],),  # noqa: E501
+            "display_setup_wizard": (bool,),  # noqa: E501
         }
 
     @cached_property
     def discriminator():
         return None
 
-
     attribute_map = {
-        'name': 'name',  # noqa: E501
-        'email': 'email',  # noqa: E501
-        'anonymous_data_collection': 'anonymousDataCollection',  # noqa: E501
-        'news': 'news',  # noqa: E501
-        'security_updates': 'securityUpdates',  # noqa: E501
-        'notifications': 'notifications',  # noqa: E501
-        'display_setup_wizard': 'displaySetupWizard',  # noqa: E501
+        "name": "name",  # noqa: E501
+        "email": "email",  # noqa: E501
+        "anonymous_data_collection": "anonymousDataCollection",  # noqa: E501
+        "news": "news",  # noqa: E501
+        "security_updates": "securityUpdates",  # noqa: E501
+        "notifications": "notifications",  # noqa: E501
+        "display_setup_wizard": "displaySetupWizard",  # noqa: E501
     }
 
-    read_only_vars = {
-    }
+    read_only_vars = {}
 
     _composed_schemas = {}
 
@@ -164,17 +175,18 @@ class WorkspaceCreate(ModelNormal):
             display_setup_wizard (bool): [optional]  # noqa: E501
         """
 
-        _check_type = kwargs.pop('_check_type', True)
-        _spec_property_naming = kwargs.pop('_spec_property_naming', False)
-        _path_to_item = kwargs.pop('_path_to_item', ())
-        _configuration = kwargs.pop('_configuration', None)
-        _visited_composed_classes = kwargs.pop('_visited_composed_classes', ())
+        _check_type = kwargs.pop("_check_type", True)
+        _spec_property_naming = kwargs.pop("_spec_property_naming", False)
+        _path_to_item = kwargs.pop("_path_to_item", ())
+        _configuration = kwargs.pop("_configuration", None)
+        _visited_composed_classes = kwargs.pop("_visited_composed_classes", ())
 
         self = super(OpenApiModel, cls).__new__(cls)
 
         if args:
             raise ApiTypeError(
-                "Invalid positional arguments=%s passed to %s. Remove those invalid positional arguments." % (
+                "Invalid positional arguments=%s passed to %s. Remove those invalid positional arguments."
+                % (
                     args,
                     self.__class__.__name__,
                 ),
@@ -191,23 +203,27 @@ class WorkspaceCreate(ModelNormal):
 
         self.name = name
         for var_name, var_value in kwargs.items():
-            if var_name not in self.attribute_map and \
-                        self._configuration is not None and \
-                        self._configuration.discard_unknown_keys and \
-                        self.additional_properties_type is None:
+            if (
+                var_name not in self.attribute_map
+                and self._configuration is not None
+                and self._configuration.discard_unknown_keys
+                and self.additional_properties_type is None
+            ):
                 # discard variable.
                 continue
             setattr(self, var_name, var_value)
         return self
 
-    required_properties = set([
-        '_data_store',
-        '_check_type',
-        '_spec_property_naming',
-        '_path_to_item',
-        '_configuration',
-        '_visited_composed_classes',
-    ])
+    required_properties = set(
+        [
+            "_data_store",
+            "_check_type",
+            "_spec_property_naming",
+            "_path_to_item",
+            "_configuration",
+            "_visited_composed_classes",
+        ]
+    )
 
     @convert_js_args_to_python_args
     def __init__(self, name, *args, **kwargs):  # noqa: E501
@@ -255,15 +271,16 @@ class WorkspaceCreate(ModelNormal):
             display_setup_wizard (bool): [optional]  # noqa: E501
         """
 
-        _check_type = kwargs.pop('_check_type', True)
-        _spec_property_naming = kwargs.pop('_spec_property_naming', False)
-        _path_to_item = kwargs.pop('_path_to_item', ())
-        _configuration = kwargs.pop('_configuration', None)
-        _visited_composed_classes = kwargs.pop('_visited_composed_classes', ())
+        _check_type = kwargs.pop("_check_type", True)
+        _spec_property_naming = kwargs.pop("_spec_property_naming", False)
+        _path_to_item = kwargs.pop("_path_to_item", ())
+        _configuration = kwargs.pop("_configuration", None)
+        _visited_composed_classes = kwargs.pop("_visited_composed_classes", ())
 
         if args:
             raise ApiTypeError(
-                "Invalid positional arguments=%s passed to %s. Remove those invalid positional arguments." % (
+                "Invalid positional arguments=%s passed to %s. Remove those invalid positional arguments."
+                % (
                     args,
                     self.__class__.__name__,
                 ),
@@ -280,13 +297,16 @@ class WorkspaceCreate(ModelNormal):
 
         self.name = name
         for var_name, var_value in kwargs.items():
-            if var_name not in self.attribute_map and \
-                        self._configuration is not None and \
-                        self._configuration.discard_unknown_keys and \
-                        self.additional_properties_type is None:
+            if (
+                var_name not in self.attribute_map
+                and self._configuration is not None
+                and self._configuration.discard_unknown_keys
+                and self.additional_properties_type is None
+            ):
                 # discard variable.
                 continue
             setattr(self, var_name, var_value)
             if var_name in self.read_only_vars:
-                raise ApiAttributeError(f"`{var_name}` is a read-only attribute. Use `from_openapi_data` to instantiate "
-                                     f"class with read only attributes.")
+                raise ApiAttributeError(
+                    f"`{var_name}` is a read-only attribute. Use `from_openapi_data` to instantiate " f"class with read only attributes."
+                )

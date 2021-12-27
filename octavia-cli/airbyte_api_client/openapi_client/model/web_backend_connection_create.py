@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -12,6 +15,7 @@
 import re  # noqa: F401
 import sys  # noqa: F401
 
+from openapi_client.exceptions import ApiAttributeError
 from openapi_client.model_utils import (  # noqa: F401
     ApiTypeError,
     ModelComposed,
@@ -26,8 +30,8 @@ from openapi_client.model_utils import (  # noqa: F401
     none_type,
     validate_get_composed_info,
 )
+
 from ..model_utils import OpenApiModel
-from openapi_client.exceptions import ApiAttributeError
 
 
 def lazy_import():
@@ -37,12 +41,13 @@ def lazy_import():
     from openapi_client.model.namespace_definition_type import NamespaceDefinitionType
     from openapi_client.model.operation_create import OperationCreate
     from openapi_client.model.resource_requirements import ResourceRequirements
-    globals()['AirbyteCatalog'] = AirbyteCatalog
-    globals()['ConnectionSchedule'] = ConnectionSchedule
-    globals()['ConnectionStatus'] = ConnectionStatus
-    globals()['NamespaceDefinitionType'] = NamespaceDefinitionType
-    globals()['OperationCreate'] = OperationCreate
-    globals()['ResourceRequirements'] = ResourceRequirements
+
+    globals()["AirbyteCatalog"] = AirbyteCatalog
+    globals()["ConnectionSchedule"] = ConnectionSchedule
+    globals()["ConnectionStatus"] = ConnectionStatus
+    globals()["NamespaceDefinitionType"] = NamespaceDefinitionType
+    globals()["OperationCreate"] = OperationCreate
+    globals()["ResourceRequirements"] = ResourceRequirements
 
 
 class WebBackendConnectionCreate(ModelNormal):
@@ -69,11 +74,9 @@ class WebBackendConnectionCreate(ModelNormal):
           as additional properties values.
     """
 
-    allowed_values = {
-    }
+    allowed_values = {}
 
-    validations = {
-    }
+    validations = {}
 
     @cached_property
     def additional_properties_type():
@@ -82,7 +85,17 @@ class WebBackendConnectionCreate(ModelNormal):
         of type self, this must run after the class is loaded
         """
         lazy_import()
-        return (bool, date, datetime, dict, float, int, list, str, none_type,)  # noqa: E501
+        return (
+            bool,
+            date,
+            datetime,
+            dict,
+            float,
+            int,
+            list,
+            str,
+            none_type,
+        )  # noqa: E501
 
     _nullable = False
 
@@ -98,42 +111,40 @@ class WebBackendConnectionCreate(ModelNormal):
         """
         lazy_import()
         return {
-            'source_id': (str,),  # noqa: E501
-            'destination_id': (str,),  # noqa: E501
-            'status': (ConnectionStatus,),  # noqa: E501
-            'name': (str,),  # noqa: E501
-            'namespace_definition': (NamespaceDefinitionType,),  # noqa: E501
-            'namespace_format': (str,),  # noqa: E501
-            'prefix': (str,),  # noqa: E501
-            'operation_ids': ([str],),  # noqa: E501
-            'sync_catalog': (AirbyteCatalog,),  # noqa: E501
-            'schedule': (ConnectionSchedule,),  # noqa: E501
-            'resource_requirements': (ResourceRequirements,),  # noqa: E501
-            'operations': ([OperationCreate],),  # noqa: E501
+            "source_id": (str,),  # noqa: E501
+            "destination_id": (str,),  # noqa: E501
+            "status": (ConnectionStatus,),  # noqa: E501
+            "name": (str,),  # noqa: E501
+            "namespace_definition": (NamespaceDefinitionType,),  # noqa: E501
+            "namespace_format": (str,),  # noqa: E501
+            "prefix": (str,),  # noqa: E501
+            "operation_ids": ([str],),  # noqa: E501
+            "sync_catalog": (AirbyteCatalog,),  # noqa: E501
+            "schedule": (ConnectionSchedule,),  # noqa: E501
+            "resource_requirements": (ResourceRequirements,),  # noqa: E501
+            "operations": ([OperationCreate],),  # noqa: E501
         }
 
     @cached_property
     def discriminator():
         return None
 
-
     attribute_map = {
-        'source_id': 'sourceId',  # noqa: E501
-        'destination_id': 'destinationId',  # noqa: E501
-        'status': 'status',  # noqa: E501
-        'name': 'name',  # noqa: E501
-        'namespace_definition': 'namespaceDefinition',  # noqa: E501
-        'namespace_format': 'namespaceFormat',  # noqa: E501
-        'prefix': 'prefix',  # noqa: E501
-        'operation_ids': 'operationIds',  # noqa: E501
-        'sync_catalog': 'syncCatalog',  # noqa: E501
-        'schedule': 'schedule',  # noqa: E501
-        'resource_requirements': 'resourceRequirements',  # noqa: E501
-        'operations': 'operations',  # noqa: E501
+        "source_id": "sourceId",  # noqa: E501
+        "destination_id": "destinationId",  # noqa: E501
+        "status": "status",  # noqa: E501
+        "name": "name",  # noqa: E501
+        "namespace_definition": "namespaceDefinition",  # noqa: E501
+        "namespace_format": "namespaceFormat",  # noqa: E501
+        "prefix": "prefix",  # noqa: E501
+        "operation_ids": "operationIds",  # noqa: E501
+        "sync_catalog": "syncCatalog",  # noqa: E501
+        "schedule": "schedule",  # noqa: E501
+        "resource_requirements": "resourceRequirements",  # noqa: E501
+        "operations": "operations",  # noqa: E501
     }
 
-    read_only_vars = {
-    }
+    read_only_vars = {}
 
     _composed_schemas = {}
 
@@ -189,17 +200,18 @@ class WebBackendConnectionCreate(ModelNormal):
             operations ([OperationCreate]): [optional]  # noqa: E501
         """
 
-        _check_type = kwargs.pop('_check_type', True)
-        _spec_property_naming = kwargs.pop('_spec_property_naming', False)
-        _path_to_item = kwargs.pop('_path_to_item', ())
-        _configuration = kwargs.pop('_configuration', None)
-        _visited_composed_classes = kwargs.pop('_visited_composed_classes', ())
+        _check_type = kwargs.pop("_check_type", True)
+        _spec_property_naming = kwargs.pop("_spec_property_naming", False)
+        _path_to_item = kwargs.pop("_path_to_item", ())
+        _configuration = kwargs.pop("_configuration", None)
+        _visited_composed_classes = kwargs.pop("_visited_composed_classes", ())
 
         self = super(OpenApiModel, cls).__new__(cls)
 
         if args:
             raise ApiTypeError(
-                "Invalid positional arguments=%s passed to %s. Remove those invalid positional arguments." % (
+                "Invalid positional arguments=%s passed to %s. Remove those invalid positional arguments."
+                % (
                     args,
                     self.__class__.__name__,
                 ),
@@ -218,23 +230,27 @@ class WebBackendConnectionCreate(ModelNormal):
         self.destination_id = destination_id
         self.status = status
         for var_name, var_value in kwargs.items():
-            if var_name not in self.attribute_map and \
-                        self._configuration is not None and \
-                        self._configuration.discard_unknown_keys and \
-                        self.additional_properties_type is None:
+            if (
+                var_name not in self.attribute_map
+                and self._configuration is not None
+                and self._configuration.discard_unknown_keys
+                and self.additional_properties_type is None
+            ):
                 # discard variable.
                 continue
             setattr(self, var_name, var_value)
         return self
 
-    required_properties = set([
-        '_data_store',
-        '_check_type',
-        '_spec_property_naming',
-        '_path_to_item',
-        '_configuration',
-        '_visited_composed_classes',
-    ])
+    required_properties = set(
+        [
+            "_data_store",
+            "_check_type",
+            "_spec_property_naming",
+            "_path_to_item",
+            "_configuration",
+            "_visited_composed_classes",
+        ]
+    )
 
     @convert_js_args_to_python_args
     def __init__(self, source_id, destination_id, status, *args, **kwargs):  # noqa: E501
@@ -287,15 +303,16 @@ class WebBackendConnectionCreate(ModelNormal):
             operations ([OperationCreate]): [optional]  # noqa: E501
         """
 
-        _check_type = kwargs.pop('_check_type', True)
-        _spec_property_naming = kwargs.pop('_spec_property_naming', False)
-        _path_to_item = kwargs.pop('_path_to_item', ())
-        _configuration = kwargs.pop('_configuration', None)
-        _visited_composed_classes = kwargs.pop('_visited_composed_classes', ())
+        _check_type = kwargs.pop("_check_type", True)
+        _spec_property_naming = kwargs.pop("_spec_property_naming", False)
+        _path_to_item = kwargs.pop("_path_to_item", ())
+        _configuration = kwargs.pop("_configuration", None)
+        _visited_composed_classes = kwargs.pop("_visited_composed_classes", ())
 
         if args:
             raise ApiTypeError(
-                "Invalid positional arguments=%s passed to %s. Remove those invalid positional arguments." % (
+                "Invalid positional arguments=%s passed to %s. Remove those invalid positional arguments."
+                % (
                     args,
                     self.__class__.__name__,
                 ),
@@ -314,13 +331,16 @@ class WebBackendConnectionCreate(ModelNormal):
         self.destination_id = destination_id
         self.status = status
         for var_name, var_value in kwargs.items():
-            if var_name not in self.attribute_map and \
-                        self._configuration is not None and \
-                        self._configuration.discard_unknown_keys and \
-                        self.additional_properties_type is None:
+            if (
+                var_name not in self.attribute_map
+                and self._configuration is not None
+                and self._configuration.discard_unknown_keys
+                and self.additional_properties_type is None
+            ):
                 # discard variable.
                 continue
             setattr(self, var_name, var_value)
             if var_name in self.read_only_vars:
-                raise ApiAttributeError(f"`{var_name}` is a read-only attribute. Use `from_openapi_data` to instantiate "
-                                     f"class with read only attributes.")
+                raise ApiAttributeError(
+                    f"`{var_name}` is a read-only attribute. Use `from_openapi_data` to instantiate " f"class with read only attributes."
+                )

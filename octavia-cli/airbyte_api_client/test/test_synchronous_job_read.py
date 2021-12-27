@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -15,8 +18,9 @@ import unittest
 import openapi_client
 from openapi_client.model.job_config_type import JobConfigType
 from openapi_client.model.log_read import LogRead
-globals()['JobConfigType'] = JobConfigType
-globals()['LogRead'] = LogRead
+
+globals()["JobConfigType"] = JobConfigType
+globals()["LogRead"] = LogRead
 from openapi_client.model.synchronous_job_read import SynchronousJobRead
 
 
@@ -36,5 +40,5 @@ class TestSynchronousJobRead(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

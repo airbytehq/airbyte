@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -22,15 +25,16 @@ from openapi_client.model.namespace_definition_type import NamespaceDefinitionTy
 from openapi_client.model.operation_read import OperationRead
 from openapi_client.model.resource_requirements import ResourceRequirements
 from openapi_client.model.source_read import SourceRead
-globals()['AirbyteCatalog'] = AirbyteCatalog
-globals()['ConnectionSchedule'] = ConnectionSchedule
-globals()['ConnectionStatus'] = ConnectionStatus
-globals()['DestinationRead'] = DestinationRead
-globals()['JobStatus'] = JobStatus
-globals()['NamespaceDefinitionType'] = NamespaceDefinitionType
-globals()['OperationRead'] = OperationRead
-globals()['ResourceRequirements'] = ResourceRequirements
-globals()['SourceRead'] = SourceRead
+
+globals()["AirbyteCatalog"] = AirbyteCatalog
+globals()["ConnectionSchedule"] = ConnectionSchedule
+globals()["ConnectionStatus"] = ConnectionStatus
+globals()["DestinationRead"] = DestinationRead
+globals()["JobStatus"] = JobStatus
+globals()["NamespaceDefinitionType"] = NamespaceDefinitionType
+globals()["OperationRead"] = OperationRead
+globals()["ResourceRequirements"] = ResourceRequirements
+globals()["SourceRead"] = SourceRead
 from openapi_client.model.web_backend_connection_read import WebBackendConnectionRead
 
 
@@ -50,5 +54,5 @@ class TestWebBackendConnectionRead(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

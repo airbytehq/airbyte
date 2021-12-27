@@ -3,9 +3,10 @@
 #
 
 import click
-
 import openapi_client
+
 from .list import commands as list_commands
+
 
 @click.group()
 @click.option("--airbyte-url", envvar="AIRBYTE_URL", default="http://localhost:8000", help="The URL of your Airbyte instance.")
@@ -16,12 +17,14 @@ def octavia(ctx, airbyte_url):
     ctx.obj["API_CLIENT"] = openapi_client.ApiClient(client_configuration)
     click.secho(f"🐙 - Octavia is targetting your Airbyte instance running at {airbyte_url}")
 
+
 octavia.add_command(list_commands._list)
 
 
 @octavia.command(help="Scaffolds a local project directories.")
 def init():
     raise click.ClickException("The init command is not yet implemented.")
+
 
 @octavia.command(name="import", help="Import an existing resources from the Airbyte instance.")
 def _import():
@@ -42,5 +45,6 @@ def apply():
 def delete():
     raise click.ClickException("The init command is not yet implemented.")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     octavia()

@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -14,7 +17,8 @@ import unittest
 
 import openapi_client
 from openapi_client.model.db_migration_state import DbMigrationState
-globals()['DbMigrationState'] = DbMigrationState
+
+globals()["DbMigrationState"] = DbMigrationState
 from openapi_client.model.db_migration_read import DbMigrationRead
 
 
@@ -34,5 +38,5 @@ class TestDbMigrationRead(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

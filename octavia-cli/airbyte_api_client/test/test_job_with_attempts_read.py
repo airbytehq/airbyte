@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -15,8 +18,9 @@ import unittest
 import openapi_client
 from openapi_client.model.attempt_read import AttemptRead
 from openapi_client.model.job_read import JobRead
-globals()['AttemptRead'] = AttemptRead
-globals()['JobRead'] = JobRead
+
+globals()["AttemptRead"] = AttemptRead
+globals()["JobRead"] = JobRead
 from openapi_client.model.job_with_attempts_read import JobWithAttemptsRead
 
 
@@ -36,5 +40,5 @@ class TestJobWithAttemptsRead(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

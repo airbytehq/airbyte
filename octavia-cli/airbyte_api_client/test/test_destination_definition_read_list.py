@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -14,7 +17,8 @@ import unittest
 
 import openapi_client
 from openapi_client.model.destination_definition_read import DestinationDefinitionRead
-globals()['DestinationDefinitionRead'] = DestinationDefinitionRead
+
+globals()["DestinationDefinitionRead"] = DestinationDefinitionRead
 from openapi_client.model.destination_definition_read_list import DestinationDefinitionReadList
 
 
@@ -34,5 +38,5 @@ class TestDestinationDefinitionReadList(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

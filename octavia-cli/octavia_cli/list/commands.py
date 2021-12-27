@@ -1,21 +1,27 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 import click
-
 import openapi_client
+import scolp
 from openapi_client.api import destination_definition_api
 from openapi_client.model.destination_definition_read_list import DestinationDefinitionReadList
-import scolp 
+
 
 @click.group("list", help="List existing Airbyte resources.")
 @click.pass_context
 def _list(ctx):
     pass
 
+
 @click.group("definitions", help="Latest information on supported sources and destinations.")
 @click.pass_context
 def definitions(ctx):
     pass
 
+
 _list.add_command(definitions)
+
 
 @definitions.command(name="destinations", help="Latest information on supported destinations.")
 @click.pass_context
@@ -27,6 +33,9 @@ def destinations(ctx):
     scolper = scolp.Scolp()
     scolper.config.add_columns("name", "docker image", "version", "destination definition id")
 
-    defs = [(definition.name, definition.docker_repository, definition.docker_image_tag, definition.destination_definition_id) for definition in api_response["destination_definitions"]]
+    defs = [
+        (definition.name, definition.docker_repository, definition.docker_image_tag, definition.destination_definition_id)
+        for definition in api_response["destination_definitions"]
+    ]
     for definition in defs:
         scolper.print(*definition)

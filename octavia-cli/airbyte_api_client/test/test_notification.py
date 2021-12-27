@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -15,8 +18,9 @@ import unittest
 import openapi_client
 from openapi_client.model.notification_type import NotificationType
 from openapi_client.model.slack_notification_configuration import SlackNotificationConfiguration
-globals()['NotificationType'] = NotificationType
-globals()['SlackNotificationConfiguration'] = SlackNotificationConfiguration
+
+globals()["NotificationType"] = NotificationType
+globals()["SlackNotificationConfiguration"] = SlackNotificationConfiguration
 from openapi_client.model.notification import Notification
 
 
@@ -36,5 +40,5 @@ class TestNotification(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

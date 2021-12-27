@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -12,16 +15,8 @@
 import re  # noqa: F401
 import sys  # noqa: F401
 
-from openapi_client.api_client import ApiClient, Endpoint as _Endpoint
-from openapi_client.model_utils import (  # noqa: F401
-    check_allowed_values,
-    check_validations,
-    date,
-    datetime,
-    file_type,
-    none_type,
-    validate_and_convert_types
-)
+from openapi_client.api_client import ApiClient
+from openapi_client.api_client import Endpoint as _Endpoint
 from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
 from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 from openapi_client.model.source_definition_create import SourceDefinitionCreate
@@ -29,6 +24,15 @@ from openapi_client.model.source_definition_id_request_body import SourceDefinit
 from openapi_client.model.source_definition_read import SourceDefinitionRead
 from openapi_client.model.source_definition_read_list import SourceDefinitionReadList
 from openapi_client.model.source_definition_update import SourceDefinitionUpdate
+from openapi_client.model_utils import (  # noqa: F401
+    check_allowed_values,
+    check_validations,
+    date,
+    datetime,
+    file_type,
+    none_type,
+    validate_and_convert_types,
+)
 
 
 class SourceDefinitionApi(object):
@@ -44,289 +48,190 @@ class SourceDefinitionApi(object):
         self.api_client = api_client
         self.create_source_definition_endpoint = _Endpoint(
             settings={
-                'response_type': (SourceDefinitionRead,),
-                'auth': [],
-                'endpoint_path': '/v1/source_definitions/create',
-                'operation_id': 'create_source_definition',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (SourceDefinitionRead,),
+                "auth": [],
+                "endpoint_path": "/v1/source_definitions/create",
+                "operation_id": "create_source_definition",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'source_definition_create',
+                "all": [
+                    "source_definition_create",
                 ],
-                'required': [],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "required": [],
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "source_definition_create": (SourceDefinitionCreate,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "source_definition_create": "body",
                 },
-                'openapi_types': {
-                    'source_definition_create':
-                        (SourceDefinitionCreate,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'source_definition_create': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.delete_source_definition_endpoint = _Endpoint(
             settings={
-                'response_type': None,
-                'auth': [],
-                'endpoint_path': '/v1/source_definitions/delete',
-                'operation_id': 'delete_source_definition',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": None,
+                "auth": [],
+                "endpoint_path": "/v1/source_definitions/delete",
+                "operation_id": "delete_source_definition",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'source_definition_id_request_body',
+                "all": [
+                    "source_definition_id_request_body",
                 ],
-                'required': [
-                    'source_definition_id_request_body',
+                "required": [
+                    "source_definition_id_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "source_definition_id_request_body": (SourceDefinitionIdRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "source_definition_id_request_body": "body",
                 },
-                'openapi_types': {
-                    'source_definition_id_request_body':
-                        (SourceDefinitionIdRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'source_definition_id_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.get_source_definition_endpoint = _Endpoint(
             settings={
-                'response_type': (SourceDefinitionRead,),
-                'auth': [],
-                'endpoint_path': '/v1/source_definitions/get',
-                'operation_id': 'get_source_definition',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (SourceDefinitionRead,),
+                "auth": [],
+                "endpoint_path": "/v1/source_definitions/get",
+                "operation_id": "get_source_definition",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'source_definition_id_request_body',
+                "all": [
+                    "source_definition_id_request_body",
                 ],
-                'required': [
-                    'source_definition_id_request_body',
+                "required": [
+                    "source_definition_id_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "source_definition_id_request_body": (SourceDefinitionIdRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "source_definition_id_request_body": "body",
                 },
-                'openapi_types': {
-                    'source_definition_id_request_body':
-                        (SourceDefinitionIdRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'source_definition_id_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.list_latest_source_definitions_endpoint = _Endpoint(
             settings={
-                'response_type': (SourceDefinitionReadList,),
-                'auth': [],
-                'endpoint_path': '/v1/source_definitions/list_latest',
-                'operation_id': 'list_latest_source_definitions',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (SourceDefinitionReadList,),
+                "auth": [],
+                "endpoint_path": "/v1/source_definitions/list_latest",
+                "operation_id": "list_latest_source_definitions",
+                "http_method": "POST",
+                "servers": None,
             },
-            params_map={
-                'all': [
-                ],
-                'required': [],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
-            },
+            params_map={"all": [], "required": [], "nullable": [], "enum": [], "validation": []},
             root_map={
-                'validations': {
-                },
-                'allowed_values': {
-                },
-                'openapi_types': {
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                },
-                'collection_format_map': {
-                }
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {},
+                "attribute_map": {},
+                "location_map": {},
+                "collection_format_map": {},
             },
             headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [],
+                "accept": ["application/json"],
+                "content_type": [],
             },
-            api_client=api_client
+            api_client=api_client,
         )
         self.list_source_definitions_endpoint = _Endpoint(
             settings={
-                'response_type': (SourceDefinitionReadList,),
-                'auth': [],
-                'endpoint_path': '/v1/source_definitions/list',
-                'operation_id': 'list_source_definitions',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (SourceDefinitionReadList,),
+                "auth": [],
+                "endpoint_path": "/v1/source_definitions/list",
+                "operation_id": "list_source_definitions",
+                "http_method": "POST",
+                "servers": None,
             },
-            params_map={
-                'all': [
-                ],
-                'required': [],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
-            },
+            params_map={"all": [], "required": [], "nullable": [], "enum": [], "validation": []},
             root_map={
-                'validations': {
-                },
-                'allowed_values': {
-                },
-                'openapi_types': {
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                },
-                'collection_format_map': {
-                }
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {},
+                "attribute_map": {},
+                "location_map": {},
+                "collection_format_map": {},
             },
             headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [],
+                "accept": ["application/json"],
+                "content_type": [],
             },
-            api_client=api_client
+            api_client=api_client,
         )
         self.update_source_definition_endpoint = _Endpoint(
             settings={
-                'response_type': (SourceDefinitionRead,),
-                'auth': [],
-                'endpoint_path': '/v1/source_definitions/update',
-                'operation_id': 'update_source_definition',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (SourceDefinitionRead,),
+                "auth": [],
+                "endpoint_path": "/v1/source_definitions/update",
+                "operation_id": "update_source_definition",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'source_definition_update',
+                "all": [
+                    "source_definition_update",
                 ],
-                'required': [],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "required": [],
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "source_definition_update": (SourceDefinitionUpdate,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "source_definition_update": "body",
                 },
-                'openapi_types': {
-                    'source_definition_update':
-                        (SourceDefinitionUpdate,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'source_definition_update': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
 
-    def create_source_definition(
-        self,
-        **kwargs
-    ):
+    def create_source_definition(self, **kwargs):
         """Creates a sourceDefinition  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -363,32 +268,16 @@ class SourceDefinitionApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
         return self.create_source_definition_endpoint.call_with_http_info(**kwargs)
 
-    def delete_source_definition(
-        self,
-        source_definition_id_request_body,
-        **kwargs
-    ):
+    def delete_source_definition(self, source_definition_id_request_body, **kwargs):
         """Delete a source definition  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -426,34 +315,17 @@ class SourceDefinitionApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['source_definition_id_request_body'] = \
-            source_definition_id_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["source_definition_id_request_body"] = source_definition_id_request_body
         return self.delete_source_definition_endpoint.call_with_http_info(**kwargs)
 
-    def get_source_definition(
-        self,
-        source_definition_id_request_body,
-        **kwargs
-    ):
+    def get_source_definition(self, source_definition_id_request_body, **kwargs):
         """Get source  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -491,33 +363,17 @@ class SourceDefinitionApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['source_definition_id_request_body'] = \
-            source_definition_id_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["source_definition_id_request_body"] = source_definition_id_request_body
         return self.get_source_definition_endpoint.call_with_http_info(**kwargs)
 
-    def list_latest_source_definitions(
-        self,
-        **kwargs
-    ):
+    def list_latest_source_definitions(self, **kwargs):
         """List the latest sourceDefinitions Airbyte supports  # noqa: E501
 
         Guaranteed to retrieve the latest information on supported sources.  # noqa: E501
@@ -554,31 +410,16 @@ class SourceDefinitionApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
         return self.list_latest_source_definitions_endpoint.call_with_http_info(**kwargs)
 
-    def list_source_definitions(
-        self,
-        **kwargs
-    ):
+    def list_source_definitions(self, **kwargs):
         """List all the sourceDefinitions the current Airbyte deployment is configured to use  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -614,31 +455,16 @@ class SourceDefinitionApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
         return self.list_source_definitions_endpoint.call_with_http_info(**kwargs)
 
-    def update_source_definition(
-        self,
-        **kwargs
-    ):
+    def update_source_definition(self, **kwargs):
         """Update a sourceDefinition  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -675,24 +501,11 @@ class SourceDefinitionApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
         return self.update_source_definition_endpoint.call_with_http_info(**kwargs)
-

@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -12,7 +15,14 @@
 import re  # noqa: F401
 import sys  # noqa: F401
 
-from openapi_client.api_client import ApiClient, Endpoint as _Endpoint
+from openapi_client.api_client import ApiClient
+from openapi_client.api_client import Endpoint as _Endpoint
+from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from openapi_client.model.job_id_request_body import JobIdRequestBody
+from openapi_client.model.job_info_read import JobInfoRead
+from openapi_client.model.job_list_request_body import JobListRequestBody
+from openapi_client.model.job_read_list import JobReadList
+from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 from openapi_client.model_utils import (  # noqa: F401
     check_allowed_values,
     check_validations,
@@ -20,14 +30,8 @@ from openapi_client.model_utils import (  # noqa: F401
     datetime,
     file_type,
     none_type,
-    validate_and_convert_types
+    validate_and_convert_types,
 )
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.job_id_request_body import JobIdRequestBody
-from openapi_client.model.job_info_read import JobInfoRead
-from openapi_client.model.job_list_request_body import JobListRequestBody
-from openapi_client.model.job_read_list import JobReadList
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 
 
 class JobsApi(object):
@@ -43,160 +47,111 @@ class JobsApi(object):
         self.api_client = api_client
         self.cancel_job_endpoint = _Endpoint(
             settings={
-                'response_type': (JobInfoRead,),
-                'auth': [],
-                'endpoint_path': '/v1/jobs/cancel',
-                'operation_id': 'cancel_job',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (JobInfoRead,),
+                "auth": [],
+                "endpoint_path": "/v1/jobs/cancel",
+                "operation_id": "cancel_job",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'job_id_request_body',
+                "all": [
+                    "job_id_request_body",
                 ],
-                'required': [
-                    'job_id_request_body',
+                "required": [
+                    "job_id_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "job_id_request_body": (JobIdRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "job_id_request_body": "body",
                 },
-                'openapi_types': {
-                    'job_id_request_body':
-                        (JobIdRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'job_id_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.get_job_info_endpoint = _Endpoint(
             settings={
-                'response_type': (JobInfoRead,),
-                'auth': [],
-                'endpoint_path': '/v1/jobs/get',
-                'operation_id': 'get_job_info',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (JobInfoRead,),
+                "auth": [],
+                "endpoint_path": "/v1/jobs/get",
+                "operation_id": "get_job_info",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'job_id_request_body',
+                "all": [
+                    "job_id_request_body",
                 ],
-                'required': [
-                    'job_id_request_body',
+                "required": [
+                    "job_id_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "job_id_request_body": (JobIdRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "job_id_request_body": "body",
                 },
-                'openapi_types': {
-                    'job_id_request_body':
-                        (JobIdRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'job_id_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.list_jobs_for_endpoint = _Endpoint(
             settings={
-                'response_type': (JobReadList,),
-                'auth': [],
-                'endpoint_path': '/v1/jobs/list',
-                'operation_id': 'list_jobs_for',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (JobReadList,),
+                "auth": [],
+                "endpoint_path": "/v1/jobs/list",
+                "operation_id": "list_jobs_for",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'job_list_request_body',
+                "all": [
+                    "job_list_request_body",
                 ],
-                'required': [
-                    'job_list_request_body',
+                "required": [
+                    "job_list_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "job_list_request_body": (JobListRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "job_list_request_body": "body",
                 },
-                'openapi_types': {
-                    'job_list_request_body':
-                        (JobListRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'job_list_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
 
-    def cancel_job(
-        self,
-        job_id_request_body,
-        **kwargs
-    ):
+    def cancel_job(self, job_id_request_body, **kwargs):
         """Cancels a job  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -234,34 +189,17 @@ class JobsApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['job_id_request_body'] = \
-            job_id_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["job_id_request_body"] = job_id_request_body
         return self.cancel_job_endpoint.call_with_http_info(**kwargs)
 
-    def get_job_info(
-        self,
-        job_id_request_body,
-        **kwargs
-    ):
+    def get_job_info(self, job_id_request_body, **kwargs):
         """Get information about a job  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -299,34 +237,17 @@ class JobsApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['job_id_request_body'] = \
-            job_id_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["job_id_request_body"] = job_id_request_body
         return self.get_job_info_endpoint.call_with_http_info(**kwargs)
 
-    def list_jobs_for(
-        self,
-        job_list_request_body,
-        **kwargs
-    ):
+    def list_jobs_for(self, job_list_request_body, **kwargs):
         """Returns recent jobs for a connection. Jobs are returned in descending order by createdAt.  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -364,26 +285,12 @@ class JobsApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['job_list_request_body'] = \
-            job_list_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["job_list_request_body"] = job_list_request_body
         return self.list_jobs_for_endpoint.call_with_http_info(**kwargs)
-

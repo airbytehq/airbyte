@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -15,8 +18,9 @@ import unittest
 import openapi_client
 from openapi_client.model.destination_sync_mode import DestinationSyncMode
 from openapi_client.model.sync_mode import SyncMode
-globals()['DestinationSyncMode'] = DestinationSyncMode
-globals()['SyncMode'] = SyncMode
+
+globals()["DestinationSyncMode"] = DestinationSyncMode
+globals()["SyncMode"] = SyncMode
 from openapi_client.model.airbyte_stream_configuration import AirbyteStreamConfiguration
 
 
@@ -36,5 +40,5 @@ class TestAirbyteStreamConfiguration(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

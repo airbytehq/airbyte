@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -12,16 +15,8 @@
 import re  # noqa: F401
 import sys  # noqa: F401
 
-from openapi_client.api_client import ApiClient, Endpoint as _Endpoint
-from openapi_client.model_utils import (  # noqa: F401
-    check_allowed_values,
-    check_validations,
-    date,
-    datetime,
-    file_type,
-    none_type,
-    validate_and_convert_types
-)
+from openapi_client.api_client import ApiClient
+from openapi_client.api_client import Endpoint as _Endpoint
 from openapi_client.model.connection_create import ConnectionCreate
 from openapi_client.model.connection_id_request_body import ConnectionIdRequestBody
 from openapi_client.model.connection_read import ConnectionRead
@@ -33,6 +28,15 @@ from openapi_client.model.invalid_input_exception_info import InvalidInputExcept
 from openapi_client.model.job_info_read import JobInfoRead
 from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 from openapi_client.model.workspace_id_request_body import WorkspaceIdRequestBody
+from openapi_client.model_utils import (  # noqa: F401
+    check_allowed_values,
+    check_validations,
+    date,
+    datetime,
+    file_type,
+    none_type,
+    validate_and_convert_types,
+)
 
 
 class ConnectionApi(object):
@@ -48,510 +52,356 @@ class ConnectionApi(object):
         self.api_client = api_client
         self.create_connection_endpoint = _Endpoint(
             settings={
-                'response_type': (ConnectionRead,),
-                'auth': [],
-                'endpoint_path': '/v1/connections/create',
-                'operation_id': 'create_connection',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (ConnectionRead,),
+                "auth": [],
+                "endpoint_path": "/v1/connections/create",
+                "operation_id": "create_connection",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'connection_create',
+                "all": [
+                    "connection_create",
                 ],
-                'required': [
-                    'connection_create',
+                "required": [
+                    "connection_create",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "connection_create": (ConnectionCreate,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "connection_create": "body",
                 },
-                'openapi_types': {
-                    'connection_create':
-                        (ConnectionCreate,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'connection_create': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.delete_connection_endpoint = _Endpoint(
             settings={
-                'response_type': None,
-                'auth': [],
-                'endpoint_path': '/v1/connections/delete',
-                'operation_id': 'delete_connection',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": None,
+                "auth": [],
+                "endpoint_path": "/v1/connections/delete",
+                "operation_id": "delete_connection",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'connection_id_request_body',
+                "all": [
+                    "connection_id_request_body",
                 ],
-                'required': [
-                    'connection_id_request_body',
+                "required": [
+                    "connection_id_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "connection_id_request_body": (ConnectionIdRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "connection_id_request_body": "body",
                 },
-                'openapi_types': {
-                    'connection_id_request_body':
-                        (ConnectionIdRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'connection_id_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.get_connection_endpoint = _Endpoint(
             settings={
-                'response_type': (ConnectionRead,),
-                'auth': [],
-                'endpoint_path': '/v1/connections/get',
-                'operation_id': 'get_connection',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (ConnectionRead,),
+                "auth": [],
+                "endpoint_path": "/v1/connections/get",
+                "operation_id": "get_connection",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'connection_id_request_body',
+                "all": [
+                    "connection_id_request_body",
                 ],
-                'required': [
-                    'connection_id_request_body',
+                "required": [
+                    "connection_id_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "connection_id_request_body": (ConnectionIdRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "connection_id_request_body": "body",
                 },
-                'openapi_types': {
-                    'connection_id_request_body':
-                        (ConnectionIdRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'connection_id_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.get_state_endpoint = _Endpoint(
             settings={
-                'response_type': (ConnectionState,),
-                'auth': [],
-                'endpoint_path': '/v1/state/get',
-                'operation_id': 'get_state',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (ConnectionState,),
+                "auth": [],
+                "endpoint_path": "/v1/state/get",
+                "operation_id": "get_state",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'connection_id_request_body',
+                "all": [
+                    "connection_id_request_body",
                 ],
-                'required': [
-                    'connection_id_request_body',
+                "required": [
+                    "connection_id_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "connection_id_request_body": (ConnectionIdRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "connection_id_request_body": "body",
                 },
-                'openapi_types': {
-                    'connection_id_request_body':
-                        (ConnectionIdRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'connection_id_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.list_all_connections_for_workspace_endpoint = _Endpoint(
             settings={
-                'response_type': (ConnectionReadList,),
-                'auth': [],
-                'endpoint_path': '/v1/connections/list_all',
-                'operation_id': 'list_all_connections_for_workspace',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (ConnectionReadList,),
+                "auth": [],
+                "endpoint_path": "/v1/connections/list_all",
+                "operation_id": "list_all_connections_for_workspace",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'workspace_id_request_body',
+                "all": [
+                    "workspace_id_request_body",
                 ],
-                'required': [
-                    'workspace_id_request_body',
+                "required": [
+                    "workspace_id_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "workspace_id_request_body": (WorkspaceIdRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "workspace_id_request_body": "body",
                 },
-                'openapi_types': {
-                    'workspace_id_request_body':
-                        (WorkspaceIdRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'workspace_id_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.list_connections_for_workspace_endpoint = _Endpoint(
             settings={
-                'response_type': (ConnectionReadList,),
-                'auth': [],
-                'endpoint_path': '/v1/connections/list',
-                'operation_id': 'list_connections_for_workspace',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (ConnectionReadList,),
+                "auth": [],
+                "endpoint_path": "/v1/connections/list",
+                "operation_id": "list_connections_for_workspace",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'workspace_id_request_body',
+                "all": [
+                    "workspace_id_request_body",
                 ],
-                'required': [
-                    'workspace_id_request_body',
+                "required": [
+                    "workspace_id_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "workspace_id_request_body": (WorkspaceIdRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "workspace_id_request_body": "body",
                 },
-                'openapi_types': {
-                    'workspace_id_request_body':
-                        (WorkspaceIdRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'workspace_id_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.reset_connection_endpoint = _Endpoint(
             settings={
-                'response_type': (JobInfoRead,),
-                'auth': [],
-                'endpoint_path': '/v1/connections/reset',
-                'operation_id': 'reset_connection',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (JobInfoRead,),
+                "auth": [],
+                "endpoint_path": "/v1/connections/reset",
+                "operation_id": "reset_connection",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'connection_id_request_body',
+                "all": [
+                    "connection_id_request_body",
                 ],
-                'required': [
-                    'connection_id_request_body',
+                "required": [
+                    "connection_id_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "connection_id_request_body": (ConnectionIdRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "connection_id_request_body": "body",
                 },
-                'openapi_types': {
-                    'connection_id_request_body':
-                        (ConnectionIdRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'connection_id_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.search_connections_endpoint = _Endpoint(
             settings={
-                'response_type': (ConnectionReadList,),
-                'auth': [],
-                'endpoint_path': '/v1/connections/search',
-                'operation_id': 'search_connections',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (ConnectionReadList,),
+                "auth": [],
+                "endpoint_path": "/v1/connections/search",
+                "operation_id": "search_connections",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'connection_search',
+                "all": [
+                    "connection_search",
                 ],
-                'required': [
-                    'connection_search',
+                "required": [
+                    "connection_search",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "connection_search": (ConnectionSearch,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "connection_search": "body",
                 },
-                'openapi_types': {
-                    'connection_search':
-                        (ConnectionSearch,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'connection_search': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.sync_connection_endpoint = _Endpoint(
             settings={
-                'response_type': (JobInfoRead,),
-                'auth': [],
-                'endpoint_path': '/v1/connections/sync',
-                'operation_id': 'sync_connection',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (JobInfoRead,),
+                "auth": [],
+                "endpoint_path": "/v1/connections/sync",
+                "operation_id": "sync_connection",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'connection_id_request_body',
+                "all": [
+                    "connection_id_request_body",
                 ],
-                'required': [
-                    'connection_id_request_body',
+                "required": [
+                    "connection_id_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "connection_id_request_body": (ConnectionIdRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "connection_id_request_body": "body",
                 },
-                'openapi_types': {
-                    'connection_id_request_body':
-                        (ConnectionIdRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'connection_id_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.update_connection_endpoint = _Endpoint(
             settings={
-                'response_type': (ConnectionRead,),
-                'auth': [],
-                'endpoint_path': '/v1/connections/update',
-                'operation_id': 'update_connection',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (ConnectionRead,),
+                "auth": [],
+                "endpoint_path": "/v1/connections/update",
+                "operation_id": "update_connection",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'connection_update',
+                "all": [
+                    "connection_update",
                 ],
-                'required': [
-                    'connection_update',
+                "required": [
+                    "connection_update",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "connection_update": (ConnectionUpdate,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "connection_update": "body",
                 },
-                'openapi_types': {
-                    'connection_update':
-                        (ConnectionUpdate,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'connection_update': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
 
-    def create_connection(
-        self,
-        connection_create,
-        **kwargs
-    ):
+    def create_connection(self, connection_create, **kwargs):
         """Create a connection between a source and a destination  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -589,34 +439,17 @@ class ConnectionApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['connection_create'] = \
-            connection_create
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["connection_create"] = connection_create
         return self.create_connection_endpoint.call_with_http_info(**kwargs)
 
-    def delete_connection(
-        self,
-        connection_id_request_body,
-        **kwargs
-    ):
+    def delete_connection(self, connection_id_request_body, **kwargs):
         """Delete a connection  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -654,34 +487,17 @@ class ConnectionApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['connection_id_request_body'] = \
-            connection_id_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["connection_id_request_body"] = connection_id_request_body
         return self.delete_connection_endpoint.call_with_http_info(**kwargs)
 
-    def get_connection(
-        self,
-        connection_id_request_body,
-        **kwargs
-    ):
+    def get_connection(self, connection_id_request_body, **kwargs):
         """Get a connection  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -719,34 +535,17 @@ class ConnectionApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['connection_id_request_body'] = \
-            connection_id_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["connection_id_request_body"] = connection_id_request_body
         return self.get_connection_endpoint.call_with_http_info(**kwargs)
 
-    def get_state(
-        self,
-        connection_id_request_body,
-        **kwargs
-    ):
+    def get_state(self, connection_id_request_body, **kwargs):
         """Fetch the current state for a connection.  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -784,34 +583,17 @@ class ConnectionApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['connection_id_request_body'] = \
-            connection_id_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["connection_id_request_body"] = connection_id_request_body
         return self.get_state_endpoint.call_with_http_info(**kwargs)
 
-    def list_all_connections_for_workspace(
-        self,
-        workspace_id_request_body,
-        **kwargs
-    ):
+    def list_all_connections_for_workspace(self, workspace_id_request_body, **kwargs):
         """Returns all connections for a workspace, including deleted connections.  # noqa: E501
 
         List connections for workspace, including deleted connections.  # noqa: E501
@@ -850,34 +632,17 @@ class ConnectionApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['workspace_id_request_body'] = \
-            workspace_id_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["workspace_id_request_body"] = workspace_id_request_body
         return self.list_all_connections_for_workspace_endpoint.call_with_http_info(**kwargs)
 
-    def list_connections_for_workspace(
-        self,
-        workspace_id_request_body,
-        **kwargs
-    ):
+    def list_connections_for_workspace(self, workspace_id_request_body, **kwargs):
         """Returns all connections for a workspace.  # noqa: E501
 
         List connections for workspace. Does not return deleted connections.  # noqa: E501
@@ -916,34 +681,17 @@ class ConnectionApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['workspace_id_request_body'] = \
-            workspace_id_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["workspace_id_request_body"] = workspace_id_request_body
         return self.list_connections_for_workspace_endpoint.call_with_http_info(**kwargs)
 
-    def reset_connection(
-        self,
-        connection_id_request_body,
-        **kwargs
-    ):
+    def reset_connection(self, connection_id_request_body, **kwargs):
         """Reset the data for the connection. Deletes data generated by the connection in the destination. Resets any cursors back to initial state.  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -981,34 +729,17 @@ class ConnectionApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['connection_id_request_body'] = \
-            connection_id_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["connection_id_request_body"] = connection_id_request_body
         return self.reset_connection_endpoint.call_with_http_info(**kwargs)
 
-    def search_connections(
-        self,
-        connection_search,
-        **kwargs
-    ):
+    def search_connections(self, connection_search, **kwargs):
         """Search connections  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -1046,34 +777,17 @@ class ConnectionApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['connection_search'] = \
-            connection_search
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["connection_search"] = connection_search
         return self.search_connections_endpoint.call_with_http_info(**kwargs)
 
-    def sync_connection(
-        self,
-        connection_id_request_body,
-        **kwargs
-    ):
+    def sync_connection(self, connection_id_request_body, **kwargs):
         """Trigger a manual sync of the connection  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -1111,34 +825,17 @@ class ConnectionApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['connection_id_request_body'] = \
-            connection_id_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["connection_id_request_body"] = connection_id_request_body
         return self.sync_connection_endpoint.call_with_http_info(**kwargs)
 
-    def update_connection(
-        self,
-        connection_update,
-        **kwargs
-    ):
+    def update_connection(self, connection_update, **kwargs):
         """Update a connection  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -1176,26 +873,12 @@ class ConnectionApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['connection_update'] = \
-            connection_update
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["connection_update"] = connection_update
         return self.update_connection_endpoint.call_with_http_info(**kwargs)
-

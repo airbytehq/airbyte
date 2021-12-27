@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -12,16 +15,8 @@
 import re  # noqa: F401
 import sys  # noqa: F401
 
-from openapi_client.api_client import ApiClient, Endpoint as _Endpoint
-from openapi_client.model_utils import (  # noqa: F401
-    check_allowed_values,
-    check_validations,
-    date,
-    datetime,
-    file_type,
-    none_type,
-    validate_and_convert_types
-)
+from openapi_client.api_client import ApiClient
+from openapi_client.api_client import Endpoint as _Endpoint
 from openapi_client.model.complete_destination_o_auth_request import CompleteDestinationOAuthRequest
 from openapi_client.model.complete_o_auth_response import CompleteOAuthResponse
 from openapi_client.model.complete_source_oauth_request import CompleteSourceOauthRequest
@@ -33,6 +28,15 @@ from openapi_client.model.o_auth_consent_read import OAuthConsentRead
 from openapi_client.model.set_instancewide_destination_oauth_params_request_body import SetInstancewideDestinationOauthParamsRequestBody
 from openapi_client.model.set_instancewide_source_oauth_params_request_body import SetInstancewideSourceOauthParamsRequestBody
 from openapi_client.model.source_oauth_consent_request import SourceOauthConsentRequest
+from openapi_client.model_utils import (  # noqa: F401
+    check_allowed_values,
+    check_validations,
+    date,
+    datetime,
+    file_type,
+    none_type,
+    validate_and_convert_types,
+)
 
 
 class OauthApi(object):
@@ -48,310 +52,216 @@ class OauthApi(object):
         self.api_client = api_client
         self.complete_destination_o_auth_endpoint = _Endpoint(
             settings={
-                'response_type': (CompleteOAuthResponse,),
-                'auth': [],
-                'endpoint_path': '/v1/destination_oauths/complete_oauth',
-                'operation_id': 'complete_destination_o_auth',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (CompleteOAuthResponse,),
+                "auth": [],
+                "endpoint_path": "/v1/destination_oauths/complete_oauth",
+                "operation_id": "complete_destination_o_auth",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'complete_destination_o_auth_request',
+                "all": [
+                    "complete_destination_o_auth_request",
                 ],
-                'required': [
-                    'complete_destination_o_auth_request',
+                "required": [
+                    "complete_destination_o_auth_request",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "complete_destination_o_auth_request": (CompleteDestinationOAuthRequest,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "complete_destination_o_auth_request": "body",
                 },
-                'openapi_types': {
-                    'complete_destination_o_auth_request':
-                        (CompleteDestinationOAuthRequest,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'complete_destination_o_auth_request': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.complete_source_o_auth_endpoint = _Endpoint(
             settings={
-                'response_type': (CompleteOAuthResponse,),
-                'auth': [],
-                'endpoint_path': '/v1/source_oauths/complete_oauth',
-                'operation_id': 'complete_source_o_auth',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (CompleteOAuthResponse,),
+                "auth": [],
+                "endpoint_path": "/v1/source_oauths/complete_oauth",
+                "operation_id": "complete_source_o_auth",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'complete_source_oauth_request',
+                "all": [
+                    "complete_source_oauth_request",
                 ],
-                'required': [
-                    'complete_source_oauth_request',
+                "required": [
+                    "complete_source_oauth_request",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "complete_source_oauth_request": (CompleteSourceOauthRequest,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "complete_source_oauth_request": "body",
                 },
-                'openapi_types': {
-                    'complete_source_oauth_request':
-                        (CompleteSourceOauthRequest,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'complete_source_oauth_request': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.get_destination_o_auth_consent_endpoint = _Endpoint(
             settings={
-                'response_type': (OAuthConsentRead,),
-                'auth': [],
-                'endpoint_path': '/v1/destination_oauths/get_consent_url',
-                'operation_id': 'get_destination_o_auth_consent',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (OAuthConsentRead,),
+                "auth": [],
+                "endpoint_path": "/v1/destination_oauths/get_consent_url",
+                "operation_id": "get_destination_o_auth_consent",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'destination_oauth_consent_request',
+                "all": [
+                    "destination_oauth_consent_request",
                 ],
-                'required': [
-                    'destination_oauth_consent_request',
+                "required": [
+                    "destination_oauth_consent_request",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "destination_oauth_consent_request": (DestinationOauthConsentRequest,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "destination_oauth_consent_request": "body",
                 },
-                'openapi_types': {
-                    'destination_oauth_consent_request':
-                        (DestinationOauthConsentRequest,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'destination_oauth_consent_request': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.get_source_o_auth_consent_endpoint = _Endpoint(
             settings={
-                'response_type': (OAuthConsentRead,),
-                'auth': [],
-                'endpoint_path': '/v1/source_oauths/get_consent_url',
-                'operation_id': 'get_source_o_auth_consent',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (OAuthConsentRead,),
+                "auth": [],
+                "endpoint_path": "/v1/source_oauths/get_consent_url",
+                "operation_id": "get_source_o_auth_consent",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'source_oauth_consent_request',
+                "all": [
+                    "source_oauth_consent_request",
                 ],
-                'required': [
-                    'source_oauth_consent_request',
+                "required": [
+                    "source_oauth_consent_request",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "source_oauth_consent_request": (SourceOauthConsentRequest,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "source_oauth_consent_request": "body",
                 },
-                'openapi_types': {
-                    'source_oauth_consent_request':
-                        (SourceOauthConsentRequest,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'source_oauth_consent_request': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.set_instancewide_destination_oauth_params_endpoint = _Endpoint(
             settings={
-                'response_type': None,
-                'auth': [],
-                'endpoint_path': '/v1/destination_oauths/oauth_params/create',
-                'operation_id': 'set_instancewide_destination_oauth_params',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": None,
+                "auth": [],
+                "endpoint_path": "/v1/destination_oauths/oauth_params/create",
+                "operation_id": "set_instancewide_destination_oauth_params",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'set_instancewide_destination_oauth_params_request_body',
+                "all": [
+                    "set_instancewide_destination_oauth_params_request_body",
                 ],
-                'required': [
-                    'set_instancewide_destination_oauth_params_request_body',
+                "required": [
+                    "set_instancewide_destination_oauth_params_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "set_instancewide_destination_oauth_params_request_body": (SetInstancewideDestinationOauthParamsRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "set_instancewide_destination_oauth_params_request_body": "body",
                 },
-                'openapi_types': {
-                    'set_instancewide_destination_oauth_params_request_body':
-                        (SetInstancewideDestinationOauthParamsRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'set_instancewide_destination_oauth_params_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
         self.set_instancewide_source_oauth_params_endpoint = _Endpoint(
             settings={
-                'response_type': None,
-                'auth': [],
-                'endpoint_path': '/v1/source_oauths/oauth_params/create',
-                'operation_id': 'set_instancewide_source_oauth_params',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": None,
+                "auth": [],
+                "endpoint_path": "/v1/source_oauths/oauth_params/create",
+                "operation_id": "set_instancewide_source_oauth_params",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'set_instancewide_source_oauth_params_request_body',
+                "all": [
+                    "set_instancewide_source_oauth_params_request_body",
                 ],
-                'required': [
-                    'set_instancewide_source_oauth_params_request_body',
+                "required": [
+                    "set_instancewide_source_oauth_params_request_body",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "set_instancewide_source_oauth_params_request_body": (SetInstancewideSourceOauthParamsRequestBody,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "set_instancewide_source_oauth_params_request_body": "body",
                 },
-                'openapi_types': {
-                    'set_instancewide_source_oauth_params_request_body':
-                        (SetInstancewideSourceOauthParamsRequestBody,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'set_instancewide_source_oauth_params_request_body': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
-            api_client=api_client
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
+            api_client=api_client,
         )
 
-    def complete_destination_o_auth(
-        self,
-        complete_destination_o_auth_request,
-        **kwargs
-    ):
+    def complete_destination_o_auth(self, complete_destination_o_auth_request, **kwargs):
         """Given a destination def ID generate an access/refresh token etc.  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -389,34 +299,17 @@ class OauthApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['complete_destination_o_auth_request'] = \
-            complete_destination_o_auth_request
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["complete_destination_o_auth_request"] = complete_destination_o_auth_request
         return self.complete_destination_o_auth_endpoint.call_with_http_info(**kwargs)
 
-    def complete_source_o_auth(
-        self,
-        complete_source_oauth_request,
-        **kwargs
-    ):
+    def complete_source_o_auth(self, complete_source_oauth_request, **kwargs):
         """Given a source def ID generate an access/refresh token etc.  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -454,34 +347,17 @@ class OauthApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['complete_source_oauth_request'] = \
-            complete_source_oauth_request
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["complete_source_oauth_request"] = complete_source_oauth_request
         return self.complete_source_o_auth_endpoint.call_with_http_info(**kwargs)
 
-    def get_destination_o_auth_consent(
-        self,
-        destination_oauth_consent_request,
-        **kwargs
-    ):
+    def get_destination_o_auth_consent(self, destination_oauth_consent_request, **kwargs):
         """Given a destination connector definition ID, return the URL to the consent screen where to redirect the user to.  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -519,34 +395,17 @@ class OauthApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['destination_oauth_consent_request'] = \
-            destination_oauth_consent_request
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["destination_oauth_consent_request"] = destination_oauth_consent_request
         return self.get_destination_o_auth_consent_endpoint.call_with_http_info(**kwargs)
 
-    def get_source_o_auth_consent(
-        self,
-        source_oauth_consent_request,
-        **kwargs
-    ):
+    def get_source_o_auth_consent(self, source_oauth_consent_request, **kwargs):
         """Given a source connector definition ID, return the URL to the consent screen where to redirect the user to.  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -584,34 +443,17 @@ class OauthApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['source_oauth_consent_request'] = \
-            source_oauth_consent_request
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["source_oauth_consent_request"] = source_oauth_consent_request
         return self.get_source_o_auth_consent_endpoint.call_with_http_info(**kwargs)
 
-    def set_instancewide_destination_oauth_params(
-        self,
-        set_instancewide_destination_oauth_params_request_body,
-        **kwargs
-    ):
+    def set_instancewide_destination_oauth_params(self, set_instancewide_destination_oauth_params_request_body, **kwargs):
         """Sets instancewide variables to be used for the oauth flow when creating this destination. When set, these variables will be injected into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know about these variables.   # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -649,34 +491,17 @@ class OauthApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['set_instancewide_destination_oauth_params_request_body'] = \
-            set_instancewide_destination_oauth_params_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["set_instancewide_destination_oauth_params_request_body"] = set_instancewide_destination_oauth_params_request_body
         return self.set_instancewide_destination_oauth_params_endpoint.call_with_http_info(**kwargs)
 
-    def set_instancewide_source_oauth_params(
-        self,
-        set_instancewide_source_oauth_params_request_body,
-        **kwargs
-    ):
+    def set_instancewide_source_oauth_params(self, set_instancewide_source_oauth_params_request_body, **kwargs):
         """Sets instancewide variables to be used for the oauth flow when creating this source. When set, these variables will be injected into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know about these variables.   # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -714,26 +539,12 @@ class OauthApi(object):
                 If the method is called asynchronously, returns the request
                 thread.
         """
-        kwargs['async_req'] = kwargs.get(
-            'async_req', False
-        )
-        kwargs['_return_http_data_only'] = kwargs.get(
-            '_return_http_data_only', True
-        )
-        kwargs['_preload_content'] = kwargs.get(
-            '_preload_content', True
-        )
-        kwargs['_request_timeout'] = kwargs.get(
-            '_request_timeout', None
-        )
-        kwargs['_check_input_type'] = kwargs.get(
-            '_check_input_type', True
-        )
-        kwargs['_check_return_type'] = kwargs.get(
-            '_check_return_type', True
-        )
-        kwargs['_host_index'] = kwargs.get('_host_index')
-        kwargs['set_instancewide_source_oauth_params_request_body'] = \
-            set_instancewide_source_oauth_params_request_body
+        kwargs["async_req"] = kwargs.get("async_req", False)
+        kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+        kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+        kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+        kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+        kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+        kwargs["_host_index"] = kwargs.get("_host_index")
+        kwargs["set_instancewide_source_oauth_params_request_body"] = set_instancewide_source_oauth_params_request_body
         return self.set_instancewide_source_oauth_params_endpoint.call_with_http_info(**kwargs)
-

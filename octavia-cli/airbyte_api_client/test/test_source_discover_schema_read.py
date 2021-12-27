@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -15,8 +18,9 @@ import unittest
 import openapi_client
 from openapi_client.model.airbyte_catalog import AirbyteCatalog
 from openapi_client.model.synchronous_job_read import SynchronousJobRead
-globals()['AirbyteCatalog'] = AirbyteCatalog
-globals()['SynchronousJobRead'] = SynchronousJobRead
+
+globals()["AirbyteCatalog"] = AirbyteCatalog
+globals()["SynchronousJobRead"] = SynchronousJobRead
 from openapi_client.model.source_discover_schema_read import SourceDiscoverSchemaRead
 
 
@@ -36,5 +40,5 @@ class TestSourceDiscoverSchemaRead(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

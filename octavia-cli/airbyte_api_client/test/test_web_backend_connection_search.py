@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """
     Airbyte Configuration API
 
@@ -18,11 +21,12 @@ from openapi_client.model.connection_status import ConnectionStatus
 from openapi_client.model.destination_search import DestinationSearch
 from openapi_client.model.namespace_definition_type import NamespaceDefinitionType
 from openapi_client.model.source_search import SourceSearch
-globals()['ConnectionSchedule'] = ConnectionSchedule
-globals()['ConnectionStatus'] = ConnectionStatus
-globals()['DestinationSearch'] = DestinationSearch
-globals()['NamespaceDefinitionType'] = NamespaceDefinitionType
-globals()['SourceSearch'] = SourceSearch
+
+globals()["ConnectionSchedule"] = ConnectionSchedule
+globals()["ConnectionStatus"] = ConnectionStatus
+globals()["DestinationSearch"] = DestinationSearch
+globals()["NamespaceDefinitionType"] = NamespaceDefinitionType
+globals()["SourceSearch"] = SourceSearch
 from openapi_client.model.web_backend_connection_search import WebBackendConnectionSearch
 
 
@@ -42,5 +46,5 @@ class TestWebBackendConnectionSearch(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
