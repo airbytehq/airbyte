@@ -44,7 +44,7 @@ public class SquareOAuthFlow extends BaseOAuth2Flow {
                                     final JsonNode inputOAuthConfiguration)
       throws IOException {
     try {
-      // Need to have decoded format, otherwice square fails saying that scope is incorrect
+      // Need to have decoded format, otherwise square fails saying that scope is incorrect
       return URLDecoder.decode(new URIBuilder(AUTHORIZE_URL)
           .addParameter("client_id", clientId)
           .addParameter("scope", SCOPE_VALUE)
