@@ -7,6 +7,8 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+import arrow
+from copy import deepcopy
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -199,22 +201,46 @@ class Departments(SnipeitStream):
     ) -> str:
         return "departments/"
 
-class Events(SnipeitStream):
-    """ This is an incremental stream. We only want the newest events each sync, and I feel that we can
-    determine which events are "newest" based on the id field. The ID field is an auto-incrementing integer. """
-    cursor_field = "id"
+class Events(SnipeitStream, ABC):
     primary_key = "id"
 
+    @property
+    def cursor_field(self):
+        return "updated_at/datetime"
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        if current_stream_state is not None and self.cursor_field in current_stream_state:
-            return {self.cursor_field: max(current_stream_state[self.cursor_field], latest_record[self.cursor_field])}
+        if current_stream_state == {}:
+            return {self.cursor_field: latest_record["updated_at"]["datetime"]}
         else:
-            return {self.cursor_field: latest_record["id"]}
+            records = {}
+            records[current_stream_state[self.cursor_field]] = arrow.get(current_stream_state[self.cursor_field])
+            records[latest_record["updated_at"]["datetime"]] = arrow.get(latest_record["updated_at"]["datetime"])
+            latest_record = max(records.items(), key=lambda x: x[1])
+            return {self.cursor_field: latest_record[0]}
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "reports/activity/"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        """
+        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
+        Usually contains common params e.g. pagination size etc.
+        """
+        return {'limit': 5000}
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        TODO: Override this method to define how a response is parsed.
+        :return an iterable containing each record in the response
+        """
+        base = response.json().get("rows")
+        ascending_list = base[::-1]
+        yield from ascending_list
+
 
 # Source
 class SourceSnipeit(AbstractSource):
