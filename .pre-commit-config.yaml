@@ -26,7 +26,8 @@ repos:
           (?x)^.*(
               .github/|
               source_specs.yaml|
-              destination_specs.yaml
+              destination_specs.yaml|
+              base-normalization/integration_tests/normalization_test_output/.*
           ).?$
 
   - repo: https://gitlab.com/pycqa/flake8
