@@ -38,9 +38,10 @@ class FlexportStream(HttpStream, ABC):
         # All list endpoints return paginated responses. The response object contains
         # elements of the current page, and links to the previous and next pages.
         data = response.json()["data"]
+        next = data.get("next")
 
-        if "next" in data:
-            url = urlparse(data["next"])
+        if next:
+            url = urlparse(next)
             qs = dict(parse_qsl(url.query))
 
             return {

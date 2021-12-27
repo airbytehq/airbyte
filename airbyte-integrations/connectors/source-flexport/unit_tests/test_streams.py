@@ -25,7 +25,7 @@ def patch_base_class(mocker):
 )
 def test_request_params(patch_base_class, next_page_token, expected):
     stream = FlexportStream()
-    assert stream.request_params(None, next_page_token=next_page_token) == expected
+    assert stream.request_params(next_page_token=next_page_token) == expected
 
 
 @pytest.mark.parametrize(
