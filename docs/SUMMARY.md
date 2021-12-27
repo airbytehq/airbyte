@@ -126,6 +126,7 @@
     * [Redshift](integrations/sources/redshift.md)
     * [S3](integrations/sources/s3.md)
     * [SAP Business One](integrations/sources/sap-business-one.md)
+    * [SearchMetrics](integrations/sources/search-metrics.md)
     * [Salesforce](integrations/sources/salesforce.md)
     * [SalesLoft](integrations/sources/salesloft.md)
     * [Sendgrid](integrations/sources/sendgrid.md)

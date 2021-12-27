@@ -74,6 +74,7 @@ import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.net.URI;
@@ -127,6 +128,7 @@ class SchedulerHandlerTest {
   private ConfigurationUpdate configurationUpdate;
   private JsonSchemaValidator jsonSchemaValidator;
   private JobPersistence jobPersistence;
+  private TemporalWorkerRunFactory temporalWorkerRunFactory;
 
   @BeforeEach
   void setup() {
@@ -143,6 +145,7 @@ class SchedulerHandlerTest {
     configRepository = mock(ConfigRepository.class);
     jobPersistence = mock(JobPersistence.class);
     final JobNotifier jobNotifier = mock(JobNotifier.class);
+    temporalWorkerRunFactory = mock(TemporalWorkerRunFactory.class);
 
     schedulerHandler = new SchedulerHandler(
         configRepository,
@@ -155,7 +158,8 @@ class SchedulerHandlerTest {
         mock(WorkflowServiceStubs.class),
         mock(OAuthConfigSupplier.class),
         WorkerEnvironment.DOCKER,
-        LogConfigs.EMPTY);
+        LogConfigs.EMPTY,
+        temporalWorkerRunFactory);
   }
 
   @Test

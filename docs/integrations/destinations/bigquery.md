@@ -109,6 +109,7 @@ There are 2 available options to upload data to BigQuery `Standard` and `GCS Sta
 This is the recommended configuration for uploading data to BigQuery. It works by first uploading all the data to a [GCS](https://cloud.google.com/storage) bucket, then ingesting the data to BigQuery. To configure GCS Staging, you'll need the following parameters:
 * **GCS Bucket Name**
 * **GCS Bucket Path**
+* **Block Size (MB) for GCS multipart upload**
 * **GCS Bucket Keep files after migration**
   * See [this](https://cloud.google.com/storage/docs/creating-buckets) for instructions on how to create a GCS bucket.
 * **HMAC Key Access ID**
@@ -145,6 +146,7 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
+| 0.6.1   | 2021-12-22 | [\#9039](https://github.com/airbytehq/airbyte/pull/9039)   | Added part_size configuration to UI for GCS staging |
 | 0.6.0   | 2021-12-17 | [\#8788](https://github.com/airbytehq/airbyte/issues/8788) | BigQuery/BiqQuery denorm Destinations : Add possibility to use different types of GCS files |
 | 0.5.1   | 2021-12-16 | [\#8816](https://github.com/airbytehq/airbyte/issues/8816) | Update dataset locations |
 | 0.5.0   | 2021-10-26 | [\#7240](https://github.com/airbytehq/airbyte/issues/7240) | Output partitioned/clustered tables |
@@ -161,6 +163,7 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
+| 0.2.2 | 2021-12-22 | [\#9039](https://github.com/airbytehq/airbyte/pull/9039)   | Added part_size configuration to UI for GCS staging |
 | 0.2.1 | 2021-12-21 | [\#8574](https://github.com/airbytehq/airbyte/pull/8574) | Added namespace to Avro and Parquet record types |
 | 0.2.0   | 2021-12-17 | [\#8788](https://github.com/airbytehq/airbyte/pull/8788) |  BigQuery/BiqQuery denorm Destinations : Add possibility to use different types of GCS files |
 | 0.1.11  | 2021-12-16 | [\#8816](https://github.com/airbytehq/airbyte/issues/8816) | Update dataset locations |
