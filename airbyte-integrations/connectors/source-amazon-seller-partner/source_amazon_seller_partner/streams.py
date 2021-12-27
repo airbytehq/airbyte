@@ -551,7 +551,6 @@ class Orders(IncrementalAmazonSPStream):
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
-        #if not next_page_token:
         params.update({"MarketplaceIds": ",".join(self.marketplace_ids)})
         return params
 
