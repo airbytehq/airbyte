@@ -19,6 +19,7 @@ SPEC_ENV_TO_PLAID_ENV = {
     "sandbox": plaid.Environment.Sandbox,
 }
 
+
 class PlaidRequester:
     def __init__(self, api: plaid_api.PlaidApi, access_token: str):
         self.api_requester = api
