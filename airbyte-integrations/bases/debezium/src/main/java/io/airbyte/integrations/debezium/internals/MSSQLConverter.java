@@ -9,6 +9,7 @@ import io.debezium.spi.converter.CustomConverter;
 import io.debezium.spi.converter.RelationalColumn;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Properties;
 import org.apache.kafka.connect.data.SchemaBuilder;
@@ -19,12 +20,8 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
 
   private final Logger LOGGER = LoggerFactory.getLogger(MSSQLConverter.class);
 
-  private final String DATE_TYPE = "DATE";
-  private final String DATETIME_TYPE = "DATETIME";
-  private final String DATETIME2_TYPE = "DATETIME2";
-  private final String DATETIMEOFFSET = "DATETIMEOFFSET";
+  private final String[] DATE_TYPES = {"DATE", "DATETIME", "DATETIME2", "DATETIMEOFFSET", "SMALLDATETIME"};
   private final String TIME_TYPE = "TIME";
-  private final String SMALLDATETIME_TYPE = "SMALLDATETIME";
   private final String SMALLMONEY_TYPE = "SMALLMONEY";
 
   @Override
@@ -33,11 +30,7 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
   @Override
   public void converterFor(final RelationalColumn field,
                            final ConverterRegistration<SchemaBuilder> registration) {
-    if (DATE_TYPE.equalsIgnoreCase(field.typeName())
-        || DATETIME_TYPE.equalsIgnoreCase(field.typeName())
-        || DATETIME2_TYPE.equalsIgnoreCase(field.typeName())
-        || DATETIMEOFFSET.equalsIgnoreCase(field.typeName())
-        || SMALLDATETIME_TYPE.equalsIgnoreCase(field.typeName())) {
+    if (Arrays.stream(DATE_TYPES).anyMatch(el -> el.equalsIgnoreCase(field.typeName()))) {
       registerDate(field, registration);
     } else if (SMALLMONEY_TYPE.equalsIgnoreCase(field.typeName())) {
       registerMoney(field, registration);

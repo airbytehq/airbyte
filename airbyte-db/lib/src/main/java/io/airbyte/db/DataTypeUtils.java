@@ -19,7 +19,6 @@ public class DataTypeUtils {
 
   public static final String DATE_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'";
   public static final DateFormat DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT_PATTERN); // Quoted "Z" to indicate UTC, no timezone offset
-  public static final DateTimeFormatter ISO_TIME = DateTimeFormatter.ISO_TIME;
 
   public static final String DATE_FORMAT_WITH_MILLISECONDS_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
   public static final DateFormat DATE_FORMAT_WITH_MILLISECONDS = new SimpleDateFormat(DATE_FORMAT_WITH_MILLISECONDS_PATTERN);
@@ -54,7 +53,7 @@ public class DataTypeUtils {
   }
 
   public static String toISOTimeString(final LocalDateTime dateTime) {
-    return ISO_TIME.format(dateTime.toLocalTime());
+    return DateTimeFormatter.ISO_TIME.format(dateTime.toLocalTime());
   }
 
   public static String toISO8601String(final LocalDate date) {

@@ -127,9 +127,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   /**
    * There is no support hierarchyid even in the native SQL Server jdbc driver in DataTypes The only
-   * way to get it as a text is to query it as "test_column.ToString() as test_column". So we
-   * need to make a pre-request to get actual types and then wrap required fields with toString()
-   * function
+   * way to get it as a text is to query it as "test_column.ToString() as test_column". So we need to
+   * make a pre-request to get actual types and then wrap required fields with toString() function
    *
    * @param database
    * @param columnNames
