@@ -6,7 +6,8 @@ import re
 from unittest.mock import MagicMock
 
 import pytest
-from source_flexport.source import FlexportStream, SourceFlexport
+from source_flexport.source import SourceFlexport
+from source_flexport.streams import FlexportStream
 
 
 @pytest.mark.parametrize(

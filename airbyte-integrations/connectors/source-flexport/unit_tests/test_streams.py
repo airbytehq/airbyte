@@ -5,7 +5,8 @@
 import pytest
 import requests
 from requests.exceptions import HTTPError
-from source_flexport.source import FlexportError, FlexportStream
+from source_flexport.source import FlexportError
+from source_flexport.streams import FlexportStream
 
 
 @pytest.fixture

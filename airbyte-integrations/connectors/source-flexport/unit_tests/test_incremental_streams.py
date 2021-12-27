@@ -5,7 +5,7 @@
 
 import pendulum
 import pytest
-from source_flexport.source import IncrementalFlexportStream, Shipments
+from source_flexport.streams import IncrementalFlexportStream, Shipments
 
 
 @pytest.fixture
