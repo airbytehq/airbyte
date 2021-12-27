@@ -6,13 +6,14 @@
           "supported_sync_modes": ["full_refresh"],
           "source_defined_cursor": true,
           "json_schema": {
-            "required": ["account_id", "available", "current"],
+            "type": "object",
+            "required": ["account_id", "current"],
             "properties": {
               "account_id": {
                 "type": "string"
               },
               "available": {
-                "type": "number"
+                "type": ["number", "null"]
               },
               "current": {
                 "type": "number"
@@ -42,7 +43,7 @@
                   "properties": {
                     "account_id": {"type": "string"},
                     "amount": {"type": "number"},
-                    "category": {"type": "array", "items": "string"},
+                    "category": {"type": "array", "items": {"type": "string"}},
                     "category_id": {"type": "string"},
                     "date": {"type": "string"},
                     "iso_currency_code": {"type": "string"},
@@ -52,17 +53,17 @@
                     "transaction_id": {"type": "string"},
                     "transaction_type": {"type": "string"},
                     "location": {
-                        "type": "object", 
-                        "properties": {
-                            "address": "string",
-                            "city": "string",
-                            "country": "string",
-                            "lat": "number",
-                            "lon": "number",
-                            "postal_code": "string",
-                            "region": "string",
-                            "store_number": "string"
-                        }
+                      "type": "object", 
+                      "properties": {
+                          "address": {"type": "string"},
+                          "city": {"type": "string"},
+                          "country": {"type": "string"},
+                          "lat": {"type": "number"},
+                          "lon": {"type": "number"},
+                          "postal_code": {"type": "string"},
+                          "region": {"type": "string"},
+                          "store_number": {"type": "string"}
+                      }
                     },
                     "payment_meta": {
                         "type": "object",

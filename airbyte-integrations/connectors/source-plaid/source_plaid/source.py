@@ -2,22 +2,20 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Mapping, List, Any, Iterable, Optional, Union, MutableMapping, Tuple
 import json
 import pathlib
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.models import (
-    AirbyteStream,
-    SyncMode
-)
+from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import Stream
+
 from .plaid_requester import PlaidRequester
 
-CATALOG_PATH = pathlib.Path(__file__).parent / 'catalog.json'
-CURSOR_FIELD = 'date'
-STATE_START_FIELD = 'start_date'
+CATALOG_PATH = pathlib.Path(__file__).parent / "catalog.json"
+CURSOR_FIELD = "date"
+
 
 class SourcePlaid(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
@@ -32,15 +30,11 @@ class SourcePlaid(AbstractSource):
         plaid_requester = PlaidRequester.from_config(**config)
 
         catalog_configuration = json.loads(CATALOG_PATH.read_text())
-        return [PlaidStream(AirbyteStream(**stream['stream']), plaid_requester) \
-                for stream in catalog_configuration['streams']]
+        return [PlaidStream(AirbyteStream(**stream["stream"]), plaid_requester) for stream in catalog_configuration["streams"]]
 
 
 class PlaidStream(Stream):
-    NAME_TO_PRIMARY_KEY = {
-        'transaction': 'transaction_id',
-        'balance': 'account_id'
-    }
+    NAME_TO_PRIMARY_KEY = {"transaction": "transaction_id", "balance": "account_id"}
 
     def __init__(self, stream_config: AirbyteStream, plaid_requester: PlaidRequester):
         self.stream_config = stream_config
@@ -74,17 +68,23 @@ class PlaidStream(Stream):
     def stream_parser_factory(plaid_requester: PlaidRequester, stream_name: str):
         return getattr(plaid_requester, f"{stream_name}_generator")
 
-    def read_records(self, sync_mode: SyncMode,
-                     cursor_field: List[str] = None,
-                     stream_slice: Mapping[str, Any] = None,
-                     stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
         plaid_generator_function = self.stream_parser_factory(self.plaid_requester, self.name)
         if sync_mode == SyncMode.incremental:
             plaid_generator = plaid_generator_function(**stream_state)
         else:
             plaid_generator = plaid_generator_function()
 
-        yield from plaid_generator
+        try:
+            yield from plaid_generator
+        except ValueError:
+            pass
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        return {STATE_START_FIELD: latest_record[CURSOR_FIELD]}
+        return {CURSOR_FIELD: latest_record[CURSOR_FIELD]}

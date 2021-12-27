@@ -5,10 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
-    "plaid-python"
-]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "plaid-python"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
