@@ -25,7 +25,7 @@ tests:
       # incremental streams: subscription_changes and email_events (it takes a long time to read)
       # and therefore the start date is set at 2021-10-10 for `config_oauth.json`,
       # but the campaign was created on 2021-01-11
-      empty_streams: ["campaigns", "workflows"]
+      empty_streams: ["campaigns", "workflows", "contacts_list_memberships"]
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "sample_files/configured_catalog.json"
