@@ -4,10 +4,12 @@
 
 import logging
 import sys
-from typing import Any, Iterable, Sequence
+from functools import lru_cache
+from typing import Any, Iterable, List, Sequence, Tuple
 
 import backoff
 import pendulum
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from facebook_business.exceptions import FacebookRequestError
 
 # The Facebook API error codes indicating rate-limiting are listed at
@@ -73,3 +75,14 @@ def deep_merge(a: Any, b: Any) -> Any:
         return a | b
     else:
         return a if b is None else b
+
+
+@lru_cache()
+def get_default_fields_and_breakdowns() -> Tuple[List[str], List[str], List[str]]:
+    package_name = __name__.split(".")[0]
+    loader = ResourceSchemaLoader(package_name)
+    default_fields, default_breakdowns, default_action_breakdowns = [
+        list(loader.get_schema(schema).get("properties", {}).keys())
+        for schema in ["ads_insights", "ads_insights_breakdowns", "ads_insights_action_breakdowns"]
+    ]
+    return default_fields, default_breakdowns, default_action_breakdowns
