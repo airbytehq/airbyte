@@ -2,8 +2,8 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from abc import abstractmethod
 import pathlib
+from abc import abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 from airbyte_cdk.logger import AirbyteLogger
@@ -58,39 +58,28 @@ class PlaidStream(Stream):
     def stream_generator_function(self, **kwargs):
         pass
 
+
 class BalanceStream(PlaidStream):
     def stream_generator_function(self, **_kwargs):
         yield from self.plaid_requester.balance_generator()
 
     @property
     def name(self):
-        return 'balance'
+        return "balance"
 
     def get_json_schema(self) -> Mapping[str, Any]:
         return {
             "type": "object",
             "required": ["account_id", "current"],
             "properties": {
-              "account_id": {
-                "type": "string"
-              },
-              "available": {
-                "type": ["number", "null"]
-              },
-              "current": {
-                "type": "number"
-              },
-              "iso_currency_code": {
-                "type": ["string", "null"]
-              },
-              "limit": {
-                "type": ["number", "null"]
-              },
-              "unofficial_currency_code": {
-                "type": ["string", "null"]
-              }
-            }
-          }
+                "account_id": {"type": "string"},
+                "available": {"type": ["number", "null"]},
+                "current": {"type": "number"},
+                "iso_currency_code": {"type": ["string", "null"]},
+                "limit": {"type": ["number", "null"]},
+                "unofficial_currency_code": {"type": ["string", "null"]},
+            },
+        }
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -100,6 +89,7 @@ class BalanceStream(PlaidStream):
     def cursor_field(self) -> Union[str, List[str]]:
         return []
 
+
 class IncrementalTransactionStream(PlaidStream):
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -107,11 +97,9 @@ class IncrementalTransactionStream(PlaidStream):
 
     @property
     def name(self):
-        return 'transaction'
+        return "transaction"
 
-    def get_updated_state(self, 
-                        current_stream_state: MutableMapping[str, Any],
-                        latest_record: Mapping[str, Any]):
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         return {CURSOR_FIELD: latest_record[CURSOR_FIELD]}
 
     def stream_generator_function(self, **kwargs):
@@ -122,61 +110,59 @@ class IncrementalTransactionStream(PlaidStream):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         return {
-                  "type": "object",
-                  "required": ["account_id", "amount", "iso_currency_code", "name", 
-                    "transaction_id", "category", "date", "transaction_type"],
-                  "properties": {
-                    "account_id": {"type": "string"},
-                    "amount": {"type": "number"},
-                    "category": {"type": "array", "items": {"type": "string"}},
-                    "category_id": {"type": ["string", "null"]},
-                    "date": {"type": "string"},
-                    "iso_currency_code": {"type": "string"},
-                    "name": {"type": "string"},
-                    "payment_channel": {"type": ["string", "null"]},
-                    "pending": {"type": ["boolean", "null"]},
-                    "transaction_id": {"type": "string"},
-                    "transaction_type": {"type": "string"},
-                    "location": {
-                      "type": ["object", "null"], 
-                      "properties": {
-                          "address": {"type": ["string", "null"]},
-                          "city": {"type": ["string", "null"]},
-                          "country": {"type": ["string", "null"]},
-                          "lat": {"type": ["string", "null"]},
-                          "lon": {"type": ["string", "null"]},
-                          "postal_code": {"type": ["string", "null"]},
-                          "region": {"type": ["string", "null"]},
-                          "store_number": {"type": ["string", "null"]}
-                      }
+            "type": "object",
+            "required": ["account_id", "amount", "iso_currency_code", "name", "transaction_id", "category", "date", "transaction_type"],
+            "properties": {
+                "account_id": {"type": "string"},
+                "amount": {"type": "number"},
+                "category": {"type": "array", "items": {"type": "string"}},
+                "category_id": {"type": ["string", "null"]},
+                "date": {"type": "string"},
+                "iso_currency_code": {"type": "string"},
+                "name": {"type": "string"},
+                "payment_channel": {"type": ["string", "null"]},
+                "pending": {"type": ["boolean", "null"]},
+                "transaction_id": {"type": "string"},
+                "transaction_type": {"type": "string"},
+                "location": {
+                    "type": ["object", "null"],
+                    "properties": {
+                        "address": {"type": ["string", "null"]},
+                        "city": {"type": ["string", "null"]},
+                        "country": {"type": ["string", "null"]},
+                        "lat": {"type": ["string", "null"]},
+                        "lon": {"type": ["string", "null"]},
+                        "postal_code": {"type": ["string", "null"]},
+                        "region": {"type": ["string", "null"]},
+                        "store_number": {"type": ["string", "null"]},
                     },
-                    "payment_meta": {
-                        "type": ["object", "null"],
-                        "properties": {
-                            "by_order_of": {"type": ["string", "null"]},
-                            "payee": {"type": ["string", "null"]},
-                            "payer": {"type": ["string", "null"]},
-                            "payment_method": {"type": ["string", "null"]},
-                            "payment_processor": {"type": ["string", "null"]},
-                            "ppd_id": {"type": ["string", "null"]},
-                            "reason": {"type": ["string", "null"]},
-                            "reference_number": {"type": ["string", "null"]}
-                        }
+                },
+                "payment_meta": {
+                    "type": ["object", "null"],
+                    "properties": {
+                        "by_order_of": {"type": ["string", "null"]},
+                        "payee": {"type": ["string", "null"]},
+                        "payer": {"type": ["string", "null"]},
+                        "payment_method": {"type": ["string", "null"]},
+                        "payment_processor": {"type": ["string", "null"]},
+                        "ppd_id": {"type": ["string", "null"]},
+                        "reason": {"type": ["string", "null"]},
+                        "reference_number": {"type": ["string", "null"]},
                     },
-                    "account_owner": {"type": ["string", "null"]},
-                    "authorized_date": {"type": ["string", "null"]},
-                    "authorized_datetime": {"type": ["string", "null"]},
-                    "check_number": {"type": ["string", "null"]},
-                    "datetime": {"type": ["string", "null"]},
-                    "merchant_name": {"type": ["string", "null"]},
-                    "pending_transaction_id": {"type": ["string", "null"]},
-                    "personal_finance_category": {"type": ["string", "null"]},
-                    "transaction_code": {"type": ["string", "null"]},
-                    "unofficial_currency_code": {"type": ["string", "null"]}
-                }
-              }
+                },
+                "account_owner": {"type": ["string", "null"]},
+                "authorized_date": {"type": ["string", "null"]},
+                "authorized_datetime": {"type": ["string", "null"]},
+                "check_number": {"type": ["string", "null"]},
+                "datetime": {"type": ["string", "null"]},
+                "merchant_name": {"type": ["string", "null"]},
+                "pending_transaction_id": {"type": ["string", "null"]},
+                "personal_finance_category": {"type": ["string", "null"]},
+                "transaction_code": {"type": ["string", "null"]},
+                "unofficial_currency_code": {"type": ["string", "null"]},
+            },
+        }
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
         return CURSOR_FIELD
-        
