@@ -363,14 +363,14 @@
 - name: Linnworks
   sourceDefinitionId: 7b86879e-26c5-4ef6-a5ce-2be5c7b46d1e
   dockerRepository: airbyte/source-linnworks
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/linnworks
   icon: linnworks.svg
   sourceType: api
 - name: Looker
   sourceDefinitionId: 00405b19-9768-4e0c-b1ae-9fc2ee2b2a8c
   dockerRepository: airbyte/source-looker
-  dockerImageTag: 0.2.5
+  dockerImageTag: 0.2.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/looker
   icon: looker.svg
   sourceType: api
@@ -391,7 +391,7 @@
 - name: Marketo
   sourceDefinitionId: 9e0556f4-69df-4522-a3fb-03264d36b348
   dockerRepository: airbyte/source-marketo
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/marketo
   icon: marketo.svg
   sourceType: api
@@ -412,7 +412,7 @@
 - name: Mixpanel
   sourceDefinitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
   dockerRepository: airbyte/source-mixpanel
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/mixpanel
   icon: mixpanel.svg
   sourceType: api
@@ -796,4 +796,10 @@
   dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/zuora
   icon: zuora.svg
+  sourceType: api
+- name: Kustomer
+  sourceDefinitionId: cd06e646-31bf-4dc8-af48-cbc6530fcad3
+  dockerRepository: airbyte/source-kustomer-singer
+  dockerImageTag: 0.1.2
+  documentationUrl: https://docs.airbyte.io/integrations/sources/kustomer
   sourceType: api
