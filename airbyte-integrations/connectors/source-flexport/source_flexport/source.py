@@ -39,7 +39,7 @@ class FlexportStream(HttpStream, ABC):
         # elements of the current page, and links to the previous and next pages.
         data = response.json()["data"]
 
-        if data["next"]:
+        if "next" in data:
             url = urlparse(data["next"])
             qs = dict(parse_qsl(url.query))
 
