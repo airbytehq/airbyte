@@ -40,7 +40,7 @@ setup(
         "Tracker": "https://github.com/airbytehq/airbyte/issues",
     },
     packages=find_packages(exclude=("tests", "docs")),
-    install_requires=["click~=8.0.3"],
+    install_requires=["click~=8.0.3", "requests~=2.26.0", "scolp~=0.1.5"],
     python_requires=">=3.10.0",
     extras_require={
         "dev": ["MyPy~=0.812", "pytest~=6.2.5", "pytest-cov", "pytest-mock", "requests-mock", "pre-commit"],
