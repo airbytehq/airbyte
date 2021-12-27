@@ -199,6 +199,23 @@ class Departments(SnipeitStream):
     ) -> str:
         return "departments/"
 
+class Events(SnipeitStream):
+    """ This is an incremental stream. We only want the newest events each sync, and I feel that we can
+    determine which events are "newest" based on the id field. The ID field is an auto-incrementing integer. """
+    cursor_field = "id"
+    primary_key = "id"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        if current_stream_state is not None and self.cursor_field in current_stream_state:
+            return {self.cursor_field: max(current_stream_state[self.cursor_field], latest_record[self.cursor_field])}
+        else:
+            return {self.cursor_field: latest_record["id"]}
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "reports/activity/"
+
 # Source
 class SourceSnipeit(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -244,4 +261,5 @@ class SourceSnipeit(AbstractSource):
             Manufacturers(authenticator=auth),
             Maintenances(authenticator=auth),
             Departments(authenticator=auth),
+            Events(authenticator=auth),
         ]

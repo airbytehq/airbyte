@@ -1,0 +1,23 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "name": "events",
+    "type": "object",
+    "properties": {
+        "action_date": {},
+        "action_type": {},
+        "admin": {},
+        "created_at": {},
+        "days_to_next_audit": {},
+        "file": {},
+        "icon": {},
+        "id": {},
+        "item": {},
+        "location": {},
+        "log_meta": {},
+        "next_audit_date": {},
+        "note": {},
+        "signature_file": {},
+        "target": {},
+        "updated_at": {}
+    }
+}
