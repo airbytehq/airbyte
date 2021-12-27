@@ -1000,7 +1000,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-clickhouse:0.1.6"
+- dockerImage: "airbyte/source-clickhouse:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/clickhouse"
     connectionSpecification:
@@ -1178,7 +1178,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-cockroachdb:0.1.3"
+- dockerImage: "airbyte/source-cockroachdb:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/cockroachdb"
     connectionSpecification:
@@ -2455,7 +2455,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-search-console:0.1.8"
+- dockerImage: "airbyte/source-google-search-console:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-search-console"
     connectionSpecification:
@@ -2477,6 +2477,7 @@
           examples:
           - "https://example1.com"
           - "https://example2.com"
+          order: 0
         start_date:
           type: "string"
           description: "The date from which you'd like to replicate data in the format\
@@ -2484,6 +2485,7 @@
           examples:
           - "2021-01-01"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          order: 1
         end_date:
           type: "string"
           description: "The date from which you'd like to replicate data in the format\
@@ -2491,9 +2493,11 @@
           examples:
           - "2021-12-12"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          order: 2
         authorization:
           type: "object"
           title: "Authentication Type"
+          order: 3
           oneOf:
           - title: "Authenticate via Google (Oauth)"
             type: "object"
@@ -3136,7 +3140,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-jira:0.2.16"
+- dockerImage: "airbyte/source-jira:0.2.17"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/jira"
     connectionSpecification:
@@ -3643,7 +3647,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-linnworks:0.1.4"
+- dockerImage: "airbyte/source-linnworks:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/linnworks"
     connectionSpecification:
@@ -3658,23 +3662,27 @@
       additionalProperties: false
       properties:
         application_id:
-          title: "Application ID"
+          title: "Application ID."
+          description: "Linnworks Application ID"
           type: "string"
         application_secret:
-          title: "Application secret"
+          title: "Application Secret"
+          description: "Linnworks Application Secret"
           type: "string"
           airbyte_secret: true
         token:
-          title: "Token"
+          title: "API Token"
           type: "string"
         start_date:
-          title: "Start date"
+          title: "Start Date"
+          description: "UTC date and time in the format 2017-01-25T00:00:00Z. Any\
+            \ data before this date will not be replicated."
           type: "string"
           format: "date-time"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-looker:0.2.5"
+- dockerImage: "airbyte/source-looker:0.2.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/looker"
     connectionSpecification:
@@ -3689,6 +3697,7 @@
       properties:
         domain:
           type: "string"
+          title: "Domain"
           examples:
           - "domainname.looker.com"
           - "looker.clientname.com"
@@ -3773,7 +3782,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-marketo:0.1.2"
+- dockerImage: "airbyte/source-marketo:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/marketo"
     connectionSpecification:
@@ -3799,30 +3808,32 @@
         client_id:
           title: "Client ID"
           type: "string"
+          description: "The Client ID of your Marketo developer application. See <a\
+            \ href=\"https://docs.airbyte.io/integrations/sources/marketo\"> the docs\
+            \ </a> for info on how to obtain this."
           order: 0
-          description: "Your Marketo client_id. See <a href=\"https://docs.airbyte.io/integrations/sources/marketo\"\
-            > the docs </a> for info on how to obtain this."
           airbyte_secret: true
         client_secret:
           title: "Client Secret"
           type: "string"
+          description: "The Client Secret of your Marketo developer application. See\
+            \ <a href=\"https://docs.airbyte.io/integrations/sources/marketo\"> the\
+            \ docs </a> for info on how to obtain this."
           order: 1
-          description: "Your Marketo client secret. See <a href=\"https://docs.airbyte.io/integrations/sources/marketo\"\
-            > the docs </a> for info on how to obtain this."
           airbyte_secret: true
         start_date:
           title: "Start Date"
           type: "string"
           order: 2
-          description: "Data generated in Marketo after this date will be replicated.\
-            \ This date must be specified in the format YYYY-MM-DDT00:00:00Z."
+          description: "UTC date and time in the format 2017-01-25T00:00:00Z. Any\
+            \ data before this date will not be replicated."
           examples:
           - "2020-09-25T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.3.10"
+- dockerImage: "airbyte/source-mssql:0.3.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -4172,7 +4183,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-mixpanel:0.1.7"
+- dockerImage: "airbyte/source-mixpanel:0.1.8.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mixpanel"
     connectionSpecification:
@@ -4192,9 +4203,9 @@
         attribution_window:
           title: "Attribution Window"
           type: "integer"
-          description: "Latency minimum number of days to look-back to account for\
-            \ delays in attributing accurate results. Default attribution window is\
-            \ 5 days."
+          description: " A period of time for attributing results to ads and the lookback\
+            \ period after those actions occur during which ad results are counted.Default\
+            \ attribution window is 5 days."
           default: 5
         project_timezone:
           title: "Project Timezone"
@@ -4215,9 +4226,9 @@
         start_date:
           title: "Start Date"
           type: "string"
-          description: "The default value to use if no bookmark exists for an endpoint.\
-            \ If this option is not set, the connector will replicate data from up\
-            \ to one year ago by default."
+          description: "UTC date and time in the format 2017-01-25T00:00:00Z. Any\
+            \ data before this date will not be replicated. If this option is not\
+            \ set, the connector will replicate data from up to one year ago by default."
           examples:
           - "2021-11-16"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$"
@@ -4801,7 +4812,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-oracle:0.3.10"
+- dockerImage: "airbyte/source-oracle:0.3.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/oracle"
     connectionSpecification:
@@ -5335,7 +5346,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-posthog:0.1.4"
+- dockerImage: "airbyte/source-posthog:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/posthog"
     connectionSpecification:
@@ -5760,7 +5771,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-redshift:0.3.4"
+- dockerImage: "airbyte/source-redshift:0.3.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/redshift"
     connectionSpecification:
@@ -7717,6 +7728,31 @@
           title: "Client Secret"
           description: "Your OAuth user Client Secret"
           airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-kustomer-singer:0.1.2"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/kustomer"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Source Kustomer Singer Spec"
+      type: "object"
+      required:
+      - "api_token"
+      - "start_date"
+      additionalProperties: true
+      properties:
+        api_token:
+          type: "string"
+          description: "Kustomer API Token. See the <a href=\"https://developer.kustomer.com/kustomer-api-docs/reference/authentication\"\
+            >docs</a> on how to obtain this"
+          airbyte_secret: true
+        start_date:
+          type: "string"
+          description: "The date from which you'd like to replicate the data"
+          examples:
+          - "2019-01-01T00:00:00Z"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
