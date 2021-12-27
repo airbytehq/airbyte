@@ -19,7 +19,6 @@ SPEC_ENV_TO_PLAID_ENV = {
     "sandbox": plaid.Environment.Sandbox,
 }
 
-
 class PlaidRequester:
     def __init__(self, api: plaid_api.PlaidApi, access_token: str):
         self.api_requester = api
@@ -53,8 +52,7 @@ class PlaidRequester:
             TransactionsGetRequest(access_token=self.access_token, start_date=date, end_date=datetime.datetime.utcnow().date())
         )
 
-        yield from map(lambda x: {k: v for k, v in x.to_dict().items() if v is not None}, 
-                       sorted(transaction_response[TRANSACTION_KEY], key=lambda t: t["date"]))
+        yield from map(lambda x: x.to_dict(), sorted(transaction_response[TRANSACTION_KEY], key=lambda t: t["date"]))
 
     def balance_generator(self) -> Iterator[Dict[str, Any]]:
         balance_response = self.api_requester.accounts_balance_get(AccountsBalanceGetRequest(access_token=self.access_token))
@@ -62,4 +60,4 @@ class PlaidRequester:
         for balance in balance_response[BALANCE_ACCOUNT_KEY]:
             message_dict = balance["balances"].to_dict()
             message_dict["account_id"] = balance["account_id"]
-            yield {k: v for k, v in message_dict.items() if v is not None}
+            yield message_dict
