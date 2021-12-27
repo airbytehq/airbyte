@@ -6,19 +6,19 @@
       "type": ["null", "integer"]
     },
     "static-list-id": {
-      "type": ["null", "integer"],
+      "type": ["null", "integer"]
     },
     "internal-list-id": {
-      "type": ["null", "integer"],
+      "type": ["null", "integer"]
     },
     "timestamp": {
-      "type": ["null", "integer"],
+      "type": ["null", "integer"]
     },
     "vid": {
-      "type": ["null", "integer"],
+      "type": ["null", "integer"]
     },
     "is-member": {
-      "type": ["null", "boolean"],
+      "type": ["null", "boolean"]
     }
   }
 }

@@ -599,8 +599,13 @@ class ContactListStream(IncrementalStream):
 
 
 class ContactsListMembershipsStream(Stream):
-    """Contact lists, API v1
-    Docs: https://legacydocs.hubspot.com/docs/methods/lists/get_lists
+    """Contacts list Memberships, API v1
+    The Stream was created due to issue #8477, where supporting List Memberships in Contacts stream was requested.
+    According to the issue this feature is supported in API v1 by setting parameter showListMemberships=true
+    in get all contacts endpoint. API will return list memberships for each contact record.
+    But for syncing Contacts API v3 is used, where list memberships for contacts isn't supported.
+    Therefore, new stream was created based on get all contacts endpoint of API V1.
+    Docs: https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts
     """
 
     url = "/contacts/v1/lists/all/contacts/all"
@@ -611,12 +616,18 @@ class ContactsListMembershipsStream(Stream):
     page_field = "vid-offset"
 
     def _transform(self, records: Iterable) -> Iterable:
+        """Extracting list membership records from contacts
+        According to documentation Contacts may have multiple vids,
+        but the canonical-vid will be the primary ID for a record.
+        Docs: https://legacydocs.hubspot.com/docs/methods/contacts/contacts-overview
+        """
         for record in super()._transform(records):
             canonical_vid = record.get("canonical-vid")
             for item in record.get("list-memberships", []):
                 yield {"canonical-vid": canonical_vid, **item}
 
     def list(self, fields) -> Iterable:
+        """Receiving all contacts with list memberships"""
         params = {"showListMemberships": True}
         yield from self.read(partial(self._api.get, url=self.url), params)
 
