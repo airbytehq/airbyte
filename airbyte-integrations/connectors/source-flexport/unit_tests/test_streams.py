@@ -66,10 +66,10 @@ def test_next_page_token(patch_base_class, requests_mock, response, expected):
         (404, {"error": "unexpected_error_type"}, FlexportError("Unexpected error: unexpected_error_type")),
         (200, {"error": {"code": "error_code", "message": "Error message"}}, FlexportError("error_code: Error message")),
         (405, {"error": {"code": "error_code", "message": "Error message"}}, FlexportError("error_code: Error message")),
-        (200, {"data": "unexpected_data_type"}, TypeError("string indices must be integers")),
-        (200, {"data": {"data": None}}, TypeError("'NoneType' object is not iterable")),
-        (200, {"data": {"data": "hello"}}, ["h", "e", "l", "l", "o"]),
-        (200, {"data": {"data": ["record_1", "record_2"]}}, ["record_1", "record_2"]),
+        (200, {"error": None, "data": "unexpected_data_type"}, TypeError("string indices must be integers")),
+        (200, {"error": None, "data": {"data": None}}, TypeError("'NoneType' object is not iterable")),
+        (200, {"error": None, "data": {"data": "hello"}}, ["h", "e", "l", "l", "o"]),
+        (200, {"error": None, "data": {"data": ["record_1", "record_2"]}}, ["record_1", "record_2"]),
     ],
 )
 def test_parse_response(patch_base_class, requests_mock, status_code, response, expected):
