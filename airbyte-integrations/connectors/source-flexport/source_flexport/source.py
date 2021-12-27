@@ -67,13 +67,13 @@ class FlexportStream(HttpStream, ABC):
         except Exception as exc:
             http_error = exc
 
-        error = json.get("error")
-        if error:
-            if "code" in error and "message" in error:
-                raise FlexportError(f"{error['code']}: {error['message']}") from http_error
+        flexport_error = json.get("error")
+        if flexport_error:
+            if "code" in flexport_error and "message" in flexport_error:
+                raise FlexportError(f"{flexport_error['code']}: {flexport_error['message']}") from http_error
 
             if not http_error:
-                raise FlexportError(f"Unexpected error: {error}")
+                raise FlexportError(f"Unexpected error: {flexport_error}")
 
         if http_error:
             raise http_error
