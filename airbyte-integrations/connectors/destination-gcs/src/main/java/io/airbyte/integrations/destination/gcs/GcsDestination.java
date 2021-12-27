@@ -5,6 +5,9 @@
 package io.airbyte.integrations.destination.gcs;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
+import com.amazonaws.services.s3.transfer.Upload;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -16,6 +19,8 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,13 +36,38 @@ public class GcsDestination extends BaseConnector implements Destination {
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     try {
-      final GcsDestinationConfig destinationConfig = GcsDestinationConfig.getGcsDestinationConfig(config);
+      final String fileName = "test";
+      final String testContent = "check-content";
+      final GcsDestinationConfig destinationConfig = GcsDestinationConfig
+          .getGcsDestinationConfig(config);
       final AmazonS3 s3Client = GcsS3Helper.getGcsS3Client(destinationConfig);
-      s3Client.putObject(destinationConfig.getBucketName(), "test", "check-content");
-      s3Client.deleteObject(destinationConfig.getBucketName(), "test");
+      LOGGER.info("Started testing if all required credentials assigned to user");
+      s3Client.putObject(destinationConfig.getBucketName(), fileName, testContent);
+      s3Client.deleteObject(destinationConfig.getBucketName(), fileName);
+      LOGGER.info("Finished checking for normal upload, started checking multipart uploading...");
+      TransferManager tm = TransferManagerBuilder.standard()
+          .withS3Client(s3Client)
+          .build();
+
+      // Test Multipart Upload permissions
+      // TransferManager processes all transfers asynchronously,
+      // so this call returns immediately.
+      final File tmpFile = File.createTempFile(fileName, ".tmp");
+      final FileWriter writer = new FileWriter(tmpFile);
+      writer.write(testContent);
+      writer.close();
+      final Upload upload = tm.upload(destinationConfig.getBucketName(), fileName, tmpFile);
+
+      upload.waitForCompletion();
+      LOGGER.info("Object upload complete");
+      s3Client.deleteObject(destinationConfig.getBucketName(), fileName);
+      LOGGER.info("All checks have passed.");
+      tm.shutdownNow(true);
+
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception attempting to access the Gcs bucket: {}", e.getMessage());
+      LOGGER.error("Please make sure you account has both \"storage.objects.create\" and \"storage.multipartUploads.create\" roles");
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
           .withMessage("Could not connect to the Gcs bucket with the provided configuration. \n" + e
@@ -50,7 +80,8 @@ public class GcsDestination extends BaseConnector implements Destination {
                                             final ConfiguredAirbyteCatalog configuredCatalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
     final GcsWriterFactory formatterFactory = new ProductionWriterFactory();
-    return new GcsConsumer(GcsDestinationConfig.getGcsDestinationConfig(config), configuredCatalog, formatterFactory, outputRecordCollector);
+    return new GcsConsumer(GcsDestinationConfig.getGcsDestinationConfig(config), configuredCatalog,
+        formatterFactory, outputRecordCollector);
   }
 
 }
