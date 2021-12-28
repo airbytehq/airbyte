@@ -116,6 +116,11 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
     this.workerConfigs = workerConfigs;
   }
 
+  // todo: outline all possible failure states
+  // launched + created pod + worker turned off + pod failed + worker was down long enough for pod to be swept + what to do? -> start again presumably in this weird case
+  // launched submitted pod but it wasn't actually created (need to identify this somehow -- is there a waiting period?)
+  // launched + created pod + worker turned off + already succeeded (swept or not)
+  // need to check that we aren't spamming the api
   @Override
   public ReplicationOutput run(StandardSyncInput standardSyncInput, Path jobRoot) throws WorkerException {
     try {
@@ -150,7 +155,7 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
               PORT1, PORT1,
               PORT2, PORT2,
               PORT3, PORT3,
-              PORT4, PORT4));
+              PORT4, PORT4)); // todo: remove port serving sidecars
 
       final AtomicReference<ReplicationOutput> output = new AtomicReference<>();
 
@@ -189,6 +194,7 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
     }
   }
 
+  // todo: figure out how to propagate cancellation to the async process via deletion
   @Override
   public void cancel() {
     cancelled.set(true);

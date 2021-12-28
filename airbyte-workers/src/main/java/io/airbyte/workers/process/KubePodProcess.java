@@ -89,7 +89,7 @@ import org.slf4j.MDC;
  */
 
 // TODO(Davin): Better test for this. See https://github.com/airbytehq/airbyte/issues/3700.
-public class KubePodProcess extends Process {
+public class KubePodProcess extends Process implements KubePod {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcess.class);
 
@@ -180,7 +180,7 @@ public class KubePodProcess extends Process {
 
     // communicates its completion to the heartbeat check via a file and closes itself if the heartbeat
     // fails
-    final var mainCommand = MoreResources.readResource("entrypoints/main.sh")
+    final var mainCommand = MoreResources.readResource("entrypoints/sync/main.sh")
         .replaceAll("TERMINATION_FILE_CHECK", TERMINATION_FILE_CHECK)
         .replaceAll("TERMINATION_FILE_MAIN", TERMINATION_FILE_MAIN)
         .replaceAll("OPTIONAL_STDIN", optionalStdin)
@@ -422,7 +422,7 @@ public class KubePodProcess extends Process {
 
     // communicates via a file if it isn't able to reach the heartbeating server and succeeds if the
     // main container completes
-    final String heartbeatCommand = MoreResources.readResource("entrypoints/check.sh")
+    final String heartbeatCommand = MoreResources.readResource("entrypoints/sync/check.sh")
         .replaceAll("TERMINATION_FILE_CHECK", TERMINATION_FILE_CHECK)
         .replaceAll("TERMINATION_FILE_MAIN", TERMINATION_FILE_MAIN)
         .replaceAll("HEARTBEAT_URL", kubeHeartbeatUrl);
@@ -577,6 +577,11 @@ public class KubePodProcess extends Process {
   @Override
   public Info info() {
     return new KubePodProcessInfo(podDefinition.getMetadata().getName());
+  }
+
+  @Override
+  public KubePodInfo getInfo() {
+    return new KubePodInfo(podDefinition.getMetadata().getNamespace(), podDefinition.getMetadata().getName());
   }
 
   /**
