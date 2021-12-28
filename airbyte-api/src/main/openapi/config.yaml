@@ -1944,8 +1944,10 @@ components:
             $ref: "#/components/schemas/Notification"
         firstCompletedSync:
           type: boolean
+          nullable: true
         feedbackDone:
           type: boolean
+          nullable: true
     WorkspaceUpdate:
       type: object
       required:
@@ -2099,8 +2101,7 @@ components:
             - path
             - 1
         oauthFlowInitParameters:
-          description:
-            "Pointers to the fields in the rootObject needed to obtain the initial refresh/access tokens for the OAuth flow.
+          description: "Pointers to the fields in the rootObject needed to obtain the initial refresh/access tokens for the OAuth flow.
             Each inner array represents the path in the rootObject of the referenced field.
             For example.
             Assume the rootObject contains params 'app_secret', 'app_id' which are needed to get the initial refresh token.
