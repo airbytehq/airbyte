@@ -7,3 +7,12 @@ airbytePython {
     moduleDirectory 'octavia_cli'
 }
 
+task generateApiClient(type: Exec) {
+    environment 'ROOT_DIR', rootDir.absolutePath
+    commandLine 'bin/generate-api-client.sh'
+}
+
+blackFormat.dependsOn generateApiClient
+isortFormat.dependsOn generateApiClient
+flakeCheck.dependsOn generateApiClient
+installReqs.dependsOn generateApiClient
