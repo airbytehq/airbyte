@@ -47,21 +47,6 @@
     },
     {
       "stream": {
-        "name": "events_sessions",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": null,
-        "default_cursor_field": null,
-        "source_defined_primary_key": [["global_session_id"]],
-        "namespace": null
-      },
-      "sync_mode": "full_refresh",
-      "cursor_field": null,
-      "destination_sync_mode": "append",
-      "primary_key": null
-    },
-    {
-      "stream": {
         "name": "feature_flags",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
@@ -77,72 +62,12 @@
     },
     {
       "stream": {
-        "name": "insights",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": null,
-        "default_cursor_field": null,
-        "source_defined_primary_key": [["id"]],
-        "namespace": null
-      },
-      "sync_mode": "full_refresh",
-      "cursor_field": null,
-      "destination_sync_mode": "append",
-      "primary_key": null
-    },
-    {
-      "stream": {
-        "name": "insights_path",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": null,
-        "default_cursor_field": null,
-        "source_defined_primary_key": null,
-        "namespace": null
-      },
-      "sync_mode": "full_refresh",
-      "cursor_field": null,
-      "destination_sync_mode": "append",
-      "primary_key": null
-    },
-    {
-      "stream": {
-        "name": "insights_sessions",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": null,
-        "default_cursor_field": null,
-        "source_defined_primary_key": null,
-        "namespace": null
-      },
-      "sync_mode": "full_refresh",
-      "cursor_field": null,
-      "destination_sync_mode": "append",
-      "primary_key": null
-    },
-    {
-      "stream": {
         "name": "persons",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": null,
         "default_cursor_field": null,
         "source_defined_primary_key": [["id"]],
-        "namespace": null
-      },
-      "sync_mode": "full_refresh",
-      "cursor_field": null,
-      "destination_sync_mode": "append",
-      "primary_key": null
-    },
-    {
-      "stream": {
-        "name": "trends",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": null,
-        "default_cursor_field": null,
-        "source_defined_primary_key": null,
         "namespace": null
       },
       "sync_mode": "full_refresh",

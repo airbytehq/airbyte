@@ -132,6 +132,7 @@ Airbite has the ability to connect to the Oracle source with 3 network connectiv
 
 | Version | Date | Pull Request | Subject                                         |
 |:--------| :--- | :--- |:------------------------------------------------|
+| 0.3.11  | 2021-12-24 | [8958](https://github.com/airbytehq/airbyte/pull/8958) | Add support for JdbcType.ARRAY |
 | 0.3.10  | 2021-12-07 | [8582](https://github.com/airbytehq/airbyte/pull/8582) | Update connector fields title/description |
 | 0.3.9   | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key      |
 | 0.3.8   | 2021-10-13 | [7125](https://github.com/airbytehq/airbyte/pull/7125) | Fix incorrect handling of LONG RAW data type    |
