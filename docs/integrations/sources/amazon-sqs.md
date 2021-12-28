@@ -84,5 +84,6 @@ Extra care should be taken to understand this risk before enabling this option.
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| `0.1.1` | 2021-12-09 | [\#8661](https://github.com/airbytehq/airbyte/pull/8661) | Update fields in source-connectors specifications |
 | `0.1.0` | 2021-10-10 | [\#0000](https://github.com/airbytehq/airbyte/pull/0000) | `Initial version` |
 
