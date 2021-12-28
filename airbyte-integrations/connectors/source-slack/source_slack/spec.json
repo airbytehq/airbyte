@@ -16,24 +16,24 @@
       },
       "lookback_window": {
         "type": "integer",
-        "title": "Threads Lookback window (Days)",
+        "title": "Threads Lookback Window (Days)",
         "description": "How far into the past to look for messages in threads.",
         "examples": [7, 14]
       },
       "join_channels": {
         "type": "boolean",
         "default": true,
-        "title": "Join all channels",
+        "title": "Join All Channels",
         "description": "Whether to join all channels or to sync data only from channels the bot is already in.  If false, you'll need to manually add the bot to all the channels from which you'd like to sync messages. "
       },
       "credentials": {
-        "title": "Authentication mechanism",
-        "description": "Choose how to authenticate into Slack",
+        "title": "Authentication Mechanism",
+        "description": "Choose how to authenticate into Slack.",
         "type": "object",
         "oneOf": [
           {
             "type": "object",
-            "title": "Sign in via Slack (OAuth)",
+            "title": "Sign In via Slack (OAuth)",
             "required": [
               "access_token",
               "client_id",
@@ -47,27 +47,27 @@
               },
               "client_id": {
                 "title": "Client ID",
-                "description": "Slack client_id. See our <a href=\"https://docs.airbyte.io/integrations/sources/slack\">docs</a> if you need help finding this id.",
+                "description": "The Client ID of your Slack developer application.",
                 "type": "string",
                 "examples": ["slack-client-id-example"]
               },
               "client_secret": {
                 "title": "Client Secret",
-                "description": "Slack client_secret. See our <a href=\"https://docs.airbyte.io/integrations/sources/slack\">docs</a> if you need help finding this secret.",
+                "description": "The Client Secret of your Slack developer application.",
                 "type": "string",
                 "examples": ["slack-client-secret-example"],
                 "airbyte_secret": true
               },
               "access_token": {
-                "title": "Access token",
-                "description": "Slack access_token. See our <a href=\"https://docs.airbyte.io/integrations/sources/slack\">docs</a> if you need help generating the token.",
+                "title": "Access Token",
+                "description": "Access Token for making authenticated requests.",
                 "type": "string",
                 "examples": ["slack-access-token-example"],
                 "airbyte_secret": true
               },
               "refresh_token": {
-                "title": "Refresh token",
-                "description": "Slack refresh_token. See our <a href=\"https://docs.airbyte.io/integrations/sources/slack\">docs</a> if you need help generating the token.",
+                "title": "Refresh Token",
+                "description": "Slack Refresh Token which can be used to fetch new Access Token when the current one expires.",
                 "type": "string",
                 "examples": ["slack-refresh-token-example"],
                 "airbyte_secret": true
@@ -87,7 +87,7 @@
               "api_token": {
                 "type": "string",
                 "title": "API Token",
-                "description": "A Slack bot token. See the <a href=\"https://docs.airbyte.io/integrations/sources/slack\">docs</a> for instructions on how to generate it.",
+                "description": "A Slack bot token. See the <a href=\"https://docs.airbyte.io/integrations/sources/slack\">docs</a> for more information on how to obtain this token.",
                 "airbyte_secret": true
               }
             },
