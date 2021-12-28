@@ -82,6 +82,7 @@ runs:
             -Dsonar.verbose=true
             -Dsonar.language=${{ inputs.module-lang }}
             -Dsonar.sourceEncoding=UTF-8
+            -Dsonar.projectBaseDir="/home/runner/work/airbyte/airbyte/${{ inputs.module-folder }}"
 
     - name: Remove SonarQube Project
       if: ${{ inputs.remove-sonar-project == true }}
