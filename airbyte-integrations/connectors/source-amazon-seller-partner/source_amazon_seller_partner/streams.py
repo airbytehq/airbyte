@@ -41,7 +41,7 @@ class AmazonSPStream(HttpStream, ABC):
         url_base: str,
         aws_signature: AWSSignature,
         replication_start_date: str,
-        marketplace_ids: List[str],
+        marketplace_id: str,
         period_in_days: Optional[int],
         report_options: Optional[str],
         max_wait_seconds: Optional[int],
@@ -52,7 +52,7 @@ class AmazonSPStream(HttpStream, ABC):
 
         self._url_base = url_base.rstrip("/") + "/"
         self._replication_start_date = replication_start_date
-        self.marketplace_ids = marketplace_ids
+        self.marketplace_id = marketplace_id
         self._session.auth = aws_signature
 
     @property
@@ -148,7 +148,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         url_base: str,
         aws_signature: AWSSignature,
         replication_start_date: str,
-        marketplace_ids: List[str],
+        marketplace_id: str,
         period_in_days: Optional[int],
         report_options: Optional[str],
         max_wait_seconds: Optional[int],
@@ -159,7 +159,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         self._url_base = url_base.rstrip("/") + "/"
         self._session.auth = aws_signature
         self._replication_start_date = replication_start_date
-        self.marketplace_ids = marketplace_ids
+        self.marketplace_id = marketplace_id
         self.period_in_days = period_in_days
         self._report_options = report_options
         self.max_wait_seconds = max_wait_seconds
@@ -173,7 +173,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         return self._authenticator
 
     def request_params(self) -> MutableMapping[str, Any]:
-        return {"MarketplaceIds": ",".join(self.marketplace_ids)}
+        return {"MarketplaceIds": self.marketplace_id}
 
     def request_headers(self) -> Mapping[str, Any]:
         return {"content-type": "application/json"}
@@ -223,7 +223,7 @@ class ReportsAmazonSPStream(Stream, ABC):
 
         return {
             "reportType": self.name,
-            "marketplaceIds": self.marketplace_ids,
+            "marketplaceIds": [self.marketplace_id],
             "createdSince": replication_start_date.strftime(DATE_TIME_FORMAT),
         }
 
@@ -556,10 +556,9 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
     def get_transform_function(self):
         def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
             if original_value and "format" in field_schema and field_schema["format"] == "date":
-                marketplace_id = self.marketplace_ids[0]
-                date_format = self.MARKETPLACE_DATE_FORMAT_MAP.get(marketplace_id)
+                date_format = self.MARKETPLACE_DATE_FORMAT_MAP.get(self.marketplace_id)
                 if not date_format:
-                    raise KeyError(f"Date format not found for Markeplace ID: {marketplace_id}")
+                    raise KeyError(f"Date format not found for Markeplace ID: {self.marketplace_id}")
                 transformed_value = pendulum.from_format(original_value, date_format).to_date_string()
                 return transformed_value
 
@@ -589,7 +588,7 @@ class Orders(IncrementalAmazonSPStream):
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         if not next_page_token:
-            params.update({"MarketplaceIds": ",".join(self.marketplace_ids)})
+            params.update({"MarketplaceIds": self.marketplace_id})
         return params
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:

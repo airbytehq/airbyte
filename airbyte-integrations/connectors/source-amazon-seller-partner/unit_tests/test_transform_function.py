@@ -20,7 +20,7 @@ def reports_stream(marketplace_id):
         url_base="https://test.url",
         aws_signature=aws_signature,
         replication_start_date="2010-01-25T00:00:00Z",
-        marketplace_ids=[marketplace_id],
+        marketplace_id=marketplace_id,
         authenticator=NoAuth(),
         period_in_days=0,
         report_options=None,
