@@ -62,7 +62,7 @@ runs:
     - name: Remove SonarQube Project
       if: ${{ inputs.remove-sonar-project == true }}
       shell: bash
-      id: create-sq-project
+      id: remove-sq-project
       run: |
         ci_sonar_qube --pull_request_name ${{ inputs.pull_request_id }} --remove_module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
 
