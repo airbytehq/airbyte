@@ -23,7 +23,7 @@ class SonarQubeApi:
         # split the latest name part
         self._pr_id = (pr_name or '').split("/")[-1]
         if not self._pr_id.isdigit():
-            self.logger.critical("PR id should be finished by integer value.")
+            self.logger.critical(f"PR id should be integer. Current value: {pr_name}")
         self._pr_id = int(self._pr_id)
         # check token
         # https://sonarcloud.io/web_api/api/authentication/validate
