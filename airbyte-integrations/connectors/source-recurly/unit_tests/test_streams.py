@@ -6,14 +6,7 @@ import unittest
 from datetime import datetime, timedelta
 from unittest.mock import Mock
 
-from source_recurly.streams import (
-    BEGIN_TIME_PARAM,
-    DEFAULT_CURSOR,
-    BaseStream,
-    AccountCouponRedemptions,
-    ExportDates,
-    MeasuredUnits,
-)
+from source_recurly.streams import BEGIN_TIME_PARAM, DEFAULT_CURSOR, AccountCouponRedemptions, BaseStream, ExportDates, MeasuredUnits
 
 METHOD_NAME = "list_resource"
 
