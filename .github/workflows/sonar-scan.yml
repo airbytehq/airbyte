@@ -43,6 +43,7 @@ jobs:
       uses: Bhacaz/checkout-files@master
       with:
         files: .github tools
+        token: ${{ github.token }}
 
       #      uses: actions/checkout@v2
 #      with:
