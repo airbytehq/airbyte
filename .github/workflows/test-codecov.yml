@@ -1,10 +1,6 @@
 name: Using Codecov for Native Python Connections
 on: [push]
 
-defaults:
- run:
-  working-directory: airbyte-integration/connectors
-
 jobs:
   run:
     runs-on: ubuntu-latest
@@ -18,7 +14,9 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Run tests and collect coverage
+        working-directory: ./airbyte-integrations/connectors
         run: invoke test
       - name: Upload coverage to Codecov
+        working-directory: ./airbyte-integrations/connectors
         if: ${{ always() }}
         uses: codecov/codecov-action@v2
