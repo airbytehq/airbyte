@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
+import itertools
 import logging
 import time
 from collections import deque
@@ -56,11 +56,11 @@ class InsightsAsyncJobManager:
     DAYS_PER_JOB = 1
     # Number of jobs to check in advance and restart if some jobs failed
     # without waiting until previous jobs processed.
-    JOBS_TO_CHECK_INADVANCE = 40
+    JOBS_TO_CHECK_INADVANCE = 10
     # Maximum of concurrent jobs that could be scheduled. Since throttling
     # limit is not reliable indicator of async workload capability we still
     # have to use this parameter.
-    MAX_JOBS_IN_QUEUE = 100
+    MAX_JOBS_IN_QUEUE = 10
 
     def done(self) -> bool:
         """
@@ -78,10 +78,11 @@ class InsightsAsyncJobManager:
         self._update_api_throttle_limit()
         self._wait_throttle_limit_down()
         prev_jobs_count = len(self._jobs_queue)
+        completed_jobs_count = sum(job.completed for job in self._jobs_queue)
         while (
             self._get_current_throttle_value() < self.THROTTLE_LIMIT
             and not self._no_more_ranges()
-            and len(self._jobs_queue) < self.MAX_JOBS_IN_QUEUE
+            and len(self._jobs_queue) - completed_jobs_count < self.MAX_JOBS_IN_QUEUE
         ):
             next_range = self._get_next_range()
             params = {**self.job_params, **next_range}
@@ -107,13 +108,16 @@ class InsightsAsyncJobManager:
             while not job.completed:
                 self.logger.info(f"Job {job} is not ready, wait for {self.JOB_STATUS_UPDATE_SLEEP_SECONDS} seconds")
                 time.sleep(self.JOB_STATUS_UPDATE_SLEEP_SECONDS)
+                self._check_jobs_status_and_restart()
+
             if job.failed:
                 self.logger.info(f"Job {job} failed, restarting")
                 # TODO: wait for insights throttle to go down
                 job.restart()
                 continue
+            self._jobs_queue.popleft()
             self.add_async_jobs()
-            return self._jobs_queue.popleft()
+            return job
         else:
             raise Exception(f"Job {job} failed")
 
@@ -123,26 +127,17 @@ class InsightsAsyncJobManager:
         """
 
         api_batch: FacebookAdsApiBatch = self.api.api.new_batch()
-
-        def success(job: AsyncJob, response: FacebookResponse):
-            try:
-                job.process_batch_result(response)
-            except JobException:
-                job.restart()
-
-        def failure(response: FacebookResponse):
-            self.logger.info(f"Request failed with response: {response.body()}")
-
-        for i in range(min(len(self._jobs_queue), self.JOBS_TO_CHECK_INADVANCE)):
-            job = self._jobs_queue[i]
-            request = job.batch_update_request()
-            if request:
-                api_batch.add_request(request, success=partial(success, job), failure=failure)
+        for job in itertools.islice(self._jobs_queue, 0, self.JOBS_TO_CHECK_INADVANCE):
+            job.update_job(batch=api_batch)
 
         while api_batch:
             # If some of the calls from batch have failed, it returns  a new
             # FacebookAdsApiBatch object with those calls
             api_batch = api_batch.execute()
+
+        for job in itertools.islice(self._jobs_queue, 1, self.JOBS_TO_CHECK_INADVANCE):
+            if job.failed:
+                job.restart()
 
     def _wait_throttle_limit_down(self):
         while self._get_current_throttle_value() > self.THROTTLE_LIMIT:

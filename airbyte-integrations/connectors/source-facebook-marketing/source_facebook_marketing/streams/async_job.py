@@ -4,7 +4,7 @@
 
 import logging
 from enum import Enum
-from typing import Any, Mapping
+from typing import Any, Mapping, Optional
 
 import backoff
 import pendulum
@@ -88,33 +88,40 @@ class AsyncJob:
         :return: True if completed, False - if task still running
         :raises: JobException in case job failed to start, failed or timed out
         """
-        if self._finish_time:
-            return True
-        self._update_job()
-        return self._check_status()
-
-    def batch_update_request(self) -> FacebookRequest:
-        if self._finish_time:
-            # No need to update job status if its already completed
-            return None
-        return self._job.api_get(pending=True)
-
-    def process_batch_result(self, response: FacebookResponse):
-        """Update job status from response"""
-        self._job = ObjectParser(reuse_object=self._job).parse_single(response.json())
-        self._check_status()
+        return bool(self._finish_time is not None)
 
     @property
     def failed(self) -> bool:
         """Tell if the job previously failed"""
         return self._failed
 
+    def _batch_success_handler(self, response: FacebookResponse):
+        """Update job status from response"""
+        self._job = ObjectParser(reuse_object=self._job).parse_single(response.json())
+        self._check_status()
+
+    def _batch_failure_handler(self, response: FacebookResponse):
+        """Update job status from response"""
+        logger.info(f"Request failed with response: {response.body()}")
+
     @backoff_policy
-    def _update_job(self):
+    def update_job(self, batch = None):
         """Method to retrieve job's status, separated because of retry handler"""
         if not self._job:
             raise RuntimeError(f"{self}: Incorrect usage of the method - the job is not started")
-        self._job = self._job.api_get()
+
+        if self.completed:
+            job_progress_pct = self._job["async_percent_completion"]
+            logger.info(f"{self} is {job_progress_pct}% complete ({self._job['async_status']})")
+            # No need to update job status if its already completed
+            return
+
+        if batch:
+            request = self._job.api_get(pending=True)
+            batch.add_request(request, success=self._batch_success_handler, failure=self._batch_failure_handler)
+        else:
+            self._job = self._job.api_get()
+            self._check_status()
 
     def _check_status(self) -> bool:
         """Perform status check
@@ -122,8 +129,8 @@ class AsyncJob:
         :return: True if the job is completed, False - if the job is still running
         """
         job_progress_pct = self._job["async_percent_completion"]
-        logger.info(f"{self} is {job_progress_pct}% complete ({self._job['async_status']})")
         job_status = self._job["async_status"]
+        logger.info(f"{self} is {job_progress_pct}% complete ({job_status})")
 
         if job_status == Status.COMPLETED:
             self._finish_time = pendulum.now()  # TODO: is not actual running time, but interval between check_status calls
