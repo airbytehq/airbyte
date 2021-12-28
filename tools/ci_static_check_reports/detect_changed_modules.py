@@ -37,4 +37,4 @@ def list_changed_modules(changed_files: List[str]) -> Set[str]:
 
 if __name__ == "__main__":
     changed_modules = list_changed_modules(sys.argv[1:])
-    print(changed_modules)
+    print(" ".join(changed_modules))

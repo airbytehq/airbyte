@@ -3,41 +3,81 @@
 #
 import os
 import sys
+from pathlib import Path
+from typing import Dict, List
 
 from invoke import Context
-from tasks import CONFIG_FILE, TASK_COMMANDS, TOOLS_VERSIONS, _run_task
 
+sys.path.insert(0, "airbyte-integrations/connectors")
+from tasks import CONFIG_FILE, TOOLS_VERSIONS, _run_task  # noqa
 
-def update_task_commands_to_generate_reports(module_path: str) -> None:
-    # TODO: update tasks runner after its deployed (https://github.com/airbytehq/airbyte/pull/8873) and refactor this codeblock
-    for task, commands in TASK_COMMANDS.items():
-        if task == "black":
-            commands[-1] = (
-                f"XDG_CACHE_HOME={os.devnull} black -v {{check_option}} "
-                f"--diff {{source_path}}/. > static_checker_reports/{module_path}/black.txt"
-            )
-        elif task == "coverage":
-            commands[-1] = f"{commands[-1]} > static_checker_reports/{module_path}/coverage.txt"
-        elif task == "flake":
-            commands[-1] = f"{commands[-1]} > static_checker_reports/{module_path}/flake.txt"
-        elif task == "isort":
-            commands[-1] = f"pflake8 -v --diff {{source_path}} > static_checker_reports/{module_path}/isort.txt"
-        elif task == "mypy":
-            commands.insert(-1, f"pip install lxml~={TOOLS_VERSIONS['lxml']}")
-            commands[-1] = f"mypy {{source_path}} --config-file={CONFIG_FILE} --cobertura-xml-report=static_checker_reports/{module_path}"
-        elif task == "test":
-            commands[-1] = (
-                f"pytest -v --cov={{source_path}} --cov-report xml:static_checker_reports/{module_path}/pytest.xml "
-                f"{{source_path}}/unit_tests"
-            )
+TASK_COMMANDS: Dict[str, List[str]] = {
+    "black": [
+        f"pip install black~={TOOLS_VERSIONS['black']}",
+        f"XDG_CACHE_HOME={os.devnull} black -v {{check_option}} --diff {{source_path}}/. > {{reports_path}}/black.txt",
+    ],
+    "coverage": [
+        "pip install .",
+        f"pip install coverage[toml]~={TOOLS_VERSIONS['coverage']}",
+        "coverage xml --rcfile={toml_config_file} -o {reports_path}/coverage.xml",
+    ],
+    "flake": [
+        f"pip install mccabe~={TOOLS_VERSIONS['mccabe']}",
+        f"pip install pyproject-flake8~={TOOLS_VERSIONS['flake']}",
+        f"pip install flake8-junit-report~={TOOLS_VERSIONS['flake_junit']}",
+        "pflake8 -v {source_path} --output-file={reports_path}/flake.txt --bug-report",
+        "flake8_junit {reports_path}/flake.txt {reports_path}/flake.xml",
+        "rm -f {reports_path}/flake.txt",
+    ],
+    "isort": [
+        f"pip install colorama~={TOOLS_VERSIONS['colorama']}",
+        f"pip install isort~={TOOLS_VERSIONS['isort']}",
+        "isort -v {check_option} {source_path}/. > {reports_path}/isort.txt",
+    ],
+    "mypy": [
+        "pip install .",
+        f"pip install lxml~={TOOLS_VERSIONS['lxml']}",
+        f"pip install mypy~={TOOLS_VERSIONS['mypy']}",
+        "mypy {source_path} --config-file={toml_config_file} --cobertura-xml-report={reports_path}",
+    ],
+    "test": [
+        "mkdir {venv}/source-acceptance-test",
+        "cp -f $(git ls-tree -r HEAD --name-only {source_acceptance_test_path} | tr '\n' ' ') {venv}/source-acceptance-test",
+        "pip install build",
+        f"python -m build {os.path.join('{venv}', 'source-acceptance-test')}",
+        f"pip install {os.path.join('{venv}', 'source-acceptance-test', 'dist', 'source_acceptance_test-*.whl')}",
+        "[ -f requirements.txt ] && pip install -r requirements.txt 2> /dev/null",
+        "pip install .",
+        "pip install .[tests]",
+        "pip install pytest-cov",
+        "pytest -v --cov={source_path} --cov-report xml:{reports_path}/pytest.xml {source_path}/unit_tests",
+    ],
+}
 
 
 def build_static_checkers_reports(modules: list) -> None:
+    os.chdir(Path(__file__).parents[2])
     ctx = Context()
+    toml_config_file = os.path.join(os.getcwd(), "pyproject.toml")
+
     for module_path in modules:
-        update_task_commands_to_generate_reports(module_path)
-        for checker in TASK_COMMANDS.keys():
-            _run_task(ctx, module_path, checker, multi_envs=False, check_option="")
+        reports_path = f"{os.getcwd()}/static_checker_reports/{module_path}"
+        if not os.path.exists(reports_path):
+            os.makedirs(reports_path)
+
+        for checker in ["coverage"]:
+            _run_task(
+                ctx,
+                f"{os.getcwd()}/{module_path}",
+                checker,
+                module_path=module_path,
+                multi_envs=True,
+                check_option="",
+                task_commands=TASK_COMMANDS,
+                toml_config_file=toml_config_file,
+                reports_path=reports_path,
+                source_acceptance_test_path=os.path.join(os.getcwd(), "airbyte-integrations/bases/source-acceptance-test"),
+            )
 
 
 if __name__ == "__main__":
