@@ -87,13 +87,15 @@ class FlexportStream(HttpStream, ABC):
 
 
 class IncrementalFlexportStream(FlexportStream, ABC):
+    epoch_start = pendulum.from_timestamp(0, tz="UTC").to_iso8601_string()
+
     @property
     def cursor_field(self) -> str:
         return []
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        current = current_stream_state.get(self.cursor_field, "")
-        latest = latest_record.get(self.cursor_field, "")
+        current = current_stream_state.get(self.cursor_field, self.epoch_start)
+        latest = latest_record.get(self.cursor_field, self.epoch_start)
 
         return {
             self.cursor_field: max(latest, current),
