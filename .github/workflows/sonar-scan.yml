@@ -40,7 +40,7 @@ jobs:
          echo "Module: ${{ env.MODULE_NAME }}, Lang: ${{ env.MODULE_LANG }}, Folder: ${{ env.MODULE_FOLDER }}"
     - name: Checkout Airbyte
       if: ${{ env.ENV_NAME == 'github' }}
-      uses: actions/checkout@v2
+      uses: Bhacaz/checkout-files@master
       with:
         files: .github tools
 
