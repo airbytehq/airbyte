@@ -9,26 +9,22 @@
     "properties": {
       "api_token": {
         "type": "string",
-        "title": "API Token",
-        "description": "Zenloop API Token. See <a href=\"https://app.zenloop.com/settings/api\">here</a> on how to obtain API Token.",
+        "description": "Zenloop API Token. You can get the API token in settings page <a href=\"https://app.zenloop.com/settings/api\">here</a> ",
         "airbyte_secret": true
       },
       "date_from": {
         "type": "string",
-        "title": "Start Date",
-        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
+        "description": "Zenloop date_from. Format: 2021-10-24T03:30:30Z or 2021-10-24. Leave empty if only data from current data should be synced",
         "examples": ["2021-10-24T03:30:30Z"]
       },
       "survey_id": {
         "type": "string",
-        "title": "Survey ID",
         "description": "Zenloop Survey ID. Can be found <a href=\"https://app.zenloop.com/settings/api\">here</a>. Leave empty to pull answers from all surveys",
         "airbyte_secret": true
       },
       "survey_group_id": {
         "type": "string",
-        "title": "Survey Group ID",
-        "description": "Zenloop Survey Group ID. Leave empty to pull answers from all survey groups",
+        "description": "Zenloop Survey Group ID. Can be found by pulling All Survey Groups via SurveyGroups stream. Leave empty to pull answers from all survey groups",
         "airbyte_secret": true
       }
     }
