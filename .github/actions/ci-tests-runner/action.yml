@@ -61,7 +61,6 @@ runs:
         ci_sonar_qube --pr ${{ inputs.pull-request-id }} --create --module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
         echo "::set-output name=sq_project_name::=$(ci_sonar_qube --pr ${{ inputs.pull-request-id }} --print_key --module ${{ inputs.module-name }})"
     - name: SonarQube Scan
-      shell: bash
       # test for Python only
       if: ${{ inputs.module-lang == 'py' }}
       uses: sonarsource/sonarqube-scan-action@master
