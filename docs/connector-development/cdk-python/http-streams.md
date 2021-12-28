@@ -49,7 +49,7 @@ Note that Airbyte will always attempt to make as many requests as possible and o
 
 When implementing [stream slicing](incremental-stream.md#streamstream_slices) in an `HTTPStream` each Slice is equivalent to a HTTP request; the stream will make one request per element returned by the `stream_slices` function. The current slice being read is passed into every other method in `HttpStream` e.g: `request_params`, `request_headers`, `path`, etc.. to be injected into a request. This allows you to dynamically determine the output of the `request_params`, `path`, and other functions to read the input slice and return the appropriate value.
 
-## Caching
+## Nested Streams & Caching
 It's possible to cache data from a stream onto a temporary file on disk. 
 
 This is especially useful when dealing with streams that depend on the results of another stream e.g: `/employees/{id}/details`. In this case, we can use caching to write the data of the parent stream to a file to use this data when the child stream synchronizes, rather than performing a full HTTP request again.

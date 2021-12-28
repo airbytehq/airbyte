@@ -135,6 +135,40 @@ class DefaultReplicationWorkerTest {
   }
 
   @Test
+  void testSourceNonZeroExitValue() throws Exception {
+    when(source.getExitValue()).thenReturn(1);
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        sourceMessageTracker,
+        destinationMessageTracker);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+    assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
+  }
+
+  @Test
+  void testDestinationNonZeroExitValue() throws Exception {
+    when(destination.getExitValue()).thenReturn(1);
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        sourceMessageTracker,
+        destinationMessageTracker);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+    assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
+  }
+
+  @Test
   void testLoggingInThreads() throws IOException, WorkerException {
     // set up the mdc so that actually log to a file, so that we can verify that file logging captures
     // threads.
