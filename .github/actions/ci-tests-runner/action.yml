@@ -30,6 +30,14 @@ runs:
       with:
         python-version: 3.7
 
+    - name: Run tests of CI
+      shell: bash
+      run: |
+        # all CI python packages have the prefix "ci_"
+        pip install --quiet tox==3.24.4
+        tox -r -c ./tools/tox_ci.ini
+        pip install --quiet -e ./tools/ci_*
+
     - name: Run Python Tests
       id: run-python-tests
       if: ${{ inputs.module-lang == 'py' }}

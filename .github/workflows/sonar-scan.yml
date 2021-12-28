@@ -53,7 +53,7 @@ jobs:
         module-lang: ${{ env.MODULE_LANG }}
         sonar-token: ${{ secrets.SONAR_TOKEN }}
         sonar-host: ${{ secrets.SONAR_HOST_URL }}
-        pull-request-id: "${{github.repository}}/${{ github.event.inputs.pull_request.id }}"
+        pull-request-id: "${{ github.repository }}/${{ github.event.pull_request.number }}"
         remove-sonar-project: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
 
 
