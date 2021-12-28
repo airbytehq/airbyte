@@ -30,14 +30,6 @@ runs:
       with:
         python-version: 3.7
 
-    - name: Run tests of CI
-      shell: bash
-      run: |
-        # all CI python packages have the prefix "ci_"
-        pip install --quiet tox==3.24.4
-        tox -r -c ./tools/tox_ci.ini
-        pip install --quiet -e ./tools/ci_*
-
     - name: Run Python Tests
       id: run-python-tests
       if: ${{ inputs.module-lang == 'py' }}
@@ -58,11 +50,10 @@ runs:
       shell: bash
       id: create-sq-project
       run: |
-        ci_sonar_qube --pull_request_name ${{ inputs.pull_request_id }} --create_module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
+        ci_sonar_qube --pull_request_name ${{ inputs.pull-request-id }} --create_module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
     - name: Remove SonarQube Project
       if: ${{ inputs.remove-sonar-project == true }}
       shell: bash
       id: remove-sq-project
       run: |
-        ci_sonar_qube --pull_request_name ${{ inputs.pull_request_id }} --remove_module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
-
+        ci_sonar_qube --pull_request_name ${{ inputs.pull-request-id }} --remove_module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
