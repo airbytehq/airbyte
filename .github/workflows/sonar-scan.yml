@@ -40,12 +40,16 @@ jobs:
          echo "Module: ${{ env.MODULE_NAME }}, Lang: ${{ env.MODULE_LANG }}, Folder: ${{ env.MODULE_FOLDER }}"
     - name: Checkout Airbyte
       if: ${{ env.ENV_NAME == 'github' }}
-      uses: Bhacaz/checkout-files
+      uses: actions/checkout@v2
       with:
         files: .github tools
-#      uses: actions/checkout@v2
+
+      #      uses: actions/checkout@v2
 #      with:
 #        fetch-depth: 0
+
+
+
     - name: Run Tests Runner
       id: run-python-tests
       uses: ./.github/actions/ci-tests-runner
