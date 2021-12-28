@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Retently source supports full refresh syncsю
+The Retently source supports full refresh sync.
 
 ### Output schema
 
@@ -12,7 +12,7 @@ Several output streams are available from this source:
 * [Companies](https://www.retently.com/api/#api-get-companies-get)
 * [Reports](https://www.retently.com/api/#api-get-reports-get)
 
-If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
+If there are more endpoints you'd like Airbyte to support, please [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
 ### Features
 
