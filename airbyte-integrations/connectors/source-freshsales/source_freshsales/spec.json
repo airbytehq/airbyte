@@ -9,13 +9,13 @@
     "properties": {
       "domain_name": {
         "type": "string",
-        "title": "Domain Name"
+        "title": "Domain Name",
         "description": "The Name of your Freshsales domain",
         "examples": ["mydomain.myfreshworks.com"]
       },
       "api_key": {
         "type": "string",
-        "title": ""
+        "title": "API Key",
         "description": "Freshsales API Key. See <a href=\"https://crmsupport.freshworks.com/support/solutions/articles/50000002503-how-to-find-my-api-key-\">here</a>. The key is case sensitive.",
         "airbyte_secret": true
       }
