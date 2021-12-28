@@ -16,7 +16,7 @@ function main() {
     -i "/airbyte/$OPENAPI_CONFIG_PATH" \
     -o "/airbyte/$GENERATED_CLIENT_PATH" \
     -g python \
-    --additional-properties=packageName=airbyte_api_client,packageVersion=$PACKAGE_VERSION
+    --additional-properties=packageName=airbyte_api_client
 }
 
 main "$@"
