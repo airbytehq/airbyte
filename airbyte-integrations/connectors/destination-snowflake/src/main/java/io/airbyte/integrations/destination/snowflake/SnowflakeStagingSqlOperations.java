@@ -77,4 +77,7 @@ public class SnowflakeStagingSqlOperations extends JdbcSqlOperations implements 
         schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
+  public void cleanUpStage(JdbcDatabase database, String path) throws SQLException {
+    database.execute(String.format("REMOVE @%s;", path));
+  }
 }
