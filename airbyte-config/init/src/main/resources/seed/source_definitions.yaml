@@ -635,7 +635,7 @@
 - name: Short.io
   sourceDefinitionId: 2fed2292-5586-480c-af92-9944e39fe12d
   dockerRepository: airbyte/source-shortio
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/shortio
   icon: short.svg
   sourceType: api
@@ -687,17 +687,17 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/stripe
   icon: stripe.svg
   sourceType: api
-- name: Survey Monkey
+- name: SurveyMonkey
   sourceDefinitionId: badc5925-0485-42be-8caa-b34096cb71b5
   dockerRepository: airbyte/source-surveymonkey
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/surveymonkey
   icon: surveymonkey.svg
   sourceType: api
 - name: Tempo
   sourceDefinitionId: d1aa448b-7c54-498e-ad95-263cbebcd2db
   dockerRepository: airbyte/source-tempo
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.2.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/tempo
   icon: tempo.svg
   sourceType: api
@@ -711,7 +711,7 @@
 - name: Trello
   sourceDefinitionId: 8da67652-004c-11ec-9a03-0242ac130003
   dockerRepository: airbyte/source-trello
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/trello
   icon: trelllo.svg
   sourceType: api
@@ -732,7 +732,7 @@
 - name: US Census
   sourceDefinitionId: c4cfaeda-c757-489a-8aba-859fb08b6970
   dockerRepository: airbyte/source-us-census
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/us-census
   icon: uscensus.svg
   sourceType: api
@@ -780,7 +780,7 @@
 - sourceDefinitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
   name: Sentry
   dockerRepository: airbyte/source-sentry
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/sentry
   icon: sentry.svg
 - name: Zoom
