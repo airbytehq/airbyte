@@ -458,11 +458,6 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/okta
   icon: okta.svg
   sourceType: api
-- sourceDefinitionId: 135819f4-2505-11ec-8381-2784537b7ff6
-  name: 3PL Central
-  dockerRepository: airbyte/source-tplcentral
-  dockerImageTag: dev
-  documentationUrl: https://docs.airbyte.io/integrations/sources/tplcentral
 - name: OneSignal
   sourceDefinitionId: bb6afd81-87d5-47e3-97c4-e2c2901b1cf8
   dockerRepository: airbyte/source-onesignal
