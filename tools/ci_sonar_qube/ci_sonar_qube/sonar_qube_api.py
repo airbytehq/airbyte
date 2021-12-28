@@ -58,7 +58,7 @@ class SonarQubeApi:
         """"""
         parts = module_name.split("/")
         if len(parts) != 2:
-            self.logger.critical("module name must have the format: component/module")
+            cls.logger.critical("module name must have the format: component/module")
         return f"{AIRBYTE_PROJECT_PREFIX}:{parts[0].lower()}:{parts[1].lower().replace('_', '-')}"
 
     def __correct_project_name(self, project_name: str) -> str:
