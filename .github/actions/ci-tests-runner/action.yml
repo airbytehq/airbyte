@@ -72,7 +72,7 @@ runs:
         SONAR_TOKEN: ${{ inputs.sonar-token }}
         SONAR_HOST_URL: ${{ inputs.sonar-host }}
       with:
-          projectBaseDir: ${{ inputs.module-folder }}
+          projectBaseDir: "/home/runner/work/airbyte/airbyte/${{ inputs.module-folder }}"
           args: >
             -Dsonar.projectKey=${{ steps.create-sq-project.outputs.sq_project_name }}
             -Dsonar.verbose=true
