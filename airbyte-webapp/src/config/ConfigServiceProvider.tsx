@@ -37,14 +37,17 @@ const ConfigServiceInner: React.FC<{
     () => (value ? { config: value } : null),
     [value]
   );
+
+  if (loading) {
+    return <LoadingPage />;
+  }
+
   return (
-    <configContext.Provider value={config}>
-      {loading && providers ? <LoadingPage /> : children}
-    </configContext.Provider>
+    <configContext.Provider value={config}>{children}</configContext.Provider>
   );
 };
 
 export const ConfigServiceProvider: React.FC<{
   defaultConfig: Config;
-  providers: ValueProvider<Config>;
+  providers?: ValueProvider<Config>;
 }> = React.memo(ConfigServiceInner);

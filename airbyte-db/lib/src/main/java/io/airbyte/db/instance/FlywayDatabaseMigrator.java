@@ -52,10 +52,6 @@ public class FlywayDatabaseMigrator implements DatabaseMigrator {
     this.flyway = flyway;
   }
 
-  private static String getDefaultMigrationFileLocation(final String dbIdentifier) {
-    return String.format("classpath:io/airbyte/db/instance/%s/migrations", dbIdentifier);
-  }
-
   private static FluentConfiguration getConfiguration(final Database database,
                                                       final String dbIdentifier,
                                                       final String migrationRunner,
@@ -98,10 +94,18 @@ public class FlywayDatabaseMigrator implements DatabaseMigrator {
 
   @Override
   public String dumpSchema() throws IOException {
-    return new ExceptionWrappingDatabase(database).query(ctx -> ctx.meta().ddl().queryStream()
+    return getDisclaimer() + new ExceptionWrappingDatabase(database).query(ctx -> ctx.meta().ddl().queryStream()
         .map(query -> query.toString() + ";")
         .filter(statement -> !statement.startsWith("create schema"))
         .collect(Collectors.joining("\n")));
+  }
+
+  protected String getDisclaimer() {
+    return """
+           // The content of the file is just to have a basic idea of the current state of the database and is not fully accurate.\040
+           // It is also not used by any piece of code to generate anything.\040
+           // It doesn't contain the enums created in the database and the default values might also be buggy.\s
+           """ + '\n';
   }
 
   @VisibleForTesting
