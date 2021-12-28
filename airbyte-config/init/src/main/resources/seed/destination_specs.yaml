@@ -176,7 +176,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-bigquery:0.5.1"
+- dockerImage: "airbyte/destination-bigquery:0.6.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -307,6 +307,16 @@
                 type: "string"
                 examples:
                 - "data_sync/test"
+              part_size_mb:
+                title: "Block Size (MB) for GCS multipart upload"
+                description: "This is the size of a \"Part\" being buffered in memory.\
+                  \ It limits the memory usage when writing. Larger values will allow\
+                  \ to upload a bigger files and improve the speed, but consumes9\
+                  \ more memory. Allowed values: min=5MB, max=525MB Default: 5MB."
+                type: "integer"
+                default: 5
+                examples:
+                - 5
               keep_files_in_gcs-bucket:
                 type: "string"
                 description: "This upload method is supposed to temporary store records\
@@ -354,7 +364,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:0.2.1"
+- dockerImage: "airbyte/destination-bigquery-denormalized:0.2.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -474,6 +484,18 @@
                 type: "string"
                 examples:
                 - "data_sync/test"
+              part_size_mb:
+                title: "Block Size (MB) for GCS multipart upload"
+                description: "This is the size of a \"Part\" being buffered in memory.\
+                  \ It limits the memory usage when writing. Larger values will allow\
+                  \ to upload a bigger files and improve the speed, but consumes9\
+                  \ more memory. Allowed values: min=5MB, max=525MB Default: 5MB."
+                type: "integer"
+                default: 5
+                minimum: 5
+                maximum: 525
+                examples:
+                - 5
               keep_files_in_gcs-bucket:
                 type: "string"
                 description: "This upload method is supposed to temporary store records\
@@ -3549,6 +3571,8 @@
                   \ more memory. Allowed values: min=5MB, max=525MB Default: 5MB."
                 type: "integer"
                 default: 5
+                minimum: 5
+                maximum: 525
                 examples:
                 - 5
           - title: "CSV: Comma-Separated Values"
@@ -3722,7 +3746,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.3.22"
+- dockerImage: "airbyte/destination-snowflake:0.3.24"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:
@@ -3895,6 +3919,21 @@
                 title: "S3 Access Key"
                 airbyte_secret: true
                 order: 4
+              part_size:
+                type: "integer"
+                default: 5
+                examples:
+                - 5
+                description: "Optional. Increase this if syncing tables larger than\
+                  \ 100GB. Only relevant for COPY. Files are streamed to S3 in parts.\
+                  \ This determines the size of each part, in MBs. As S3 has a limit\
+                  \ of 10,000 parts per file, part size affects the table size. This\
+                  \ is 10MB by default, resulting in a default limit of 100GB tables.\
+                  \ Note, a larger part size will result in larger memory requirements.\
+                  \ A rule of thumb is to multiply the part size by 10 to get the\
+                  \ memory requirement. Modify this with care."
+                title: "Stream Part Size"
+                order: 5
           - title: "GCS Staging"
             additionalProperties: false
             description: "Writes large batches of records to a file, uploads the file\
