@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 1000
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
@@ -18,7 +20,8 @@ jobs:
       - name: Detect Changed Modules
         id: detect-changed-modules
         run: |
-          echo "::set-output name=changed-modules::'$(python ./tools/ci_static_check_reports/detect_changed_modules.py $(git diff --name-only $(git merge-base remotes/origin/${GITHUB_HEAD_REF} remotes/origin/master)))'"
+          git fetch
+          echo "::set-output name=changed-modules::$(python ./tools/ci_static_check_reports/detect_changed_modules.py $(git diff --name-only $(git merge-base HEAD origin/master)))"
   build-reports:
     name: Build Static Checkers Reports
     needs:

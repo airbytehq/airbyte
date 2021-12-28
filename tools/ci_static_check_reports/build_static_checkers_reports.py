@@ -65,7 +65,7 @@ def build_static_checkers_reports(modules: list) -> None:
         if not os.path.exists(reports_path):
             os.makedirs(reports_path)
 
-        for checker in ["coverage"]:
+        for checker in TASK_COMMANDS.keys():
             _run_task(
                 ctx,
                 f"{os.getcwd()}/{module_path}",

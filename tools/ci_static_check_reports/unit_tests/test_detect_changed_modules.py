@@ -5,7 +5,7 @@ from typing import List, Set
 
 import pytest
 
-from tools.ci_static_check_reports.detect_changed_modules import list_changed_modules
+from ..detect_changed_modules import list_changed_modules
 
 
 @pytest.mark.parametrize(
