@@ -23,7 +23,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "tap-activecampaign @ git+https://github.com/singer-io/tap-activecampaign",
+    "tap-activecampaign @ git+https://github.com/blotoutio/tap-activecampaign",
     "airbyte-cdk==0.1.2",
 ]
 

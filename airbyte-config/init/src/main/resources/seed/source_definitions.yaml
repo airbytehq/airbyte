@@ -413,4 +413,4 @@
   name: Active Campaign
   dockerRepository: blotout/source-active-campaign-singer
   dockerImageTag: 0.1.1
-  documentationUrl: https://github.com/singer-io/tap-activecampaign
+  documentationUrl: https://github.com/blotoutio/tap-activecampaign
