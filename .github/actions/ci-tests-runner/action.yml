@@ -64,10 +64,7 @@ runs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    - name: Test
-      shell: bash
-      run: |
-        echo "AAAA: /home/runner/work/airbyte/airbyte/${{ inputs.module-folder }}"
+        path: /github/workspace/
     - name: SonarQube Scan
       # test for Python only
       if: ${{ inputs.module-lang == 'py' }}
@@ -76,13 +73,12 @@ runs:
         SONAR_TOKEN: ${{ inputs.sonar-token }}
         SONAR_HOST_URL: ${{ inputs.sonar-host }}
       with:
-          projectBaseDir: "/home/runner/work/airbyte/airbyte/${{ inputs.module-folder }}"
+          projectBaseDir: ${{ inputs.module-folder }}
           args: >
             -Dsonar.projectKey=${{ steps.create-sq-project.outputs.sq_project_name }}
             -Dsonar.verbose=true
             -Dsonar.language=${{ inputs.module-lang }}
             -Dsonar.sourceEncoding=UTF-8
-            -Dsonar.projectBaseDir="/home/runner/work/airbyte/airbyte/${{ inputs.module-folder }}"
 
     - name: Remove SonarQube Project
       if: ${{ inputs.remove-sonar-project == true }}
