@@ -9,13 +9,13 @@
       "stock_ticker": {
         "type": "string",
         "title": "Stock Ticker",
-        "description": "The stock ticker to track.",
+        "description": "The stock ticker to track",
         "examples": ["AAPL", "TSLA", "AMZN"]
       },
       "api_key": {
         "title": "API Key",
         "type": "string",
-        "description": "The IEX Cloud API Key to use to hit the API.",
+        "description": "The IEX Cloud API key to use to hit the API.",
         "airbyte_secret": true
       }
     }
