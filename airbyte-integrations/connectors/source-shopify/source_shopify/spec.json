@@ -74,6 +74,7 @@
               },
               "api_password": {
                 "type": "string",
+                "title": "API Password",
                 "description": "The API Password for your private application in the `Shopify` store.",
                 "airbyte_secret": true
               }
