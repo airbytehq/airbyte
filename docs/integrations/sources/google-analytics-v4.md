@@ -132,6 +132,7 @@ The Google Analytics connector should not run into Google Analytics API limitati
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.15 | 2021-12-28 | [9165](https://github.com/airbytehq/airbyte/pull/9165) | Update titles and descriptions |
 | 0.1.14 | 2021-12-09 | [8656](https://github.com/airbytehq/airbyte/pull/8656) | Fix date-format in schemas |
 | 0.1.13 | 2021-12-09 | [8676](https://github.com/airbytehq/airbyte/pull/8676) | Fix `window_in_days` validation issue |
 | 0.1.12 | 2021-12-03 | [8175](https://github.com/airbytehq/airbyte/pull/8175) | Fix validation of unknown metric(s) or dimension(s) error |
