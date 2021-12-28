@@ -58,7 +58,7 @@
               },
               "api_key": {
                 "title": "API Token",
-                "description": "Retantly API Token. See the <a href=\"https://app.retently.com/settings/api/tokens\">docs</a> for more information on how to obtain this key.",
+                "description": "Retently API Token. See the <a href=\"https://app.retently.com/settings/api/tokens\">docs</a> for more information on how to obtain this key.",
                 "type": "string",
                 "airbyte_secret": true
               }
