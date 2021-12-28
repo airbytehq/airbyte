@@ -64,3 +64,9 @@ This guide will walk through how to create the credentials you need to run this 
     ```
 * We should now have everything we need to configure this source in the UI.
 
+## Changelog
+
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.2.2 | 2021-12-28 | [9154](https://github.com/airbytehq/airbyte/pull/9154) | Update fields in source-connectors specifications |
+
