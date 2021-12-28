@@ -12,13 +12,18 @@ import io.airbyte.db.jdbc.JdbcSourceOperations;
 import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class MssqlSourceOperations extends JdbcSourceOperations {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MssqlSourceOperations.class);
-
+  /**
+   * The method is used to set json value by type. Need to be overridden as MSSQL has some its own
+   * specific types (ex. Geometry, Geography, Hierarchyid, etc)
+   *
+   * @param resultSet
+   * @param colIndex
+   * @param json
+   * @throws SQLException
+   */
   @Override
   public void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json)
       throws SQLException {
@@ -36,23 +41,32 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
     } else if (columnTypeName.equalsIgnoreCase("geography")) {
       putGeography(json, columnName, resultSet, colIndex);
     } else {
-      switch (columnType) {
-        case BIT, BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
-        case TINYINT, SMALLINT -> putShortInt(json, columnName, resultSet, colIndex);
-        case INTEGER -> putInteger(json, columnName, resultSet, colIndex);
-        case BIGINT -> putBigInt(json, columnName, resultSet, colIndex);
-        case FLOAT, DOUBLE -> putDouble(json, columnName, resultSet, colIndex);
-        case REAL -> putFloat(json, columnName, resultSet, colIndex);
-        case NUMERIC, DECIMAL -> putBigDecimal(json, columnName, resultSet, colIndex);
-        case CHAR, NVARCHAR, VARCHAR, LONGVARCHAR -> putString(json, columnName, resultSet, colIndex);
-        case DATE -> putDate(json, columnName, resultSet, colIndex);
-        case TIME -> putTime(json, columnName, resultSet, colIndex);
-        case TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
-        case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(json, columnName, resultSet,
-            colIndex);
-        case ARRAY -> putArray(json, columnName, resultSet, colIndex);
-        default -> putDefault(json, columnName, resultSet, colIndex);
-      }
+      putValue(columnType, resultSet, columnName, colIndex, json);
+    }
+  }
+
+  private void putValue(JDBCType columnType,
+                        final ResultSet resultSet,
+                        final String columnName,
+                        final int colIndex,
+                        final ObjectNode json)
+      throws SQLException {
+    switch (columnType) {
+      case BIT, BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
+      case TINYINT, SMALLINT -> putShortInt(json, columnName, resultSet, colIndex);
+      case INTEGER -> putInteger(json, columnName, resultSet, colIndex);
+      case BIGINT -> putBigInt(json, columnName, resultSet, colIndex);
+      case FLOAT, DOUBLE -> putDouble(json, columnName, resultSet, colIndex);
+      case REAL -> putFloat(json, columnName, resultSet, colIndex);
+      case NUMERIC, DECIMAL -> putBigDecimal(json, columnName, resultSet, colIndex);
+      case CHAR, NVARCHAR, VARCHAR, LONGVARCHAR -> putString(json, columnName, resultSet, colIndex);
+      case DATE -> putDate(json, columnName, resultSet, colIndex);
+      case TIME -> putTime(json, columnName, resultSet, colIndex);
+      case TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
+      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(json, columnName, resultSet,
+          colIndex);
+      case ARRAY -> putArray(json, columnName, resultSet, colIndex);
+      default -> putDefault(json, columnName, resultSet, colIndex);
     }
   }
 
