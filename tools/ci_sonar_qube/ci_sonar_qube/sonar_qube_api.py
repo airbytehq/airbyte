@@ -15,9 +15,15 @@ class SonarQubeApi:
     """https://sonarcloud.io/web_api"""
     logger = Logger()
 
-    def __init__(self, host: str, token: str):
+    def __init__(self, host: str, token: str, pr_name: str):
         self._host = host
         self._token = token
+
+        # split the latest name part
+        self._pr_id = (pr_name or '').split("/")[-1]
+        if not self._pr_id.isdigit():
+            self.logger.critical("PR id should be finished by integer value.")
+        self._pr_id = int(self._pr_id)
         # check token
         # https://sonarcloud.io/web_api/api/authentication/validate
         resp = self.__get("authentication/validate")
@@ -52,8 +58,11 @@ class SonarQubeApi:
         """"""
         parts = module_name.split("/")
         if len(parts) != 2:
-            cls.logger.critical("module name must have the format: <component/module")
-        return f"{AIRBYTE_PROJECT_PREFIX}:{parts[0].lower()}:{parts[0].lower().replace('_', '-')}"
+            self.logger.critical("module name must have the format: component/module")
+        return f"{AIRBYTE_PROJECT_PREFIX}:{parts[0].lower()}:{parts[1].lower().replace('_', '-')}"
+
+    def __correct_project_name(self, project_name: str) -> str:
+        return f"{project_name}:{self._pr_id}" if self._pr_id else project_name
 
     def __search_project(self, project_name: str) -> Optional[Mapping[str, Any]]:
         """https://sonarcloud.io/web_api/api/projects/search"""
@@ -67,12 +76,18 @@ class SonarQubeApi:
 
     def create_project(self, project_name: str) -> bool:
         """https://sonarcloud.io/web_api/api/projects/create"""
+        title = re.sub('[:_-]', ' ', project_name).title()
+        if self._pr_id:
+            title += f"(#{self._pr_id})"
+
+        project_name = self.__correct_project_name(project_name)
         exists_project = self.__search_project(project_name)
         if exists_project:
             self.logger.info(f"The project '{project_name}' was created before")
             return True
+
         body = {
-            "name": re.sub('[:_-]', ' ', project_name).title(),
+            "name": title,
             "project": project_name,
             "visibility": "private",
         }
@@ -87,7 +102,7 @@ class SonarQubeApi:
             self.logger.info(f"not found the project '{project_name}'")
             return True
         body = {
-            "project": project_name,
+            "project": self.__correct_project_name(project_name)
         }
         self.__post("projects/delete", body)
         self.logger.info(f"The project '{project_name}' was removed")

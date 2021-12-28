@@ -8,6 +8,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description='Working with SonarQube instance.')
     parser.add_argument('--host', help='SonarQube host', required=True, type=str)
     parser.add_argument('--token', help='SonarQube token', required=True, type=str)
+    parser.add_argument('--pull_request_name', help='PR unique name. Example: airbyte/1231', type=str, default=None)
 
     command = parser.add_mutually_exclusive_group(required=True)
     command.add_argument('--create_project', help='Name of future project', type=str)
@@ -16,7 +17,8 @@ def main() -> int:
     command.add_argument('--remove_module', help='Name of removable module project', type=str)
 
     args = parser.parse_args()
-    api = SonarQubeApi(host=args.host, token=args.token)
+    api = SonarQubeApi(host=args.host, token=args.token, pr_name=args.pull_request_name)
+
     if args.create_project or args.create_module:
         project_name = api.module2project(args.create_module) if args.create_module else args.create_project
         return 0 if api.create_project(project_name=project_name) else 1

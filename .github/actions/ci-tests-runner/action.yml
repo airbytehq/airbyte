@@ -2,16 +2,25 @@ name: "Setup CI Tests Env"
 description: "Setup CI Tests Env for all module types"
 inputs:
   module-name:
+    description: "Unique module name. e.g.: connectors/source-s3, connectors/destination-s3"
     required: true
   module-folder:
+    description: "Path to module folder"
     required: true
   module-lang:
+    description: "Detected module language. Available values: py, java"
     required: true
   sonar-host:
     required: true
   sonar-token:
+    description: "Access token for using SonarQube API"
     required: true
-
+  pull_request_id:
+    description: "Unique PR ID. For example: airbyte/1234"
+    default: "0"
+  remove-sonar-project:
+    description: "This flag should be used if needed to remove sonar project after using"
+    default: false
 runs:
   using: "composite"
   steps:
@@ -31,7 +40,7 @@ runs:
 
     - name: Run Python Tests
       id: run-python-tests
-      if: ${{ env.MODULE_LANG == 'py' }}
+      if: ${{ inputs.module-lang == 'py' }}
       uses: ./.github/actions/ci-py-tests
       with:
         module-name: ${{ inputs.module-name }}
@@ -39,42 +48,21 @@ runs:
 
     - name: Run Java Tests
       id: run-java-tests
-      if: ${{ env.MODULE_LANG == 'java' }}
+      if: ${{ inputs.module-lang == 'java' }}
       uses: ./.github/actions/ci-java-tests
       with:
         module-name: ${{ inputs.module-name }}
         module-folder: ${{ inputs.module-folder }}
 
-#      - name: Write Integration Test Credentials for ${{ github.event.inputs.connector }}
-#        run: |
-#          source venv/bin/activate
-#          ci_credentials ${{ github.event.inputs.connector }}
-#        env:
-#          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-#    - name: Checkout repo
-#      if: ${{ env.ENV_NAME == 'github' }}
-#      uses: actions/checkout@v2
-#      with:
-#        fetch-depth: 0
-##      - uses: sonarsource/sonarqube-scan-action@master
-##        with:
-##          projectBaseDir: airbyte-integrations/connectors
-##          # -Dsonar.tests=.
-##          # -Dsonar.test.inclusions=**/unit_tests/**
-##          args: >
-##            -Dsonar.projectKey=airbite-python-connectors
-##            -Dsonar.exclusions=**/*.java
-##            -Dsonar.verbose=true
-##            -Dsonar.language=py
-##            -Dsonar.sourceEncoding=UTF-8
-##        env:
-##          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-##          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-#
-#        # If you wish to fail your job when the Quality Gate is red, uncomment the
-#        # following lines. This would typically be used to fail a deployment.
-#        # - uses: sonarsource/sonarqube-quality-gate-action@master
-#        #   timeout-minutes: 5
-#        #   env:
-#        #    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-#
+    - name: Create SonarQube Project
+      shell: bash
+      id: create-sq-project
+      run: |
+        ci_sonar_qube --pull_request_name ${{ inputs.pull_request_id }} --create_module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
+    - name: Remove SonarQube Project
+      if: ${{ inputs.remove-sonar-project == true }}
+      shell: bash
+      id: create-sq-project
+      run: |
+        ci_sonar_qube --pull_request_name ${{ inputs.pull_request_id }} --remove_module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
+
