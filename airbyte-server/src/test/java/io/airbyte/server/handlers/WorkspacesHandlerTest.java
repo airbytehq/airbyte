@@ -15,6 +15,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
+import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.DestinationRead;
@@ -203,7 +204,9 @@ class WorkspacesHandlerTest {
 
     workspacesHandler.deleteWorkspace(workspaceIdRequestBody);
 
-    verify(connectionsHandler).deleteConnection(connection);
+    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody()
+        .connectionId(connection.getConnectionId());
+    verify(connectionsHandler).deleteConnection(connectionIdRequestBody);
     verify(destinationHandler).deleteDestination(destination);
     verify(sourceHandler).deleteSource(source);
   }

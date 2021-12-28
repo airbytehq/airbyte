@@ -10,7 +10,7 @@
       "api_token": {
         "title": "API Token",
         "type": "string",
-        "description": "The API token for your Kustomer account",
+        "description": "Kustomer API Token. See the <a href=\"https://developer.kustomer.com/kustomer-api-docs/reference/authentication\">docs</a> on how to obtain this",
         "airbyte_secret": true
       },
       "start_date": {
