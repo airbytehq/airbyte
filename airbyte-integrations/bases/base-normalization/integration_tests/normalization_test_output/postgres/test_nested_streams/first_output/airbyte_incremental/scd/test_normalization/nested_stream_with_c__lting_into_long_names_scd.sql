@@ -13,6 +13,17 @@ input_data as (
     -- nested_stream_with_c__lting_into_long_names from "postgres".test_normalization._airbyte_raw_nested_stream_with_complex_columns_resulting_into_long_names
 ),
 
+input_data_with_active_row_num as (
+    select *,
+      row_number() over (
+        partition by "id"
+        order by
+            "date" is null asc,
+            "date" desc,
+            _airbyte_emitted_at desc
+      ) as _airbyte_active_row_num
+    from input_data
+),
 scd_data as (
     -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
     select
@@ -32,17 +43,11 @@ scd_data as (
             "date" desc,
             _airbyte_emitted_at desc
       ) as _airbyte_end_at,
-      case when row_number() over (
-        partition by "id"
-        order by
-            "date" is null asc,
-            "date" desc,
-            _airbyte_emitted_at desc
-      ) = 1 then 1 else 0 end as _airbyte_active_row,
+      case when _airbyte_active_row_num = 1 then 1 else 0 end as _airbyte_active_row,
       _airbyte_ab_id,
       _airbyte_emitted_at,
       _airbyte_nested_stre__nto_long_names_hashid
-    from input_data
+    from input_data_with_active_row_num
 ),
 dedup_data as (
     select

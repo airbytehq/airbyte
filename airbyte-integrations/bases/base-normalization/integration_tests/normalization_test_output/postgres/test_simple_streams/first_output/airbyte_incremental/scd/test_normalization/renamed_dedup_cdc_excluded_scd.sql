@@ -13,6 +13,17 @@ input_data as (
     -- renamed_dedup_cdc_excluded from "postgres".test_normalization._airbyte_raw_renamed_dedup_cdc_excluded
 ),
 
+input_data_with_active_row_num as (
+    select *,
+      row_number() over (
+        partition by "id"
+        order by
+            _airbyte_emitted_at is null asc,
+            _airbyte_emitted_at desc,
+            _airbyte_emitted_at desc
+      ) as _airbyte_active_row_num
+    from input_data
+),
 scd_data as (
     -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
     select
@@ -30,17 +41,11 @@ scd_data as (
             _airbyte_emitted_at desc,
             _airbyte_emitted_at desc
       ) as _airbyte_end_at,
-      case when row_number() over (
-        partition by "id"
-        order by
-            _airbyte_emitted_at is null asc,
-            _airbyte_emitted_at desc,
-            _airbyte_emitted_at desc
-      ) = 1 then 1 else 0 end as _airbyte_active_row,
+      case when _airbyte_active_row_num = 1 then 1 else 0 end as _airbyte_active_row,
       _airbyte_ab_id,
       _airbyte_emitted_at,
       _airbyte_renamed_dedup_cdc_excluded_hashid
-    from input_data
+    from input_data_with_active_row_num
 ),
 dedup_data as (
     select
