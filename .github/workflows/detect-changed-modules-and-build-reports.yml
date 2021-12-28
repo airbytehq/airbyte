@@ -18,7 +18,7 @@ jobs:
       - name: Detect Changed Modules
         id: detect-changed-modules
         run: |
-          echo "::set-output name=changed-modules::'$(python ./tools/ci_static_check_reports/detect_changed_modules.py $(git diff --name-only $(git merge-base origin/${GITHUB_HEAD_REF} origin/master)))'"
+          echo "::set-output name=changed-modules::'$(python ./tools/ci_static_check_reports/detect_changed_modules.py $(git diff --name-only $(git merge-base remotes/origin/${GITHUB_HEAD_REF} remotes/origin/master)))'"
   build-reports:
     name: Build Static Checkers Reports
     needs:
