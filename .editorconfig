@@ -148,11 +148,3 @@ indent_style = unset
 indent_size = unset
 tab_width = unset
 max_line_length = unset
-
-# don't interfere with generated api docs formatting either
-[/docs/reference/**]
-end_of_line = unset
-indent_style = unset
-indent_size = unset
-tab_width = unset
-max_line_length = unset
