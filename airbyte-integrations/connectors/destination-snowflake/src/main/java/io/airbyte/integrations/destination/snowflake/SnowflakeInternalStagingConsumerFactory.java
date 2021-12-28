@@ -46,7 +46,7 @@ public class SnowflakeInternalStagingConsumerFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeInternalStagingConsumerFactory.class);
 
   private static final long MAX_BATCH_SIZE_BYTES = 1024 * 1024 * 1024 / 4; // 256mb
-  private static final String currentSyncPath = UUID.randomUUID().toString();
+  private static final String CURRENT_SYNC_PATH = UUID.randomUUID().toString();
 
   public static AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
                                               final JdbcDatabase database,
@@ -151,7 +151,7 @@ public class SnowflakeInternalStagingConsumerFactory {
       final WriteConfig writeConfig = pairToWriteConfig.get(pair);
       final String schemaName = writeConfig.getOutputSchemaName();
       final String tableName = writeConfig.getOutputTableName();
-      final String path = namingResolver.getStagingPath(schemaName, tableName, currentSyncPath);
+      final String path = namingResolver.getStagingPath(schemaName, tableName, CURRENT_SYNC_PATH);
 
       snowflakeSqlOperations.insertRecords(database, records, schemaName, path);
     };
@@ -172,13 +172,13 @@ public class SnowflakeInternalStagingConsumerFactory {
           LOGGER.info("Finalizing stream {}. schema {}, tmp table {}, final table {}", writeConfig.getStreamName(), schemaName, srcTableName,
               dstTableName);
 
-          final String path = namingResolver.getStagingPath(schemaName, dstTableName, currentSyncPath);
+          final String path = namingResolver.getStagingPath(schemaName, dstTableName, CURRENT_SYNC_PATH);
           LOGGER.info("Uploading data from stage:  stream {}. schema {}, tmp table {}, stage path {}", writeConfig.getStreamName(), schemaName,
                   srcTableName,
                   path);
           try {
             sqlOperations.copyIntoTmpTableFromStage(database, path, srcTableName, schemaName);
-          }catch (Exception e){
+          } catch (Exception e){
             sqlOperations.cleanUpStage(database, path);
             LOGGER.info("Cleaning stage path {}", path);
             throw new RuntimeException("Failed to upload data from stage "+ path, e);
