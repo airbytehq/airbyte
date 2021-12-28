@@ -4,6 +4,7 @@ on: [push]
 jobs:
   run:
     runs-on: ubuntu-latest
+    working-directory: airbyte-integrations/connectors
     steps:
       - name: Checkout
         uses: actions/checkout@v2
