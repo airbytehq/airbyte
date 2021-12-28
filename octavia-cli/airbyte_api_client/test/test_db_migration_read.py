@@ -15,11 +15,11 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.db_migration_state import DbMigrationState
+import airbyte_api_client
+from airbyte_api_client.model.db_migration_state import DbMigrationState
 
 globals()["DbMigrationState"] = DbMigrationState
-from openapi_client.model.db_migration_read import DbMigrationRead
+from airbyte_api_client.model.db_migration_read import DbMigrationRead
 
 
 class TestDbMigrationRead(unittest.TestCase):

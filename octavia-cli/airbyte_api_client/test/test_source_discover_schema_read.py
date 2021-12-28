@@ -15,13 +15,15 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.airbyte_catalog import AirbyteCatalog
-from openapi_client.model.synchronous_job_read import SynchronousJobRead
+import airbyte_api_client
+from airbyte_api_client.model.airbyte_catalog import AirbyteCatalog
+from airbyte_api_client.model.synchronous_job_read import SynchronousJobRead
 
 globals()["AirbyteCatalog"] = AirbyteCatalog
 globals()["SynchronousJobRead"] = SynchronousJobRead
-from openapi_client.model.source_discover_schema_read import SourceDiscoverSchemaRead
+from airbyte_api_client.model.source_discover_schema_read import (
+    SourceDiscoverSchemaRead,
+)
 
 
 class TestSourceDiscoverSchemaRead(unittest.TestCase):

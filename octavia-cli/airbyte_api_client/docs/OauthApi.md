@@ -1,4 +1,4 @@
-# openapi_client.OauthApi
+# airbyte_api_client.OauthApi
 
 All URIs are relative to *http://localhost:8000/api*
 
@@ -22,22 +22,22 @@ Given a destination def ID generate an access/refresh token etc.
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import oauth_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.complete_o_auth_response import CompleteOAuthResponse
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.complete_destination_o_auth_request import CompleteDestinationOAuthRequest
+import airbyte_api_client
+from airbyte_api_client.api import oauth_api
+from airbyte_api_client.model.complete_destination_o_auth_request import CompleteDestinationOAuthRequest
+from airbyte_api_client.model.complete_o_auth_response import CompleteOAuthResponse
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = oauth_api.OauthApi(api_client)
     complete_destination_o_auth_request = CompleteDestinationOAuthRequest(
@@ -53,7 +53,7 @@ with openapi_client.ApiClient() as api_client:
         # Given a destination def ID generate an access/refresh token etc.
         api_response = api_instance.complete_destination_o_auth(complete_destination_o_auth_request)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling OauthApi->complete_destination_o_auth: %s\n" % e)
 ```
 
@@ -98,22 +98,22 @@ Given a source def ID generate an access/refresh token etc.
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import oauth_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.complete_source_oauth_request import CompleteSourceOauthRequest
-from openapi_client.model.complete_o_auth_response import CompleteOAuthResponse
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import oauth_api
+from airbyte_api_client.model.complete_o_auth_response import CompleteOAuthResponse
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.complete_source_oauth_request import CompleteSourceOauthRequest
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = oauth_api.OauthApi(api_client)
     complete_source_oauth_request = CompleteSourceOauthRequest(
@@ -129,7 +129,7 @@ with openapi_client.ApiClient() as api_client:
         # Given a source def ID generate an access/refresh token etc.
         api_response = api_instance.complete_source_o_auth(complete_source_oauth_request)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling OauthApi->complete_source_o_auth: %s\n" % e)
 ```
 
@@ -174,22 +174,22 @@ Given a destination connector definition ID, return the URL to the consent scree
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import oauth_api
-from openapi_client.model.o_auth_consent_read import OAuthConsentRead
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.destination_oauth_consent_request import DestinationOauthConsentRequest
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import oauth_api
+from airbyte_api_client.model.destination_oauth_consent_request import DestinationOauthConsentRequest
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.o_auth_consent_read import OAuthConsentRead
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = oauth_api.OauthApi(api_client)
     destination_oauth_consent_request = DestinationOauthConsentRequest(
@@ -204,7 +204,7 @@ with openapi_client.ApiClient() as api_client:
         # Given a destination connector definition ID, return the URL to the consent screen where to redirect the user to.
         api_response = api_instance.get_destination_o_auth_consent(destination_oauth_consent_request)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling OauthApi->get_destination_o_auth_consent: %s\n" % e)
 ```
 
@@ -249,22 +249,22 @@ Given a source connector definition ID, return the URL to the consent screen whe
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import oauth_api
-from openapi_client.model.o_auth_consent_read import OAuthConsentRead
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.source_oauth_consent_request import SourceOauthConsentRequest
+import airbyte_api_client
+from airbyte_api_client.api import oauth_api
+from airbyte_api_client.model.source_oauth_consent_request import SourceOauthConsentRequest
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.o_auth_consent_read import OAuthConsentRead
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = oauth_api.OauthApi(api_client)
     source_oauth_consent_request = SourceOauthConsentRequest(
@@ -279,7 +279,7 @@ with openapi_client.ApiClient() as api_client:
         # Given a source connector definition ID, return the URL to the consent screen where to redirect the user to.
         api_response = api_instance.get_source_o_auth_consent(source_oauth_consent_request)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling OauthApi->get_source_o_auth_consent: %s\n" % e)
 ```
 
@@ -324,21 +324,21 @@ Sets instancewide variables to be used for the oauth flow when creating this des
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import oauth_api
-from openapi_client.model.known_exception_info import KnownExceptionInfo
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.set_instancewide_destination_oauth_params_request_body import SetInstancewideDestinationOauthParamsRequestBody
+import airbyte_api_client
+from airbyte_api_client.api import oauth_api
+from airbyte_api_client.model.set_instancewide_destination_oauth_params_request_body import SetInstancewideDestinationOauthParamsRequestBody
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.known_exception_info import KnownExceptionInfo
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = oauth_api.OauthApi(api_client)
     set_instancewide_destination_oauth_params_request_body = SetInstancewideDestinationOauthParamsRequestBody(
@@ -350,7 +350,7 @@ with openapi_client.ApiClient() as api_client:
     try:
         # Sets instancewide variables to be used for the oauth flow when creating this destination. When set, these variables will be injected into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know about these variables. 
         api_instance.set_instancewide_destination_oauth_params(set_instancewide_destination_oauth_params_request_body)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling OauthApi->set_instancewide_destination_oauth_params: %s\n" % e)
 ```
 
@@ -395,21 +395,21 @@ Sets instancewide variables to be used for the oauth flow when creating this sou
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import oauth_api
-from openapi_client.model.known_exception_info import KnownExceptionInfo
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.set_instancewide_source_oauth_params_request_body import SetInstancewideSourceOauthParamsRequestBody
+import airbyte_api_client
+from airbyte_api_client.api import oauth_api
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.known_exception_info import KnownExceptionInfo
+from airbyte_api_client.model.set_instancewide_source_oauth_params_request_body import SetInstancewideSourceOauthParamsRequestBody
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = oauth_api.OauthApi(api_client)
     set_instancewide_source_oauth_params_request_body = SetInstancewideSourceOauthParamsRequestBody(
@@ -421,7 +421,7 @@ with openapi_client.ApiClient() as api_client:
     try:
         # Sets instancewide variables to be used for the oauth flow when creating this source. When set, these variables will be injected into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know about these variables. 
         api_instance.set_instancewide_source_oauth_params(set_instancewide_source_oauth_params_request_body)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling OauthApi->set_instancewide_source_oauth_params: %s\n" % e)
 ```
 

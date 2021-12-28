@@ -1,4 +1,4 @@
-# openapi_client.SchedulerApi
+# airbyte_api_client.SchedulerApi
 
 All URIs are relative to *http://localhost:8000/api*
 
@@ -19,21 +19,21 @@ Run check connection for a given destination configuration
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import scheduler_api
-from openapi_client.model.check_connection_read import CheckConnectionRead
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.destination_core_config import DestinationCoreConfig
+import airbyte_api_client
+from airbyte_api_client.api import scheduler_api
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.check_connection_read import CheckConnectionRead
+from airbyte_api_client.model.destination_core_config import DestinationCoreConfig
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = scheduler_api.SchedulerApi(api_client)
     destination_core_config = DestinationCoreConfig(
@@ -46,7 +46,7 @@ with openapi_client.ApiClient() as api_client:
         # Run check connection for a given destination configuration
         api_response = api_instance.execute_destination_check_connection(destination_core_config)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling SchedulerApi->execute_destination_check_connection: %s\n" % e)
 ```
 
@@ -90,21 +90,21 @@ Run check connection for a given source configuration
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import scheduler_api
-from openapi_client.model.check_connection_read import CheckConnectionRead
-from openapi_client.model.source_core_config import SourceCoreConfig
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import scheduler_api
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.source_core_config import SourceCoreConfig
+from airbyte_api_client.model.check_connection_read import CheckConnectionRead
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = scheduler_api.SchedulerApi(api_client)
     source_core_config = SourceCoreConfig(
@@ -117,7 +117,7 @@ with openapi_client.ApiClient() as api_client:
         # Run check connection for a given source configuration
         api_response = api_instance.execute_source_check_connection(source_core_config)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling SchedulerApi->execute_source_check_connection: %s\n" % e)
 ```
 
@@ -161,21 +161,21 @@ Run discover schema for a given source a source configuration
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import scheduler_api
-from openapi_client.model.source_discover_schema_read import SourceDiscoverSchemaRead
-from openapi_client.model.source_core_config import SourceCoreConfig
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import scheduler_api
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.source_core_config import SourceCoreConfig
+from airbyte_api_client.model.source_discover_schema_read import SourceDiscoverSchemaRead
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = scheduler_api.SchedulerApi(api_client)
     source_core_config = SourceCoreConfig(
@@ -188,7 +188,7 @@ with openapi_client.ApiClient() as api_client:
         # Run discover schema for a given source a source configuration
         api_response = api_instance.execute_source_discover_schema(source_core_config)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling SchedulerApi->execute_source_discover_schema: %s\n" % e)
 ```
 

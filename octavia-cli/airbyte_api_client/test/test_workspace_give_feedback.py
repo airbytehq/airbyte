@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.workspace_give_feedback import WorkspaceGiveFeedback
+import airbyte_api_client
+from airbyte_api_client.model.workspace_give_feedback import WorkspaceGiveFeedback
 
 
 class TestWorkspaceGiveFeedback(unittest.TestCase):

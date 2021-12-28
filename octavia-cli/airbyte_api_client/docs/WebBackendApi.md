@@ -1,4 +1,4 @@
-# openapi_client.WebBackendApi
+# airbyte_api_client.WebBackendApi
 
 All URIs are relative to *http://localhost:8000/api*
 
@@ -22,21 +22,21 @@ Create a connection
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import web_backend_api
-from openapi_client.model.web_backend_connection_read import WebBackendConnectionRead
-from openapi_client.model.web_backend_connection_create import WebBackendConnectionCreate
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import web_backend_api
+from airbyte_api_client.model.web_backend_connection_read import WebBackendConnectionRead
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.web_backend_connection_create import WebBackendConnectionCreate
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = web_backend_api.WebBackendApi(api_client)
     web_backend_connection_create = WebBackendConnectionCreate(
@@ -122,7 +122,7 @@ with openapi_client.ApiClient() as api_client:
         # Create a connection
         api_response = api_instance.web_backend_create_connection(web_backend_connection_create)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling WebBackendApi->web_backend_create_connection: %s\n" % e)
 ```
 
@@ -166,22 +166,22 @@ Get a connection
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import web_backend_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.web_backend_connection_read import WebBackendConnectionRead
-from openapi_client.model.web_backend_connection_request_body import WebBackendConnectionRequestBody
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import web_backend_api
+from airbyte_api_client.model.web_backend_connection_request_body import WebBackendConnectionRequestBody
+from airbyte_api_client.model.web_backend_connection_read import WebBackendConnectionRead
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = web_backend_api.WebBackendApi(api_client)
     web_backend_connection_request_body = WebBackendConnectionRequestBody(
@@ -194,7 +194,7 @@ with openapi_client.ApiClient() as api_client:
         # Get a connection
         api_response = api_instance.web_backend_get_connection(web_backend_connection_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling WebBackendApi->web_backend_get_connection: %s\n" % e)
 ```
 
@@ -239,22 +239,22 @@ Returns all connections for a workspace.
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import web_backend_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.workspace_id_request_body import WorkspaceIdRequestBody
-from openapi_client.model.web_backend_connection_read_list import WebBackendConnectionReadList
+import airbyte_api_client
+from airbyte_api_client.api import web_backend_api
+from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
+from airbyte_api_client.model.web_backend_connection_read_list import WebBackendConnectionReadList
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = web_backend_api.WebBackendApi(api_client)
     workspace_id_request_body = WorkspaceIdRequestBody(
@@ -266,7 +266,7 @@ with openapi_client.ApiClient() as api_client:
         # Returns all connections for a workspace.
         api_response = api_instance.web_backend_list_all_connections_for_workspace(workspace_id_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling WebBackendApi->web_backend_list_all_connections_for_workspace: %s\n" % e)
 ```
 
@@ -311,22 +311,22 @@ Returns all non-deleted connections for a workspace.
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import web_backend_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.workspace_id_request_body import WorkspaceIdRequestBody
-from openapi_client.model.web_backend_connection_read_list import WebBackendConnectionReadList
+import airbyte_api_client
+from airbyte_api_client.api import web_backend_api
+from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
+from airbyte_api_client.model.web_backend_connection_read_list import WebBackendConnectionReadList
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = web_backend_api.WebBackendApi(api_client)
     workspace_id_request_body = WorkspaceIdRequestBody(
@@ -338,7 +338,7 @@ with openapi_client.ApiClient() as api_client:
         # Returns all non-deleted connections for a workspace.
         api_response = api_instance.web_backend_list_connections_for_workspace(workspace_id_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling WebBackendApi->web_backend_list_connections_for_workspace: %s\n" % e)
 ```
 
@@ -383,21 +383,21 @@ Search connections
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import web_backend_api
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.web_backend_connection_read_list import WebBackendConnectionReadList
-from openapi_client.model.web_backend_connection_search import WebBackendConnectionSearch
+import airbyte_api_client
+from airbyte_api_client.api import web_backend_api
+from airbyte_api_client.model.web_backend_connection_search import WebBackendConnectionSearch
+from airbyte_api_client.model.web_backend_connection_read_list import WebBackendConnectionReadList
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = web_backend_api.WebBackendApi(api_client)
     web_backend_connection_search = WebBackendConnectionSearch(
@@ -436,7 +436,7 @@ with openapi_client.ApiClient() as api_client:
         # Search connections
         api_response = api_instance.web_backend_search_connections(web_backend_connection_search)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling WebBackendApi->web_backend_search_connections: %s\n" % e)
 ```
 
@@ -480,21 +480,21 @@ Update a connection
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import web_backend_api
-from openapi_client.model.web_backend_connection_update import WebBackendConnectionUpdate
-from openapi_client.model.web_backend_connection_read import WebBackendConnectionRead
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import web_backend_api
+from airbyte_api_client.model.web_backend_connection_read import WebBackendConnectionRead
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.web_backend_connection_update import WebBackendConnectionUpdate
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = web_backend_api.WebBackendApi(api_client)
     web_backend_connection_update = WebBackendConnectionUpdate(
@@ -580,7 +580,7 @@ with openapi_client.ApiClient() as api_client:
         # Update a connection
         api_response = api_instance.web_backend_update_connection(web_backend_connection_update)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling WebBackendApi->web_backend_update_connection: %s\n" % e)
 ```
 

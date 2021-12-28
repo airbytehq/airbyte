@@ -15,11 +15,11 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.attempt_status import AttemptStatus
+import airbyte_api_client
+from airbyte_api_client.model.attempt_status import AttemptStatus
 
 globals()["AttemptStatus"] = AttemptStatus
-from openapi_client.model.attempt_read import AttemptRead
+from airbyte_api_client.model.attempt_read import AttemptRead
 
 
 class TestAttemptRead(unittest.TestCase):

@@ -1,4 +1,4 @@
-# openapi_client.DbMigrationApi
+# airbyte_api_client.DbMigrationApi
 
 All URIs are relative to *http://localhost:8000/api*
 
@@ -18,22 +18,22 @@ Migrate the database to the latest version
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import db_migration_api
-from openapi_client.model.db_migration_execution_read import DbMigrationExecutionRead
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.db_migration_request_body import DbMigrationRequestBody
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import db_migration_api
+from airbyte_api_client.model.db_migration_request_body import DbMigrationRequestBody
+from airbyte_api_client.model.db_migration_execution_read import DbMigrationExecutionRead
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = db_migration_api.DbMigrationApi(api_client)
     db_migration_request_body = DbMigrationRequestBody(
@@ -45,7 +45,7 @@ with openapi_client.ApiClient() as api_client:
         # Migrate the database to the latest version
         api_response = api_instance.execute_migrations(db_migration_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling DbMigrationApi->execute_migrations: %s\n" % e)
 ```
 
@@ -90,22 +90,22 @@ List all database migrations
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import db_migration_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.db_migration_read_list import DbMigrationReadList
-from openapi_client.model.db_migration_request_body import DbMigrationRequestBody
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import db_migration_api
+from airbyte_api_client.model.db_migration_read_list import DbMigrationReadList
+from airbyte_api_client.model.db_migration_request_body import DbMigrationRequestBody
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = db_migration_api.DbMigrationApi(api_client)
     db_migration_request_body = DbMigrationRequestBody(
@@ -117,7 +117,7 @@ with openapi_client.ApiClient() as api_client:
         # List all database migrations
         api_response = api_instance.list_migrations(db_migration_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling DbMigrationApi->list_migrations: %s\n" % e)
 ```
 

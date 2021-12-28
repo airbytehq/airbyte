@@ -15,15 +15,17 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.advanced_auth import AdvancedAuth
-from openapi_client.model.auth_specification import AuthSpecification
-from openapi_client.model.synchronous_job_read import SynchronousJobRead
+import airbyte_api_client
+from airbyte_api_client.model.advanced_auth import AdvancedAuth
+from airbyte_api_client.model.auth_specification import AuthSpecification
+from airbyte_api_client.model.synchronous_job_read import SynchronousJobRead
 
 globals()["AdvancedAuth"] = AdvancedAuth
 globals()["AuthSpecification"] = AuthSpecification
 globals()["SynchronousJobRead"] = SynchronousJobRead
-from openapi_client.model.source_definition_specification_read import SourceDefinitionSpecificationRead
+from airbyte_api_client.model.source_definition_specification_read import (
+    SourceDefinitionSpecificationRead,
+)
 
 
 class TestSourceDefinitionSpecificationRead(unittest.TestCase):

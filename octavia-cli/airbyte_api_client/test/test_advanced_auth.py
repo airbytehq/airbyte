@@ -15,11 +15,13 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.o_auth_config_specification import OAuthConfigSpecification
+import airbyte_api_client
+from airbyte_api_client.model.o_auth_config_specification import (
+    OAuthConfigSpecification,
+)
 
 globals()["OAuthConfigSpecification"] = OAuthConfigSpecification
-from openapi_client.model.advanced_auth import AdvancedAuth
+from airbyte_api_client.model.advanced_auth import AdvancedAuth
 
 
 class TestAdvancedAuth(unittest.TestCase):

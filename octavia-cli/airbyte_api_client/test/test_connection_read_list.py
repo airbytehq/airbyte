@@ -15,11 +15,11 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.connection_read import ConnectionRead
+import airbyte_api_client
+from airbyte_api_client.model.connection_read import ConnectionRead
 
 globals()["ConnectionRead"] = ConnectionRead
-from openapi_client.model.connection_read_list import ConnectionReadList
+from airbyte_api_client.model.connection_read_list import ConnectionReadList
 
 
 class TestConnectionReadList(unittest.TestCase):

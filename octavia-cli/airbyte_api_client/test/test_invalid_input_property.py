@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.invalid_input_property import InvalidInputProperty
+import airbyte_api_client
+from airbyte_api_client.model.invalid_input_property import InvalidInputProperty
 
 
 class TestInvalidInputProperty(unittest.TestCase):

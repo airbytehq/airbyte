@@ -15,15 +15,15 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.operator_dbt import OperatorDbt
-from openapi_client.model.operator_normalization import OperatorNormalization
-from openapi_client.model.operator_type import OperatorType
+import airbyte_api_client
+from airbyte_api_client.model.operator_dbt import OperatorDbt
+from airbyte_api_client.model.operator_normalization import OperatorNormalization
+from airbyte_api_client.model.operator_type import OperatorType
 
 globals()["OperatorDbt"] = OperatorDbt
 globals()["OperatorNormalization"] = OperatorNormalization
 globals()["OperatorType"] = OperatorType
-from openapi_client.model.operator_configuration import OperatorConfiguration
+from airbyte_api_client.model.operator_configuration import OperatorConfiguration
 
 
 class TestOperatorConfiguration(unittest.TestCase):

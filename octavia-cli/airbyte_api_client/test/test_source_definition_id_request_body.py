@@ -15,8 +15,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.source_definition_id_request_body import SourceDefinitionIdRequestBody
+import airbyte_api_client
+from airbyte_api_client.model.source_definition_id_request_body import (
+    SourceDefinitionIdRequestBody,
+)
 
 
 class TestSourceDefinitionIdRequestBody(unittest.TestCase):

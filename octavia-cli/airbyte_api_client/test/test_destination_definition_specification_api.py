@@ -14,8 +14,10 @@
 
 import unittest
 
-import openapi_client
-from openapi_client.api.destination_definition_specification_api import DestinationDefinitionSpecificationApi  # noqa: E501
+import airbyte_api_client
+from airbyte_api_client.api.destination_definition_specification_api import (  # noqa: E501
+    DestinationDefinitionSpecificationApi,
+)
 
 
 class TestDestinationDefinitionSpecificationApi(unittest.TestCase):

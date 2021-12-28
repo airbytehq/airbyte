@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.resource_requirements import ResourceRequirements
+import airbyte_api_client
+from airbyte_api_client.model.resource_requirements import ResourceRequirements
 
 
 class TestResourceRequirements(unittest.TestCase):

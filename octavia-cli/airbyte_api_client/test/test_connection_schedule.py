@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.connection_schedule import ConnectionSchedule
+import airbyte_api_client
+from airbyte_api_client.model.connection_schedule import ConnectionSchedule
 
 
 class TestConnectionSchedule(unittest.TestCase):

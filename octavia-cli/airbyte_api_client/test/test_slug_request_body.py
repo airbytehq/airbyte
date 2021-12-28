@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.slug_request_body import SlugRequestBody
+import airbyte_api_client
+from airbyte_api_client.model.slug_request_body import SlugRequestBody
 
 
 class TestSlugRequestBody(unittest.TestCase):

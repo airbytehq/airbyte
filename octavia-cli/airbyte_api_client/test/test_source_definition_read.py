@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.source_definition_read import SourceDefinitionRead
+import airbyte_api_client
+from airbyte_api_client.model.source_definition_read import SourceDefinitionRead
 
 
 class TestSourceDefinitionRead(unittest.TestCase):

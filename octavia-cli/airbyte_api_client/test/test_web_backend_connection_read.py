@@ -15,16 +15,16 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.airbyte_catalog import AirbyteCatalog
-from openapi_client.model.connection_schedule import ConnectionSchedule
-from openapi_client.model.connection_status import ConnectionStatus
-from openapi_client.model.destination_read import DestinationRead
-from openapi_client.model.job_status import JobStatus
-from openapi_client.model.namespace_definition_type import NamespaceDefinitionType
-from openapi_client.model.operation_read import OperationRead
-from openapi_client.model.resource_requirements import ResourceRequirements
-from openapi_client.model.source_read import SourceRead
+import airbyte_api_client
+from airbyte_api_client.model.airbyte_catalog import AirbyteCatalog
+from airbyte_api_client.model.connection_schedule import ConnectionSchedule
+from airbyte_api_client.model.connection_status import ConnectionStatus
+from airbyte_api_client.model.destination_read import DestinationRead
+from airbyte_api_client.model.job_status import JobStatus
+from airbyte_api_client.model.namespace_definition_type import NamespaceDefinitionType
+from airbyte_api_client.model.operation_read import OperationRead
+from airbyte_api_client.model.resource_requirements import ResourceRequirements
+from airbyte_api_client.model.source_read import SourceRead
 
 globals()["AirbyteCatalog"] = AirbyteCatalog
 globals()["ConnectionSchedule"] = ConnectionSchedule
@@ -35,7 +35,9 @@ globals()["NamespaceDefinitionType"] = NamespaceDefinitionType
 globals()["OperationRead"] = OperationRead
 globals()["ResourceRequirements"] = ResourceRequirements
 globals()["SourceRead"] = SourceRead
-from openapi_client.model.web_backend_connection_read import WebBackendConnectionRead
+from airbyte_api_client.model.web_backend_connection_read import (
+    WebBackendConnectionRead,
+)
 
 
 class TestWebBackendConnectionRead(unittest.TestCase):

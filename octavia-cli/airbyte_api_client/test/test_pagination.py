@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.pagination import Pagination
+import airbyte_api_client
+from airbyte_api_client.model.pagination import Pagination
 
 
 class TestPagination(unittest.TestCase):

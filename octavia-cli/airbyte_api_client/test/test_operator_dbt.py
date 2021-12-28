@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.operator_dbt import OperatorDbt
+import airbyte_api_client
+from airbyte_api_client.model.operator_dbt import OperatorDbt
 
 
 class TestOperatorDbt(unittest.TestCase):

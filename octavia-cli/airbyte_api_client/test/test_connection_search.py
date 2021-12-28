@@ -15,19 +15,19 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.connection_schedule import ConnectionSchedule
-from openapi_client.model.connection_status import ConnectionStatus
-from openapi_client.model.destination_search import DestinationSearch
-from openapi_client.model.namespace_definition_type import NamespaceDefinitionType
-from openapi_client.model.source_search import SourceSearch
+import airbyte_api_client
+from airbyte_api_client.model.connection_schedule import ConnectionSchedule
+from airbyte_api_client.model.connection_status import ConnectionStatus
+from airbyte_api_client.model.destination_search import DestinationSearch
+from airbyte_api_client.model.namespace_definition_type import NamespaceDefinitionType
+from airbyte_api_client.model.source_search import SourceSearch
 
 globals()["ConnectionSchedule"] = ConnectionSchedule
 globals()["ConnectionStatus"] = ConnectionStatus
 globals()["DestinationSearch"] = DestinationSearch
 globals()["NamespaceDefinitionType"] = NamespaceDefinitionType
 globals()["SourceSearch"] = SourceSearch
-from openapi_client.model.connection_search import ConnectionSearch
+from airbyte_api_client.model.connection_search import ConnectionSearch
 
 
 class TestConnectionSearch(unittest.TestCase):

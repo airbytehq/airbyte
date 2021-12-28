@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.operator_type import OperatorType
+import airbyte_api_client
+from airbyte_api_client.model.operator_type import OperatorType
 
 
 class TestOperatorType(unittest.TestCase):

@@ -15,8 +15,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.destination_oauth_consent_request import DestinationOauthConsentRequest
+import airbyte_api_client
+from airbyte_api_client.model.destination_oauth_consent_request import (
+    DestinationOauthConsentRequest,
+)
 
 
 class TestDestinationOauthConsentRequest(unittest.TestCase):

@@ -1,4 +1,4 @@
-# openapi_client.DestinationDefinitionSpecificationApi
+# airbyte_api_client.DestinationDefinitionSpecificationApi
 
 All URIs are relative to *http://localhost:8000/api*
 
@@ -17,22 +17,22 @@ Get specification for a destinationDefinition
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import destination_definition_specification_api
-from openapi_client.model.destination_definition_id_request_body import DestinationDefinitionIdRequestBody
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.destination_definition_specification_read import DestinationDefinitionSpecificationRead
+import airbyte_api_client
+from airbyte_api_client.api import destination_definition_specification_api
+from airbyte_api_client.model.destination_definition_specification_read import DestinationDefinitionSpecificationRead
+from airbyte_api_client.model.destination_definition_id_request_body import DestinationDefinitionIdRequestBody
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = destination_definition_specification_api.DestinationDefinitionSpecificationApi(api_client)
     destination_definition_id_request_body = DestinationDefinitionIdRequestBody(
@@ -44,7 +44,7 @@ with openapi_client.ApiClient() as api_client:
         # Get specification for a destinationDefinition
         api_response = api_instance.get_destination_definition_specification(destination_definition_id_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling DestinationDefinitionSpecificationApi->get_destination_definition_specification: %s\n" % e)
 ```
 

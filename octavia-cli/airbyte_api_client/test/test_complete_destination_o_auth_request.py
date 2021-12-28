@@ -15,8 +15,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.complete_destination_o_auth_request import CompleteDestinationOAuthRequest
+import airbyte_api_client
+from airbyte_api_client.model.complete_destination_o_auth_request import (
+    CompleteDestinationOAuthRequest,
+)
 
 
 class TestCompleteDestinationOAuthRequest(unittest.TestCase):

@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.log_type import LogType
+import airbyte_api_client
+from airbyte_api_client.model.log_type import LogType
 
 
 class TestLogType(unittest.TestCase):

@@ -1,4 +1,4 @@
-# openapi_client.SourceDefinitionSpecificationApi
+# airbyte_api_client.SourceDefinitionSpecificationApi
 
 All URIs are relative to *http://localhost:8000/api*
 
@@ -17,22 +17,22 @@ Get specification for a SourceDefinition.
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import source_definition_specification_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.source_definition_id_request_body import SourceDefinitionIdRequestBody
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.source_definition_specification_read import SourceDefinitionSpecificationRead
+import airbyte_api_client
+from airbyte_api_client.api import source_definition_specification_api
+from airbyte_api_client.model.source_definition_specification_read import SourceDefinitionSpecificationRead
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.source_definition_id_request_body import SourceDefinitionIdRequestBody
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = source_definition_specification_api.SourceDefinitionSpecificationApi(api_client)
     source_definition_id_request_body = SourceDefinitionIdRequestBody(
@@ -44,7 +44,7 @@ with openapi_client.ApiClient() as api_client:
         # Get specification for a SourceDefinition.
         api_response = api_instance.get_source_definition_specification(source_definition_id_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling SourceDefinitionSpecificationApi->get_source_definition_specification: %s\n" % e)
 ```
 

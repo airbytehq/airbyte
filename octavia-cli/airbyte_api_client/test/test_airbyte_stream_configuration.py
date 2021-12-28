@@ -15,13 +15,15 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.destination_sync_mode import DestinationSyncMode
-from openapi_client.model.sync_mode import SyncMode
+import airbyte_api_client
+from airbyte_api_client.model.destination_sync_mode import DestinationSyncMode
+from airbyte_api_client.model.sync_mode import SyncMode
 
 globals()["DestinationSyncMode"] = DestinationSyncMode
 globals()["SyncMode"] = SyncMode
-from openapi_client.model.airbyte_stream_configuration import AirbyteStreamConfiguration
+from airbyte_api_client.model.airbyte_stream_configuration import (
+    AirbyteStreamConfiguration,
+)
 
 
 class TestAirbyteStreamConfiguration(unittest.TestCase):

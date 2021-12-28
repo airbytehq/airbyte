@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.namespace_definition_type import NamespaceDefinitionType
+import airbyte_api_client
+from airbyte_api_client.model.namespace_definition_type import NamespaceDefinitionType
 
 
 class TestNamespaceDefinitionType(unittest.TestCase):

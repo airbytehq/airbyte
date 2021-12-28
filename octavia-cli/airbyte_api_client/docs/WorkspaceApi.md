@@ -1,4 +1,4 @@
-# openapi_client.WorkspaceApi
+# airbyte_api_client.WorkspaceApi
 
 All URIs are relative to *http://localhost:8000/api*
 
@@ -23,21 +23,21 @@ Creates a workspace
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import workspace_api
-from openapi_client.model.workspace_create import WorkspaceCreate
-from openapi_client.model.workspace_read import WorkspaceRead
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import workspace_api
+from airbyte_api_client.model.workspace_read import WorkspaceRead
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.workspace_create import WorkspaceCreate
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = workspace_api.WorkspaceApi(api_client)
     workspace_create = WorkspaceCreate(
@@ -64,7 +64,7 @@ with openapi_client.ApiClient() as api_client:
         # Creates a workspace
         api_response = api_instance.create_workspace(workspace_create)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling WorkspaceApi->create_workspace: %s\n" % e)
 ```
 
@@ -108,21 +108,21 @@ Deletes a workspace
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import workspace_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.workspace_id_request_body import WorkspaceIdRequestBody
+import airbyte_api_client
+from airbyte_api_client.api import workspace_api
+from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = workspace_api.WorkspaceApi(api_client)
     workspace_id_request_body = WorkspaceIdRequestBody(
@@ -133,7 +133,7 @@ with openapi_client.ApiClient() as api_client:
     try:
         # Deletes a workspace
         api_instance.delete_workspace(workspace_id_request_body)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling WorkspaceApi->delete_workspace: %s\n" % e)
 ```
 
@@ -178,22 +178,22 @@ Find workspace by ID
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import workspace_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.workspace_read import WorkspaceRead
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.workspace_id_request_body import WorkspaceIdRequestBody
+import airbyte_api_client
+from airbyte_api_client.api import workspace_api
+from airbyte_api_client.model.workspace_read import WorkspaceRead
+from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = workspace_api.WorkspaceApi(api_client)
     workspace_id_request_body = WorkspaceIdRequestBody(
@@ -205,7 +205,7 @@ with openapi_client.ApiClient() as api_client:
         # Find workspace by ID
         api_response = api_instance.get_workspace(workspace_id_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling WorkspaceApi->get_workspace: %s\n" % e)
 ```
 
@@ -250,22 +250,22 @@ Find workspace by slug
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import workspace_api
-from openapi_client.model.slug_request_body import SlugRequestBody
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.workspace_read import WorkspaceRead
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import workspace_api
+from airbyte_api_client.model.workspace_read import WorkspaceRead
+from airbyte_api_client.model.slug_request_body import SlugRequestBody
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = workspace_api.WorkspaceApi(api_client)
     slug_request_body = SlugRequestBody(
@@ -277,7 +277,7 @@ with openapi_client.ApiClient() as api_client:
         # Find workspace by slug
         api_response = api_instance.get_workspace_by_slug(slug_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling WorkspaceApi->get_workspace_by_slug: %s\n" % e)
 ```
 
@@ -322,19 +322,19 @@ List all workspaces registered in the current Airbyte deployment
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import workspace_api
-from openapi_client.model.workspace_read_list import WorkspaceReadList
+import airbyte_api_client
+from airbyte_api_client.api import workspace_api
+from airbyte_api_client.model.workspace_read_list import WorkspaceReadList
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = workspace_api.WorkspaceApi(api_client)
 
@@ -343,7 +343,7 @@ with openapi_client.ApiClient() as api_client:
         # List all workspaces registered in the current Airbyte deployment
         api_response = api_instance.list_workspaces()
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling WorkspaceApi->list_workspaces: %s\n" % e)
 ```
 
@@ -383,22 +383,22 @@ Update workspace state
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import workspace_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.workspace_read import WorkspaceRead
-from openapi_client.model.workspace_update import WorkspaceUpdate
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import workspace_api
+from airbyte_api_client.model.workspace_read import WorkspaceRead
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.workspace_update import WorkspaceUpdate
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = workspace_api.WorkspaceApi(api_client)
     workspace_update = WorkspaceUpdate(
@@ -426,7 +426,7 @@ with openapi_client.ApiClient() as api_client:
         # Update workspace state
         api_response = api_instance.update_workspace(workspace_update)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling WorkspaceApi->update_workspace: %s\n" % e)
 ```
 
@@ -471,20 +471,20 @@ Update workspace feedback state
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import workspace_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.workspace_give_feedback import WorkspaceGiveFeedback
+import airbyte_api_client
+from airbyte_api_client.api import workspace_api
+from airbyte_api_client.model.workspace_give_feedback import WorkspaceGiveFeedback
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = workspace_api.WorkspaceApi(api_client)
     workspace_give_feedback = WorkspaceGiveFeedback(
@@ -495,7 +495,7 @@ with openapi_client.ApiClient() as api_client:
     try:
         # Update workspace feedback state
         api_instance.update_workspace_feedback(workspace_give_feedback)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling WorkspaceApi->update_workspace_feedback: %s\n" % e)
 ```
 

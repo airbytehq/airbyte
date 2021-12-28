@@ -1,4 +1,4 @@
-# openapi_client.HealthApi
+# airbyte_api_client.HealthApi
 
 All URIs are relative to *http://localhost:8000/api*
 
@@ -17,19 +17,19 @@ Health Check
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import health_api
-from openapi_client.model.health_check_read import HealthCheckRead
+import airbyte_api_client
+from airbyte_api_client.api import health_api
+from airbyte_api_client.model.health_check_read import HealthCheckRead
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = health_api.HealthApi(api_client)
 
@@ -38,7 +38,7 @@ with openapi_client.ApiClient() as api_client:
         # Health Check
         api_response = api_instance.get_health_check()
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling HealthApi->get_health_check: %s\n" % e)
 ```
 

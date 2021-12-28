@@ -15,8 +15,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.slack_notification_configuration import SlackNotificationConfiguration
+import airbyte_api_client
+from airbyte_api_client.model.slack_notification_configuration import (
+    SlackNotificationConfiguration,
+)
 
 
 class TestSlackNotificationConfiguration(unittest.TestCase):

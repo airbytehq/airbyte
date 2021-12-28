@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.complete_o_auth_response import CompleteOAuthResponse
+import airbyte_api_client
+from airbyte_api_client.model.complete_o_auth_response import CompleteOAuthResponse
 
 
 class TestCompleteOAuthResponse(unittest.TestCase):

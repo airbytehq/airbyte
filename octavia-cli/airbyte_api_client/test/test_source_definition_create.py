@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.source_definition_create import SourceDefinitionCreate
+import airbyte_api_client
+from airbyte_api_client.model.source_definition_create import SourceDefinitionCreate
 
 
 class TestSourceDefinitionCreate(unittest.TestCase):

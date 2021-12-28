@@ -15,11 +15,11 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.job_with_attempts_read import JobWithAttemptsRead
+import airbyte_api_client
+from airbyte_api_client.model.job_with_attempts_read import JobWithAttemptsRead
 
 globals()["JobWithAttemptsRead"] = JobWithAttemptsRead
-from openapi_client.model.job_read_list import JobReadList
+from airbyte_api_client.model.job_read_list import JobReadList
 
 
 class TestJobReadList(unittest.TestCase):

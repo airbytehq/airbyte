@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.source_core_config import SourceCoreConfig
+import airbyte_api_client
+from airbyte_api_client.model.source_core_config import SourceCoreConfig
 
 
 class TestSourceCoreConfig(unittest.TestCase):

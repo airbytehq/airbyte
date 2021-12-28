@@ -15,8 +15,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.destination_auth_specification import DestinationAuthSpecification
+import airbyte_api_client
+from airbyte_api_client.model.destination_auth_specification import (
+    DestinationAuthSpecification,
+)
 
 
 class TestDestinationAuthSpecification(unittest.TestCase):

@@ -15,11 +15,13 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.airbyte_stream_and_configuration import AirbyteStreamAndConfiguration
+import airbyte_api_client
+from airbyte_api_client.model.airbyte_stream_and_configuration import (
+    AirbyteStreamAndConfiguration,
+)
 
 globals()["AirbyteStreamAndConfiguration"] = AirbyteStreamAndConfiguration
-from openapi_client.model.airbyte_catalog import AirbyteCatalog
+from airbyte_api_client.model.airbyte_catalog import AirbyteCatalog
 
 
 class TestAirbyteCatalog(unittest.TestCase):

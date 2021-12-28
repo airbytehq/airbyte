@@ -1,4 +1,4 @@
-# openapi_client.DeploymentApi
+# airbyte_api_client.DeploymentApi
 
 All URIs are relative to *http://localhost:8000/api*
 
@@ -21,18 +21,18 @@ Export Airbyte Configuration and Data Archive
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import deployment_api
+import airbyte_api_client
+from airbyte_api_client.api import deployment_api
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = deployment_api.DeploymentApi(api_client)
 
@@ -41,7 +41,7 @@ with openapi_client.ApiClient() as api_client:
         # Export Airbyte Configuration and Data Archive
         api_response = api_instance.export_archive()
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling DeploymentApi->export_archive: %s\n" % e)
 ```
 
@@ -81,19 +81,19 @@ Export Airbyte Workspace Configuration
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import deployment_api
-from openapi_client.model.workspace_id_request_body import WorkspaceIdRequestBody
+import airbyte_api_client
+from airbyte_api_client.api import deployment_api
+from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = deployment_api.DeploymentApi(api_client)
     workspace_id_request_body = WorkspaceIdRequestBody(
@@ -105,7 +105,7 @@ with openapi_client.ApiClient() as api_client:
         # Export Airbyte Workspace Configuration
         api_response = api_instance.export_workspace(workspace_id_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling DeploymentApi->export_workspace: %s\n" % e)
 ```
 
@@ -148,19 +148,19 @@ Import Airbyte Configuration and Data Archive
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import deployment_api
-from openapi_client.model.import_read import ImportRead
+import airbyte_api_client
+from airbyte_api_client.api import deployment_api
+from airbyte_api_client.model.import_read import ImportRead
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = deployment_api.DeploymentApi(api_client)
     body = open('/path/to/file', 'rb') # file_type | 
@@ -170,7 +170,7 @@ with openapi_client.ApiClient() as api_client:
         # Import Airbyte Configuration and Data Archive
         api_response = api_instance.import_archive(body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling DeploymentApi->import_archive: %s\n" % e)
 ```
 
@@ -213,21 +213,21 @@ Import Airbyte Configuration into Workspace (this operation might change ids of 
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import deployment_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.import_request_body import ImportRequestBody
-from openapi_client.model.import_read import ImportRead
+import airbyte_api_client
+from airbyte_api_client.api import deployment_api
+from airbyte_api_client.model.import_request_body import ImportRequestBody
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.import_read import ImportRead
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = deployment_api.DeploymentApi(api_client)
     import_request_body = ImportRequestBody(
@@ -240,7 +240,7 @@ with openapi_client.ApiClient() as api_client:
         # Import Airbyte Configuration into Workspace (this operation might change ids of imported configurations). Note, in order to use this api endpoint, you might need to upload a temporary archive resource with 'deployment/upload_archive_resource' first 
         api_response = api_instance.import_into_workspace(import_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling DeploymentApi->import_into_workspace: %s\n" % e)
 ```
 
@@ -284,19 +284,19 @@ Upload a GZIP archive tarball and stage it in the server's cache as a temporary 
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import deployment_api
-from openapi_client.model.upload_read import UploadRead
+import airbyte_api_client
+from airbyte_api_client.api import deployment_api
+from airbyte_api_client.model.upload_read import UploadRead
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = deployment_api.DeploymentApi(api_client)
     body = open('/path/to/file', 'rb') # file_type | 
@@ -306,7 +306,7 @@ with openapi_client.ApiClient() as api_client:
         # Upload a GZIP archive tarball and stage it in the server's cache as a temporary resource
         api_response = api_instance.upload_archive_resource(body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling DeploymentApi->upload_archive_resource: %s\n" % e)
 ```
 

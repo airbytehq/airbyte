@@ -15,11 +15,11 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.workspace_read import WorkspaceRead
+import airbyte_api_client
+from airbyte_api_client.model.workspace_read import WorkspaceRead
 
 globals()["WorkspaceRead"] = WorkspaceRead
-from openapi_client.model.workspace_read_list import WorkspaceReadList
+from airbyte_api_client.model.workspace_read_list import WorkspaceReadList
 
 
 class TestWorkspaceReadList(unittest.TestCase):

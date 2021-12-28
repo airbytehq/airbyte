@@ -15,13 +15,13 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.airbyte_catalog import AirbyteCatalog
-from openapi_client.model.connection_schedule import ConnectionSchedule
-from openapi_client.model.connection_status import ConnectionStatus
-from openapi_client.model.namespace_definition_type import NamespaceDefinitionType
-from openapi_client.model.operation_create import OperationCreate
-from openapi_client.model.resource_requirements import ResourceRequirements
+import airbyte_api_client
+from airbyte_api_client.model.airbyte_catalog import AirbyteCatalog
+from airbyte_api_client.model.connection_schedule import ConnectionSchedule
+from airbyte_api_client.model.connection_status import ConnectionStatus
+from airbyte_api_client.model.namespace_definition_type import NamespaceDefinitionType
+from airbyte_api_client.model.operation_create import OperationCreate
+from airbyte_api_client.model.resource_requirements import ResourceRequirements
 
 globals()["AirbyteCatalog"] = AirbyteCatalog
 globals()["ConnectionSchedule"] = ConnectionSchedule
@@ -29,7 +29,9 @@ globals()["ConnectionStatus"] = ConnectionStatus
 globals()["NamespaceDefinitionType"] = NamespaceDefinitionType
 globals()["OperationCreate"] = OperationCreate
 globals()["ResourceRequirements"] = ResourceRequirements
-from openapi_client.model.web_backend_connection_create import WebBackendConnectionCreate
+from airbyte_api_client.model.web_backend_connection_create import (
+    WebBackendConnectionCreate,
+)
 
 
 class TestWebBackendConnectionCreate(unittest.TestCase):

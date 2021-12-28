@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.workspace_id_request_body import WorkspaceIdRequestBody
+import airbyte_api_client
+from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
 
 
 class TestWorkspaceIdRequestBody(unittest.TestCase):

@@ -15,8 +15,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.source_oauth_consent_request import SourceOauthConsentRequest
+import airbyte_api_client
+from airbyte_api_client.model.source_oauth_consent_request import (
+    SourceOauthConsentRequest,
+)
 
 
 class TestSourceOauthConsentRequest(unittest.TestCase):

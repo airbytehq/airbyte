@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.destination_core_config import DestinationCoreConfig
+import airbyte_api_client
+from airbyte_api_client.model.destination_core_config import DestinationCoreConfig
 
 
 class TestDestinationCoreConfig(unittest.TestCase):

@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.known_exception_info import KnownExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.model.known_exception_info import KnownExceptionInfo
 
 
 class TestKnownExceptionInfo(unittest.TestCase):

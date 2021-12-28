@@ -15,13 +15,13 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.attempt_read import AttemptRead
-from openapi_client.model.log_read import LogRead
+import airbyte_api_client
+from airbyte_api_client.model.attempt_read import AttemptRead
+from airbyte_api_client.model.log_read import LogRead
 
 globals()["AttemptRead"] = AttemptRead
 globals()["LogRead"] = LogRead
-from openapi_client.model.attempt_info_read import AttemptInfoRead
+from airbyte_api_client.model.attempt_info_read import AttemptInfoRead
 
 
 class TestAttemptInfoRead(unittest.TestCase):

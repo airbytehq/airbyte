@@ -15,8 +15,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.complete_source_oauth_request import CompleteSourceOauthRequest
+import airbyte_api_client
+from airbyte_api_client.model.complete_source_oauth_request import (
+    CompleteSourceOauthRequest,
+)
 
 
 class TestCompleteSourceOauthRequest(unittest.TestCase):

@@ -15,11 +15,11 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.source_read import SourceRead
+import airbyte_api_client
+from airbyte_api_client.model.source_read import SourceRead
 
 globals()["SourceRead"] = SourceRead
-from openapi_client.model.source_read_list import SourceReadList
+from airbyte_api_client.model.source_read_list import SourceReadList
 
 
 class TestSourceReadList(unittest.TestCase):

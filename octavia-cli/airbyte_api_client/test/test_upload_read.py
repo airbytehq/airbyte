@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.upload_read import UploadRead
+import airbyte_api_client
+from airbyte_api_client.model.upload_read import UploadRead
 
 
 class TestUploadRead(unittest.TestCase):

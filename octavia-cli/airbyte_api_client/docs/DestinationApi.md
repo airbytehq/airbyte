@@ -1,4 +1,4 @@
-# openapi_client.DestinationApi
+# airbyte_api_client.DestinationApi
 
 All URIs are relative to *http://localhost:8000/api*
 
@@ -24,22 +24,22 @@ Check connection to the destination
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import destination_api
-from openapi_client.model.check_connection_read import CheckConnectionRead
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.destination_id_request_body import DestinationIdRequestBody
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import destination_api
+from airbyte_api_client.model.destination_id_request_body import DestinationIdRequestBody
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.check_connection_read import CheckConnectionRead
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = destination_api.DestinationApi(api_client)
     destination_id_request_body = DestinationIdRequestBody(
@@ -51,7 +51,7 @@ with openapi_client.ApiClient() as api_client:
         # Check connection to the destination
         api_response = api_instance.check_connection_to_destination(destination_id_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling DestinationApi->check_connection_to_destination: %s\n" % e)
 ```
 
@@ -96,22 +96,22 @@ Check connection for a proposed update to a destination
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import destination_api
-from openapi_client.model.check_connection_read import CheckConnectionRead
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.destination_update import DestinationUpdate
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import destination_api
+from airbyte_api_client.model.destination_update import DestinationUpdate
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.check_connection_read import CheckConnectionRead
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = destination_api.DestinationApi(api_client)
     destination_update = DestinationUpdate(
@@ -125,7 +125,7 @@ with openapi_client.ApiClient() as api_client:
         # Check connection for a proposed update to a destination
         api_response = api_instance.check_connection_to_destination_for_update(destination_update)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling DestinationApi->check_connection_to_destination_for_update: %s\n" % e)
 ```
 
@@ -170,21 +170,21 @@ Create a destination
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import destination_api
-from openapi_client.model.destination_create import DestinationCreate
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.destination_read import DestinationRead
+import airbyte_api_client
+from airbyte_api_client.api import destination_api
+from airbyte_api_client.model.destination_create import DestinationCreate
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.destination_read import DestinationRead
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = destination_api.DestinationApi(api_client)
     destination_create = DestinationCreate(
@@ -199,7 +199,7 @@ with openapi_client.ApiClient() as api_client:
         # Create a destination
         api_response = api_instance.create_destination(destination_create)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling DestinationApi->create_destination: %s\n" % e)
 ```
 
@@ -243,21 +243,21 @@ Delete the destination
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import destination_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.destination_id_request_body import DestinationIdRequestBody
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import destination_api
+from airbyte_api_client.model.destination_id_request_body import DestinationIdRequestBody
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = destination_api.DestinationApi(api_client)
     destination_id_request_body = DestinationIdRequestBody(
@@ -268,7 +268,7 @@ with openapi_client.ApiClient() as api_client:
     try:
         # Delete the destination
         api_instance.delete_destination(destination_id_request_body)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling DestinationApi->delete_destination: %s\n" % e)
 ```
 
@@ -313,22 +313,22 @@ Get configured destination
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import destination_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.destination_id_request_body import DestinationIdRequestBody
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.destination_read import DestinationRead
+import airbyte_api_client
+from airbyte_api_client.api import destination_api
+from airbyte_api_client.model.destination_id_request_body import DestinationIdRequestBody
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.destination_read import DestinationRead
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = destination_api.DestinationApi(api_client)
     destination_id_request_body = DestinationIdRequestBody(
@@ -340,7 +340,7 @@ with openapi_client.ApiClient() as api_client:
         # Get configured destination
         api_response = api_instance.get_destination(destination_id_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling DestinationApi->get_destination: %s\n" % e)
 ```
 
@@ -385,22 +385,22 @@ List configured destinations for a workspace
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import destination_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.workspace_id_request_body import WorkspaceIdRequestBody
-from openapi_client.model.destination_read_list import DestinationReadList
+import airbyte_api_client
+from airbyte_api_client.api import destination_api
+from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.destination_read_list import DestinationReadList
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = destination_api.DestinationApi(api_client)
     workspace_id_request_body = WorkspaceIdRequestBody(
@@ -412,7 +412,7 @@ with openapi_client.ApiClient() as api_client:
         # List configured destinations for a workspace
         api_response = api_instance.list_destinations_for_workspace(workspace_id_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling DestinationApi->list_destinations_for_workspace: %s\n" % e)
 ```
 
@@ -457,21 +457,21 @@ Search destinations
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import destination_api
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.destination_search import DestinationSearch
-from openapi_client.model.destination_read_list import DestinationReadList
+import airbyte_api_client
+from airbyte_api_client.api import destination_api
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.destination_search import DestinationSearch
+from airbyte_api_client.model.destination_read_list import DestinationReadList
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = destination_api.DestinationApi(api_client)
     destination_search = DestinationSearch(
@@ -488,7 +488,7 @@ with openapi_client.ApiClient() as api_client:
         # Search destinations
         api_response = api_instance.search_destinations(destination_search)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling DestinationApi->search_destinations: %s\n" % e)
 ```
 
@@ -532,21 +532,21 @@ Update a destination
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import destination_api
-from openapi_client.model.destination_update import DestinationUpdate
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.destination_read import DestinationRead
+import airbyte_api_client
+from airbyte_api_client.api import destination_api
+from airbyte_api_client.model.destination_update import DestinationUpdate
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.destination_read import DestinationRead
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = destination_api.DestinationApi(api_client)
     destination_update = DestinationUpdate(
@@ -560,7 +560,7 @@ with openapi_client.ApiClient() as api_client:
         # Update a destination
         api_response = api_instance.update_destination(destination_update)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling DestinationApi->update_destination: %s\n" % e)
 ```
 

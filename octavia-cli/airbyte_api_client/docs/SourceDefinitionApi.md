@@ -1,4 +1,4 @@
-# openapi_client.SourceDefinitionApi
+# airbyte_api_client.SourceDefinitionApi
 
 All URIs are relative to *http://localhost:8000/api*
 
@@ -22,21 +22,21 @@ Creates a sourceDefinition
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import source_definition_api
-from openapi_client.model.source_definition_read import SourceDefinitionRead
-from openapi_client.model.source_definition_create import SourceDefinitionCreate
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import source_definition_api
+from airbyte_api_client.model.source_definition_create import SourceDefinitionCreate
+from airbyte_api_client.model.source_definition_read import SourceDefinitionRead
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = source_definition_api.SourceDefinitionApi(api_client)
     source_definition_create = SourceDefinitionCreate(
@@ -53,7 +53,7 @@ with openapi_client.ApiClient() as api_client:
         # Creates a sourceDefinition
         api_response = api_instance.create_source_definition(source_definition_create=source_definition_create)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling SourceDefinitionApi->create_source_definition: %s\n" % e)
 ```
 
@@ -97,21 +97,21 @@ Delete a source definition
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import source_definition_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.source_definition_id_request_body import SourceDefinitionIdRequestBody
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import source_definition_api
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.source_definition_id_request_body import SourceDefinitionIdRequestBody
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = source_definition_api.SourceDefinitionApi(api_client)
     source_definition_id_request_body = SourceDefinitionIdRequestBody(
@@ -122,7 +122,7 @@ with openapi_client.ApiClient() as api_client:
     try:
         # Delete a source definition
         api_instance.delete_source_definition(source_definition_id_request_body)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling SourceDefinitionApi->delete_source_definition: %s\n" % e)
 ```
 
@@ -167,22 +167,22 @@ Get source
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import source_definition_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.source_definition_read import SourceDefinitionRead
-from openapi_client.model.source_definition_id_request_body import SourceDefinitionIdRequestBody
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import source_definition_api
+from airbyte_api_client.model.source_definition_read import SourceDefinitionRead
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.source_definition_id_request_body import SourceDefinitionIdRequestBody
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = source_definition_api.SourceDefinitionApi(api_client)
     source_definition_id_request_body = SourceDefinitionIdRequestBody(
@@ -194,7 +194,7 @@ with openapi_client.ApiClient() as api_client:
         # Get source
         api_response = api_instance.get_source_definition(source_definition_id_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling SourceDefinitionApi->get_source_definition: %s\n" % e)
 ```
 
@@ -241,19 +241,19 @@ Guaranteed to retrieve the latest information on supported sources.
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import source_definition_api
-from openapi_client.model.source_definition_read_list import SourceDefinitionReadList
+import airbyte_api_client
+from airbyte_api_client.api import source_definition_api
+from airbyte_api_client.model.source_definition_read_list import SourceDefinitionReadList
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = source_definition_api.SourceDefinitionApi(api_client)
 
@@ -262,7 +262,7 @@ with openapi_client.ApiClient() as api_client:
         # List the latest sourceDefinitions Airbyte supports
         api_response = api_instance.list_latest_source_definitions()
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling SourceDefinitionApi->list_latest_source_definitions: %s\n" % e)
 ```
 
@@ -302,19 +302,19 @@ List all the sourceDefinitions the current Airbyte deployment is configured to u
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import source_definition_api
-from openapi_client.model.source_definition_read_list import SourceDefinitionReadList
+import airbyte_api_client
+from airbyte_api_client.api import source_definition_api
+from airbyte_api_client.model.source_definition_read_list import SourceDefinitionReadList
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = source_definition_api.SourceDefinitionApi(api_client)
 
@@ -323,7 +323,7 @@ with openapi_client.ApiClient() as api_client:
         # List all the sourceDefinitions the current Airbyte deployment is configured to use
         api_response = api_instance.list_source_definitions()
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling SourceDefinitionApi->list_source_definitions: %s\n" % e)
 ```
 
@@ -363,22 +363,22 @@ Update a sourceDefinition
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import source_definition_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.source_definition_update import SourceDefinitionUpdate
-from openapi_client.model.source_definition_read import SourceDefinitionRead
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import source_definition_api
+from airbyte_api_client.model.source_definition_read import SourceDefinitionRead
+from airbyte_api_client.model.source_definition_update import SourceDefinitionUpdate
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = source_definition_api.SourceDefinitionApi(api_client)
     source_definition_update = SourceDefinitionUpdate(
@@ -392,7 +392,7 @@ with openapi_client.ApiClient() as api_client:
         # Update a sourceDefinition
         api_response = api_instance.update_source_definition(source_definition_update=source_definition_update)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling SourceDefinitionApi->update_source_definition: %s\n" % e)
 ```
 

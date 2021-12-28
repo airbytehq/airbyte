@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.operation_id_request_body import OperationIdRequestBody
+import airbyte_api_client
+from airbyte_api_client.model.operation_id_request_body import OperationIdRequestBody
 
 
 class TestOperationIdRequestBody(unittest.TestCase):

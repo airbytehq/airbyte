@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.job_status import JobStatus
+import airbyte_api_client
+from airbyte_api_client.model.job_status import JobStatus
 
 
 class TestJobStatus(unittest.TestCase):

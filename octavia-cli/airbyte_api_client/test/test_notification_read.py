@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.notification_read import NotificationRead
+import airbyte_api_client
+from airbyte_api_client.model.notification_read import NotificationRead
 
 
 class TestNotificationRead(unittest.TestCase):

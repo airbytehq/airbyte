@@ -15,8 +15,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.model.not_found_known_exception_info import (
+    NotFoundKnownExceptionInfo,
+)
 
 
 class TestNotFoundKnownExceptionInfo(unittest.TestCase):

@@ -15,8 +15,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.destination_definition_create import DestinationDefinitionCreate
+import airbyte_api_client
+from airbyte_api_client.model.destination_definition_create import (
+    DestinationDefinitionCreate,
+)
 
 
 class TestDestinationDefinitionCreate(unittest.TestCase):

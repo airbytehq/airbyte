@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.import_request_body import ImportRequestBody
+import airbyte_api_client
+from airbyte_api_client.model.import_request_body import ImportRequestBody
 
 
 class TestImportRequestBody(unittest.TestCase):

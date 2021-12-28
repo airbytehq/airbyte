@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.o_auth_consent_read import OAuthConsentRead
+import airbyte_api_client
+from airbyte_api_client.model.o_auth_consent_read import OAuthConsentRead
 
 
 class TestOAuthConsentRead(unittest.TestCase):

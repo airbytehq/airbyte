@@ -1,4 +1,4 @@
-# openapi_client.JobsApi
+# airbyte_api_client.JobsApi
 
 All URIs are relative to *http://localhost:8000/api*
 
@@ -19,22 +19,22 @@ Cancels a job
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import jobs_api
-from openapi_client.model.job_id_request_body import JobIdRequestBody
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.job_info_read import JobInfoRead
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import jobs_api
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.job_id_request_body import JobIdRequestBody
+from airbyte_api_client.model.job_info_read import JobInfoRead
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = jobs_api.JobsApi(api_client)
     job_id_request_body = JobIdRequestBody(
@@ -46,7 +46,7 @@ with openapi_client.ApiClient() as api_client:
         # Cancels a job
         api_response = api_instance.cancel_job(job_id_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling JobsApi->cancel_job: %s\n" % e)
 ```
 
@@ -91,22 +91,22 @@ Get information about a job
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import jobs_api
-from openapi_client.model.job_id_request_body import JobIdRequestBody
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.job_info_read import JobInfoRead
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import jobs_api
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.job_id_request_body import JobIdRequestBody
+from airbyte_api_client.model.job_info_read import JobInfoRead
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = jobs_api.JobsApi(api_client)
     job_id_request_body = JobIdRequestBody(
@@ -118,7 +118,7 @@ with openapi_client.ApiClient() as api_client:
         # Get information about a job
         api_response = api_instance.get_job_info(job_id_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling JobsApi->get_job_info: %s\n" % e)
 ```
 
@@ -163,22 +163,22 @@ Returns recent jobs for a connection. Jobs are returned in descending order by c
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import jobs_api
-from openapi_client.model.job_read_list import JobReadList
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.job_list_request_body import JobListRequestBody
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import jobs_api
+from airbyte_api_client.model.job_list_request_body import JobListRequestBody
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.job_read_list import JobReadList
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = jobs_api.JobsApi(api_client)
     job_list_request_body = JobListRequestBody(
@@ -197,7 +197,7 @@ with openapi_client.ApiClient() as api_client:
         # Returns recent jobs for a connection. Jobs are returned in descending order by createdAt.
         api_response = api_instance.list_jobs_for(job_list_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling JobsApi->list_jobs_for: %s\n" % e)
 ```
 

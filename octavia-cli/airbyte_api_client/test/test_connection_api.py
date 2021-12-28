@@ -14,8 +14,8 @@
 
 import unittest
 
-import openapi_client
-from openapi_client.api.connection_api import ConnectionApi  # noqa: E501
+import airbyte_api_client
+from airbyte_api_client.api.connection_api import ConnectionApi  # noqa: E501
 
 
 class TestConnectionApi(unittest.TestCase):

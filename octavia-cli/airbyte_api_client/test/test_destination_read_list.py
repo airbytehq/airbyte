@@ -15,11 +15,11 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.destination_read import DestinationRead
+import airbyte_api_client
+from airbyte_api_client.model.destination_read import DestinationRead
 
 globals()["DestinationRead"] = DestinationRead
-from openapi_client.model.destination_read_list import DestinationReadList
+from airbyte_api_client.model.destination_read_list import DestinationReadList
 
 
 class TestDestinationReadList(unittest.TestCase):

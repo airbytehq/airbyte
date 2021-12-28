@@ -15,13 +15,13 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.job_config_type import JobConfigType
-from openapi_client.model.job_status import JobStatus
+import airbyte_api_client
+from airbyte_api_client.model.job_config_type import JobConfigType
+from airbyte_api_client.model.job_status import JobStatus
 
 globals()["JobConfigType"] = JobConfigType
 globals()["JobStatus"] = JobStatus
-from openapi_client.model.job_read import JobRead
+from airbyte_api_client.model.job_read import JobRead
 
 
 class TestJobRead(unittest.TestCase):

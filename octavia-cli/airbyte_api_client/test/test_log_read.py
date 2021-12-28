@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.log_read import LogRead
+import airbyte_api_client
+from airbyte_api_client.model.log_read import LogRead
 
 
 class TestLogRead(unittest.TestCase):

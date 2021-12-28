@@ -15,13 +15,13 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.job_config_type import JobConfigType
-from openapi_client.model.log_read import LogRead
+import airbyte_api_client
+from airbyte_api_client.model.job_config_type import JobConfigType
+from airbyte_api_client.model.log_read import LogRead
 
 globals()["JobConfigType"] = JobConfigType
 globals()["LogRead"] = LogRead
-from openapi_client.model.synchronous_job_read import SynchronousJobRead
+from airbyte_api_client.model.synchronous_job_read import SynchronousJobRead
 
 
 class TestSynchronousJobRead(unittest.TestCase):

@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.health_check_read import HealthCheckRead
+import airbyte_api_client
+from airbyte_api_client.model.health_check_read import HealthCheckRead
 
 
 class TestHealthCheckRead(unittest.TestCase):

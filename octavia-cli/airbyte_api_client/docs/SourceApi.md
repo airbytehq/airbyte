@@ -1,4 +1,4 @@
-# openapi_client.SourceApi
+# airbyte_api_client.SourceApi
 
 All URIs are relative to *http://localhost:8000/api*
 
@@ -25,22 +25,22 @@ Check connection to the source
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import source_api
-from openapi_client.model.check_connection_read import CheckConnectionRead
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.source_id_request_body import SourceIdRequestBody
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import source_api
+from airbyte_api_client.model.source_id_request_body import SourceIdRequestBody
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.check_connection_read import CheckConnectionRead
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = source_api.SourceApi(api_client)
     source_id_request_body = SourceIdRequestBody(
@@ -52,7 +52,7 @@ with openapi_client.ApiClient() as api_client:
         # Check connection to the source
         api_response = api_instance.check_connection_to_source(source_id_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling SourceApi->check_connection_to_source: %s\n" % e)
 ```
 
@@ -97,22 +97,22 @@ Check connection for a proposed update to a source
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import source_api
-from openapi_client.model.check_connection_read import CheckConnectionRead
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.source_update import SourceUpdate
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import source_api
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.check_connection_read import CheckConnectionRead
+from airbyte_api_client.model.source_update import SourceUpdate
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = source_api.SourceApi(api_client)
     source_update = SourceUpdate(
@@ -126,7 +126,7 @@ with openapi_client.ApiClient() as api_client:
         # Check connection for a proposed update to a source
         api_response = api_instance.check_connection_to_source_for_update(source_update)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling SourceApi->check_connection_to_source_for_update: %s\n" % e)
 ```
 
@@ -171,21 +171,21 @@ Create a source
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import source_api
-from openapi_client.model.source_read import SourceRead
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.source_create import SourceCreate
+import airbyte_api_client
+from airbyte_api_client.api import source_api
+from airbyte_api_client.model.source_create import SourceCreate
+from airbyte_api_client.model.source_read import SourceRead
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = source_api.SourceApi(api_client)
     source_create = SourceCreate(
@@ -200,7 +200,7 @@ with openapi_client.ApiClient() as api_client:
         # Create a source
         api_response = api_instance.create_source(source_create)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling SourceApi->create_source: %s\n" % e)
 ```
 
@@ -244,21 +244,21 @@ Delete a source
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import source_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.source_id_request_body import SourceIdRequestBody
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import source_api
+from airbyte_api_client.model.source_id_request_body import SourceIdRequestBody
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = source_api.SourceApi(api_client)
     source_id_request_body = SourceIdRequestBody(
@@ -269,7 +269,7 @@ with openapi_client.ApiClient() as api_client:
     try:
         # Delete a source
         api_instance.delete_source(source_id_request_body)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling SourceApi->delete_source: %s\n" % e)
 ```
 
@@ -314,22 +314,22 @@ Discover the schema catalog of the source
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import source_api
-from openapi_client.model.source_discover_schema_read import SourceDiscoverSchemaRead
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.source_id_request_body import SourceIdRequestBody
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import source_api
+from airbyte_api_client.model.source_id_request_body import SourceIdRequestBody
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.source_discover_schema_read import SourceDiscoverSchemaRead
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = source_api.SourceApi(api_client)
     source_id_request_body = SourceIdRequestBody(
@@ -341,7 +341,7 @@ with openapi_client.ApiClient() as api_client:
         # Discover the schema catalog of the source
         api_response = api_instance.discover_schema_for_source(source_id_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling SourceApi->discover_schema_for_source: %s\n" % e)
 ```
 
@@ -386,22 +386,22 @@ Get source
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import source_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.source_id_request_body import SourceIdRequestBody
-from openapi_client.model.source_read import SourceRead
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import source_api
+from airbyte_api_client.model.source_read import SourceRead
+from airbyte_api_client.model.source_id_request_body import SourceIdRequestBody
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = source_api.SourceApi(api_client)
     source_id_request_body = SourceIdRequestBody(
@@ -413,7 +413,7 @@ with openapi_client.ApiClient() as api_client:
         # Get source
         api_response = api_instance.get_source(source_id_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling SourceApi->get_source: %s\n" % e)
 ```
 
@@ -460,22 +460,22 @@ List sources for workspace. Does not return deleted sources.
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import source_api
-from openapi_client.model.source_read_list import SourceReadList
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.workspace_id_request_body import WorkspaceIdRequestBody
+import airbyte_api_client
+from airbyte_api_client.api import source_api
+from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.source_read_list import SourceReadList
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = source_api.SourceApi(api_client)
     workspace_id_request_body = WorkspaceIdRequestBody(
@@ -487,7 +487,7 @@ with openapi_client.ApiClient() as api_client:
         # List sources for workspace
         api_response = api_instance.list_sources_for_workspace(workspace_id_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling SourceApi->list_sources_for_workspace: %s\n" % e)
 ```
 
@@ -532,21 +532,21 @@ Search sources
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import source_api
-from openapi_client.model.source_search import SourceSearch
-from openapi_client.model.source_read_list import SourceReadList
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import source_api
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.source_search import SourceSearch
+from airbyte_api_client.model.source_read_list import SourceReadList
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = source_api.SourceApi(api_client)
     source_search = SourceSearch(
@@ -563,7 +563,7 @@ with openapi_client.ApiClient() as api_client:
         # Search sources
         api_response = api_instance.search_sources(source_search)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling SourceApi->search_sources: %s\n" % e)
 ```
 
@@ -607,22 +607,22 @@ Update a source
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import source_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.source_update import SourceUpdate
-from openapi_client.model.source_read import SourceRead
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import source_api
+from airbyte_api_client.model.source_read import SourceRead
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.source_update import SourceUpdate
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = source_api.SourceApi(api_client)
     source_update = SourceUpdate(
@@ -636,7 +636,7 @@ with openapi_client.ApiClient() as api_client:
         # Update a source
         api_response = api_instance.update_source(source_update)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling SourceApi->update_source: %s\n" % e)
 ```
 

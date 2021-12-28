@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.connection_state import ConnectionState
+import airbyte_api_client
+from airbyte_api_client.model.connection_state import ConnectionState
 
 
 class TestConnectionState(unittest.TestCase):

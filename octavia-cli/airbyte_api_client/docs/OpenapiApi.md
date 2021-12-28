@@ -1,4 +1,4 @@
-# openapi_client.OpenapiApi
+# airbyte_api_client.OpenapiApi
 
 All URIs are relative to *http://localhost:8000/api*
 
@@ -17,18 +17,18 @@ Returns the openapi specification
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import openapi_api
+import airbyte_api_client
+from airbyte_api_client.api import openapi_api
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = openapi_api.OpenapiApi(api_client)
 
@@ -37,7 +37,7 @@ with openapi_client.ApiClient() as api_client:
         # Returns the openapi specification
         api_response = api_instance.get_open_api_spec()
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling OpenapiApi->get_open_api_spec: %s\n" % e)
 ```
 

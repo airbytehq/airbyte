@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.connection_id_request_body import ConnectionIdRequestBody
+import airbyte_api_client
+from airbyte_api_client.model.connection_id_request_body import ConnectionIdRequestBody
 
 
 class TestConnectionIdRequestBody(unittest.TestCase):

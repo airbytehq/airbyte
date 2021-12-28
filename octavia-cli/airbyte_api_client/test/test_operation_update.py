@@ -15,11 +15,11 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.operator_configuration import OperatorConfiguration
+import airbyte_api_client
+from airbyte_api_client.model.operator_configuration import OperatorConfiguration
 
 globals()["OperatorConfiguration"] = OperatorConfiguration
-from openapi_client.model.operation_update import OperationUpdate
+from airbyte_api_client.model.operation_update import OperationUpdate
 
 
 class TestOperationUpdate(unittest.TestCase):

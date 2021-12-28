@@ -1,4 +1,4 @@
-# openapi-client
+# airbyte-api-client
 Airbyte Configuration API
 [https://airbyte.io](https://airbyte.io).
 
@@ -40,7 +40,7 @@ pip install git+https://github.com/GIT_USER_ID/GIT_REPO_ID.git
 
 Then import the package:
 ```python
-import openapi_client
+import airbyte_api_client
 ```
 
 ### Setuptools
@@ -54,7 +54,7 @@ python setup.py install --user
 
 Then import the package:
 ```python
-import openapi_client
+import airbyte_api_client
 ```
 
 ## Getting Started
@@ -64,30 +64,30 @@ Please follow the [installation procedure](#installation--usage) and then run th
 ```python
 
 import time
-import openapi_client
+import airbyte_api_client
 from pprint import pprint
-from openapi_client.api import connection_api
-from openapi_client.model.connection_create import ConnectionCreate
-from openapi_client.model.connection_id_request_body import ConnectionIdRequestBody
-from openapi_client.model.connection_read import ConnectionRead
-from openapi_client.model.connection_read_list import ConnectionReadList
-from openapi_client.model.connection_search import ConnectionSearch
-from openapi_client.model.connection_state import ConnectionState
-from openapi_client.model.connection_update import ConnectionUpdate
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.job_info_read import JobInfoRead
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.workspace_id_request_body import WorkspaceIdRequestBody
+from airbyte_api_client.api import connection_api
+from airbyte_api_client.model.connection_create import ConnectionCreate
+from airbyte_api_client.model.connection_id_request_body import ConnectionIdRequestBody
+from airbyte_api_client.model.connection_read import ConnectionRead
+from airbyte_api_client.model.connection_read_list import ConnectionReadList
+from airbyte_api_client.model.connection_search import ConnectionSearch
+from airbyte_api_client.model.connection_state import ConnectionState
+from airbyte_api_client.model.connection_update import ConnectionUpdate
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.job_info_read import JobInfoRead
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with airbyte_api_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = connection_api.ConnectionApi(api_client)
     connection_create = ConnectionCreate(
@@ -154,7 +154,7 @@ with openapi_client.ApiClient(configuration) as api_client:
         # Create a connection between a source and a destination
         api_response = api_instance.create_connection(connection_create)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling ConnectionApi->create_connection: %s\n" % e)
 ```
 
@@ -384,21 +384,21 @@ contact@airbyte.io
 
 
 ## Notes for Large OpenAPI documents
-If the OpenAPI document is large, imports in openapi_client.apis and openapi_client.models may fail with a
+If the OpenAPI document is large, imports in airbyte_api_client.apis and airbyte_api_client.models may fail with a
 RecursionError indicating the maximum recursion limit has been exceeded. In that case, there are a couple of solutions:
 
 Solution 1:
 Use specific imports for apis and models like:
-- `from openapi_client.api.default_api import DefaultApi`
-- `from openapi_client.model.pet import Pet`
+- `from airbyte_api_client.api.default_api import DefaultApi`
+- `from airbyte_api_client.model.pet import Pet`
 
 Solution 2:
 Before importing the package, adjust the maximum recursion limit as shown below:
 ```
 import sys
 sys.setrecursionlimit(1500)
-import openapi_client
-from openapi_client.apis import *
-from openapi_client.models import *
+import airbyte_api_client
+from airbyte_api_client.apis import *
+from airbyte_api_client.models import *
 ```
 

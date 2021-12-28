@@ -15,13 +15,15 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.notification_type import NotificationType
-from openapi_client.model.slack_notification_configuration import SlackNotificationConfiguration
+import airbyte_api_client
+from airbyte_api_client.model.notification_type import NotificationType
+from airbyte_api_client.model.slack_notification_configuration import (
+    SlackNotificationConfiguration,
+)
 
 globals()["NotificationType"] = NotificationType
 globals()["SlackNotificationConfiguration"] = SlackNotificationConfiguration
-from openapi_client.model.notification import Notification
+from airbyte_api_client.model.notification import Notification
 
 
 class TestNotification(unittest.TestCase):

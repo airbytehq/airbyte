@@ -1,4 +1,4 @@
-# openapi_client.OperationApi
+# airbyte_api_client.OperationApi
 
 All URIs are relative to *http://localhost:8000/api*
 
@@ -22,21 +22,21 @@ Check if an operation to be created is valid
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import operation_api
-from openapi_client.model.check_operation_read import CheckOperationRead
-from openapi_client.model.operator_configuration import OperatorConfiguration
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import operation_api
+from airbyte_api_client.model.check_operation_read import CheckOperationRead
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.operator_configuration import OperatorConfiguration
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = operation_api.OperationApi(api_client)
     operator_configuration = OperatorConfiguration(
@@ -57,7 +57,7 @@ with openapi_client.ApiClient() as api_client:
         # Check if an operation to be created is valid
         api_response = api_instance.check_operation(operator_configuration)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling OperationApi->check_operation: %s\n" % e)
 ```
 
@@ -101,21 +101,21 @@ Create an operation to be applied as part of a connection pipeline
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import operation_api
-from openapi_client.model.operation_read import OperationRead
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.operation_create import OperationCreate
+import airbyte_api_client
+from airbyte_api_client.api import operation_api
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.operation_create import OperationCreate
+from airbyte_api_client.model.operation_read import OperationRead
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = operation_api.OperationApi(api_client)
     operation_create = OperationCreate(
@@ -140,7 +140,7 @@ with openapi_client.ApiClient() as api_client:
         # Create an operation to be applied as part of a connection pipeline
         api_response = api_instance.create_operation(operation_create)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling OperationApi->create_operation: %s\n" % e)
 ```
 
@@ -184,21 +184,21 @@ Delete an operation
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import operation_api
-from openapi_client.model.operation_id_request_body import OperationIdRequestBody
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import operation_api
+from airbyte_api_client.model.operation_id_request_body import OperationIdRequestBody
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = operation_api.OperationApi(api_client)
     operation_id_request_body = OperationIdRequestBody(
@@ -209,7 +209,7 @@ with openapi_client.ApiClient() as api_client:
     try:
         # Delete an operation
         api_instance.delete_operation(operation_id_request_body)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling OperationApi->delete_operation: %s\n" % e)
 ```
 
@@ -254,22 +254,22 @@ Returns an operation
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import operation_api
-from openapi_client.model.operation_read import OperationRead
-from openapi_client.model.operation_id_request_body import OperationIdRequestBody
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import operation_api
+from airbyte_api_client.model.operation_id_request_body import OperationIdRequestBody
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.operation_read import OperationRead
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = operation_api.OperationApi(api_client)
     operation_id_request_body = OperationIdRequestBody(
@@ -281,7 +281,7 @@ with openapi_client.ApiClient() as api_client:
         # Returns an operation
         api_response = api_instance.get_operation(operation_id_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling OperationApi->get_operation: %s\n" % e)
 ```
 
@@ -328,22 +328,22 @@ List operations for connection.
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import operation_api
-from openapi_client.model.operation_read_list import OperationReadList
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.connection_id_request_body import ConnectionIdRequestBody
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import operation_api
+from airbyte_api_client.model.connection_id_request_body import ConnectionIdRequestBody
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.operation_read_list import OperationReadList
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = operation_api.OperationApi(api_client)
     connection_id_request_body = ConnectionIdRequestBody(
@@ -355,7 +355,7 @@ with openapi_client.ApiClient() as api_client:
         # Returns all operations for a connection.
         api_response = api_instance.list_operations_for_connection(connection_id_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling OperationApi->list_operations_for_connection: %s\n" % e)
 ```
 
@@ -400,21 +400,21 @@ Update an operation
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import operation_api
-from openapi_client.model.operation_update import OperationUpdate
-from openapi_client.model.operation_read import OperationRead
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import operation_api
+from airbyte_api_client.model.operation_update import OperationUpdate
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.operation_read import OperationRead
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = operation_api.OperationApi(api_client)
     operation_update = OperationUpdate(
@@ -439,7 +439,7 @@ with openapi_client.ApiClient() as api_client:
         # Update an operation
         api_response = api_instance.update_operation(operation_update)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling OperationApi->update_operation: %s\n" % e)
 ```
 

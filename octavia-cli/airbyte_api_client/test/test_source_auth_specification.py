@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.source_auth_specification import SourceAuthSpecification
+import airbyte_api_client
+from airbyte_api_client.model.source_auth_specification import SourceAuthSpecification
 
 
 class TestSourceAuthSpecification(unittest.TestCase):

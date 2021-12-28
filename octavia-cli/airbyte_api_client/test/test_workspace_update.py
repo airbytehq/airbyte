@@ -15,11 +15,11 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.notification import Notification
+import airbyte_api_client
+from airbyte_api_client.model.notification import Notification
 
 globals()["Notification"] = Notification
-from openapi_client.model.workspace_update import WorkspaceUpdate
+from airbyte_api_client.model.workspace_update import WorkspaceUpdate
 
 
 class TestWorkspaceUpdate(unittest.TestCase):

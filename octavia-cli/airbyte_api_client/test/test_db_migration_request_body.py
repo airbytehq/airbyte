@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.db_migration_request_body import DbMigrationRequestBody
+import airbyte_api_client
+from airbyte_api_client.model.db_migration_request_body import DbMigrationRequestBody
 
 
 class TestDbMigrationRequestBody(unittest.TestCase):

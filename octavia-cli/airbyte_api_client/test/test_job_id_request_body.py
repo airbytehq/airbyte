@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.job_id_request_body import JobIdRequestBody
+import airbyte_api_client
+from airbyte_api_client.model.job_id_request_body import JobIdRequestBody
 
 
 class TestJobIdRequestBody(unittest.TestCase):

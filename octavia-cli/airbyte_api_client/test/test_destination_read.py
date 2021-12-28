@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.destination_read import DestinationRead
+import airbyte_api_client
+from airbyte_api_client.model.destination_read import DestinationRead
 
 
 class TestDestinationRead(unittest.TestCase):

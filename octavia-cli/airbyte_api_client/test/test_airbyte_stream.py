@@ -15,11 +15,11 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.sync_mode import SyncMode
+import airbyte_api_client
+from airbyte_api_client.model.sync_mode import SyncMode
 
 globals()["SyncMode"] = SyncMode
-from openapi_client.model.airbyte_stream import AirbyteStream
+from airbyte_api_client.model.airbyte_stream import AirbyteStream
 
 
 class TestAirbyteStream(unittest.TestCase):

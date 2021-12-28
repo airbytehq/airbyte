@@ -41,18 +41,12 @@ repos:
       - id: pyproject-flake8
         additional_dependencies: ["mccabe"]
         alias: flake8
-        exclude: |
-          (?x)^.*(
-              octavia-cli/airbyte_api_client/
-          ).?$
+        exclude: octavia-cli/airbyte_api_client/
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v0.910-1
     hooks:
       - id: mypy
-        exclude: |
-          (?x)^.*(
-              octavia-cli/airbyte_api_client/
-          ).?$
+        exclude: octavia-cli/airbyte_api_client/
   - repo: local
     hooks:
       - id: spec-linter

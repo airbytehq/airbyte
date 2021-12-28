@@ -1,4 +1,4 @@
-# openapi_client.ConnectionApi
+# airbyte_api_client.ConnectionApi
 
 All URIs are relative to *http://localhost:8000/api*
 
@@ -26,21 +26,21 @@ Create a connection between a source and a destination
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import connection_api
-from openapi_client.model.connection_create import ConnectionCreate
-from openapi_client.model.connection_read import ConnectionRead
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import connection_api
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.connection_create import ConnectionCreate
+from airbyte_api_client.model.connection_read import ConnectionRead
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = connection_api.ConnectionApi(api_client)
     connection_create = ConnectionCreate(
@@ -108,7 +108,7 @@ with openapi_client.ApiClient() as api_client:
         # Create a connection between a source and a destination
         api_response = api_instance.create_connection(connection_create)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling ConnectionApi->create_connection: %s\n" % e)
 ```
 
@@ -152,21 +152,21 @@ Delete a connection
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import connection_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.connection_id_request_body import ConnectionIdRequestBody
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import connection_api
+from airbyte_api_client.model.connection_id_request_body import ConnectionIdRequestBody
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = connection_api.ConnectionApi(api_client)
     connection_id_request_body = ConnectionIdRequestBody(
@@ -177,7 +177,7 @@ with openapi_client.ApiClient() as api_client:
     try:
         # Delete a connection
         api_instance.delete_connection(connection_id_request_body)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling ConnectionApi->delete_connection: %s\n" % e)
 ```
 
@@ -222,22 +222,22 @@ Get a connection
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import connection_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.connection_id_request_body import ConnectionIdRequestBody
-from openapi_client.model.connection_read import ConnectionRead
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import connection_api
+from airbyte_api_client.model.connection_id_request_body import ConnectionIdRequestBody
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.connection_read import ConnectionRead
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = connection_api.ConnectionApi(api_client)
     connection_id_request_body = ConnectionIdRequestBody(
@@ -249,7 +249,7 @@ with openapi_client.ApiClient() as api_client:
         # Get a connection
         api_response = api_instance.get_connection(connection_id_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling ConnectionApi->get_connection: %s\n" % e)
 ```
 
@@ -294,22 +294,22 @@ Fetch the current state for a connection.
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import connection_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.connection_id_request_body import ConnectionIdRequestBody
-from openapi_client.model.connection_state import ConnectionState
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import connection_api
+from airbyte_api_client.model.connection_id_request_body import ConnectionIdRequestBody
+from airbyte_api_client.model.connection_state import ConnectionState
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = connection_api.ConnectionApi(api_client)
     connection_id_request_body = ConnectionIdRequestBody(
@@ -321,7 +321,7 @@ with openapi_client.ApiClient() as api_client:
         # Fetch the current state for a connection.
         api_response = api_instance.get_state(connection_id_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling ConnectionApi->get_state: %s\n" % e)
 ```
 
@@ -368,22 +368,22 @@ List connections for workspace, including deleted connections.
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import connection_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.connection_read_list import ConnectionReadList
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.workspace_id_request_body import WorkspaceIdRequestBody
+import airbyte_api_client
+from airbyte_api_client.api import connection_api
+from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.connection_read_list import ConnectionReadList
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = connection_api.ConnectionApi(api_client)
     workspace_id_request_body = WorkspaceIdRequestBody(
@@ -395,7 +395,7 @@ with openapi_client.ApiClient() as api_client:
         # Returns all connections for a workspace, including deleted connections.
         api_response = api_instance.list_all_connections_for_workspace(workspace_id_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling ConnectionApi->list_all_connections_for_workspace: %s\n" % e)
 ```
 
@@ -442,22 +442,22 @@ List connections for workspace. Does not return deleted connections.
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import connection_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.connection_read_list import ConnectionReadList
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.workspace_id_request_body import WorkspaceIdRequestBody
+import airbyte_api_client
+from airbyte_api_client.api import connection_api
+from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.connection_read_list import ConnectionReadList
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = connection_api.ConnectionApi(api_client)
     workspace_id_request_body = WorkspaceIdRequestBody(
@@ -469,7 +469,7 @@ with openapi_client.ApiClient() as api_client:
         # Returns all connections for a workspace.
         api_response = api_instance.list_connections_for_workspace(workspace_id_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling ConnectionApi->list_connections_for_workspace: %s\n" % e)
 ```
 
@@ -514,22 +514,22 @@ Reset the data for the connection. Deletes data generated by the connection in t
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import connection_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.connection_id_request_body import ConnectionIdRequestBody
-from openapi_client.model.job_info_read import JobInfoRead
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import connection_api
+from airbyte_api_client.model.connection_id_request_body import ConnectionIdRequestBody
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.job_info_read import JobInfoRead
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = connection_api.ConnectionApi(api_client)
     connection_id_request_body = ConnectionIdRequestBody(
@@ -541,7 +541,7 @@ with openapi_client.ApiClient() as api_client:
         # Reset the data for the connection. Deletes data generated by the connection in the destination. Resets any cursors back to initial state.
         api_response = api_instance.reset_connection(connection_id_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling ConnectionApi->reset_connection: %s\n" % e)
 ```
 
@@ -586,21 +586,21 @@ Search connections
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import connection_api
-from openapi_client.model.connection_read_list import ConnectionReadList
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.connection_search import ConnectionSearch
+import airbyte_api_client
+from airbyte_api_client.api import connection_api
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.connection_search import ConnectionSearch
+from airbyte_api_client.model.connection_read_list import ConnectionReadList
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = connection_api.ConnectionApi(api_client)
     connection_search = ConnectionSearch(
@@ -639,7 +639,7 @@ with openapi_client.ApiClient() as api_client:
         # Search connections
         api_response = api_instance.search_connections(connection_search)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling ConnectionApi->search_connections: %s\n" % e)
 ```
 
@@ -683,22 +683,22 @@ Trigger a manual sync of the connection
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import connection_api
-from openapi_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
-from openapi_client.model.connection_id_request_body import ConnectionIdRequestBody
-from openapi_client.model.job_info_read import JobInfoRead
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+import airbyte_api_client
+from airbyte_api_client.api import connection_api
+from airbyte_api_client.model.connection_id_request_body import ConnectionIdRequestBody
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.not_found_known_exception_info import NotFoundKnownExceptionInfo
+from airbyte_api_client.model.job_info_read import JobInfoRead
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = connection_api.ConnectionApi(api_client)
     connection_id_request_body = ConnectionIdRequestBody(
@@ -710,7 +710,7 @@ with openapi_client.ApiClient() as api_client:
         # Trigger a manual sync of the connection
         api_response = api_instance.sync_connection(connection_id_request_body)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling ConnectionApi->sync_connection: %s\n" % e)
 ```
 
@@ -755,21 +755,21 @@ Update a connection
 
 ```python
 import time
-import openapi_client
-from openapi_client.api import connection_api
-from openapi_client.model.connection_read import ConnectionRead
-from openapi_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
-from openapi_client.model.connection_update import ConnectionUpdate
+import airbyte_api_client
+from airbyte_api_client.api import connection_api
+from airbyte_api_client.model.invalid_input_exception_info import InvalidInputExceptionInfo
+from airbyte_api_client.model.connection_read import ConnectionRead
+from airbyte_api_client.model.connection_update import ConnectionUpdate
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost:8000/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = airbyte_api_client.Configuration(
     host = "http://localhost:8000/api"
 )
 
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient() as api_client:
+with airbyte_api_client.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = connection_api.ConnectionApi(api_client)
     connection_update = ConnectionUpdate(
@@ -835,7 +835,7 @@ with openapi_client.ApiClient() as api_client:
         # Update a connection
         api_response = api_instance.update_connection(connection_update)
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except airbyte_api_client.ApiException as e:
         print("Exception when calling ConnectionApi->update_connection: %s\n" % e)
 ```
 

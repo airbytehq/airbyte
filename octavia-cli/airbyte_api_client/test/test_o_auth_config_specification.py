@@ -15,8 +15,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.o_auth_config_specification import OAuthConfigSpecification
+import airbyte_api_client
+from airbyte_api_client.model.o_auth_config_specification import (
+    OAuthConfigSpecification,
+)
 
 
 class TestOAuthConfigSpecification(unittest.TestCase):

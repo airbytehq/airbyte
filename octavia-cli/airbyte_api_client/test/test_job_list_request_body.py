@@ -15,13 +15,13 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.job_config_type import JobConfigType
-from openapi_client.model.pagination import Pagination
+import airbyte_api_client
+from airbyte_api_client.model.job_config_type import JobConfigType
+from airbyte_api_client.model.pagination import Pagination
 
 globals()["JobConfigType"] = JobConfigType
 globals()["Pagination"] = Pagination
-from openapi_client.model.job_list_request_body import JobListRequestBody
+from airbyte_api_client.model.job_list_request_body import JobListRequestBody
 
 
 class TestJobListRequestBody(unittest.TestCase):

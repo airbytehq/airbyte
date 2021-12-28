@@ -15,8 +15,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.destination_definition_id_request_body import DestinationDefinitionIdRequestBody
+import airbyte_api_client
+from airbyte_api_client.model.destination_definition_id_request_body import (
+    DestinationDefinitionIdRequestBody,
+)
 
 
 class TestDestinationDefinitionIdRequestBody(unittest.TestCase):

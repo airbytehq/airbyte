@@ -15,11 +15,11 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.operation_read import OperationRead
+import airbyte_api_client
+from airbyte_api_client.model.operation_read import OperationRead
 
 globals()["OperationRead"] = OperationRead
-from openapi_client.model.operation_read_list import OperationReadList
+from airbyte_api_client.model.operation_read_list import OperationReadList
 
 
 class TestOperationReadList(unittest.TestCase):

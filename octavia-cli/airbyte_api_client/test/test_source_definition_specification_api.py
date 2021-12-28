@@ -14,8 +14,10 @@
 
 import unittest
 
-import openapi_client
-from openapi_client.api.source_definition_specification_api import SourceDefinitionSpecificationApi  # noqa: E501
+import airbyte_api_client
+from airbyte_api_client.api.source_definition_specification_api import (  # noqa: E501
+    SourceDefinitionSpecificationApi,
+)
 
 
 class TestSourceDefinitionSpecificationApi(unittest.TestCase):

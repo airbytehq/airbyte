@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.attempt_status import AttemptStatus
+import airbyte_api_client
+from airbyte_api_client.model.attempt_status import AttemptStatus
 
 
 class TestAttemptStatus(unittest.TestCase):

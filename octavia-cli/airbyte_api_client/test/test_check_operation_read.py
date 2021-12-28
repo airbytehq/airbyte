@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.check_operation_read import CheckOperationRead
+import airbyte_api_client
+from airbyte_api_client.model.check_operation_read import CheckOperationRead
 
 
 class TestCheckOperationRead(unittest.TestCase):

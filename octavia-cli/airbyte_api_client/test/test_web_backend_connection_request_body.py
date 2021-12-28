@@ -15,8 +15,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.web_backend_connection_request_body import WebBackendConnectionRequestBody
+import airbyte_api_client
+from airbyte_api_client.model.web_backend_connection_request_body import (
+    WebBackendConnectionRequestBody,
+)
 
 
 class TestWebBackendConnectionRequestBody(unittest.TestCase):

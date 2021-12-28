@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.destination_search import DestinationSearch
+import airbyte_api_client
+from airbyte_api_client.model.destination_search import DestinationSearch
 
 
 class TestDestinationSearch(unittest.TestCase):

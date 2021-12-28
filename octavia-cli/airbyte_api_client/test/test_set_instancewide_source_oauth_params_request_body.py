@@ -15,8 +15,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.set_instancewide_source_oauth_params_request_body import SetInstancewideSourceOauthParamsRequestBody
+import airbyte_api_client
+from airbyte_api_client.model.set_instancewide_source_oauth_params_request_body import (
+    SetInstancewideSourceOauthParamsRequestBody,
+)
 
 
 class TestSetInstancewideSourceOauthParamsRequestBody(unittest.TestCase):
