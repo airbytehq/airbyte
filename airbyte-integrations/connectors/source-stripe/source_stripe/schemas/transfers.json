@@ -52,7 +52,7 @@
       "type": ["null", "string"]
     },
     "date": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "livemode": {
       "type": ["null", "boolean"]
@@ -82,7 +82,7 @@
       "type": ["null", "string"]
     },
     "arrival_date": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "description": {
       "type": ["null", "string"]
