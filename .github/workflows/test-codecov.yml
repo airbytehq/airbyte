@@ -3,7 +3,7 @@ on: [push]
 
 defaults:
  run:
-  working-directory: ./airbyte-integration/connectors
+  working-directory: airbyte-integration/connectors
 
 jobs:
   run:
