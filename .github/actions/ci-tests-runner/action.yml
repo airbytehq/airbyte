@@ -58,10 +58,26 @@ runs:
       shell: bash
       id: create-sq-project
       run: |
-        ci_sonar_qube --pull_request_name ${{ inputs.pull-request-id }} --create_module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
+        ci_sonar_qube --pr ${{ inputs.pull-request-id }} --create --module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
+        echo "::set-output name=sq_project_name::=$(ci_sonar_qube --pr ${{ inputs.pull-request-id }} --print_key --module ${{ inputs.module-name }})"
+    - name: SonarQube Scan
+      uses: sonarsource/sonarqube-scan-action@master
+      env:
+        SONAR_TOKEN: ${{ inputs.sonar-token }}
+        SONAR_HOST_URL: ${{ inputs.sonar-host }}
+      with:
+          projectBaseDir: ${{ inputs.module-folder }}
+          args: >
+            -Dsonar.projectKey=${{ steps.create-sq-project.outputs.sq_project_name }}
+            -Dsonar.verbose=true
+            -Dsonar.language=${{ inputs.module-lang }}
+            -Dsonar.sourceEncoding=UTF-8
+
     - name: Remove SonarQube Project
       if: ${{ inputs.remove-sonar-project == true }}
       shell: bash
       id: remove-sq-project
       run: |
-        ci_sonar_qube --pull_request_name ${{ inputs.pull-request-id }} --remove_module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
+        ci_sonar_qube --pr ${{ inputs.pull-request-id }} --remove --module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
+
+

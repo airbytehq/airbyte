@@ -13,37 +13,6 @@ runs:
     - name: Run tests of CI
       shell: bash
       run: |
-          echo "TEEEEEESSSSSTTT ${{ inputs.module-name }} in ${{ inputs.module-folder }}, PR ${{ github.event.pull_request.id }}"
-#      - name: Write Integration Test Credentials for ${{ github.event.inputs.connector }}
-#        run: |
-#          source venv/bin/activate
-#          ci_credentials ${{ github.event.inputs.connector }}
-#        env:
-#          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-#    - name: Checkout repo
-#      if: ${{ env.ENV_NAME == 'github' }}
-#      uses: actions/checkout@v2
-#      with:
-#        fetch-depth: 0
-##      - uses: sonarsource/sonarqube-scan-action@master
-##        with:
-##          projectBaseDir: airbyte-integrations/connectors
-##          # -Dsonar.tests=.
-##          # -Dsonar.test.inclusions=**/unit_tests/**
-##          args: >
-##            -Dsonar.projectKey=airbite-python-connectors
-##            -Dsonar.exclusions=**/*.java
-##            -Dsonar.verbose=true
-##            -Dsonar.language=py
-##            -Dsonar.sourceEncoding=UTF-8
-##        env:
-##          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-##          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-#
-#        # If you wish to fail your job when the Quality Gate is red, uncomment the
-#        # following lines. This would typically be used to fail a deployment.
-#        # - uses: sonarsource/sonarqube-quality-gate-action@master
-#        #   timeout-minutes: 5
-#        #   env:
-#        #    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          echo "make me, ${{ inputs.module-name }} in ${{ inputs.module-folder }}"
+
 #

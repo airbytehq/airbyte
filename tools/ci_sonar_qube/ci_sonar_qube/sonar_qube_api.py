@@ -16,6 +16,7 @@ class SonarQubeApi:
     logger = Logger()
 
     def __init__(self, host: str, token: str, pr_name: str):
+
         self._host = host
         self._token = token
 
@@ -26,6 +27,8 @@ class SonarQubeApi:
         self._pr_id = int(self._pr_id)
         # check token
         # https://sonarcloud.io/web_api/api/authentication/validate
+        if not self._host:
+            return
         resp = self.__get("authentication/validate")
         if not resp["valid"]:
             self.logger.critical("provided token is not valid")
@@ -74,35 +77,40 @@ class SonarQubeApi:
             return None
         return exists_projects[0]
 
-    def create_project(self, project_name: str) -> bool:
-        """https://sonarcloud.io/web_api/api/projects/create"""
+    def prepare_project_settings(self, project_name: str) -> Mapping[str, str]:
         title = re.sub('[:_-]', ' ', project_name).title()
         if self._pr_id:
             title += f"(#{self._pr_id})"
 
         project_name = self.__correct_project_name(project_name)
+        return {
+            "name": title,
+            "project": project_name,
+            "visibility": "private",
+        }
+
+    def create_project(self, project_name: str) -> bool:
+        """https://sonarcloud.io/web_api/api/projects/create"""
+        data = self.prepare_project_settings(project_name)
+        project_name = data["project"]
         exists_project = self.__search_project(project_name)
         if exists_project:
             self.logger.info(f"The project '{project_name}' was created before")
             return True
 
-        body = {
-            "name": title,
-            "project": project_name,
-            "visibility": "private",
-        }
-        self.__post("projects/create", body)
+        self.__post("projects/create", data)
         self.logger.info(f"The project '{project_name}' was created")
         return True
 
     def remove_project(self, project_name: str) -> bool:
         """https://sonarcloud.io/web_api/api/projects/delete"""
+        project_name = self.prepare_project_settings(project_name)["project"]
         exists_project = self.__search_project(project_name)
         if exists_project is None:
             self.logger.info(f"not found the project '{project_name}'")
             return True
         body = {
-            "project": self.__correct_project_name(project_name)
+            "project": project_name
         }
         self.__post("projects/delete", body)
         self.logger.info(f"The project '{project_name}' was removed")
