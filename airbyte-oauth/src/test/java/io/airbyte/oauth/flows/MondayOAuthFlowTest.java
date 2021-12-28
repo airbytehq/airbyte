@@ -4,13 +4,12 @@
 
 package io.airbyte.oauth.flows;
 
-import io.airbyte.oauth.BaseOAuthFlow;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.oauth.BaseOAuthFlow;
 import io.airbyte.oauth.MoreOAuthParameters;
-import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
-import io.airbyte.commons.json.Jsons;
 
 public class MondayOAuthFlowTest extends BaseOAuthFlowTest {
 
