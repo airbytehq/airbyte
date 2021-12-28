@@ -64,6 +64,10 @@ runs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
+    - name: Test
+      shell: bash
+      run: |
+        echo "AAAA: /home/runner/work/airbyte/airbyte/${{ inputs.module-folder }}"
     - name: SonarQube Scan
       # test for Python only
       if: ${{ inputs.module-lang == 'py' }}
