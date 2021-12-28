@@ -39,8 +39,8 @@ jobs:
     - name: Print Settings
       run: |
          echo "Module: ${{ env.MODULE_NAME }}, Lang: ${{ env.MODULE_LANG }}, Folder: ${{ env.MODULE_FOLDER }}"
-         PR=$(IFS='/' read -r -a REF <<< "$GITHUB_REF" && echo ${REF[2]})
-         echo "PR1: ${PR}, PR2: ${{ github.event.pull_request.number }}"
+         # PR=$(IFS='/' read -r -a REF <<< "$GITHUB_REF" && echo ${REF[2]})
+         echo "PR1: ${GITHUB_REF}, PR2: ${{ github.event.pull_request.number }}, PR3: ${{ github.event.number }},"
     - name: Checkout Airbyte
       if: ${{ env.ENV_NAME == 'github' }}
       uses: actions/checkout@v2
