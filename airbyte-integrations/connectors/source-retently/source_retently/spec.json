@@ -32,7 +32,7 @@
               "client_secret": {
                 "title": "Client Secret",
                 "type": "string",
-                "description": "The Cclient Secret of your Retently developer application.",
+                "description": "The Client Secret of your Retently developer application.",
                 "airbyte_secret": true
               },
               "refresh_token": {
