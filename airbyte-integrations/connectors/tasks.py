@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 import os
 import shutil
 import tempfile
@@ -5,9 +8,8 @@ from glob import glob
 from multiprocessing import Pool
 from typing import Any, Dict, Iterable, List, Set
 
-import invoke
 import virtualenv
-from invoke import task
+from invoke import Context, Exit, task
 
 CONNECTORS_DIR: str = os.path.abspath(os.path.curdir)
 
@@ -92,7 +94,7 @@ def _run_single_connector_task(args: Iterable) -> int:
     return _run_task(*args)
 
 
-def _run_task(ctx: invoke.Context, connector_string: str, task_name: str, multi_envs: bool = True, **kwargs: Any) -> int:
+def _run_task(ctx: Context, connector_string: str, task_name: str, multi_envs: bool = True, **kwargs: Any) -> int:
     """
     Run task in its own environment.
     """
@@ -118,8 +120,6 @@ def _run_task(ctx: invoke.Context, connector_string: str, task_name: str, multi_
             for command in commands:
                 result = ctx.run(command, warn=True)
                 if result.return_code:
-                    print(command)
-                    print(result)
                     exit_code = 1
                     break
     finally:
@@ -128,7 +128,7 @@ def _run_task(ctx: invoke.Context, connector_string: str, task_name: str, multi_
     return exit_code
 
 
-def apply_task_for_connectors(ctx: invoke.Context, connectors_names: str, task_name: str, multi_envs: bool = False, **kwargs: Any) -> None:
+def apply_task_for_connectors(ctx: Context, connectors_names: str, task_name: str, multi_envs: bool = False, **kwargs: Any) -> None:
     """
     Run task commands for every connector or for once for a set of connectors, depending on task needs (`multi_envs` param).
     If `multi_envs == True` task for every connector runs in its own subprocess.
@@ -153,7 +153,7 @@ def apply_task_for_connectors(ctx: invoke.Context, connectors_names: str, task_n
         source_path = " ".join([f"{os.path.join(CONNECTORS_DIR, f'source-{connector}')}" for connector in connectors])
         exit_code = _run_task(ctx, source_path, task_name, multi_envs=False, **kwargs)
 
-    raise invoke.Exit(code=exit_code)
+    raise Exit(code=exit_code)
 
 
 ###########################################################################################################################################
@@ -239,7 +239,7 @@ def coverage(ctx, connectors=None):  # type: ignore[no-untyped-def]
     """
     try:
         test(ctx, connectors=connectors)
-    except invoke.Exit as e:
+    except Exit as e:
         if e.code:
             raise
         apply_task_for_connectors(ctx, connectors, "coverage", multi_envs=True)
