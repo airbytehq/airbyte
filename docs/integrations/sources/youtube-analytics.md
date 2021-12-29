@@ -57,4 +57,5 @@ Quota usage is not an issue because data is retrieved once and then filtered, so
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.1 | 2021-12-29 | [9174](https://github.com/airbytehq/airbyte/pull/9174) | Update fields in source-connectors specifications |
 | 0.1.0 | 2021-11-01 | [7407](https://github.com/airbytehq/airbyte/pull/7407) | Initial Release |
