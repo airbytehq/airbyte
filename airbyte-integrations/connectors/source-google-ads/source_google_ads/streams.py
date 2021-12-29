@@ -66,10 +66,11 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
     primary_key = None
     time_unit = "days"
 
-    def __init__(self, start_date: str, conversion_window_days: int, end_date: str=None, **kwargs):
+    def __init__(self, start_date: str, conversion_window_days: int, end_date: str=None, time_zone: [pendulum.timezone, str], **kwargs):
         self.conversion_window_days = conversion_window_days
         self._start_date = start_date
         self._end_date = end_date
+        self.time_zone = time_zone
         super().__init__(**kwargs)
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:

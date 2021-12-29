@@ -56,9 +56,11 @@ class SourceGoogleAds(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         google_api = GoogleAds(credentials=self.get_credentials(config), customer_id=config["customer_id"])
+        account_info = self.get_account_info(google_api)
+        time_zone = self.get_time_zone(account_info)
         end_date = config.get("end_date")
         incremental_stream_config = dict(
-            api=google_api, conversion_window_days=config["conversion_window_days"], start_date=config["start_date"],end_date=end_date
+            api=google_api, conversion_window_days=config["conversion_window_days"], start_date=config["start_date"],end_date=end_date, time_zone=time_zone
         )
 
         custom_query_streams = [
