@@ -16,5 +16,5 @@ ENV APPLICATION destination-oracle
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.1.12
+LABEL io.airbyte.version=0.1.13
 LABEL io.airbyte.name=airbyte/destination-oracle
