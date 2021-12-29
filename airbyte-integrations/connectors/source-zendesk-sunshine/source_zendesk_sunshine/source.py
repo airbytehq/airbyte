@@ -4,7 +4,7 @@
 
 
 import base64
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping, Tuple, Union
 
 import pendulum
 from airbyte_cdk.logger import AirbyteLogger
@@ -12,7 +12,6 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from requests.auth import AuthBase
 
 from .streams import Limits, ObjectRecords, ObjectTypePolicies, ObjectTypes, RelationshipRecords, RelationshipTypes
 
@@ -28,26 +27,13 @@ class ZendeskSunshineAuthenticator:
     """Provides the authentication capabilities for both old and new methods."""
 
     @staticmethod
-    def get_auth(config: Mapping[str, Any]) -> AuthBase:
+    def get_auth(config: Mapping[str, Any]) -> Union[Base64HttpAuthenticator, TokenAuthenticator]:
         credentials = config.get("credentials", {})
-        auth_method = credentials.get("auth_method")
-
-        if auth_method == "api_token" or not credentials:
-            api_token = credentials.get("api_token") or config.get("api_token")
-            if not api_token:
-                raise Exception("No api_token in creds")
-            email = credentials.get("email") or config.get("email")
-            if not email:
-                raise Exception("No email in creds")
-            auth = Base64HttpAuthenticator(auth=(f"{email}/token", api_token))
-
-        elif auth_method == "oauth2.0":
-            auth = TokenAuthenticator(token=credentials["access_token"])
-
-        else:
-            raise Exception(f"Invalid auth method: {auth_method}")
-
-        return auth
+        token = config.get("api_token") or credentials.get("api_token")
+        email = config.get("email") or credentials.get("email")
+        if email and token:
+            return Base64HttpAuthenticator(auth=(f"{email}/token", token))
+        return TokenAuthenticator(token=credentials["access_token"])
 
 
 class SourceZendeskSunshine(AbstractSource):

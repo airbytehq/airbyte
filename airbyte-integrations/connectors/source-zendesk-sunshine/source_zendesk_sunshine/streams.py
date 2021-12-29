@@ -14,7 +14,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class SunshineStream(HttpStream, ABC):
-    primary_key = None
+    primary_key = "id"
     data_field = "data"
     page_size = 100
 
@@ -77,6 +77,8 @@ class IncrementalSunshineStream(SunshineStream, ABC):
 
 
 class ObjectTypes(SunshineStream):
+    primary_key = "key"
+
     def path(self, **kwargs) -> str:
         return "objects/types"
 
@@ -134,6 +136,8 @@ class ObjectRecords(IncrementalSunshineStream):
 
 
 class RelationshipTypes(SunshineStream):
+    primary_key = "key"
+
     def path(self, **kwargs) -> str:
         return "relationships/types"
 
@@ -170,6 +174,8 @@ class CustomObjectEvents(SunshineStream):
 
 
 class ObjectTypePolicies(SunshineStream):
+    primary_key = None
+
     def stream_slices(self, **kwargs):
         parent_stream = ObjectTypes(authenticator=self.authenticator, subdomain=self.subdomain, start_date=self._start_date)
         for obj_type in parent_stream.read_records(sync_mode=SyncMode.full_refresh):
@@ -200,5 +206,7 @@ class Jobs(SunshineStream):
 
 
 class Limits(SunshineStream):
+    primary_key = "key"
+
     def path(self, **kwargs) -> str:
         return "limits"
