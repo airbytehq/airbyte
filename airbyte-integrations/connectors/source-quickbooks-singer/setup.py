@@ -13,20 +13,20 @@ from setuptools.command.develop import develop
 from setuptools.command.egg_info import egg_info
 from setuptools.command.install import install
 
-TMP_DIR = "/tmp/tap-quickbooks"
+TMP_DIR = "/tmp/singer-python"
 
 
 def check_singer():
     if not os.path.exists(TMP_DIR):
-        # check_call(f"git clone -b v5.8.1 https://github.com/singer-io/singer-python.git {TMP_DIR}".split())
-        check_call(f"git clone -b v1.0.5-airbyte https://github.com/airbytehq/tap-quickbooks.git {TMP_DIR}".split())
+        check_call(f"git clone -b v5.12.1 --depth 1 https://github.com/singer-io/singer-python.git {TMP_DIR}".split())
     setup_py = Path(TMP_DIR) / "setup.py"
-    setup_py.write_text(setup_py.read_text().replace("jsonschema==", "jsonschema>="))
+    setup_py.write_text(setup_py.read_text().replace("jsonschema==", "jsonschema~="))
     setup_py.write_text(setup_py.read_text().replace("backoff==", "backoff>="))
-    setup_py.write_text(setup_py.read_text().replace("requests==", "requests>="))
-    check_call(f"pip install -U  {TMP_DIR}".split())
+    # setup_py.write_text(setup_py.read_text().replace("requests==", "backoff>="))
+    #print(setup_py.read_text())
+    #check_call(f"git switch -c v5.12.1".split())
+    #check_call(f"pip install -U {TMP_DIR}".split())
     
-
 
 class CustomInstallCommand(install):
     def run(self):
@@ -54,7 +54,7 @@ class CustomEggInfoCommand(egg_info):
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk",
-    #"tap-quickbooks @ https://github.com/airbytehq//tap-quickbooks/tarball/v1.0.5-airbyte",
+    "tap-quickbooks @ https://github.com/airbytehq//tap-quickbooks/tarball/v1.0.5-airbyte",
 ]
 
 TEST_REQUIREMENTS = [
