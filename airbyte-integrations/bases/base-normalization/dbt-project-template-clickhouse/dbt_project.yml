@@ -62,3 +62,6 @@ models:
 dispatch:
   - macro_namespace: dbt_utils
     search_order: ['airbyte_utils', 'dbt_utils']
+
+vars:
+  destination: "clickhouse"

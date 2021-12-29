@@ -699,6 +699,7 @@ input_data as (
     {{ sql_table_comment }}
 ),
 {{ '{% endif %}' }}
+{{ '{%- if var("destination") == "clickhouse" %}' }}
 input_data_with_active_row_num as (
     select *,
       row_number() over (
@@ -710,6 +711,7 @@ input_data_with_active_row_num as (
       ) as _airbyte_active_row_num
     from input_data
 ),
+{{ '{%- endif %}' }}
 scd_data as (
     -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
     select
@@ -725,7 +727,9 @@ scd_data as (
         {{ field }},
       {%- endfor %}
       {{ cursor_field }} as {{ airbyte_start_at }},
-      {{ lag_begin }}({{ cursor_field }}) over (
+      {{ '{%- if var("destination") == "clickhouse" %}' }}
+        case when _airbyte_active_row_num = 1{{ cdc_active_row }} then 1 else 0 end as {{ active_row }},
+        {{ lag_begin }}({{ cursor_field }}) over (
         partition by {{ primary_key_partition | join(", ") }}
         order by
             {{ cursor_field }} {{ order_null }},
@@ -733,11 +737,26 @@ scd_data as (
             {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
         {{ lag_end }}
       ) as {{ airbyte_end_at }},
-      case when _airbyte_active_row_num = 1{{ cdc_active_row }} then 1 else 0 end as {{ active_row }},
+      {{ '{%- else %}' }}
+        lag({{ cursor_field }}) over (
+        partition by {{ primary_key_partition | join(", ") }}
+        order by
+            {{ cursor_field }} {{ order_null }},
+            {{ cursor_field }} desc,
+            {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
+      ) as {{ airbyte_end_at }},
+        case when row_number() over (
+        partition by {{ primary_key_partition | join(", ") }}
+        order by
+            {{ cursor_field }} {{ order_null }},
+            {{ cursor_field }} desc,
+            {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
+      ) = 1{{ cdc_active_row }} then 1 else 0 end as {{ active_row }},
+      {{ '{%- endif %}' }}
       {{ col_ab_id }},
       {{ col_emitted_at }},
       {{ hash_id }}
-    from input_data_with_active_row_num
+    from {{ input_data_table }}
 ),
 dedup_data as (
     select
@@ -784,11 +803,13 @@ from dedup_data where {{ airbyte_row_num }} = 1
 
         lag_begin = "lag"
         lag_end = ""
+        input_data_table = "input_data"
         if self.destination_type == DestinationType.CLICKHOUSE:
             # ClickHouse doesn't support lag() yet, this is a workaround solution
             # Ref: https://clickhouse.com/docs/en/sql-reference/window-functions/
             lag_begin = "anyOrNull"
             lag_end = "ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING"
+            input_data_table = "input_data_with_active_row_num"
 
         enable_left_join_null = ""
         cast_begin = "cast("
@@ -859,6 +880,7 @@ from dedup_data where {{ airbyte_row_num }} = 1
             lag_begin=lag_begin,
             lag_end=lag_end,
             enable_left_join_null=enable_left_join_null,
+            input_data_table=input_data_table,
         )
         return sql
 
