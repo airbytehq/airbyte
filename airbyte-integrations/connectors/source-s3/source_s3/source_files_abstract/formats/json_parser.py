@@ -46,7 +46,7 @@ class JsonParser(AbstractFileParser):
         """
         schema = self.json_schema_to_dtype_schema(self._master_schema) if self._master_schema is not None else None
         return {
-            **{"dtype": schema},
+            "dtype": schema,
             "convert_dates": self._format.get("convert_dates", True),
             "keep_default_dates": self._format.get("keep_default_dates", True),
             "orient": self._format.get("orient", "columns"),
@@ -59,7 +59,7 @@ class JsonParser(AbstractFileParser):
         Convert Table Schema types to Json types
         """
         if needed_table_schema_type not in JSON_TYPES:
-            raise TypeError(f"incorrect Table Schema type: {needed_table_schema_type}")
+            raise TypeError(f"Incorrect Table Schema type: {needed_table_schema_type}")
         else:
             json_type, _ = JSON_TYPES[needed_table_schema_type]
             return json_type
@@ -70,9 +70,9 @@ class JsonParser(AbstractFileParser):
         if field_value is None:
             return None
         if table_schema_type in JSON_TYPES:
-            _, func = JSON_TYPES[table_schema_type]
-            return func(field_value) if func else field_value
-        raise TypeError(f"unsupported field type: {table_schema_type}, value: {field_value}")
+            _, conversion_func = JSON_TYPES[table_schema_type]
+            return conversion_func(field_value) if conversion_func else field_value
+        raise TypeError(f"Unsupported field type: {table_schema_type}, value: {field_value}")
 
     def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> dict:
         """
@@ -104,9 +104,9 @@ class JsonParser(AbstractFileParser):
 
         is_empty = True
         for rows in streaming_reader:
-            if len(rows) > 0:
+            if is_empty and len(rows) > 0:
                 is_empty = False
             for row in rows.to_dict(orient="records"):
                 yield row
         if is_empty:
-            raise OSError("empty JSON file")
+            raise OSError("Empty JSON file")

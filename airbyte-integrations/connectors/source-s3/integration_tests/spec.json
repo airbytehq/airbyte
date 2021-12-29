@@ -136,7 +136,7 @@
           },
           {
             "title": "json",
-            "description": "This connector utilises <a href=\"https://pandas.pydata.org/docs/reference/api/pandas.io.json.read_json.html\" target=\"_blank\">Pandas</a> for JSON parsing.",
+            "description": "This connector uses <a href=\"https://pandas.pydata.org/docs/reference/api/pandas.io.json.read_json.html\" target=\"_blank\">Pandas</a> for JSON parsing.",
             "type": "object",
             "properties": {
               "filetype": {

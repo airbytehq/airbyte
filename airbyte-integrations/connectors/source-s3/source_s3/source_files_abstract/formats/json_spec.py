@@ -16,7 +16,8 @@ class JsonFormat(BaseModel):
 
     orient: str = Field(
         default="columns",
-        description="Indication of expected JSON string format. Compatible JSON strings can be produced by to_json() with a corresponding orient value. Allowed values are {'split','records','index', 'columns','values', 'table'}",
+        description='The expected JSON string format. Details can be found in the <a href="https://pandas.pydata.org/docs/reference/api/pandas.read_json.html">Pandas documentation</a>',
+        examples=["split", "records", "index", "columns", "values", "table"],
     )
 
     convert_dates: Union[bool, List[str]] = Field(
@@ -44,6 +45,7 @@ class JsonFormat(BaseModel):
     compression: str = Field(
         default="infer",
         description='For on-the-fly decompression of on-disk data. If "infer", then use gzip, bz2, zip or xz if path_or_buf is a string ending in ".gz", ".bz2", ".zip", or "xz", respectively, and no decompression otherwise. If using "zip", the ZIP file must contain only one data file to be read in. Set to None for no decompression.',
+        examples=[".gz", ".bz2", ".zip", "xz"],
     )
 
     encoding: str = Field(default="utf8", description="The encoding to use to decode py3 bytes.")
