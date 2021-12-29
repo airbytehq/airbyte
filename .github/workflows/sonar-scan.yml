@@ -11,7 +11,7 @@ jobs:
     steps:
     - id: detect-changed-modules
       run: |
-         CHANGES="[{\"module\":\"connectors/source-salesforces\",\"lang\":\"py\", \"folder\":\"airbyte-integrations/connectors/source-salesforces/\"}, {\"module\":\"connectors/source-s3\",\"lang\":\"py\", \"folder\":\"airbyte-integrations/connectors/source-s3/\"},{\"module\":\"connectors/destination-s3\",\"lang\":\"java\", \"folder\":\"airbyte-integrations/connectors/destination-s3/\"}]"
+         CHANGES="[{\"module\":\"connectors/source-file\",\"lang\":\"py\", \"folder\":\"airbyte-integrations/connectors/source-file/\"}, {\"module\":\"connectors/source-s3\",\"lang\":\"py\", \"folder\":\"airbyte-integrations/connectors/source-s3/\"},{\"module\":\"connectors/destination-s3\",\"lang\":\"java\", \"folder\":\"airbyte-integrations/connectors/destination-s3/\"}]"
          echo "::set-output name=changes::{ \"include\": $CHANGES }"
 
   run-ci-tests:
