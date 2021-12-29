@@ -3,5 +3,9 @@
   "name": "Greenhouse",
   "dockerRepository": "airbyte/source-greenhouse",
   "dockerImageTag": "0.2.0",
-  "documentationUrl": "https://https://docs.airbyte.io/integrations/sources/greenhouse"
+  "documentationUrl": "https://https://docs.airbyte.io/integrations/sources/greenhouse",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.io/integrations/sources/greenhouse",
+    "connectionSpecification": {}
+  }
 }

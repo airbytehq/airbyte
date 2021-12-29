@@ -10,6 +10,145 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on.
 
+## 11/25/2021
+
+New sources:
+
+* [**Airtable**](https://docs.airbyte.io/integrations/sources/airtable)
+* [**Notion**](https://docs.airbyte.io/integrations/sources/notion)
+* [**Pardot**](https://docs.airbyte.io/integrations/sources/pardot)
+* [**Notion**](https://docs.airbyte.io/integrations/sources/linnworks)
+* [**YouTube Analytics**](https://docs.airbyte.io/integrations/sources/youtube-analytics)
+
+New features:
+
+**Exchange Rates** Source: add `ignore_weekends` option.
+**Facebook** Source: add the videos stream.
+**Freshdesk** Source: removed the limitation in streams pagination.
+**Jira** Source: add option to render fields in HTML format. 
+**MongoDB v2** Source: improve read performance. 
+**Pipedrive** Source: specify schema for "persons" stream. 
+**PostgreSQL** Source: exclude tables on which user doesn't have select privileges.
+**SurveyMonkey** Source: improve connection check.
+
+## 11/17/2021
+
+New destination:
+
+* [**ScyllaDB**](https://docs.airbyte.io/integrations/destinations/scylla)
+
+New sources:
+
+* [**Azure Table Storage**](https://docs.airbyte.io/integrations/sources/azure-table)
+* [**Linnworks**](https://docs.airbyte.io/integrations/sources/linnworks)
+
+New features:
+
+**MySQL** Source: Now has basic performance tests. 
+**Salesforce** Source: We now automatically transform and handle incorrect data for the anyType and calculated types.
+
+## 11/11/2021
+
+New destinations:
+
+* [**Cassandra**](https://docs.airbyte.io/integrations/destinations/cassandra)
+* [**Pulsar**](https://docs.airbyte.io/integrations/destinations/pulsar)
+
+New sources:
+
+* [**Confluence**](https://docs.airbyte.io/integrations/sources/confluence)
+* [**Monday**](https://docs.airbyte.io/integrations/sources/monday)
+* [**Commerce Tools**](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-commercetools)
+* [**Pinterest**](https://docs.airbyte.io/integrations/sources/pinterest)
+
+New features:
+
+**Shopify** Source: Now supports the FulfillmentOrders and Fulfillments streams.
+**Greenhouse** Source: Now supports the Demographics stream.
+**Recharge** Source: Broken requests should now be re-requested with improved backoff.
+**Stripe** Source: Now supports the checkout_sessions, checkout_sessions_line_item, and promotion_codes streams.
+**Db2** Source: Now supports SSL.
+
+## 11/3/2021
+
+New destination: 
+
+* [**Elasticsearch**](https://docs.airbyte.io/integrations/destinations/elasticsearch)
+
+New sources: 
+
+* [**Salesloft**](https://docs.airbyte.io/integrations/sources/salesloft)
+* [**OneSignal**](https://docs.airbyte.io/integrations/sources/onesignal)
+* [**Strava**](https://docs.airbyte.io/integrations/sources/strava)
+* [**Lemlist**](https://docs.airbyte.io/integrations/sources/lemlist)
+* [**Amazon SQS**](https://docs.airbyte.io/integrations/sources/amazon-sqs)
+* [**Freshservices**](https://docs.airbyte.io/integrations/source/freshservices)
+* [**Freshsales**](https://docs.airbyte.io/integrations/sources/freshsales)
+* [**Appsflyer**](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-appsflyer)
+* [**Paystack**](https://docs.airbyte.io/integrations/sources/paystack)
+* [**Sentry**](https://docs.airbyte.io/integrations/sources/sentry)
+* [**Retently**](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-retently)
+* [**Delighted!**](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-delighted)
+
+New features:
+
+**BigQuery** Destination: You can now run transformations in batches, preventing queries from hitting BigQuery limits. (contributed by @Andrés Bravo)
+**S3** Source: Memory and Performance optimizations, also some fancy new PyArrow CSV configuration options.
+**Zuora** Source: Now supports Unlimited as an option for the Data Query Live API.
+**Clickhouse** Source: Now supports SSL and connection via SSH tunneling.
+
+## 10/20/2021
+
+New source:
+* [**WooCommerce**](https://docs.airbyte.io/integrations/sources/woocommerce)
+
+New feature:
+**MSSQL** destination: Now supports basic normalization
+
+## 9/29/2021
+
+New sources:
+
+* [**LinkedIn Ads**](https://docs.airbyte.io/integrations/sources/linkedin-ads)
+* [**Kafka**](https://docs.airbyte.io/integrations/sources/kafka)
+* [**Lever Hiring**](https://docs.airbyte.io/integrations/sources/lever-hiring)
+
+New features:
+
+**MySQL** destination: Now supports connection via TLS/SSL 
+**BigQuery** (denormalized) destination: Supports reading BigQuery types such as date by reading the format field (contributed by @Nicolas Moreau)
+**Hubspot** source: Added contacts associations to the deals stream.
+**GitHub** source: Now supports pulling commits from user-specified branches.
+**Google Search Console** source: Now accepts admin email as input when using a service account key.
+**Greenhouse** source: Now identifies API streams it has access to if permissions are limited.
+**Marketo** source: Now Airbyte native.
+**S3** source: Now supports any source that conforms to the S3 protocol (Non-AWS S3).
+**Shopify** source: Now reports pre_tax_price on the line_items stream if you have Shopify Plus.
+**Stripe** source: Now actually uses the mandatory start_date config field for incremental syncs.
+
+## 9/16/2021
+
+New destinations: 
+
+* [**Databricks**](https://docs.airbyte.io/integrations/destinations/databricks)
+
+New sources: 
+
+* [**Close.com**](https://docs.airbyte.io/integrations/sources/close-com)
+* [**Google Search Console**](https://docs.airbyte.io/integrations/sources/google-search-console)
+
+New features: 
+
+**Google Ads** source: You can now specify user-specified queries in GAQL.
+**GitHub** source: All streams with a parent stream use cached parent stream data when possible.
+**Shopify** source: Substantial performance improvements to the incremental sync mode.
+**Stripe** source: Now supports the PaymentIntents stream.
+**Pipedrive** source: Now supports the Organizations stream.
+**Sendgrid** source: Now supports the SingleSendStats stream.
+**Bing Ads** source: Now supports the Report stream.
+**GitHub** source: Now supports the Reactions stream.
+**MongoDB** source: Now Airbyte native!
+
 ## 9/9/2021
 
 New source:
@@ -69,7 +208,7 @@ New features:
 
 * **GitHub** source: Add support for rotating through multiple API tokens.
 * **Google Ads** source: Added `UserLocationReport` stream.
-* **Cart** source: Added the `order_items` stream.
+* **Cart.com** source: Added the `order_items` stream.
 
 Bug fixes:
 
@@ -148,7 +287,7 @@ New sources:
 * [**SAP Business One**](https://docs.airbyte.io/integrations/sources/sap-business-one)
 * [**Spree Commerce**](https://docs.airbyte.io/integrations/sources/spree-commerce)
 * [**Sugar CRM**](https://docs.airbyte.io/integrations/sources/sugar-crm)
-* [**Woo Commerce**](https://docs.airbyte.io/integrations/sources/woo-commerce)
+* [**WooCommerce**](https://docs.airbyte.io/integrations/sources/woocommerce)
 * [**Wordpress**](https://docs.airbyte.io/integrations/sources/wordpress)
 * [**Zencart**](https://docs.airbyte.io/integrations/sources/zencart)
 

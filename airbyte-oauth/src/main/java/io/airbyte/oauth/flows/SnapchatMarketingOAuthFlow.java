@@ -4,6 +4,7 @@
 
 package io.airbyte.oauth.flows;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -21,8 +22,6 @@ import org.apache.http.client.utils.URIBuilder;
  * Following docs from https://marketingapi.snapchat.com/docs/#authentication
  */
 public class SnapchatMarketingOAuthFlow extends BaseOAuth2Flow {
-  // Clickable link for IDE
-  // https://help.salesforce.com/s/articleView?language=en_US&id=sf.remoteaccess_oauth_web_server_flow.htm
 
   private static final String AUTHORIZE_URL = "https://accounts.snapchat.com/login/oauth2/authorize";
   private static final String ACCESS_TOKEN_URL = "https://accounts.snapchat.com/login/oauth2/access_token";
@@ -38,7 +37,11 @@ public class SnapchatMarketingOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId,
+                                    final String clientId,
+                                    final String redirectUrl,
+                                    final JsonNode inputOAuthConfiguration)
+      throws IOException {
     try {
       return new URIBuilder(AUTHORIZE_URL)
           .addParameter("client_id", clientId)
@@ -53,7 +56,7 @@ public class SnapchatMarketingOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected String getAccessTokenUrl() {
+  protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
     return ACCESS_TOKEN_URL;
   }
 
@@ -69,7 +72,7 @@ public class SnapchatMarketingOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected List<String> getDefaultOAuthOutputPath() {
+  public List<String> getDefaultOAuthOutputPath() {
     return List.of();
   }
 

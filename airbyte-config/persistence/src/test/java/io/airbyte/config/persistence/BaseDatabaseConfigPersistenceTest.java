@@ -15,14 +15,17 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.db.Database;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jooq.Record1;
 import org.jooq.Result;
+import org.jooq.Table;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -88,6 +91,13 @@ public abstract class BaseDatabaseConfigPersistenceTest {
     configPersistence.writeConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId().toString(), destination);
   }
 
+  protected static void writeDestinations(final ConfigPersistence configPersistence, final List<StandardDestinationDefinition> destinations)
+      throws Exception {
+    final Map<String, StandardDestinationDefinition> destinationsByID = destinations.stream()
+        .collect(Collectors.toMap(destinationDefinition -> destinationDefinition.getDestinationDefinitionId().toString(), Function.identity()));
+    configPersistence.writeConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationsByID);
+  }
+
   protected static void deleteDestination(final ConfigPersistence configPersistence, final StandardDestinationDefinition destination)
       throws Exception {
     configPersistence.deleteConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId().toString());
@@ -105,8 +115,8 @@ public abstract class BaseDatabaseConfigPersistenceTest {
     assertEquals(getMapWithSet(expected), getMapWithSet(actual));
   }
 
-  protected void assertRecordCount(final int expectedCount) throws Exception {
-    final Result<Record1<Integer>> recordCount = database.query(ctx -> ctx.select(count(asterisk())).from(table("airbyte_configs")).fetch());
+  protected void assertRecordCount(final int expectedCount, final Table table) throws Exception {
+    final Result<Record1<Integer>> recordCount = database.query(ctx -> ctx.select(count(asterisk())).from(table).fetch());
     assertEquals(expectedCount, recordCount.get(0).value1());
   }
 

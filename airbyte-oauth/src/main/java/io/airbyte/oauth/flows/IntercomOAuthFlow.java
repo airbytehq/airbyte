@@ -23,17 +23,21 @@ public class IntercomOAuthFlow extends BaseOAuth2Flow {
   private static final String AUTHORIZE_URL = "https://app.intercom.com/a/oauth/connect";
   private static final String ACCESS_TOKEN_URL = "https://api.intercom.io/auth/eagle/token";
 
-  public IntercomOAuthFlow(ConfigRepository configRepository, HttpClient httpClient) {
+  public IntercomOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
   }
 
   @VisibleForTesting
-  public IntercomOAuthFlow(ConfigRepository configRepository, final HttpClient httpClient, Supplier<String> stateSupplier) {
+  public IntercomOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier);
   }
 
   @Override
-  protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId,
+                                    final String clientId,
+                                    final String redirectUrl,
+                                    final JsonNode inputOAuthConfiguration)
+      throws IOException {
     try {
       return new URIBuilder(AUTHORIZE_URL)
           .addParameter("client_id", clientId)
@@ -41,13 +45,13 @@ public class IntercomOAuthFlow extends BaseOAuth2Flow {
           .addParameter("response_type", "code")
           .addParameter("state", getState())
           .build().toString();
-    } catch (URISyntaxException e) {
+    } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
     }
   }
 
   @Override
-  protected String getAccessTokenUrl() {
+  protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
     return ACCESS_TOKEN_URL;
   }
 
@@ -60,7 +64,7 @@ public class IntercomOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected List<String> getDefaultOAuthOutputPath() {
+  public List<String> getDefaultOAuthOutputPath() {
     return List.of();
   }
 

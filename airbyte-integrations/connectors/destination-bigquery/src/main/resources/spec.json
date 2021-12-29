@@ -44,27 +44,29 @@
           "asia-northeast2",
           "asia-northeast3",
           "asia-south1",
+          "asia-south2",
           "asia-southeast1",
           "asia-southeast2",
           "australia-southeast1",
-          "europe-central1",
+          "australia-southeast2",
           "europe-central2",
           "europe-north1",
           "europe-west1",
           "europe-west2",
           "europe-west3",
           "europe-west4",
-          "europe-west5",
           "europe-west6",
           "northamerica-northeast1",
+          "northamerica-northeast2",
           "southamerica-east1",
+          "southamerica-west1",
           "us-central1",
           "us-east1",
           "us-east4",
-          "us-west-1",
-          "us-west-2",
-          "us-west-3",
-          "us-west-4"
+          "us-west1",
+          "us-west2",
+          "us-west3",
+          "us-west4"
         ]
       },
       "credentials_json": {
@@ -75,7 +77,7 @@
       },
       "transformation_priority": {
         "type": "string",
-        "description": "When running custom transformations or Basic normalization, running queries on interactive mode can hit BQ limits, choosing batch will solve those limitss.",
+        "description": "When running custom transformations or Basic normalization, running queries on interactive mode can hit BQ limits, choosing batch will solve those limits.",
         "title": "Transformation Query Run Type",
         "default": "interactive",
         "enum": ["interactive", "batch"]
@@ -122,6 +124,15 @@
                 "description": "Directory under the GCS bucket where data will be written.",
                 "type": "string",
                 "examples": ["data_sync/test"]
+              },
+              "part_size_mb": {
+                "title": "Block Size (MB) for GCS multipart upload",
+                "description": "This is the size of a \"Part\" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes more memory. Allowed values: min=5MB, max=525MB Default: 5MB.",
+                "type": "integer",
+                "default": 5,
+                "minimum": 5,
+                "maximum": 525,
+                "examples": [5]
               },
               "keep_files_in_gcs-bucket": {
                 "type": "string",

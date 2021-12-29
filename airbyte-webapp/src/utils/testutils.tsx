@@ -1,12 +1,13 @@
 import React from "react";
 import { render as rtlRender, RenderResult } from "@testing-library/react";
 import { ThemeProvider } from "styled-components";
-import { History, createMemoryHistory } from "history";
-import { Router } from "react-router-dom";
+import { History } from "history";
+import { MemoryRouter } from "react-router-dom";
 import { IntlProvider } from "react-intl";
 
 import en from "locales/en.json";
-import { FeatureService } from "../hooks/services/Feature";
+import { FeatureService } from "hooks/services/Feature";
+import { ConfigServiceProvider, defaultConfig } from "config";
 
 export type RenderOptions = {
   // optionally pass in a history object to control routes in the test
@@ -26,16 +27,11 @@ export function render(
     return (
       <ThemeProvider theme={{}}>
         <IntlProvider locale="en" messages={en}>
-          <FeatureService>
-            <Router
-              history={
-                (renderOptions && renderOptions.history) ||
-                createMemoryHistory()
-              }
-            >
-              {children}
-            </Router>
-          </FeatureService>
+          <ConfigServiceProvider defaultConfig={defaultConfig}>
+            <FeatureService>
+              <MemoryRouter>{children}</MemoryRouter>
+            </FeatureService>
+          </ConfigServiceProvider>
         </IntlProvider>
       </ThemeProvider>
     );

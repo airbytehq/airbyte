@@ -41,7 +41,7 @@ public class QuickbooksOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest
   }
 
   @Override
-  protected OAuthFlowImplementation getFlowImplementation(ConfigRepository configRepository, HttpClient httpClient) {
+  protected OAuthFlowImplementation getFlowImplementation(final ConfigRepository configRepository, final HttpClient httpClient) {
     return new QuickbooksOAuthFlow(configRepository, httpClient);
   }
 
@@ -61,7 +61,8 @@ public class QuickbooksOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest
             .put("client_id", credentialsJson.get("client_id").asText())
             .put("client_secret", credentialsJson.get("client_secret").asText())
             .build())))));
-    final String url = getFlowImplementation(configRepository, httpClient).getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String url =
+        getFlowImplementation(configRepository, httpClient).getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null);
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
     // access...

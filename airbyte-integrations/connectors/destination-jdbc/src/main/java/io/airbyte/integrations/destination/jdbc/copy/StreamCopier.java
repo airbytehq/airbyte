@@ -61,7 +61,8 @@ public interface StreamCopier {
   /**
    * Creates the staging file and all the necessary items to write data to this file.
    *
-   * @return the name of the staging file
+   * @return A string that unqiuely identifies the file. E.g. the filename, or a unique suffix that is
+   *         appended to a shared filename prefix
    */
   String prepareStagingFile();
 

@@ -34,7 +34,11 @@ public abstract class GoogleOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId,
+                                    final String clientId,
+                                    final String redirectUrl,
+                                    final JsonNode inputOAuthConfiguration)
+      throws IOException {
     final URIBuilder builder = new URIBuilder()
         .setScheme("https")
         .setHost("accounts.google.com")
@@ -63,7 +67,7 @@ public abstract class GoogleOAuthFlow extends BaseOAuth2Flow {
   protected abstract String getScope();
 
   @Override
-  protected String getAccessTokenUrl() {
+  protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
     return ACCESS_TOKEN_URL;
   }
 
