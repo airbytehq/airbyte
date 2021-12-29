@@ -80,7 +80,13 @@ class JsonParser(AbstractFileParser):
         """
         reader = read_json(file, **self._read_options(), **self._parse_options())
 
-        schema = build_table_schema(reader.read())
+        is_lines_true = self._read_options()["lines"]
+        if is_lines_true:
+            dataframe = reader.read()
+        else:
+            dataframe = reader
+
+        schema = build_table_schema(dataframe)
         # remove the first field which is the index
         schema_fields = schema["fields"][1:]
         schema_dict = {field["name"]: self.parse_field_type(field["type"]) for field in schema_fields}
@@ -96,17 +102,24 @@ class JsonParser(AbstractFileParser):
         https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html#reading-json
         Pandas reads streaming batches from a JSON line-delimited file
         """
-        streaming_reader = read_json(
+        reader = read_json(
             file,
             **self._read_options(),
             **self._parse_options(),
         )
 
-        is_empty = True
-        for rows in streaming_reader:
-            if is_empty and len(rows) > 0:
-                is_empty = False
-            for row in rows.to_dict(orient="records"):
+        is_lines_true = self._read_options()["lines"]
+        if is_lines_true:
+            is_empty = True
+            for rows in reader:
+                if is_empty and len(rows) > 0:
+                    is_empty = False
+                for row in rows.to_dict(orient="records"):
+                    yield row
+            if is_empty:
+                raise OSError("Empty JSON file")
+        else:
+            if len(reader) == 0:
+                raise OSError("Empty JSON file")
+            for row in reader.to_dict(orient="records"):
                 yield row
-        if is_empty:
-            raise OSError("Empty JSON file")

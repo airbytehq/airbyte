@@ -401,6 +401,56 @@ test_files: List[Mapping[str, Any]] = [
         "line_checks": {},
         "fails": [],
     },
+    {
+        # tests multiline json file
+        "test_alias": "multiline json file",
+        "AbstractFileParser": JsonParser(
+            format={"filetype": "json", "lines": False, "chunk_size": None},
+            master_schema={
+                "id": "integer",
+                "name": "string",
+                "valid": "boolean",
+                "code": "integer",
+                "degrees": "number",
+                "birthday": "string",
+                "last_seen": "string",
+            },
+        ),
+        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_10_multiline.json"),
+        "num_records": 8,
+        "inferred_schema": {
+            "id": "integer",
+            "name": "string",
+            "valid": "boolean",
+            "code": "integer",
+            "degrees": "number",
+            "birthday": "string",
+            "last_seen": "string",
+        },
+        "line_checks": {},
+        "fails": [],
+    },
+    {
+        # tests multiline json file
+        "test_alias": "multiline json file",
+        "AbstractFileParser": JsonParser(
+            format={"filetype": "json", "lines": False, "chunk_size": None},
+            master_schema={
+                "id": "integer",
+                "name": "string",
+                "valid": "boolean",
+                "code": "integer",
+                "degrees": "number",
+                "birthday": "string",
+                "last_seen": "string",
+            },
+        ),
+        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_6_empty.jsonl"),
+        "num_records": 0,
+        "inferred_schema": {},
+        "line_checks": {},
+        "fails": ["test_get_inferred_schema", "test_stream_records"],
+    },
 ]
 
 
