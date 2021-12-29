@@ -42,7 +42,7 @@ public class AzureBlobStorageJsonlWriter extends BaseAzureBlobStorageWriter impl
                                      final boolean isNewlyCreatedBlob) {
     super(config, appendBlobClient, configuredStream);
     // at this moment we already receive appendBlobClient initialized
-    this.blobOutputStream = mew BufferedOutputStream(appendBlobClient.getBlobOutputStream(), config.getOutputStreamBufferSize());
+    this.blobOutputStream = new BufferedOutputStream(appendBlobClient.getBlobOutputStream(), config.getOutputStreamBufferSize());
     this.printWriter = new PrintWriter(blobOutputStream, false, StandardCharsets.UTF_8);
   }
 
