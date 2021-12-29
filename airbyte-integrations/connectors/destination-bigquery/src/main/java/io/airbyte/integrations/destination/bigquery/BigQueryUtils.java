@@ -49,7 +49,7 @@ public class BigQueryUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUtils.class);
   private static final String BIG_QUERY_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss.SSSSSS";
-  private static final Pattern datasetIdPattern = Pattern.compile("^(([a-z]([a-z0-9\\-]*[a-z0-9])?):)?([a-zA-Z0-9_]+)$");
+  private static final Pattern DATASET_ID_PATTERN = Pattern.compile("^(([a-z]([a-z0-9\\-]*[a-z0-9])?):)?([a-zA-Z0-9_]+)$");
 
   public static ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
     final JobId jobId = JobId.of(UUID.randomUUID().toString());
@@ -166,7 +166,7 @@ public class BigQueryUtils {
 
   public static String getDatasetId(final JsonNode config) {
     String datasetId = config.get(BigQueryConsts.CONFIG_DATASET_ID).asText();
-    Matcher matcher = datasetIdPattern.matcher(datasetId);
+    Matcher matcher = DATASET_ID_PATTERN.matcher(datasetId);
 
     if (matcher.matches()) {
       if (!isNull(matcher.group(1))) {
