@@ -20,7 +20,7 @@ def check_singer():
     if not os.path.exists(TMP_DIR):
         check_call(f"git clone -b v5.12.1 --depth 1 https://github.com/singer-io/singer-python.git {TMP_DIR}".split())
     setup_py = Path(TMP_DIR) / "setup.py"
-    setup_py.write_text(setup_py.read_text().replace("jsonschema==", "jsonschema>="))
+    setup_py.write_text(setup_py.read_text().replace("jsonschema==2.6.0", "jsonschema==3.2.0"))
     setup_py.write_text(setup_py.read_text().replace("backoff==", "backoff>="))
 
 
