@@ -1,16 +1,15 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from urllib.parse import parse_qs, urlparse
 
 import requests
-from urllib.parse import (
-    urlparse,
-    parse_qs
-)
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+
 
 # Basic full refresh stream
 class HellobatonStream(HttpStream, ABC):
@@ -27,15 +26,14 @@ class HellobatonStream(HttpStream, ABC):
         super().__init__(**kwargs)
         self.api_key = api_key
         self.company = company
-    
+
     @property
     def url_base(self) -> str:
         """
         Using this method instead of class init to dynamically generate base url based on config
         """
-        company=self.company
+        company = self.company
         return f"https://{company}.hellobaton.com/api/"
-
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -43,12 +41,12 @@ class HellobatonStream(HttpStream, ABC):
         """
 
         payload = response.json()
-        result_count = payload['count']
+        result_count = payload["count"]
 
         if result_count > self.page_size:
-            query_string = urlparse(payload['next']).query
-            next_page_token = parse_qs(query_string).get('page', None)
-        
+            query_string = urlparse(payload["next"]).query
+            next_page_token = parse_qs(query_string).get("page", None)
+
         else:
             next_page_token = None
 
@@ -61,11 +59,7 @@ class HellobatonStream(HttpStream, ABC):
         API request params which expect an api key for auth and any pagination is done using defined in the next_page_token method
         """
 
-        params = {
-            'api_key': self.api_key,
-            'page_size': self.page_size,
-            'page': next_page_token
-        }
+        params = {"api_key": self.api_key, "page_size": self.page_size, "page": next_page_token}
 
         return params
 
@@ -74,7 +68,7 @@ class HellobatonStream(HttpStream, ABC):
         May want to add logic here to unpack foreign keys from urls but tbd
         For now each response record is accessed through the results key in the JSON payload
         """
-        for results in response.json()['results']:
+        for results in response.json()["results"]:
             yield results
 
 
@@ -86,8 +80,9 @@ class Activity(HellobatonStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-  
+
         return "activity"
+
 
 class Companies(HellobatonStream):
     """
@@ -97,8 +92,9 @@ class Companies(HellobatonStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-  
+
         return "companies"
+
 
 class Milestones(HellobatonStream):
     """
@@ -108,8 +104,9 @@ class Milestones(HellobatonStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-    
+
         return "milestones"
+
 
 class Phases(HellobatonStream):
     """
@@ -119,7 +116,7 @@ class Phases(HellobatonStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-    
+
         return "phases"
 
 
@@ -131,8 +128,9 @@ class ProjectAttachments(HellobatonStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-    
+
         return "project_attachments"
+
 
 class Projects(HellobatonStream):
     """
@@ -142,8 +140,9 @@ class Projects(HellobatonStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-    
+
         return "projects"
+
 
 class Tasks(HellobatonStream):
     """
@@ -153,8 +152,9 @@ class Tasks(HellobatonStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-    
+
         return "tasks"
+
 
 class TaskAttachments(HellobatonStream):
     """
@@ -164,7 +164,7 @@ class TaskAttachments(HellobatonStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-    
+
         return "task_attachments"
 
 
@@ -176,8 +176,9 @@ class Templates(HellobatonStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-    
+
         return "templates"
+
 
 class TimeEntries(HellobatonStream):
     """
@@ -187,8 +188,9 @@ class TimeEntries(HellobatonStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-    
+
         return "time_entries"
+
 
 class Users(HellobatonStream):
     """
@@ -198,5 +200,5 @@ class Users(HellobatonStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-    
+
         return "users"
