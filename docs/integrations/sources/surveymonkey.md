@@ -55,6 +55,7 @@ Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-start
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.5 | 2021-12-28 | [8628](https://github.com/airbytehq/airbyte/pull/8628) | Update fields in source-connectors specifications |
 | 0.1.4 | 2021-11-11 | [7868](https://github.com/airbytehq/airbyte/pull/7868) | Improve 'check' using '/users/me' API call |
 | 0.1.3 | 2021-11-01 | [7433](https://github.com/airbytehq/airbyte/pull/7433) | Remove unsused oAuth flow parameters |
 | 0.1.2 | 2021-10-27 | [7433](https://github.com/airbytehq/airbyte/pull/7433) | Add OAuth support |

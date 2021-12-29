@@ -12,6 +12,7 @@ data
 .settings
 .tool-versions
 .vscode
+**/gmon.out
 
 # Logs
 acceptance_tests_logs/

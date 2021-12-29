@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "WarehouseTransactionPriceCalcId": {
+      "type": "integer"
+    },
+    "NumUnits": {
+      "type": "number"
+    },
+    "ChargeLabel": {
+      "type": "string"
+    },
+    "UnitDescription": {
+      "type": "string"
+    },
+    "ChargePerUnit": {
+      "type": "number"
+    },
+    "GlAcctNum": {
+      "type": "string"
+    },
+    "Sku": {
+      "type": "string"
+    },
+    "PtItem": {
+      "type": "string"
+    },
+    "PtItemDescription": {
+      "type": "string"
+    },
+    "PtArAcct": {
+      "type": "string"
+    },
+    "SystemGenerated": {
+      "type": "boolean"
+    }
+  }
+}
