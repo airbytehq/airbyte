@@ -48,7 +48,7 @@ This source produces a single table for the target file as it replicates only on
 | Parquet               | Yes        |
 | Pickle                | No         |
 
-**This connector does not support syncing non-structured data files such as raw text, audio, or videos.**
+**This connector does not support syncing unstructured data files such as raw text, audio, or videos.**
 
 ## Getting Started (Airbyte Cloud)
 
