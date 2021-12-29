@@ -54,32 +54,34 @@ runs:
         module-name: ${{ inputs.module-name }}
         module-folder: ${{ inputs.module-folder }}
 
+    - name: Checkout Airbyte
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
     - name: Create SonarQube Project
       shell: bash
       id: create-sq-project
       run: |
         ci_sonar_qube --pr ${{ inputs.pull-request-id }} --create --module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
-        echo "::set-output name=sq_project_name::=$(ci_sonar_qube --pr ${{ inputs.pull-request-id }} --print_key --module ${{ inputs.module-name }})"
-#    - name: Checkout Airbyte
-#      uses: actions/checkout@v2
-#      with:
-#        fetch-depth: 0
-#        path: /github/workspace/
+        echo "::set-output name=sq_project_name::$(ci_sonar_qube --pr ${{ inputs.pull-request-id }} --print_key --module ${{ inputs.module-name }})"
+        echo "::set-output name=full_module_folder::$(pwd)/${{ inputs.module-folder }}"
+
     - name: SonarQube Scan
       # test for Python only
       if: ${{ inputs.module-lang == 'py' }}
       uses: sonarsource/sonarqube-scan-action@master
-      working-directory: .
       env:
         SONAR_TOKEN: ${{ inputs.sonar-token }}
         SONAR_HOST_URL: ${{ inputs.sonar-host }}
       with:
-          projectBaseDir: ${{ inputs.module-folder }}
+          projectBaseDir: ${{ steps.create-sq-project.outputs.full_module_folder }}
           args: >
             -Dsonar.projectKey=${{ steps.create-sq-project.outputs.sq_project_name }}
             -Dsonar.verbose=true
             -Dsonar.language=${{ inputs.module-lang }}
             -Dsonar.sourceEncoding=UTF-8
+            -Dsonar.projectBaseDir=${{ steps.create-sq-project.outputs.full_module_folder }}
 
     - name: Remove SonarQube Project
       if: ${{ inputs.remove-sonar-project == true }}

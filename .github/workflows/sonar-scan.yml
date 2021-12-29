@@ -47,7 +47,6 @@ jobs:
     - name: Run Tests Runner
       id: run-python-tests
       uses: ./.github/actions/ci-tests-runner
-      working-directory: .
       with:
         module-name: ${{ env.MODULE_NAME }}
         module-folder: ${{ env.MODULE_FOLDER }}
