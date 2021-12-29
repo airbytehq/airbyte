@@ -7,13 +7,13 @@
     "additionalProperties": true,
     "properties": {
       "credentials": {
-        "title": "Authentication mechanism",
+        "title": "Authentication Mechanism",
         "description": "Choose how to authenticate to Retently",
         "type": "object",
         "oneOf": [
           {
             "type": "object",
-            "title": "Authenticate via Retently (Oauth)",
+            "title": "Authenticate via Retently (OAuth)",
             "required": ["client_id", "client_secret", "refresh_token"],
             "additionalProperties": false,
             "properties": {
@@ -27,18 +27,18 @@
               "client_id": {
                 "title": "Client ID",
                 "type": "string",
-                "description": "The Client ID of your application"
+                "description": "The Client ID of your Retently developer application."
               },
               "client_secret": {
                 "title": "Client Secret",
                 "type": "string",
-                "description": "The client secret of your application",
+                "description": "The Client Secret of your Retently developer application.",
                 "airbyte_secret": true
               },
               "refresh_token": {
                 "title": "Refresh Token",
                 "type": "string",
-                "description": "A refresh token generated using the above client ID and secret",
+                "description": "Retently Refresh Token which can be used to fetch new Bearer Tokens when the current one expires.",
                 "airbyte_secret": true
               }
             }
@@ -58,7 +58,7 @@
               },
               "api_key": {
                 "title": "API Token",
-                "description": "API token from https://app.retently.com/settings/api/tokens",
+                "description": "Retently API Token. See the <a href=\"https://app.retently.com/settings/api/tokens\">docs</a> for more information on how to obtain this key.",
                 "type": "string",
                 "airbyte_secret": true
               }
