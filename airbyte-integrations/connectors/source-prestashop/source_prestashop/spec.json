@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docsurl.com",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/presta-shop",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "PrestaShop Spec",
@@ -8,12 +8,14 @@
     "additionalProperties": false,
     "properties": {
       "url": {
+	"title": "URL"
         "type": "string",
-        "description": "Shop URL without trailing slash (domain name or IP address)"
+        "description": "PrestaShop URL without trailing slash (domain name or IP address)."
       },
       "access_key": {
+	"title": "Access Key"
         "type": "string",
-        "description": "Your PrestaShop access key. See <a href=\"https://devdocs.prestashop.com/1.7/webservice/tutorials/creating-access/#create-an-access-key\"> the docs </a> for info on how to obtain this.",
+        "description": "PrestaShop access key. See the <a href=\"https://docs.airbyte.io/integrations/sources/presta-shop\">docs</a> for more information on how to obtain this key.",
         "airbyte_secret": true
       }
     }
