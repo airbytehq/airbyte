@@ -54,10 +54,10 @@ runs:
         module-name: ${{ inputs.module-name }}
         module-folder: ${{ inputs.module-folder }}
 
-    - name: Checkout Airbyte
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
+#    - name: Checkout Airbyte
+#      uses: actions/checkout@v2
+#      with:
+#        fetch-depth: 0
 
     - name: Create SonarQube Project
       shell: bash
