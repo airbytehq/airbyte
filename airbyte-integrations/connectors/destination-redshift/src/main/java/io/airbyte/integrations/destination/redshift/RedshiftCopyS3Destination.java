@@ -14,6 +14,7 @@ import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.CopyConsumerFactory;
 import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopyConfig;
+import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
 import io.airbyte.integrations.destination.s3.S3Destination;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -33,6 +34,12 @@ import java.util.function.Consumer;
  */
 public class RedshiftCopyS3Destination extends CopyDestination {
 
+  private final RedshiftDataTmpTableMode redshiftDataTmpTableMode;
+
+  public RedshiftCopyS3Destination(RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
+    this.redshiftDataTmpTableMode = redshiftDataTmpTableMode;
+  }
+
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
@@ -41,7 +48,7 @@ public class RedshiftCopyS3Destination extends CopyDestination {
     return CopyConsumerFactory.create(
         outputRecordCollector,
         getDatabase(config),
-        getSqlOperations(config),
+        getSqlOperations(redshiftDataTmpTableMode),
         getNameTransformer(),
         new S3CopyConfig(S3CopyConfig.shouldPurgeStagingData(config), getS3DestinationConfig(config)),
         catalog,
@@ -69,11 +76,8 @@ public class RedshiftCopyS3Destination extends CopyDestination {
     throw new UnsupportedOperationException("RedshiftCopyS3Destination.getSqlOperations() without arguments not supported in Redshift destination connector.");
   }
 
-  public SqlOperations getSqlOperations(JsonNode config) {
-    if (!config.get("use_super_redshift_type").isNull() && config.get("use_super_redshift_type").asBoolean()) {
-      return new RedshiftSqlOperations(RedshiftDataTmpTableMode.SUPER);
-    }
-    return new RedshiftSqlOperations(RedshiftDataTmpTableMode.VARCHAR);
+  public SqlOperations getSqlOperations(RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
+    return new RedshiftSqlOperations(redshiftDataTmpTableMode);
   }
 
   private String getConfiguredSchema(final JsonNode config) {

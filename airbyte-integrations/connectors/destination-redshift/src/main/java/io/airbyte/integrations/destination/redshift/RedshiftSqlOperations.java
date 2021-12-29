@@ -11,6 +11,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
+import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.sql.SQLException;
 import java.util.List;

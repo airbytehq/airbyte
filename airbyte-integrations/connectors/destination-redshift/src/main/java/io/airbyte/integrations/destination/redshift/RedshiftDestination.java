@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
+import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,8 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftDestination.class);
 
+  private static RedshiftDataTmpTableMode redshiftDataTmpTableMode;
+
   enum DestinationType {
     INSERT,
     COPY_S3
@@ -35,9 +38,8 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     super(DestinationType.class, RedshiftDestination::getTypeFromConfig, getTypeToDestination());
   }
 
-
-
   public static DestinationType getTypeFromConfig(final JsonNode config) {
+    redshiftDataTmpTableMode = determineTmpTableDatatype(config);
     if (isCopy(config)) {
       return DestinationType.COPY_S3;
     } else {
@@ -45,10 +47,16 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     }
   }
 
+  private static RedshiftDataTmpTableMode determineTmpTableDatatype(JsonNode config) {
+    if (!config.get("use_super_redshift_type").isNull() && config.get("use_super_redshift_type").asBoolean()) {
+      return RedshiftDataTmpTableMode.SUPER;
+    }
+    return RedshiftDataTmpTableMode.VARCHAR;
+  }
 
   public static Map<DestinationType, Destination> getTypeToDestination() {
-    final RedshiftInsertDestination insertDestination = new RedshiftInsertDestination();
-    final RedshiftCopyS3Destination copyS3Destination = new RedshiftCopyS3Destination();
+    final RedshiftInsertDestination insertDestination = new RedshiftInsertDestination(redshiftDataTmpTableMode);
+    final RedshiftCopyS3Destination copyS3Destination = new RedshiftCopyS3Destination(redshiftDataTmpTableMode);
     return ImmutableMap.of(
         DestinationType.INSERT, insertDestination,
         DestinationType.COPY_S3, copyS3Destination);
