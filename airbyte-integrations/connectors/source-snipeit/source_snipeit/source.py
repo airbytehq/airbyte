@@ -204,6 +204,8 @@ class Departments(SnipeitStream):
 class Events(SnipeitStream, ABC):
     primary_key = "id"
 
+    state_checkpoint_interval = 10
+
     @property
     def cursor_field(self):
         return "updated_at/datetime"
@@ -230,23 +232,39 @@ class Events(SnipeitStream, ABC):
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
-        return {'limit': 5000}
+        return {'limit': 1000}
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] , **kwargs) -> Iterable[Mapping]:
         """
-        TODO: Override this method to define how a response is parsed.
+        Parses response and returns a result set suitable for incremental sync. It takes in the stream state saved
+        by Airbyte, and uses it to filter out records that have already been synced, leaving only the newest records.
+
         :return an iterable containing each record in the response
         """
-        base = response.json().get("rows")
-        ascending_list = base[::-1]
-        yield from ascending_list
+        def _newer_than_latest(latest_record_date: arrow.Arrow, record: Mapping[str, Any]) -> bool:
+            current_record_date = arrow.get(record["updated_at"]["datetime"])
+            if current_record_date > latest_record_date:
+                return True
+            else:
+                return False
+
+        base: list = response.json().get("rows")
+        ascending_list = reversed(base)
+
+        if stream_state != {}:
+            latest_record_date: arrow.Arrow = arrow.get(stream_state[self.cursor_field])
+            # NOTE: There's probably a more succint way of doing this but I can't think of it right now.
+            only_the_newest: list = [x for x in ascending_list if _newer_than_latest(latest_record_date, x)]
+            yield from only_the_newest
+        else:
+            yield from ascending_list
 
 
 # Source
 class SourceSnipeit(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
+        Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
 
         See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
         for an example.
@@ -265,7 +283,7 @@ class SourceSnipeit(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        TODO: Replace the streams below with your own streams.
+        Replace the streams below with your own streams.
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
