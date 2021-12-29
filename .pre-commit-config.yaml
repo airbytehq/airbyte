@@ -44,7 +44,11 @@ repos:
     rev: v0.910-1
     hooks:
       - id: mypy
-        exclude: octavia-cli/airbyte_api_client/
+        exclude: |
+          (?x)^.*(
+              octavia-cli/airbyte_api_client/|
+              octavia-cli/unit_tests/|
+          ).?$
   - repo: local
     hooks:
       - id: spec-linter
