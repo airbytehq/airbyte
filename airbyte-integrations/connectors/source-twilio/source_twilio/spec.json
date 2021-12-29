@@ -9,18 +9,18 @@
     "properties": {
       "account_sid": {
         "title": "Account ID",
-        "description": "Twilio account SID",
+        "description": "Twilio Account SID. See the <a href=\"https://docs.airbyte.io/integrations/sources/twilio\">docs</a> for more information on how to obtain this ID.",
         "airbyte_secret": true,
         "type": "string"
       },
       "auth_token": {
         "title": "Auth Token",
-        "description": "Twilio Auth Token.",
+        "description": "Twilio Auth Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/twilio\">docs</a> for more information on how to obtain this token.",
         "airbyte_secret": true,
         "type": "string"
       },
       "start_date": {
-        "title": "Replication Start Date",
+        "title": "Start Date",
         "description": "UTC date and time in the format 2020-10-01T00:00:00Z. Any data before this date will not be replicated.",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "examples": ["2020-10-01T00:00:00Z"],
