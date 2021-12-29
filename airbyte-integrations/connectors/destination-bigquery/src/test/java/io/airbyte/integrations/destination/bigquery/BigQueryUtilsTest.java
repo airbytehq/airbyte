@@ -24,13 +24,7 @@ public class BigQueryUtilsTest {
         .put(BigQueryConsts.CONFIG_CREDS, "test_secret")
         .put(BigQueryConsts.CONFIG_DATASET_LOCATION, "US");
   }
-
-  public static Stream<Arguments> validBigQueryIdProvider() {
-    return Stream.of(
-        Arguments.arguments("my-project", "my_dataset", "my_dataset"),
-        Arguments.arguments("my-project", "my-project:my_dataset", "my_dataset"));
-  }
-
+  
   @ParameterizedTest
   @MethodSource("validBigQueryIdProvider")
   public void testGetDatasetIdSuccess(String projectId, String datasetId, String expected) throws Exception {
@@ -42,13 +36,6 @@ public class BigQueryUtilsTest {
     String actual = BigQueryUtils.getDatasetId(config);
 
     assertEquals(expected, actual);
-  }
-
-  public static Stream<Arguments> invalidBigQueryIdProvider() {
-    return Stream.of(
-        Arguments.arguments("my-project", ":my_dataset", "BigQuery Dataset ID format must match '[project-id:]dataset_id': :my_dataset"),
-        Arguments.arguments("my-project", "your-project:my_dataset",
-            "Project ID included in Dataset ID must match Project ID field's value: Project ID is my-project, but you specified your-project in Dataset ID"));
   }
 
   @ParameterizedTest
@@ -64,4 +51,16 @@ public class BigQueryUtilsTest {
     assertEquals(expected, exception.getMessage());
   }
 
+  private static Stream<Arguments> validBigQueryIdProvider() {
+    return Stream.of(
+        Arguments.arguments("my-project", "my_dataset", "my_dataset"),
+        Arguments.arguments("my-project", "my-project:my_dataset", "my_dataset"));
+  }
+
+  private static Stream<Arguments> invalidBigQueryIdProvider() {
+    return Stream.of(
+        Arguments.arguments("my-project", ":my_dataset", "BigQuery Dataset ID format must match '[project-id:]dataset_id': :my_dataset"),
+        Arguments.arguments("my-project", "your-project:my_dataset",
+            "Project ID included in Dataset ID must match Project ID field's value: Project ID is my-project, but you specified your-project in Dataset ID"));
+  }
 }
