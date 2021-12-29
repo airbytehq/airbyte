@@ -111,8 +111,8 @@ transformer = Transformer(TransformConfig.DefaultSchemaNormalization | Transform
 
 In this case custom transformation will be applied after default type transformation function. Note that order of flags doesn't matter, default transformation will always be run before custom.
 
-In some specific cases you might want to make your custom transform not static, e.g: Formatting a field according to the connector configuration.
-To do so we suggest you to use declare a function to generate another, a.k.a a closure:
+In some specific cases, you might want to make your custom transform not static, e.g. Formatting a field according to the connector configuration.
+To do so, we suggest you to declare a function to generate another, a.k.a a closure:
 
 ```python
 class MyStream(Stream):
