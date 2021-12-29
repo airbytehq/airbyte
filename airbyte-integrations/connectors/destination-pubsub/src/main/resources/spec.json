@@ -13,12 +13,12 @@
     "properties": {
       "project_id": {
         "type": "string",
-        "description": "The GCP project ID for the project containing the target PubSub",
+        "description": "The GCP project ID for the project containing the target PubSub.",
         "title": "Project ID"
       },
       "topic_id": {
         "type": "string",
-        "description": "PubSub topic ID in the given GCP project ID",
+        "description": "The PubSub topic ID in the given GCP project ID.",
         "title": "PubSub Topic ID"
       },
       "credentials_json": {
