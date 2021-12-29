@@ -22,7 +22,6 @@ def check_singer():
     setup_py = Path(TMP_DIR) / "setup.py"
     setup_py.write_text(setup_py.read_text().replace("jsonschema==", "jsonschema>="))
     setup_py.write_text(setup_py.read_text().replace("backoff==", "backoff>="))
-    # check_call(f"pip install -U  {TMP_DIR}".split())
 
 
 class CustomInstallCommand(install):
