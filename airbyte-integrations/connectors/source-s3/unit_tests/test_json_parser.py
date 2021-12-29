@@ -29,7 +29,7 @@ test_files: List[Mapping[str, Any]] = [
                 "last_seen": "string",
             },
         ),
-        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_1.json"),
+        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_1.jsonl"),
         "num_records": 8,
         "inferred_schema": {
             "id": "integer",
@@ -58,7 +58,7 @@ test_files: List[Mapping[str, Any]] = [
                 "last_seen": "string",
             },
         ),
-        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_1.json"),
+        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_1.jsonl"),
         "num_records": 8,
         "inferred_schema": {
             "id": "integer",
@@ -78,7 +78,7 @@ test_files: List[Mapping[str, Any]] = [
         "AbstractFileParser": JsonParser(
             format={"filetype": "json", "encoding": "big5"}, master_schema={"id": "integer", "name": "string", "valid": "boolean"}
         ),
-        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_2_enc_Big5.json"),
+        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_2_enc_Big5.jsonl"),
         "num_records": 8,
         "inferred_schema": {"id": "integer", "name": "string", "valid": "boolean"},
         "line_checks": {
@@ -97,7 +97,7 @@ test_files: List[Mapping[str, Any]] = [
             format={"filetype": "json", "encoding": "windows-1256"},
             master_schema={"id": "integer", "notes": "string", "valid": "boolean"},
         ),
-        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_3_enc_Arabic.json"),
+        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_3_enc_Arabic.jsonl"),
         "num_records": 2,
         "inferred_schema": {"id": "integer", "notes": "string", "valid": "boolean"},
         "line_checks": {
@@ -124,7 +124,7 @@ test_files: List[Mapping[str, Any]] = [
                 "last_seen": "string",
             },
         ),
-        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_4.json.gz"),
+        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_4.jsonl.gz"),
         "num_records": 8,
         "inferred_schema": {
             "id": "integer",
@@ -163,7 +163,7 @@ test_files: List[Mapping[str, Any]] = [
                 "last_seen": "string",
             },
         ),
-        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_5_bz2.json.bz2"),
+        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_5_bz2.jsonl.bz2"),
         "num_records": 8,
         "inferred_schema": {
             "id": "integer",
@@ -204,7 +204,7 @@ test_files: List[Mapping[str, Any]] = [
                 "last_seen": "string",
             },
         ),
-        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_1.json"),
+        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_1.jsonl"),
         "num_records": 8,
         "inferred_schema": {
             "id": "integer",
@@ -223,7 +223,7 @@ test_files: List[Mapping[str, Any]] = [
         # TODO: maybe this should fail read_records, but it does pick up all the columns from file despite missing from master schema
         "test_alias": "missing columns in master schema",
         "AbstractFileParser": JsonParser(format={"filetype": "json"}, master_schema={"id": "integer", "name": "string"}),
-        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_1.json"),
+        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_1.jsonl"),
         "num_records": 8,
         "inferred_schema": {
             "id": "integer",
@@ -241,7 +241,7 @@ test_files: List[Mapping[str, Any]] = [
         # tests empty file, SHOULD FAIL INFER & STREAM RECORDS
         "test_alias": "empty json file",
         "AbstractFileParser": JsonParser(format={"filetype": "json"}, master_schema={}),
-        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_6_empty.json"),
+        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_6_empty.jsonl"),
         "num_records": 0,
         "inferred_schema": {},
         "line_checks": {},
@@ -262,7 +262,7 @@ test_files: List[Mapping[str, Any]] = [
                 "last_seen": "string",
             },
         ),
-        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_7_schema.json"),
+        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_7_schema.jsonl"),
         "num_records": 8,
         "inferred_schema": {
             "id": "integer",
@@ -294,7 +294,7 @@ test_files: List[Mapping[str, Any]] = [
                 "categories": "string",
             },
         ),
-        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_8_structures.json"),
+        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_8_structures.jsonl"),
         "num_records": 8,
         "inferred_schema": {
             "id": "integer",
@@ -327,7 +327,7 @@ test_files: List[Mapping[str, Any]] = [
                 "timestamp": "string",
             },
         ),
-        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_9_timestamp.json"),
+        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_9_timestamp.jsonl"),
         "num_records": 8,
         "inferred_schema": {
             "id": "integer",
@@ -358,7 +358,7 @@ test_files: List[Mapping[str, Any]] = [
                 "last_seen": "string",
             },
         ),
-        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_1.json"),
+        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_1.jsonl"),
         "num_records": 4,
         "inferred_schema": {
             "id": "integer",
@@ -387,7 +387,7 @@ test_files: List[Mapping[str, Any]] = [
                 "last_seen": "string",
             },
         ),
-        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_1.json"),
+        "filepath": os.path.join(SAMPLE_DIRECTORY, "json/test_file_1.jsonl"),
         "num_records": 8,
         "inferred_schema": {
             "id": "integer",
