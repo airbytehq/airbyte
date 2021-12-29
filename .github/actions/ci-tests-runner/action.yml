@@ -65,7 +65,7 @@ runs:
       run: |
         ci_sonar_qube --pr ${{ inputs.pull-request-id }} --create --module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
         echo "::set-output name=sq_project_name::$(ci_sonar_qube --pr ${{ inputs.pull-request-id }} --print_key --module ${{ inputs.module-name }})"
-        echo "::set-output name=full_module_folder::$(pwd)/${{ inputs.module-folder }}"
+        echo "::set-output name=full_module_folder::{{ inputs.module-folder }}"
         ls -hal "$(pwd)"
         ls -hal "$(pwd)/${{ inputs.module-folder }}"
     - name: SonarQube Scan
