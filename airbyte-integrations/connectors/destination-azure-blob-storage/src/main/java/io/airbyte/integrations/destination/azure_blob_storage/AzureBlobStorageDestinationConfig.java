@@ -64,7 +64,7 @@ public class AzureBlobStorageDestinationConfig {
         .get("azure_blob_storage_endpoint_domain_name");
     final JsonNode containerName = config.get("azure_blob_storage_container_name");
     final int outputStreamBufferSizeFromConfig = config.get("azure_blob_storage_output_buffer_size").asInt();
-    if (outputStreamBufferSizeFromConfig == null) {
+    if (outputStreamBufferSizeFromConfig == 0) {
       // Default to 100MB buffer size
       outputStreamBufferSizeFromConfig = 1024 * 1024 * 100;
     }
