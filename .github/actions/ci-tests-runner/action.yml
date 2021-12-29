@@ -90,4 +90,3 @@ runs:
       id: remove-sq-project
       run: |
         ci_sonar_qube --pr ${{ inputs.pull-request-id }} --remove --module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
-

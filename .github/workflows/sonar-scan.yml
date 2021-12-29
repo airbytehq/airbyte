@@ -44,6 +44,17 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Auth with gcloud CLI
+      uses: google-github-actions/setup-gcloud@master
+      with:
+        service_account_key: ${{ secrets.GCP_SONAR_SA_KEY }}
+        project_id: dataline-integration-testing
+        export_default_credentials: true
+
+    - name: Create IAP tunnel to the SonarQube VM
+      shell: bash
+      run: gcloud compute start-iap-tunnel sonarqube-1-vm 80 --local-host-port=localhost:3300 --zone=europe-central2-a --project dataline-integration-testing &
+
     - name: Run Tests Runner
       id: run-python-tests
       uses: ./.github/actions/ci-tests-runner
@@ -52,9 +63,11 @@ jobs:
         module-folder: ${{ env.MODULE_FOLDER }}
         module-lang: ${{ env.MODULE_LANG }}
         sonar-token: ${{ secrets.SONAR_TOKEN }}
-        sonar-host: ${{ secrets.SONAR_HOST_URL }}
+        sonar-host: "http://localhost:3300"
         pull-request-id: "${{ github.repository }}/${{ github.event.pull_request.number }}"
         remove-sonar-project: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
 
-
-
+    - name: Remove IAP tunnel
+      shell: bash
+      run: |-
+        kill %1
