@@ -14,6 +14,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 
 | Connector | Grade |
 | :--- | :--- |
+| [3PL Central](sources/tplcentral.md) | Alpha |
 | [Airtable](sources/airtable.md) | Alpha |
 | [Amazon SQS](sources/amazon-sqs.md) | Alpha |
 | [Amazon Seller Partner](sources/amazon-seller-partner.md) | Alpha |
@@ -93,6 +94,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Postgres](sources/postgres.md) | Certified |
 | [PostHog](sources/posthog.md) | Beta |
 | [PrestaShop](sources/presta-shop.md) | Beta |
+| [Qualaroo](sources/qualaroo.md) | Beta |
 | [Quickbooks](sources/quickbooks.md) | Beta |
 | [Recharge](sources/recharge.md) | Beta |
 | [Recurly](sources/recurly.md) | Beta |
@@ -101,6 +103,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Salesforce](sources/salesforce.md) | Certified |
 | [Salesloft](./sources/salesloft.md)| Alpha |
 | [SAP Business One](sources/sap-business-one.md) | Beta |
+| [SearchMetrics](./sources/search-metrics.md)| Alpha |
 | [Sendgrid](sources/sendgrid.md) | Certified |
 | [Sentry](sources/sentry.md) | Alpha |
 | [Shopify](sources/shopify.md) | Certified |

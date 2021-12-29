@@ -6,9 +6,14 @@ package io.airbyte.db.instance;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.commons.lang.Exceptions;
 import java.io.IOException;
 import java.util.Date;
 import lombok.val;
@@ -20,14 +25,25 @@ import org.junit.jupiter.api.Test;
 
 public class MinimumFlywayMigrationVersionCheckTest {
 
-  private static final long DEFAULT_TIMEOUT_MS = 10 * 1000;
+  private static final long DEFAULT_TIMEOUT_MS = 2 * 1000;
 
   @Test
   void testDatabaseNotSetupFails() throws IOException {
     val database = mock(DatabaseInstance.class);
     when(database.isInitialized()).thenThrow(new IOException()).thenReturn(false);
 
+    val startTime = System.currentTimeMillis();
     assertThrows(RuntimeException.class, () -> MinimumFlywayMigrationVersionCheck.assertDatabase(database, DEFAULT_TIMEOUT_MS));
+    assertTrue(System.currentTimeMillis() - startTime >= DEFAULT_TIMEOUT_MS);
+  }
+
+  @Test
+  void testDatabaseFailsPollsCorrectTimes() throws IOException {
+    val database = spy(DatabaseInstance.class);
+    when(database.isInitialized()).thenThrow(new IOException()).thenReturn(false);
+
+    Exceptions.swallow(() -> MinimumFlywayMigrationVersionCheck.assertDatabase(database, DEFAULT_TIMEOUT_MS));
+    verify(database, times(MinimumFlywayMigrationVersionCheck.NUM_POLL_TIMES)).isInitialized();
   }
 
   @Test
@@ -42,7 +58,7 @@ public class MinimumFlywayMigrationVersionCheckTest {
   }
 
   @Test
-  void testMatchesMinimum() {
+  void testMigrationMatchesMinimum() {
     val version = "0.22.0.1";
     val migrator = mock(DatabaseMigrator.class);
     when(migrator.getLatestMigration()).thenReturn(new StubMigrationInfo(version));
@@ -51,7 +67,7 @@ public class MinimumFlywayMigrationVersionCheckTest {
   }
 
   @Test
-  void testExceedsMinimum() {
+  void testMigrationExceedsMinimum() {
     val minVersion = "0.22.0.1";
     val latestVersion = "0.30.0";
     val migrator = mock(DatabaseMigrator.class);
@@ -61,7 +77,7 @@ public class MinimumFlywayMigrationVersionCheckTest {
   }
 
   @Test
-  void testFulfilledAfter() {
+  void testMigrationFulfilledAfter() {
     val startVersion = "0.22.0.1";
     val minVersion = "0.30.0";
     val latestVersion = "0.33.0.1";
@@ -77,14 +93,28 @@ public class MinimumFlywayMigrationVersionCheckTest {
   }
 
   @Test
-  void testTimeout() {
+  void testMigrationTimeout() {
     val startVersion = "0.22.0.1";
     val minVersion = "0.30.0";
 
     val migrator = mock(DatabaseMigrator.class);
     when(migrator.getLatestMigration()).thenReturn(new StubMigrationInfo(startVersion));
 
+    val startTime = System.currentTimeMillis();
     assertThrows(RuntimeException.class, () -> MinimumFlywayMigrationVersionCheck.assertMigrations(migrator, minVersion, DEFAULT_TIMEOUT_MS));
+    assertTrue(System.currentTimeMillis() - startTime >= DEFAULT_TIMEOUT_MS);
+  }
+
+  @Test
+  void testMigrationPollsCorrectTimes() {
+    val startVersion = "0.22.0.1";
+    val minVersion = "0.30.0";
+
+    val migrator = spy(DatabaseMigrator.class);
+    when(migrator.getLatestMigration()).thenReturn(new StubMigrationInfo(startVersion));
+
+    Exceptions.swallow(() -> MinimumFlywayMigrationVersionCheck.assertMigrations(migrator, minVersion, DEFAULT_TIMEOUT_MS));
+    verify(migrator, times(MinimumFlywayMigrationVersionCheck.NUM_POLL_TIMES + 1)).getLatestMigration();
   }
 
   /**
@@ -94,7 +124,7 @@ public class MinimumFlywayMigrationVersionCheckTest {
 
     private final String version;
 
-    public StubMigrationInfo(String version) {
+    public StubMigrationInfo(final String version) {
       this.version = version;
     }
 
@@ -154,12 +184,12 @@ public class MinimumFlywayMigrationVersionCheckTest {
     }
 
     @Override
-    public int compareVersion(MigrationInfo o) {
+    public int compareVersion(final MigrationInfo o) {
       return 0;
     }
 
     @Override
-    public int compareTo(MigrationInfo o) {
+    public int compareTo(final MigrationInfo o) {
       return 0;
     }
 

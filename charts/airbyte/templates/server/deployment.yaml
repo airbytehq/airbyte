@@ -1,4 +1,3 @@
-
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -93,26 +92,26 @@ spec:
               key: TEMPORAL_HOST
         - name: LOG_LEVEL
           value: "{{ .Values.server.log.level }}"
-        - name: JOB_POD_MAIN_CONTAINER_CPU_REQUEST
+        - name: JOB_MAIN_CONTAINER_CPU_REQUEST
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
-              key: JOB_POD_MAIN_CONTAINER_CPU_REQUEST
-        - name: JOB_POD_MAIN_CONTAINER_CPU_LIMIT
+              key: JOB_MAIN_CONTAINER_CPU_REQUEST
+        - name: JOB_MAIN_CONTAINER_CPU_LIMIT
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
-              key: JOB_POD_MAIN_CONTAINER_CPU_LIMIT
-        - name: JOB_POD_MAIN_CONTAINER_MEMORY_REQUEST
+              key: JOB_MAIN_CONTAINER_CPU_LIMIT
+        - name: JOB_MAIN_CONTAINER_MEMORY_REQUEST
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
-              key: JOB_POD_MAIN_CONTAINER_MEMORY_REQUEST
-        - name: JOB_POD_MAIN_CONTAINER_MEMORY_LIMIT
+              key: JOB_MAIN_CONTAINER_MEMORY_REQUEST
+        - name: JOB_MAIN_CONTAINER_MEMORY_LIMIT
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
-              key: JOB_POD_MAIN_CONTAINER_MEMORY_LIMIT
+              key: JOB_MAIN_CONTAINER_MEMORY_LIMIT
         - name: S3_LOG_BUCKET
           valueFrom:
             configMapKeyRef:
@@ -153,6 +152,16 @@ spec:
             configMapKeyRef:
               name: airbyte-env
               key: GCS_LOG_BUCKET
+        - name: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+        - name: JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
         {{- if .Values.server.extraEnv }}
         {{ .Values.server.extraEnv | toYaml | nindent 8 }}
         {{- end }}

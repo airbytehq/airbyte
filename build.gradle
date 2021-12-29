@@ -171,7 +171,7 @@ allprojects {
 // Java projects common configurations
 subprojects {
 
-    if (project.name == 'airbyte-webapp' || project.name == 'airbyte-e2e-testing') {
+    if (project.name == 'airbyte-webapp' || project.name == 'airbyte-webapp-e2e-tests') {
         return
     }
 
@@ -354,6 +354,7 @@ subprojects {
 }
 
 task('generate-docker') {
+    dependsOn(':airbyte-bootloader:assemble')
     dependsOn(':airbyte-workers:assemble')
     dependsOn(':airbyte-webapp:assemble')
     dependsOn(':airbyte-server:assemble')

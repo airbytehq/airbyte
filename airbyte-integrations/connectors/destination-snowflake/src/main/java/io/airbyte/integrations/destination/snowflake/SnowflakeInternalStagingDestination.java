@@ -13,11 +13,10 @@ import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.UUID;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination implements Destination {
 
@@ -39,18 +38,22 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
-              .withStatus(AirbyteConnectionStatus.Status.FAILED)
-              .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
     }
   }
 
-  private static void attemptSQLCreateAndDropStages(String outputSchema, JdbcDatabase database, SnowflakeSQLNameTransformer namingResolver, SnowflakeStagingSqlOperations sqlOperations) throws Exception {
+  private static void attemptSQLCreateAndDropStages(String outputSchema,
+                                                    JdbcDatabase database,
+                                                    SnowflakeSQLNameTransformer namingResolver,
+                                                    SnowflakeStagingSqlOperations sqlOperations)
+      throws Exception {
 
-      // verify we have permissions to create/drop stage
-      final String outputTableName = namingResolver.getIdentifier("_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", ""));
-      String stageName = namingResolver.getStageName(outputSchema, outputTableName);;
-      sqlOperations.createStageIfNotExists(database, stageName);
-      sqlOperations.dropStageIfExists(database,stageName);
+    // verify we have permissions to create/drop stage
+    final String outputTableName = namingResolver.getIdentifier("_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", ""));
+    String stageName = namingResolver.getStageName(outputSchema, outputTableName);;
+    sqlOperations.createStageIfNotExists(database, stageName);
+    sqlOperations.dropStageIfExists(database, stageName);
   }
 
   @Override

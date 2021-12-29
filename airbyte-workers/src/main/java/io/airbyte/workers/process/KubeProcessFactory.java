@@ -7,15 +7,14 @@ package io.airbyte.workers.process;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ResourceRequirements;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerException;
-import io.airbyte.workers.WorkerUtils;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.kubernetes.client.openapi.ApiClient;
 import java.net.InetAddress;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -31,7 +30,8 @@ public class KubeProcessFactory implements ProcessFactory {
   public static final String SPEC_JOB = "spec";
   public static final String CHECK_JOB = "check";
   public static final String DISCOVER_JOB = "discover";
-  public static final String NORMALIZATION_JOB = "normalize";
+
+  public static final String SYNC_RUNNER = "sync-runner";
 
   public static final String SYNC_STEP = "sync_step";
   public static final String READ_STEP = "read";
@@ -45,57 +45,65 @@ public class KubeProcessFactory implements ProcessFactory {
   private static final String WORKER_POD_LABEL_KEY = "airbyte";
   private static final String WORKER_POD_LABEL_VALUE = "worker-pod";
 
+  private final WorkerConfigs workerConfigs;
   private final String namespace;
-  private final ApiClient officialClient;
   private final KubernetesClient fabricClient;
   private final String kubeHeartbeatUrl;
   private final String processRunnerHost;
+  private final boolean isOrchestrator;
+  private final Duration statusCheckInterval;
 
   /**
    * Sets up a process factory with the default processRunnerHost.
    */
-  public KubeProcessFactory(final String namespace,
-                            final ApiClient officialClient,
+  public KubeProcessFactory(final WorkerConfigs workerConfigs,
+                            final String namespace,
                             final KubernetesClient fabricClient,
                             final String kubeHeartbeatUrl,
-                            final Set<Integer> ports) {
-    this(namespace, officialClient, fabricClient, kubeHeartbeatUrl, Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()), ports);
+                            final boolean isOrchestrator) {
+    this(workerConfigs, namespace, fabricClient, kubeHeartbeatUrl,
+        Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()), isOrchestrator, KubePodProcess.DEFAULT_STATUS_CHECK_INTERVAL);
   }
 
   /**
    * @param namespace kubernetes namespace where spawned pods will live
-   * @param officialClient official kubernetes client
    * @param fabricClient fabric8 kubernetes client
    * @param kubeHeartbeatUrl a url where if the response is not 200 the spawned process will fail
    *        itself
    * @param processRunnerHost is the local host or ip of the machine running the process factory.
    *        injectable for testing.
+   * @param isOrchestrator determines if this should run as airbyte-admin
+   * @param statusCheckInterval specifies how often the Kubernetes API should be consulted when
+   *        attempting to get the exit code after termination
    */
   @VisibleForTesting
-  public KubeProcessFactory(final String namespace,
-                            final ApiClient officialClient,
+  public KubeProcessFactory(final WorkerConfigs workerConfigs,
+                            final String namespace,
                             final KubernetesClient fabricClient,
                             final String kubeHeartbeatUrl,
                             final String processRunnerHost,
-                            final Set<Integer> ports) {
+                            final boolean isOrchestrator,
+                            final Duration statusCheckInterval) {
+    this.workerConfigs = workerConfigs;
     this.namespace = namespace;
-    this.officialClient = officialClient;
     this.fabricClient = fabricClient;
     this.kubeHeartbeatUrl = kubeHeartbeatUrl;
     this.processRunnerHost = processRunnerHost;
-    KubePortManagerSingleton.init(ports);
+    this.isOrchestrator = isOrchestrator;
+    this.statusCheckInterval = statusCheckInterval;
   }
 
   @Override
   public Process create(final String jobId,
                         final int attempt,
-                        final Path jobRoot,
+                        final Path jobRoot, // todo: remove unused
                         final String imageName,
                         final boolean usesStdin,
                         final Map<String, String> files,
                         final String entrypoint,
                         final ResourceRequirements resourceRequirements,
                         final Map<String, String> customLabels,
+                        final Map<Integer, Integer> internalToExternalPorts,
                         final String... args)
       throws WorkerException {
     try {
@@ -117,13 +125,14 @@ public class KubeProcessFactory implements ProcessFactory {
       allLabels.putAll(generalKubeLabels);
 
       return new KubePodProcess(
+          isOrchestrator,
           processRunnerHost,
-          officialClient,
           fabricClient,
+          statusCheckInterval,
           podName,
           namespace,
           imageName,
-          WorkerUtils.DEFAULT_JOB_POD_MAIN_CONTAINER_IMAGE_PULL_POLICY,
+          workerConfigs.getJobImagePullPolicy(),
           stdoutLocalPort,
           stderrLocalPort,
           kubeHeartbeatUrl,
@@ -131,13 +140,14 @@ public class KubeProcessFactory implements ProcessFactory {
           files,
           entrypoint,
           resourceRequirements,
-          WorkerUtils.DEFAULT_JOB_POD_MAIN_CONTAINER_IMAGE_PULL_SECRET,
-          WorkerUtils.DEFAULT_JOB_POD_TOLERATIONS,
-          WorkerUtils.DEFAULT_JOB_POD_NODE_SELECTORS,
+          workerConfigs.getJobImagePullSecret(),
+          workerConfigs.getWorkerKubeTolerations(),
+          workerConfigs.getworkerKubeNodeSelectors(),
           allLabels,
-          WorkerUtils.JOB_POD_SOCAT_IMAGE,
-          WorkerUtils.JOB_POD_BUSYBOX_IMAGE,
-          WorkerUtils.JOB_POD_CURL_IMAGE,
+          workerConfigs.getJobSocatImage(),
+          workerConfigs.getJobBusyboxImage(),
+          workerConfigs.getJobCurlImage(),
+          internalToExternalPorts,
           args);
     } catch (final Exception e) {
       throw new WorkerException(e.getMessage(), e);
