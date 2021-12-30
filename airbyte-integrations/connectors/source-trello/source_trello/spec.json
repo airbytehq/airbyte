@@ -10,13 +10,13 @@
       "token": {
         "type": "string",
         "title": "API token",
-        "description": "A Trello token. See the <a href=\"https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth\">docs</a> for instructions on how to generate it.",
+        "description": "Trello v API token. See the <a href=\"https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth\">docs</a> for instructions on how to generate it.",
         "airbyte_secret": true
       },
       "key": {
         "type": "string",
         "title": "API key",
-        "description": "A Trello token. See the <a href=\"https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth\">docs</a> for instructions on how to generate it.",
+        "description": "Trello API key. See the <a href=\"https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth\">docs</a> for instructions on how to generate it.",
         "airbyte_secret": true
       },
       "start_date": {
@@ -32,8 +32,8 @@
           "type": "string",
           "pattern": "^[0-9a-fA-F]{24}$"
         },
-        "title": "Trello board IDs",
-        "description": "IDs of the boards from which you'd like to replicate data. If left empty, data from all boards to which you have access will be replicated."
+        "title": "Trello Board IDs",
+        "description": "IDs of the boards to replicate data from. If left empty, data from all boards to which you have access will be replicated."
       }
     }
   },

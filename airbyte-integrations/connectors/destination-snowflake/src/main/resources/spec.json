@@ -48,7 +48,7 @@
         "order": 3
       },
       "schema": {
-        "description": "The default Snowflake schema tables are written to if the source does not specify a namespace.",
+        "description": "The default Snowflake schema tables are written to if the source does not specify a namespace. Schema name would be transformed to allowed by Snowflake if it not follow Snowflake Naming Conventions https://docs.airbyte.io/integrations/destinations/snowflake#notes-about-snowflake-naming-conventions ",
         "examples": ["AIRBYTE_SCHEMA"],
         "type": "string",
         "title": "Default Schema",
@@ -170,6 +170,14 @@
                 "title": "S3 Access Key",
                 "airbyte_secret": true,
                 "order": 4
+              },
+              "part_size": {
+                "type": "integer",
+                "default": 5,
+                "examples": [5],
+                "description": "Optional. Increase this if syncing tables larger than 100GB. Only relevant for COPY. Files are streamed to S3 in parts. This determines the size of each part, in MBs. As S3 has a limit of 10,000 parts per file, part size affects the table size. This is 10MB by default, resulting in a default limit of 100GB tables. Note, a larger part size will result in larger memory requirements. A rule of thumb is to multiply the part size by 10 to get the memory requirement. Modify this with care.",
+                "title": "Stream Part Size",
+                "order": 5
               }
             }
           },

@@ -10,6 +10,7 @@ data
 .classpath
 .project
 .settings
+**/gmon.out
 
 # Logs
 acceptance_tests_logs/

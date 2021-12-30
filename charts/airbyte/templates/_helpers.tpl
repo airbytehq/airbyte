@@ -208,6 +208,13 @@ Returns the Airbyte worker Image
 {{- end -}}
 
 {{/*
+Returns the Airbyte Bootloader Image
+*/}}
+{{- define "airbyte.bootloaderImage" -}}
+{{- include "common.images.image" (dict "imageRoot" .Values.bootloader.image "global" .Values.global) -}}
+{{- end -}}
+
+{{/*
 Returns the Temporal Image. TODO: This will probably be replaced if we move to using temporal as a dependency, like minio and postgres.
 */}}
 {{- define "airbyte.temporalImage" -}}

@@ -176,7 +176,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-bigquery:0.5.1"
+- dockerImage: "airbyte/destination-bigquery:0.6.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -307,6 +307,16 @@
                 type: "string"
                 examples:
                 - "data_sync/test"
+              part_size_mb:
+                title: "Block Size (MB) for GCS multipart upload"
+                description: "This is the size of a \"Part\" being buffered in memory.\
+                  \ It limits the memory usage when writing. Larger values will allow\
+                  \ to upload a bigger files and improve the speed, but consumes9\
+                  \ more memory. Allowed values: min=5MB, max=525MB Default: 5MB."
+                type: "integer"
+                default: 5
+                examples:
+                - 5
               keep_files_in_gcs-bucket:
                 type: "string"
                 description: "This upload method is supposed to temporary store records\
@@ -354,7 +364,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:0.1.11"
+- dockerImage: "airbyte/destination-bigquery-denormalized:0.2.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -366,6 +376,19 @@
       - "dataset_id"
       additionalProperties: true
       properties:
+        big_query_client_buffer_size_mb:
+          title: "Google BigQuery client chunk size"
+          description: "Google BigQuery client's chunk (buffer) size (MIN = 1, MAX\
+            \ = 15) for each table. It defaults to 15MiB. Smaller chunk size means\
+            \ less memory consumption, and is recommended for big data sets. For more\
+            \ details refer to the documentation <a href=\"https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html\"\
+            >here</a>"
+          type: "integer"
+          minimum: 1
+          maximum: 15
+          default: 15
+          examples:
+          - "15"
         project_id:
           type: "string"
           description: "The GCP project ID for the project containing the target BigQuery\
@@ -422,6 +445,97 @@
             \ be used if this field is left empty."
           title: "Credentials JSON"
           airbyte_secret: true
+        loading_method:
+          type: "object"
+          title: "Loading Method"
+          description: "Select the way that data will be uploaded to BigQuery."
+          oneOf:
+          - title: "Standard Inserts"
+            additionalProperties: false
+            description: "Direct uploading using streams."
+            required:
+            - "method"
+            properties:
+              method:
+                type: "string"
+                const: "Standard"
+          - title: "GCS Staging"
+            additionalProperties: false
+            description: "Writes large batches of records to a file, uploads the file\
+              \ to GCS, then uses <pre>COPY INTO table</pre> to upload the file. Recommended\
+              \ for large production workloads for better speed and scalability."
+            required:
+            - "method"
+            - "gcs_bucket_name"
+            - "gcs_bucket_path"
+            - "credential"
+            properties:
+              method:
+                type: "string"
+                const: "GCS Staging"
+              gcs_bucket_name:
+                title: "GCS Bucket Name"
+                type: "string"
+                description: "The name of the GCS bucket."
+                examples:
+                - "airbyte_sync"
+              gcs_bucket_path:
+                description: "Directory under the GCS bucket where data will be written."
+                type: "string"
+                examples:
+                - "data_sync/test"
+              part_size_mb:
+                title: "Block Size (MB) for GCS multipart upload"
+                description: "This is the size of a \"Part\" being buffered in memory.\
+                  \ It limits the memory usage when writing. Larger values will allow\
+                  \ to upload a bigger files and improve the speed, but consumes9\
+                  \ more memory. Allowed values: min=5MB, max=525MB Default: 5MB."
+                type: "integer"
+                default: 5
+                minimum: 5
+                maximum: 525
+                examples:
+                - 5
+              keep_files_in_gcs-bucket:
+                type: "string"
+                description: "This upload method is supposed to temporary store records\
+                  \ in GCS bucket. What do you want to do with data in GCS bucket\
+                  \ when migration has finished?"
+                title: "GCS tmp files afterward processing"
+                default: "Delete all tmp files from GCS"
+                enum:
+                - "Delete all tmp files from GCS"
+                - "Keep all tmp files in GCS"
+              credential:
+                title: "Credential"
+                type: "object"
+                oneOf:
+                - title: "HMAC key"
+                  required:
+                  - "credential_type"
+                  - "hmac_key_access_id"
+                  - "hmac_key_secret"
+                  properties:
+                    credential_type:
+                      type: "string"
+                      const: "HMAC_KEY"
+                    hmac_key_access_id:
+                      type: "string"
+                      description: "HMAC key access ID. When linked to a service account,\
+                        \ this ID is 61 characters long; when linked to a user account,\
+                        \ it is 24 characters long."
+                      title: "HMAC Key Access ID"
+                      airbyte_secret: true
+                      examples:
+                      - "1234567890abcdefghij1234"
+                    hmac_key_secret:
+                      type: "string"
+                      description: "The corresponding secret for the access ID. It\
+                        \ is a 40-character base-64 encoded string."
+                      title: "HMAC Key Secret"
+                      airbyte_secret: true
+                      examples:
+                      - "1234567890abcdefghij1234567890ABCDEFGHIJ"
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: true
@@ -529,7 +643,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-clickhouse:0.1.0"
+- dockerImage: "airbyte/destination-clickhouse:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/clickhouse"
     connectionSpecification:
@@ -1014,7 +1128,7 @@
     - "overwrite"
     - "append"
     supportsNamespaces: true
-- dockerImage: "airbyte/destination-gcs:0.1.16"
+- dockerImage: "airbyte/destination-gcs:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/gcs"
     connectionSpecification:
@@ -2107,7 +2221,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-meilisearch:0.2.10"
+- dockerImage: "airbyte/destination-meilisearch:0.2.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/meilisearch"
     connectionSpecification:
@@ -2120,13 +2234,14 @@
       properties:
         host:
           title: "Host"
-          description: "Hostname of the MeiliSearch instance"
+          description: "Hostname of the MeiliSearch instance."
           type: "string"
           order: 0
         api_key:
           title: "API Key"
           airbyte_secret: true
-          description: "MeiliSearch instance API Key"
+          description: "MeiliSearch API Key. See the <a href=\"https://docs.airbyte.io/integrations/destinations/meilisearch\"\
+            >docs</a> for more information on how to obtain this key."
           type: "string"
           order: 1
     supportsIncremental: true
@@ -3259,7 +3374,7 @@
     supported_destination_sync_modes:
     - "append"
     - "overwrite"
-- dockerImage: "airbyte/destination-s3:0.2.1"
+- dockerImage: "airbyte/destination-s3:0.2.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/s3"
     connectionSpecification:
@@ -3457,6 +3572,8 @@
                   \ more memory. Allowed values: min=5MB, max=525MB Default: 5MB."
                 type: "integer"
                 default: 5
+                minimum: 5
+                maximum: 525
                 examples:
                 - 5
           - title: "CSV: Comma-Separated Values"
@@ -3630,7 +3747,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.3.21"
+- dockerImage: "airbyte/destination-snowflake:0.3.24"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:
@@ -3678,7 +3795,9 @@
           order: 3
         schema:
           description: "The default Snowflake schema tables are written to if the\
-            \ source does not specify a namespace."
+            \ source does not specify a namespace. Schema name would be transformed\
+            \ to allowed by Snowflake if it not follow Snowflake Naming Conventions\
+            \ https://docs.airbyte.io/integrations/destinations/snowflake#notes-about-snowflake-naming-conventions "
           examples:
           - "AIRBYTE_SCHEMA"
           type: "string"
@@ -3801,6 +3920,21 @@
                 title: "S3 Access Key"
                 airbyte_secret: true
                 order: 4
+              part_size:
+                type: "integer"
+                default: 5
+                examples:
+                - 5
+                description: "Optional. Increase this if syncing tables larger than\
+                  \ 100GB. Only relevant for COPY. Files are streamed to S3 in parts.\
+                  \ This determines the size of each part, in MBs. As S3 has a limit\
+                  \ of 10,000 parts per file, part size affects the table size. This\
+                  \ is 10MB by default, resulting in a default limit of 100GB tables.\
+                  \ Note, a larger part size will result in larger memory requirements.\
+                  \ A rule of thumb is to multiply the part size by 10 to get the\
+                  \ memory requirement. Modify this with care."
+                title: "Stream Part Size"
+                order: 5
           - title: "GCS Staging"
             additionalProperties: false
             description: "Writes large batches of records to a file, uploads the file\
