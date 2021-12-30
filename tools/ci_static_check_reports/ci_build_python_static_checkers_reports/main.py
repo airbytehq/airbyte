@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+import argparse
 import json
 import os
 import sys
@@ -55,16 +56,16 @@ TASK_COMMANDS: Dict[str, List[str]] = {
 }
 
 
-def build_static_checkers_reports(modules: list) -> int:
+def build_static_checkers_reports(modules: list, static_checker_reports_path: str) -> int:
     ctx = Context()
     toml_config_file = os.path.join(os.getcwd(), "pyproject.toml")
 
     for module_path in modules:
-        reports_path = f"{os.getcwd()}/static_checker_reports/{module_path}"
+        reports_path = f"{os.getcwd()}/{static_checker_reports_path}/{module_path}"
         if not os.path.exists(reports_path):
             os.makedirs(reports_path)
 
-        for checker in TASK_COMMANDS.keys():
+        for checker in TASK_COMMANDS:
             _run_task(
                 ctx,
                 f"{os.getcwd()}/{module_path}",
@@ -81,9 +82,18 @@ def build_static_checkers_reports(modules: list) -> int:
 
 
 def main() -> int:
-    changed_python_module_paths = [module["dir"] for module in json.loads(sys.argv[1]) if module["lang"] == "py"]
+    parser = argparse.ArgumentParser(description="Working with Python Static Report Builder.")
+    parser.add_argument("changed_modules", nargs="*")
+    parser.add_argument("--static-checker-reports-path", help="SonarQube host", required=False, type=str, default="static_checker_reports")
+
+    args = parser.parse_args()
+    changed_python_module_paths = [
+        module["dir"]
+        for module in json.loads(args.changed_modules[0])
+        if module["lang"] == "py" and os.path.exists(module["dir"]) and "setup.py" in os.listdir(module["dir"])
+    ]
     print("Changed python modules: ", changed_python_module_paths)
-    return build_static_checkers_reports(changed_python_module_paths)
+    return build_static_checkers_reports(changed_python_module_paths, static_checker_reports_path=args.static_checker_reports_path)
 
 
 if __name__ == "__main__":

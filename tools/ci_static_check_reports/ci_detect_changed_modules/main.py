@@ -29,6 +29,11 @@ def find_base_path(path: str, modules: List[Dict[str, str]], unique_modules: Set
 
 
 def list_changed_modules(changed_files: List[str]) -> List[Dict[str, str]]:
+    """
+    changed_filed are the list of files which were modified in current branch.
+    E.g. changed_files = ["tools/ci_static_check_reports/__init__.py", "tools/ci_static_check_reports/setup.py", ...]
+    """
+
     modules: List[Dict[str, str]] = []
     unique_modules: set = set()
     for file_path in changed_files:
