@@ -41,7 +41,7 @@ setup(
     },
     packages=find_packages(exclude=("tests", "docs")),
     install_requires=["click~=8.0.3"],
-    python_requires=">=3.10.0",
+    python_requires=">=3.8.12",
     extras_require={
         "dev": ["MyPy~=0.812", "pytest~=6.2.5", "pytest-cov", "pytest-mock", "requests-mock", "pre-commit"],
         "sphinx-docs": [
