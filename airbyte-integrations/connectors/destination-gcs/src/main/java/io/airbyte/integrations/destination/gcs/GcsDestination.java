@@ -45,24 +45,11 @@ public class GcsDestination extends BaseConnector implements Destination {
       s3Client.putObject(destinationConfig.getBucketName(), fileName, testContent);
       s3Client.deleteObject(destinationConfig.getBucketName(), fileName);
       LOGGER.info("Finished checking for normal upload, started checking multipart uploading...");
-      TransferManager tm = TransferManagerBuilder.standard()
-          .withS3Client(s3Client)
-          .build();
 
       // Test Multipart Upload permissions
-      // TransferManager processes all transfers asynchronously,
-      // so this call returns immediately.
-      final File tmpFile = File.createTempFile(fileName, ".tmp");
-      final FileWriter writer = new FileWriter(tmpFile);
-      writer.write(testContent);
-      writer.close();
-      final Upload upload = tm.upload(destinationConfig.getBucketName(), fileName, tmpFile);
-
-      upload.waitForCompletion();
-      LOGGER.info("Object upload complete");
-      s3Client.deleteObject(destinationConfig.getBucketName(), fileName);
-      LOGGER.info("All checks have passed.");
-      tm.shutdownNow(true);
+      final TransferManager tm = performTestMultipartUpload(s3Client,
+          destinationConfig.getBucketName(), fileName, testContent);
+      deleteTestObjectAndShutdownClient(s3Client, destinationConfig.getBucketName(), fileName, tm);
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {
@@ -73,6 +60,37 @@ public class GcsDestination extends BaseConnector implements Destination {
           .withMessage("Could not connect to the Gcs bucket with the provided configuration. \n" + e
               .getMessage());
     }
+  }
+
+  private TransferManager performTestMultipartUpload(final AmazonS3 s3Client,
+                                                     final String bucketName,
+                                                     final String fileName,
+                                                     final String testContent)
+      throws Exception {
+    final TransferManager tm = TransferManagerBuilder.standard()
+        .withS3Client(s3Client)
+        .build();
+    // TransferManager processes all transfers asynchronously,
+    // so this call returns immediately.
+    final File tmpFile = File.createTempFile(fileName, ".tmp");
+    try (final FileWriter writer = new FileWriter(tmpFile)) {
+      writer.write(testContent);
+    }
+    // TransferManager processes all transfers asynchronously,
+    // so this call returns immediately.
+    final Upload upload = tm.upload(bucketName, fileName, tmpFile);
+    upload.waitForCompletion();
+    LOGGER.info("Object upload complete");
+    return tm;
+  }
+
+  private void deleteTestObjectAndShutdownClient(final AmazonS3 s3Client,
+                                                 final String bucketName,
+                                                 final String fileName,
+                                                 final TransferManager tm) {
+    s3Client.deleteObject(bucketName, fileName);
+    LOGGER.info("All checks have passed.");
+    tm.shutdownNow(true);
   }
 
   @Override
