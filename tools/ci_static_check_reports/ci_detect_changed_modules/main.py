@@ -3,7 +3,6 @@
 #
 import os
 import sys
-
 from typing import List, Set
 
 # Filenames used to detect whether the dir is a module
@@ -34,11 +33,10 @@ def list_changed_modules(changed_files: List[str]) -> Set[str]:
 
 
 def main() -> int:
-    print("Changed modules: ", sys.argv[1:])
     changed_modules = list_changed_modules(sys.argv[1:])
     print(" ".join(changed_modules))
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())
