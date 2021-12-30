@@ -3,7 +3,7 @@
 #
 import os
 
-from ..build_static_checkers_reports import build_static_checkers_reports
+from ci_build_static_checkers_reports.main import build_static_checkers_reports
 
 
 def test_build_static_checkers_reports() -> None:

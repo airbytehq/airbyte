@@ -4,10 +4,9 @@
 import os
 import sys
 
-# Filenames used to detect whether the dir is a module
-from pathlib import Path
 from typing import List, Set
 
+# Filenames used to detect whether the dir is a module
 LANGUAGE_MODULE_ID_FILE = {
     ".py": "setup.py",
     # TODO: Add ID files for other languages
@@ -28,13 +27,18 @@ def find_base_path(path: str, modules: Set[str], lookup_file: str = None) -> Non
 
 
 def list_changed_modules(changed_files: List[str]) -> Set[str]:
-    os.chdir(Path(__file__).parents[2])
     modules: set = set()
     for file_path in changed_files:
         find_base_path(file_path, modules)
     return modules
 
 
-if __name__ == "__main__":
+def main() -> int:
+    print("Changed modules: ", sys.argv[1:])
     changed_modules = list_changed_modules(sys.argv[1:])
     print(" ".join(changed_modules))
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

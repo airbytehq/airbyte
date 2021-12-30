@@ -3,7 +3,6 @@
 #
 import os
 import sys
-from pathlib import Path
 from typing import Dict, List
 
 from invoke import Context
@@ -55,8 +54,7 @@ TASK_COMMANDS: Dict[str, List[str]] = {
 }
 
 
-def build_static_checkers_reports(modules: list) -> None:
-    os.chdir(Path(__file__).parents[2])
+def build_static_checkers_reports(modules: list) -> int:
     ctx = Context()
     toml_config_file = os.path.join(os.getcwd(), "pyproject.toml")
 
@@ -78,8 +76,13 @@ def build_static_checkers_reports(modules: list) -> None:
                 reports_path=reports_path,
                 source_acceptance_test_path=os.path.join(os.getcwd(), "airbyte-integrations/bases/source-acceptance-test"),
             )
+    return 0
 
 
-if __name__ == "__main__":
+def main() -> int:
     print("Changed modules: ", sys.argv[1:])
-    build_static_checkers_reports(sys.argv[1:])
+    return build_static_checkers_reports(sys.argv[1:])
+
+
+if __name__ == '__main__':
+    sys.exit(main())

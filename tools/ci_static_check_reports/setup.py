@@ -20,4 +20,10 @@ setup(
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
+    entry_points={
+        'console_scripts': [
+            'ci_detect_changed_modules = ci_detect_changed_modules.main:main',
+            'ci_build_checkers_reports = ci_build_static_checkers_reports.main:main',
+        ],
+    },
 )
