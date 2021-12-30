@@ -104,6 +104,7 @@ The Airbyte UI will ask for two things:
 
 | Version | Date       | Pull Request | Subject                                                                       |
 |:--------| :--------  | :-----       |:------------------------------------------------------------------------------|
+| 0.2.8   | 2021-12-29 | [89208](https://github.com/airbytehq/airbyte/pull/9208) | Update title and descriptions          
 | 0.2.7   | 2021-09-27 | [8470](https://github.com/airbytehq/airbyte/pull/8470) | Migrate to the CDK                                                            |
 | 0.2.6   | 2021-09-27 | [6354](https://github.com/airbytehq/airbyte/pull/6354) | Support connecting via Oauth webflow                                          |
 | 0.2.5   | 2021-09-12 | [5972](https://github.com/airbytehq/airbyte/pull/5972) | Fix full_refresh test by adding supported_sync_modes to Stream initialization |
