@@ -10,13 +10,13 @@
       "token": {
         "type": "string",
         "title": "API Token",
-        "description": "A Okta token. See the <a href=\"https://docs.airbyte.io/integrations/sources/okta\">docs</a> for instructions on how to generate it.",
+        "description": "Okta API Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/okta\">docs</a> for instructions on how to generate it.",
         "airbyte_secret": true
       },
       "base_url": {
         "type": "string",
         "title": "Base URL",
-        "description": "The Okta base URL.",
+        "description": "Okta base URL. Every Okta org comes with a built-in authorization server called the Org Authorization Server. The base URL for the Org Authorization Server is https://${yourOktaOrg}",
         "airbyte_secret": true
       }
     }
