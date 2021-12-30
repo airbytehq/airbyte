@@ -60,7 +60,7 @@ class SourceGoogleAds(AbstractSource):
         time_zone = self.get_time_zone(account_info)
         end_date = config.get("end_date")
         incremental_stream_config = dict(
-            api=google_api, conversion_window_days=config["conversion_window_days"], start_date=config["start_date"],end_date=end_date, time_zone=time_zone
+            api=google_api, conversion_window_days=config["conversion_window_days"], start_date=config["start_date"], time_zone=time_zone, end_date=end_date
         )
 
         custom_query_streams = [
