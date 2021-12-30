@@ -14,6 +14,7 @@ import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.process.WorkerHeartbeatServer;
+import io.airbyte.workers.temporal.sync.DbtLauncherWorker;
 import io.airbyte.workers.temporal.sync.NormalizationLauncherWorker;
 import io.airbyte.workers.temporal.sync.OrchestratorConstants;
 import io.airbyte.workers.temporal.sync.ReplicationLauncherWorker;
@@ -82,6 +83,8 @@ public class ContainerOrchestratorApp {
       return new ReplicationJobOrchestrator(configs, workerConfigs, processFactory);
     } else if (application.equals(NormalizationLauncherWorker.NORMALIZATION)) {
       return new NormalizationJobOrchestrator(configs, workerConfigs, processFactory);
+    } else if (application.equals(DbtLauncherWorker.DBT)) {
+      return new DbtJobOrchestrator(configs, workerConfigs, processFactory);
     } else {
       log.error("Runner failed", new IllegalStateException("Unexpected value: " + application));
       System.exit(1);

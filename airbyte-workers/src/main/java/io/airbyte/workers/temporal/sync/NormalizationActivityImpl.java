@@ -4,7 +4,6 @@
 
 package io.airbyte.workers.temporal.sync;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfigValidator;
@@ -24,12 +23,8 @@ import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import java.nio.file.Path;
 import java.util.function.Supplier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class NormalizationActivityImpl implements NormalizationActivity {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(NormalizationActivityImpl.class);
 
   private final boolean containerOrchestratorEnabled;
   private final WorkerConfigs workerConfigs;
@@ -52,47 +47,18 @@ public class NormalizationActivityImpl implements NormalizationActivity {
                                    final SecretsHydrator secretsHydrator,
                                    final Path workspaceRoot,
                                    final WorkerEnvironment workerEnvironment,
-                                   final LogConfigs logConfig,
+                                   final LogConfigs logConfigs,
                                    final String databaseUser,
                                    final String databasePassword,
                                    final String databaseUrl,
                                    final String airbyteVersion) {
-    this(containerOrchestratorEnabled,
-        workerConfigs,
-        jobProcessFactory,
-        orchestratorProcessFactory,
-        secretsHydrator,
-        workspaceRoot,
-        new AirbyteConfigValidator(),
-        workerEnvironment,
-        logConfig,
-        databaseUser,
-        databasePassword,
-        databaseUrl,
-        airbyteVersion);
-  }
-
-  @VisibleForTesting
-  NormalizationActivityImpl(final boolean containerOrchestratorEnabled,
-                            final WorkerConfigs workerConfigs,
-                            final ProcessFactory jobProcessFactory,
-                            final ProcessFactory orchestratorProcessFactory,
-                            final SecretsHydrator secretsHydrator,
-                            final Path workspaceRoot,
-                            final AirbyteConfigValidator validator,
-                            final WorkerEnvironment workerEnvironment,
-                            final LogConfigs logConfigs,
-                            final String databaseUser,
-                            final String databasePassword,
-                            final String databaseUrl,
-                            final String airbyteVersion) {
     this.containerOrchestratorEnabled = containerOrchestratorEnabled;
     this.workerConfigs = workerConfigs;
     this.jobProcessFactory = jobProcessFactory;
     this.orchestratorProcessFactory = orchestratorProcessFactory;
     this.secretsHydrator = secretsHydrator;
     this.workspaceRoot = workspaceRoot;
-    this.validator = validator;
+    this.validator = new AirbyteConfigValidator();
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
     this.databaseUser = databaseUser;

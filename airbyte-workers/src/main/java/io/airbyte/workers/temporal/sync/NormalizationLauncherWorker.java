@@ -125,10 +125,10 @@ public class NormalizationLauncherWorker implements Worker<NormalizationInput, V
       return;
     }
 
-    LOGGER.debug("Closing sync runner process");
+    LOGGER.debug("Closing normalization launcher process");
     WorkerUtils.gentleClose(workerConfigs, process, 1, TimeUnit.MINUTES);
     if (process.isAlive() || process.exitValue() != 0) {
-      LOGGER.error("Sync runner process wasn't successful");
+      LOGGER.error("Normalization launcher process wasn't successful");
     }
   }
 
