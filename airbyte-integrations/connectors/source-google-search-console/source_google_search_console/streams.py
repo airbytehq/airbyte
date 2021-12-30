@@ -95,7 +95,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
     start_row = 0
     dimensions = []
     search_types = ["web", "news", "image", "video"]
-    range_of_days = 2
+    range_of_days = 3
 
     def path(
         self,

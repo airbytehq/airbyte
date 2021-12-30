@@ -43,7 +43,7 @@ def test_pagination(count, expected):
     ],
 )
 def test_slice(site_urls, sync_mode):
-    stream = SearchAnalyticsByDate(NoAuth(), site_urls, "2021-09-01", "2021-09-05")
+    stream = SearchAnalyticsByDate(NoAuth(), site_urls, "2021-09-01", "2021-09-07")
 
     search_types = stream.search_types
     stream_slice = stream.stream_slices(sync_mode=sync_mode)
@@ -51,9 +51,9 @@ def test_slice(site_urls, sync_mode):
     for site_url in site_urls:
         for search_type in search_types:
             for range_ in [
-                {"start_date": "2021-09-01", "end_date": "2021-09-02"},
-                {"start_date": "2021-09-03", "end_date": "2021-09-04"},
-                {"start_date": "2021-09-05", "end_date": "2021-09-05"},
+                {"start_date": "2021-09-01", "end_date": "2021-09-03"},
+                {"start_date": "2021-09-04", "end_date": "2021-09-06"},
+                {"start_date": "2021-09-07", "end_date": "2021-09-07"},
             ]:
                 expected = {
                     "site_url": quote_plus(site_url),
