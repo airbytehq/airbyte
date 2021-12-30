@@ -80,20 +80,22 @@ cmd_publish() {
      publish_spec_to_cache=false
   fi
 
-  # before we start working sanity check that this version has not been published yet, so that we do not spend a lot of
-  # time building, running tests to realize this version is a duplicate.
-  _error_if_tag_exists "$versioned_image"
-
-  cmd_build "$path" "$run_tests"
-
+  # setting local variables for docker image versioning
   local image_name; image_name=$(_get_docker_image_name "$path"/Dockerfile)
   local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile)
   local versioned_image=$image_name:$image_version
   local latest_image=$image_name:latest
 
   echo "image_name $image_name"
-  echo "$versioned_image $versioned_image"
+  echo "versioned_image $versioned_image"
   echo "latest_image $latest_image"
+
+  # before we start working sanity check that this version has not been published yet, so that we do not spend a lot of
+  # time building, running tests to realize this version is a duplicate.
+  _error_if_tag_exists "$versioned_image"
+
+  # building the connector
+  cmd_build "$path" "$run_tests"
 
   # in case curing the build / tests someone this version has been published.
   _error_if_tag_exists "$versioned_image"
