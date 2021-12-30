@@ -17,12 +17,10 @@ jobs:
           fetch-depth: 0
 
       - name: Set java-version
-        run: |
-          echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
+        run: echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
 
       - name: Set node-version
-        run: |
-          echo "NODE_VERSION="$(cat ../../.node-version)"" >> $GITHUB_ENV
+        run: echo "NODE_VERSION="$(cat ../../.node-version)"" >> $GITHUB_ENV
 
       - uses: actions/setup-java@v1
         with:

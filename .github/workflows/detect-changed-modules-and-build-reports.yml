@@ -14,8 +14,7 @@ jobs:
         with:
           fetch-depth: 1000
       - name: Set python-version
-        run: |
-          echo "PYTHON_VERSION="$(cat ../../.python-version)"" >> $GITHUB_ENV
+        run: echo "PYTHON_VERSION="$(cat ../../.python-version)"" >> $GITHUB_ENV
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
@@ -36,8 +35,7 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
       - name: Set python-version
-        run: |
-          echo "PYTHON_VERSION="$(cat ../../.python-version)"" >> $GITHUB_ENV
+        run: echo "PYTHON_VERSION="$(cat ../../.python-version)"" >> $GITHUB_ENV
       - name: Setup Python
         uses: actions/setup-python@v2
         with:

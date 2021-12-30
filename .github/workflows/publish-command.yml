@@ -67,8 +67,7 @@ jobs:
         with:
           repository: ${{github.event.pull_request.head.repo.full_name}} # always use the branch's repository
       - name: Set java-version
-        run: |
-          echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
+        run: echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
       - name: Install Java
         uses: actions/setup-java@v1
         with:

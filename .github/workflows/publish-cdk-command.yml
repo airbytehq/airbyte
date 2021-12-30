@@ -24,8 +24,7 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
       - name: Set java-version
-        run: |
-          echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
+        run: echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
       - uses: actions/setup-java@v1
         with:
           java-version: "${{ env.JAVA_VERSION }}"
@@ -60,11 +59,9 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
       - name: Set python-version
-        run: |
-          echo "PYTHON_VERSION="$(cat ../../.python-version)"" >> $GITHUB_ENV
+        run: echo "PYTHON_VERSION="$(cat ../../.python-version)"" >> $GITHUB_ENV
       - name: Set pip-version
-        run: |
-          echo "PIP_VERSION="$(cat ../../.pip-version)"" >> $GITHUB_ENV
+        run: echo "PIP_VERSION="$(cat ../../.pip-version)"" >> $GITHUB_ENV
       - name: Publish Python Package
         uses: mariamrf/py-package-publish-action@v1.1.0
         with:

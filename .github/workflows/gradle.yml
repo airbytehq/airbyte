@@ -50,16 +50,13 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set java-version
-        run: |
-          echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
+        run: echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
 
       - name: Set python-version
-        run: |
-          echo "PYTHON_VERSION="$(cat ../../.python-version)"" >> $GITHUB_ENV
+        run: echo "PYTHON_VERSION="$(cat ../../.python-version)"" >> $GITHUB_ENV
 
       - name: Set node-version
-        run: |
-          echo "NODE_VERSION="$(cat ../../.node-version)"" >> $GITHUB_ENV
+        run: echo "NODE_VERSION="$(cat ../../.node-version)"" >> $GITHUB_ENV
 
       - name: Pip Caching
         uses: actions/cache@v2
@@ -202,12 +199,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set java-version
-        run: |
-          echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
+        run: echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
 
       - name: Set node-version
-        run: |
-          echo "NODE_VERSION="$(cat ../../.node-version)"" >> $GITHUB_ENV
+        run: echo "NODE_VERSION="$(cat ../../.node-version)"" >> $GITHUB_ENV
 
       - name: Npm Caching
         uses: actions/cache@v2
