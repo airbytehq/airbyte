@@ -2221,7 +2221,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-meilisearch:0.2.10"
+- dockerImage: "airbyte/destination-meilisearch:0.2.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/meilisearch"
     connectionSpecification:
@@ -2234,13 +2234,14 @@
       properties:
         host:
           title: "Host"
-          description: "Hostname of the MeiliSearch instance"
+          description: "Hostname of the MeiliSearch instance."
           type: "string"
           order: 0
         api_key:
           title: "API Key"
           airbyte_secret: true
-          description: "MeiliSearch instance API Key"
+          description: "MeiliSearch API Key. See the <a href=\"https://docs.airbyte.io/integrations/destinations/meilisearch\"\
+            >docs</a> for more information on how to obtain this key."
           type: "string"
           order: 1
     supportsIncremental: true
