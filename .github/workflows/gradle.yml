@@ -216,10 +216,6 @@ jobs:
         with:
           node-version: "16.13.0"
 
-      - uses: actions/setup-python@v2
-        with:
-          python-version: "3.8"
-
       - name: Set up CI Gradle Properties
         run: |
           mkdir -p ~/.gradle/
