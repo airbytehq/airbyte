@@ -17,6 +17,8 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
+      - name: Intall Requirements
+        run: pip install ./tools/ci_static_check_reports/.
       - name: Detect Changed Modules
         id: detect-changed-modules
         run: |
