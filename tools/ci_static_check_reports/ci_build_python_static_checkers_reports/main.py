@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+import json
 import os
 import sys
 from typing import Dict, List
@@ -80,8 +81,9 @@ def build_static_checkers_reports(modules: list) -> int:
 
 
 def main() -> int:
-    print("Changed modules: ", sys.argv[1:])
-    return build_static_checkers_reports(sys.argv[1:])
+    changed_python_module_paths = [module["dir"] for module in json.loads(sys.argv[1]) if module["lang"] == "py"]
+    print("Changed python modules: ", changed_python_module_paths)
+    return build_static_checkers_reports(changed_python_module_paths)
 
 
 if __name__ == "__main__":

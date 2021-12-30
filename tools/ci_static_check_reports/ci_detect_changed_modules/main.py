@@ -1,9 +1,10 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+import json
 import os
 import sys
-from typing import List, Set
+from typing import Dict, List, Set
 
 # Filenames used to detect whether the dir is a module
 LANGUAGE_MODULE_ID_FILE = {
@@ -12,7 +13,7 @@ LANGUAGE_MODULE_ID_FILE = {
 }
 
 
-def find_base_path(path: str, modules: Set[str], lookup_file: str = None) -> None:
+def find_base_path(path: str, modules: List[Dict[str, str]], unique_modules: Set[str], file_ext: str = "", lookup_file: str = None) -> None:
     filename, file_extension = os.path.splitext(path)
     lookup_file = lookup_file or LANGUAGE_MODULE_ID_FILE.get(file_extension)
 
@@ -20,21 +21,25 @@ def find_base_path(path: str, modules: Set[str], lookup_file: str = None) -> Non
     if dir_path and os.path.exists(dir_path):
         is_module_root = lookup_file in os.listdir(dir_path)
         if is_module_root:
-            modules.add(dir_path)
+            if dir_path not in unique_modules:
+                modules.append({"dir": dir_path, "lang": file_ext[1:]})
+                unique_modules.add(dir_path)
         else:
-            find_base_path(dir_path, modules, lookup_file=lookup_file)
+            find_base_path(dir_path, modules, unique_modules, file_ext=file_extension, lookup_file=lookup_file)
 
 
-def list_changed_modules(changed_files: List[str]) -> Set[str]:
-    modules: set = set()
+def list_changed_modules(changed_files: List[str]) -> List[Dict[str, str]]:
+    modules: List[Dict[str, str]] = []
+    unique_modules: set = set()
     for file_path in changed_files:
-        find_base_path(file_path, modules)
+        _, file_extension = os.path.splitext(file_path)
+        find_base_path(file_path, modules, file_ext=file_extension, unique_modules=unique_modules)
     return modules
 
 
 def main() -> int:
     changed_modules = list_changed_modules(sys.argv[1:])
-    print(" ".join(changed_modules))
+    print(json.dumps(changed_modules))
     return 0
 
 
