@@ -367,3 +367,26 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalSalesforc
     def next_page_token(self, last_record: dict) -> str:
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
             return last_record[self.cursor_field]
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        selected_properties = self.get_json_schema().get("properties", {})
+
+        # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
+        if self.sf_api.api_type == "BULK":
+            selected_properties = {
+                key: value
+                for key, value in selected_properties.items()
+                if value.get("format") != "base64" and "object" not in value["type"]
+            }
+
+        stream_date = stream_state.get(self.cursor_field)
+        start_date = next_page_token or stream_date or self.start_date
+
+        query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
+        if start_date:
+            query += f"WHERE {self.cursor_field} >= {start_date} "
+        if self.name not in UNSUPPORTED_FILTERING_STREAMS:
+            query += f"ORDER BY {self.cursor_field} ASC LIMIT {self.page_size}"
+        return {"q": query}
