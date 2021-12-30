@@ -78,7 +78,7 @@
               "cluster_url": {
                 "title": "Cluster URL",
                 "type": "string",
-                "description": "The URL of a cluster to connect to.xw",
+                "description": "The URL of a cluster to connect to.",
                 "order": 0
               }
             }
