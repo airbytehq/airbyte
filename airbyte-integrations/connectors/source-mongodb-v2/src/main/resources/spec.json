@@ -67,7 +67,7 @@
               "replica_set": {
                 "title": "Replica Set",
                 "type": "string",
-                "description": "A replica set in MongoDB is a group of mongodb processes that maintain the same data set.",
+                "description": "A replica set in MongoDB is a group of mongod processes that maintain the same data set.",
                 "order": 1
               }
             }
