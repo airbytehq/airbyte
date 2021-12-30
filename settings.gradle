@@ -30,12 +30,14 @@ if (!System.getenv().containsKey("SUB_BUILD")) {
     }
 }
 
+// shared
+include ':airbyte-commons'
+
 // shared by CONNECTORS_BASE and PLATFORM sub builds
 if (!System.getenv().containsKey("SUB_BUILD") == "CONNECTORS_BASE" || System.getenv().get("SUB_BUILD") == "PLATFORM") {
     include ':airbyte-api'
     include ':airbyte-commons-cli'
     include ':airbyte-commons-docker'
-    include ':airbyte-commons'
     include ':airbyte-config:models' // reused by acceptance tests in connector base.
     include ':airbyte-db:lib' // reused by acceptance tests in connector base.
     include ':airbyte-json-validation'
