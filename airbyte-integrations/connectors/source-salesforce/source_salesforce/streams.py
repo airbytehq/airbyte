@@ -250,6 +250,32 @@ class BulkSalesforceStream(SalesforceStream):
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             return f"WHERE {self.primary_key} >= '{last_record[self.primary_key]}' "
 
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        """
+        Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
+        """
+
+        selected_properties = self.get_json_schema().get("properties", {})
+
+        # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
+        if self.sf_api.api_type == "BULK":
+            selected_properties = {
+                key: value
+                for key, value in selected_properties.items()
+                if value.get("format") != "base64" and "object" not in value["type"]
+            }
+
+        query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
+        if next_page_token:
+            query += next_page_token
+
+        if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
+            query += f"ORDER BY {self.primary_key} ASC LIMIT {self.page_size}"
+
+        return {"q": query}
+
     def read_records(
         self,
         sync_mode: SyncMode,
