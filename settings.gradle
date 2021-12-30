@@ -25,7 +25,7 @@ if (!System.getenv().containsKey("SUB_BUILD")) {
 } else {
     def subBuild = System.getenv().get("SUB_BUILD")
     println("Building Airbyte Sub Build: " + subBuild)
-    if (subBuild != "PLATFORM" && subBuild != "CONNECTORS_BASE") {
+    if (subBuild != "PLATFORM" && subBuild != "CONNECTORS_BASE" && subBuild != "OCTAVIA_CLI") {
         throw new IllegalArgumentException(String.format("%s is invalid. Must be unset or PLATFORM or CONNECTORS_BASE", subBuild))
     }
 }
@@ -42,6 +42,7 @@ include ':airbyte-protocol:models'
 include ':airbyte-metrics'
 include ':airbyte-queue'
 include ':airbyte-test-utils'
+include ':airbyte-oauth'
 
 // airbyte-workers has a lot of dependencies.
 include ':airbyte-workers' // reused by acceptance tests in connector base.
@@ -60,14 +61,12 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-config:specs'
     include ':airbyte-container-orchestrator'
     include ':airbyte-webapp-e2e-tests'
-    include ':airbyte-oauth'
     include ':airbyte-scheduler:app'
     include ':airbyte-scheduler:client'
     include ':airbyte-server'
     include ':airbyte-temporal'
     include ':airbyte-tests'
     include ':airbyte-webapp'
-    include ':octavia-cli'
 }
 
 // connectors base
@@ -87,8 +86,6 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-integrations:connector-templates:generator'
     include ':airbyte-integrations:bases:debezium'
 
-    include ':airbyte-oauth'
-
     // Needed by normalization integration tests
     include ':airbyte-integrations:connectors:destination-bigquery'
     include ':airbyte-integrations:connectors:destination-jdbc'
@@ -104,6 +101,10 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-integrations:connectors:destination-gcs'
 
     include ':tools:code-generator'
+}
+
+if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "OCTAVIA_CLI") {
+    include ':octavia-cli'
 }
 
 // connectors
