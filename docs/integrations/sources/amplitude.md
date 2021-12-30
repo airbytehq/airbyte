@@ -38,13 +38,14 @@ The Amplitude connector should gracefully handle Amplitude API limitations under
 * Amplitude Secret Key
 
 ### Setup guide
-
+<!-- markdown-link-check-disable-next-line -->
 Please read [How to get your API key and Secret key](https://help.amplitude.com/hc/en-us/articles/360058073772-Create-and-manage-organizations-and-projects#view-and-edit-your-project-information).
 
 ## Changelog
 
 | Version | Date       | Pull Request                                           | Subject |
 | :------ | :--------- | :----------------------------------------------------- | :------ |
+| 0.1.4   | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434) | Update fields in source-connectors specifications |
 | 0.1.3   | 2021-10-12 | [6375](https://github.com/airbytehq/airbyte/pull/6375) | Log Transient 404 Error in Events stream  |
 | 0.1.2   | 2021-09-21 | [6353](https://github.com/airbytehq/airbyte/pull/6353) | Correct output schemas on cohorts, events, active\_users, and average\_session\_lengths streams |
 | 0.1.1   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE\_ENTRYPOINT for kubernetes support |

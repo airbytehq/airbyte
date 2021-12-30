@@ -5,8 +5,6 @@
 package io.airbyte.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.api.client.util.Preconditions;
-import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.lang.MoreBooleans;
@@ -38,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -56,7 +55,6 @@ public class ConfigRepository {
   private final SecretsHydrator secretsHydrator;
   private final Optional<SecretPersistence> longLivedSecretPersistence;
   private final Optional<SecretPersistence> ephemeralSecretPersistence;
-  private Function<String, ConnectorSpecification> specFetcherFn;
 
   public ConfigRepository(final ConfigPersistence persistence,
                           final SecretsHydrator secretsHydrator,
@@ -111,9 +109,21 @@ public class ConfigRepository {
     persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
   }
 
+  public void setFeedback(final UUID workflowId) throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardWorkspace workspace = this.getStandardWorkspace(workflowId, false);
+
+    workspace.setFeedbackDone(true);
+
+    persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
+  }
+
   public StandardSourceDefinition getStandardSourceDefinition(final UUID sourceDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionId.toString(), StandardSourceDefinition.class);
+
+    return persistence.getConfig(
+        ConfigSchema.STANDARD_SOURCE_DEFINITION,
+        sourceDefinitionId.toString(),
+        StandardSourceDefinition.class);
   }
 
   public StandardSourceDefinition getSourceDefinitionFromSource(final UUID sourceId) {
@@ -134,8 +144,26 @@ public class ConfigRepository {
     }
   }
 
-  public List<StandardSourceDefinition> listStandardSourceDefinitions() throws JsonValidationException, IOException {
-    return persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
+  public StandardWorkspace getStandardWorkspaceFromConnection(final UUID connectionId, final boolean isTombstone) {
+    try {
+      final StandardSync sync = getStandardSync(connectionId);
+      final SourceConnection source = getSourceConnection(sync.getSourceId());
+      return getStandardWorkspace(source.getWorkspaceId(), isTombstone);
+    } catch (final Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public List<StandardSourceDefinition> listStandardSourceDefinitions(final boolean includeTombstone) throws JsonValidationException, IOException {
+    final List<StandardSourceDefinition> sourceDefinitions = new ArrayList<>();
+    for (final StandardSourceDefinition sourceDefinition : persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION,
+        StandardSourceDefinition.class)) {
+      if (!MoreBooleans.isTruthy(sourceDefinition.getTombstone()) || includeTombstone) {
+        sourceDefinitions.add(sourceDefinition);
+      }
+    }
+
+    return sourceDefinitions;
   }
 
   public void writeStandardSourceDefinition(final StandardSourceDefinition sourceDefinition) throws JsonValidationException, IOException {
@@ -148,6 +176,17 @@ public class ConfigRepository {
     } catch (final ConfigNotFoundException e) {
       LOGGER.info("Attempted to delete source definition with id: {}, but it does not exist", sourceDefId);
     }
+  }
+
+  public void deleteSourceDefinitionAndAssociations(final UUID sourceDefinitionId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    deleteConnectorDefinitionAndAssociations(
+        ConfigSchema.STANDARD_SOURCE_DEFINITION,
+        ConfigSchema.SOURCE_CONNECTION,
+        SourceConnection.class,
+        SourceConnection::getSourceId,
+        SourceConnection::getSourceDefinitionId,
+        sourceDefinitionId);
   }
 
   public StandardDestinationDefinition getStandardDestinationDefinition(final UUID destinationDefinitionId)
@@ -174,8 +213,18 @@ public class ConfigRepository {
     }
   }
 
-  public List<StandardDestinationDefinition> listStandardDestinationDefinitions() throws JsonValidationException, IOException {
-    return persistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class);
+  public List<StandardDestinationDefinition> listStandardDestinationDefinitions(final boolean includeTombstone)
+      throws JsonValidationException, IOException {
+    final List<StandardDestinationDefinition> destinationDefinitions = new ArrayList<>();
+
+    for (final StandardDestinationDefinition destinationDefinition : persistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION,
+        StandardDestinationDefinition.class)) {
+      if (!MoreBooleans.isTruthy(destinationDefinition.getTombstone()) || includeTombstone) {
+        destinationDefinitions.add(destinationDefinition);
+      }
+    }
+
+    return destinationDefinitions;
   }
 
   public void writeStandardDestinationDefinition(final StandardDestinationDefinition destinationDefinition)
@@ -192,6 +241,52 @@ public class ConfigRepository {
     } catch (final ConfigNotFoundException e) {
       LOGGER.info("Attempted to delete destination definition with id: {}, but it does not exist", destDefId);
     }
+  }
+
+  public void deleteStandardSyncDefinition(final UUID syncDefId) throws IOException {
+    try {
+      persistence.deleteConfig(ConfigSchema.STANDARD_SYNC, syncDefId.toString());
+    } catch (final ConfigNotFoundException e) {
+      LOGGER.info("Attempted to delete destination definition with id: {}, but it does not exist", syncDefId);
+    }
+  }
+
+  public void deleteDestinationDefinitionAndAssociations(final UUID destinationDefinitionId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    deleteConnectorDefinitionAndAssociations(
+        ConfigSchema.STANDARD_DESTINATION_DEFINITION,
+        ConfigSchema.DESTINATION_CONNECTION,
+        DestinationConnection.class,
+        DestinationConnection::getDestinationId,
+        DestinationConnection::getDestinationDefinitionId,
+        destinationDefinitionId);
+  }
+
+  private <T> void deleteConnectorDefinitionAndAssociations(
+                                                            final ConfigSchema definitionType,
+                                                            final ConfigSchema connectorType,
+                                                            final Class<T> connectorClass,
+                                                            final Function<T, UUID> connectorIdGetter,
+                                                            final Function<T, UUID> connectorDefinitionIdGetter,
+                                                            final UUID definitionId)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    final Set<T> connectors = persistence.listConfigs(connectorType, connectorClass)
+        .stream()
+        .filter(connector -> connectorDefinitionIdGetter.apply(connector).equals(definitionId))
+        .collect(Collectors.toSet());
+    for (final T connector : connectors) {
+      final Set<StandardSync> syncs = persistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class)
+          .stream()
+          .filter(sync -> sync.getSourceId().equals(connectorIdGetter.apply(connector))
+              || sync.getDestinationId().equals(connectorIdGetter.apply(connector)))
+          .collect(Collectors.toSet());
+
+      for (final StandardSync sync : syncs) {
+        persistence.deleteConfig(ConfigSchema.STANDARD_SYNC, sync.getConnectionId().toString());
+      }
+      persistence.deleteConfig(connectorType, connectorIdGetter.apply(connector).toString());
+    }
+    persistence.deleteConfig(definitionType, definitionId.toString());
   }
 
   public SourceConnection getSourceConnection(final UUID sourceId) throws JsonValidationException, ConfigNotFoundException, IOException {
@@ -229,7 +324,6 @@ public class ConfigRepository {
   }
 
   /**
-   *
    * @param workspaceId workspace id for the config
    * @param fullConfig full config
    * @param spec connector specification
@@ -240,7 +334,6 @@ public class ConfigRepository {
   }
 
   /**
-   *
    * @param workspaceId workspace id for the config
    * @param oldConfig old full config
    * @param fullConfig new full config
@@ -279,7 +372,6 @@ public class ConfigRepository {
   }
 
   /**
-   *
    * @param fullConfig full config
    * @param spec connector specification
    * @return partial config
@@ -461,7 +553,7 @@ public class ConfigRepository {
 
   /**
    * Converts between a dumpConfig() output and a replaceAllConfigs() input, by deserializing the
-   * string/jsonnode into the AirbyteConfig, Stream<Object<AirbyteConfig.getClassName()>
+   * string/jsonnode into the AirbyteConfig, Stream&lt;Object&lt;AirbyteConfig.getClassName()&gt;&gt;
    *
    * @param configurations from dumpConfig()
    * @return input suitable for replaceAllConfigs()
@@ -469,7 +561,8 @@ public class ConfigRepository {
   public static Map<AirbyteConfig, Stream<?>> deserialize(final Map<String, Stream<JsonNode>> configurations) {
     final Map<AirbyteConfig, Stream<?>> deserialized = new LinkedHashMap<AirbyteConfig, Stream<?>>();
     for (final String configSchemaName : configurations.keySet()) {
-      deserialized.put(ConfigSchema.valueOf(configSchemaName),
+      deserialized.put(
+          ConfigSchema.valueOf(configSchemaName),
           configurations.get(configSchemaName).map(jsonNode -> Jsons.object(jsonNode, ConfigSchema.valueOf(configSchemaName).getClassName())));
     }
     return deserialized;
@@ -481,7 +574,6 @@ public class ConfigRepository {
 
   public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
     if (longLivedSecretPersistence.isPresent()) {
-      Preconditions.checkNotNull(specFetcherFn);
       final var augmentedMap = new HashMap<>(configs);
 
       // get all source defs so that we can use their specs when storing secrets.
@@ -492,11 +584,7 @@ public class ConfigRepository {
       augmentedMap.put(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefs.stream());
       final Map<UUID, ConnectorSpecification> sourceDefIdToSpec = sourceDefs
           .stream()
-          .collect(Collectors.toMap(StandardSourceDefinition::getSourceDefinitionId, sourceDefinition -> {
-            final String imageName = DockerUtils
-                .getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
-            return specFetcherFn.apply(imageName);
-          }));
+          .collect(Collectors.toMap(StandardSourceDefinition::getSourceDefinitionId, StandardSourceDefinition::getSpec));
 
       // get all destination defs so that we can use their specs when storing secrets.
       @SuppressWarnings("unchecked")
@@ -505,11 +593,7 @@ public class ConfigRepository {
       augmentedMap.put(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefs.stream());
       final Map<UUID, ConnectorSpecification> destinationDefIdToSpec = destinationDefs
           .stream()
-          .collect(Collectors.toMap(StandardDestinationDefinition::getDestinationDefinitionId, destinationDefinition -> {
-            final String imageName = DockerUtils
-                .getTaggedImageName(destinationDefinition.getDockerRepository(), destinationDefinition.getDockerImageTag());
-            return specFetcherFn.apply(imageName);
-          }));
+          .collect(Collectors.toMap(StandardDestinationDefinition::getDestinationDefinitionId, StandardDestinationDefinition::getSpec));
 
       if (augmentedMap.containsKey(ConfigSchema.SOURCE_CONNECTION)) {
         final Stream<?> augmentedValue = augmentedMap.get(ConfigSchema.SOURCE_CONNECTION)
@@ -572,10 +656,6 @@ public class ConfigRepository {
 
   public void loadData(final ConfigPersistence seedPersistence) throws IOException {
     persistence.loadData(seedPersistence);
-  }
-
-  public void setSpecFetcher(final Function<String, ConnectorSpecification> specFetcherFn) {
-    this.specFetcherFn = specFetcherFn;
   }
 
 }

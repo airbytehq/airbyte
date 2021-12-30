@@ -310,10 +310,12 @@
       }
     },
     "createdAt": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "updatedAt": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "archived": {
       "type": ["null", "boolean"]

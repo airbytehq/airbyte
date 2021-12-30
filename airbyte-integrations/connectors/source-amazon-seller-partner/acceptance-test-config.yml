@@ -3,9 +3,9 @@ tests:
   spec:
     - spec_path: "source_amazon_seller_partner/spec.json"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-      timeout_seconds: 60
+    # - config_path: "secrets/config.json"
+    #   status: "succeed"
+    #   timeout_seconds: 60
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
       timeout_seconds: 60

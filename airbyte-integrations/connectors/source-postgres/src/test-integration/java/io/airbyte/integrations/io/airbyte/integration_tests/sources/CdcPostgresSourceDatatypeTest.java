@@ -321,8 +321,8 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("numeric")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("'99999'", "'NAN'", null)
-            .addExpectedValues("99999", "NAN", null)
+            .addInsertValues("'99999'", "'NAN'", "10000000000000000000000000000000000000", null)
+            .addExpectedValues("99999", "NAN", "10000000000000000000000000000000000000", null)
             .build());
 
     addDataTypeTestData(
@@ -430,7 +430,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("text")
             .fullSourceDataType("text[]")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaPrimitive.ARRAY)
             .addInsertValues("'{10000, 10000, 10000, 10000}'", "null")
             .addExpectedValues("[\"10000\",\"10000\",\"10000\",\"10000\"]", null)
             .build());
@@ -507,6 +507,23 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
                 "'((0,0),(999999999999999999999999,0))'", "null")
             .addExpectedValues("((3.0,7.0),(15.0,18.0))", "((0.0,0.0),(0.0,0.0))", "((0.0,0.0),(1.0E24,0.0))", null)
             .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("real")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'123'", "'1234567890.1234567'", "null")
+            .addExpectedValues("123.0", "1.23456794E9", null)
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("tsvector")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("to_tsvector('The quick brown fox jumped over the lazy dog.')")
+            .addExpectedValues("'brown':3 'dog':9 'fox':4 'jumped':5 'lazy':8 'over':6 'quick':2 'the':1,7")
+            .build());
+
   }
 
 }

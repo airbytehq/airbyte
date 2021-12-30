@@ -16,6 +16,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 LAST_END_TIME_KEY = "_last_end_time"
@@ -26,13 +27,15 @@ class SourceZendeskException(Exception):
 
 
 class SourceZendeskSupportStream(HttpStream, ABC):
-    """"Basic Zendesk class"""
+    """ "Basic Zendesk class"""
 
     primary_key = "id"
 
     page_size = 100
     created_at_field = "created_at"
     updated_at_field = "updated_at"
+
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, subdomain: str, **kwargs):
         super().__init__(**kwargs)
@@ -74,7 +77,7 @@ class SourceZendeskSupportStream(HttpStream, ABC):
     @staticmethod
     def str2datetime(str_dt: str) -> datetime:
         """convert string to datetime object
-        Input example: '2021-07-22T06:55:55Z' FROMAT : "%Y-%m-%dT%H:%M:%SZ"
+        Input example: '2021-07-22T06:55:55Z' FORMAT : "%Y-%m-%dT%H:%M:%SZ"
         """
         if not str_dt:
             return None
@@ -83,7 +86,7 @@ class SourceZendeskSupportStream(HttpStream, ABC):
     @staticmethod
     def datetime2str(dt: datetime) -> str:
         """convert datetime object to string
-        Output example: '2021-07-22T06:55:55Z' FROMAT : "%Y-%m-%dT%H:%M:%SZ"
+        Output example: '2021-07-22T06:55:55Z' FORMAT : "%Y-%m-%dT%H:%M:%SZ"
         """
         return datetime.strftime(dt.replace(tzinfo=pytz.UTC), DATETIME_FORMAT)
 
@@ -123,7 +126,7 @@ class IncrementalEntityStream(SourceZendeskSupportStream, ABC):
 
     def __init__(self, start_date: str, **kwargs):
         super().__init__(**kwargs)
-        # add the custom value for skiping of not relevant records
+        # add the custom value for skipping of not relevant records
         self._start_date = self.str2datetime(start_date) if isinstance(start_date, str) else start_date
         # Flag for marking of completed process
         self._finished = False
@@ -180,7 +183,7 @@ class IncrementalExportStream(IncrementalEntityStream, ABC):
     page_size = 1000
 
     # try to save a stage after every 100 records
-    # this endpoint provides responces in ascending order.
+    # this endpoint provides responses in ascending order.
     state_checkpoint_interval = 100
 
     def __init__(self, **kwargs):
@@ -206,14 +209,14 @@ class IncrementalExportStream(IncrementalEntityStream, ABC):
         if not next_page_token:
             current_state = stream_state.get(LAST_END_TIME_KEY)
             if not current_state:
-                # try to search all reconds with generated_timestamp > start_time
+                # try to search all records with generated_timestamp > start_time
                 current_state = stream_state.get(self.cursor_field)
                 if current_state and isinstance(current_state, str) and not current_state.isdigit():
                     current_state = self.str2unixtime(current_state)
             elif not self.last_end_time:
                 self.last_end_time = current_state
             start_time = int(current_state or time.mktime(self._start_date.timetuple()))
-            # +1 because the API returns all records where  generated_timestamp >= start_time
+            # +1 because the API returns all records where generated_timestamp >= start_time
 
             now = calendar.timegm(datetime.now().utctimetuple())
             if start_time > now - 60:
@@ -262,8 +265,8 @@ class IncrementalExportStream(IncrementalEntityStream, ABC):
 class IncrementalUnsortedStream(IncrementalEntityStream, ABC):
     """Stream for loading without sorting
 
-    Some endpoints don't provide approachs for data filtration
-    We can load all reconds fully and select updated data only
+    Some endpoints don't provide approaches for data filtration
+    We can load all records fully and select updated data only
     """
 
     def __init__(self, **kwargs):
@@ -320,28 +323,39 @@ class IncrementalUnsortedPageStream(IncrementalUnsortedStream, ABC):
         return params
 
 
+class IncrementalUnsortedCursorStream(IncrementalUnsortedStream, ABC):
+    """Stream for loading without sorting but with cursor based pagination"""
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        has_more = response.json().get("meta", {}).get("has_more")
+        if not has_more:
+            self._finished = True
+            return None
+        return response.json().get("meta", {}).get("after_cursor")
+
+    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(next_page_token=next_page_token, **kwargs)
+        params["page[size]"] = self.page_size
+        if next_page_token:
+            params["page[after]"] = next_page_token
+        return params
+
+
 class FullRefreshStream(IncrementalUnsortedPageStream, ABC):
-    """"Stream for endpoints where there are not any created_at or updated_at fields"""
+    """ "Stream for endpoints where there are not any created_at or updated_at fields"""
 
     # reset to default value
     cursor_field = SourceZendeskSupportStream.cursor_field
 
 
-class IncrementalSortedCursorStream(IncrementalUnsortedStream, ABC):
+class IncrementalSortedCursorStream(IncrementalUnsortedCursorStream, ABC):
     """Stream for loading sorting data with cursor based pagination"""
 
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(next_page_token=next_page_token, **kwargs)
-        params.update({"sort_by": self.cursor_field, "sort_order": "desc", "limit": self.page_size})
-
-        if next_page_token:
-            params["cursor"] = next_page_token
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(**kwargs)
+        if params:
+            params.update({"sort_by": self.cursor_field, "sort_order": "desc"})
         return params
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if self.is_finished:
-            return None
-        return response.json().get("before_cursor")
 
 
 class IncrementalSortedPageStream(IncrementalUnsortedPageStream, ABC):
@@ -354,7 +368,7 @@ class IncrementalSortedPageStream(IncrementalUnsortedPageStream, ABC):
         return params
 
 
-class TicketComments(IncrementalSortedPageStream):
+class TicketComments(IncrementalSortedCursorStream):
     """TicketComments stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_comments/
     ZenDesk doesn't provide API for loading of all comments by one direct endpoints.
     Thus at first we loads all updated tickets and after this tries to load all created/updated
@@ -365,7 +379,7 @@ class TicketComments(IncrementalSortedPageStream):
     raise_on_http_errors = False
 
     response_list_name = "comments"
-    cursor_field = IncrementalSortedPageStream.created_at_field
+    cursor_field = IncrementalSortedCursorStream.created_at_field
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -442,7 +456,12 @@ class TicketComments(IncrementalSortedPageStream):
     ) -> Iterable[Mapping]:
         """Handle response status"""
         if response.status_code == 200:
-            yield from super().parse_response(response, stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+            # Ticket ID not included in ticket comments response.
+            # Manually add ticket_id to ticket_comments dict.
+            ticket_id = stream_slice["id"]
+            result = super().parse_response(response, stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+            enriched_result = map(lambda x: x.update({"ticket_id": ticket_id}) or x, result)
+            yield from enriched_result
         elif response.status_code == 404:
             ticket_id = stream_slice["id"]
             # skip 404 errors for not found tickets
@@ -451,12 +470,13 @@ class TicketComments(IncrementalSortedPageStream):
             response.raise_for_status()
 
 
-# NOTE: all Zendesk endpoints can be splitted into several templates of data loading.
+# NOTE: all Zendesk endpoints can be split into several templates of data loading.
 # 1) with API built-in incremental approach
-# 2)  pagination and sorting mechanism
+# 2) pagination and sorting mechanism
 # 3) cursor pagination and sorting mechanism
 # 4) without sorting but with pagination
-# 5) without created_at/updated_at fields
+# 5) without sorting but with cursor pagination
+# 6) without created_at/updated_at fields
 
 # endpoints provide a built-in incremental approach
 
@@ -498,15 +518,15 @@ class Tickets(IncrementalExportStream):
 # endpoints provide a pagination mechanism but we can't manage a response order
 
 
-class Groups(IncrementalUnsortedPageStream):
+class Groups(IncrementalUnsortedCursorStream):
     """Groups stream: https://developer.zendesk.com/api-reference/ticketing/groups/groups/"""
 
 
-class GroupMemberships(IncrementalUnsortedPageStream):
+class GroupMemberships(IncrementalUnsortedCursorStream):
     """GroupMemberships stream: https://developer.zendesk.com/api-reference/ticketing/groups/group_memberships/"""
 
 
-class SatisfactionRatings(IncrementalUnsortedPageStream):
+class SatisfactionRatings(IncrementalUnsortedCursorStream):
     """SatisfactionRatings stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/satisfaction_ratings/
 
     The ZenDesk API for this stream provides the filter "start_time" that can be used for incremental logic
@@ -538,21 +558,32 @@ class TicketForms(IncrementalUnsortedPageStream):
     """TicketForms stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_forms/"""
 
 
-class TicketMetrics(IncrementalUnsortedPageStream):
+class TicketMetrics(IncrementalUnsortedCursorStream):
     """TicketMetric stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metrics/"""
 
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        # Tickets are ordered chronologically by created date, from newest to oldest.
+        # No need to get next page once cursor passed initial state
+        if self.is_finished:
+            return None
 
-# endpoints provide a pagination and sorting mechanism
+        return super().next_page_token(response)
 
 
-class Macros(IncrementalSortedPageStream):
+class TicketMetricEvents(IncrementalExportStream):
+    """TicketMetricEvents stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/"""
+
+    cursor_field = "time"
+
+
+class Macros(IncrementalSortedCursorStream):
     """Macros stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/macros/"""
 
 
 # endpoints provide a cursor pagination and sorting mechanism
 
 
-class TicketAudits(IncrementalSortedCursorStream):
+class TicketAudits(IncrementalUnsortedStream):
     """TicketAudits stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/"""
 
     # can request a maximum of 1,000 results
@@ -563,8 +594,22 @@ class TicketAudits(IncrementalSortedCursorStream):
     # Root of response is 'audits'. As rule as an endpoint name is equal a response list name
     response_list_name = "audits"
 
+    # This endpoint uses a variant of cursor pagination with some differences from cursor pagination used in other endpoints.
+    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(next_page_token=next_page_token, **kwargs)
+        params.update({"sort_by": self.cursor_field, "sort_order": "desc", "limit": self.page_size})
 
-# endpoints dont provide the updated_at/created_at fields
+        if next_page_token:
+            params["cursor"] = next_page_token
+        return params
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if self.is_finished:
+            return None
+        return response.json().get("before_cursor")
+
+
+# endpoints don't provide the updated_at/created_at fields
 # thus we can't implement an incremental logic for them
 
 
@@ -580,3 +625,18 @@ class SlaPolicies(FullRefreshStream):
 
     def path(self, *args, **kwargs) -> str:
         return "slas/policies.json"
+
+
+class Brands(FullRefreshStream):
+    """Brands stream: https://developer.zendesk.com/api-reference/ticketing/account-configuration/brands/#list-brands"""
+
+
+class CustomRoles(FullRefreshStream):
+    """CustomRoles stream: https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles"""
+
+
+class Schedules(FullRefreshStream):
+    """Schedules stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules"""
+
+    def path(self, *args, **kwargs) -> str:
+        return "business_hours/schedules.json"

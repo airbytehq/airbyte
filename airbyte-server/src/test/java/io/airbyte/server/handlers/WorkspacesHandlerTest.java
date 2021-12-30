@@ -15,6 +15,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
+import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.DestinationRead;
@@ -23,6 +24,7 @@ import io.airbyte.api.model.SlugRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
 import io.airbyte.api.model.WorkspaceCreate;
+import io.airbyte.api.model.WorkspaceGiveFeedback;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceReadList;
@@ -202,7 +204,9 @@ class WorkspacesHandlerTest {
 
     workspacesHandler.deleteWorkspace(workspaceIdRequestBody);
 
-    verify(connectionsHandler).deleteConnection(connection);
+    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody()
+        .connectionId(connection.getConnectionId());
+    verify(connectionsHandler).deleteConnection(connectionIdRequestBody);
     verify(destinationHandler).deleteDestination(destination);
     verify(sourceHandler).deleteSource(source);
   }
@@ -341,6 +345,16 @@ class WorkspacesHandlerTest {
     verify(configRepository).writeStandardWorkspace(expectedWorkspace);
 
     assertEquals(expectedWorkspaceRead, actualWorkspaceRead);
+  }
+
+  @Test
+  public void testSetFeedbackDone() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final WorkspaceGiveFeedback workspaceGiveFeedback = new WorkspaceGiveFeedback()
+        .workspaceId(UUID.randomUUID());
+
+    workspacesHandler.setFeedbackDone(workspaceGiveFeedback);
+
+    verify(configRepository).setFeedback(workspaceGiveFeedback.getWorkspaceId());
   }
 
 }

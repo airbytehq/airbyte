@@ -109,13 +109,35 @@ In this case default transformation would be skipped and only custom transformat
 transformer = Transformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
 ```
 
-In this case custom transformation will be applied after default type transformation function. Note that order of flags doesnt matter, default transformation will always be run before custom.
+In this case custom transformation will be applied after default type transformation function. Note that order of flags doesn't matter, default transformation will always be run before custom.
+
+In some specific cases, you might want to make your custom transform not static, e.g. Formatting a field according to the connector configuration.
+To do so, we suggest you to declare a function to generate another, a.k.a a closure:
+
+```python
+class MyStream(Stream):
+    ...
+    transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization)
+    ...
+    def __init__(self, config_based_date_format):
+        self.config_based_date_format = config_based_date_format
+        transform_function = self.get_custom_transform()
+        self.transformer.registerCustomTransform(transform_function)
+
+    def get_custom_transform(self):
+        def custom_transform_function(original_value, field_schema):
+            if original_value and "format" in field_schema and field_schema["format"] == "date":
+                transformed_value = pendulum.from_format(original_value, self.config_based_date_format).to_date_string()
+                return transformed_value
+            return original_value
+        return custom_transform_function
+```
 
 ### Performance consideration
 
-Transofrming each object on the fly would add some time for each object processing. This time is depends on object/schema complexitiy and hardware configuration.
+Transforming each object on the fly would add some time for each object processing. This time is depends on object/schema complexity and hardware configuration.
 
-There is some performance benchmark we've done with ads\_insights facebook schema \(it is complex schema with objects nested inside arrays ob object and a lot of references\) and example object. Here is average transform time per single object, seconds:
+There are some performance benchmarks we've done with ads\_insights facebook schema \(it is complex schema with objects nested inside arrays ob object and a lot of references\) and example object. Here is the average transform time per single object, seconds:
 
 ```text
 regular transform:
@@ -131,5 +153,5 @@ just traverse/validate through json schema and object fields:
 0.0006139181846665452
 ```
 
-On my PC \(AMD Ryzen 7 5800X\) it took 0.8 milliseconds per one object. As you can see most time \(~ 75%\) is taken by jsonschema traverse/validation routine and very little \(less than 10 %\) by actual converting. Processing time can be reduced by skipping jsonschema type checking but it would be no warnings about possible object jsonschema inconsistency.
+On my PC \(AMD Ryzen 7 5800X\) it took 0.8 milliseconds per object. As you can see most time \(~ 75%\) is taken by jsonschema traverse/validation routine and very little \(less than 10 %\) by actual converting. Processing time can be reduced by skipping jsonschema type checking but it would be no warnings about possible object jsonschema inconsistency.
 

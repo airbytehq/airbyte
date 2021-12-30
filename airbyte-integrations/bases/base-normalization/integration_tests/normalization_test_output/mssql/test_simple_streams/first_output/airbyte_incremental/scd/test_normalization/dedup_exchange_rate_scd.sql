@@ -20,11 +20,12 @@
    USE [test_normalization];
    EXEC('create view test_normalization."dedup_exchange_rate_scd_temp_view" as
     
+-- depends_on: ref(''dedup_exchange_rate_stg'')
 with
 
 input_data as (
     select *
-    from "test_normalization"._airbyte_test_normalization."dedup_exchange_rate_ab3"
+    from "test_normalization"._airbyte_test_normalization."dedup_exchange_rate_stg"
     -- dedup_exchange_rate from "test_normalization".test_normalization._airbyte_raw_dedup_exchange_rate
 ),
 
@@ -57,14 +58,14 @@ scd_data as (
             "date" desc,
             _airbyte_emitted_at desc
       ) as _airbyte_end_at,
-      case when lag("date") over (
+      case when row_number() over (
         partition by id, currency, cast(nzd as 
     VARCHAR(max))
         order by
             "date" desc,
             "date" desc,
             _airbyte_emitted_at desc
-      ) is null  then 1 else 0 end as _airbyte_active_row,
+      ) = 1 then 1 else 0 end as _airbyte_active_row,
       _airbyte_ab_id,
       _airbyte_emitted_at,
       _airbyte_dedup_exchange_rate_hashid
@@ -76,7 +77,7 @@ dedup_data as (
         -- additionally, we generate a unique key for the scd table
         row_number() over (
             partition by _airbyte_unique_key, _airbyte_start_at, _airbyte_emitted_at
-            order by _airbyte_ab_id
+            order by _airbyte_active_row desc, _airbyte_ab_id
         ) as _airbyte_row_num,
         convert(varchar(32), HashBytes(''md5'',  coalesce(cast(
     

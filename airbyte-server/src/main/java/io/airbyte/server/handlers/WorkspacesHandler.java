@@ -7,6 +7,7 @@ package io.airbyte.server.handlers;
 import com.github.slugify.Slugify;
 import com.google.common.base.Strings;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.Notification;
@@ -15,6 +16,7 @@ import io.airbyte.api.model.NotificationRead.StatusEnum;
 import io.airbyte.api.model.SlugRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.WorkspaceCreate;
+import io.airbyte.api.model.WorkspaceGiveFeedback;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceReadList;
@@ -102,7 +104,8 @@ public class WorkspacesHandler {
 
     // disable all connections associated with this workspace
     for (final ConnectionRead connectionRead : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
-      connectionsHandler.deleteConnection(connectionRead);
+      final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
+      connectionsHandler.deleteConnection(connectionIdRequestBody);
     }
 
     // disable all destinations associated with this workspace
@@ -181,6 +184,11 @@ public class WorkspacesHandler {
       return new NotificationRead().status(StatusEnum.FAILED).message(e.getMessage());
     }
     return new NotificationRead().status(StatusEnum.FAILED);
+  }
+
+  public void setFeedbackDone(final WorkspaceGiveFeedback workspaceGiveFeedback)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    configRepository.setFeedback(workspaceGiveFeedback.getWorkspaceId());
   }
 
   private WorkspaceRead buildWorkspaceReadFromId(final UUID workspaceId) throws ConfigNotFoundException, IOException, JsonValidationException {
