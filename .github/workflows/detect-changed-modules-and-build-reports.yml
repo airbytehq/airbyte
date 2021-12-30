@@ -25,7 +25,7 @@ jobs:
           git fetch
           echo "::set-output name=changed-modules::$(ci_detect_changed_modules $(git diff --name-only $(git merge-base HEAD origin/master)))"
   build-reports:
-    name: Build Static Checkers Reports
+    name: Build Python Static Checkers Reports
     needs:
       - detect-changed-modules
     runs-on: ubuntu-latest
@@ -39,4 +39,4 @@ jobs:
       - name: Intall Requirements
         run: pip install ./tools/ci_static_check_reports/.
       - name: Build Reports
-        run: ci_build_checkers_reports ${{needs.detect-changed-modules.outputs.changed-modules}}
+        run: ci_build_python_checkers_reports ${{needs.detect-changed-modules.outputs.changed-modules}}
