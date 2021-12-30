@@ -13,10 +13,13 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 1000
+      - name: Set python-version
+        run: |
+          echo "PYTHON_VERSION="$(cat ../../.python-version)"" >> $GITHUB_ENV
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: "${{ env.PYTHON_VERSION }}"
       - name: Intall Requirements
         run: pip install ./tools/ci_static_check_reports/.
       - name: Detect Changed Modules
@@ -32,10 +35,13 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
+      - name: Set python-version
+        run: |
+          echo "PYTHON_VERSION="$(cat ../../.python-version)"" >> $GITHUB_ENV
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: "${{ env.PYTHON_VERSION }}"
       - name: Intall Requirements
         run: pip install ./tools/ci_static_check_reports/.
       - name: Build Reports

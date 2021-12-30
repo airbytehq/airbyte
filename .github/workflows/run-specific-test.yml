@@ -16,6 +16,14 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
+      - name: Set java-version
+        run: |
+          echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
+
+      - name: Set node-version
+        run: |
+          echo "NODE_VERSION="$(cat ../../.node-version)"" >> $GITHUB_ENV
+
       - name: Npm Caching
         uses: actions/cache@v2
         with:
@@ -37,11 +45,11 @@ jobs:
 
       - uses: actions/setup-java@v1
         with:
-          java-version: '14'
+          java-version: "${{ env.JAVA_VERSION }}"
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '16.13.0'
+          node-version: "${{ env.NODE_VERSION }}"
 
       - name: Build
         id: run-specific-test

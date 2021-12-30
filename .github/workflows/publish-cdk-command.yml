@@ -21,11 +21,14 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - uses: actions/setup-java@v1
-        with:
-          java-version: '17'
       - name: Checkout Airbyte
         uses: actions/checkout@v2
+      - name: Set java-version
+        run: |
+          echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
+      - uses: actions/setup-java@v1
+        with:
+          java-version: "${{ env.JAVA_VERSION }}"
       - name: Build CDK Package
         run: SUB_BUILD=CONNECTORS_BASE ./gradlew --no-daemon --no-build-cache :airbyte-cdk:python:build
       - name: Add Failure Comment
@@ -56,12 +59,17 @@ jobs:
           echo "pypi_url=https://test.pypi.org/legacy/" >> $GITHUB_ENV
       - name: Checkout Airbyte
         uses: actions/checkout@v2
+      - name: Set python-version
+        run: |
+          echo "PYTHON_VERSION="$(cat ../../.python-version)"" >> $GITHUB_ENV
+      - name: Set pip-version
+        run: |
+          echo "PIP_VERSION="$(cat ../../.pip-version)"" >> $GITHUB_ENV
       - name: Publish Python Package
         uses: mariamrf/py-package-publish-action@v1.1.0
         with:
-          # specify the same version as in ~/.python-version
-          python_version: '3.7.9'
-          pip_version: '21.1'
+          python_version: "${{ env.PYTHON_VERSION }}"
+          pip_version: "${{ env.PIP_VERSION }}"
           subdir: 'airbyte-cdk/python/'
         env:
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
