@@ -571,11 +571,13 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
     # csv header field names for this report differ per marketplace (are localized to marketplace language)
     # but columns come in the same order
     # so we set fieldnames to our custom ones
-    # and skip the original header with next()
+    # and raise error if original and custom header field count does not match
     @staticmethod
     def parse_document(document):
         reader = csv.DictReader(StringIO(document), delimiter="\t", fieldnames=SellerFeedbackReports.NORMALIZED_FIELD_NAMES)
-        next(reader)
+        original_fieldnames = next(reader)
+        if len(original_fieldnames) != len(SellerFeedbackReports.NORMALIZED_FIELD_NAMES):
+            raise ValueError("Original and normalized header field count does not match")
 
         return reader
 
