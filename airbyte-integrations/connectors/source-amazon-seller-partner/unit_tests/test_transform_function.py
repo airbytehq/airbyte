@@ -3,7 +3,6 @@
 #
 
 import pytest
-from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_amazon_seller_partner.auth import AWSSignature
 from source_amazon_seller_partner.streams import SellerFeedbackReports
 
@@ -21,7 +20,7 @@ def reports_stream(marketplace_id):
         aws_signature=aws_signature,
         replication_start_date="2010-01-25T00:00:00Z",
         marketplace_id=marketplace_id,
-        authenticator=NoAuth(),
+        authenticator=None,
         period_in_days=0,
         report_options=None,
         max_wait_seconds=0,
