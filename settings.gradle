@@ -34,7 +34,7 @@ if (!System.getenv().containsKey("SUB_BUILD")) {
 include ':airbyte-commons'
 
 // shared by CONNECTORS_BASE and PLATFORM sub builds
-if (!System.getenv().containsKey("SUB_BUILD") == "CONNECTORS_BASE" || System.getenv().get("SUB_BUILD") == "PLATFORM") {
+//if (!System.getenv().containsKey("SUB_BUILD") == "CONNECTORS_BASE" || System.getenv().get("SUB_BUILD") == "PLATFORM") {
     include ':airbyte-api'
     include ':airbyte-commons-cli'
     include ':airbyte-commons-docker'
@@ -55,7 +55,7 @@ if (!System.getenv().containsKey("SUB_BUILD") == "CONNECTORS_BASE" || System.get
     include ':airbyte-notification' // transitively used by airbyte-workers.
     include ':airbyte-scheduler:models' // transitively used by airbyte-workers.
     include ':airbyte-scheduler:persistence' // used by airbyte-workers.
-}
+//}
 
 
 // platform
