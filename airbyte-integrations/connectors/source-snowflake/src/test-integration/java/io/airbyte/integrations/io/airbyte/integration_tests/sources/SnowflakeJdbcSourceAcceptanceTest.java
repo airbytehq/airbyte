@@ -17,6 +17,7 @@ import java.sql.JDBCType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.apache.commons.lang3.RandomStringUtils;
 
 class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
@@ -31,8 +32,8 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @BeforeEach
   public void setup() throws Exception {
     // due to case sensitiveness in SnowflakeDB
-    SCHEMA_NAME = "JDBC_INTEGRATION_TEST1";
-    SCHEMA_NAME2 = "JDBC_INTEGRATION_TEST2";
+    SCHEMA_NAME = "JDBC_INTEGRATION_TEST" + RandomStringUtils.randomAlphanumeric(5);
+    SCHEMA_NAME2 = "JDBC_INTEGRATION_TEST" + RandomStringUtils.randomAlphanumeric(5);
     TEST_SCHEMAS = ImmutableSet.of(SCHEMA_NAME, SCHEMA_NAME2);
     TABLE_NAME = "ID_AND_NAME";
     TABLE_NAME_WITH_SPACES = "ID AND NAME";
