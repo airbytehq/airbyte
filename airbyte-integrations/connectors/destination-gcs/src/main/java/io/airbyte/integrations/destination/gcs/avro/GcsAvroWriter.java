@@ -62,11 +62,12 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer, GscWriter,
       throws IOException {
     super(config, s3Client, configuredStream);
 
-    final Schema schema = (jsonSchema == null
+    final Schema schema = jsonSchema == null
         ? GcsUtils.getDefaultAvroSchema(stream.getName(), stream.getNamespace(), true)
         : new JsonToAvroSchemaConverter().getAvroSchema(jsonSchema, stream.getName(),
-            stream.getNamespace(), true, false, false, true));
-    LOGGER.info("Avro schema : {}", schema);
+            stream.getNamespace(), true, false, false, true);
+    LOGGER.info("Avro schema for stream {}: {}", stream.getName(), schema.toString(false));
+
     final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.AVRO);
     objectKey = String.join("/", outputPrefix, outputFilename);
     gcsFileLocation = String.format("gs://%s/%s", config.getBucketName(), objectKey);
