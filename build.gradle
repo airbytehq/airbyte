@@ -179,8 +179,8 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'jacoco'
 
-    // sourceCompatibility = JavaVersion.VERSION_17
-    // targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 
     repositories {
         mavenCentral()
