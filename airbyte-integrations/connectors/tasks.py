@@ -6,7 +6,7 @@ import shutil
 import tempfile
 from glob import glob
 from multiprocessing import Pool
-from typing import Any, Dict, Iterable, List, Set
+from typing import Any, Dict, Iterable, List, Optional, Set
 
 import virtualenv
 from invoke import Context, Exit, task
@@ -22,9 +22,11 @@ TOOLS_VERSIONS: Dict[str, str] = {
     "colorama": "0.4.4",
     "coverage": "6.2",
     "flake": "0.0.1a2",
+    "flake_junit": "2.1",
     "isort": "5.10.1",
     "mccabe": "0.6.1",
     "mypy": "0.910",
+    "lxml": "4.7",
 }
 
 
@@ -94,13 +96,26 @@ def _run_single_connector_task(args: Iterable) -> int:
     return _run_task(*args)
 
 
-def _run_task(ctx: Context, connector_string: str, task_name: str, multi_envs: bool = True, **kwargs: Any) -> int:
+def _run_task(
+    ctx: Context,
+    connector_string: str,
+    task_name: str,
+    multi_envs: bool = True,
+    module_path: Optional[str] = None,
+    task_commands: Dict = TASK_COMMANDS,
+    **kwargs: Any,
+) -> int:
     """
     Run task in its own environment.
     """
+    cur_dir = os.getcwd()
     if multi_envs:
-        source_path = f"source_{connector_string.replace('-', '_')}"
-        os.chdir(os.path.join(CONNECTORS_DIR, f"source-{connector_string}"))
+        if module_path:
+            os.chdir(module_path)
+            source_path = connector_string
+        else:
+            os.chdir(os.path.join(CONNECTORS_DIR, f"source-{connector_string}"))
+            source_path = f"source_{connector_string.replace('-', '_')}"
 
     else:
         source_path = connector_string
@@ -111,7 +126,7 @@ def _run_task(ctx: Context, connector_string: str, task_name: str, multi_envs: b
 
     commands = []
 
-    commands.extend([cmd.format(source_path=source_path, venv=venv_name, **kwargs) for cmd in TASK_COMMANDS[task_name]])
+    commands.extend([cmd.format(source_path=source_path, venv=venv_name, **kwargs) for cmd in task_commands[task_name]])
 
     exit_code: int = 0
 
@@ -124,6 +139,9 @@ def _run_task(ctx: Context, connector_string: str, task_name: str, multi_envs: b
                     break
     finally:
         shutil.rmtree(venv_name, ignore_errors=True)
+
+    if module_path:
+        os.chdir(cur_dir)
 
     return exit_code
 
