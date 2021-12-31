@@ -50,26 +50,26 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
 
   private final Set<String> fieldsContainRefDefinitionValue = new HashSet<>();
 
-  public DefaultBigQueryDenormalizedRecordFormatter(JsonNode jsonSchema, StandardNameTransformer namingResolver) {
+  public DefaultBigQueryDenormalizedRecordFormatter(final JsonNode jsonSchema, final StandardNameTransformer namingResolver) {
     super(jsonSchema, namingResolver);
   }
 
   @Override
-  protected JsonNode formatJsonSchema(JsonNode jsonSchema) {
+  protected JsonNode formatJsonSchema(final JsonNode jsonSchema) {
     populateEmptyArrays(jsonSchema);
     surroundArraysByObjects(jsonSchema);
     return jsonSchema;
   }
 
-  private List<JsonNode> findArrays(JsonNode node) {
+  private List<JsonNode> findArrays(final JsonNode node) {
     if (node != null) {
       return node.findParents(TYPE_FIELD).stream()
           .filter(
               jsonNode -> {
-                JsonNode type = jsonNode.get(TYPE_FIELD);
+                final JsonNode type = jsonNode.get(TYPE_FIELD);
                 if (type.isArray()) {
-                  ArrayNode typeNode = (ArrayNode) type;
-                  for (JsonNode arrayTypeNode : typeNode) {
+                  final ArrayNode typeNode = (ArrayNode) type;
+                  for (final JsonNode arrayTypeNode : typeNode) {
                     if (arrayTypeNode.isTextual() && arrayTypeNode.textValue().equals("array"))
                       return true;
                   }
@@ -84,21 +84,21 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     }
   }
 
-  private void populateEmptyArrays(JsonNode node) {
+  private void populateEmptyArrays(final JsonNode node) {
     findArrays(node).forEach(jsonNode -> {
       if (!jsonNode.has(ARRAY_ITEMS_FIELD)) {
-        ObjectNode nodeToChange = (ObjectNode) jsonNode;
+        final ObjectNode nodeToChange = (ObjectNode) jsonNode;
         nodeToChange.putObject(ARRAY_ITEMS_FIELD).putArray(TYPE_FIELD).add("string");
       }
     });
   }
 
-  private void surroundArraysByObjects(JsonNode node) {
+  private void surroundArraysByObjects(final JsonNode node) {
     findArrays(node).forEach(
         jsonNode -> {
-          JsonNode arrayNode = jsonNode.deepCopy();
+          final JsonNode arrayNode = jsonNode.deepCopy();
 
-          ObjectNode newNode = (ObjectNode) jsonNode;
+          final ObjectNode newNode = (ObjectNode) jsonNode;
           newNode.removeAll();
           newNode.putArray(TYPE_FIELD).add("object");
           newNode.putObject(PROPERTIES_FIELD).set(NESTED_ARRAY_FIELD, arrayNode);
@@ -127,7 +127,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     return data;
   }
 
-  protected void addAirbyteColumns(ObjectNode data, final AirbyteRecordMessage recordMessage) {
+  protected void addAirbyteColumns(final ObjectNode data, final AirbyteRecordMessage recordMessage) {
     final long emittedAtMicroseconds = recordMessage.getEmittedAt();
     final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
 
@@ -157,7 +157,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     }
   }
 
-  private JsonNode getArrayNode(FieldList fields, JsonNode root) {
+  private JsonNode getArrayNode(final FieldList fields, final JsonNode root) {
     // Arrays can have only one field
     final Field arrayField = fields.get(0);
     // If an array of records, we should use subfields
@@ -174,7 +174,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     return Jsons.jsonNode(ImmutableMap.of(NESTED_ARRAY_FIELD, items));
   }
 
-  private JsonNode getObjectNode(FieldList fields, JsonNode root) {
+  private JsonNode getObjectNode(final FieldList fields, final JsonNode root) {
     final List<String> fieldNames = fields.stream().map(Field::getName).collect(Collectors.toList());
     return Jsons.jsonNode(Jsons.keys(root).stream()
         .filter(key -> {
@@ -191,7 +191,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
 
   @Override
   public Schema getBigQuerySchema(final JsonNode jsonSchema) {
-    final List<Field> fieldList = getSchemaFields(namingResolver, jsonSchema);
+        final List<Field> fieldList = getSchemaFields(namingResolver, jsonSchema);
     if (fieldList.stream().noneMatch(f -> f.getName().equals(JavaBaseConstants.COLUMN_NAME_AB_ID))) {
       fieldList.add(Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING));
     }
@@ -206,7 +206,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     LOGGER.info("getSchemaFields : " + jsonSchema + " namingResolver " + namingResolver);
     Preconditions.checkArgument(jsonSchema.isObject() && jsonSchema.has(PROPERTIES_FIELD));
     final ObjectNode properties = (ObjectNode) jsonSchema.get(PROPERTIES_FIELD);
-    List<Field> tmpFields = Jsons.keys(properties).stream()
+    final List<Field> tmpFields = Jsons.keys(properties).stream()
         .peek(addToRefList(properties))
         .map(key -> getField(namingResolver, key, properties.get(key))
             .build())
@@ -227,7 +227,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
    *        Currently, AirByte doesn't support parsing value by $ref key definition. The issue to
    *        track this <a href="https://github.com/airbytehq/airbyte/issues/7725">7725</a>
    */
-  private Consumer<String> addToRefList(ObjectNode properties) {
+  private Consumer<String> addToRefList(final ObjectNode properties) {
     return key -> {
       if (properties.get(key).has(REF_DEFINITION_KEY)) {
         fieldsContainRefDefinitionValue.add(key);
