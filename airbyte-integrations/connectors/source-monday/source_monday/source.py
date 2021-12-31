@@ -6,7 +6,7 @@
 import json
 import os
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Dict
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 from airbyte_cdk.sources import AbstractSource
@@ -128,7 +128,7 @@ class Users(MondayStream):
 
 
 class MondayAuthentication:
-    """ Provides the authentication capabilities for both old and new methods. """
+    """Provides the authentication capabilities for both old and new methods."""
 
     def __init__(self, config: Dict):
         self.config = config
@@ -145,7 +145,7 @@ class MondayAuthentication:
         return token
 
     def get_auth(self) -> TokenAuthenticator:
-        """ Return the TokenAuthenticator object with access or api token. """
+        """Return the TokenAuthenticator object with access or api token."""
         return TokenAuthenticator(token=self.get_token())
 
 
