@@ -58,12 +58,13 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer, GscWriter,
                        final ConfiguredAirbyteStream configuredStream,
                        final Timestamp uploadTimestamp,
                        final JsonAvroConverter converter,
-                       final JsonNode airbyteSchema)
+                       final JsonNode jsonSchema)
       throws IOException {
     super(config, s3Client, configuredStream);
 
-    Schema schema = (airbyteSchema == null ? GcsUtils.getDefaultAvroSchema(stream.getName(), stream.getNamespace(), true)
-        : new JsonToAvroSchemaConverter().getAvroSchema(airbyteSchema, stream.getName(),
+    final Schema schema = (jsonSchema == null
+        ? GcsUtils.getDefaultAvroSchema(stream.getName(), stream.getNamespace(), true)
+        : new JsonToAvroSchemaConverter().getAvroSchema(jsonSchema, stream.getName(),
             stream.getNamespace(), true, false, false, true));
     LOGGER.info("Avro schema : {}", schema);
     final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.AVRO);
@@ -93,8 +94,8 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer, GscWriter,
   }
 
   @Override
-  public void write(JsonNode formattedData) throws IOException {
-    GenericData.Record record = avroRecordFactory.getAvroRecord(formattedData);
+  public void write(final JsonNode formattedData) throws IOException {
+    final GenericData.Record record = avroRecordFactory.getAvroRecord(formattedData);
     dataFileWriter.append(record);
   }
 
