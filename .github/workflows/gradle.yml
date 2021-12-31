@@ -335,8 +335,8 @@ jobs:
 
       - name: Build
         run: |
-          SUB_BUILD=OCTAVIA_CLI ./gradlew build javadoc --scan
-    
+          SUB_BUILD=OCTAVIA_CLI ./gradlew :octavia-cli:build javadoc --scan
+
       - name: Slack Notification - Failure
         if: failure() && github.ref == 'refs/heads/master'
         uses: rtCamp/action-slack-notify@master
