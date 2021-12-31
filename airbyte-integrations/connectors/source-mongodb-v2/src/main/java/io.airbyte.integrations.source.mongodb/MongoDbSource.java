@@ -23,6 +23,7 @@ import io.airbyte.integrations.source.relationaldb.AbstractDbSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -79,7 +80,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  protected MongoDatabase createDatabase(final JsonNode config) throws Exception {
+  protected MongoDatabase createDatabase(final JsonNode config) {
     final var dbConfig = toDatabaseConfig(config);
     return Databases.createMongoDatabase(dbConfig.get("connectionString").asText(),
         dbConfig.get("database").asText());
@@ -90,7 +91,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
       throws Exception {
     final List<CheckedConsumer<MongoDatabase, Exception>> checkList = new ArrayList<>();
     checkList.add(database -> {
-      if (database.getCollectionNames().isEmpty()) {
+        if (getAuthorizedCollections(database).isEmpty()) {
         throw new Exception("Unable to execute any operation on the source!");
       } else {
         LOGGER.info("The source passed the basic operation test!");
@@ -110,11 +111,10 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  protected List<TableInfo<CommonField<BsonType>>> discoverInternal(final MongoDatabase database)
-      throws Exception {
-    final List<TableInfo<CommonField<BsonType>>> tableInfos = new ArrayList<>();
+  protected List<TableInfo<CommonField<BsonType>>> discoverInternal(final MongoDatabase database) {
+      final List<TableInfo<CommonField<BsonType>>> tableInfos = new ArrayList<>();
 
-    for (final String collectionName : database.getCollectionNames()) {
+      for (final String collectionName : getAuthorizedCollections(database)) {
       final MongoCollection<Document> collection = database.getCollection(collectionName);
       final Map<String, BsonType> uniqueFields = MongoUtils.getUniqueFields(collection);
 
@@ -135,7 +135,20 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     return tableInfos;
   }
 
-  @Override
+    private Set<String> getAuthorizedCollections(MongoDatabase database) {
+        Document document = database.getDatabase().runCommand(new Document("listCollections", 1)
+                .append("authorizedCollections", true).append("nameOnly", true));
+
+        return document.toBsonDocument()
+                .get("cursor").asDocument().getArray("firstBatch")
+                        .stream()
+                .filter(bsonValue -> bsonValue.asDocument().getString("type").getValue().equals("collection"))
+                .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
+                .collect(Collectors.toSet());
+
+    }
+
+    @Override
   protected List<TableInfo<CommonField<BsonType>>> discoverInternal(final MongoDatabase database, final String schema) throws Exception {
     // MondoDb doesn't support schemas
     return discoverInternal(database);
