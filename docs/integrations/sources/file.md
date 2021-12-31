@@ -48,6 +48,8 @@ This source produces a single table for the target file as it replicates only on
 | Parquet               | Yes        |
 | Pickle                | No         |
 
+**This connector does not support syncing unstructured data files such as raw text, audio, or videos.**
+
 ## Getting Started (Airbyte Cloud)
 
 Setup through Airbyte Cloud will be exactly the same as the open-source setup, except for the fact that local files are disabled.
