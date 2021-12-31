@@ -86,14 +86,14 @@ public class BigQueryUploaderFactory {
   }
 
   private static AbstractGscBigQueryUploader<?> getGcsBigQueryUploader(
-      final JsonNode config,
-      final ConfiguredAirbyteStream configStream,
-      final TableId targetTable,
-      final TableId tmpTable,
-      final BigQuery bigQuery,
-      final JobInfo.WriteDisposition syncMode,
-      final BigQueryRecordFormatter formatter,
-      final boolean isDefaultAirbyteTmpSchema)
+                                                                       final JsonNode config,
+                                                                       final ConfiguredAirbyteStream configStream,
+                                                                       final TableId targetTable,
+                                                                       final TableId tmpTable,
+                                                                       final BigQuery bigQuery,
+                                                                       final JobInfo.WriteDisposition syncMode,
+                                                                       final BigQueryRecordFormatter formatter,
+                                                                       final boolean isDefaultAirbyteTmpSchema)
       throws IOException {
 
     final GcsDestinationConfig gcsDestinationConfig =
@@ -134,13 +134,13 @@ public class BigQueryUploaderFactory {
   }
 
   private static BigQueryDirectUploader getBigQueryDirectUploader(
-      final JsonNode config,
-      final TableId targetTable,
-      final TableId tmpTable,
-      final BigQuery bigQuery,
-      final JobInfo.WriteDisposition syncMode,
-      final String datasetLocation,
-      final BigQueryRecordFormatter formatter) {
+                                                                  final JsonNode config,
+                                                                  final TableId targetTable,
+                                                                  final TableId tmpTable,
+                                                                  final BigQuery bigQuery,
+                                                                  final JobInfo.WriteDisposition syncMode,
+                                                                  final String datasetLocation,
+                                                                  final BigQueryRecordFormatter formatter) {
     // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
     final WriteChannelConfiguration writeChannelConfiguration =
         WriteChannelConfiguration.newBuilder(tmpTable)

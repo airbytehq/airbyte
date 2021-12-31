@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit;
 public class GcsBigQueryDenormalizedRecordFormatter extends DefaultBigQueryDenormalizedRecordFormatter {
 
   public GcsBigQueryDenormalizedRecordFormatter(
-          final JsonNode jsonSchema,
-          final StandardNameTransformer namingResolver) {
+                                                final JsonNode jsonSchema,
+                                                final StandardNameTransformer namingResolver) {
     super(jsonSchema, namingResolver);
   }
 
