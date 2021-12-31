@@ -191,21 +191,14 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
 
   @Override
   public Schema getBigQuerySchema(final JsonNode jsonSchema) {
-    final String schemaString = Jsons.serialize(jsonSchema)
-        // BigQuery avro file loader doesn't support date-time
-        // https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-avro#logical_types
-        // So we use timestamp for date-time
-        .replace("\"format\":\"date-time\"", "\"format\":\"timestamp-micros\"");
-    final JsonNode bigQuerySchema = Jsons.deserialize(schemaString);
-
-    final List<Field> fieldList = getSchemaFields(namingResolver, bigQuerySchema);
+        final List<Field> fieldList = getSchemaFields(namingResolver, jsonSchema);
     if (fieldList.stream().noneMatch(f -> f.getName().equals(JavaBaseConstants.COLUMN_NAME_AB_ID))) {
       fieldList.add(Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING));
     }
     if (fieldList.stream().noneMatch(f -> f.getName().equals(JavaBaseConstants.COLUMN_NAME_EMITTED_AT))) {
       fieldList.add(Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
     }
-    LOGGER.info("Airbyte Schema is transformed from {} to {}.", bigQuerySchema, fieldList);
+    LOGGER.info("Airbyte Schema is transformed from {} to {}.", jsonSchema, fieldList);
     return com.google.cloud.bigquery.Schema.of(fieldList);
   }
 
