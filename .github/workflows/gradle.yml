@@ -284,7 +284,6 @@ jobs:
           SLACK_TITLE: "Build Success"
           SLACK_FOOTER: ""
   octavia-cli-build:
-    # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
     runs-on: ubuntu-latest
     name: "Octavia CLI: Build"
     timeout-minutes: 90
@@ -305,10 +304,6 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: "17"
-
-      - uses: actions/setup-node@v1
-        with:
-          node-version: "16.13.0"
 
       - uses: actions/setup-python@v2
         with:
