@@ -54,11 +54,6 @@ runs:
         module-name: ${{ inputs.module-name }}
         module-folder: ${{ inputs.module-folder }}
 
-#    - name: Checkout Airbyte
-#      uses: actions/checkout@v2
-#      with:
-#        fetch-depth: 0
-
     - name: Create SonarQube Project
       shell: bash
       id: create-sq-project
@@ -77,9 +72,27 @@ runs:
           args: >
             -Dsonar.projectKey=${{ steps.create-sq-project.outputs.sq_project_name }}
             -Dsonar.verbose=true
+            -Dsonar.working.directory=/tmp/scannerwork
             -Dsonar.language=${{ inputs.module-lang }}
             -Dsonar.sourceEncoding=UTF-8
             -Dsonar.projectBaseDir=${{ inputs.module-folder }}
+            -Dsonar.python.coverage.reportPaths=${{ steps.ci-py-tests.outputs.coverage-file }}
+
+    - name: Generate SonarQube Report
+      shell: bash
+      id: generate-sq-report
+      run: |
+        REPORT_FILE=/tmp/sq_report_$RANDOM.md
+        ci_sonar_qube --pr ${{ inputs.pull-request-id }} --report ${REPORT_FILE} --module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
+        echo "::set-output name=sq-report::$(cat ${REPORT_FILE})"
+
+    - name: Add Comment
+      uses: peter-evans/create-or-update-comment@v1
+      with:
+          template:
+          issue-number: ${{ inputs.pull-request-id }}
+           body: |
+             ${{ steps.generate-sq-report.outputs.sq-report }}
 
     - name: Remove SonarQube Project
       if: ${{ inputs.remove-sonar-project == true }}

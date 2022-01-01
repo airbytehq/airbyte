@@ -5,9 +5,9 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["requests", "ci_common_utils"]
+MAIN_REQUIREMENTS = ["requests", "ci_common_utils", "mdutils~=1.3.1"]
 
-TEST_REQUIREMENTS = ["requests-mock",  "pytest"]
+TEST_REQUIREMENTS = ["requests-mock", "pytest"]
 
 setup(
     version="0.0.0",

@@ -1,14 +1,48 @@
+import itertools
 import re
 from functools import reduce
 from typing import Mapping, Any, Optional
 from urllib.parse import urljoin
 
 import requests
+from mdutils.mdutils import MdUtils
 from requests.auth import HTTPBasicAuth
 
 from ci_common_utils import Logger
 
 AIRBYTE_PROJECT_PREFIX = "airbyte"
+
+REPORT_METRICS = (
+    "alert_status",
+    # "quality_gate_details",
+    "bugs", "new_bugs",
+    "reliability_rating", "new_reliability_rating",
+    "vulnerabilities", "new_vulnerabilities",
+    "security_rating", "new_security_rating",
+    # "security_hotspots", "new_security_hotspots",
+    # "security_hotspots_reviewed", "new_security_hotspots_reviewed",
+    # "security_review_rating", "new_security_review_rating",
+    "code_smells", "new_code_smells",
+    # "sqale_rating", "new_maintainability_rating",
+    # "sqale_index", "new_technical_debt",
+    "coverage", "new_coverage",
+    "lines_to_cover", "new_lines_to_cover",
+    "tests",
+    "duplicated_lines_density", "new_duplicated_lines_density",
+    "duplicated_blocks",
+    "ncloc",
+    # "ncloc_language_distribution",
+    # "projects",
+    # "lines", "new_lines"
+)
+
+RATINGS = {
+    1.0: "A",
+    2.0: "B",
+    3.0: "C",
+    4.0: "D",
+    5.0: "F",
+}
 
 
 class SonarQubeApi:
@@ -105,6 +139,7 @@ class SonarQubeApi:
     def remove_project(self, project_name: str) -> bool:
         """https://sonarcloud.io/web_api/api/projects/delete"""
         project_name = self.prepare_project_settings(project_name)["project"]
+
         exists_project = self.__search_project(project_name)
         if exists_project is None:
             self.logger.info(f"not found the project '{project_name}'")
@@ -114,4 +149,106 @@ class SonarQubeApi:
         }
         self.__post("projects/delete", body)
         self.logger.info(f"The project '{project_name}' was removed")
+        return True
+
+    def generate_report(self, project_name: str, report_file: str) -> bool:
+        project_data = self.prepare_project_settings(project_name)
+        project_name = project_data["project"]
+        issues = []
+        page = 1
+        rules = {}
+        while True:
+            data = self.__get(f"issues/search?componentKeys={project_name}&additionalFields=_all&p={page}")
+            needed_rules = set(issue["rule"] for issue in data["issues"])
+            issues += data["issues"]
+            for needed_rule in needed_rules:
+                if needed_rule in rules:
+                    continue
+                for rule in data["rules"]:
+                    if rule["key"] == needed_rule:
+                        rules[needed_rule] = rule["name"]
+            if data["total"] <= len(issues):
+                break
+            page += 1
+        md_file = MdUtils(file_name=report_file)
+        md_file.new_line(f'### SonarQube report for {project_data["name"]}')
+        md_file.new_line('#### Total Issues')
+        table_items = [
+            "Blocker", "Critical", "Major", "Minor",
+            sum(map(lambda i: i["severity"] == "BLOCKER", issues)),
+            sum(map(lambda i: i["severity"] == "CRITICAL", issues)),
+            sum(map(lambda i: i["severity"] == "MAJOR", issues)),
+            sum(map(lambda i: i["severity"] == "MINOR", issues)),
+        ]
+        md_file.new_table(columns=4, rows=2, text=table_items, text_align='center')
+        md_file.new_line()
+        if issues:
+            md_file.new_line('#### Detected Issues')
+            table_items = [
+                "Rule", "Component", "Description", "Message"
+            ]
+            for issue in issues:
+                rule_name = issue["rule"]
+                rule_link = md_file.new_inline_link(
+                    link=f'{self._host}/coding_rules?open={rule_name}&rule_key={rule_name}',
+                    text=rule_name
+                )
+                table_items += [
+                    f'{rule_link} ({issue["severity"]})',
+                    # issue["component"].replace(issue["project"] + ":", ""),
+                    f'{issue["component"].split("/")[-1]}:{issue["line"]}',
+                    rules[rule_name],
+                    issue["message"],
+                ]
+
+            md_file.new_table(columns=4, rows=len(issues) + 1, text=table_items, text_align='left')
+
+        data = self.__get(f"measures/component?component={project_name}&additionalFields=metrics&metricKeys={','.join(REPORT_METRICS)}")
+        measures = {}
+        for measure in data["component"]["measures"]:
+            metric = measure["metric"]
+            if measure["metric"].startswith("new_") and measure.get("periods"):
+                # we need to show values for last sync period only
+                last_period = max(measure["periods"], key=lambda period: period["index"])
+                value = last_period["value"]
+            else:
+                value = measure.get("value")
+            measures[metric] = value
+        # group overall and latest values
+        measures = {metric: (value, measures.get(f"new_{metric}")) for metric, value in measures.items() if
+                    not metric.startswith("new_")}
+        metrics = {}
+        for metric in data["metrics"]:
+            # if metric["key"] not in measures:
+            #     continue
+            metrics[metric["key"]] = (metric["name"], metric["type"])
+
+        md_file.new_line('#### Measures')
+
+        values = []
+        for metric, (overall_value, latest_value) in measures.items():
+            if metric not in metrics:
+                continue
+            name, metric_type = metrics[metric]
+            value = overall_value if (latest_value is None or latest_value == "0") else latest_value
+            if metric_type == "PERCENT":
+                value = str(round(float(value) * 100, 1))
+            elif metric_type == "INT":
+                value = int(float(value))
+            elif metric_type == "LEVEL":
+                pass
+            elif metric_type == "RATING":
+                value = int(float(value))
+                for k, v in RATINGS.items():
+                    if value <= k:
+                        value = v
+                        break
+            values.append([name, value])
+        while len(values) % 3:
+            values.append(("", ""))
+        table_items = ["Name", "Value"] * 3 + list(itertools.chain.from_iterable(values))
+        md_file.new_table(columns=6, rows=int(len(values) / 3 + 1), text=table_items, text_align='left')
+
+        md_file.create_md_file()
+        self.logger.info(f"The {report_file} was generated")
         return True

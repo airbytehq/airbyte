@@ -17,6 +17,7 @@ def main() -> int:
 
     command = parser.add_mutually_exclusive_group(required=True)
     command.add_argument('--print_key', help='Return a generate SonarQube key', action="store_true")
+    command.add_argument('--report', help='generate .md file with current issues of a project')
     command.add_argument('--create', help='create a project', action="store_true")
     command.add_argument('--remove', help='remove project', action="store_true")
 
@@ -33,6 +34,8 @@ def main() -> int:
         data = api.prepare_project_settings(project_name)
         print(data["project"], file=sys.stdout)
         return 0
+    elif args.report:
+        return 0 if api.generate_report(project_name=project_name, report_file=args.report) else 1
     api.logger.critical("not set any action...")
     return 1
 

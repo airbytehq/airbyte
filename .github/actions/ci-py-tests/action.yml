@@ -5,14 +5,17 @@ inputs:
     required: true
   module-folder:
     required: true
-
+outputs:
+  coverage-file:
+    description: "Cavarage File"
+    value: ${{ steps.generate-reports.outputs.coverage-file }}
 runs:
   using: "composite"
   steps:
-
     - name: Run tests of CI
+      id: generate-reports
       shell: bash
       run: |
           echo "make me, ${{ inputs.module-name }} in ${{ inputs.module-folder }}"
+          echo "::set-output name=coverage-file::${{ github.action_path }}/coverage.xml"
 
-#
