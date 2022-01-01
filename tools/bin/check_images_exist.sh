@@ -29,11 +29,11 @@ checkConnectorImages() {
   echo "Checking connector images exist..."
 
   CONNECTOR_DEFINITIONS=$(grep "dockerRepository" -h -A1 airbyte-config/init/src/main/resources/seed/*.yaml | grep -v -- "^--$" | tr -d ' ')
-  [ -z "CONNECTOR_DEFINITIONS" ] && echo "ERROR: Could not find any connector definition." && exit 1
+  [ -z "${CONNECTOR_DEFINITIONS}" ] && echo "ERROR: Could not find any connector definition." && exit 1
 
   while IFS=":" read -r _ REPO; do
       IFS=":" read -r _ TAG
-      printf "${REPO}: ${TAG}\n"
+      echo "${REPO}: ${TAG}"
       if docker_tag_exists "$REPO" "$TAG"; then
           printf "\tSTATUS: found\n"
       else

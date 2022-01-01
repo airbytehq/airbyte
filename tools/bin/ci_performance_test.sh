@@ -89,12 +89,14 @@ coverage_report=$(sed -n '/^[ \t]*-\+ coverage: /,/TOTAL   /p' build.out)
 
 if ! test_performance -z "$coverage_report"
 then
-   echo "PYTHON_UNITTEST_COVERAGE_REPORT<<EOF" >> "$GITHUB_ENV"
-   echo "Python tests coverage:" >> "$GITHUB_ENV"
-   echo '```' >> "$GITHUB_ENV"
-   echo "$coverage_report" >> "$GITHUB_ENV"
-   echo '```' >> "$GITHUB_ENV"
-   echo "EOF" >> "$GITHUB_ENV"
+  {
+    echo "PYTHON_UNITTEST_COVERAGE_REPORT<<EOF"
+    echo "Python tests coverage:"
+    echo '```'
+    echo "$coverage_report"
+    echo '```'
+    echo "EOF"
+  } >> "$GITHUB_ENV"
 else
    echo "PYTHON_UNITTEST_COVERAGE_REPORT=No Python unittests run" >> "$GITHUB_ENV"
 fi

@@ -10,7 +10,7 @@ if [[ "$BRANCH" != "master" ]]; then
   exit 1;
 fi
 
-[[ ! -z "$(git status --porcelain)" ]] && echo "Cannot tag revision if all changes aren't checked in..." && exit 1
+[[ -n "$(git status --porcelain)" ]] && echo "Cannot tag revision if all changes aren't checked in..." && exit 1
 
 # make sure your master branch is up to date
 git pull --rebase

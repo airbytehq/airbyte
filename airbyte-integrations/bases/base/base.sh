@@ -16,7 +16,6 @@ function main() {
   CMD="$1"
   shift 1 || error "command not specified."
 
-  ARGS=
   while [ $# -ne 0 ]; do
     case "$1" in
     --config)
@@ -49,7 +48,7 @@ function main() {
     ;;
   read)
     READ_STATEMENT="$AIRBYTE_READ_CMD --config $CONFIG_FILE --catalog $CATALOG_FILE"
-    if [[ ! -z "$STATE_FILE" ]]; then READ_STATEMENT="$READ_STATEMENT --state $STATE_FILE"; fi
+    if [[ -n "$STATE_FILE" ]]; then READ_STATEMENT="$READ_STATEMENT --state $STATE_FILE"; fi
     eval "$READ_STATEMENT"
     ;;
   write)

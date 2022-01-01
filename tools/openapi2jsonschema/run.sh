@@ -8,7 +8,7 @@ test "$#" == "0" &&  {
 }
 
 docker images | grep "$IMG_TAG"  > /dev/null || {
-   pushd $(dirname "${BASH_SOURCE[0]}") || exit
+   pushd "$(dirname "${BASH_SOURCE[0]}")" || exit
    docker build . -t $IMG_TAG
    popd || exit
 }
@@ -19,7 +19,7 @@ tmp_file=$(basename "$1")
 
 docker run --rm \
    --name openapi2jsonschema \
-   --user $(id -u):$(id -g)\
+   --user "$(id -u):$(id -g)" \
    -v "$tmp_dir":/schemas \
    $IMG_TAG --stand-alone --no-all ./"$tmp_file"
 

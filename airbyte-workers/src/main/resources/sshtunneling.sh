@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # This function opens an ssh tunnel if required using values provided in config.
 # Requires one argument,
   # path to ssh config file ($1)
@@ -48,7 +50,8 @@ function openssh() {
       { dnf install epel-release -y && dnf install sshpass -y; } || return 1
     fi
     # put ssh password in env var for use in sshpass. Better than directly passing with -p
-    export SSHPASS=$(cat "$1" | jq -r '.tunnel_map.tunnel_user_password')
+    SSHPASS=$(cat "$1" | jq -r '.tunnel_map.tunnel_user_password')
+    export SSHPASS
     echo "Running: sshpass -e ssh -f -N -M -o StrictHostKeyChecking=no -S {control socket} -l ${tunnel_username} -L ${tunnel_local_port}:${tunnel_db_host}:${tunnel_db_port} ${tunnel_host}"
     sshpass -e ssh -f -N -M -o StrictHostKeyChecking=no -S "$tmpcontrolsocket" -l "${tunnel_username}" -L "${tunnel_local_port}":"${tunnel_db_host}":"${tunnel_db_port}" "${tunnel_host}" &&
     sshopen="yes" &&
@@ -60,7 +63,7 @@ function openssh() {
 # This only works after calling openssh()
 function closessh() {
   # $sshopen $tmpcontrolsocket comes from openssh() function
-  if [ ! -z "$sshopen" ] ; then
+  if [ -n "$sshopen" ] ; then
     ssh -S "$tmpcontrolsocket" -O exit "${tunnel_host}" &&
     echo "closed ssh tunnel"
     trap 'rm -f "$tmpcontrolsocket"' EXIT

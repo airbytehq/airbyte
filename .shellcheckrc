@@ -1,3 +1,6 @@
 # https://github.com/koalaman/shellcheck/blob/master/shellcheck.1.md
 
 # Place shellcheck settings here
+
+# Temporarily disable this, it can be better fixed by using yq instead of grepping
+disable=SC2002

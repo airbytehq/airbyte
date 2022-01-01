@@ -8,10 +8,10 @@ assert_root
 kubectl --help
 
 NAMESPACE=$(openssl rand -hex 12)
-echo "Namespace" "$NAMESPACE"
+echo "Namespace $NAMESPACE"
 
 TAG=$(openssl rand -hex 12)
-echo "Tag" "$TAG"
+echo "Tag $TAG"
 
 docker login -u airbytebot -p "$DOCKER_PASSWORD"
 VERSION=$TAG ./gradlew build
@@ -34,7 +34,7 @@ kubectl apply -f tools/bin/gke-kube-acceptance-test/postgres-destination.yaml --
 sleep 180s
 
 function findAndDeleteTag () {
-    if [ $(curl --fail -LI --request GET 'https://hub.docker.com/v2/repositories/airbyte/'"$1"'/tags/'"$TAG"'/' --header 'Authorization: JWT '"$2"'' -o /dev/null -w '%{http_code}\n' -s) == "200" ];
+    if [ "$(curl --fail -LI --request GET 'https://hub.docker.com/v2/repositories/airbyte/'"$1"'/tags/'"$TAG"'/' --header 'Authorization: JWT '"$2"'' -o /dev/null -w '%{http_code}\n' -s)" == "200" ];
     then
         echo "FOUND TAG" "$TAG" "in repository" "$1" ",DELETING IT"
         curl --request DELETE 'https://hub.docker.com/v2/repositories/airbyte/'"$1"'/tags/'"$TAG"'/' --header 'Authorization: JWT '"$2"'';
@@ -57,7 +57,7 @@ function cleanUpImages () {
     findAndDeleteTag "migration" "$TOKEN"
 }
 
-trap "cleanUpImages && kubectl delete namespaces $NAMESPACE --grace-period=0 --force" EXIT
+trap 'cleanUpImages && kubectl delete namespaces $NAMESPACE --grace-period=0 --force' EXIT
 
 kubectl port-forward svc/airbyte-server-svc 8001:8001 --namespace="$NAMESPACE" &
 
@@ -69,4 +69,3 @@ sleep 10s
 
 echo "Running e2e tests via gradle..."
 KUBE=true IS_GKE=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan -i
-

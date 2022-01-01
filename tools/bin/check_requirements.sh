@@ -7,7 +7,7 @@ fi;
 printf "\n";
 desired="14"
 printf "Java ";
-if [[ "$(which java)" && "$(java --version)" ]]; 
+if [[ "$(which java)" && "$(java --version)" ]];
     then
         printf "installed"
         str="$(java --version)"
@@ -25,7 +25,7 @@ fi;
 printf "\n";
 desired="20.1"
 printf "Pip ";
-if [[ "$(which pip)" && "$(pip --version)" ]]; 
+if [[ "$(which pip)" && "$(pip --version)" ]];
     then
         printf "installed"
         str="$(pip --version)"
@@ -43,7 +43,7 @@ fi;
 printf "\n";
 desired="3.7.9"
 printf "Python ";
-if [[ "$(which python3)" && "$(python3 --version)" ]]; 
+if [[ "$(which python3)" && "$(python3 --version)" ]];
     then
         printf "installed"
         str="$(python3 --version)"
