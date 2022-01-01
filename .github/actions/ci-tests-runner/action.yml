@@ -99,6 +99,7 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       with:
+        check_for_duplicate_msg: false
         msg: ${{ steps.generate-sq-report.outputs.sq-report }}
 #      uses: peter-evans/create-or-update-comment@v1
 #      with:
