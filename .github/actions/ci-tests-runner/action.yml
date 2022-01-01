@@ -92,7 +92,7 @@ runs:
       uses: peter-evans/create-or-update-comment@v1
       with:
           issue-number: ${{ inputs.pull-request-id }}
-          body: ${{ steps.generate-sq-report.outputs.sq-report }}
+          body: "${{ steps.generate-sq-report.outputs.sq-report }}"
 
     - name: Remove SonarQube Project
       if: ${{ inputs.remove-sonar-project == true }}
