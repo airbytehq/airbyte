@@ -46,8 +46,6 @@ import org.junit.jupiter.api.Timeout;
          unit = TimeUnit.MINUTES)
 public class KubePodProcessIntegrationTest {
 
-  // todo: add a minio startup so we can write things to it to monitor and re-attach to this
-
   private static final int RANDOM_FILE_LINE_LENGTH = 100;
 
   private static final boolean IS_MINIKUBE = Boolean.parseBoolean(Optional.ofNullable(System.getenv("IS_MINIKUBE")).orElse("false"));
