@@ -19,6 +19,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
+import io.airbyte.config.storage.CloudStorageConfigs;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
@@ -35,6 +36,10 @@ import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.process.WorkerHeartbeatServer;
+import io.airbyte.workers.storage.DocumentStoreClient;
+import io.airbyte.workers.storage.GcsDocumentStoreClient;
+import io.airbyte.workers.storage.S3DocumentStoreClient;
+import io.airbyte.workers.storage.StateClients;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.TemporalUtils;
@@ -70,6 +75,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -79,10 +85,10 @@ public class WorkerApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerApp.class);
   public static final int KUBE_HEARTBEAT_PORT = 9000;
+  public static final Path STATE_STORAGE_PREFIX = Path.of("/state");
 
   private final Path workspaceRoot;
   private final ProcessFactory jobProcessFactory;
-  private final ProcessFactory orchestratorProcessFactory;
   private final SecretsHydrator secretsHydrator;
   private final WorkflowServiceStubs temporalService;
   private final ConfigRepository configRepository;
@@ -99,7 +105,7 @@ public class WorkerApp {
   private final TemporalWorkerRunFactory temporalWorkerRunFactory;
   private final Configs configs;
   private final ConnectionHelper connectionHelper;
-  private final boolean containerOrchestratorEnabled;
+  private final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig;
 
   public void start() {
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
@@ -153,10 +159,9 @@ public class WorkerApp {
     final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(workspaceRoot, configRepository);
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     final ReplicationActivityImpl replicationActivity = getReplicationActivityImpl(
-        containerOrchestratorEnabled,
+        containerOrchestratorConfig,
         workerConfigs,
         jobProcessFactory,
-        orchestratorProcessFactory,
         secretsHydrator,
         workspaceRoot,
         workerEnvironment,
@@ -196,10 +201,9 @@ public class WorkerApp {
    * launching or not.
    */
   private ReplicationActivityImpl getReplicationActivityImpl(
-                                                             final boolean containerOrchestratorEnabled,
+                                                             final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig,
                                                              final WorkerConfigs workerConfigs,
                                                              final ProcessFactory jobProcessFactory,
-                                                             final ProcessFactory orchestratorProcessFactory,
                                                              final SecretsHydrator secretsHydrator,
                                                              final Path workspaceRoot,
                                                              final WorkerEnvironment workerEnvironment,
@@ -208,22 +212,9 @@ public class WorkerApp {
                                                              final String databasePassword,
                                                              final String databaseUrl,
                                                              final String airbyteVersion) {
-    if (containerOrchestratorEnabled) {
+
       return new ReplicationActivityImpl(
-          containerOrchestratorEnabled,
-          workerConfigs,
-          orchestratorProcessFactory,
-          secretsHydrator,
-          workspaceRoot,
-          workerEnvironment,
-          logConfigs,
-          databaseUser,
-          databasePassword,
-          databaseUrl,
-          airbyteVersion);
-    } else {
-      return new ReplicationActivityImpl(
-          containerOrchestratorEnabled,
+          containerOrchestratorConfig,
           workerConfigs,
           jobProcessFactory,
           secretsHydrator,
@@ -234,7 +225,6 @@ public class WorkerApp {
           databasePassword,
           databaseUrl,
           airbyteVersion);
-    }
   }
 
   private static ProcessFactory getJobProcessFactory(final Configs configs) throws IOException {
@@ -257,35 +247,36 @@ public class WorkerApp {
     }
   }
 
-  private static ProcessFactory getOrchestratorProcessFactory(final Configs configs) throws IOException {
-    final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
-
-    if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
-      final KubernetesClient fabricClient = new DefaultKubernetesClient();
-      final String localIp = InetAddress.getLocalHost().getHostAddress();
-      final String kubeHeartbeatUrl = localIp + ":" + KUBE_HEARTBEAT_PORT;
-      LOGGER.info("Using Kubernetes namespace: {}", configs.getJobKubeNamespace());
-      return new KubeProcessFactory(workerConfigs, configs.getJobKubeNamespace(), fabricClient, kubeHeartbeatUrl, true);
-    } else {
-      return new DockerProcessFactory(
-          workerConfigs,
-          configs.getWorkspaceRoot(),
-          configs.getWorkspaceDockerMount(),
-          configs.getLocalDockerMount(),
-
-          // this needs to point at the Docker network Airbyte is running on, not the host network or job
-          // runner network, otherwise it can't talk with the db/minio
-          "airbyte_default",
-
-          true);
-    }
-  }
-
   private static WorkerOptions getWorkerOptions(final int max) {
     return WorkerOptions.newBuilder()
         .setMaxConcurrentActivityExecutionSize(max)
         .build();
   }
+
+  public static record ContainerOrchestratorConfig(
+          String namespace,
+          DocumentStoreClient documentStoreClient,
+          KubernetesClient kubernetesClient
+  ) { }
+
+   static Optional<ContainerOrchestratorConfig> getContainerOrchestratorConfig(Configs configs) {
+      if (configs.getContainerOrchestratorEnabled()) {
+        final var kubernetesClient = new DefaultKubernetesClient();
+
+        final DocumentStoreClient documentStoreClient = StateClients.create(
+                configs.getStateStorageCloudConfigs(),
+                STATE_STORAGE_PREFIX
+        );
+
+        return Optional.of(new ContainerOrchestratorConfig(
+                configs.getJobKubeNamespace(),
+                documentStoreClient,
+                kubernetesClient
+        ));
+      } else {
+        return Optional.empty();
+      }
+   }
 
   public static void main(final String[] args) throws IOException, InterruptedException {
     final Configs configs = new EnvConfigs();
@@ -306,7 +297,6 @@ public class WorkerApp {
     }
 
     final ProcessFactory jobProcessFactory = getJobProcessFactory(configs);
-    final ProcessFactory orchestratorProcessFactory = getOrchestratorProcessFactory(configs);
 
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
 
@@ -354,10 +344,11 @@ public class WorkerApp {
         workspaceHelper,
         workerConfigs);
 
+    final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig = getContainerOrchestratorConfig(configs);
+
     new WorkerApp(
         workspaceRoot,
         jobProcessFactory,
-        orchestratorProcessFactory,
         secretsHydrator,
         temporalService,
         configRepository,
@@ -374,7 +365,7 @@ public class WorkerApp {
         temporalWorkerRunFactory,
         configs,
         connectionHelper,
-        configs.getContainerOrchestratorEnabled()).start();
+        containerOrchestratorConfig).start();
   }
 
 }

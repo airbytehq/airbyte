@@ -5,6 +5,8 @@
 package io.airbyte.container_orchestrator;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.logging.LoggingHelper;
+import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ReplicationOutput;
@@ -39,6 +41,8 @@ import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,9 +60,15 @@ import org.slf4j.LoggerFactory;
  */
 public class ContainerOrchestratorApp {
 
+  // todo: merge in other prs before doing this, otherwise there will be conflicts
   // todo: publish logs itself instead of reporting via stdout to the parent
+  // todo: use document store to publish states
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ContainerOrchestratorApp.class);
+
+  private static final MdcScope.Builder LOG_MDC_BUILDER = new MdcScope.Builder()
+          .setLogPrefix("container-orchestrator")
+          .setPrefixColor(LoggingHelper.Color.CYAN_BACKGROUND);
 
   private static void replicationRunner(final Configs configs) throws IOException, WorkerException {
 

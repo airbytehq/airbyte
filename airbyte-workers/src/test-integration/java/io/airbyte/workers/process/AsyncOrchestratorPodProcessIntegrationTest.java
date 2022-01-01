@@ -1,42 +1,28 @@
 package io.airbyte.workers.process;
 
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
 import io.airbyte.config.storage.MinioS3ClientFactory;
-import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.storage.DocumentStoreClient;
 import io.airbyte.workers.storage.S3DocumentStoreClient;
-import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.EnvVar;
-import io.fabric8.kubernetes.api.model.EnvVarSource;
-import io.fabric8.kubernetes.api.model.LocalObjectReference;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
-import io.fabric8.kubernetes.api.model.PodFluent;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.kubernetes.client.internal.readiness.Readiness;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
 import java.nio.file.Path;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class AsyncKubePodProcessIntegrationTest {
+public class AsyncOrchestratorPodProcessIntegrationTest {
 
     private static KubernetesClient kubernetesClient;
     private static DocumentStoreClient documentStoreClient;
@@ -123,7 +109,7 @@ public class AsyncKubePodProcessIntegrationTest {
 
 
         // another activity issues the request to create the pod process -> here we'll just create it
-        final var asyncProcess = new AsyncKubePodProcess(
+        final var asyncProcess = new AsyncOrchestratorPodProcess(
                 kubePodInfo,
                 documentStoreClient,
                 kubernetesClient
@@ -152,6 +138,12 @@ public class AsyncKubePodProcessIntegrationTest {
     // todo: test failure with exit value publishing
 
     // todo: test failure with cleanup already
+
+    // todo: outline all possible failure states
+    // launched + created pod + worker turned off + pod failed + worker was down long enough for pod to be swept + what to do? -> start again presumably in this weird case
+    // launched submitted pod but it wasn't actually created (need to identify this somehow -- is there a waiting period?)
+    // launched + created pod + worker turned off + already succeeded (swept or not)
+    // need to check that we aren't spamming the api
 
     @AfterAll
     public static void teardown() {
