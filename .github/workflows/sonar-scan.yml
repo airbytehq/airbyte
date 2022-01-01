@@ -48,6 +48,7 @@ jobs:
       id: run-python-tests
       uses: ./.github/actions/ci-tests-runner
       with:
+        token: ${{ secrets.GITHUB_TOKEN }}
         module-name: ${{ env.MODULE_NAME }}
         module-folder: ${{ env.MODULE_FOLDER }}
         module-lang: ${{ env.MODULE_LANG }}

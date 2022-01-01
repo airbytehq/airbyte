@@ -18,6 +18,8 @@ inputs:
   pull_request_id:
     description: "Unique PR ID. For example: airbyte/1234"
     default: "0"
+  token:
+    required: true
   remove-sonar-project:
     description: "This flag should be used if needed to remove sonar project after using"
     default: false
@@ -95,7 +97,7 @@ runs:
       if: ${{ inputs.module-lang == 'py' }}
       uses: unsplash/comment-on-pr@v1.3.0
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ inputs.token }}
       with:
         msg: ${{ steps.generate-sq-report.outputs.sq-report }}
 #      uses: peter-evans/create-or-update-comment@v1
