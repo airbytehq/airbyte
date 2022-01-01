@@ -28,9 +28,8 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Entrypoint for the application responsible for launching containers and handling all message
- * passing. Currently, this is only implemented for replication but in the future it will be
- * available for normalization and dbt. Also, the current version relies on a heartbeat from a
- * Temporal worker. This will also be removed in the future so this can run fully async.
+ * passing for replication, normalization, and dbt. Also, the current version relies on a heartbeat
+ * from a Temporal worker. This will also be removed in the future so this can run fully async.
  *
  * This application retrieves most of its configuration from copied files from the calling Temporal
  * worker.
