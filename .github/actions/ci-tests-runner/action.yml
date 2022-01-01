@@ -87,9 +87,9 @@ runs:
         ci_sonar_qube --pr ${{ inputs.pull-request-id }} --report ${REPORT_FILE} --module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
         echo "::set-output name=sq-report::$(cat ${REPORT_FILE})"
 
-    - name: Add Report As Comment
-      uses: peter-evans/create-or-update-comment@v1
+    - name: Add Comment
       if: ${{ inputs.module-lang == 'py' }}
+      uses: peter-evans/create-or-update-comment@v1
       with:
           issue-number: ${{ inputs.pull-request-id }}
           body: |
