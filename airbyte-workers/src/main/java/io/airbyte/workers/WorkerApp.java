@@ -154,11 +154,19 @@ public class WorkerApp {
             databaseUrl,
             airbyteVersion);
     final DbtTransformationActivityImpl dbtTransformationActivity =
-        new DbtTransformationActivityImpl(workerConfigs, jobProcessFactory, secretsHydrator,
+        new DbtTransformationActivityImpl(
+            containerOrchestratorEnabled,
+            workerConfigs,
+            jobProcessFactory,
+            orchestratorProcessFactory,
+            secretsHydrator,
             workspaceRoot,
-            workerEnvironment, logConfigs,
+            workerEnvironment,
+            logConfigs,
             databaseUser,
-            databasePassword, databaseUrl, airbyteVersion);
+            databasePassword,
+            databaseUrl,
+            airbyteVersion);
     new PersistStateActivityImpl(workspaceRoot, configRepository);
     final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(workspaceRoot, configRepository);
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
