@@ -89,9 +89,8 @@ runs:
     - name: Add Comment
       uses: peter-evans/create-or-update-comment@v1
       with:
-          template:
           issue-number: ${{ inputs.pull-request-id }}
-           body: |
+          body: |
              ${{ steps.generate-sq-report.outputs.sq-report }}
 
     - name: Remove SonarQube Project
