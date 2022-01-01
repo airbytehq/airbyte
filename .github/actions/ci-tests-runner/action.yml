@@ -30,7 +30,7 @@ runs:
       with:
         python-version: 3.7
 
-    - name: Run tests of CI
+    - name: Tests of CI
       shell: bash
       run: |
         # all CI python packages have the prefix "ci_"
@@ -38,7 +38,7 @@ runs:
         tox -r -c ./tools/tox_ci.ini
         pip install --quiet -e ./tools/ci_*
 
-    - name: Run Python Tests
+    - name: Python Tests
       id: run-python-tests
       if: ${{ inputs.module-lang == 'py' }}
       uses: ./.github/actions/ci-py-tests
@@ -46,7 +46,7 @@ runs:
         module-name: ${{ inputs.module-name }}
         module-folder: ${{ inputs.module-folder }}
 
-    - name: Run Java Tests
+    - name: Java Tests
       id: run-java-tests
       if: ${{ inputs.module-lang == 'java' }}
       uses: ./.github/actions/ci-java-tests
@@ -60,6 +60,7 @@ runs:
       run: |
         ci_sonar_qube --pr ${{ inputs.pull-request-id }} --create --module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
         echo "::set-output name=sq_project_name::$(ci_sonar_qube --pr ${{ inputs.pull-request-id }} --print_key --module ${{ inputs.module-name }})"
+
     - name: SonarQube Scan
       # test for Python only
       if: ${{ inputs.module-lang == 'py' }}
@@ -80,20 +81,18 @@ runs:
 
     - name: Generate SonarQube Report
       shell: bash
-      if: ${{ inputs.module-lang == 'py' }}
       id: generate-sq-report
       run: |
         REPORT_FILE=/tmp/sq_report_$RANDOM.md
         ci_sonar_qube --pr ${{ inputs.pull-request-id }} --report ${REPORT_FILE} --module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
         echo "::set-output name=sq-report::$(cat ${REPORT_FILE})"
 
-    - name: Add Comment
-      if: ${{ inputs.module-lang == 'py' }}
-      uses: peter-evans/create-or-update-comment@v1
-      with:
-          issue-number: ${{ inputs.pull-request-id }}
-          body: |
-             ${{ steps.generate-sq-report.outputs.sq-report }}
+#    - name: Add Comment
+#      uses: peter-evans/create-or-update-comment@v1
+#      with:
+#          issue-number: ${{ inputs.pull-request-id }}
+#          body: |
+#             ${{ steps.generate-sq-report.outputs.sq-report }}
 
     - name: Remove SonarQube Project
       if: ${{ inputs.remove-sonar-project == true }}
