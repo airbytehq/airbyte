@@ -18,6 +18,6 @@ ROOT_PARENT=$2; echo "ROOT_PARENT: $ROOT_PARENT"
 ROOT=$3; echo "ROOT: $ROOT"
 
 [[ "${ROOT}"="${ROOT_PARENT}"* ]] || (echo "ROOT ${ROOT} is not a child of ROOT_PARENT ${ROOT_PARENT}." && exit 1)
-MOUNT_ROOT=${MOUNT}/$(echo $ROOT | sed -e "s|${ROOT_PARENT}||g")
+MOUNT_ROOT=${MOUNT}/$(echo "$ROOT" | sed -e "s|${ROOT_PARENT}||g")
 echo "MOUNT_ROOT: ${MOUNT_ROOT}"
-mkdir -p ${MOUNT_ROOT}
+mkdir -p "${MOUNT_ROOT}"

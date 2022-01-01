@@ -20,13 +20,13 @@ main() {
 
   echo "Checking if ${imageName} exists..."
   # handle the case where the image exists ONLY on the local machine.
-  LOCAL=$(docker_exists_in_local ${imageName})
+  LOCAL=$(docker_exists_in_local "${imageName}")
 
   if [[ $LOCAL -eq 0 ]]; then
     echo "${imageName} not found locally. Attempting to pull the image..."
     # handle the case where the image exists in the remote and either has never been pulled or has already been pulled
     # and is already up to date.
-    RESULT=$(docker pull $imageName 2> /dev/null | awk '/Status: Image is up to date/ || /Status: Downloaded newer image/')
+    RESULT=$(docker pull "$imageName" 2> /dev/null | awk '/Status: Image is up to date/ || /Status: Downloaded newer image/')
     [ -z "$RESULT" ] && _error "Image does not exist."
     echo "Pulled ${imageName} from remote."
   else

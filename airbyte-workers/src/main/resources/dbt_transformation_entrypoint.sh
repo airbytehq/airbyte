@@ -34,8 +34,8 @@ if [[ -f "${CWD}/bq_keyfile.json" ]]; then
   cp "${CWD}/bq_keyfile.json" /tmp/bq_keyfile.json
 fi
 
-. $CWD/sshtunneling.sh
-openssh $CWD/ssh.json
+. "$CWD"/sshtunneling.sh
+openssh "$CWD"/ssh.json
 trap 'closessh' EXIT
 
 # Add mandatory flags profiles-dir and project-dir when calling dbt when necessary

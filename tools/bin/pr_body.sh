@@ -9,7 +9,7 @@ GIT_REVISION=$(git rev-parse HEAD)
 
 echo "Changelog:"
 echo
-PAGER=cat git log v${PREV_VERSION}..${GIT_REVISION} --oneline --decorate=no
+PAGER=cat git log v"${PREV_VERSION}".."${GIT_REVISION}" --oneline --decorate=no
 echo
 echo "Steps After Merging PR:"
 echo "1. Pull most recent version of master"

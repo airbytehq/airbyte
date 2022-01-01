@@ -2,4 +2,4 @@
 
 set -e
 
-/app/bin/${APPLICATION} "$@"
+/app/bin/"${APPLICATION}" "$@"

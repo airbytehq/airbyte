@@ -2,7 +2,7 @@
 image_name=$(cat acceptance-test-config.yml | grep "connector_image" | head -n 1 | cut -d: -f2-)
 # Build latest connector image
 echo "try to build: ${image_name}"
-docker build . -t ${image_name}
+docker build . -t "${image_name}"
 
 # Pull latest acctest image
 docker pull airbyte/source-acceptance-test:latest
