@@ -80,7 +80,7 @@ runs:
 
     - name: Generate SonarQube Report
       shell: bash
-      if: success() || failure()
+      if: ${{ inputs.module-lang == 'py' }}
       id: generate-sq-report
       run: |
         REPORT_FILE=/tmp/sq_report_$RANDOM.md
@@ -89,7 +89,7 @@ runs:
 
     - name: Add Comment
       uses: peter-evans/create-or-update-comment@v1
-      if: success() || failure()
+      if: ${{ inputs.module-lang == 'py' }}
       with:
           issue-number: ${{ inputs.pull-request-id }}
           body: |
