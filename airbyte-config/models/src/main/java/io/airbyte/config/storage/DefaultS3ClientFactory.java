@@ -8,7 +8,6 @@ import com.google.common.base.Preconditions;
 import io.airbyte.config.storage.CloudStorageConfigs.S3ApiWorkerStorageConfig;
 import io.airbyte.config.storage.CloudStorageConfigs.S3Config;
 import java.util.function.Supplier;
-
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;

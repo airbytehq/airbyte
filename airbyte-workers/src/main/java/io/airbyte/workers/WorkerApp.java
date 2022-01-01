@@ -19,7 +19,6 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
-import io.airbyte.config.storage.CloudStorageConfigs;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
@@ -37,8 +36,6 @@ import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.process.WorkerHeartbeatServer;
 import io.airbyte.workers.storage.DocumentStoreClient;
-import io.airbyte.workers.storage.GcsDocumentStoreClient;
-import io.airbyte.workers.storage.S3DocumentStoreClient;
 import io.airbyte.workers.storage.StateClients;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalJobType;
@@ -75,7 +72,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -213,18 +209,18 @@ public class WorkerApp {
                                                              final String databaseUrl,
                                                              final String airbyteVersion) {
 
-      return new ReplicationActivityImpl(
-          containerOrchestratorConfig,
-          workerConfigs,
-          jobProcessFactory,
-          secretsHydrator,
-          workspaceRoot,
-          workerEnvironment,
-          logConfigs,
-          databaseUser,
-          databasePassword,
-          databaseUrl,
-          airbyteVersion);
+    return new ReplicationActivityImpl(
+        containerOrchestratorConfig,
+        workerConfigs,
+        jobProcessFactory,
+        secretsHydrator,
+        workspaceRoot,
+        workerEnvironment,
+        logConfigs,
+        databaseUser,
+        databasePassword,
+        databaseUrl,
+        airbyteVersion);
   }
 
   private static ProcessFactory getJobProcessFactory(final Configs configs) throws IOException {
@@ -254,29 +250,26 @@ public class WorkerApp {
   }
 
   public static record ContainerOrchestratorConfig(
-          String namespace,
-          DocumentStoreClient documentStoreClient,
-          KubernetesClient kubernetesClient
-  ) { }
+                                                   String namespace,
+                                                   DocumentStoreClient documentStoreClient,
+                                                   KubernetesClient kubernetesClient) {}
 
-   static Optional<ContainerOrchestratorConfig> getContainerOrchestratorConfig(Configs configs) {
-      if (configs.getContainerOrchestratorEnabled()) {
-        final var kubernetesClient = new DefaultKubernetesClient();
+  static Optional<ContainerOrchestratorConfig> getContainerOrchestratorConfig(Configs configs) {
+    if (configs.getContainerOrchestratorEnabled()) {
+      final var kubernetesClient = new DefaultKubernetesClient();
 
-        final DocumentStoreClient documentStoreClient = StateClients.create(
-                configs.getStateStorageCloudConfigs(),
-                STATE_STORAGE_PREFIX
-        );
+      final DocumentStoreClient documentStoreClient = StateClients.create(
+          configs.getStateStorageCloudConfigs(),
+          STATE_STORAGE_PREFIX);
 
-        return Optional.of(new ContainerOrchestratorConfig(
-                configs.getJobKubeNamespace(),
-                documentStoreClient,
-                kubernetesClient
-        ));
-      } else {
-        return Optional.empty();
-      }
-   }
+      return Optional.of(new ContainerOrchestratorConfig(
+          configs.getJobKubeNamespace(),
+          documentStoreClient,
+          kubernetesClient));
+    } else {
+      return Optional.empty();
+    }
+  }
 
   public static void main(final String[] args) throws IOException, InterruptedException {
     final Configs configs = new EnvConfigs();

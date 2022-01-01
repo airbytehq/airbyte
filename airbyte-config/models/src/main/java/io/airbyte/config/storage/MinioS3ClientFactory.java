@@ -9,10 +9,7 @@ import io.airbyte.config.storage.CloudStorageConfigs.MinioConfig;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.function.Supplier;
-
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.AwsCredentials;
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 

@@ -41,8 +41,6 @@ import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,8 +65,8 @@ public class ContainerOrchestratorApp {
   private static final Logger LOGGER = LoggerFactory.getLogger(ContainerOrchestratorApp.class);
 
   private static final MdcScope.Builder LOG_MDC_BUILDER = new MdcScope.Builder()
-          .setLogPrefix("container-orchestrator")
-          .setPrefixColor(LoggingHelper.Color.CYAN_BACKGROUND);
+      .setLogPrefix("container-orchestrator")
+      .setPrefixColor(LoggingHelper.Color.CYAN_BACKGROUND);
 
   private static void replicationRunner(final Configs configs) throws IOException, WorkerException {
 

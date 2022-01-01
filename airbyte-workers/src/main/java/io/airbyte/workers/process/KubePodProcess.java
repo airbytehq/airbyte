@@ -207,17 +207,17 @@ public class KubePodProcess extends Process implements KubePod {
     return containerBuilder.build();
   }
 
-  public  static List<ContainerPort> createContainerPortList(final Map<Integer, Integer> internalToExternalPorts) {
+  public static List<ContainerPort> createContainerPortList(final Map<Integer, Integer> internalToExternalPorts) {
     return internalToExternalPorts.keySet().stream()
-            .map(integer -> new ContainerPortBuilder()
-                    .withContainerPort(integer)
-                    .build())
-            .collect(Collectors.toList());
+        .map(integer -> new ContainerPortBuilder()
+            .withContainerPort(integer)
+            .build())
+        .collect(Collectors.toList());
   }
 
   public static void copyFilesToKubeConfigVolume(final KubernetesClient client,
-                                                  final Pod podDefinition,
-                                                  final Map<String, String> files) {
+                                                 final Pod podDefinition,
+                                                 final Map<String, String> files) {
     final List<Map.Entry<String, String>> fileEntries = new ArrayList<>(files.entrySet());
 
     // copy this file last to indicate that the copy has completed

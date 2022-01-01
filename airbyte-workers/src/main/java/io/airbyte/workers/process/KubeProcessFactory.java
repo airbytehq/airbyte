@@ -153,9 +153,9 @@ public class KubeProcessFactory implements ProcessFactory {
     final var allLabels = new HashMap<>(customLabels);
 
     final var generalKubeLabels = Map.of(
-            JOB_LABEL_KEY, jobId,
-            ATTEMPT_LABEL_KEY, String.valueOf(attemptId),
-            WORKER_POD_LABEL_KEY, WORKER_POD_LABEL_VALUE);
+        JOB_LABEL_KEY, jobId,
+        ATTEMPT_LABEL_KEY, String.valueOf(attemptId),
+        WORKER_POD_LABEL_KEY, WORKER_POD_LABEL_VALUE);
 
     allLabels.putAll(generalKubeLabels);
 

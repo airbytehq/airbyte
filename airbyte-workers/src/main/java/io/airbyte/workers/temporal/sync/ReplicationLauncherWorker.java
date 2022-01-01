@@ -14,13 +14,10 @@ import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerException;
-import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
 import io.airbyte.workers.process.AsyncKubePodStatus;
+import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
 import io.airbyte.workers.process.KubePodInfo;
-import io.airbyte.workers.process.KubePodProcess;
 import io.airbyte.workers.process.KubeProcessFactory;
-import io.airbyte.workers.process.ProcessFactory;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
@@ -87,14 +84,14 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
   private AsyncOrchestratorPodProcess process;
 
   public ReplicationLauncherWorker(
-          final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig,
-          final IntegrationLauncherConfig sourceLauncherConfig,
-          final IntegrationLauncherConfig destinationLauncherConfig,
-          final JobRunConfig jobRunConfig,
-          final StandardSyncInput syncInput,
-          final Path workspaceRoot,
-          final String airbyteVersion,
-          final WorkerConfigs workerConfigs) {
+                                   final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig,
+                                   final IntegrationLauncherConfig sourceLauncherConfig,
+                                   final IntegrationLauncherConfig destinationLauncherConfig,
+                                   final JobRunConfig jobRunConfig,
+                                   final StandardSyncInput syncInput,
+                                   final Path workspaceRoot,
+                                   final String airbyteVersion,
+                                   final WorkerConfigs workerConfigs) {
     this.containerOrchestratorConfig = containerOrchestratorConfig;
     this.sourceLauncherConfig = sourceLauncherConfig;
     this.destinationLauncherConfig = destinationLauncherConfig;
@@ -120,35 +117,32 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
           INIT_FILE_ENV_MAP, Jsons.serialize(envMap));
 
       final Map<Integer, Integer> portMap = Map.of(
-              WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT,
-              PORT1, PORT1,
-              PORT2, PORT2,
-              PORT3, PORT3,
-              PORT4, PORT4);
+          WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT,
+          PORT1, PORT1,
+          PORT2, PORT2,
+          PORT3, PORT3,
+          PORT4, PORT4);
 
       final var allLabels = KubeProcessFactory.getLabels(
-              jobRunConfig.getJobId(),
-              Math.toIntExact(jobRunConfig.getAttemptId()),
-              Collections.emptyMap()
-      );
+          jobRunConfig.getJobId(),
+          Math.toIntExact(jobRunConfig.getAttemptId()),
+          Collections.emptyMap());
 
       final var podName = "container-launcher-j-" + jobRunConfig.getJobId() + "-a-" + jobRunConfig.getAttemptId();
       final var kubePodInfo = new KubePodInfo(containerOrchestratorConfig.namespace(), podName);
 
       process = new AsyncOrchestratorPodProcess(
-              kubePodInfo,
-              containerOrchestratorConfig.documentStoreClient(),
-              containerOrchestratorConfig.kubernetesClient()
-      );
+          kubePodInfo,
+          containerOrchestratorConfig.documentStoreClient(),
+          containerOrchestratorConfig.kubernetesClient());
 
-      if(process.getDocStoreStatus().equals(AsyncKubePodStatus.NOT_STARTED)) {
+      if (process.getDocStoreStatus().equals(AsyncKubePodStatus.NOT_STARTED)) {
         process.create(
-                airbyteVersion,
-                allLabels,
-                workerConfigs.getResourceRequirements(),
-                fileMap,
-                portMap
-        );
+            airbyteVersion,
+            allLabels,
+            workerConfigs.getResourceRequirements(),
+            fileMap,
+            portMap);
       }
 
       // this waitFor can resume if the activity is re-run
@@ -185,13 +179,13 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
     LOGGER.debug("Closing sync runner process");
     process.destroy();
 
-    if(process.hasExited()) {
+    if (process.hasExited()) {
       LOGGER.info("Successfully cancelled process.");
     } else {
       // try again
       process.destroy();
 
-      if(process.hasExited()) {
+      if (process.hasExited()) {
         LOGGER.info("Successfully cancelled process.");
       } else {
         LOGGER.error("Unable to cancel process");

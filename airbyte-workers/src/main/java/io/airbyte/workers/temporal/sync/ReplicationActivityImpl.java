@@ -121,9 +121,9 @@ public class ReplicationActivityImpl implements ReplicationActivity {
 
     CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> workerFactory;
 
-
     if (containerOrchestratorConfig.isPresent()) {
-      workerFactory = getContainerLauncherWorkerFactory(containerOrchestratorConfig.get(), sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput);
+      workerFactory = getContainerLauncherWorkerFactory(containerOrchestratorConfig.get(), sourceLauncherConfig, destinationLauncherConfig,
+          jobRunConfig, syncInput);
     } else {
       workerFactory = getLegacyWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput);
     }
@@ -204,11 +204,11 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   }
 
   private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getContainerLauncherWorkerFactory(
-          final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig,
-          final IntegrationLauncherConfig sourceLauncherConfig,
-          final IntegrationLauncherConfig destinationLauncherConfig,
-          final JobRunConfig jobRunConfig,
-          final StandardSyncInput syncInput) {
+                                                                                                                     final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig,
+                                                                                                                     final IntegrationLauncherConfig sourceLauncherConfig,
+                                                                                                                     final IntegrationLauncherConfig destinationLauncherConfig,
+                                                                                                                     final JobRunConfig jobRunConfig,
+                                                                                                                     final StandardSyncInput syncInput) {
     return () -> new ReplicationLauncherWorker(
         containerOrchestratorConfig,
         sourceLauncherConfig,
