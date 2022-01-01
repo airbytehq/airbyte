@@ -85,14 +85,18 @@ runs:
       run: |
         REPORT_FILE=/tmp/sq_report_$RANDOM.md
         ci_sonar_qube --pr ${{ inputs.pull-request-id }} --report ${REPORT_FILE} --module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
-        echo "::set-output name=sq-report::$(cat ${REPORT_FILE})"
+        body="$(cat ${REPORT_FILE})"
+        body="${body//'%'/'%25'}"
+        body="${body//$'\n'/'%0A'}"
+        body="${body//$'\r'/'%0D'}"
+        echo "::set-output name=sq-report::$body"
 
     - name: Add Comment
       if: ${{ inputs.module-lang == 'py' }}
       uses: peter-evans/create-or-update-comment@v1
       with:
           issue-number: ${{ inputs.pull-request-id }}
-          body: "${{ steps.generate-sq-report.outputs.sq-report }}"
+          body: ${{ steps.generate-sq-report.outputs.sq-report }}
 
     - name: Remove SonarQube Project
       if: ${{ inputs.remove-sonar-project == true }}
