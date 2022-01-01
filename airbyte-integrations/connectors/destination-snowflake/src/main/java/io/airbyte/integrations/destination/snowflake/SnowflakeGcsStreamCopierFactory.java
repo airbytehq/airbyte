@@ -5,8 +5,6 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import com.google.cloud.storage.Storage;
-import io.aesy.datasize.ByteUnit.IEC;
-import io.aesy.datasize.DataSize;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;

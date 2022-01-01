@@ -31,6 +31,7 @@
   * [Scaling Airbyte](operator-guides/scaling-airbyte.md)
 * [Connector Catalog](integrations/README.md)
   * [Sources](integrations/sources/README.md)
+    * [3PL Central](integrations/sources/tplcentral.md)
     * [Airtable](integrations/sources/airtable.md)
     * [Amazon SQS](integrations/sources/amazon-sqs.md)
     * [Amazon Seller Partner](integrations/sources/amazon-seller-partner.md)
