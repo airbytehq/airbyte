@@ -36,7 +36,7 @@ jobs:
     environment: more-secrets
     # this option must be uncommented for github env
     strategy:
-      matrix: ${{fromJson(needs.detect-changes.outputs.changes)}}
+      matrix: ${{fromJson(needs.detect-changes.outputs.changed-modules)}}
     env:
       MODULE_NAME: ${{ matrix.module }}
       MODULE_LANG: ${{ matrix.lang }}
