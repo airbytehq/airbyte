@@ -22,7 +22,9 @@ def find_base_path(path: str, modules: List[Dict[str, str]], unique_modules: Set
         is_module_root = lookup_file in os.listdir(dir_path)
         if is_module_root:
             if dir_path not in unique_modules:
-                modules.append({"dir": dir_path, "lang": file_ext[1:]})
+                parts = dir_path.split("/")
+                module_name = "/".join(parts[-2:])
+                modules.append({"folder": dir_path, "lang": file_ext[1:], "module": module_name})
                 unique_modules.add(dir_path)
         else:
             find_base_path(dir_path, modules, unique_modules, file_ext=file_extension, lookup_file=lookup_file)

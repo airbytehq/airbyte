@@ -2,7 +2,9 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 import argparse
+import itertools
 import json
+import logging
 import os
 import sys
 from typing import Dict, List
@@ -12,6 +14,7 @@ from invoke import Context
 sys.path.insert(0, "airbyte-integrations/connectors")
 from tasks import CONFIG_FILE, TOOLS_VERSIONS, _run_task  # noqa
 
+LOGGER = logging.getLogger(__name__)
 TASK_COMMANDS: Dict[str, List[str]] = {
     "black": [
         f"pip install black~={TOOLS_VERSIONS['black']}",
@@ -56,44 +59,57 @@ TASK_COMMANDS: Dict[str, List[str]] = {
 }
 
 
-def build_static_checkers_reports(modules: list, static_checker_reports_path: str) -> int:
+def build_py_static_checkers_reports(folder: str, output_folder: str) -> int:
     ctx = Context()
     toml_config_file = os.path.join(os.getcwd(), "pyproject.toml")
 
-    for module_path in modules:
-        reports_path = f"{os.getcwd()}/{static_checker_reports_path}/{module_path}"
-        if not os.path.exists(reports_path):
-            os.makedirs(reports_path)
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
 
-        for checker in TASK_COMMANDS:
-            _run_task(
-                ctx,
-                f"{os.getcwd()}/{module_path}",
-                checker,
-                module_path=module_path,
-                multi_envs=True,
-                check_option="",
-                task_commands=TASK_COMMANDS,
-                toml_config_file=toml_config_file,
-                reports_path=reports_path,
-                source_acceptance_test_path=os.path.join(os.getcwd(), "airbyte-integrations/bases/source-acceptance-test"),
-            )
+    for checker in TASK_COMMANDS:
+        _run_task(
+            ctx,
+            f"{os.getcwd()}/{folder}",
+            checker,
+            module_path=folder,
+            multi_envs=True,
+            check_option="",
+            task_commands=TASK_COMMANDS,
+            toml_config_file=toml_config_file,
+            reports_path=output_folder,
+            source_acceptance_test_path=os.path.join(os.getcwd(), "airbyte-integrations/bases/source-acceptance-test"),
+        )
     return 0
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Working with Python Static Report Builder.")
     parser.add_argument("changed_modules", nargs="*")
-    parser.add_argument("--static-checker-reports-path", help="SonarQube host", required=False, type=str, default="static_checker_reports")
+    parser.add_argument("--output_folder", help="Folder where all reports will be saved", required=False, type=str,
+                        default=f"{os.getcwd()}/static_checker_reports")
 
     args = parser.parse_args()
-    changed_python_module_paths = [
-        module["dir"]
-        for module in json.loads(args.changed_modules[0])
-        if module["lang"] == "py" and os.path.exists(module["dir"]) and "setup.py" in os.listdir(module["dir"])
-    ]
-    print("Changed python modules: ", changed_python_module_paths)
-    return build_static_checkers_reports(changed_python_module_paths, static_checker_reports_path=args.static_checker_reports_path)
+    modules = [json.loads(m) for m in args.changed_modules]
+    modules = {m['folder']: m for m in itertools.chain.from_iterable([m if isinstance(m, list) else [m] for m in modules])}
+    for module in modules.values():
+        output_folder = args.output_folder
+        if len(modules) > 1:
+            output_folder += "/" + module["module"].replace("/", "_")
+
+        LOGGER.info(f"Found the module {module['module']}, lang: {module['lang']} => {output_folder}")
+        if module["lang"] != "py":
+            LOGGER.warning(f"Skipped the module: {module} because its tests are not supported now")
+            continue
+        elif not os.path.exists(module["folder"]):
+            LOGGER.error(f"Not found the folder: {module['folder']}")
+            return 1
+        elif "setup.py" not in os.listdir(module["folder"]):
+            LOGGER.error(f"Not found the setup.py file in the {module['folder']}")
+            return 1
+        elif build_py_static_checkers_reports(folder=module["folder"], output_folder=output_folder):
+            return 1
+    LOGGER.info("all tests were finished...")
+    return 0
 
 
 if __name__ == "__main__":

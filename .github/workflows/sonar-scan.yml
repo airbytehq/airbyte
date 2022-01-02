@@ -4,15 +4,30 @@ on:
     types: [opened, synchronize, reopened, closed]
 
 jobs:
+
   detect-changes:
+    name: Detect Changed Modules
+    timeout-minutes: 5
     runs-on: ubuntu-latest
     outputs:
-      changes: ${{ steps.detect-changed-modules.outputs.changes }}
+      changed-modules: ${{ steps.detect-changed-modules.outputs.changed-modules }}
     steps:
-    - id: detect-changed-modules
-      run: |
-         CHANGES="[{\"module\":\"connectors/source-file\",\"lang\":\"py\", \"folder\":\"airbyte-integrations/connectors/source-file/\"}, {\"module\":\"connectors/source-s3\",\"lang\":\"py\", \"folder\":\"airbyte-integrations/connectors/source-s3/\"},{\"module\":\"connectors/destination-s3\",\"lang\":\"java\", \"folder\":\"airbyte-integrations/connectors/destination-s3/\"}]"
-         echo "::set-output name=changes::{ \"include\": $CHANGES }"
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1000
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Intall Requirements
+        run: pip install ./tools/ci_static_check_reports
+      - name: Detect Changed Modules
+        id: detect-changed-modules
+        run: |
+          git fetch
+          CHANGES=$(ci_detect_changed_modules $(git diff --name-only $(git merge-base HEAD origin/master)) | jq -c .)
+          echo "::set-output name=changed-modules::{ \"include\": $CHANGES }"
 
   run-ci-tests:
     needs: detect-changes

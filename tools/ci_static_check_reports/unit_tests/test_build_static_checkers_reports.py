@@ -1,7 +1,9 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+import json
 import os
+import shutil
 import subprocess
 
 import pytest
@@ -10,14 +12,21 @@ import pytest
 @pytest.mark.parametrize(
     "changed_module,should_build_reports",
     [
-        ('[{"dir": "tools/ci_static_check_reports", "lang": "py"}]', True),
-        ('[{"dir": "airbyte-integrations/connectors/destination-bigquery", "lang": "java"}]', False),
-        ('[{"dir": "airbyte-integrations/connectors/not-existing-module", "lang": "other"}]', False),
+        ('[{"folder": "airbyte-integrations/connectors/source-airtable", "lang": "py", "module": "connectors/source-airtable"}]', True),
+        (
+                '[{"folder": "airbyte-integrations/connectors/destination-bigquery", "lang": "java", "module": "connectors/destination-bigquery" }]',
+                False),
+        ('[{"folder": "airbyte-integrations/connectors/not-existing-module", "lang": "other", "module": "connectors/not-existing-module"}]',
+         False),
     ],
 )
 def test_build_static_checkers_reports(changed_module: str, should_build_reports: bool) -> None:
-    subprocess.call(["ci_build_python_checkers_reports", changed_module], shell=False)
-    static_checker_reports_path = f"static_checker_reports/{changed_module}"
+    static_checker_reports_path = "/tmp/report_" + json.loads(changed_module)[0]["module"].replace("/", "_")
+    if os.path.exists(static_checker_reports_path):
+        shutil.rmtree(static_checker_reports_path)
+    subprocess.call(["ci_build_python_checkers_reports", changed_module,
+                     "--output_folder", static_checker_reports_path],
+                    shell=False)
 
     static_checker_reports_path_exists = os.path.exists(static_checker_reports_path)
     black_exists = os.path.exists(os.path.join(static_checker_reports_path, "black.txt"))

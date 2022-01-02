@@ -153,6 +153,10 @@ class SonarQubeApi:
 
     def generate_report(self, project_name: str, report_file: str) -> bool:
         project_data = self.prepare_project_settings(project_name)
+
+        md_file = MdUtils(file_name=report_file)
+        md_file.new_line(f'### SonarQube report for {project_data["name"]}')
+
         project_name = project_data["project"]
         issues = []
         page = 1
@@ -170,39 +174,6 @@ class SonarQubeApi:
             if data["total"] <= len(issues):
                 break
             page += 1
-        md_file = MdUtils(file_name=report_file)
-        md_file.new_line(f'### SonarQube report for {project_data["name"]}')
-        md_file.new_line('#### Total Issues')
-        table_items = [
-            "Blocker", "Critical", "Major", "Minor",
-            sum(map(lambda i: i["severity"] == "BLOCKER", issues)),
-            sum(map(lambda i: i["severity"] == "CRITICAL", issues)),
-            sum(map(lambda i: i["severity"] == "MAJOR", issues)),
-            sum(map(lambda i: i["severity"] == "MINOR", issues)),
-        ]
-        md_file.new_table(columns=4, rows=2, text=table_items, text_align='center')
-        md_file.new_line()
-        if issues:
-            md_file.new_line('#### Detected Issues')
-            table_items = [
-                "Rule", "Component", "Description", "Message"
-            ]
-            for issue in issues:
-                rule_name = issue["rule"]
-                rule_link = md_file.new_inline_link(
-                    link=f'{self._host}/coding_rules?open={rule_name}&rule_key={rule_name}',
-                    text=rule_name
-                )
-                table_items += [
-                    f'{rule_link} ({issue["severity"]})',
-                    # issue["component"].replace(issue["project"] + ":", ""),
-                    f'{issue["component"].split("/")[-1]}:{issue["line"]}',
-                    rules[rule_name],
-                    issue["message"],
-                ]
-
-            md_file.new_table(columns=4, rows=len(issues) + 1, text=table_items, text_align='left')
-
         data = self.__get(f"measures/component?component={project_name}&additionalFields=metrics&metricKeys={','.join(REPORT_METRICS)}")
         measures = {}
         for measure in data["component"]["measures"]:
@@ -244,10 +215,39 @@ class SonarQubeApi:
                         value = v
                         break
             values.append([name, value])
+
+        values += [
+            ("Blocker Issues", sum(map(lambda i: i["severity"] == "BLOCKER", issues))),
+            ("Critical Issues", sum(map(lambda i: i["severity"] == "CRITICAL", issues))),
+            ("Major Issues", sum(map(lambda i: i["severity"] == "MAJOR", issues))),
+            ("Minor Issues", sum(map(lambda i: i["severity"] == "MINOR", issues))),
+        ]
+
         while len(values) % 3:
             values.append(("", ""))
         table_items = ["Name", "Value"] * 3 + list(itertools.chain.from_iterable(values))
         md_file.new_table(columns=6, rows=int(len(values) / 3 + 1), text=table_items, text_align='left')
+        md_file.new_line()
+        if issues:
+            md_file.new_line('#### Detected Issues')
+            table_items = [
+                "Rule", "Component", "Description", "Message"
+            ]
+            for issue in issues:
+                rule_name = issue["rule"]
+                rule_link = md_file.new_inline_link(
+                    link=f'{self._host}/coding_rules?open={rule_name}&rule_key={rule_name}',
+                    text=rule_name
+                )
+                table_items += [
+                    f'{rule_link} ({issue["severity"]})',
+                    # issue["component"].replace(issue["project"] + ":", ""),
+                    f'{issue["component"].split("/")[-1]}:{issue["line"]}',
+                    rules[rule_name],
+                    issue["message"],
+                ]
+
+            md_file.new_table(columns=4, rows=len(issues) + 1, text=table_items, text_align='left')
 
         md_file.create_md_file()
         self.logger.info(f"The {report_file} was generated")

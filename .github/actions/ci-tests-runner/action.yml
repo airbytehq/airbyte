@@ -41,7 +41,7 @@ runs:
         pip install --quiet -e ./tools/ci_*
 
     - name: Python Tests
-      id: run-python-tests
+      id: ci-py-tests
       if: ${{ inputs.module-lang == 'py' }}
       uses: ./.github/actions/ci-py-tests
       with:
@@ -101,10 +101,6 @@ runs:
       with:
         check_for_duplicate_msg: false
         msg: ${{ steps.generate-sq-report.outputs.sq-report }}
-#      uses: peter-evans/create-or-update-comment@v1
-#      with:
-#          issue-number: ${{ inputs.pull-request-id }}
-#          body: ${{ steps.generate-sq-report.outputs.sq-report }}
 
     - name: Remove SonarQube Project
       if: ${{ inputs.remove-sonar-project == true }}
