@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 docker run --rm -it \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /tmp:/tmp \

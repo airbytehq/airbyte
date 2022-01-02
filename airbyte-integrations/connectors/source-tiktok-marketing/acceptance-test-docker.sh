@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 # Build latest connector image
 docker build . -t "$(grep "connector_image" acceptance-test-config.yml | cut -d: -f2 | xargs)"
