@@ -10,7 +10,7 @@ Go to OCI Console &gt; Compute &gt; Instances &gt; Create Instance
 
 ![](../.gitbook/assets/OCIScreen2.png)
 
-Deploy it in a VCN which has a Private subnet. Ensure you select shape as 'Intel' 
+Deploy it in a VCN which has a Private subnet. Ensure you select shape as 'Intel'
 
 ## Whitelist Port 8000 for a CIDR range in Security List of OCI VM Subnet
 
@@ -20,7 +20,7 @@ Select the Subnet &gt; Security List &gt; Add Ingress Rules
 
 ![](../.gitbook/assets/OCIScreen3.png)
 
-### Connection Method 1 : Create SSH Tunnel via a Bastion Host to Login to the Instance 
+### Connection Method 1 : Create SSH Tunnel via a Bastion Host to Login to the Instance
 
 Keep in mind that it is highly recommended to not have a Public IP for the Instance where you are running Airbyte.
 
@@ -33,7 +33,7 @@ ssh opc@bastion-host-public-ip -i <private-key-file.key> -L 2200:oci-private-ins
 ssh opc@localhost -i <private-key-file.key> -p 2200
 ```
 
-### Connection Method 2 : Create OCI Bastion Host Service to Login to the Instance 
+### Connection Method 2 : Create OCI Bastion Host Service to Login to the Instance
 
 ![](../.gitbook/assets/OCIScreen13.png)
 
@@ -43,7 +43,7 @@ ssh opc@localhost -i <private-key-file.key> -p 2200
 #### Create Port forwarding SSH Session from Bastion Service
 ![](../.gitbook/assets/OCIScreen6.png)
 
-#### Create SSH port forwarding session on Local machine 
+#### Create SSH port forwarding session on Local machine
 
 ```text
 ssh -i <privateKey> -N -L <localPort>:10.10.1.25:22 -p 22 ocid1.bastionsession.oc1.ap-sydney-1.amaaaaaaqcins5yaf6gzqsp5beaikpg4mczr445uberbrsvj7rmsd73wtiua@host.bastion.ap-sydney-1.oci.oraclecloud.com
@@ -53,7 +53,7 @@ ssh -i <privateKey> -N -L <localPort>:10.10.1.25:22 -p 22 ocid1.bastionsession.o
 
 
 
-### Login to Airbyte Instance using Port forwarding session from Local machine 
+### Login to Airbyte Instance using Port forwarding session from Local machine
 
 ```text
  ssh -i mydemo_vcn.priv opc@localhost -p 2222
@@ -80,7 +80,7 @@ sudo usermod -a -G docker $USER
 ### Install Docker Compose
 
 ```text
-sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
+sudo wget "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -O /usr/local/bin/docker-compose
 
 sudo chmod +x /usr/local/bin/docker-compose
 
@@ -137,5 +137,3 @@ Open URL in Browser : [http://localhost:8000/](http://localhost:8000/)
 ![](../.gitbook/assets/OCIScreen4.png)
 
 / _Please note Airbyte currently does not support SSL/TLS certificates_ /
-
-

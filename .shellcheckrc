@@ -3,4 +3,4 @@
 # Place shellcheck settings here
 
 # Temporarily disable this, it can be better fixed by using yq instead of grepping
-disable=SC2002
+# disable=SC2002

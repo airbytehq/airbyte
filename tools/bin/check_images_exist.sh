@@ -5,7 +5,7 @@ set -e
 . tools/lib/lib.sh
 
 function docker_tag_exists() {
-    URL=https://hub.docker.com/v2/repositories/"$1"/tags/"$2"
+    URL="https://hub.docker.com/v2/repositories/$1/tags/$2"
     printf "\tURL: %s\n" "$URL"
     curl --silent -f -lSL "$URL" > /dev/null
 }
@@ -19,7 +19,7 @@ checkPlatformImages() {
 checkNormalizationImages() {
   # the only way to know what version of normalization the platform is using is looking in NormalizationRunnerFactory.
   local image_version;
-  image_version=$(cat airbyte-workers/src/main/java/io/airbyte/workers/normalization/NormalizationRunnerFactory.java | grep 'NORMALIZATION_VERSION =' | cut -d"=" -f2 | sed 's:;::' | sed -e 's:"::g' | sed -e 's:[[:space:]]::g')
+  image_version=$(grep 'NORMALIZATION_VERSION =' airbyte-workers/src/main/java/io/airbyte/workers/normalization/NormalizationRunnerFactory.java | cut -d"=" -f2 | sed 's:;::' | sed -e 's:"::g' | sed -e 's:[[:space:]]::g')
   echo "Checking normalization images with version $image_version exist..."
   VERSION=$image_version docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.yaml pull || exit 1
   echo "Success! All normalization images exist!"

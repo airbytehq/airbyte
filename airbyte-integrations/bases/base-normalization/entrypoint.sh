@@ -43,7 +43,7 @@ function configuredbt() {
       TRANSFORM_EXIT_CODE=$?
       if [ ${TRANSFORM_EXIT_CODE} -ne 0 ]; then
         echo -e "\nShowing destination_catalog.json to diagnose/debug errors (${TRANSFORM_EXIT_CODE}):\n"
-        cat "${CATALOG_FILE}" | jq
+        jq "." "${CATALOG_FILE}"
         exit ${TRANSFORM_EXIT_CODE}
       fi
     fi
@@ -110,6 +110,7 @@ function main() {
   case "$CMD" in
   run)
     configuredbt
+    # shellcheck source=./airbyte-workers/src/main/resources/sshtunneling.sh
     . /airbyte/sshtunneling.sh
     openssh "${PROJECT_DIR}/ssh.json"
     trap 'closessh' EXIT

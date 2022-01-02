@@ -29,7 +29,7 @@ echo "Waiting for applications to start..."
 wait
 echo "Access Airbyte at http://localhost:8000 and set up a connection."
 echo "Enter your Airbyte connection ID: "
-read connection_id
+read -r connection_id
 # Set connection ID for DAG.
 docker exec -ti airflow_webserver airflow variables set 'AIRBYTE_CONNECTION_ID' "$connection_id"
 docker exec -ti airflow_webserver airflow connections add 'airbyte_example' --conn-uri 'airbyte://host.docker.internal:8000'

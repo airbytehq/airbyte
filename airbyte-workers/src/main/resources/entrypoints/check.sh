@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 trap "touch TERMINATION_FILE_CHECK" EXIT
 (set -e; while true; do curl -s HEARTBEAT_URL &> /dev/null; sleep 1; done) &
 CHILD_PID=$!

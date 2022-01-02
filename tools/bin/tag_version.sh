@@ -15,7 +15,7 @@ fi
 # make sure your master branch is up to date
 git pull --rebase
 
-VERSION=$(cat .env | grep -w VERSION | cut -d= -f 2)
+VERSION=$(grep -w VERSION .env | cut -d= -f 2)
 [[ -z "$VERSION" ]] && echo "Couldn't find version in env file..." && exit 1
 
 TAG_NAME="v$VERSION"

@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 countAttempt=0
 maxAttempt=10
 while : ; do

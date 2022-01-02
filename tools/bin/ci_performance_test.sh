@@ -77,7 +77,7 @@ run_status=${PIPESTATUS[0]}
 
 test_performance "$run_status" == "0" || {
    # Build failed
-   link=$(cat build.out | grep -a -A1 "Publishing build scan..." | tail -n1 | tr -d "\n")
+   link=$(grep -a -A1 "Publishing build scan..." build.out | tail -n1 | tr -d "\n")
    # Save gradle scan link to github GRADLE_SCAN_LINK variable for next job.
    # https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
    echo "GRADLE_SCAN_LINK=$link" >> "$GITHUB_ENV"

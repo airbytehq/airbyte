@@ -13,6 +13,7 @@ VERSION=dev TRACKING_STRATEGY=logging docker-compose up -d
 trap "echo 'docker-compose logs:' && docker-compose logs -t --tail 1000 && docker-compose down -v" EXIT
 
 echo "Waiting for services to begin"
+# shellcheck disable=SC1083
 while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8000/api/v1/health)" != "200" ]]; do echo "Waiting for docker deployment.."; sleep 5; done
 
 echo "Running e2e tests via gradle"

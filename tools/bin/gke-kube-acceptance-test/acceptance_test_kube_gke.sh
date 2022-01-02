@@ -21,8 +21,8 @@ VERSION=$TAG docker-compose -f docker-compose.build.yaml push
 #sed -i .bak 's/default/'$NAMESPACE'/g' kube/overlays/dev/kustomization.yaml
 #sed -i .bak 's/dev/'$TAG'/g' kube/overlays/dev/kustomization.yaml
 
-sed -i 's/default/'"$NAMESPACE"'/g' kube/overlays/dev/kustomization.yaml
-sed -i 's/dev/'"$TAG"'/g' kube/overlays/dev/kustomization.yaml
+sed -i "s/default/$NAMESPACE/g" kube/overlays/dev/kustomization.yaml
+sed -i "s/dev/$TAG/g" kube/overlays/dev/kustomization.yaml
 
 kubectl create namespace "$NAMESPACE"
 kubectl config set-context --current --namespace="$NAMESPACE"
@@ -34,12 +34,15 @@ kubectl apply -f tools/bin/gke-kube-acceptance-test/postgres-destination.yaml --
 sleep 180s
 
 function findAndDeleteTag () {
-    if [ "$(curl --fail -LI --request GET 'https://hub.docker.com/v2/repositories/airbyte/'"$1"'/tags/'"$TAG"'/' --header 'Authorization: JWT '"$2"'' -o /dev/null -w '%{http_code}\n' -s)" == "200" ];
+    local image="${1}"
+    local token="${2}"
+
+    if [ "$(curl --fail -LI --request GET "https://hub.docker.com/v2/repositories/airbyte/$image/tags/$TAG/" --header "Authorization: JWT '$token'" -o /dev/null -w '%{http_code}\n' -s)" == "200" ];
     then
-        echo "FOUND TAG" "$TAG" "in repository" "$1" ",DELETING IT"
-        curl --request DELETE 'https://hub.docker.com/v2/repositories/airbyte/'"$1"'/tags/'"$TAG"'/' --header 'Authorization: JWT '"$2"'';
+        echo "FOUND TAG $TAG in repository $image, DELETING IT"
+        curl --request DELETE "https://hub.docker.com/v2/repositories/airbyte/$image/tags/$TAG/" --header "Authorization: JWT '$token'";
     else
-      echo "NOT FOUND TAG" "$TAG" "in repository" "$1";
+      echo "NOT FOUND TAG $TAG in repository $image";
     fi
 }
 

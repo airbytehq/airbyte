@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 echo "Preparing certs"
 mkdir "certs"
 mkdir "safe-place"

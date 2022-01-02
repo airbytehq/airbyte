@@ -8,7 +8,7 @@ if [[ $IS_CAPTURE_HEAP_DUMP_ON_ERROR = true ]]; then
   arrayOfSupportedConnectors=("source-postgres" "source-mssql" "source-mysql" )
 
   # The heap dump would be captured only in case when java-based connector fails with OutOfMemory error
-  if [[ " ${arrayOfSupportedConnectors[*]} " =~ $APPLICATION ]]; then
+  if [[ "${arrayOfSupportedConnectors[*]}" =~ $APPLICATION ]]; then
       JAVA_OPTS=$JAVA_OPTS" -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/data/dump.hprof"
       export JAVA_OPTS
       echo "Added JAVA_OPTS=$JAVA_OPTS"
@@ -20,7 +20,7 @@ fi
 # set by the dockerfile that inherits base-java, so it cannot be evaluated when base-java is built.
 # We also need to make sure that stdin of the script is piped to the stdin of the java application.
 if [[ $A = --write ]]; then
-  cat <&0 | /airbyte/bin/"$APPLICATION" "$@"
+  cat <&0 | "/airbyte/bin/$APPLICATION" "$@"
 else
-  /airbyte/bin/"$APPLICATION" "$@"
+  "/airbyte/bin/$APPLICATION" "$@"
 fi

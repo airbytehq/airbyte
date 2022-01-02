@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 error() {
   echo -e "$@"
   exit 1
@@ -36,5 +38,5 @@ _to_gradle_path() {
   echo ":$(echo "$path" | tr -s / :):${task}"
 }
 
-VERSION=$(cat .env | grep "^VERSION=" | cut -d = -f 2); export VERSION
+VERSION=$(grep "^VERSION=" .env| cut -d = -f 2); export VERSION
 SCRIPT_DIRECTORY=$(_script_directory); export SCRIPT_DIRECTORY

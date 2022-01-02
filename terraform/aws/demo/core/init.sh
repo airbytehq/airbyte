@@ -12,8 +12,10 @@ install_docker() {
   sudo usermod -a -G docker ec2-user
 }
 
+# TODO: pin this as .docker-compose-version in root of repo
+docker_compose_version="1.26.2"
 install_docker_compose() {
-  sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
+  sudo wget "https://github.com/docker/compose/releases/download/${docker_compose_version}/docker-compose-$(uname -s)-$(uname -m)" -O /usr/local/bin/docker-compose
   sudo chmod +x /usr/local/bin/docker-compose
   docker-compose --version
 }

@@ -88,7 +88,7 @@ sudo usermod -a -G docker $USER
 
 ```bash
 # Inside Azure cloud shell
-sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
+sudo wget "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -O /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
 ```
@@ -100,7 +100,7 @@ docker-compose --version
 logout
 ```
 
-* Reconnect to virtual machine 
+* Reconnect to virtual machine
 
 ```bash
 # Inside Azure cloud shell
@@ -140,4 +140,3 @@ This part assumes that you have access to a terminal on your workstation
 ## Troubleshooting
 
 If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../troubleshooting/on-deploying.md) section in our docs for common problems.
-

@@ -2,7 +2,7 @@
 
 set -e
 
-LOCAL_RESTISH_PATH="$(pwd)"/airbyte-cli/restish.json
+LOCAL_RESTISH_PATH="$(pwd)/airbyte-cli/restish.json"
 IMAGE_RESTISH_PATH=/root/.restish/apis.json
 
 DOWNLOADED_CONFIG_PATH=/tmp/downloaded-airbyte-api-config

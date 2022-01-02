@@ -10,7 +10,7 @@ The instructions have been tested on `Digital Ocean Droplet ($5)`
 
 ![](../.gitbook/assets/digitalocean_launch_droplet.png)
 
-* Select image distribution 
+* Select image distribution
 
 ![](../.gitbook/assets/dg_choose_ditribution.png)
 
@@ -20,7 +20,7 @@ The instructions have been tested on `Digital Ocean Droplet ($5)`
 
 ![](../.gitbook/assets/dg_droplet_type.png)
 
-* `Region` 
+* `Region`
   * Generally, choose a datacenter close to you.
 * `Authentication`
   * Password
@@ -60,7 +60,7 @@ su - ${USER}
 
 ```bash
 # In your ssh session on the instance terminal
-sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
+sudo wget "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -O /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
 ```
@@ -84,4 +84,3 @@ docker-compose up -d
 ## Troubleshooting
 
 If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../troubleshooting/on-deploying.md) section in our docs for common problems.
-

@@ -20,7 +20,7 @@ tmp_file=$(basename "$1")
 docker run --rm \
    --name openapi2jsonschema \
    --user "$(id -u):$(id -g)" \
-   -v "$tmp_dir":/schemas \
-   $IMG_TAG --stand-alone --no-all ./"$tmp_file"
+   -v "$tmp_dir:/schemas" \
+   $IMG_TAG --stand-alone --no-all "./$tmp_file"
 
 cp -rf "$tmp_dir"/schemas ./

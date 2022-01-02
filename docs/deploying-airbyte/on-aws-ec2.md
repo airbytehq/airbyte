@@ -20,14 +20,14 @@ The instructions have been tested on `Amazon Linux 2 AMI (HVM)`
 
 ![](../.gitbook/assets/aws_ec2_instance_type.png)
 
-* `Next: Configure Instance Details` 
+* `Next: Configure Instance Details`
   * You can tune parameters or keep the defaults
 * `Next: Add Storage`
   * You can tune parameters or keep the defaults
 * `Next: Add Tags`
   * You can tune parameters or keep the defaults
 * `Next: Configure Security Groups`
-  * We are going to allow network for `ssh` 
+  * We are going to allow network for `ssh`
 
 ![](../.gitbook/assets/aws_ec2_security_group.png)
 
@@ -74,7 +74,7 @@ sudo usermod -a -G docker $USER
 
 ```bash
 # In your ssh session on the instance terminal
-sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
+sudo wget "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -O /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
 ```
@@ -130,4 +130,3 @@ If you want to get your logs from your Airbyte Docker containers in CloudWatch, 
 ## Troubleshooting
 
 If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../troubleshooting/on-deploying.md) section in our docs for common problems.
-

@@ -34,27 +34,28 @@ if [[ -f "${CWD}/bq_keyfile.json" ]]; then
   cp "${CWD}/bq_keyfile.json" /tmp/bq_keyfile.json
 fi
 
-. "$CWD"/sshtunneling.sh
-openssh "$CWD"/ssh.json
+# shellcheck source=./airbyte-workers/src/main/resources/sshtunneling.sh
+. "$CWD/sshtunneling.sh"
+openssh "$CWD/ssh.json"
 trap 'closessh' EXIT
 
 # Add mandatory flags profiles-dir and project-dir when calling dbt when necessary
 case "${CONTAINS_PROFILES_DIR}-${CONTAINS_PROJECT_DIR}" in
   true-true)
-    echo "Running: dbt $@"
-    dbt $@ --profile normalize
+    echo "Running: dbt $*"
+    dbt "$@" --profile normalize
     ;;
   true-false)
-    echo "Running: dbt $@ --project-dir=${CWD}/git_repo"
-    dbt $@ "--project-dir=${CWD}/git_repo" --profile normalize
+    echo "Running: dbt $* --project-dir=${CWD}/git_repo"
+    dbt "$@" --project-dir="${CWD}/git_repo" --profile normalize
     ;;
   false-true)
-    echo "Running: dbt $@ --profiles-dir=${CWD}"
-    dbt $@ "--profiles-dir=${CWD}" --profile normalize
+    echo "Running: dbt $* --profiles-dir=${CWD}"
+    dbt "$@" --profiles-dir="${CWD}" --profile normalize
     ;;
   *)
-    echo "Running: dbt $@ --profiles-dir=${CWD} --project-dir=${CWD}/git_repo"
-    dbt $@ "--profiles-dir=${CWD}" "--project-dir=${CWD}/git_repo" --profile normalize
+    echo "Running: dbt $* --profiles-dir=${CWD} --project-dir=${CWD}/git_repo"
+    dbt "$@" --profiles-dir="${CWD}" --project-dir="${CWD}/git_repo" --profile normalize
     ;;
 esac
 

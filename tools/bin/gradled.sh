@@ -22,7 +22,7 @@ main() {
   docker run $OPTS --rm \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /tmp:/tmp \
-    -v "$(pwd)":/code \
+    -v "$(pwd):/code" \
     -p 5005:5005 \
     -e GRADLE_OPTS="-Dorg.gradle.daemon=false" \
     $IMG_NAME $CMD

@@ -9,7 +9,10 @@ GIT_REVISION=$(git rev-parse HEAD)
 
 echo "Changelog:"
 echo
-PAGER=cat git log v"${PREV_VERSION}".."${GIT_REVISION}" --oneline --decorate=no
+# TODO: I'm not sure what the PAGER variable here is for
+PAGER=$(git log "v${PREV_VERSION}..${GIT_REVISION}" --oneline --decorate=no)
+echo "${PAGER}"
+export PAGER
 echo
 echo "Steps After Merging PR:"
 echo "1. Pull most recent version of master"

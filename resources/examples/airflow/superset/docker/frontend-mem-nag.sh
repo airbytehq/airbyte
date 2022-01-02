@@ -20,7 +20,7 @@ set -e
 
 # We need at least 3GB of free mem...
 MIN_MEM_FREE_GB=3
-MIN_MEM_FREE_KB=$(($MIN_MEM_FREE_GB*1000000))
+MIN_MEM_FREE_KB=$((MIN_MEM_FREE_GB*1000000))
 
 echo_mem_warn() {
   MEM_FREE_KB=$(awk '/MemFree/ { printf "%s \n", $2 }' /proc/meminfo)

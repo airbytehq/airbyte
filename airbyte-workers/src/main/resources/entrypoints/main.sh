@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 trap "touch TERMINATION_FILE_MAIN" EXIT
 trap "echo 'received ABRT'; exit 1;" ABRT
 
@@ -13,6 +15,8 @@ else
   echo "Using existing AIRBYTE_ENTRYPOINT: $AIRBYTE_ENTRYPOINT"
 fi
 
+# No clue whats going on here, disable all issues
+# shellcheck disable=SC1073,SC1009,SC1072
 ((eval "$AIRBYTE_ENTRYPOINT ARGS" 2> STDERR_PIPE_FILE > STDOUT_PIPE_FILE) OPTIONAL_STDIN) &
 CHILD_PID=$!
 

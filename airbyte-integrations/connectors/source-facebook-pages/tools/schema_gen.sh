@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # copy fb specs files from git
 rm -rf facebook-business-sdk-codegen
 git clone https://github.com/facebook/facebook-business-sdk-codegen

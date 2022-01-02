@@ -11,7 +11,7 @@ The instructions have been tested on `Debian GNU/Linux 10 (buster)`
 ![](../.gitbook/assets/gcp_ce_launch.png)
 
 * Configure new instance
-  * For testing out Airbyte, an `e2.medium` instance is likely sufficient. Airbyte uses a lot of disk space with images and logs, so make sure to provision at least 30GBs of disk per node. 
+  * For testing out Airbyte, an `e2.medium` instance is likely sufficient. Airbyte uses a lot of disk space with images and logs, so make sure to provision at least 30GBs of disk per node.
   * For long-running Airbyte installations, we recommend a `n1-standard-2` instance.
 
 ![](../.gitbook/assets/gcp_ce_configure.png)
@@ -84,7 +84,7 @@ sudo usermod -a -G docker $USER
 ```bash
 # In your ssh session on the instance terminal
 sudo apt-get -y install wget
-sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
+sudo wget "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -O /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
 ```
@@ -132,4 +132,3 @@ gcloud --project=$PROJECT_ID beta compute ssh airbyte -- -L 8000:localhost:8000 
 ## Troubleshooting
 
 If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../troubleshooting/on-deploying.md) section in our docs for common problems.
-
