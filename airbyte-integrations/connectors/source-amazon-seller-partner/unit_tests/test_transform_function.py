@@ -29,6 +29,8 @@ def reports_stream(marketplace_id):
 
 
 INPUT_DATES = {
+    "YYYY-MM-DD": ["2017-01-13", "2017-12-12", "2017-12-17", "2011-12-13"],
+    "D.M.YY": ["13.1.17", "12.12.17", "17.12.17", "13.12.11"],
     "YY/M/D": ["17/1/13", "17/12/12", "17/12/17", "11/12/13"],
     "D/M/YY": ["13/1/17", "12/12/17", "17/12/17", "13/12/11"],
     "M/D/YY": ["1/13/17", "12/12/17", "12/17/17", "12/13/11"],
@@ -44,8 +46,8 @@ def parametrize_seller_feedback():
             result.append(
                 (
                     marketplace_id,
-                    {"Date": input_date, "Rating": 1, "Comments": "c", "Response": "r", "Order ID": "1", "Rater Email": "e"},
-                    {"Date": expected_date, "Rating": 1, "Comments": "c", "Response": "r", "Order ID": "1", "Rater Email": "e"},
+                    {"date": input_date, "rating": 1, "comments": "c", "response": "r", "order_id": "1", "rater_email": "e"},
+                    {"date": expected_date, "rating": 1, "comments": "c", "response": "r", "order_id": "1", "rater_email": "e"},
                 )
             )
 
