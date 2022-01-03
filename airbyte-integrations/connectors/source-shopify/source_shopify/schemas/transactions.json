@@ -91,6 +91,9 @@
     },
     "location_id": {
       "type": ["null", "integer"]
+    },
+    "shop_url": {
+      "type": ["null", "string"]
     }
   },
   "type": ["null", "object"]
