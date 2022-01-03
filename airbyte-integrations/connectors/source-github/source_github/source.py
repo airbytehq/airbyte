@@ -41,6 +41,9 @@ from .streams import (
     Tags,
     Teams,
     Users,
+    Workflows,
+    WorkflowRuns,
+    Security
 )
 
 TOKEN_SEPARATOR = ","
@@ -189,4 +192,7 @@ class SourceGithub(AbstractSource):
             Tags(**repository_args),
             Teams(**organization_args),
             Users(**organization_args),
+            Workflows(**repository_args),
+            WorkflowRuns(**repository_args),
+            Security(**repository_args)
         ]
