@@ -1740,7 +1740,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "blotout/source-google-ads:0.1.9"
+- dockerImage: "blotout/source-google-ads:0.1.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-ads"
     connectionSpecification:
