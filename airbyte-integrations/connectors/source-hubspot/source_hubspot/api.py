@@ -545,9 +545,7 @@ class CRMSearchStream(IncrementalStream, ABC):
     
     @property
     def url(self):
-        if self.state:
-            return f"/crm/v3/objects/{self.entity}/search"
-        return f"/crm/v3/objects/{self.entity}"
+        return f"/crm/v3/objects/{self.entity}/search" if self.state else f"/crm/v3/objects/{self.entity}"
 
     def __init__(
         self,
@@ -558,9 +556,9 @@ class CRMSearchStream(IncrementalStream, ABC):
     ):
         super().__init__(**kwargs)
         self._state = None
-        self.entity = entity or self.entity
-        self.last_modified_field = last_modified_field or self.last_modified_field
-        self.associations = associations or self.associations
+        self.entity = entity
+        self.last_modified_field = last_modified_field
+        self.associations = associations
         self._include_archived_only = include_archived_only
 
     def list(self, fields) -> Iterable:
