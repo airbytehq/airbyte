@@ -272,7 +272,7 @@ class SourceHandlerTest {
     verify(connectionsHandler).listConnectionsForWorkspace(workspaceIdRequestBody);
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody()
         .connectionId(connectionRead.getConnectionId());
-    verify(connectionsHandler).deleteConnection(connectionIdRequestBody);
+    verify(connectionsHandler).deleteConnection(connectionRead.getConnectionId());
   }
 
 }

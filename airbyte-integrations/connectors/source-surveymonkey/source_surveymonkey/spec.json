@@ -10,7 +10,7 @@
       "start_date": {
         "title": "Start Date",
         "type": "string",
-        "description": "The date from which you'd like to replicate the data",
+        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z?$",
         "examples": ["2021-01-01T00:00:00Z"]
       },
@@ -18,7 +18,7 @@
         "title": "Access Token",
         "type": "string",
         "airbyte_secret": true,
-        "description": "API Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/surveymonkey\">docs</a> for information on how to generate this key."
+        "description": "Access Token for making authenticated requests. See the <a href=\"https://docs.airbyte.io/integrations/sources/surveymonkey\">docs</a> for information on how to generate this key."
       }
     }
   },

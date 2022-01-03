@@ -176,6 +176,7 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_KEYDB /database/config/db2inst1/server.kdb");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_STASH /database/config/db2inst1/server.sth");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_LABEL mylabel");
+    db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_VERSIONS TLSV12");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVCENAME 50000");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2set -i db2inst1 DB2COMM=SSL");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2stop force");

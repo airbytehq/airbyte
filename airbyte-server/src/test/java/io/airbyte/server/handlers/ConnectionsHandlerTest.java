@@ -17,7 +17,6 @@ import com.google.common.collect.Lists;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.AirbyteCatalog;
 import io.airbyte.api.model.ConnectionCreate;
-import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.ConnectionSchedule;
@@ -367,8 +366,7 @@ class ConnectionsHandlerTest {
     when(configRepository.getStandardSync(standardSync.getConnectionId()))
         .thenReturn(standardSync);
 
-    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(standardSync.getConnectionId());
-    final ConnectionRead actualConnectionRead = connectionsHandler.getConnection(connectionIdRequestBody);
+    final ConnectionRead actualConnectionRead = connectionsHandler.getConnection(standardSync.getConnectionId());
 
     assertEquals(ConnectionHelpers.generateExpectedConnectionRead(standardSync), actualConnectionRead);
   }
@@ -546,7 +544,6 @@ class ConnectionsHandlerTest {
 
   @Test
   void testDeleteConnection() throws JsonValidationException, IOException, ConfigNotFoundException {
-    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(standardSync.getConnectionId());
 
     final ConnectionRead connectionRead = ConnectionHelpers.generateExpectedConnectionRead(
         standardSync.getConnectionId(),
@@ -566,12 +563,12 @@ class ConnectionsHandlerTest {
         .resourceRequirements(connectionRead.getResourceRequirements());
 
     final ConnectionsHandler spiedConnectionsHandler = spy(connectionsHandler);
-    doReturn(connectionRead).when(spiedConnectionsHandler).getConnection(connectionIdRequestBody);
+    doReturn(connectionRead).when(spiedConnectionsHandler).getConnection(connectionId);
     doReturn(null).when(spiedConnectionsHandler).updateConnection(expectedConnectionUpdate);
 
-    spiedConnectionsHandler.deleteConnection(connectionIdRequestBody);
+    spiedConnectionsHandler.deleteConnection(connectionId);
 
-    verify(spiedConnectionsHandler).getConnection(connectionIdRequestBody);
+    verify(spiedConnectionsHandler).getConnection(connectionId);
     verify(spiedConnectionsHandler).updateConnection(expectedConnectionUpdate);
   }
 
