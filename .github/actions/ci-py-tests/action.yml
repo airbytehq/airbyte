@@ -21,6 +21,8 @@ runs:
          # REPORT_FOLDER=/tmp/static_report_1000
          echo "try to save all report to ${REPORT_FOLDER}"
          ci_build_checkers_reports --output_folder "${REPORT_FOLDER}" "${JSON_CONFIG}"
+         ls -hal ${REPORT_FOLDER}
+         echo "AAA ${REPORT_FOLDER}"
          echo "::set-output name=report-folder::${REPORT_FOLDER}"
 
     - name: Static Python Tests
@@ -28,8 +30,9 @@ runs:
       shell: bash
       run: |
           REPORT_FOLDER=${{ steps.build-reports.outputs.report-folder }}
+          echo "${REPORT_FOLDER}"
           # REPORT_FOLDER=/tmp/static_report_1000
-          ls -hal ${REPORT_FOLDER}
+          ls -hal "${REPORT_FOLDER}"
           COV_FILE=${REPORT_FOLDER}/coverage.xml
           PYTEST_COV_FILE=${REPORT_FOLDER}/pytest.xml
           [ -f ${COV_FILE} ] && ( cat ${COV_FILE}; mv ${COV_FILE} ${REPORT_FOLDER}/coverage_1.xml )

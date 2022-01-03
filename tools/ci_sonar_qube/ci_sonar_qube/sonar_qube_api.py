@@ -99,7 +99,7 @@ class SonarQubeApi:
         return f"{AIRBYTE_PROJECT_PREFIX}:{parts[0].lower()}:{parts[1].lower().replace('_', '-')}"
 
     def __correct_project_name(self, project_name: str) -> str:
-        return f"{project_name}:{self._pr_id}" if self._pr_id else project_name
+        return f"pr:{self._pr_id}:{project_name}" if self._pr_id else project_name
 
     def __search_project(self, project_name: str) -> Optional[Mapping[str, Any]]:
         """https://sonarcloud.io/web_api/api/projects/search"""
