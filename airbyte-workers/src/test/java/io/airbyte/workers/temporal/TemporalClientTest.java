@@ -14,7 +14,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Sets;
@@ -220,7 +219,7 @@ class TemporalClientTest {
       temporalClient.migrateSyncIfNeeded(Sets.newHashSet(nonMigratedId, migratedId));
 
       verify(temporalClient, times(1)).submitConnectionUpdaterAsync(nonMigratedId);
-      verifyNoInteractions(temporalClient);
+      verify(temporalClient, times(0)).submitConnectionUpdaterAsync(migratedId);
     }
 
   }
