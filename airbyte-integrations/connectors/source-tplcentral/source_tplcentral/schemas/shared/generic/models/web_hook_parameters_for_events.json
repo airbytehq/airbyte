@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "EventTypes": {
+      "description": "a comma-delimited list of supported event types",
+      "type": "string"
+    },
+    "Url": {
+      "type": "string"
+    },
+    "IncludeResource": {
+      "type": "boolean"
+    },
+    "ResourceApiParameters": {
+      "description": "as defined in the REL documentation for the subject resource",
+      "type": "string"
+    }
+  }
+}

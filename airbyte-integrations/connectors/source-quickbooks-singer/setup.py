@@ -6,13 +6,12 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "tap-quickbooks @ https://github.com/airbytehq//tap-quickbooks/tarball/v1.0.5-airbyte",
     "airbyte-cdk",
+    "tap-quickbooks @ https://github.com/airbytehq//tap-quickbooks/tarball/v1.0.5-airbyte",
 ]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
-    "source-acceptance-test",
 ]
 
 setup(

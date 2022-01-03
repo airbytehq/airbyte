@@ -1,0 +1,57 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "stock_summaries",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "_item_identifier_id": {
+              "type": "integer"
+            },
+            "ItemIdentifier": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "Sku": {
+                  "type": "string"
+                },
+                "Id": {
+                  "type": "integer"
+                }
+              }
+            },
+            "Qualifier": {
+              "type": "string"
+            },
+            "TotalReceived": {
+              "type": "number"
+            },
+            "Allocated": {
+              "type": "number"
+            },
+            "Available": {
+              "type": "number"
+            },
+            "OnHold": {
+              "type": "number"
+            },
+            "OnHand": {
+              "type": "number"
+            },
+            "FacilityId": {
+              "type": "integer"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["FacilityId"], ["_item_identifier_id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    }
+  ]
+}

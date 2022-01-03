@@ -29,6 +29,9 @@ The connector is restricted by normal Salesforce rate limiting. For large transf
 
 * Salesforce Account
 * Salesforce OAuth credentials
+* Dedicated Salesforce user (optional)
+
+**Note**: We recommend creating a new Salesforce user, restricted, read-only OAuth credentials specifically for Airbyte access. In addition, you can restrict access to only the data and streams you need by creating a profile in Salesforce and assigning it to the user.
 
 ### Setup guide
 
