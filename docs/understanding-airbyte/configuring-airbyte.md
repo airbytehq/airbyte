@@ -8,15 +8,102 @@ Configuration is currently via environment variables. See the below section on h
 
 The recommended way to run an Airbyte Docker deployment is via the Airbyte repo's `docker-compose.yaml` and `.env` file.
 
-In this manner, modifying the `.env` file is all that is needed. The `docker-compose.yaml` file injects appropriate variables into the containers. 
+To configure the default Airbyte Docker deployment, modify the bundled `.env` file. The `docker-compose.yaml` file injects appropriate variables into
+the containers.
 
-If you want to manage your own docker files, please look at the existing docker file to ensure applications get the correct variables.
+If you want to manage your own docker files, please refer to Airbyte's docker file to ensure applications get the correct variables.
 
 ## Kubernetes Deployments
 
-The recommended way to run an Airbyte Kubernetes deployment is via the 
+The recommended way to run an Airbyte Kubernetes deployment is via the `Kustomize` overlays.
 
+We recommend using the overlays in the `stable` directory as these have preset resource limits.
+
+To configure the default Airbyte Kubernetes deployment, modify the `.env` in the respective directory. Each application will consume the appropriate
+env var from a generated configmap.
+
+If you want to manage your own Kube manifest, please refer to the various `Kustomize` overlays as an example.
 
 ## Reference
 
-The following  
+The following are the possible configuration options organised by deployment type and services.
+
+Internal-onlu variables have been omitted for clarity. See `Configs.java` for a full list.
+
+### Shared
+
+The following variables are relevant to both Docker and Kubernetes.
+
+#### Core
+1. `AIRBYTE_VERSION` - Defines the Airbyte deployment version.
+2. `SPEC_CACHE_BUCKET` - Defines the bucket for caching specs. This immensely speeds up spec operations. This is updated when new versions are published.
+3. `WORKER_ENVIRONMENT` - Defines if the deployment is Docker or Kubernetes. Airbyte behaves accordingly.
+4. `CONFIG_ROOT` - Defines the configs directory. Applies only to Docker, and is present in Kubernetes for backward compatibility.
+5. `WORKSPACE_ROOT` - Defines the Airbyte workspace directory. Applies only to Docker, and is present in Kubernetes for backward compatibility.
+
+#### Secrets
+1. `SECRET_STORE_GCP_PROJECT_ID` - Defines the GCP Project to store secrets in.
+2. `SECRET_STORE_GCP_CREDENTIALS` - Define the JSON credentials used to read/write Airbyte Configuration to Google Secret Manager. These credentials must have Secret Manager Read/Write access.
+3. `SECRET_PERSISTENCE_TYPE` - Defines the Secret Persistence type. Defaults to NONE. Set to GOOGLE_SECRET_MANAGER to use Google Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test.
+
+#### Database
+1. `DATABASE_USER` - Define the Jobs Database user.
+2. `DATABASE_PASSWORD` - Define the Jobs Database password.
+3. `DATABASE_URL` - Define the Jobs Database url in the form of jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT/${DATABASE_DB}. Do not include username or password.
+4. `JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION` - Define the minimum flyway migration version the Jobs Database must be at. If this is not satisfied, applications will not successfully connect.
+5. `JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS` - Define the total time to wait for the Jobs Database to be initialized. This includes migrations.
+6. `CONFIG_DATABASE_USER` - Define the Configs Database user. Defaults to the Jobs Database user if empty.
+7. `CONFIG_DATABASE_PASSWORD` - Define the Configs Database password. Defaults to the Jobs Database password if empty.
+8. `CONFIG_DATABASE_URL` - Define the Configs Database url in the form of jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT/${DATABASE_DB}. Defaults to the Jobs Database url if empty.
+9. `CONFIG_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION` - Define the minimum flyway migration version the Configs Database must be at. If this is not satisfied, applications will not successfully connect.
+10. `CONFIG_DATABASE_INITIALIZATION_TIMEOUT_MS` - Define the total time to wait for the Configs Database to be initialized. This includes migrations.
+11. `RUN_DATABASE_MIGRATION_ON_STARTUP` - Define if the Bootloader should run migrations on start up.
+
+#### Airbyte Services
+1. `TEMPORAL_HOST` - Define the url where Temporal is hosted at. Please include the port. Airbyte services use this information.
+2. `INTERNAL_API_HOST` - Define the url where the Airbyte Server is hosted at. Please include the port. Airbyte services use this information.
+3. `WEBAPP_URL` - Define the url the Airbyte Webapp is hosted at. Please include the port. Airbyte services use this information.
+
+#### Jobs
+1. `SYNC_JOB_MAX_ATTEMPTS` - Define the number of attempts a sync will attempt before failing.
+2. `SYNC_JOB_MAX_TIMEOUT_DAYS` - Define the number of days a sync job will execute for before timing out.
+3. `JOB_MAIN_CONTAINER_CPU_REQUEST` -  Define the job container's minimum CPU usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
+4. `JOB_MAIN_CONTAINER_CPU_LIMIT` - Define the job container's maximum CPU usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
+5. `JOB_MAIN_CONTAINER_MEMORY_REQUEST` - Define the job container's minimum RAM usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
+6. `JOB_MAIN_CONTAINER_MEMORY_LIMIT` - Define the job container's maximum RAM usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
+
+#### Logging
+1. `LOG_LEVEL` - Define log levels. Defaults to INFO. This value is expected to be one of the various Log4J log levels.
+
+#### Worker
+1. `MAX_SPEC_WORKERS` - Define the maximum number of Spec workers each Airbyte Worker container can support. Defaults to 5.
+2. `MAX_CHECK_WORKERS` - Define the maximum number of Check workers each Airbyte Worker container can support. Defaults to 5.
+3. `MAX_SYNC_WORKERS` - Define the maximum number of Sync workers each Airbyte Worker container can support. Defaults to 5.
+4. `MAX_DISCOVER_WORKERS` - Define the maximum number of Discover workers each Airbyte Worker container can support. Defaults to 5.
+
+#### Scheduler
+1. `SUBMITTER_NUM_THREADS` - Define the maximum number of concurrent jobs the Scheduler schedules. Defaults to 5.
+2. `MINIMUM_WORKSPACE_RETENTION_DAYS` - Defines the minimum configuration file age for sweeping. The Scheduler will do it's best to now sweep files younger than this. Defaults to 1 day.
+3. `MAXIMUM_WORKSPACE_RETENTION_DAYS` - Defines the oldest un-swept configuration file age. Files older than this will definitely be swept. Defaults to 60 days.
+4. `MAXIMUM_WORKSPACE_SIZE_MB` - Defines the workspace size sweeping will continue until. Defaults to 5GB.
+
+#### Container Orchestrator
+1. `CONTAINER_ORCHESTRATOR_ENABLED` - Define if Airbyte should use Scheduler V2.
+
+### Docker-Only
+1. `WORKSPACE_DOCKER_MOUNT` - Defines the name of the Airbyte docker volume.
+2. `DOCKER_NETWORK` - Defines the docker network the new Scheduler launches jobs on.
+
+### Kubernetes-Only
+#### Jobs
+1. `JOB_KUBE_TOLERATIONS` - Define one or more Job pod tolerations. Tolerations are separated by ';'. Each toleration contains k=v pairs mentioning some/all of key, effect, operator and value and separated by `,`.
+2. `JOB_KUBE_NODE_SELECTORS` - Define one or more Job pod node selectors. Each kv-pair is separated by a `,`.
+3. `JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY` - Define the Job pod connector image pull policy.
+4. `JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET` - Define the Job pod connector image pull secret. Useful when hosting private images.
+5. `JOB_KUBE_SOCAT_IMAGE` - Define the Job pod socat image.
+6. `JOB_KUBE_BUSYBOX_IMAGE` - Define the Job pod busybox image.
+7. `JOB_KUBE_CURL_IMAGE` - Define the Job pod curl image pull.
+8. `JOB_KUBE_NAMESPACE` - Define the Kubernetes namespace Job pods are created in.
+
+#### Worker
+1. `TEMPORAL_WORKER_PORTS` - Define the local ports the Airbyte Worker pod uses to connect to the various Job pods. Port 9001 - 9040 are exposed by default in the Kustomize deployments.
