@@ -38,17 +38,19 @@ public class AirbyteMessageTracker implements MessageTracker { // TODO the Messa
   private short nextStreamIndex;
 
   /**
-   * Track the running count of source-emitted records since the last source-emitted state record, indexed by stream. When the tracker receives a
-   * source-emitted state record, these running counts are persisted to {@link AirbyteMessageTracker#runningCountByStreamByState} and this map is
-   * reset to an empty state.
+   * Track the running count of source-emitted records since the last source-emitted state record,
+   * indexed by stream. When the tracker receives a source-emitted state record, these running counts
+   * are persisted to {@link AirbyteMessageTracker#runningCountByStreamByState} and this map is reset
+   * to an empty state.
    */
   private final Map<Short, Long> runningCountByStream;
 
   /**
-   * Tracks the running count of source-emitted records by stream, indexed by the state hashcode pertaining to those records. When the tracker
-   * receives a DESTINATION-emitted state record, the running counts for that state are persisted to {@link
-   * AirbyteMessageTracker#committedCountByStream} and cleared from this map. TODO handle state hash collisions. TODO handle concurrent access? do we
-   * actually need ConcurrentHashMap?
+   * Tracks the running count of source-emitted records by stream, indexed by the state hashcode
+   * pertaining to those records. When the tracker receives a DESTINATION-emitted state record, the
+   * running counts for that state are persisted to
+   * {@link AirbyteMessageTracker#committedCountByStream} and cleared from this map. TODO handle state
+   * hash collisions. TODO handle concurrent access? do we actually need ConcurrentHashMap?
    */
   private final ConcurrentHashMap<Integer, Map<Short, Long>> runningCountByStreamByState;
 
@@ -63,8 +65,9 @@ public class AirbyteMessageTracker implements MessageTracker { // TODO the Messa
   private final List<Integer> orderedStateHashes;
 
   /**
-   * Tracks the committed count of records per stream. This map is only updated when the tracker receives a destination-emitted state message. During
-   * such an update, the running counts by stream are added to the committed counts by stream. There should be one such update for every
+   * Tracks the committed count of records per stream. This map is only updated when the tracker
+   * receives a destination-emitted state message. During such an update, the running counts by stream
+   * are added to the committed counts by stream. There should be one such update for every
    * destination-emitted state message.
    */
   private final Map<Short, Long> committedCountByStream;
@@ -82,14 +85,16 @@ public class AirbyteMessageTracker implements MessageTracker { // TODO the Messa
     this.streamIndexByName = new HashMap<>();
     this.streamNameByIndex = new HashMap<>();
     this.nextStreamIndex = 0;
-    this.hashFunction = Hashing.murmur3_32_fixed(); // TODO seed with currTime so that if a hash collision occurs, a retry might work due to different seed? More digging needed
+    this.hashFunction = Hashing.murmur3_32_fixed(); // TODO seed with currTime so that if a hash collision occurs, a retry might work due to different
+                                                    // seed? More digging needed
   }
 
-  // TODO note to self: Added private methods at the bottom to handle the new stuff. Now need to call those methods where appropriate.
-  // TODO also need to add in EMITTED counts per stream, because right now it just tracks total records emitted overall.
-  // TODO also need to think about concurrency questions, and adding escape hatch/failure scenario so that we can try to report as much information as we can.
-
-
+  // TODO note to self: Added private methods at the bottom to handle the new stuff. Now need to call
+  // those methods where appropriate.
+  // TODO also need to add in EMITTED counts per stream, because right now it just tracks total
+  // records emitted overall.
+  // TODO also need to think about concurrency questions, and adding escape hatch/failure scenario so
+  // that we can try to report as much information as we can.
 
   @Override
   public void acceptFromSource(final AirbyteMessage message) {
@@ -181,7 +186,6 @@ public class AirbyteMessageTracker implements MessageTracker { // TODO the Messa
     return hashFunction.hashBytes(Jsons.serialize(stateMessage.getData()).getBytes(Charsets.UTF_8)).hashCode();
   }
 
-
   /**
    * When a source emits a record, increment the count for that record's stream.
    */
@@ -192,8 +196,10 @@ public class AirbyteMessageTracker implements MessageTracker { // TODO the Messa
   }
 
   /**
-   * When a source emits a state, persist the current running count per stream to the map that is tracking counts per state. Then, reset the running
-   * count per stream so that new counts can start recording for the next state. Also add the state to list so that state order is tracked correctly.
+   * When a source emits a state, persist the current running count per stream to the map that is
+   * tracking counts per state. Then, reset the running count per stream so that new counts can start
+   * recording for the next state. Also add the state to list so that state order is tracked
+   * correctly.
    */
   private void handleSourceEmittedState(final AirbyteStateMessage stateMessage) {
     final int stateHash = getStateHashCode(stateMessage);
@@ -206,8 +212,9 @@ public class AirbyteMessageTracker implements MessageTracker { // TODO the Messa
   }
 
   /**
-   * When a destination emits a state, update the committed count per stream by adding up the running count deltas for all states since the last
-   * committed state. Also record the state as the last committed state.
+   * When a destination emits a state, update the committed count per stream by adding up the running
+   * count deltas for all states since the last committed state. Also record the state as the last
+   * committed state.
    */
   private void handleDestinationEmittedState(final AirbyteStateMessage stateMessage) {
     final int committedStateHash = getStateHashCode(stateMessage);
@@ -224,4 +231,5 @@ public class AirbyteMessageTracker implements MessageTracker { // TODO the Messa
       lastCommittedStateIndex++;
     } while (currStateHash != committedStateHash);
   }
+
 }
