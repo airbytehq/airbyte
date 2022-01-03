@@ -117,7 +117,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
       return fullSyncInput;
     };
 
-    CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> workerFactory;
+    final CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> workerFactory;
 
     if (containerOrchestratorEnabled) {
       workerFactory = getContainerLauncherWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput);
@@ -195,7 +195,6 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           airbyteSource,
           new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
           new DefaultAirbyteDestination(workerConfigs, destinationLauncher),
-          new AirbyteMessageTracker(),
           new AirbyteMessageTracker());
     };
   }
