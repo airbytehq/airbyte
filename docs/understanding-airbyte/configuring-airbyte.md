@@ -22,7 +22,7 @@ We recommend using the overlays in the `stable` directory as these have preset r
 To configure the default Airbyte Kubernetes deployment, modify the `.env` in the respective directory. Each application will consume the appropriate
 env var from a generated configmap.
 
-If you want to manage your own Kube manifest, please refer to the various `Kustomize` overlays as an example.
+If you want to manage your own Kube manifest, please refer to the various `Kustomize` overlays for examples.
 
 ## Reference
 
