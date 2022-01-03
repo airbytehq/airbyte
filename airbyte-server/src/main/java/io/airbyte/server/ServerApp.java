@@ -197,13 +197,13 @@ public class ServerApp implements ServerRunnable {
         configs.getWorkspaceRoot(),
         configs.getAirbyteVersionOrWarning(),
         featureFlags);
-    final JobNotifier jobNotifier = new JobNotifier(
-        configs.getWebappUrl(),
-        configRepository,
-        new WorkspaceHelper(configRepository, jobPersistence),
-        TrackingClientSingleton.get());
 
     if (featureFlags.usesNewScheduler()) {
+      final JobNotifier jobNotifier = new JobNotifier(
+          configs.getWebappUrl(),
+          configRepository,
+          new WorkspaceHelper(configRepository, jobPersistence),
+          TrackingClientSingleton.get());
       cleanupZombies(jobPersistence, jobNotifier);
       migrateExistingConnection(configRepository, temporalWorkerRunFactory);
     }
