@@ -93,14 +93,14 @@ def retry_connection_handler(**kwargs):
     )
 
 
-def retry_after_handler(**kwargs):
+def retry_after_handler(fixed_retry_after = None, **kwargs):
     """Retry helper when we hit the call limit, sleeps for specific duration"""
 
     def sleep_on_ratelimit(_details):
         _, exc, _ = sys.exc_info()
         if isinstance(exc, HubspotRateLimited):
             # HubSpot API does not always return Retry-After value for 429 HTTP error
-            retry_after = int(exc.response.headers.get("Retry-After", 3))
+            retry_after = fixed_retry_after if fixed_retry_after else int(exc.response.headers.get("Retry-After", 3))
             logger.info(f"Rate limit reached. Sleeping for {retry_after} seconds")
             time.sleep(retry_after + 1)  # extra second to cover any fractions of second
 
@@ -561,13 +561,24 @@ class CRMSearchStream(IncrementalStream, ABC):
         self.associations = associations
         self._include_archived_only = include_archived_only
 
+    @retry_connection_handler(max_tries=5, factor=5)
+    @retry_after_handler(fixed_retry_after=1, max_tries=3)
+    def search(
+        self, url: str, data: Mapping[str, Any], params: MutableMapping[str, Any] = None
+    ) -> Union[Mapping[str, Any], List[Mapping[str, Any]]]:
+        # We can safely retry this POST call, because it's a search operation.
+        # Given Hubspot does not return any Retry-After header (https://developers.hubspot.com/docs/api/crm/search)
+        # from the search endpoint, it waits one second after trying again.
+        # As per their docs: `These search endpoints are rate limited to four requests per second per authentication token`.
+        return self._api.post(url=url, data=data, params=params)
+
     def list(self, fields) -> Iterable:
         params = {
             "archived": str(self._include_archived_only).lower(),
             "associations": self.associations,
         }
         if self.state:
-            generator = self.read(partial(self._api.post, url=self.url), params)
+            generator = self.read(partial(self.search, url=self.url), params)
         else:
             generator = self.read(partial(self._api.get, url=self.url), params)
         yield from self._flat_associations(self._filter_dynamic_fields(self._filter_old_records(generator)))
@@ -583,7 +594,7 @@ class CRMSearchStream(IncrementalStream, ABC):
             "value": int(self._state.timestamp() * 1000),
             "propertyName": self.last_modified_field,
             "operator": "GTE"
-        }], "properties": properties_list
+        }], "properties": properties_list, "limit": 100
         } if self.state else {}
 
         while True:
