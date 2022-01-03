@@ -27,7 +27,7 @@ runs:
       shell: bash
       run: |
           REPORT_FOLDER=${{ steps.build-reports.outputs.report-folder }}
-          echo "REPORT FOLDER: ${REPORT_FOLDER}"
+          ls -hal ${REPORT_FOLDER}
 #          echo "AAADD ${{ steps.build-reports.outputs.report-folder }}"
 #          echo "DDDDD ${{ steps.build-reports.outputs.report-folder }}"
 #          ls -hal ${{ steps.build-reports.outputs.report-folder }}
