@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: 3.7
       - name: Intall Requirements
-        run: pip install ./tools/ci_static_check_reports
+        run: pip install ./tools/ci_common_utils ./tools/ci_static_check_reports
       - name: Detect Changed Modules
         id: detect-changed-modules
         run: |
