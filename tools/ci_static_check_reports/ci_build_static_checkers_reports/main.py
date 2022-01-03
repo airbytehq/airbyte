@@ -4,8 +4,8 @@
 import argparse
 import itertools
 import json
-import logging
 import os
+import shutil
 import sys
 from typing import Dict, List
 
@@ -13,8 +13,9 @@ from invoke import Context
 
 sys.path.insert(0, "airbyte-integrations/connectors")
 from tasks import CONFIG_FILE, TOOLS_VERSIONS, _run_task  # noqa
+from ci_common_utils import Logger
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = Logger()
 TASK_COMMANDS: Dict[str, List[str]] = {
     # "black": [
     #     f"pip install black~={TOOLS_VERSIONS['black']}",
@@ -48,15 +49,12 @@ TASK_COMMANDS: Dict[str, List[str]] = {
         "mkdir {venv}/source-acceptance-test",
         "cp -f $(git ls-tree -r HEAD --name-only {source_acceptance_test_path} | tr '\n' ' ') {venv}/source-acceptance-test",
         "pip install build",
-        "echo 21111111",
         f"python -m build {os.path.join('{venv}', 'source-acceptance-test')}",
         f"pip install {os.path.join('{venv}', 'source-acceptance-test', 'dist', 'source_acceptance_test-*.whl')}",
         "[ -f requirements.txt ] && pip install -r requirements.txt 2> /dev/null",
         "pip install .",
         "pip install .[tests]",
-        "echo 111111110",
         "pip install pytest-cov",
-        "echo 111111112",
         "echo '111111111111 pytest -v --cov={source_path} --cov-report xml:{reports_path}/pytest.xml {source_path}/unit_tests'",
         "pytest -v --cov={source_path} --cov-report xml:{reports_path}/pytest.xml {source_path}/unit_tests",
     ],
@@ -67,8 +65,10 @@ def build_py_static_checkers_reports(folder: str, output_folder: str) -> int:
     ctx = Context()
     toml_config_file = os.path.join(os.getcwd(), "pyproject.toml")
 
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
+    if os.path.exists(output_folder):
+        shutil.rmtree(output_folder)
+    LOGGER.info(f"created the report folder: {output_folder}")
+    os.makedirs(output_folder)
 
     for checker in TASK_COMMANDS:
         LOGGER.info(f"start the test '{checker}'...")
@@ -84,7 +84,7 @@ def build_py_static_checkers_reports(folder: str, output_folder: str) -> int:
             reports_path=output_folder,
             source_acceptance_test_path=os.path.join(os.getcwd(), "airbyte-integrations/bases/source-acceptance-test"),
         )
-        LOGGER.warning(TASK_COMMANDS)
+        LOGGER.info(f"stop the test '{checker} => {output_folder}'...")
     return 0
 
 
@@ -107,11 +107,9 @@ def main() -> int:
             LOGGER.warning(f"Skipped the module: {module} because its tests are not supported now")
             continue
         elif not os.path.exists(module["folder"]):
-            LOGGER.error(f"Not found the folder: {module['folder']}")
-            return 1
+            return LOGGER.error(f"Not found the folder: {module['folder']}")
         elif "setup.py" not in os.listdir(module["folder"]):
-            LOGGER.error(f"Not found the setup.py file in the {module['folder']}")
-            return 1
+            return LOGGER.error(f"Not found the setup.py file in the {module['folder']}")
         elif build_py_static_checkers_reports(folder=module["folder"], output_folder=output_folder):
             return 1
     LOGGER.info("all tests were finished...")

@@ -24,7 +24,7 @@ def test_build_static_checkers_reports(changed_module: str, should_build_reports
     static_checker_reports_path = "/tmp/report_" + json.loads(changed_module)[0]["module"].replace("/", "_")
     if os.path.exists(static_checker_reports_path):
         shutil.rmtree(static_checker_reports_path)
-    subprocess.call(["ci_build_python_checkers_reports", changed_module,
+    subprocess.call(["ci_build_checkers_reports", changed_module,
                      "--output_folder", static_checker_reports_path],
                     shell=False)
 

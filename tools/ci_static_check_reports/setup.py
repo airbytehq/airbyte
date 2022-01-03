@@ -15,7 +15,7 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["invoke~=1.6.0", "virtualenv~=20.10.0"],
+    install_requires=["invoke~=1.6.0", "virtualenv~=20.10.0", "ci_common_utils"],
     package_data={"": ["*.json", "schemas/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
@@ -23,7 +23,7 @@ setup(
     entry_points={
         "console_scripts": [
             "ci_detect_changed_modules = ci_detect_changed_modules.main:main",
-            "ci_build_python_checkers_reports = ci_build_python_static_checkers_reports.main:main",
+            "ci_build_checkers_reports = ci_build_static_checkers_reports.main:main",
         ],
     },
 )

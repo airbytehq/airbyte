@@ -20,7 +20,7 @@ runs:
          REPORT_FOLDER=/tmp/static_report_${RANDOM}
          # REPORT_FOLDER=/tmp/static_report_1000
          echo "try to save all report to ${REPORT_FOLDER}"
-         ci_build_python_checkers_reports --output_folder "${REPORT_FOLDER}" "${JSON_CONFIG}"
+         ci_build_checkers_reports --output_folder "${REPORT_FOLDER}" "${JSON_CONFIG}"
          echo "::set-output name=report-folder::${REPORT_FOLDER}"
 
     - name: Static Python Tests
