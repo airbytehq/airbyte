@@ -817,6 +817,17 @@ class EngagementStream(IncrementalStream):
         if self.state:
             return "/engagements/v1/engagements/recent/modified"
         return "/engagements/v1/engagements/paged"
+    
+    @property
+    def state(self) -> Optional[Mapping[str, Any]]:
+        """Current state, if wasn't set return None"""
+        return {self.state_pk: self._state} if self._state else None
+
+    @state.setter
+    def state(self, value):
+        state = value[self.state_pk]
+        self._state = state
+        self._start_date = max(self._field_to_datetime(self._state), self._start_date)
 
     def _transform(self, records: Iterable) -> Iterable:
         yield from super()._transform({**record.pop("engagement"), **record} for record in records)
@@ -826,11 +837,15 @@ class EngagementStream(IncrementalStream):
         default_params = {self.limit_field: self.limit}
         params = {**default_params, **params} if params else {**default_params}
         if self.state:
-            params['since'] = int(self._state.timestamp() * 1000)
+            params['since'] = self._state
+        count = 0
         for record in self._filter_dynamic_fields(self._filter_old_records(self._read(getter, params))):
             yield record
-            cursor = self._field_to_datetime(record[self.updated_at_field])
+            count += 1
+            cursor = record[self.updated_at_field]
             max_last_updated_at = max(cursor, max_last_updated_at) if max_last_updated_at else cursor
+        
+        logger.info(f'Processed {count} records')
         
         if max_last_updated_at:
             new_state = max(max_last_updated_at, self._state) if self._state else max_last_updated_at
