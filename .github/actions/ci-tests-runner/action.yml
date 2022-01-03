@@ -15,7 +15,7 @@ inputs:
   sonar-token:
     description: "Access token for using SonarQube API"
     required: true
-  pull_request_id:
+  pull-request-id:
     description: "Unique PR ID. For example: airbyte/1234"
     default: "0"
   token:
@@ -49,7 +49,7 @@ runs:
         module-folder: ${{ inputs.module-folder }}
 
     - name: Java Tests
-      id: run-java-tests
+      id: ci-java-tests
       if: ${{ inputs.module-lang == 'java' }}
       uses: ./.github/actions/ci-java-tests
       with:

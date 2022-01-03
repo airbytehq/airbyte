@@ -33,11 +33,11 @@ TASK_COMMANDS: Dict[str, List[str]] = {
         "flake8_junit {reports_path}/flake.txt {reports_path}/flake.xml",
         "rm -f {reports_path}/flake.txt",
     ],
-    "isort": [
-        f"pip install colorama~={TOOLS_VERSIONS['colorama']}",
-        f"pip install isort~={TOOLS_VERSIONS['isort']}",
-        "isort -v {check_option} {source_path}/. > {reports_path}/isort.txt",
-    ],
+    # "isort": [
+    #     f"pip install colorama~={TOOLS_VERSIONS['colorama']}",
+    #     f"pip install isort~={TOOLS_VERSIONS['isort']}",
+    #     "isort -v {check_option} {source_path}/. > {reports_path}/isort.txt",
+    # ],
     "mypy": [
         "pip install .",
         f"pip install lxml~={TOOLS_VERSIONS['lxml']}",

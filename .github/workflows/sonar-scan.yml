@@ -31,7 +31,7 @@ jobs:
 
   run-ci-tests:
     needs: detect-changes
-    name:  Run tests for ${{ matrix.module }}
+    name:  Tests for ${{ matrix.module }}
     runs-on: ubuntu-latest
     environment: more-secrets
     # this option must be uncommented for github env

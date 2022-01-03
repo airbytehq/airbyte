@@ -12,10 +12,25 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Run tests of CI
+    - name: Build Reports
+      id: build-reports
+      shell: bash
+      run: |
+         JSON_CONFIG='{"module": "${{ inputs.module-name }}", "folder": "${{ inputs.module-folder }}", "lang": "py"}'
+         REPORT_FOLDER=/tmp/static_report_${RANDOM}
+         # REPORT_FOLDER=/tmp/static_report_1000
+         ci_build_python_checkers_reports --output_folder "${REPORT_FOLDER}" "${JSON_CONFIG}"
+         echo "::set-output name=report-folder::${REPORT_FOLDER}"
+
+    - name: Static Python Tests
       id: generate-reports
       shell: bash
       run: |
-          echo "make me, ${{ inputs.module-name }} in ${{ inputs.module-folder }}"
-          echo "::set-output name=coverage-file::${{ github.action_path }}/coverage.xml"
-
+          REPORT_FOLDER=${{ steps.build-reports.outputs.report-folder }}
+          echo "REPORT FOLDER: ${REPORT_FOLDER}"
+#          echo "AAADD ${{ steps.build-reports.outputs.report-folder }}"
+#          echo "DDDDD ${{ steps.build-reports.outputs.report-folder }}"
+#          ls -hal ${{ steps.build-reports.outputs.report-folder }}
+#          exit 1
+#          echo "make me, ${{ inputs.module-name }} in ${{ inputs.module-folder }}"
+#          echo "::set-output name=coverage-file::${{ github.action_path }}/coverage.xml"
