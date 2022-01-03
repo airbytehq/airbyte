@@ -191,7 +191,7 @@
 - name: Google Ads
   sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   dockerRepository: blotout/source-google-ads
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.14
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-ads
   sourceType: api
 - name: Google Analytics
@@ -657,5 +657,5 @@
 - sourceDefinitionId: 01ea7a82-528b-11ec-bf63-0242ac130002
   name: Active Campaign
   dockerRepository: blotout/source-active-campaign-singer
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.6
   documentationUrl: https://github.com/blotoutio/tap-activecampaign
