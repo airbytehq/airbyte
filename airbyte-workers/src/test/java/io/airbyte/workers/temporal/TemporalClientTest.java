@@ -8,10 +8,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.Configs;
 import io.airbyte.config.JobCheckConnectionConfig;
@@ -74,7 +79,7 @@ class TemporalClientTest {
     logPath = workspaceRoot.resolve(String.valueOf(JOB_ID)).resolve(String.valueOf(ATTEMPT_ID)).resolve(LogClientSingleton.LOG_FILENAME);
     workflowClient = mock(WorkflowClient.class);
     workflowServiceStubs = mock(WorkflowServiceStubs.class);
-    temporalClient = new TemporalClient(workflowClient, workspaceRoot, workflowServiceStubs, configs);
+    temporalClient = spy(new TemporalClient(workflowClient, workspaceRoot, workflowServiceStubs, configs));
   }
 
   @Nested
@@ -189,6 +194,32 @@ class TemporalClientTest {
       temporalClient.submitSync(JOB_ID, ATTEMPT_ID, syncConfig, CONNECTION_ID);
       discoverCatalogWorkflow.run(JOB_RUN_CONFIG, LAUNCHER_CONFIG, destinationLauncherConfig, input, CONNECTION_ID);
       verify(workflowClient).newWorkflowStub(SyncWorkflow.class, TemporalUtils.getWorkflowOptions(TemporalJobType.SYNC));
+    }
+
+  }
+
+  @Nested
+  @DisplayName("Test related to the migration to the new scheduler")
+  class TestMigration {
+
+    @DisplayName("Test that the migration is properly done if needed")
+    @Test
+    public void migrateCalled() {
+      final UUID nonMigratedId = UUID.randomUUID();
+      final UUID migratedId = UUID.randomUUID();
+
+      doReturn(false)
+          .when(temporalClient).isWorkflowRunning(TemporalClient.getConnectionManagerName(nonMigratedId));
+      doReturn(true)
+          .when(temporalClient).isWorkflowRunning(TemporalClient.getConnectionManagerName(migratedId));
+
+      doNothing()
+          .when(temporalClient).submitConnectionUpdaterAsync(nonMigratedId);
+
+      temporalClient.migrateSyncIfNeeded(Sets.newHashSet(nonMigratedId, migratedId));
+
+      verify(temporalClient, times(1)).submitConnectionUpdaterAsync(nonMigratedId);
+      verify(temporalClient, times(0)).submitConnectionUpdaterAsync(migratedId);
     }
 
   }
