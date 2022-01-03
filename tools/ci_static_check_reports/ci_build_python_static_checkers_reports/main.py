@@ -16,44 +16,48 @@ from tasks import CONFIG_FILE, TOOLS_VERSIONS, _run_task  # noqa
 
 LOGGER = logging.getLogger(__name__)
 TASK_COMMANDS: Dict[str, List[str]] = {
-    "black": [
-        f"pip install black~={TOOLS_VERSIONS['black']}",
-        f"XDG_CACHE_HOME={os.devnull} black -v {{check_option}} --diff {{source_path}}/. > {{reports_path}}/black.txt",
-    ],
+    # "black": [
+    #     f"pip install black~={TOOLS_VERSIONS['black']}",
+    #     f"XDG_CACHE_HOME={os.devnull} black -v {{check_option}} --diff {{source_path}}/. > {{reports_path}}/black.txt",
+    # ],
     "coverage": [
         "pip install .",
         f"pip install coverage[toml]~={TOOLS_VERSIONS['coverage']}",
         "coverage xml --rcfile={toml_config_file} -o {reports_path}/coverage.xml",
     ],
-    "flake": [
-        f"pip install mccabe~={TOOLS_VERSIONS['mccabe']}",
-        f"pip install pyproject-flake8~={TOOLS_VERSIONS['flake']}",
-        f"pip install flake8-junit-report~={TOOLS_VERSIONS['flake_junit']}",
-        "pflake8 -v {source_path} --output-file={reports_path}/flake.txt --bug-report",
-        "flake8_junit {reports_path}/flake.txt {reports_path}/flake.xml",
-        "rm -f {reports_path}/flake.txt",
-    ],
+    # "flake": [
+    #     f"pip install mccabe~={TOOLS_VERSIONS['mccabe']}",
+    #     f"pip install pyproject-flake8~={TOOLS_VERSIONS['flake']}",
+    #     f"pip install flake8-junit-report~={TOOLS_VERSIONS['flake_junit']}",
+    #     "pflake8 -v {source_path} --output-file={reports_path}/flake.txt --bug-report",
+    #     "flake8_junit {reports_path}/flake.txt {reports_path}/flake.xml",
+    #     "rm -f {reports_path}/flake.txt",
+    # ],
     # "isort": [
     #     f"pip install colorama~={TOOLS_VERSIONS['colorama']}",
     #     f"pip install isort~={TOOLS_VERSIONS['isort']}",
     #     "isort -v {check_option} {source_path}/. > {reports_path}/isort.txt",
     # ],
-    "mypy": [
-        "pip install .",
-        f"pip install lxml~={TOOLS_VERSIONS['lxml']}",
-        f"pip install mypy~={TOOLS_VERSIONS['mypy']}",
-        "mypy {source_path} --config-file={toml_config_file} --cobertura-xml-report={reports_path}",
-    ],
+    # "mypy": [
+    #     "pip install .",
+    #     f"pip install lxml~={TOOLS_VERSIONS['lxml']}",
+    #     f"pip install mypy~={TOOLS_VERSIONS['mypy']}",
+    #     "mypy {source_path} --config-file={toml_config_file} --cobertura-xml-report={reports_path}",
+    # ],
     "test": [
         "mkdir {venv}/source-acceptance-test",
         "cp -f $(git ls-tree -r HEAD --name-only {source_acceptance_test_path} | tr '\n' ' ') {venv}/source-acceptance-test",
         "pip install build",
+        "echo 21111111",
         f"python -m build {os.path.join('{venv}', 'source-acceptance-test')}",
         f"pip install {os.path.join('{venv}', 'source-acceptance-test', 'dist', 'source_acceptance_test-*.whl')}",
         "[ -f requirements.txt ] && pip install -r requirements.txt 2> /dev/null",
         "pip install .",
         "pip install .[tests]",
+        "echo 111111110",
         "pip install pytest-cov",
+        "echo 111111112",
+        "echo '111111111111 pytest -v --cov={source_path} --cov-report xml:{reports_path}/pytest.xml {source_path}/unit_tests'",
         "pytest -v --cov={source_path} --cov-report xml:{reports_path}/pytest.xml {source_path}/unit_tests",
     ],
 }
@@ -67,6 +71,7 @@ def build_py_static_checkers_reports(folder: str, output_folder: str) -> int:
         os.makedirs(output_folder)
 
     for checker in TASK_COMMANDS:
+        LOGGER.info(f"start the test '{checker}'...")
         _run_task(
             ctx,
             f"{os.getcwd()}/{folder}",
@@ -79,6 +84,7 @@ def build_py_static_checkers_reports(folder: str, output_folder: str) -> int:
             reports_path=output_folder,
             source_acceptance_test_path=os.path.join(os.getcwd(), "airbyte-integrations/bases/source-acceptance-test"),
         )
+        LOGGER.warning(TASK_COMMANDS)
     return 0
 
 

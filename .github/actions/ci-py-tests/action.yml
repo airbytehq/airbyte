@@ -6,9 +6,9 @@ inputs:
   module-folder:
     required: true
 outputs:
-  coverage-file:
-    description: "Cavarage File"
-    value: ${{ steps.generate-reports.outputs.coverage-file }}
+  coverage-paths:
+    description: "Cavarage Paths"
+    value: ${{ steps.generate-reports.outputs.coverage-paths }}
 runs:
   using: "composite"
   steps:
@@ -19,6 +19,7 @@ runs:
          JSON_CONFIG='{"module": "${{ inputs.module-name }}", "folder": "${{ inputs.module-folder }}", "lang": "py"}'
          REPORT_FOLDER=/tmp/static_report_${RANDOM}
          # REPORT_FOLDER=/tmp/static_report_1000
+         echo "try to save all report to ${REPORT_FOLDER}"
          ci_build_python_checkers_reports --output_folder "${REPORT_FOLDER}" "${JSON_CONFIG}"
          echo "::set-output name=report-folder::${REPORT_FOLDER}"
 
@@ -27,7 +28,14 @@ runs:
       shell: bash
       run: |
           REPORT_FOLDER=${{ steps.build-reports.outputs.report-folder }}
+          # REPORT_FOLDER=/tmp/static_report_1000
           ls -hal ${REPORT_FOLDER}
+          COV_FILE=${REPORT_FOLDER}/coverage.xml
+          PYTEST_COV_FILE=${REPORT_FOLDER}/pytest.xml
+          [ -f ${COV_FILE} ] && ( cat ${COV_FILE}; mv ${COV_FILE} ${REPORT_FOLDER}/coverage_1.xml )
+          [ -f ${PYTEST_COV_FILE} ] && ( cat ${PYTEST_COV_FILE}; mv ${PYTEST_COV_FILE} ${REPORT_FOLDER}/coverage_2.xml )
+          echo "::set-output name=coverage-paths::${REPORT_FOLDER}/coverage_*.xml"
+
 #          echo "AAADD ${{ steps.build-reports.outputs.report-folder }}"
 #          echo "DDDDD ${{ steps.build-reports.outputs.report-folder }}"
 #          ls -hal ${{ steps.build-reports.outputs.report-folder }}
