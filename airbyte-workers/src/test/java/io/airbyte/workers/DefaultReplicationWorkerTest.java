@@ -78,8 +78,7 @@ class DefaultReplicationWorkerTest {
   private StandardSyncInput syncInput;
   private WorkerSourceConfig sourceConfig;
   private WorkerDestinationConfig destinationConfig;
-  private AirbyteMessageTracker sourceMessageTracker;
-  private AirbyteMessageTracker destinationMessageTracker;
+  private AirbyteMessageTracker messageTracker;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -97,8 +96,7 @@ class DefaultReplicationWorkerTest {
     source = mock(AirbyteSource.class);
     mapper = mock(NamespacingMapper.class);
     destination = mock(AirbyteDestination.class);
-    sourceMessageTracker = mock(AirbyteMessageTracker.class);
-    destinationMessageTracker = mock(AirbyteMessageTracker.class);
+    messageTracker = mock(AirbyteMessageTracker.class);
 
     when(source.isFinished()).thenReturn(false, false, false, true);
     when(destination.isFinished()).thenReturn(false, false, false, true);
@@ -121,8 +119,7 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+        messageTracker);
 
     worker.run(syncInput, jobRoot);
 
@@ -144,8 +141,7 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+        messageTracker);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -161,8 +157,7 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+        messageTracker);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -181,8 +176,7 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+        messageTracker);
 
     worker.run(syncInput, jobRoot);
 
@@ -213,7 +207,7 @@ class DefaultReplicationWorkerTest {
   void testCancellation() throws InterruptedException {
     final AtomicReference<ReplicationOutput> output = new AtomicReference<>();
     when(source.isFinished()).thenReturn(false);
-    when(destinationMessageTracker.getOutputState()).thenReturn(Optional.of(new State().withState(STATE_MESSAGE.getState().getData())));
+    when(messageTracker.getDestinationOutputState()).thenReturn(Optional.of(new State().withState(STATE_MESSAGE.getState().getData())));
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -221,8 +215,7 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+        messageTracker);
 
     final Thread workerThread = new Thread(() -> {
       try {
@@ -235,7 +228,7 @@ class DefaultReplicationWorkerTest {
     workerThread.start();
 
     // verify the worker is actually running before we kill it.
-    while (Mockito.mockingDetails(sourceMessageTracker).getInvocations().size() < 5) {
+    while (Mockito.mockingDetails(messageTracker).getInvocations().size() < 5) {
       LOGGER.info("waiting for worker to start running");
       sleep(100);
     }
@@ -249,9 +242,9 @@ class DefaultReplicationWorkerTest {
   @Test
   void testPopulatesOutputOnSuccess() throws WorkerException {
     final JsonNode expectedState = Jsons.jsonNode(ImmutableMap.of("updated_at", 10L));
-    when(sourceMessageTracker.getRecordCount()).thenReturn(12L);
-    when(sourceMessageTracker.getBytesCount()).thenReturn(100L);
-    when(destinationMessageTracker.getOutputState()).thenReturn(Optional.of(new State().withState(expectedState)));
+    when(messageTracker.getRecordCount()).thenReturn(12L);
+    when(messageTracker.getBytesCount()).thenReturn(100L);
+    when(messageTracker.getDestinationOutputState()).thenReturn(Optional.of(new State().withState(expectedState)));
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -259,8 +252,7 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+        messageTracker);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
     final ReplicationOutput replicationOutput = new ReplicationOutput()
@@ -291,7 +283,7 @@ class DefaultReplicationWorkerTest {
   @Test
   void testPopulatesStateOnFailureIfAvailable() throws Exception {
     doThrow(new IllegalStateException("induced exception")).when(source).close();
-    when(destinationMessageTracker.getOutputState()).thenReturn(Optional.of(new State().withState(STATE_MESSAGE.getState().getData())));
+    when(messageTracker.getDestinationOutputState()).thenReturn(Optional.of(new State().withState(STATE_MESSAGE.getState().getData())));
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -299,8 +291,7 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+        messageTracker);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
     assertNotNull(actual);
@@ -317,8 +308,7 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+        messageTracker);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
 
@@ -339,8 +329,7 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+        messageTracker);
 
     final ReplicationOutput actual = worker.run(syncInputWithoutState, jobRoot);
 
@@ -350,7 +339,7 @@ class DefaultReplicationWorkerTest {
 
   @Test
   void testDoesNotPopulateOnIrrecoverableFailure() {
-    doThrow(new IllegalStateException("induced exception")).when(sourceMessageTracker).getRecordCount();
+    doThrow(new IllegalStateException("induced exception")).when(messageTracker).getRecordCount();
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -358,8 +347,7 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+        messageTracker);
     assertThrows(WorkerException.class, () -> worker.run(syncInput, jobRoot));
   }
 

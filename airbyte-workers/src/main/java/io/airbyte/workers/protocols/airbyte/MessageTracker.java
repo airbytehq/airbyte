@@ -6,22 +6,32 @@ package io.airbyte.workers.protocols.airbyte;
 
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
+import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 /**
  * Interface to handle extracting metadata from the stream of data flowing from a Source to a
  * Destination.
  */
-public interface MessageTracker extends Consumer<AirbyteMessage> {
+public interface MessageTracker { // TODO parker: no longer extends Consumer<AirbyteMessage> is that fine? look into BiConsumer?
+
+  // /**
+  // * Accepts an AirbyteMessage and tracks any metadata about it that is required by the Platform.
+  // *
+  // * @param message message to derive metadata from.
+  // */
+  // @Override
+  // void accept(AirbyteMessage message);
 
   /**
-   * Accepts an AirbyteMessage and tracks any metadata about it that is required by the Platform.
-   *
-   * @param message message to derive metadata from.
+   * TODO javadoc
    */
-  @Override
-  void accept(AirbyteMessage message);
+  void acceptFromSource(AirbyteMessage message);
+
+  /**
+   * TODO javadoc
+   */
+  void acceptFromDestination(AirbyteMessage message);
 
   /**
    * Gets the records replicated.
@@ -37,11 +47,29 @@ public interface MessageTracker extends Consumer<AirbyteMessage> {
    */
   long getBytesCount();
 
+  // /**
+  // * Get the current state of the stream.
+  // *
+  // * @return returns the last StateMessage that was accepted. If no StateMessage was accepted,
+  // empty.
+  // */
+  // Optional<State> getOutputState();
+
   /**
    * Get the current state of the stream.
    *
    * @return returns the last StateMessage that was accepted. If no StateMessage was accepted, empty.
    */
-  Optional<State> getOutputState();
+  Optional<State> getSourceOutputState();
+
+  /**
+   * Get the current state of the stream.
+   *
+   * @return returns the last StateMessage that was accepted. If no StateMessage was accepted, empty.
+   */
+  Optional<State> getDestinationOutputState();
+
+  // TODO javadoc
+  Map<String, Long> getCommittedRecordsByStream();
 
 }

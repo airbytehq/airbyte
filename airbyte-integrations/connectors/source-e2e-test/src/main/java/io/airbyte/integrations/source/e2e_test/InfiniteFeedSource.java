@@ -20,6 +20,7 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
@@ -35,9 +36,14 @@ public class InfiniteFeedSource extends BaseConnector implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InfiniteFeedSource.class);
 
+//  public static final AirbyteCatalog CATALOG = CatalogHelpers.createAirbyteCatalog(
+//      "data",
+//      Field.of("column1", JsonSchemaPrimitive.STRING));
+
   public static final AirbyteCatalog CATALOG = CatalogHelpers.createAirbyteCatalog(
-      "data",
-      Field.of("column1", JsonSchemaPrimitive.STRING));
+      CatalogHelpers.createAirbyteStream("data1", Field.of("column1", JsonSchemaPrimitive.STRING)),
+      CatalogHelpers.createAirbyteStream("data2", Field.of("column2", JsonSchemaPrimitive.STRING)),
+      CatalogHelpers.createAirbyteStream("data3", Field.of("column3", JsonSchemaPrimitive.STRING)));
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
@@ -75,12 +81,19 @@ public class InfiniteFeedSource extends BaseConnector implements Source {
           }
           i.incrementAndGet();
           LOGGER.info("source emitting record {}:", i.get());
-          return new AirbyteMessage()
-              .withType(Type.RECORD)
-              .withRecord(new AirbyteRecordMessage()
-                  .withStream("data")
-                  .withEmittedAt(Instant.now().toEpochMilli())
-                  .withData(Jsons.jsonNode(ImmutableMap.of("column1", i))));
+          if (i.get() % 10 == 0) {
+            LOGGER.info("emitting a state record {}:", i.get());
+            return new AirbyteMessage()
+                .withType(Type.STATE)
+                .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", i.get()).build())));
+          } else {
+            return new AirbyteMessage()
+                .withType(Type.RECORD)
+                .withRecord(new AirbyteRecordMessage()
+                    .withStream("data" + ((i.get() % 3) + 1))
+                    .withEmittedAt(Instant.now().toEpochMilli())
+                    .withData(Jsons.jsonNode(ImmutableMap.of("column" + ((i.get() % 3) + 1), i))));
+          }
         } else {
           return endOfData();
         }

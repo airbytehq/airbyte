@@ -55,8 +55,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private final AirbyteSource source;
   private final AirbyteMapper mapper;
   private final AirbyteDestination destination;
-  private final MessageTracker sourceMessageTracker;
-  private final MessageTracker destinationMessageTracker;
+  private final MessageTracker messageTracker;
 
   private final ExecutorService executors;
   private final AtomicBoolean cancelled;
@@ -67,15 +66,13 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                   final AirbyteSource source,
                                   final AirbyteMapper mapper,
                                   final AirbyteDestination destination,
-                                  final MessageTracker sourceMessageTracker,
-                                  final MessageTracker destinationMessageTracker) {
+                                  final MessageTracker messageTracker) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.source = source;
     this.mapper = mapper;
     this.destination = destination;
-    this.sourceMessageTracker = sourceMessageTracker;
-    this.destinationMessageTracker = destinationMessageTracker;
+    this.messageTracker = messageTracker;
     this.executors = Executors.newFixedThreadPool(2);
 
     this.cancelled = new AtomicBoolean(false);
@@ -120,11 +117,11 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         source.start(sourceConfig, jobRoot);
 
         final CompletableFuture<?> destinationOutputThreadFuture = CompletableFuture.runAsync(
-            getDestinationOutputRunnable(destination, cancelled, destinationMessageTracker, mdc),
+            getDestinationOutputRunnable(destination, cancelled, messageTracker, mdc),
             executors);
 
         final CompletableFuture<?> replicationThreadFuture = CompletableFuture.runAsync(
-            getReplicationRunnable(source, destination, cancelled, mapper, sourceMessageTracker, mdc),
+            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc),
             executors);
 
         LOGGER.info("Waiting for source and destination threads to complete.");
@@ -157,26 +154,28 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
       final ReplicationAttemptSummary summary = new ReplicationAttemptSummary()
           .withStatus(outputStatus)
-          .withRecordsSynced(sourceMessageTracker.getRecordCount())
-          .withBytesSynced(sourceMessageTracker.getBytesCount())
+          .withRecordsSynced(messageTracker.getRecordCount())
+          .withBytesSynced(messageTracker.getBytesCount())
           .withStartTime(startTime)
           .withEndTime(System.currentTimeMillis());
 
       LOGGER.info("sync summary: {}", summary);
 
+      LOGGER.info("Per-Stream Committed Records: {}", messageTracker.getCommittedRecordsByStream());
+
       final ReplicationOutput output = new ReplicationOutput()
           .withReplicationAttemptSummary(summary)
           .withOutputCatalog(destinationConfig.getCatalog());
 
-      if (sourceMessageTracker.getOutputState().isPresent()) {
+      if (messageTracker.getSourceOutputState().isPresent()) {
         LOGGER.info("Source output at least one state message");
       } else {
         LOGGER.info("Source did not output any state messages");
       }
 
-      if (destinationMessageTracker.getOutputState().isPresent()) {
-        LOGGER.info("State capture: Updated state to: {}", destinationMessageTracker.getOutputState());
-        final State state = destinationMessageTracker.getOutputState().get();
+      if (messageTracker.getDestinationOutputState().isPresent()) {
+        LOGGER.info("State capture: Updated state to: {}", messageTracker.getDestinationOutputState());
+        final State state = messageTracker.getDestinationOutputState().get();
         output.withState(state);
       } else if (syncInput.getState() != null) {
         LOGGER.warn("State capture: No new state, falling back on input state: {}", syncInput.getState());
@@ -196,7 +195,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                  final AirbyteDestination destination,
                                                  final AtomicBoolean cancelled,
                                                  final AirbyteMapper mapper,
-                                                 final MessageTracker sourceMessageTracker,
+                                                 final MessageTracker messageTracker,
                                                  final Map<String, String> mdc) {
     return () -> {
       MDC.setContextMap(mdc);
@@ -208,7 +207,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           if (messageOptional.isPresent()) {
             final AirbyteMessage message = mapper.mapMessage(messageOptional.get());
 
-            sourceMessageTracker.accept(message);
+            messageTracker.acceptFromSource(message);
             destination.accept(message);
             recordsRead += 1;
 
@@ -235,7 +234,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
   private static Runnable getDestinationOutputRunnable(final AirbyteDestination destination,
                                                        final AtomicBoolean cancelled,
-                                                       final MessageTracker destinationMessageTracker,
+                                                       final MessageTracker messageTracker,
                                                        final Map<String, String> mdc) {
     return () -> {
       MDC.setContextMap(mdc);
@@ -245,7 +244,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           final Optional<AirbyteMessage> messageOptional = destination.attemptRead();
           if (messageOptional.isPresent()) {
             LOGGER.info("state in DefaultReplicationWorker from Destination: {}", messageOptional.get());
-            destinationMessageTracker.accept(messageOptional.get());
+            messageTracker.acceptFromDestination(messageOptional.get());
           }
         }
         if (!cancelled.get() && destination.getExitValue() != 0) {
