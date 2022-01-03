@@ -432,7 +432,7 @@ test_files: List[Mapping[str, Any]] = [
     },
     {
         # tests multiline json file
-        "test_alias": "multiline json file",
+        "test_alias": "multiline empty json file",
         "AbstractFileParser": JsonParser(
             format={"filetype": "json", "lines": False, "chunk_size": None},
             master_schema={

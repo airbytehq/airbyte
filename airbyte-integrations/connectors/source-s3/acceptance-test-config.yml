@@ -43,7 +43,7 @@ tests:
     - config_path: "secrets/json_config.json"
       configured_catalog_path: "integration_tests/json_configured_catalog.json"
       expect_records:
-        path: "integration_tests/json_expected_records.txt"
+        path: "integration_tests/json_expected_records.jsonl"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

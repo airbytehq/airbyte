@@ -3,6 +3,7 @@
 #
 from typing import Any, BinaryIO, Iterator, Mapping, TextIO, Union
 
+from pandas import DataFrame
 from pandas.io.json import build_table_schema, read_json
 
 from .abstract_file_parser import AbstractFileParser
@@ -17,18 +18,16 @@ JSON_TYPES = {
     "integer": ("integer", None),
     # supported by Pandas type
     "datetime": ("string", lambda v: v.isoformat()),
-    "object": ("string", lambda v: v.isoformat()),
     "duration": ("string", lambda v: v.isoformat()),
-    "any": ("string", lambda v: v.isoformat()),
 }
 
 
 class JsonParser(AbstractFileParser):
     @property
-    def is_binary(self):
+    def is_binary(self) -> bool:
         return True
 
-    def _read_options(self):
+    def _read_options(self) -> Mapping[str, Any]:
         """
         https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html#reading-json
         """
@@ -40,7 +39,7 @@ class JsonParser(AbstractFileParser):
             "encoding": self._format.get("encoding", "utf8"),
         }
 
-    def _parse_options(self):
+    def _parse_options(self) -> Mapping[str, Any]:
         """
         https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html#reading-json
         """
@@ -74,6 +73,13 @@ class JsonParser(AbstractFileParser):
             return conversion_func(field_value) if conversion_func else field_value
         raise TypeError(f"Unsupported field type: {table_schema_type}, value: {field_value}")
 
+    def _build_table_schema(self, dataframe: DataFrame) -> dict:
+        schema = build_table_schema(dataframe)
+        # remove the first field which is the Pandas index
+        schema_fields = schema["fields"][1:]
+
+        return {field["name"]: field["type"] for field in schema_fields}
+
     def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> dict:
         """
         https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html#reading-json
@@ -86,10 +92,9 @@ class JsonParser(AbstractFileParser):
         else:
             dataframe = reader
 
-        schema = build_table_schema(dataframe)
-        # remove the first field which is the index
-        schema_fields = schema["fields"][1:]
-        schema_dict = {field["name"]: self.parse_field_type(field["type"]) for field in schema_fields}
+        schema_dict = {
+            field_name: self.parse_field_type(field_type) for (field_name, field_type) in self._build_table_schema(dataframe).items()
+        }
 
         if not schema_dict:
             # pandas can parse empty JSON files but a connector can't generate dynamic schema
@@ -108,18 +113,16 @@ class JsonParser(AbstractFileParser):
             **self._parse_options(),
         )
 
-        is_lines_true = self._read_options()["lines"]
-        if is_lines_true:
-            is_empty = True
-            for rows in reader:
-                if is_empty and len(rows) > 0:
-                    is_empty = False
-                for row in rows.to_dict(orient="records"):
-                    yield row
-            if is_empty:
-                raise OSError("Empty JSON file")
-        else:
-            if len(reader) == 0:
-                raise OSError("Empty JSON file")
-            for row in reader.to_dict(orient="records"):
-                yield row
+        # in case of classic JSON, put the whole dataframe in a list so the for loop
+        # can be factorized with the iterator behaviour for line-delimited JSON
+        reader = [reader] if not self._read_options()["lines"] else reader
+        schema = None
+        is_empty = True
+        for rows in reader:
+            schema = self._build_table_schema(rows) if schema is None else schema
+            if is_empty and len(rows) > 0:
+                is_empty = False
+            for row in rows.to_dict(orient="records"):
+                yield {k: self.convert_field_data(schema[k], v) for (k, v) in row.items()}
+        if is_empty:
+            raise OSError("Empty JSON file")
