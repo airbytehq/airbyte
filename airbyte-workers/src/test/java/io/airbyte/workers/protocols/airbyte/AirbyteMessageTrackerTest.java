@@ -15,8 +15,6 @@ import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
-import java.util.Iterator;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import org.junit.jupiter.api.Test;
 
 class AirbyteMessageTrackerTest {
@@ -88,24 +86,26 @@ class AirbyteMessageTrackerTest {
 
   @Test
   public void hashStuff() {
-//    final AirbyteMessageTracker messageTracker = new AirbyteMessageTracker();
-//
-//    final AirbyteMessage stateMessage = new AirbyteMessage().withType(Type.STATE).withState(
-//        new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", 20).build())));
-//
-//    final AirbyteStateMessage state = stateMessage.getState();
-//
-//    final int hashcode = Hashing.murmur3_32_fixed().hashBytes(Jsons.serialize(state.getData()).getBytes(Charsets.UTF_8)).hashCode();
-//
-//    assertTrue(true);
-
-    final ConcurrentLinkedQueue<Integer> queue = new ConcurrentLinkedQueue<>();
-    final Iterator<Integer> queueIter = queue.;
-    queue.add(1);
-    System.out.println(queueIter.next());
-    queue.add(2);
-    queue.add(3);
-    assertTrue(true);
+    // final AirbyteMessageTracker messageTracker = new AirbyteMessageTracker();
+    //
+    // final AirbyteMessage stateMessage = new AirbyteMessage().withType(Type.STATE).withState(
+    // new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint",
+    // 20).build())));
+    //
+    // final AirbyteStateMessage state = stateMessage.getState();
+    //
+    // final int hashcode =
+    // Hashing.murmur3_32_fixed().hashBytes(Jsons.serialize(state.getData()).getBytes(Charsets.UTF_8)).hashCode();
+    //
+    // assertTrue(true);
+    //
+    // final ConcurrentLinkedQueue<Integer> queue = new ConcurrentLinkedQueue<>();
+    // final Iterator<Integer> queueIter = queue.;
+    // queue.add(1);
+    // System.out.println(queueIter.next());
+    // queue.add(2);
+    // queue.add(3);
+    // assertTrue(true);
 
   }
 
