@@ -3,28 +3,28 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "object": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "display_name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "state": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "description": {
       "type": ["null", "string"]
     },
     "created_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "updated_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "deleted_at": {
       "type": ["null", "string"]

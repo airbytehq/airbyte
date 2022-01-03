@@ -103,7 +103,7 @@ public class WorkspacesHandler {
 
     // disable all connections associated with this workspace
     for (final ConnectionRead connectionRead : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
-      connectionsHandler.deleteConnection(connectionRead);
+      connectionsHandler.deleteConnection(connectionRead.getConnectionId());
     }
 
     // disable all destinations associated with this workspace

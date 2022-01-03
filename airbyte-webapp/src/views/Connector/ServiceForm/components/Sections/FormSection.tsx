@@ -87,14 +87,10 @@ const FormSection: React.FC<{
               );
 
           return (
-            <>
+            <React.Fragment key={sectionPath}>
               {isAuthSection && <AuthSection />}
-              <FormNode
-                key={sectionPath}
-                formField={formField}
-                sectionPath={sectionPath}
-              />
-            </>
+              <FormNode formField={formField} sectionPath={sectionPath} />
+            </React.Fragment>
           );
         })}
     </>

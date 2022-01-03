@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "PackageNumber": {
+      "description": "use the same number on multiple OrderItemInPackages to add package content to the same package",
+      "type": "integer"
+    },
+    "Quantity": {
+      "description": "how much of the orderitem to pack into this package content; must be a positive number",
+      "type": "number"
+    },
+    "PackageDefIdentifier": {
+      "description": "the package definition to apply to any package created as a result of this OrderItemInPackage",
+      "$ref": "../../generic/models/package_def_identifier.json"
+    }
+  }
+}

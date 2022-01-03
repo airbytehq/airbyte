@@ -17,7 +17,6 @@ import com.google.common.collect.Lists;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.AirbyteCatalog;
 import io.airbyte.api.model.ConnectionCreate;
-import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.ConnectionSchedule;
@@ -26,14 +25,17 @@ import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.DestinationSearch;
 import io.airbyte.api.model.NamespaceDefinitionType;
+import io.airbyte.api.model.ResourceRequirements;
 import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DataType;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.SourceConnection;
@@ -41,13 +43,18 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.workers.helper.ConnectionHelper;
+import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -62,6 +69,7 @@ class ConnectionsHandlerTest {
   private ConfigRepository configRepository;
   private Supplier<UUID> uuidGenerator;
 
+  private WorkerConfigs workerConfigs;
   private ConnectionsHandler connectionsHandler;
   private UUID workspaceId;
   private UUID sourceDefinitionId;
@@ -79,10 +87,20 @@ class ConnectionsHandlerTest {
   private StandardSyncOperation standardSyncOperation;
   private WorkspaceHelper workspaceHelper;
   private TrackingClient trackingClient;
+  private TemporalWorkerRunFactory temporalWorkflowHandler;
+  private SyncJobFactory jobFactory;
+  private JobPersistence jobPersistence;
+  private LogConfigs logConfigs;
+  private FeatureFlags featureFlags;
+
+  // TODO: bmoric move to a mock
+  private ConnectionHelper connectionHelper;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
   void setUp() throws IOException, JsonValidationException, ConfigNotFoundException {
+    workerConfigs = new WorkerConfigs(new EnvConfigs());
+
     workspaceId = UUID.randomUUID();
     sourceDefinitionId = UUID.randomUUID();
     sourceId = UUID.randomUUID();
@@ -110,7 +128,7 @@ class ConnectionsHandlerTest {
         .withOperationIds(List.of(operationId))
         .withManual(false)
         .withSchedule(ConnectionHelpers.generateBasicSchedule())
-        .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+        .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS);
     standardSyncDeleted = new StandardSync()
         .withConnectionId(connectionId)
         .withName("presto to hudi2")
@@ -124,7 +142,7 @@ class ConnectionsHandlerTest {
         .withOperationIds(List.of(operationId))
         .withManual(false)
         .withSchedule(ConnectionHelpers.generateBasicSchedule())
-        .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+        .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS);
 
     standardSyncOperation = new StandardSyncOperation()
         .withOperationId(operationId)
@@ -134,12 +152,26 @@ class ConnectionsHandlerTest {
     uuidGenerator = mock(Supplier.class);
     workspaceHelper = mock(WorkspaceHelper.class);
     trackingClient = mock(TrackingClient.class);
-    connectionsHandler = new ConnectionsHandler(configRepository, uuidGenerator, workspaceHelper, trackingClient);
+    featureFlags = mock(FeatureFlags.class);
+
+    connectionHelper = new ConnectionHelper(configRepository, workspaceHelper, workerConfigs);
+
+    connectionsHandler = new ConnectionsHandler(
+        configRepository,
+        uuidGenerator,
+        workspaceHelper,
+        trackingClient,
+        temporalWorkflowHandler,
+        featureFlags,
+        connectionHelper,
+        workerConfigs);
 
     when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(deletedSourceId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(destinationId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(operationId)).thenReturn(workspaceId);
+
+    when(featureFlags.usesNewScheduler()).thenReturn(false);
   }
 
   @Test
@@ -273,7 +305,12 @@ class ConnectionsHandlerTest {
         .operationIds(standardSync.getOperationIds())
         .status(ConnectionStatus.INACTIVE)
         .schedule(null)
-        .syncCatalog(catalog);
+        .syncCatalog(catalog)
+        .resourceRequirements(new ResourceRequirements()
+            .cpuLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
+            .cpuRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
+            .memoryLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit())
+            .memoryRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest()));
 
     final ConfiguredAirbyteCatalog configuredCatalog = ConnectionHelpers.generateBasicConfiguredAirbyteCatalog();
     configuredCatalog.getStreams().get(0).getStream().withName("azkaban_users");
@@ -290,7 +327,7 @@ class ConnectionsHandlerTest {
         .withStatus(StandardSync.Status.INACTIVE)
         .withCatalog(configuredCatalog)
         .withManual(true)
-        .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+        .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS);
 
     when(configRepository.getStandardSync(standardSync.getConnectionId()))
         .thenReturn(standardSync)
@@ -329,8 +366,7 @@ class ConnectionsHandlerTest {
     when(configRepository.getStandardSync(standardSync.getConnectionId()))
         .thenReturn(standardSync);
 
-    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(standardSync.getConnectionId());
-    final ConnectionRead actualConnectionRead = connectionsHandler.getConnection(connectionIdRequestBody);
+    final ConnectionRead actualConnectionRead = connectionsHandler.getConnection(standardSync.getConnectionId());
 
     assertEquals(ConnectionHelpers.generateExpectedConnectionRead(standardSync), actualConnectionRead);
   }
@@ -390,7 +426,7 @@ class ConnectionsHandlerTest {
         .withDestinationId(destinationId)
         .withOperationIds(List.of(operationId))
         .withManual(true)
-        .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+        .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS);
     final ConnectionRead connectionRead2 = ConnectionHelpers.connectionReadFromStandardSync(standardSync2);
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
         .withName("source-test")
@@ -508,7 +544,6 @@ class ConnectionsHandlerTest {
 
   @Test
   void testDeleteConnection() throws JsonValidationException, IOException, ConfigNotFoundException {
-    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(standardSync.getConnectionId());
 
     final ConnectionRead connectionRead = ConnectionHelpers.generateExpectedConnectionRead(
         standardSync.getConnectionId(),
@@ -528,12 +563,12 @@ class ConnectionsHandlerTest {
         .resourceRequirements(connectionRead.getResourceRequirements());
 
     final ConnectionsHandler spiedConnectionsHandler = spy(connectionsHandler);
-    doReturn(connectionRead).when(spiedConnectionsHandler).getConnection(connectionIdRequestBody);
+    doReturn(connectionRead).when(spiedConnectionsHandler).getConnection(connectionId);
     doReturn(null).when(spiedConnectionsHandler).updateConnection(expectedConnectionUpdate);
 
-    spiedConnectionsHandler.deleteConnection(connectionIdRequestBody);
+    spiedConnectionsHandler.deleteConnection(connectionId);
 
-    verify(spiedConnectionsHandler).getConnection(connectionIdRequestBody);
+    verify(spiedConnectionsHandler).getConnection(connectionId);
     verify(spiedConnectionsHandler).updateConnection(expectedConnectionUpdate);
   }
 
