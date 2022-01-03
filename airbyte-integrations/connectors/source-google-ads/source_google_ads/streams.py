@@ -12,7 +12,8 @@ from google.ads.googleads.v8.services.services.google_ads_service.pagers import 
 from .google_ads import GoogleAds
 
 
-def chunk_date_range(start_date: str, conversion_window: int, field: str, report_name: str, end_date: str = None,time_unit: str = "months", days_of_data_storage: int = None) -> Iterable[
+def chunk_date_range(start_date: str, conversion_window: int, field: str, report_name: str, end_date: str = None) -> \
+Iterable[
     Mapping[str, any]]:
     """
     Passing optional parameter end_date for testing
@@ -64,14 +65,11 @@ class GoogleAdsStream(Stream, ABC):
 
 
 class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
-    days_of_data_storage = None
-    cursor_field = "segments.date"
-    primary_key = None
-    time_unit = "months"
 
-    def __init__(self, start_date: str, conversion_window_days: int, **kwargs):
+    def __init__(self, start_date: str, conversion_window_days: int, time_zone: [pendulum.timezone, str], **kwargs):
         self.conversion_window_days = conversion_window_days
         self._start_date = start_date
+        self.time_zone = time_zone
         super().__init__(**kwargs)
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
@@ -81,9 +79,8 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         return chunk_date_range(start_date=start_date, conversion_window=self.conversion_window_days,
                                 field=self.cursor_field, report_name=self.name,time_unit=self.time_unit,days_of_data_storage=self.days_of_data_storage)
 
-    @staticmethod
-    def get_date_params(stream_slice: Mapping[str, Any], cursor_field: str, end_date: pendulum.datetime = None, time_unit: str = "months"):
-        end_date = end_date or pendulum.yesterday()
+    def get_date_params(self, stream_slice: Mapping[str, Any], cursor_field: str, end_date: pendulum.datetime = None):
+        end_date = end_date or pendulum.yesterday(tz=self.time_zone)
         start_date = pendulum.parse(stream_slice.get(cursor_field))
         if start_date > pendulum.now():
             return start_date.to_date_string(), start_date.add(days=1).to_date_string()
@@ -96,7 +93,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         return start_date.add(days=1).to_date_string(), end_date.to_date_string()
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
-    Mapping[str, Any]:
+            Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
 
         # When state is none return date from latest record

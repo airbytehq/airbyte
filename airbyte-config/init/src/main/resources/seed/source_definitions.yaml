@@ -654,3 +654,8 @@
   dockerImageTag: 0.2.12
   documentationUrl: https://hub.docker.com/r/airbyte/source-googleanalytics-singer
   icon: google-analytics.svg
+- sourceDefinitionId: 01ea7a82-528b-11ec-bf63-0242ac130002
+  name: Active Campaign
+  dockerRepository: blotout/source-active-campaign-singer
+  dockerImageTag: 0.1.1
+  documentationUrl: https://github.com/blotoutio/tap-activecampaign
