@@ -8,20 +8,23 @@
     "additionalProperties": false,
     "properties": {
       "application_id": {
-        "title": "Application ID",
+        "title": "Application ID.",
+        "description": "Linnworks Application ID",
         "type": "string"
       },
       "application_secret": {
-        "title": "Application secret",
+        "title": "Application Secret",
+        "description": "Linnworks Application Secret",
         "type": "string",
         "airbyte_secret": true
       },
       "token": {
-        "title": "Token",
+        "title": "API Token",
         "type": "string"
       },
       "start_date": {
-        "title": "Start date",
+        "title": "Start Date",
+        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         "type": "string",
         "format": "date-time"
       }

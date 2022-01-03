@@ -6,20 +6,27 @@ package io.airbyte.integrations.source.cockroachdb;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.sql.Connection;
 import java.sql.JDBCType;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,6 +95,32 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
     }
 
     return super.read(config, catalog, state);
+  }
+
+  @Override
+  public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
+    return database
+        .query(getPrivileges(database), sourceOperations::rowToJson)
+        .map(this::getPrivilegeDto)
+        .collect(Collectors.toSet());
+  }
+
+  private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivileges(JdbcDatabase database) {
+    return connection -> {
+      final PreparedStatement ps = connection.prepareStatement(
+          "SELECT DISTINCT table_catalog, table_schema, table_name, privilege_type\n"
+              + "FROM   information_schema.table_privileges\n"
+              + "WHERE  grantee = ? AND privilege_type in ('SELECT', 'ALL')");
+      ps.setString(1, database.getDatabaseConfig().get("username").asText());
+      return ps;
+    };
+  }
+
+  private JdbcPrivilegeDto getPrivilegeDto(JsonNode jsonNode) {
+    return JdbcPrivilegeDto.builder()
+        .schemaName(jsonNode.get("table_schema").asText())
+        .tableName(jsonNode.get("table_name").asText())
+        .build();
   }
 
   public static void main(final String[] args) throws Exception {
