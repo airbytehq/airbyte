@@ -84,6 +84,7 @@ public class EnvConfigs implements Configs {
   private static final String CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS = "CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS";
   private static final String JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION = "JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION";
   private static final String JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS = "JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS";
+  private static final String CONTAINER_ORCHESTRATOR_ENABLED = "CONTAINER_ORCHESTRATOR_ENABLED";
 
   private static final String STATE_STORAGE_S3_BUCKET_NAME = "STATE_STORAGE_S3_BUCKET_NAME";
   private static final String STATE_STORAGE_S3_REGION = "STATE_STORAGE_S3_REGION";
@@ -544,7 +545,7 @@ public class EnvConfigs implements Configs {
 
   @Override
   public boolean getContainerOrchestratorEnabled() {
-    return getEnvOrDefault("CONTAINER_ORCHESTRATOR_ENABLED", false, Boolean::valueOf);
+    return getEnvOrDefault(CONTAINER_ORCHESTRATOR_ENABLED, false, Boolean::valueOf);
   }
 
   // Helpers
