@@ -56,8 +56,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   PostgresSource() {
-    super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration(),
-        new PostgresSourceOperations());
+    super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration(), new PostgresSourceOperations());
   }
 
   @Override
@@ -246,10 +245,6 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       throws SQLException {
     return database.query(connection -> {
       final PreparedStatement ps = connection.prepareStatement(
-          // c.relkind = 'm' means Materialized View
-          // c.relacl is null or s[2] = 'r' means either null (all grants) or "r" - grants for read
-          // coalesce ('SELECT') as privilege_type\n" is set as it to match Union query, verification is done
-          // is "where" clause
           """
                  SELECT DISTINCT table_catalog,
                                  table_schema,
@@ -262,6 +257,9 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
                  SELECT r.rolname           AS table_catalog,
                         n.nspname           AS table_schema,
                         c.relname           AS table_name,
+                        -- the initial query is supposed to get a SELECT type. Since we use a UNION query
+                        -- to get Views that we can read (i.e. select) - then lets fill this columns with SELECT
+                        -- value to keep the backward-compatibility
                         COALESCE ('SELECT') AS privilege_type
                  FROM   pg_class c
                  JOIN   pg_namespace n
@@ -272,9 +270,12 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
                         Regexp_split_to_array(acl, '=|/') s
                  WHERE  r.rolname = ?
                  AND    nspname = 'public'
+                        -- 'm' means Materialized View
                  AND    c.relkind = 'm'
                  AND    (
+                               -- all grants
                                c.relacl IS NULL
+                               -- read grant
                         OR     s[2] = 'r');
           """);
       final String username = database.getDatabaseConfig().get("username").asText();
