@@ -111,6 +111,15 @@ jobs:
       - name: Format
         run: SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace
 
+      - name: build snowflake
+        run: ./gradlew :airbyte-integrations:connectors:destination-snowflake:airbyteDocker
+
+      - name: build redshift
+        run: ./gradlew :airbyte-integrations:connectors:destination-redshift:airbyteDocker
+
+      - name: build postgres
+        run: ./gradlew :airbyte-integrations:connectors:destination-postgres:airbyteDocker
+
       - name: docker ps -a
         run: docker ps -a
 
@@ -119,6 +128,9 @@ jobs:
 
       - name: docker system df
         run: docker system df
+
+      - name: df -h
+        run: df -h
 
       - name: Build
         run: SUB_BUILD=CONNECTORS_BASE ./gradlew build --scan
