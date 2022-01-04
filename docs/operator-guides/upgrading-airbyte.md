@@ -4,6 +4,8 @@
 
 This tutorial will describe how to determine if you need to run this upgrade process, and if you do, how to do so. This process does require temporarily turning off Airbyte.
 
+When Airbyte is upgraded, it will attempt to upgrade some connector versions. It follows the following rules: 1. if a connector is not used, it will be upgraded to the latest version 2. if a connector is used, it will NOT be upgraded to avoid disrupting working workflows. If you want to upgrade a connector, do so in the settings page in the webapp.
+
 ## Determining if you need to Upgrade
 
 Airbyte intelligently performs upgrades automatically based off of your version defined in your `.env` file and will handle data migration for you.
