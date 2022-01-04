@@ -7,41 +7,54 @@ inputs:
     required: true
 outputs:
   coverage-paths:
-    description: "Cavarage Paths"
-    value: ${{ steps.generate-reports.outputs.coverage-paths }}
+    description: "Coverage Paths"
+    value: ${{ steps.build-coverage-reports.outputs.coverage-paths }}
 runs:
   using: "composite"
   steps:
-    - name: Build Reports
-      id: build-reports
+    - name: Build Coverage Reports
+      id: build-coverage-reports
       shell: bash
+      working-directory: ${{ inputs.module-folder }}
       run: |
+         rm -rf venv
+         virtualenv venv
+         source venv/bin/activate
          JSON_CONFIG='{"module": "${{ inputs.module-name }}", "folder": "${{ inputs.module-folder }}", "lang": "py"}'
          REPORT_FOLDER=/tmp/static_report_${RANDOM}
-         # REPORT_FOLDER=/tmp/static_report_1000
-         echo "try to save all report to ${REPORT_FOLDER}"
-         ci_build_checkers_reports --output_folder "${REPORT_FOLDER}" "${JSON_CONFIG}"
-         ls -hal ${REPORT_FOLDER}
-         echo "AAA ${REPORT_FOLDER}"
-         echo "::set-output name=report-folder::${REPORT_FOLDER}"
+         ci_build_checkers_reports --venv_folder venv --output_folder "${REPORT_FOLDER}" "${JSON_CONFIG}" --print_commands coverage,test | while read cmd
+         do
+           echo "CMD: ${cmd}"
+           eval ${cmd}
+         done
+         rm -rf venv
 
-    - name: Static Python Tests
-      id: generate-reports
-      shell: bash
-      run: |
-          REPORT_FOLDER=${{ steps.build-reports.outputs.report-folder }}
-          echo "${REPORT_FOLDER}"
-          # REPORT_FOLDER=/tmp/static_report_1000
-          ls -hal "${REPORT_FOLDER}"
-          COV_FILE=${REPORT_FOLDER}/coverage.xml
-          PYTEST_COV_FILE=${REPORT_FOLDER}/pytest.xml
-          [ -f ${COV_FILE} ] && ( cat ${COV_FILE}; mv ${COV_FILE} ${REPORT_FOLDER}/coverage_1.xml )
-          [ -f ${PYTEST_COV_FILE} ] && ( cat ${PYTEST_COV_FILE}; mv ${PYTEST_COV_FILE} ${REPORT_FOLDER}/coverage_2.xml )
-          echo "::set-output name=coverage-paths::${REPORT_FOLDER}/coverage_*.xml"
+         COV_FILE=${REPORT_FOLDER}/coverage.xml
+         PYTEST_COV_FILE=${REPORT_FOLDER}/pytest.xml
+         [ -f ${COV_FILE} ] && ( cat ${COV_FILE}; mv ${COV_FILE} ${REPORT_FOLDER}/coverage_1.xml )
+         [ -f ${PYTEST_COV_FILE} ] && ( cat ${PYTEST_COV_FILE}; mv ${PYTEST_COV_FILE} ${REPORT_FOLDER}/coverage_2.xml )
 
-#          echo "AAADD ${{ steps.build-reports.outputs.report-folder }}"
-#          echo "DDDDD ${{ steps.build-reports.outputs.report-folder }}"
-#          ls -hal ${{ steps.build-reports.outputs.report-folder }}
-#          exit 1
-#          echo "make me, ${{ inputs.module-name }} in ${{ inputs.module-folder }}"
-#          echo "::set-output name=coverage-file::${{ github.action_path }}/coverage.xml"
+         echo "::set-output name=coverage-paths::${REPORT_FOLDER}/coverage_*.xml"
+
+
+
+#    - name: Static Python Tests
+#      id: generate-reports
+#      shell: bash
+#      run: |
+#          REPORT_FOLDER=${{ steps.build-reports.outputs.report-folder }}
+#          echo "${REPORT_FOLDER}"
+#          # REPORT_FOLDER=/tmp/static_report_1000
+#          ls -hal "${REPORT_FOLDER}"
+#          COV_FILE=${REPORT_FOLDER}/coverage.xml
+#          PYTEST_COV_FILE=${REPORT_FOLDER}/pytest.xml
+#          [ -f ${COV_FILE} ] && ( cat ${COV_FILE}; mv ${COV_FILE} ${REPORT_FOLDER}/coverage_1.xml )
+#          [ -f ${PYTEST_COV_FILE} ] && ( cat ${PYTEST_COV_FILE}; mv ${PYTEST_COV_FILE} ${REPORT_FOLDER}/coverage_2.xml )
+#          echo "::set-output name=coverage-paths::${REPORT_FOLDER}/coverage_*.xml"
+#
+##          echo "AAADD ${{ steps.build-reports.outputs.report-folder }}"
+##          echo "DDDDD ${{ steps.build-reports.outputs.report-folder }}"
+##          ls -hal ${{ steps.build-reports.outputs.report-folder }}
+##          exit 1
+##          echo "make me, ${{ inputs.module-name }} in ${{ inputs.module-folder }}"
+##          echo "::set-output name=coverage-file::${{ github.action_path }}/coverage.xml"
