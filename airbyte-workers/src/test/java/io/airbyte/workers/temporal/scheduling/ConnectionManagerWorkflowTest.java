@@ -190,9 +190,9 @@ public class ConnectionManagerWorkflowTest {
           workflowState);
 
       WorkflowClient.start(workflow::run, input);
-      testEnv.sleep(Duration.ofSeconds(2L));
+      testEnv.sleep(Duration.ofSeconds(30L));
       workflow.submitManualSync();
-      testEnv.sleep(Duration.ofSeconds(50L));
+      testEnv.sleep(Duration.ofSeconds(20L));
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
@@ -231,9 +231,9 @@ public class ConnectionManagerWorkflowTest {
           workflowState);
 
       WorkflowClient.start(workflow::run, input);
-      testEnv.sleep(Duration.ofSeconds(2L));
+      testEnv.sleep(Duration.ofSeconds(30L));
       workflow.connectionUpdated();
-      testEnv.sleep(Duration.ofSeconds(50L));
+      testEnv.sleep(Duration.ofSeconds(20L));
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
@@ -272,9 +272,9 @@ public class ConnectionManagerWorkflowTest {
           workflowState);
 
       WorkflowClient.start(workflow::run, input);
-      testEnv.sleep(Duration.ofSeconds(50L));
+      testEnv.sleep(Duration.ofSeconds(30L));
       workflow.cancelJob();
-      testEnv.sleep(Duration.ofSeconds(2L));
+      testEnv.sleep(Duration.ofSeconds(20L));
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
@@ -313,8 +313,9 @@ public class ConnectionManagerWorkflowTest {
           workflowState);
 
       WorkflowClient.start(workflow::run, input);
+      testEnv.sleep(Duration.ofSeconds(30L));
       workflow.deleteConnection();
-      testEnv.sleep(Duration.ofSeconds(50L));
+      testEnv.sleep(Duration.ofMinutes(20L));
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
