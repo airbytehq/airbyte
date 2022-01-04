@@ -40,7 +40,7 @@ TASK_COMMANDS: Dict[str, List[str]] = {
         f"pip install mccabe~={TOOLS_VERSIONS['mccabe']}",
         f"pip install pyproject-flake8~={TOOLS_VERSIONS['flake']}",
         # f"pip install flake8-junit-report~={TOOLS_VERSIONS['flake_junit']}",
-        "pflake8 --exit-zero {source_path}  | grep ^. > {reports_path}/flake.txt",
+        "pflake8 --exit-zero {source_path} |  grep ^. > {reports_path}/flake.txt",
         # "flake8_junit {reports_path}/flake.txt {reports_path}/flake.xml",
     ],
     "isort": [

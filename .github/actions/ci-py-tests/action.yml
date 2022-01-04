@@ -21,17 +21,17 @@ runs:
       shell: bash
       working-directory: ${{ inputs.module-folder }}
       run: |
-         rm -rf venv
-         virtualenv venv
-         source venv/bin/activate
+         rm -rf .venv
+         virtualenv .venv
+         source .venv/bin/activate
          JSON_CONFIG='{"module": "${{ inputs.module-name }}", "folder": "${{ inputs.module-folder }}", "lang": "py"}'
          REPORT_FOLDER=reports_${RANDOM}
-         ci_build_checkers_reports --venv_folder venv --output_folder "${REPORT_FOLDER}" "${JSON_CONFIG}" --print_commands pycoverage | while read cmd
+         ci_build_checkers_reports --venv_folder .venv --output_folder "${REPORT_FOLDER}" "${JSON_CONFIG}" --print_commands pycoverage | while read cmd
          do
            echo "CMD: ${cmd}"
            eval ${cmd}
          done
-         rm -rf venv
+         rm -rf .venv
          echo "::set-output name=coverage-paths::${REPORT_FOLDER}/coverage.xml"
 
     - name: Build Linter Reports
@@ -39,18 +39,18 @@ runs:
       shell: bash
       working-directory: ${{ inputs.module-folder }}
       run: |
-         rm -rf venv
-         virtualenv venv
+         rm -rf .venv
+         virtualenv .venv
          source venv/bin/activate
          JSON_CONFIG='{"module": "${{ inputs.module-name }}", "folder": "${{ inputs.module-folder }}", "lang": "py"}'
          REPORT_FOLDER=reports_${RANDOM}
          mkdir -p ${REPORT_FOLDER}
-         ci_build_checkers_reports --venv_folder venv --output_folder "${REPORT_FOLDER}" "${JSON_CONFIG}" --print_commands flake | while read cmd
+         ci_build_checkers_reports --venv_folder .venv --output_folder "${REPORT_FOLDER}" "${JSON_CONFIG}" --print_commands flake | while read cmd
          do
            echo "CMD: ${cmd}"
            eval ${cmd}
          done
-         rm -rf venv
+         rm -rf .venv
          cat ${REPORT_FOLDER}/flake.txt
          echo "::set-output name=linter-options::-Dsonar.python.flake8.reportPaths=${REPORT_FOLDER}/flake.txt"
 
