@@ -22,7 +22,7 @@ runs:
          source venv/bin/activate
          JSON_CONFIG='{"module": "${{ inputs.module-name }}", "folder": "${{ inputs.module-folder }}", "lang": "py"}'
          REPORT_FOLDER=/tmp/static_report_${RANDOM}
-         ci_build_checkers_reports --venv_folder venv --output_folder "${REPORT_FOLDER}" "${JSON_CONFIG}" --print_commands coverage,test | while read cmd
+         ci_build_checkers_reports --venv_folder venv --output_folder "${REPORT_FOLDER}" "${JSON_CONFIG}" --print_commands test,coverage | while read cmd
          do
            echo "CMD: ${cmd}"
            eval ${cmd}
