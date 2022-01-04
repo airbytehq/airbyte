@@ -653,7 +653,8 @@ public class KubePodProcess extends Process {
       }
       // If the pod cannot be found and was not killed, it either means 1) the pod was not created
       // properly 2) this method is incorrectly called.
-      throw new RuntimeException("Cannot find pod while trying to retrieve exit code. This probably means the Pod was not correctly created.");
+      throw new RuntimeException(
+          String.format("Cannot find pod (%s) while trying to retrieve exit code. This probably means the pod was not correctly created.", name));
     }
 
     if (!isTerminal(refreshedPod)) {
