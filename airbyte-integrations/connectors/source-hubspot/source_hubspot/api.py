@@ -216,19 +216,8 @@ class Stream(ABC):
             stream_name = stream_name[: -len("Stream")]
         return stream_name
 
-    def list(self, fields) -> Iterable:
+    def list_records(self, fields) -> Iterable:
         yield from self.read(partial(self._api.get, url=self.url))
-    
-    def _filter_dynamic_fields(self, records: Iterable) -> Iterable:
-        """Skip certain fields because they are too dynamic and change every call (timers, etc),
-        see https://github.com/airbytehq/airbyte/issues/2397
-        """
-        for record in records:
-            if isinstance(record, Mapping) and "properties" in record:
-                for key in list(record["properties"].keys()):
-                    if key.startswith("hs_time_in"):
-                        record["properties"].pop(key)
-            yield record
 
     @staticmethod
     def _cast_value(declared_field_types: List, field_name: str, field_value: Any, declared_format: str = None) -> Any:
@@ -575,7 +564,7 @@ class CRMSearchStream(IncrementalStream, ABC):
         # As per their docs: `These search endpoints are rate limited to four requests per second per authentication token`.
         return self._api.post(url=url, data=data, params=params)
 
-    def list(self, fields) -> Iterable:
+    def list_records(self, fields) -> Iterable:
         params = {
             "archived": str(self._include_archived_only).lower(),
             "associations": self.associations,
@@ -584,7 +573,7 @@ class CRMSearchStream(IncrementalStream, ABC):
             generator = self.read(partial(self.search, url=self.url), params)
         else:
             generator = self.read(partial(self._api.get, url=self.url), params)
-        yield from self._flat_associations(self._filter_dynamic_fields(self._filter_old_records(generator)))
+        yield from self._flat_associations(self._filter_old_records(generator))
 
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         """Apply state filter to set of records, update cursor(state) if necessary in the end"""
@@ -652,7 +641,7 @@ class CRMObjectStream(Stream):
         if not self.entity:
             raise ValueError("Entity must be set either on class or instance level")
 
-    def list(self, fields) -> Iterable:
+    def list_records(self, fields) -> Iterable:
         params = {
             "archived": str(self._include_archived_only).lower(),
             "associations": self.associations,
@@ -679,7 +668,7 @@ class CampaignStream(Stream):
     limit = 500
     updated_at_field = "lastUpdatedTime"
 
-    def list(self, fields) -> Iterable:
+    def list_records(self, fields) -> Iterable:
         for row in self.read(getter=partial(self._api.get, url=self.url)):
             record = self._api.get(f"/email/public/v1/campaigns/{row['id']}")
             yield {**row, **record}
@@ -718,7 +707,7 @@ class DealStageHistoryStream(Stream):
             if updated_at:
                 yield {"id": record.get("dealId"), "dealstage": dealstage, self.updated_at_field: updated_at}
 
-    def list(self, fields) -> Iterable:
+    def list_records(self, fields) -> Iterable:
         params = {"propertiesWithHistory": "dealstage"}
         yield from self.read(partial(self._api.get, url=self.url), params)
 
@@ -730,12 +719,12 @@ class DealStream(CRMSearchStream):
         super().__init__(entity="deal", last_modified_field="hs_lastmodifieddate", **kwargs)
         self._stage_history = DealStageHistoryStream(**kwargs)
 
-    def list(self, fields) -> Iterable:
+    def list_records(self, fields) -> Iterable:
         history_by_id = {}
-        for record in self._stage_history.list(fields):
+        for record in self._stage_history.list_records(fields):
             if all(field in record for field in ("id", "dealstage")):
                 history_by_id[record["id"]] = record["dealstage"]
-        for record in super().list(fields):
+        for record in super().list_records(fields):
             if record.get("id") and int(record["id"]) in history_by_id:
                 record["dealstage"] = history_by_id[int(record["id"])]
             yield record
@@ -815,7 +804,7 @@ class EngagementStream(IncrementalStream):
         if self.state:
             params['since'] = self._state
         count = 0
-        for record in self._filter_dynamic_fields(self._filter_old_records(self._read(getter, params))):
+        for record in self._filter_old_records(self._read(getter, params)):
             yield record
             count += 1
             cursor = record[self.updated_at_field]

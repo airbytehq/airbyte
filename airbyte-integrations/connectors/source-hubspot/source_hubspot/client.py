@@ -60,7 +60,7 @@ class Client(BaseClient):
         super().__init__(**kwargs)
 
     def _enumerate_methods(self) -> Mapping[str, Callable]:
-        return {name: api.list for name, api in self._apis.items()}
+        return {name: api.list_records for name, api in self._apis.items()}
 
     @property
     def streams(self) -> Iterator[AirbyteStream]:
