@@ -34,7 +34,7 @@ class DelightedStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_data = response.json()
-        if response_data and len(response_data) == self.limit:
+        if len(response_data) == self.limit:
             self.page += 1
             return {"page": self.page}
 
