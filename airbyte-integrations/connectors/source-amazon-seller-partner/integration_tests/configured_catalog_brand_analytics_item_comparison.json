@@ -1,0 +1,13 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

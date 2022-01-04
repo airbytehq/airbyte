@@ -388,13 +388,7 @@ class VendorInventoryHealthReports(ReportsAmazonSPStream):
     name = "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT"
 
 
-class BrandAnalyticsSearchTermsReports(ReportsAmazonSPStream):
-    """
-    Field definitions: https://sellercentral.amazon.co.uk/help/hub/reference/G5NXWNY8HUD3VDCW
-    """
-
-    name = "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT"
-
+class BrandAnalyticsStream(ReportsAmazonSPStream):
     @staticmethod
     def parse_document(document):
         parsed = json_lib.loads(document)
@@ -450,6 +444,30 @@ class BrandAnalyticsSearchTermsReports(ReportsAmazonSPStream):
                 "dataEndTime": data_end_time.strftime(DATE_TIME_FORMAT),
                 "reportOptions": report_options,
             }
+
+
+class BrandAnalyticsMarketBasketReports(BrandAnalyticsStream):
+    name = "GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT"
+
+
+class BrandAnalyticsSearchTermsReports(BrandAnalyticsStream):
+    """
+    Field definitions: https://sellercentral.amazon.co.uk/help/hub/reference/G5NXWNY8HUD3VDCW
+    """
+
+    name = "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT"
+
+
+class BrandAnalyticsRepeatPurchaseReports(BrandAnalyticsStream):
+    name = "GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT"
+
+
+class BrandAnalyticsAlternatePurchaseReports(BrandAnalyticsStream):
+    name = "GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT"
+
+
+class BrandAnalyticsItemComparisonReports(BrandAnalyticsStream):
+    name = "GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT"
 
 
 class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
