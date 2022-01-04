@@ -52,6 +52,6 @@ runs:
          done
          rm -rf .venv
          cat ${REPORT_FOLDER}/flake.txt
-         echo "::set-output name=linter-options::-Dsonar.python.flake8.reportPaths=${REPORT_FOLDER}/flake.txt"
+         echo "::set-output name=linter-reports::-Dsonar.python.flake8.reportPaths=${REPORT_FOLDER}/flake.txt"
 
 
