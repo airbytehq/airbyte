@@ -651,7 +651,7 @@ where 1 = 1
     def generate_scd_type_2_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
         order_null = "is null asc"
         if self.destination_type.value == DestinationType.ORACLE.value:
-            order_null = "asc nulls last"
+            order_null = "desc nulls last"
         if self.destination_type.value == DestinationType.MSSQL.value:
             # SQL Server treats NULL values as the lowest values, then sorted in ascending order, NULLs come first.
             order_null = "desc"
@@ -705,11 +705,27 @@ where 1 = 1
             cdc_cols += f", {cast_begin}{col_cdc_log_pos}{cast_as}" + "{{ dbt_utils.type_string() }}" + f"{cast_end}"
             quoted_cdc_cols += f", {quoted_col_cdc_log_pos}"
 
+        if (
+            self.destination_type == DestinationType.BIGQUERY
+            and len(self.cursor_field) == 1
+            and is_number(self.properties[self.cursor_field[0]]["type"])
+        ):
+            # partition by float columns is not allowed in BigQuery, cast it to string
+            airbyte_start_at_string = (
+                cast_begin
+                + self.name_transformer.normalize_column_name("_airbyte_start_at")
+                + cast_as
+                + "{{ dbt_utils.type_string() }}"
+                + cast_end
+            )
+        else:
+            airbyte_start_at_string = self.name_transformer.normalize_column_name("_airbyte_start_at")
         jinja_variables = {
             "active_row": self.name_transformer.normalize_column_name("_airbyte_active_row"),
             "airbyte_end_at": self.name_transformer.normalize_column_name("_airbyte_end_at"),
             "airbyte_row_num": self.name_transformer.normalize_column_name("_airbyte_row_num"),
             "airbyte_start_at": self.name_transformer.normalize_column_name("_airbyte_start_at"),
+            "airbyte_start_at_string": airbyte_start_at_string,
             "airbyte_unique_key_scd": self.name_transformer.normalize_column_name(f"{self.airbyte_unique_key}_scd"),
             "cdc_active_row": cdc_active_row_pattern,
             "cdc_cols": cdc_cols,
@@ -863,7 +879,10 @@ dedup_data as (
         -- we need to ensure de-duplicated rows for merge/update queries
         -- additionally, we generate a unique key for the scd table
         row_number() over (
-            partition by {{ unique_key }}, cast({{ airbyte_start_at }} as {{ dbt_utils.type_string() }}), {{ col_emitted_at }}{{ cdc_cols }}
+            partition by
+                {{ unique_key }},
+                {{ airbyte_start_at_string }},
+                {{ col_emitted_at }}{{ cdc_cols }}
             order by {{ active_row }} desc, {{ col_ab_id }}
         ) as {{ airbyte_row_num }},
         {{ '{{' }} dbt_utils.surrogate_key([
