@@ -83,8 +83,6 @@ class People(IncrementalDelightedStream):
         next_page = response.links.get("next", None)
         if next_page:
             return {"page_info": dict(parse_qsl(urlparse(next_page.get("url")).query)).get("page_info")}
-        else:
-            return None
 
 
 class Unsubscribes(IncrementalDelightedStream):

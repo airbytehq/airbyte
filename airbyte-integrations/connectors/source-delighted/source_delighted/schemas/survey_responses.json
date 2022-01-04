@@ -90,12 +90,10 @@
                     "text": {
                       "type": "string"
                     }
-                  },
-                  "required": ["id", "text"]
+                  }
                 }
               }
-            },
-            "required": ["free_response", "scale", "select_one", "select_many"]
+            }
           },
           "question": {
             "type": "object",
@@ -109,11 +107,9 @@
               "text": {
                 "type": "string"
               }
-            },
-            "required": ["id", "type", "text"]
+            }
           }
-        },
-        "required": ["id", "value", "question"]
+        }
       }
     }
   }
