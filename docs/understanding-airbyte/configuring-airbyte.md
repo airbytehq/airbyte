@@ -22,13 +22,15 @@ We recommend using the overlays in the `stable` directory as these have preset r
 To configure the default Airbyte Kubernetes deployment, modify the `.env` in the respective directory. Each application will consume the appropriate
 env var from a generated configmap.
 
-If you want to manage your own Kube manifest, please refer to the various `Kustomize` overlays for examples.
+If you want to manage your own Kube manifests, please refer to the various `Kustomize` overlays for examples.
 
 ## Reference
 
 The following are the possible configuration options organised by deployment type and services.
 
-Internal-onlu variables have been omitted for clarity. See `Configs.java` for a full list.
+Internal-only variables have been omitted for clarity. See `Configs.java` for a full list.
+
+Be careful using variables marked as `alpha` as they aren't meant for public consumption.
 
 ### Shared
 
@@ -42,22 +44,20 @@ The following variables are relevant to both Docker and Kubernetes.
 5. `WORKSPACE_ROOT` - Defines the Airbyte workspace directory. Applies only to Docker, and is present in Kubernetes for backward compatibility.
 
 #### Secrets
-1. `SECRET_STORE_GCP_PROJECT_ID` - Defines the GCP Project to store secrets in.
-2. `SECRET_STORE_GCP_CREDENTIALS` - Define the JSON credentials used to read/write Airbyte Configuration to Google Secret Manager. These credentials must have Secret Manager Read/Write access.
-3. `SECRET_PERSISTENCE_TYPE` - Defines the Secret Persistence type. Defaults to NONE. Set to GOOGLE_SECRET_MANAGER to use Google Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test.
+1. `SECRET_STORE_GCP_PROJECT_ID` - Defines the GCP Project to store secrets in. Alpha support.
+2. `SECRET_STORE_GCP_CREDENTIALS` - Define the JSON credentials used to read/write Airbyte Configuration to Google Secret Manager. These credentials must have Secret Manager Read/Write access. Alpha support.
+3. `SECRET_PERSISTENCE_TYPE` - Defines the Secret Persistence type. Defaults to NONE. Set to GOOGLE_SECRET_MANAGER to use Google Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test. Alpha support. Undefined behavior will result if this is turned on and then off.
 
 #### Database
 1. `DATABASE_USER` - Define the Jobs Database user.
 2. `DATABASE_PASSWORD` - Define the Jobs Database password.
 3. `DATABASE_URL` - Define the Jobs Database url in the form of jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT/${DATABASE_DB}. Do not include username or password.
-4. `JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION` - Define the minimum flyway migration version the Jobs Database must be at. If this is not satisfied, applications will not successfully connect.
-5. `JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS` - Define the total time to wait for the Jobs Database to be initialized. This includes migrations.
-6. `CONFIG_DATABASE_USER` - Define the Configs Database user. Defaults to the Jobs Database user if empty.
-7. `CONFIG_DATABASE_PASSWORD` - Define the Configs Database password. Defaults to the Jobs Database password if empty.
-8. `CONFIG_DATABASE_URL` - Define the Configs Database url in the form of jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT/${DATABASE_DB}. Defaults to the Jobs Database url if empty.
-9. `CONFIG_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION` - Define the minimum flyway migration version the Configs Database must be at. If this is not satisfied, applications will not successfully connect.
-10. `CONFIG_DATABASE_INITIALIZATION_TIMEOUT_MS` - Define the total time to wait for the Configs Database to be initialized. This includes migrations.
-11. `RUN_DATABASE_MIGRATION_ON_STARTUP` - Define if the Bootloader should run migrations on start up.
+4. `JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS` - Define the total time to wait for the Jobs Database to be initialized. This includes migrations.
+5. `CONFIG_DATABASE_USER` - Define the Configs Database user. Defaults to the Jobs Database user if empty.
+6. `CONFIG_DATABASE_PASSWORD` - Define the Configs Database password. Defaults to the Jobs Database password if empty.
+7. `CONFIG_DATABASE_URL` - Define the Configs Database url in the form of jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT/${DATABASE_DB}. Defaults to the Jobs Database url if empty.
+8. `CONFIG_DATABASE_INITIALIZATION_TIMEOUT_MS` - Define the total time to wait for the Configs Database to be initialized. This includes migrations.
+9. `RUN_DATABASE_MIGRATION_ON_STARTUP` - Define if the Bootloader should run migrations on start up.
 
 #### Airbyte Services
 1. `TEMPORAL_HOST` - Define the url where Temporal is hosted at. Please include the port. Airbyte services use this information.
@@ -87,12 +87,10 @@ The following variables are relevant to both Docker and Kubernetes.
 3. `MAXIMUM_WORKSPACE_RETENTION_DAYS` - Defines the oldest un-swept configuration file age. Files older than this will definitely be swept. Defaults to 60 days.
 4. `MAXIMUM_WORKSPACE_SIZE_MB` - Defines the workspace size sweeping will continue until. Defaults to 5GB.
 
-#### Container Orchestrator
-1. `CONTAINER_ORCHESTRATOR_ENABLED` - Define if Airbyte should use Scheduler V2.
-
 ### Docker-Only
 1. `WORKSPACE_DOCKER_MOUNT` - Defines the name of the Airbyte docker volume.
 2. `DOCKER_NETWORK` - Defines the docker network the new Scheduler launches jobs on.
+3. `LOCAL_DOCKER_MOUNT` - Defines the name of the docker mount that is used for local file handling. On Docker, this allows connector pods to interact with a volume for "local file" operations.
 
 ### Kubernetes-Only
 #### Jobs

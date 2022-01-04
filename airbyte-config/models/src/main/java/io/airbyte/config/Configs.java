@@ -14,8 +14,15 @@ import java.util.Set;
 
 /**
  * This interface defines the general variables for configuring Airbyte.
- *
- * Please also update the configuring-airbyte.md document when modifying this file.
+ * <p>
+ * Please update the configuring-airbyte.md document when modifying this file.
+ * <p>
+ * Please also add one of the following tags to the env var accordingly:
+ * <p>
+ * 1. 'Internal-use only' if a var is mainly for Airbyte-only configuration. e.g. tracking, test or
+ * Cloud related etc.
+ * <p>
+ * 2. 'Alpha support' if a var does not have proper support and should be used with care.
  */
 public interface Configs {
 
@@ -67,6 +74,10 @@ public interface Configs {
    */
   String getWorkspaceDockerMount();
 
+  /**
+   * Defines the name of the docker mount that is used for local file handling. On Docker, this allows
+   * connector pods to interact with a volume for "local file" operations.
+   */
   String getLocalDockerMount();
 
   /**
@@ -78,19 +89,20 @@ public interface Configs {
 
   // Secrets
   /**
-   * Defines the GCP Project to store secrets in.
+   * Defines the GCP Project to store secrets in. Alpha support.
    */
   String getSecretStoreGcpProjectId();
 
   /**
    * Define the JSON credentials used to read/write Airbyte Configuration to Google Secret Manager.
-   * These credentials must have Secret Manager Read/Write access.
+   * These credentials must have Secret Manager Read/Write access. Alpha support.
    */
   String getSecretStoreGcpCredentials();
 
   /**
    * Defines the Secret Persistence type. None by default. Set to GOOGLE_SECRET_MANAGER to use Google
-   * Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test.
+   * Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test. Alpha support.
+   * Undefined behavior will result if this is turned on and then off.
    */
   SecretPersistenceType getSecretPersistenceType();
 
@@ -114,7 +126,7 @@ public interface Configs {
 
   /**
    * Define the minimum flyway migration version the Jobs Database must be at. If this is not
-   * satisfied, applications will not successfully connect.
+   * satisfied, applications will not successfully connect. Internal-use only.
    */
   String getJobsDatabaseMinimumFlywayMigrationVersion();
 
@@ -142,7 +154,7 @@ public interface Configs {
 
   /**
    * Define the minimum flyway migration version the Configs Database must be at. If this is not
-   * satisfied, applications will not successfully connect.
+   * satisfied, applications will not successfully connect. Internal-use only.
    */
   String getConfigsDatabaseMinimumFlywayMigrationVersion();
 
@@ -309,7 +321,7 @@ public interface Configs {
 
   // Container Orchestrator
   /**
-   * Define if Airbyte should use Scheduler V2.
+   * Define if Airbyte should use Scheduler V2. Internal-use only.
    */
   boolean getContainerOrchestratorEnabled();
 
