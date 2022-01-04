@@ -27,7 +27,21 @@
       "type": ["null", "integer"]
     },
     "person_properties": {
-      "type": "object"
+      "type": ["object", "null"],
+      "properties": {
+        "Delighted Source": {
+          "type": ["null", "string"]
+        },
+        "Delighted Device Type": {
+          "type": ["null", "string"]
+        },
+        "Delighted Operating System": {
+          "type": ["null", "string"]
+        },
+        "Delighted Browser": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "notes": {
       "type": "array",
@@ -102,19 +116,5 @@
         "required": ["id", "value", "question"]
       }
     }
-  },
-  "required": [
-    "id",
-    "person",
-    "survey_type",
-    "score",
-    "comment",
-    "permalink",
-    "created_at",
-    "updated_at",
-    "person_properties",
-    "notes",
-    "tags",
-    "additional_answers"
-  ]
+  }
 }
