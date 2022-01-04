@@ -60,8 +60,6 @@ runs:
       shell: bash
       id: create-sq-project
       run: |
-        echo "Found covarage files: ${{ steps.ci-py-tests.outputs.coverage-paths }}"
-        ls -hal ${{ steps.ci-py-tests.outputs.coverage-paths }}
         ci_sonar_qube --pr ${{ inputs.pull-request-id }} --create --module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
         echo "::set-output name=sq_project_name::$(ci_sonar_qube --pr ${{ inputs.pull-request-id }} --print_key --module ${{ inputs.module-name }})"
 
