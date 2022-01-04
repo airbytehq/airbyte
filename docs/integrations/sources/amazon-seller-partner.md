@@ -63,7 +63,8 @@ Information about rate limits you may find [here](https://github.com/amzn/sellin
 
 | Version  | Date       | Pull Request                                             | Subject                                                                |
 | :------- | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------- |
-| `0.2.10` | 2022-01-04 | [\#9115](https://github.com/airbytehq/airbyte/pull/9115) | Fix reading only 100 orders                                            |
+| `0.2.11` | 2022-01-04 | [\#9115](https://github.com/airbytehq/airbyte/pull/9115) | Fix reading only 100 orders                                            |
+| `0.2.10` | 2021-12-31 | [\#9236](https://github.com/airbytehq/airbyte/pull/9236) | Fix NoAuth deprecation warning                                         |
 | `0.2.9`  | 2021-12-30 | [\#9212](https://github.com/airbytehq/airbyte/pull/9212) | Normalize GET_SELLER_FEEDBACK_DATA header field names                  |
 | `0.2.8`  | 2021-12-22 | [\#8810](https://github.com/airbytehq/airbyte/pull/8810) | Fix GET_SELLER_FEEDBACK_DATA Date cursor field format                  |
 | `0.2.7`  | 2021-12-21 | [\#9002](https://github.com/airbytehq/airbyte/pull/9002) | Extract REPORTS_MAX_WAIT_SECONDS to configurable parameter             |

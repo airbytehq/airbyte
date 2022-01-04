@@ -18,7 +18,7 @@ from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, NoAuth
+from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
 from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
@@ -152,7 +152,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         period_in_days: Optional[int],
         report_options: Optional[str],
         max_wait_seconds: Optional[int],
-        authenticator: HttpAuthenticator = NoAuth(),
+        authenticator: HttpAuthenticator = None,
     ):
         self._authenticator = authenticator
         self._session = requests.Session()
