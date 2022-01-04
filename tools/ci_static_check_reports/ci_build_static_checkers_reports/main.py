@@ -18,7 +18,7 @@ LOGGER = Logger()
 
 CURRENT_DIR = Path(os.getcwd())
 ROOT_DIR = Path(os.getcwd())
-while str(ROOT_DIR) != "/" and not (ROOT_DIR / "pyproject.toml").is_file():
+while str(ROOT_DIR) != "/" and not (ROOT_DIR / "gradlew").is_file():
     ROOT_DIR = ROOT_DIR.parent
 if str(ROOT_DIR) == "/":
     LOGGER.critical("this script must be executed into the Airbite repo only")
@@ -39,10 +39,9 @@ TASK_COMMANDS: Dict[str, List[str]] = {
     "flake": [
         f"pip install mccabe~={TOOLS_VERSIONS['mccabe']}",
         f"pip install pyproject-flake8~={TOOLS_VERSIONS['flake']}",
-        f"pip install flake8-junit-report~={TOOLS_VERSIONS['flake_junit']}",
-        "pflake8 -v {source_path} --output-file={reports_path}/flake.txt --bug-report",
-        "flake8_junit {reports_path}/flake.txt {reports_path}/flake.xml",
-        "rm -f {reports_path}/flake.txt",
+        # f"pip install flake8-junit-report~={TOOLS_VERSIONS['flake_junit']}",
+        "pflake8 --exit-zero {source_path}  | grep ^. > {reports_path}/flake.txt",
+        # "flake8_junit {reports_path}/flake.txt {reports_path}/flake.xml",
     ],
     "isort": [
         f"pip install colorama~={TOOLS_VERSIONS['colorama']}",
@@ -89,6 +88,9 @@ def print_commands(folder: str, output_folder: str, venv_folder: str, test_name:
         return LOGGER.error(f"not found the test suite '{test_name}', Available values: {TASK_COMMANDS.keys()}")
 
     toml_config_file = str(ROOT_DIR / "pyproject.toml")
+    if ROOT_DIR != CURRENT_DIR:
+        # copy pyproject.toml to currect folder because some tools can read it from currect folder only
+        shutil.copy(toml_config_file, CURRENT_DIR / "pyproject.toml")
     for cmd in TASK_COMMANDS[test_name]:
         rendered_cmd = cmd.replace(
             "{source_path}", folder.replace(str(CURRENT_DIR), ".")).replace(

@@ -81,6 +81,7 @@ runs:
             -Dsonar.projectBaseDir=${{ inputs.module-folder }}
             -Dsonar.exclusions=reports_*/**
             -Dsonar.python.coverage.reportPaths=${{ steps.ci-py-tests.outputs.coverage-paths }}
+            ${{ steps.ci-py-tests.outputs.linter-options }}
 
     - name: Generate SonarQube Report
       shell: bash

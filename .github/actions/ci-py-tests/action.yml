@@ -9,6 +9,10 @@ outputs:
   coverage-paths:
     description: "Coverage Paths"
     value: ${{ steps.build-coverage-reports.outputs.coverage-paths }}
+  linter-options:
+    description: "Linter Options"
+    value: ${{ steps.build-linter-reports.outputs.linter-reports }}
+
 runs:
   using: "composite"
   steps:
@@ -28,33 +32,26 @@ runs:
            eval ${cmd}
          done
          rm -rf venv
-
-         # COV_FILE=${REPORT_FOLDER}/coverage.xml
-         # PYTEST_COV_FILE=${REPORT_FOLDER}/pytest.xml
-         # [ -f ${COV_FILE} ] && ( cat ${COV_FILE}; mv ${COV_FILE} ${REPORT_FOLDER}/coverage_1.xml )
-         # [ -f ${PYTEST_COV_FILE} ] && ( cat ${PYTEST_COV_FILE}; mv ${PYTEST_COV_FILE} ${REPORT_FOLDER}/coverage_2.xml )
-
          echo "::set-output name=coverage-paths::${REPORT_FOLDER}/coverage.xml"
 
+    - name: Build Linter Reports
+      id: build-linter-reports
+      shell: bash
+      working-directory: ${{ inputs.module-folder }}
+      run: |
+         rm -rf venv
+         virtualenv venv
+         source venv/bin/activate
+         JSON_CONFIG='{"module": "${{ inputs.module-name }}", "folder": "${{ inputs.module-folder }}", "lang": "py"}'
+         REPORT_FOLDER=reports_${RANDOM}
+         mkdir -p ${REPORT_FOLDER}
+         ci_build_checkers_reports --venv_folder venv --output_folder "${REPORT_FOLDER}" "${JSON_CONFIG}" --print_commands flake | while read cmd
+         do
+           echo "CMD: ${cmd}"
+           eval ${cmd}
+         done
+         rm -rf venv
+         cat ${REPORT_FOLDER}/flake.txt
+         echo "::set-output name=linter-options::-Dsonar.python.flake8.reportPaths=${REPORT_FOLDER}/flake.txt"
 
 
-#    - name: Static Python Tests
-#      id: generate-reports
-#      shell: bash
-#      run: |
-#          REPORT_FOLDER=${{ steps.build-reports.outputs.report-folder }}
-#          echo "${REPORT_FOLDER}"
-#          # REPORT_FOLDER=/tmp/static_report_1000
-#          ls -hal "${REPORT_FOLDER}"
-#          COV_FILE=${REPORT_FOLDER}/coverage.xml
-#          PYTEST_COV_FILE=${REPORT_FOLDER}/pytest.xml
-#          [ -f ${COV_FILE} ] && ( cat ${COV_FILE}; mv ${COV_FILE} ${REPORT_FOLDER}/coverage_1.xml )
-#          [ -f ${PYTEST_COV_FILE} ] && ( cat ${PYTEST_COV_FILE}; mv ${PYTEST_COV_FILE} ${REPORT_FOLDER}/coverage_2.xml )
-#          echo "::set-output name=coverage-paths::${REPORT_FOLDER}/coverage_*.xml"
-#
-##          echo "AAADD ${{ steps.build-reports.outputs.report-folder }}"
-##          echo "DDDDD ${{ steps.build-reports.outputs.report-folder }}"
-##          ls -hal ${{ steps.build-reports.outputs.report-folder }}
-##          exit 1
-##          echo "make me, ${{ inputs.module-name }} in ${{ inputs.module-folder }}"
-##          echo "::set-output name=coverage-file::${{ github.action_path }}/coverage.xml"
