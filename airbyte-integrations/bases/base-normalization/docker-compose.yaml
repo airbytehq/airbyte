@@ -10,3 +10,5 @@ services:
     image: airbyte/normalization-mysql:${VERSION}
   normalization-oracle:
     image: airbyte/normalization-oracle:${VERSION}
+  normalization-clickhouse:
+    image: airbyte/normalization-clickhouse:${VERSION}
