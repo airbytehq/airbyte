@@ -39,9 +39,8 @@ TASK_COMMANDS: Dict[str, List[str]] = {
     "flake": [
         f"pip install mccabe~={TOOLS_VERSIONS['mccabe']}",
         f"pip install pyproject-flake8~={TOOLS_VERSIONS['flake']}",
-        # f"pip install flake8-junit-report~={TOOLS_VERSIONS['flake_junit']}",
         "pflake8 --exit-zero {source_path} |  grep ^. > {reports_path}/flake.txt",
-        # "flake8_junit {reports_path}/flake.txt {reports_path}/flake.xml",
+
     ],
     "isort": [
         f"pip install colorama~={TOOLS_VERSIONS['colorama']}",
@@ -49,6 +48,10 @@ TASK_COMMANDS: Dict[str, List[str]] = {
         "isort -v {check_option} {source_path}/. > {reports_path}/isort.txt",
     ],
     "mypy": [
+        f"pip install lxml~={TOOLS_VERSIONS['lxml']} mypy~={TOOLS_VERSIONS['mypy']} .",
+        "mypy {source_path} --config-file={toml_config_file} --junit-xml {reports_path}/mypy_junit.xml || true",
+    ],
+    "mypycoverage": [
         "pip install .",
         f"pip install lxml~={TOOLS_VERSIONS['lxml']}",
         f"pip install mypy~={TOOLS_VERSIONS['mypy']}",
@@ -65,7 +68,7 @@ TASK_COMMANDS: Dict[str, List[str]] = {
         "pip install .",
         "pip install .[tests]",
         "coverage run --rcfile={toml_config_file} -m pytest {source_path}/unit_tests || true",
-        "coverage xml :--rcfile={toml_config_file} -o {reports_path}/coverage.xml || true",
+        "coverage xml --rcfile={toml_config_file} -o {reports_path}/coverage.xml || true",
     ],
     "test": [
         "mkdir {venv}/source-acceptance-test",

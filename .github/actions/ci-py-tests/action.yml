@@ -21,7 +21,6 @@ runs:
       shell: bash
       working-directory: ${{ inputs.module-folder }}
       run: |
-         rm -rf .venv
          virtualenv .venv
          source .venv/bin/activate
          JSON_CONFIG='{"module": "${{ inputs.module-name }}", "folder": "${{ inputs.module-folder }}", "lang": "py"}'
@@ -39,19 +38,19 @@ runs:
       shell: bash
       working-directory: ${{ inputs.module-folder }}
       run: |
-         rm -rf .venv
+         # rm -rf .venv
          virtualenv .venv
          source .venv/bin/activate
          JSON_CONFIG='{"module": "${{ inputs.module-name }}", "folder": "${{ inputs.module-folder }}", "lang": "py"}'
          REPORT_FOLDER=reports_${RANDOM}
          mkdir -p ${REPORT_FOLDER}
-         ci_build_checkers_reports --venv_folder .venv --output_folder "${REPORT_FOLDER}" "${JSON_CONFIG}" --print_commands flake | while read cmd
+         ci_build_checkers_reports --venv_folder .venv --output_folder "${REPORT_FOLDER}" "${JSON_CONFIG}" --print_commands mypy,flake | while read cmd
          do
            echo "CMD: ${cmd}"
            eval ${cmd}
          done
          rm -rf .venv
-         cat ${REPORT_FOLDER}/flake.txt
-         echo "::set-output name=linter-reports::-Dsonar.python.flake8.reportPaths=${REPORT_FOLDER}/flake.txt"
+         cat ${REPORT_FOLDER}/mypy_junit.xml
+         echo "::set-output name=linter-reports::-Dsonar.python.flake8.reportPaths=${REPORT_FOLDER}/flake.txt -Dsonar.junit.reportPaths=${REPORT_FOLDER}/mypy_junit.xml"
 
 
