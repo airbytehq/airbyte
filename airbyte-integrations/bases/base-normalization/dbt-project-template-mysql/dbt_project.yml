@@ -61,4 +61,3 @@ models:
 
 vars:
   dbt_utils_dispatch_list: ['airbyte_utils']
-  destination: "myssql"
