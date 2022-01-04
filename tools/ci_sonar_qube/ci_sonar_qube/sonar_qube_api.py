@@ -203,7 +203,7 @@ class SonarQubeApi:
             name, metric_type = metrics[metric]
             value = overall_value if (latest_value is None or latest_value == "0") else latest_value
             if metric_type == "PERCENT":
-                value = str(round(float(value) * 100, 1))
+                value = str(round(float(value), 1))
             elif metric_type == "INT":
                 value = int(float(value))
             elif metric_type == "LEVEL":

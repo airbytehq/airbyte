@@ -22,19 +22,19 @@ runs:
          source venv/bin/activate
          JSON_CONFIG='{"module": "${{ inputs.module-name }}", "folder": "${{ inputs.module-folder }}", "lang": "py"}'
          REPORT_FOLDER=reports_${RANDOM}
-         ci_build_checkers_reports --venv_folder venv --output_folder "${REPORT_FOLDER}" "${JSON_CONFIG}" --print_commands test,coverage | while read cmd
+         ci_build_checkers_reports --venv_folder venv --output_folder "${REPORT_FOLDER}" "${JSON_CONFIG}" --print_commands pycoverage | while read cmd
          do
            echo "CMD: ${cmd}"
            eval ${cmd}
          done
          rm -rf venv
 
-         COV_FILE=${REPORT_FOLDER}/coverage.xml
-         PYTEST_COV_FILE=${REPORT_FOLDER}/pytest.xml
-         [ -f ${COV_FILE} ] && ( cat ${COV_FILE}; mv ${COV_FILE} ${REPORT_FOLDER}/coverage_1.xml )
-         [ -f ${PYTEST_COV_FILE} ] && ( cat ${PYTEST_COV_FILE}; mv ${PYTEST_COV_FILE} ${REPORT_FOLDER}/coverage_2.xml )
+         # COV_FILE=${REPORT_FOLDER}/coverage.xml
+         # PYTEST_COV_FILE=${REPORT_FOLDER}/pytest.xml
+         # [ -f ${COV_FILE} ] && ( cat ${COV_FILE}; mv ${COV_FILE} ${REPORT_FOLDER}/coverage_1.xml )
+         # [ -f ${PYTEST_COV_FILE} ] && ( cat ${PYTEST_COV_FILE}; mv ${PYTEST_COV_FILE} ${REPORT_FOLDER}/coverage_2.xml )
 
-         echo "::set-output name=coverage-paths::${REPORT_FOLDER}/coverage_*.xml"
+         echo "::set-output name=coverage-paths::${REPORT_FOLDER}/coverage.xml"
 
 
 
