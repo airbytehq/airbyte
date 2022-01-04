@@ -112,7 +112,7 @@ jobs:
         run: SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace
 
       - name: Build
-        run: df -h
+        run: SUB_BUILD=CONNECTORS_BASE ./gradlew build --scan
 
       - name: Ensure no file change
         run: git --no-pager diff && test -z "$(git --no-pager diff)"
