@@ -79,7 +79,7 @@ runs:
             -Dsonar.language=${{ inputs.module-lang }}
             -Dsonar.sourceEncoding=UTF-8
             -Dsonar.projectBaseDir=${{ inputs.module-folder }}
-            sonar.exclusions=reports_*/**
+            -Dsonar.exclusions=reports_*/**
             -Dsonar.python.coverage.reportPaths=${{ steps.ci-py-tests.outputs.coverage-paths }}
 
     - name: Generate SonarQube Report
