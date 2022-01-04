@@ -95,9 +95,10 @@ public class KubePodProcess extends Process {
 
   private static final String INIT_CONTAINER_NAME = "init";
   public static final Duration DEFAULT_STATUS_CHECK_INTERVAL = Duration.ofSeconds(30);
-  private static final String DEFAULT_MEMORY_LIMIT = "25Mi";
+  private static final String DEFAULT_MEMORY_REQUEST = "25Mi";
+  private static final String DEFAULT_MEMORY_LIMIT = "50Mi";
   private static final ResourceRequirements DEFAULT_SIDECAR_RESOURCES = new ResourceRequirements()
-      .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_LIMIT);
+      .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_REQUEST);
 
   private static final String PIPES_DIR = "/pipes";
   private static final String STDIN_PIPE_FILE = PIPES_DIR + "/stdin";
