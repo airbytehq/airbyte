@@ -108,7 +108,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             "authenticator": auth,
             "aws_signature": aws_signature,
             "replication_start_date": config.replication_start_date,
-            "marketplace_ids": [marketplace_id],
+            "marketplace_id": marketplace_id,
             "period_in_days": config.period_in_days,
             "report_options": config.report_options,
             "max_wait_seconds": config.max_wait_seconds,
