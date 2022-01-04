@@ -60,6 +60,7 @@ runs:
       shell: bash
       id: create-sq-project
       run: |
+        echo "DDDDDDDDD ${{ steps.ci-py-tests.outputs.linter-reports }}"
         ci_sonar_qube --pr ${{ inputs.pull-request-id }} --create --module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
         echo "::set-output name=sq_project_name::$(ci_sonar_qube --pr ${{ inputs.pull-request-id }} --print_key --module ${{ inputs.module-name }})"
 
@@ -79,7 +80,7 @@ runs:
             -Dsonar.language=${{ inputs.module-lang }}
             -Dsonar.sourceEncoding=UTF-8
             -Dsonar.projectBaseDir=${{ inputs.module-folder }}
-            -Dsonar.exclusions=reports_*/**
+            -Dsonar.exclusions=reports_*/**,*.toml
             -Dsonar.python.coverage.reportPaths=${{ steps.ci-py-tests.outputs.coverage-paths }}
             ${{ steps.ci-py-tests.outputs.linter-reports }}
 

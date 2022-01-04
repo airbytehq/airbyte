@@ -9,7 +9,7 @@ outputs:
   coverage-paths:
     description: "Coverage Paths"
     value: ${{ steps.build-coverage-reports.outputs.coverage-paths }}
-  linter-options:
+  linter-reports:
     description: "Linter Options"
     value: ${{ steps.build-linter-reports.outputs.linter-reports }}
 
