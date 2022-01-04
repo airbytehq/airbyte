@@ -111,6 +111,15 @@ jobs:
       - name: Format
         run: SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace
 
+      - name: docker ps -a
+        run: docker ps -a
+
+      - name: docker images
+        run: docker images
+
+      - name: docker system df
+        run: docker system df
+
       - name: Build
         run: SUB_BUILD=CONNECTORS_BASE ./gradlew build --scan
 
