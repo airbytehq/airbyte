@@ -13,7 +13,7 @@
       "description": "Unique identifier for the location."
     },
     "name": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Name of the location."
     },
     "address": {
