@@ -26,7 +26,12 @@
           {
             "type": "object",
             "title": "OAuth2.0",
-            "required": ["auth_method", "client_id", "client_secret", "access_token"],
+            "required": [
+              "auth_method",
+              "client_id",
+              "client_secret",
+              "access_token"
+            ],
             "properties": {
               "auth_method": {
                 "type": "string",
