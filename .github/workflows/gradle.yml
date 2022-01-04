@@ -52,3 +52,7 @@ jobs:
         run: |
           docker tag airbyte/worker:dev blotout/airbyte-worker:${{ env.DOCKER_TAG }}
           docker push blotout/airbyte-worker:${{ env.DOCKER_TAG }}
+      - name: Push Temporal Docker
+        run: |
+          docker tag airbyte/temporal:dev blotout/airbyte-temporal:${{ env.DOCKER_TAG }}
+          docker push blotout/airbyte-temporal:${{ env.DOCKER_TAG }}
