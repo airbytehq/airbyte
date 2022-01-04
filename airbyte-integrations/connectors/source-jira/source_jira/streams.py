@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import re
 import urllib.parse as urlparse
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
@@ -114,7 +115,7 @@ class IncrementalJiraStream(StartDateJiraStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         cursor_field = self.cursor_field
         if isinstance(cursor_field, str):
-            latest_record.get(self.cursor_field)
+            latest_record = latest_record.get(self.cursor_field)
         elif isinstance(cursor_field, list):
             for cursor_part in cursor_field:
                 latest_record = latest_record.get(cursor_part, {})
@@ -381,7 +382,7 @@ class Issues(IncrementalJiraStream):
         additional_field_names = ["Development", "Story Points", "Story point estimate", "Epic Link", "Sprint"]
         for name in additional_field_names + self._additional_fields:
             if name in field_ids_by_name:
-                fields.append(field_ids_by_name[name])
+                fields.extend(field_ids_by_name[name])
         projects_stream = Projects(**stream_args)
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(
@@ -427,8 +428,13 @@ class IssueFields(JiraStream):
     def path(self, **kwargs) -> str:
         return "field"
 
-    def field_ids_by_name(self) -> Mapping[str, str]:
-        return {f["name"]: f["id"] for f in self.read_records(sync_mode=SyncMode.full_refresh)}
+    def field_ids_by_name(self) -> Mapping[str, List[str]]:
+        results = {}
+        for f in self.read_records(sync_mode=SyncMode.full_refresh):
+            if f["name"] not in results:
+                results[f["name"]] = []
+            results[f["name"]].append(f["id"])
+        return results
 
 
 class IssueFieldConfigurations(JiraStream):
@@ -862,6 +868,72 @@ class ProjectVersions(JiraStream):
             yield from super().read_records(stream_slice={"key": project["key"]}, **kwargs)
 
 
+class PullRequests(IncrementalJiraStream):
+    """
+    This stream uses an undocumented internal API endpoint used by the Jira
+    webapp. Jira does not publish any specifications about this endpoint, so the
+    only way to get details about it is to use a web browser, view a Jira issue
+    that has a linked pull request, and inspect the network requests using the
+    browser's developer console.
+    """
+
+    cursor_field = "updated"
+    parse_response_root = "detail"
+    raise_on_http_errors = False
+
+    pr_regex = r"(?P<prDetails>PullRequestOverallDetails{openCount=(?P<open>[0-9]+), mergedCount=(?P<merged>[0-9]+), declinedCount=(?P<declined>[0-9]+)})|(?P<pr>pullrequest={dataType=pullrequest, state=(?P<state>[a-zA-Z]+), stateCount=(?P<count>[0-9]+)})"
+
+    def __init__(self, issues_stream: Issues, issue_fields_stream: IssueFields, **kwargs):
+        super().__init__(**kwargs)
+        self.issues_stream = issues_stream
+        self.issue_fields_stream = issue_fields_stream
+
+    @property
+    def url_base(self) -> str:
+        return f"https://{self._domain}/rest/dev-status/1.0/"
+
+    def path(self, **kwargs) -> str:
+        return "issue/detail"
+
+    # Currently, only GitHub pull requests are supported by this stream. The
+    # requirements for supporting other systems are unclear.
+    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        params = super().request_params(stream_slice=stream_slice, **kwargs)
+        params["issueId"] = stream_slice["id"]
+        params["applicationType"] = "GitHub"
+        params["dataType"] = "branch"
+        return params
+
+    def has_pull_requests(self, dev_field) -> bool:
+        if not dev_field or dev_field == "{}":
+            return False
+        matches = 0
+        for match in re.finditer(self.pr_regex, dev_field, re.MULTILINE):
+            if match.group("prDetails"):
+                matches += int(match.group("open")) + int(match.group("merged")) + int(match.group("declined"))
+            elif match.group("pr"):
+                matches += int(match.group("count"))
+        return matches > 0
+
+    def read_records(
+        self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+        field_ids_by_name = self.issue_fields_stream.field_ids_by_name()
+        dev_field_ids = field_ids_by_name.get("Development", [])
+        for issue in self.issues_stream.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state):
+            for dev_field_id in dev_field_ids:
+                if self.has_pull_requests(issue["fields"][dev_field_id]):
+                    yield from super().read_records(
+                        stream_slice={"id": issue["id"], self.cursor_field: issue["fields"][self.cursor_field]}, **kwargs
+                    )
+                    break
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["id"] = stream_slice["id"]
+        record[self.cursor_field] = stream_slice[self.cursor_field]
+        return record
+
+
 class Screens(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screens/#api-rest-api-3-screens-get
@@ -977,7 +1049,7 @@ class SprintIssues(V1ApiJiraStream, IncrementalJiraStream):
         fields = ["key", "status", "updated"]
         for name in ["Story Points", "Story point estimate"]:
             if name in field_ids_by_name:
-                fields.append(field_ids_by_name[name])
+                fields.extend(field_ids_by_name[name])
         sprints_stream = Sprints(**stream_args)
         for sprints in sprints_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"sprint_id": sprints["id"], "fields": fields}, **kwargs)
