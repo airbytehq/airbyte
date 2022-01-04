@@ -243,7 +243,7 @@ public class KubePodProcess extends Process {
           // Copying the success indicator file to the init container causes the container to immediately
           // exit, causing the `kubectl cp` command to exit with code 137. This check ensures that an error is
           // not thrown in this case if the init container exits successfully.
-          if (file.getKey().equals(SUCCESS_FILE_NAME) && waitForInitPodToTerminate(client, podDefinition, 10, TimeUnit.SECONDS) == 0) {
+          if (file.getKey().equals(SUCCESS_FILE_NAME) && waitForInitPodToTerminate(client, podDefinition, 5, TimeUnit.MINUTES) == 0) {
             LOGGER.info("Init was successful; ignoring non-zero kubectl cp exit code for success indicator file.");
           } else {
             throw new IOException("kubectl cp failed with exit code " + exitCode);

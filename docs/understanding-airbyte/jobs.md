@@ -39,6 +39,16 @@ Note: When a source has passed all of its messages, the docker process should au
 
 See the [architecture overview](high-level-view.md) for more information about workers.
 
+## Worker parallelization
+Airbyte exposes the following environment variable to change the maximum number of each type of worker allowed to run in parallel. 
+Tweaking these values might help you run more jobs in parallel and increase the workload of your Airbyte instance: 
+* `MAX_SPEC_WORKERS`: Maximum number of *Spec* workers allowed to run in parallel.
+* `MAX_CHECK_WORKERS`: Maximum number of *Check connection* workers allowed to run in parallel.
+* `MAX_DISCOVERY_WORKERS`: Maximum number of *Discovery* workers allowed to run in parallel.
+* `MAX_SYNC_WORKERS`: Maximum number of *Sync* workers allowed to run in parallel.
+
+The current default value for these environment variables is currently set to **5**.
+
 ## Job State Machine
 
 Jobs in the worker follow the following state machine.

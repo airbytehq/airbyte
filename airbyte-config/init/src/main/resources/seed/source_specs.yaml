@@ -157,7 +157,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-seller-partner:0.2.8"
+- dockerImage: "airbyte/source-amazon-seller-partner:0.2.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/amazon-seller-partner"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/amazon-seller-partner"
@@ -2942,7 +2942,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-db2:0.1.3"
+- dockerImage: "airbyte/source-db2:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/db2"
     connectionSpecification:
@@ -4369,7 +4369,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-mongodb-v2:0.1.9"
+- dockerImage: "airbyte/source-mongodb-v2:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mongodb-v2"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/mongodb-v2"
@@ -4383,9 +4383,9 @@
       properties:
         instance_type:
           type: "object"
-          title: "MongoDb instance type"
-          description: "MongoDb instance to connect to. For MongoDB Atlas and Replica\
-            \ Set TLS connection is used by default."
+          title: "MongoDb Instance Type"
+          description: "The MongoDb instance to connect to. For MongoDB Atlas and\
+            \ Replica Set TLS connection is used by default."
           order: 0
           oneOf:
           - title: "Standalone MongoDb Instance"
@@ -4402,12 +4402,12 @@
               host:
                 title: "Host"
                 type: "string"
-                description: "Host of a Mongo database to be replicated."
+                description: "The host name of the Mongo database."
                 order: 0
               port:
                 title: "Port"
                 type: "integer"
-                description: "Port of a Mongo database to be replicated."
+                description: "The port of the Mongo database."
                 minimum: 0
                 maximum: 65536
                 default: 27017
@@ -4415,7 +4415,7 @@
                 - "27017"
                 order: 1
               tls:
-                title: "TLS connection"
+                title: "TLS Connection"
                 type: "boolean"
                 description: "Indicates whether TLS encryption protocol will be used\
                   \ to connect to MongoDB. It is recommended to use TLS connection\
@@ -4434,17 +4434,18 @@
                 - "replica"
                 default: "replica"
               server_addresses:
-                title: "Server addresses"
+                title: "Server Addresses"
                 type: "string"
                 description: "The members of a replica set. Please specify `host`:`port`\
-                  \ of each member seperated by comma."
+                  \ of each member separated by comma."
                 examples:
                 - "host1:27017,host2:27017,host3:27017"
                 order: 0
               replica_set:
                 title: "Replica Set"
                 type: "string"
-                description: "A replica set name."
+                description: "A replica set in MongoDB is a group of mongod processes\
+                  \ that maintain the same data set."
                 order: 1
           - title: "MongoDB Atlas"
             additionalProperties: false
@@ -4460,28 +4461,28 @@
               cluster_url:
                 title: "Cluster URL"
                 type: "string"
-                description: "URL of a cluster to connect to."
+                description: "The URL of a cluster to connect to."
                 order: 0
         database:
-          title: "Database name"
+          title: "Database Name"
           type: "string"
-          description: "Database to be replicated."
+          description: "The database you want to replicate."
           order: 1
         user:
           title: "User"
           type: "string"
-          description: "User"
+          description: "The username which is used to access the database."
           order: 2
         password:
           title: "Password"
           type: "string"
-          description: "Password"
+          description: "The password associated with this username."
           airbyte_secret: true
           order: 3
         auth_source:
-          title: "Authentication source"
+          title: "Authentication Source"
           type: "string"
-          description: "Authentication source where user information is stored"
+          description: "The authentication source where the user information is stored."
           default: "admin"
           examples:
           - "admin"
@@ -7020,7 +7021,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-- dockerImage: "airbyte/source-stripe:0.1.26"
+- dockerImage: "airbyte/source-stripe:0.1.27"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/stripe"
     connectionSpecification:
