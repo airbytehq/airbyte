@@ -82,6 +82,11 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   }
 
   @Override
+  public boolean testCatalog() {
+    return true;
+  }
+
+  @Override
   protected void initTests() {
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -118,7 +123,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bit")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaPrimitive.BOOLEAN)
             .addInsertValues("null", "0", "1", "'true'", "'false'")
             .addExpectedValues(null, "false", "true", "true", "false")
             .build());
@@ -282,7 +287,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("binary")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaPrimitive.STRING_BINARY)
             .addInsertValues("CAST( 'A' AS BINARY(1))", "null")
             .addExpectedValues("A", null)
             .build());
@@ -291,7 +296,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("varbinary")
             .fullSourceDataType("varbinary(3)")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaPrimitive.STRING_BINARY)
             .addInsertValues("CAST( 'ABC' AS VARBINARY)", "null")
             .addExpectedValues("ABC", null)
             .build());

@@ -74,7 +74,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                                String tableName) {
     LOGGER.info("Queueing query for table: {}", tableName);
 
-    List<String> newIdentifiersList = handleFunctionsIfAnyInIdentifierList(database,
+    List<String> newIdentifiersList = getWrappedColumn(database,
         columnNames,
         schemaName, tableName, "\"");
     String preparedSqlQuery = String
@@ -102,11 +102,11 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
               final String identifierQuoteString = connection.getMetaData()
                   .getIdentifierQuoteString();
-              List<String> newColumnNames = handleFunctionsIfAnyInIdentifierList(database,
+              List<String> newColumnNames = getWrappedColumn(database,
                   columnNames, schemaName, tableName, identifierQuoteString);
 
               final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
-                  handleFunctionsIfAnyInIdentifierList(connection, newColumnNames),
+                  getWrappedColumn(connection, newColumnNames),
                   sourceOperations
                       .getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
                   sourceOperations.enquoteIdentifier(connection, cursorField));
@@ -126,23 +126,20 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   /**
-   * There is no support hierarchyid even in the native SQL Server jdbc driver in DataTypes The only
-   * way to get it as a text is to query it as "test_column.ToString() as test_column". So we need to
-   * make a pre-request to get actual types and then wrap required fields with toString() function
+   * There is no support for hierarchyid even in the native SQL Server JDBC driver. Its value can be
+   * converted to a nvarchar(4000) data type by calling the ToString() method. So we make a separate
+   * query to get Table's MetaData, check is there any hierarchyid columns, and wrap required fields
+   * with the ToString() function in the final Select query. Reference:
+   * https://docs.microsoft.com/en-us/sql/t-sql/data-types/hierarchyid-data-type-method-reference?view=sql-server-ver15#data-type-conversion
    *
-   * @param database
-   * @param columnNames
-   * @param schemaName
-   * @param tableName
-   * @param enquoteSymbol
    * @return the list with Column names updated to handle functions (if nay) properly
    */
-  private List<String> handleFunctionsIfAnyInIdentifierList(JdbcDatabase database,
-                                                            List<String> columnNames,
-                                                            String schemaName,
-                                                            String tableName,
-                                                            String enquoteSymbol) {
-    List<String> namesToReplaceList = new ArrayList<>();
+  private List<String> getWrappedColumn(JdbcDatabase database,
+                                        List<String> columnNames,
+                                        String schemaName,
+                                        String tableName,
+                                        String enquoteSymbol) {
+    List<String> hierarchyIdColumns = new ArrayList<>();
     try {
       SQLServerResultSetMetaData sqlServerResultSetMetaData = (SQLServerResultSetMetaData) database
           .queryMetadata(String
@@ -152,7 +149,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
       for (int i = 1; i <= sqlServerResultSetMetaData.getColumnCount(); i++) {
         if (HIERARCHYID.equals(sqlServerResultSetMetaData.getColumnTypeName(i))) {
-          namesToReplaceList.add(sqlServerResultSetMetaData.getColumnName(i));
+          hierarchyIdColumns.add(sqlServerResultSetMetaData.getColumnName(i));
         }
       }
 
@@ -166,14 +163,22 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     // specific HEX value
     return columnNames.stream()
         .map(
-            el -> namesToReplaceList.contains(el) ? String
+            el -> hierarchyIdColumns.contains(el) ? String
                 .format("%s.ToString() as %s%s%s", el, enquoteSymbol, el, enquoteSymbol)
                 : el)
         .collect(toList());
   }
 
-  public String handleFunctionsIfAnyInIdentifierList(final Connection connection,
-                                                     final List<String> identifiers)
+  /**
+   * There is no support for hierarchyid even in the native SQL Server JDBC driver. Its value can be
+   * converted to a nvarchar(4000) data type by calling the ToString() method. So we make a separate
+   * query to get Table's MetaData, check is there any hierarchyid columns, and wrap required fields
+   * with the ToString() function in the final Select query. Reference:
+   * https://docs.microsoft.com/en-us/sql/t-sql/data-types/hierarchyid-data-type-method-reference?view=sql-server-ver15#data-type-conversion
+   *
+   * @return the list with Column names updated to handle functions (if nay) properly
+   */
+  public String getWrappedColumn(final Connection connection, final List<String> identifiers)
       throws SQLException {
 
     final StringJoiner joiner = new StringJoiner(",");

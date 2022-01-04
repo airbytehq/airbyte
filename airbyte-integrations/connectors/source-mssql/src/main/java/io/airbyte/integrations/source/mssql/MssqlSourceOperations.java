@@ -4,6 +4,13 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
+
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.sqlserver.jdbc.Geography;
 import com.microsoft.sqlserver.jdbc.Geometry;
@@ -12,16 +19,17 @@ import io.airbyte.db.jdbc.JdbcSourceOperations;
 import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MssqlSourceOperations extends JdbcSourceOperations {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(MssqlSourceOperations.class);
 
   /**
    * The method is used to set json value by type. Need to be overridden as MSSQL has some its own
    * specific types (ex. Geometry, Geography, Hierarchyid, etc)
    *
-   * @param resultSet
-   * @param colIndex
-   * @param json
    * @throws SQLException
    */
   @Override
@@ -67,6 +75,27 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
           colIndex);
       case ARRAY -> putArray(json, columnName, resultSet, colIndex);
       default -> putDefault(json, columnName, resultSet, colIndex);
+    }
+  }
+
+  @Override
+  public JDBCType getFieldType(final JsonNode field) {
+    try {
+      final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText();
+      // Postgres boolean is mapped to JDBCType.BIT, but should be BOOLEAN
+      if (typeName.equalsIgnoreCase("geography")
+          || typeName.equalsIgnoreCase("geometry")
+          || typeName.equalsIgnoreCase("hierarchyid")) {
+        return JDBCType.VARCHAR;
+      }
+      return JDBCType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
+    } catch (final IllegalArgumentException ex) {
+      LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
+          field.get(INTERNAL_COLUMN_NAME),
+          field.get(INTERNAL_SCHEMA_NAME),
+          field.get(INTERNAL_TABLE_NAME),
+          field.get(INTERNAL_COLUMN_TYPE)));
+      return JDBCType.VARCHAR;
     }
   }
 
