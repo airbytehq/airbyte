@@ -105,3 +105,16 @@ The following variables are relevant to both Docker and Kubernetes.
 
 #### Worker
 1. `TEMPORAL_WORKER_PORTS` - Define the local ports the Airbyte Worker pod uses to connect to the various Job pods. Port 9001 - 9040 are exposed by default in the Kustomize deployments.
+
+#### Logging
+Note that Airbyte does not support logging to separate Cloud Storage providers.
+
+Please see [here](https://docs.airbyte.com/deploying-airbyte/on-kubernetes#configure-logs) for more information on configuring Kuberentes logging.
+
+1. `GCS_LOG_BUCKET` - Define the GCS bucket to store logs.
+2. `S3_BUCKET` - Define the S3 bucket to store logs.
+3. `S3_RREGION` - Define the S3 region the S3 log bucket is in.
+4. `S3_AWS_KEY` - Define the key used to access the S3 log bucket.
+5. `S3_AWS_SECRET` - Define the secret used to access the S3 log bucket.
+6. `S3_MINIO_ENDPOINT` - Define the url Minio is hosted at so Airbyte can use Minio to store logs.
+7. `S3_PATH_STYLE_ACCESS` - Set to `true` if using Minio to store logs. Empty otherwise.
