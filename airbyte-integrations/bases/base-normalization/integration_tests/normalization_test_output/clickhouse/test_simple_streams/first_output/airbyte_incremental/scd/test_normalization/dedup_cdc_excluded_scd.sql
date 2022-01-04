@@ -12,11 +12,12 @@
     
   as (
     
+-- depends_on: ref('dedup_cdc_excluded_stg')
 with
 
 input_data as (
     select *
-    from _airbyte_test_normalization.dedup_cdc_excluded_ab3
+    from _airbyte_test_normalization.dedup_cdc_excluded_stg
     -- dedup_cdc_excluded from test_normalization._airbyte_raw_dedup_cdc_excluded
 ),
 
@@ -25,8 +26,8 @@ input_data_with_active_row_num as (
       row_number() over (
         partition by id
         order by
-            _airbyte_emitted_at is null asc,
-            _airbyte_emitted_at desc,
+            _ab_cdc_lsn is null asc,
+            _ab_cdc_lsn desc,
             _airbyte_emitted_at desc, _ab_cdc_updated_at desc
       ) as _airbyte_active_row_num
     from input_data
@@ -44,16 +45,16 @@ scd_data as (
         _ab_cdc_lsn,
         _ab_cdc_updated_at,
         _ab_cdc_deleted_at,
-      _airbyte_emitted_at as _airbyte_start_at,
-      anyOrNull(_airbyte_emitted_at) over (
+      _ab_cdc_lsn as _airbyte_start_at,
+      case when _airbyte_active_row_num = 1 and _ab_cdc_deleted_at is null then 1 else 0 end as _airbyte_active_row,
+      anyOrNull(_ab_cdc_lsn) over (
         partition by id
         order by
-            _airbyte_emitted_at is null asc,
-            _airbyte_emitted_at desc,
+            _ab_cdc_lsn is null asc,
+            _ab_cdc_lsn desc,
             _airbyte_emitted_at desc, _ab_cdc_updated_at desc
-        ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING
+            ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING
       ) as _airbyte_end_at,
-      case when _airbyte_active_row_num = 1 and _ab_cdc_deleted_at is null then 1 else 0 end as _airbyte_active_row,
       _airbyte_ab_id,
       _airbyte_emitted_at,
       _airbyte_dedup_cdc_excluded_hashid
@@ -64,8 +65,11 @@ dedup_data as (
         -- we need to ensure de-duplicated rows for merge/update queries
         -- additionally, we generate a unique key for the scd table
         row_number() over (
-            partition by _airbyte_unique_key, _airbyte_start_at, _airbyte_emitted_at, accurateCastOrNull(_ab_cdc_deleted_at, 'String'), accurateCastOrNull(_ab_cdc_updated_at, 'String')
-            order by _airbyte_ab_id
+            partition by
+                _airbyte_unique_key,
+                _airbyte_start_at,
+                _airbyte_emitted_at, accurateCastOrNull(_ab_cdc_deleted_at, 'String'), accurateCastOrNull(_ab_cdc_updated_at, 'String')
+            order by _airbyte_active_row desc, _airbyte_ab_id
         ) as _airbyte_row_num,
         assumeNotNull(hex(MD5(
             
