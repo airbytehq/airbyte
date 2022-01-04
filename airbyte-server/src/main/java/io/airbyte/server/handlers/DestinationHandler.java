@@ -109,7 +109,7 @@ public class DestinationHandler {
         continue;
       }
 
-      connectionsHandler.deleteConnection(connectionRead);
+      connectionsHandler.deleteConnection(connectionRead.getConnectionId());
     }
 
     final var fullConfig = configRepository.getDestinationConnectionWithSecrets(destination.getDestinationId()).getConfiguration();

@@ -294,6 +294,7 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date | Pull Request | Subject |  |
 |:--------| :--- | :--- | :--- | :-- |
+| 0.3.11  | 2021-12-24 | [8958](https://github.com/airbytehq/airbyte/pull/8958) | Add support for JdbcType.ARRAY |
 | 0.3.10  | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key               |  |
 | 0.3.9   | 2021-11-09 | [7386](https://github.com/airbytehq/airbyte/pull/7386) | Improve support for binary and varbinary data types  |  |
 | 0.3.8   | 2021-10-26 | [7386](https://github.com/airbytehq/airbyte/pull/7386) | Fixed data type (smalldatetime, smallmoney) conversion from mssql source |  |
