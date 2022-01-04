@@ -142,6 +142,7 @@ class ReportsAmazonSPStream(Stream, ABC):
     path_prefix = f"reports/{REPORTS_API_VERSION}"
     sleep_seconds = 30
     data_field = "payload"
+    result_key = None
 
     def __init__(
         self,
@@ -285,7 +286,7 @@ class ReportsAmazonSPStream(Stream, ABC):
             payload,
         )
 
-        document_records = self.parse_document(document)
+        document_records = self.parse_document(document, self.result_key)
         yield from document_records
 
     @staticmethod
@@ -390,9 +391,10 @@ class VendorInventoryHealthReports(ReportsAmazonSPStream):
 
 class BrandAnalyticsStream(ReportsAmazonSPStream):
     @staticmethod
-    def parse_document(document):
+    def parse_document(document, result_key):
         parsed = json_lib.loads(document)
-        return parsed.get("dataByDepartmentAndSearchTerm", {})
+        print(parsed)
+        return parsed.get(result_key, [])
 
     def _report_data(
         self,
@@ -448,6 +450,7 @@ class BrandAnalyticsStream(ReportsAmazonSPStream):
 
 class BrandAnalyticsMarketBasketReports(BrandAnalyticsStream):
     name = "GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT"
+    result_key = "dataByAsin"
 
 
 class BrandAnalyticsSearchTermsReports(BrandAnalyticsStream):
@@ -456,6 +459,7 @@ class BrandAnalyticsSearchTermsReports(BrandAnalyticsStream):
     """
 
     name = "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT"
+    result_key = "dataByDepartmentAndSearchTerm"
 
 
 class BrandAnalyticsRepeatPurchaseReports(BrandAnalyticsStream):
@@ -464,10 +468,12 @@ class BrandAnalyticsRepeatPurchaseReports(BrandAnalyticsStream):
 
 class BrandAnalyticsAlternatePurchaseReports(BrandAnalyticsStream):
     name = "GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT"
+    result_key = "dataByAsin"
 
 
 class BrandAnalyticsItemComparisonReports(BrandAnalyticsStream):
     name = "GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT"
+    result_key = "dataByAsin"
 
 
 class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
