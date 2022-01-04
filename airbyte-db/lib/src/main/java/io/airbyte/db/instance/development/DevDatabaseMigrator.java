@@ -52,6 +52,11 @@ public class DevDatabaseMigrator implements DatabaseMigrator {
     }
 
     @Override
+    public MigrationInfo getLatestMigration() {
+      return null;
+    }
+
+    @Override
     public BaselineResult createBaseline() {
       return null;
     }
@@ -100,6 +105,11 @@ public class DevDatabaseMigrator implements DatabaseMigrator {
   @Override
   public List<MigrationInfo> list() {
     return fullMigrator.list();
+  }
+
+  @Override
+  public MigrationInfo getLatestMigration() {
+    return fullMigrator.getLatestMigration();
   }
 
   @Override

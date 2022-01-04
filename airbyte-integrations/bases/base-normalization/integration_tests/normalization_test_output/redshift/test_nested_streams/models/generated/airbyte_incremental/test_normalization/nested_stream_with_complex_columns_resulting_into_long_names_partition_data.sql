@@ -4,6 +4,7 @@
     tags = [ "nested" ]
 ) }}
 -- Final base SQL model
+-- depends_on: {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_partition_data_ab3') }}
 select
     _airbyte_partition_hashid,
     currency,

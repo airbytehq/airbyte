@@ -11,15 +11,16 @@ import ContentCard from "components/ContentCard";
 import { JobsLogItem } from "components/JobItem";
 import ConnectionForm from "views/Connection/ConnectionForm";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
-import { Source } from "core/resources/Source";
-import { Destination } from "core/resources/Destination";
 
 import useConnection, { ValuesProps } from "hooks/services/useConnectionHook";
 import { useDiscoverSchema } from "hooks/services/useSchemaHook";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import { IDataItem } from "components/base/DropDown/components/Option";
-import { useAnalytics } from "hooks/useAnalytics";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { LogsRequestError } from "core/request/LogsRequestError";
+import { Destination, Source } from "core/domain/connector";
+import { Connection } from "core/domain/connection";
 
 const SkipButton = styled.div`
   margin-top: 6px;
@@ -39,7 +40,7 @@ type IProps = {
   additionBottomControls?: React.ReactNode;
   source: Source;
   destination: Destination;
-  afterSubmitConnection?: () => void;
+  afterSubmitConnection?: (connection: Connection) => void;
   noTitles?: boolean;
 };
 
@@ -51,7 +52,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
   noTitles,
 }) => {
   const { createConnection } = useConnection();
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
 
   const sourceDefinition = useResource(SourceDefinitionResource.detailShape(), {
     sourceDefinitionId: source.sourceDefinitionId,
@@ -103,13 +104,15 @@ const CreateConnectionContent: React.FC<IProps> = ({
           onClick={onDiscoverSchema}
           additionControl={<SkipButton>{additionBottomControls}</SkipButton>}
         />
-        <JobsLogItem jobInfo={schemaErrorStatus?.response} />
+        <JobsLogItem
+          jobInfo={LogsRequestError.extractJobInfo(schemaErrorStatus)}
+        />
       </ContentCard>
     );
   }
 
   const onSubmitConnectionStep = async (values: ValuesProps) => {
-    await createConnection({
+    const connection = await createConnection({
       values,
       source: source,
       destination: destination,
@@ -124,7 +127,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
     });
 
     if (afterSubmitConnection) {
-      afterSubmitConnection();
+      afterSubmitConnection(connection);
     }
   };
 

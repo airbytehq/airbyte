@@ -4,11 +4,12 @@
     test_normalization.`dedup_exchange_rate_scd__dbt_tmp`
   as (
     
+-- depends_on: ref('dedup_exchange_rate_stg')
 with
 
 input_data as (
     select *
-    from _airbyte_test_normalization.`dedup_exchange_rate_ab3`
+    from _airbyte_test_normalization.`dedup_exchange_rate_stg`
     -- dedup_exchange_rate from test_normalization._airbyte_raw_dedup_exchange_rate
 ),
 
@@ -50,7 +51,7 @@ dedup_data as (
         -- additionally, we generate a unique key for the scd table
         row_number() over (
             partition by _airbyte_unique_key, _airbyte_start_at, _airbyte_emitted_at
-            order by _airbyte_ab_id
+            order by _airbyte_active_row desc, _airbyte_ab_id
         ) as _airbyte_row_num,
         md5(cast(concat(coalesce(cast(_airbyte_unique_key as char), ''), '-', coalesce(cast(_airbyte_start_at as char), ''), '-', coalesce(cast(_airbyte_emitted_at as char), '')) as char)) as _airbyte_unique_key_scd,
         scd_data.*

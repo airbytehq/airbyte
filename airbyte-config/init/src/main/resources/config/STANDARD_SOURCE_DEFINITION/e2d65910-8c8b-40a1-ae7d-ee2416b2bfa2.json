@@ -3,5 +3,6 @@
   "name": "Snowflake",
   "dockerRepository": "airbyte/source-snowflake",
   "dockerImageTag": "0.1.2",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/snowflake"
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/snowflake",
+  "icon": "snowflake.svg"
 }

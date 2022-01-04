@@ -28,7 +28,7 @@ class Stream(ABC):
     # Use self.logger in subclasses to log any messages
     @property
     def logger(self):
-        return logging.getLogger(f"streams.{self.name}")
+        return logging.getLogger(f"airbyte.streams.{self.name}")
 
     # TypeTransformer object to perform output data transformation
     transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform)

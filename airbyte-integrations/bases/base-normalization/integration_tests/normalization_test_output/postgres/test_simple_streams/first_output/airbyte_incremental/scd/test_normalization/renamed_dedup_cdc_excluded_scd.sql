@@ -4,11 +4,12 @@
   create  table "postgres".test_normalization."renamed_dedup_cdc_excluded_scd"
   as (
     
+-- depends_on: ref('renamed_dedup_cdc_excluded_stg')
 with
 
 input_data as (
     select *
-    from "postgres"._airbyte_test_normalization."renamed_dedup_cdc_excluded_ab3"
+    from "postgres"._airbyte_test_normalization."renamed_dedup_cdc_excluded_stg"
     -- renamed_dedup_cdc_excluded from "postgres".test_normalization._airbyte_raw_renamed_dedup_cdc_excluded
 ),
 
@@ -47,7 +48,7 @@ dedup_data as (
         -- additionally, we generate a unique key for the scd table
         row_number() over (
             partition by _airbyte_unique_key, _airbyte_start_at, _airbyte_emitted_at
-            order by _airbyte_ab_id
+            order by _airbyte_active_row desc, _airbyte_ab_id
         ) as _airbyte_row_num,
         md5(cast(coalesce(cast(_airbyte_unique_key as 
     varchar

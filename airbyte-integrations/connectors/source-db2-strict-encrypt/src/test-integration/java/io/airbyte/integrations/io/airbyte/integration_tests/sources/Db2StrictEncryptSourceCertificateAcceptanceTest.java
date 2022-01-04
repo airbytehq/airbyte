@@ -164,8 +164,10 @@ public class Db2StrictEncryptSourceCertificateAcceptanceTest extends SourceAccep
   /* Helpers */
 
   private String getCertificate() throws IOException, InterruptedException {
-    // To enable SSL connection on the server, we need to generate self-signed certificates for the server and add them to the configuration.
-    // Then you need to enable SSL connection and specify on which port it will work. These changes will take effect after restart.
+    // To enable SSL connection on the server, we need to generate self-signed certificates for the
+    // server and add them to the configuration.
+    // Then you need to enable SSL connection and specify on which port it will work. These changes will
+    // take effect after restart.
     // The certificate for generating a user certificate has the extension *.arm.
     db.execInContainer("su", "-", "db2inst1", "-c", "gsk8capicmd_64 -keydb -create -db \"server.kdb\" -pw \"" + TEST_KEY_STORE_PASS + "\" -stash");
     db.execInContainer("su", "-", "db2inst1", "-c", "gsk8capicmd_64 -cert -create -db \"server.kdb\" -pw \"" + TEST_KEY_STORE_PASS
@@ -176,6 +178,7 @@ public class Db2StrictEncryptSourceCertificateAcceptanceTest extends SourceAccep
     db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_KEYDB /database/config/db2inst1/server.kdb");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_STASH /database/config/db2inst1/server.sth");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_LABEL mylabel");
+    db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_VERSIONS TLSV12");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVCENAME 50000");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2set -i db2inst1 DB2COMM=SSL");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2stop force");

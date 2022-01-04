@@ -44,24 +44,40 @@ from .streams import (
 )
 
 TOKEN_SEPARATOR = ","
+# To scan all the repos within orgnaization, organization name could be
+# specified by using asteriks i.e. "airbytehq/*"
+ORGANIZATION_PATTERN = re.compile("^.*/\\*$")
 
 
 class SourceGithub(AbstractSource):
     @staticmethod
-    def _generate_repositories(config: Mapping[str, Any], authenticator: MultipleTokenAuthenticator) -> List[str]:
+    def _generate_repositories(config: Mapping[str, Any], authenticator: MultipleTokenAuthenticator) -> Tuple[List[str], List[str]]:
+        """
+        Parse repositories config line and produce two lists of repositories.
+        Args:
+            config (dict): Dict representing connector's config
+            authenticator(MultipleTokenAuthenticator): authenticator object
+        Returns:
+            Tuple[List[str], List[str]]: Tuple of two lists: first representing
+            repositories directly mentioned in config and second is
+            organization repositories from orgs/{org}/repos request.
+        """
         repositories = list(filter(None, config["repository"].split(" ")))
 
         if not repositories:
             raise Exception("Field `repository` required to be provided for connect to Github API")
 
-        repositories_list = [repo for repo in repositories if not re.match("^.*/\\*$", repo)]
+        repositories_list: set = {repo for repo in repositories if not ORGANIZATION_PATTERN.match(repo)}
         organizations = [org.split("/")[0] for org in repositories if org not in repositories_list]
+        organisation_repos = set()
         if organizations:
             repos = Repositories(authenticator=authenticator, organizations=organizations)
             for stream in repos.stream_slices(sync_mode=SyncMode.full_refresh):
-                repositories_list += [r["full_name"] for r in repos.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream)]
+                organisation_repos = organisation_repos.union(
+                    {r["full_name"] for r in repos.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream)}
+                )
 
-        return list(set(repositories_list))
+        return list(repositories_list), list(organisation_repos)
 
     @staticmethod
     def _get_authenticator(config: Dict[str, Any]):
@@ -114,53 +130,63 @@ class SourceGithub(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authenticator = self._get_authenticator(config)
-            repositories = self._generate_repositories(config=config, authenticator=authenticator)
+            # In case of getting repository list for given organization was
+            # successfull no need of checking stats for every repository within
+            # that organization.
+            # Since we have "repo" scope requested it should grant access to private repos as well:
+            # https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes
+            repositories, _ = self._generate_repositories(config=config, authenticator=authenticator)
 
             repository_stats_stream = RepositoryStats(
                 authenticator=authenticator,
                 repositories=repositories,
             )
             for stream_slice in repository_stats_stream.stream_slices(sync_mode=SyncMode.full_refresh):
-                next(repository_stats_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
+                next(repository_stats_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), None)
             return True, None
         except Exception as e:
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self._get_authenticator(config)
-        repositories = self._generate_repositories(config=config, authenticator=authenticator)
+        repos, organization_repos = self._generate_repositories(config=config, authenticator=authenticator)
+        repositories = repos + organization_repos
+
         organizations = list({org.split("/")[0] for org in repositories})
-        full_refresh_args = {"authenticator": authenticator, "repositories": repositories}
-        incremental_args = {**full_refresh_args, "start_date": config["start_date"]}
+
         organization_args = {"authenticator": authenticator, "organizations": organizations}
-        default_branches, branches_to_pull = self._get_branches_data(config.get("branch", ""), full_refresh_args)
+        repository_args = {"authenticator": authenticator, "repositories": repositories}
+        repository_args_with_start_date = {**repository_args, "start_date": config["start_date"]}
+
+        default_branches, branches_to_pull = self._get_branches_data(config.get("branch", ""), repository_args)
+        pull_requests_stream = PullRequests(**repository_args_with_start_date)
 
         return [
-            Assignees(**full_refresh_args),
-            Branches(**full_refresh_args),
-            Collaborators(**full_refresh_args),
-            Comments(**incremental_args),
-            CommitCommentReactions(**incremental_args),
-            CommitComments(**incremental_args),
-            Commits(**incremental_args, branches_to_pull=branches_to_pull, default_branches=default_branches),
-            Events(**incremental_args),
-            IssueCommentReactions(**incremental_args),
-            IssueEvents(**incremental_args),
-            IssueLabels(**full_refresh_args),
-            IssueMilestones(**incremental_args),
-            IssueReactions(**incremental_args),
-            Issues(**incremental_args),
+            Assignees(**repository_args),
+            Branches(**repository_args),
+            Collaborators(**repository_args),
+            Comments(**repository_args_with_start_date),
+            CommitCommentReactions(**repository_args_with_start_date),
+            CommitComments(**repository_args_with_start_date),
+            Commits(**repository_args_with_start_date, branches_to_pull=branches_to_pull, default_branches=default_branches),
+            Events(**repository_args_with_start_date),
+            IssueCommentReactions(**repository_args_with_start_date),
+            IssueEvents(**repository_args_with_start_date),
+            IssueLabels(**repository_args),
+            IssueMilestones(**repository_args_with_start_date),
+            IssueReactions(**repository_args_with_start_date),
+            Issues(**repository_args_with_start_date),
             Organizations(**organization_args),
-            Projects(**incremental_args),
-            PullRequestCommentReactions(**incremental_args),
-            PullRequestStats(**full_refresh_args),
-            PullRequests(**incremental_args),
-            Releases(**incremental_args),
+            Projects(**repository_args_with_start_date),
+            PullRequestCommentReactions(**repository_args_with_start_date),
+            PullRequestStats(parent=pull_requests_stream, **repository_args),
+            PullRequests(**repository_args_with_start_date),
+            Releases(**repository_args_with_start_date),
             Repositories(**organization_args),
-            ReviewComments(**incremental_args),
-            Reviews(**full_refresh_args),
-            Stargazers(**incremental_args),
-            Tags(**full_refresh_args),
+            ReviewComments(**repository_args_with_start_date),
+            Reviews(parent=pull_requests_stream, **repository_args),
+            Stargazers(**repository_args_with_start_date),
+            Tags(**repository_args),
             Teams(**organization_args),
             Users(**organization_args),
         ]

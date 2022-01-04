@@ -130,13 +130,16 @@ Airbite has the ability to connect to the Oracle source with 3 network connectiv
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.3.8 | 2021-10-13 | [7125](https://github.com/airbytehq/airbyte/pull/7125) | Fix incorrect handling of LONG RAW data type |
-| 0.3.7 | 2021-10-01 | [6616](https://github.com/airbytehq/airbyte/pull/6616) | Added network encryption options |
-| 0.3.6 | 2021-09-30 | [6585](https://github.com/airbytehq/airbyte/pull/6585) | Improved SSH Tunnel key generation steps |
-| 0.3.5 | 2021-09-22 | [6356](https://github.com/airbytehq/airbyte/pull/6356) | Added option to connect to DB via SSH. |
-| 0.3.4 | 2021-09-01 | [6038](https://github.com/airbytehq/airbyte/pull/6038) | Remove automatic filtering of system schemas. |
-| 0.3.3 | 2021-09-01 | [5779](https://github.com/airbytehq/airbyte/pull/5779) | Ability to only discover certain schemas. |
-| 0.3.2 | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator. |
+| Version | Date | Pull Request | Subject                                         |
+|:--------| :--- | :--- |:------------------------------------------------|
+| 0.3.11  | 2021-12-24 | [8958](https://github.com/airbytehq/airbyte/pull/8958) | Add support for JdbcType.ARRAY |
+| 0.3.10  | 2021-12-07 | [8582](https://github.com/airbytehq/airbyte/pull/8582) | Update connector fields title/description |
+| 0.3.9   | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key      |
+| 0.3.8   | 2021-10-13 | [7125](https://github.com/airbytehq/airbyte/pull/7125) | Fix incorrect handling of LONG RAW data type    |
+| 0.3.7   | 2021-10-01 | [6616](https://github.com/airbytehq/airbyte/pull/6616) | Added network encryption options                |
+| 0.3.6   | 2021-09-30 | [6585](https://github.com/airbytehq/airbyte/pull/6585) | Improved SSH Tunnel key generation steps        |
+| 0.3.5   | 2021-09-22 | [6356](https://github.com/airbytehq/airbyte/pull/6356) | Added option to connect to DB via SSH.          |
+| 0.3.4   | 2021-09-01 | [6038](https://github.com/airbytehq/airbyte/pull/6038) | Remove automatic filtering of system schemas.   |
+| 0.3.3   | 2021-09-01 | [5779](https://github.com/airbytehq/airbyte/pull/5779) | Ability to only discover certain schemas.       |
+| 0.3.2   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator.                    |
 

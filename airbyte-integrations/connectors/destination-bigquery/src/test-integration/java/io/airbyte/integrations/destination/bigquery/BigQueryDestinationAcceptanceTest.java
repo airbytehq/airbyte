@@ -28,6 +28,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -44,18 +45,18 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationAcceptanceTest.class);
 
-  private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
+  protected static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 
-  private static final String CONFIG_DATASET_ID = "dataset_id";
-  private static final String CONFIG_PROJECT_ID = "project_id";
-  private static final String CONFIG_DATASET_LOCATION = "dataset_location";
-  private static final String CONFIG_CREDS = "credentials_json";
+  protected static final String CONFIG_DATASET_ID = "dataset_id";
+  protected static final String CONFIG_PROJECT_ID = "project_id";
+  protected static final String CONFIG_DATASET_LOCATION = "dataset_location";
+  protected static final String CONFIG_CREDS = "credentials_json";
 
-  private BigQuery bigquery;
-  private Dataset dataset;
-  private boolean tornDown;
-  private JsonNode config;
-  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
+  protected BigQuery bigquery;
+  protected Dataset dataset;
+  protected boolean tornDown;
+  protected JsonNode config;
+  protected final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   @Override
   protected String getImageName() {
@@ -184,6 +185,10 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
         .put(CONFIG_DATASET_LOCATION, datasetLocation)
         .build());
 
+    setupBigQuery(credentialsJson);
+  }
+
+  protected void setupBigQuery(JsonNode credentialsJson) throws IOException {
     final ServiceAccountCredentials credentials = ServiceAccountCredentials
         .fromStream(new ByteArrayInputStream(credentialsJson.toString().getBytes()));
 
@@ -213,7 +218,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
     tearDownBigQuery();
   }
 
-  private void tearDownBigQuery() {
+  protected void tearDownBigQuery() {
     // allows deletion of a dataset that has contents
     final BigQuery.DatasetDeleteOption option = BigQuery.DatasetDeleteOption.deleteContents();
 

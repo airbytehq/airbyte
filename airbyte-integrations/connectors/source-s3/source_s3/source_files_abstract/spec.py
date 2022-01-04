@@ -73,7 +73,7 @@ class SourceFilesAbstractSpec(BaseModel):
         return schema
 
     @staticmethod
-    def check_provider_added(schema: dict) -> dict:
+    def check_provider_added(schema: dict) -> None:
         if "provider" not in schema["properties"]:
             raise RuntimeError("You must add the 'provider' property in your child spec class")
 
@@ -90,7 +90,7 @@ class SourceFilesAbstractSpec(BaseModel):
 
     @classmethod
     def schema(cls) -> dict:
-        """ we're overriding the schema classmethod to enable some post-processing """
+        """we're overriding the schema classmethod to enable some post-processing"""
         schema = super().schema()
         cls.check_provider_added(schema)
         schema = cls.change_format_to_oneOf(schema)

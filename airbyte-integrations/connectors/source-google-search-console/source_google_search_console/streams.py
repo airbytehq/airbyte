@@ -12,7 +12,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
-BASE_URL = "https://www.googleapis.com/webmasters/v3"
+BASE_URL = "https://www.googleapis.com/webmasters/v3/"
 ROW_LIMIT = 25000
 
 
@@ -67,7 +67,7 @@ class Sites(GoogleSearchConsole):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> str:
-        return f"/sites/{stream_slice.get('site_url')}"
+        return f"sites/{stream_slice.get('site_url')}"
 
 
 class Sitemaps(GoogleSearchConsole):
@@ -83,7 +83,7 @@ class Sitemaps(GoogleSearchConsole):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> str:
-        return f"/sites/{stream_slice.get('site_url')}/sitemaps"
+        return f"sites/{stream_slice.get('site_url')}/sitemaps"
 
 
 class SearchAnalytics(GoogleSearchConsole, ABC):
@@ -95,6 +95,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
     start_row = 0
     dimensions = []
     search_types = ["web", "news", "image", "video"]
+    range_of_days = 3
 
     def path(
         self,
@@ -102,7 +103,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> str:
-        return f"/sites/{stream_slice.get('site_url')}/searchAnalytics/query"
+        return f"sites/{stream_slice.get('site_url')}/searchAnalytics/query"
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
@@ -123,7 +124,24 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
 
         for site_url in self._site_urls:
             for search_type in self.search_types:
-                yield {"site_url": site_url, "search_type": search_type}
+                start_date = self._get_start_date(stream_state, site_url, search_type)
+                end_date = self._get_end_date()
+
+                if start_date > end_date:
+                    start_date = end_date
+
+                next_start = start_date
+                period = pendulum.Duration(days=self.range_of_days - 1)
+                while next_start <= end_date:
+                    next_end = min(next_start + period, end_date)
+                    yield {
+                        "site_url": site_url,
+                        "search_type": search_type,
+                        "start_date": next_start.to_date_string(),
+                        "end_date": next_end.to_date_string(),
+                    }
+                    # add 1 day for the next slice's start date not to duplicate data from previous slice's end date.
+                    next_start = next_end + pendulum.Duration(days=1)
 
     def next_page_token(self, response: requests.Response) -> Optional[bool]:
         """
@@ -159,11 +177,9 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         5. For the `startRow` and `rowLimit` check next_page_token method.
         """
 
-        start_date = self._get_start_data(stream_state, stream_slice)
-
         data = {
-            "startDate": start_date,
-            "endDate": self._end_date,
+            "startDate": stream_slice["start_date"],
+            "endDate": stream_slice["end_date"],
             "dimensions": self.dimensions,
             "searchType": stream_slice.get("search_type"),
             "aggregationType": "auto",
@@ -172,23 +188,24 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         }
         return data
 
-    def _get_start_data(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-    ) -> str:
-        start_date = self._start_date
+    def _get_end_date(self) -> pendulum.date:
+        end_date = pendulum.parse(self._end_date).date()
+        # limit `end_date` value with current date
+        return min(end_date, pendulum.now().date())
+
+    def _get_start_date(self, stream_state: Mapping[str, Any] = None, site_url: str = None, search_type: str = None) -> pendulum.date:
+        start_date = pendulum.parse(self._start_date)
 
         if start_date and stream_state:
-            if stream_state.get(unquote_plus(stream_slice["site_url"]), {}).get(stream_slice["search_type"]):
-                stream_state_value = stream_state.get(unquote_plus(stream_slice["site_url"]), {}).get(stream_slice["search_type"])
+            if stream_state.get(unquote_plus(site_url), {}).get(search_type):
+                stream_state_value = stream_state.get(unquote_plus(site_url), {}).get(search_type)
 
                 start_date = max(
                     pendulum.parse(stream_state_value[self.cursor_field]),
-                    pendulum.parse(start_date),
-                ).to_date_string()
+                    start_date,
+                )
 
-        return start_date
+        return start_date.date()
 
     def parse_response(
         self,

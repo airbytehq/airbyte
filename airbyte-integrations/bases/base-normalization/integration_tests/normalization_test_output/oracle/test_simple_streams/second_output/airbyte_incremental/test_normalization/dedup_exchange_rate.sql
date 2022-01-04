@@ -5,6 +5,7 @@
   as
     
 -- Final base SQL model
+-- depends_on: test_normalization.dedup_exchange_rate_scd
 select
     "_AIRBYTE_UNIQUE_KEY",
     id,

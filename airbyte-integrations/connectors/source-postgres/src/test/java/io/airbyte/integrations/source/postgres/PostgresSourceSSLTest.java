@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.createRecord;
+import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.map;
+import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.setEmittedAtToNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -21,8 +24,6 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -31,9 +32,7 @@ import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -76,9 +75,9 @@ class PostgresSourceSSLTest {
           .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name")))));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
-      createRecord(STREAM_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
-      createRecord(STREAM_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
-      createRecord(STREAM_NAME, map("id", null, "name", "piccolo", "power", null)));
+      createRecord(STREAM_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null), SCHEMA_NAME),
+      createRecord(STREAM_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1), SCHEMA_NAME),
+      createRecord(STREAM_NAME, map("id", null, "name", "piccolo", "power", null), SCHEMA_NAME));
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
@@ -149,14 +148,6 @@ class PostgresSourceSSLTest {
     PSQL_DB.close();
   }
 
-  private static void setEmittedAtToNull(final Iterable<AirbyteMessage> messages) {
-    for (final AirbyteMessage actualMessage : messages) {
-      if (actualMessage.getRecord() != null) {
-        actualMessage.getRecord().setEmittedAt(null);
-      }
-    }
-  }
-
   @Test
   void testDiscoverWithPk() throws Exception {
     final AirbyteCatalog actual = new PostgresSource().discover(getConfig(PSQL_DB, dbName));
@@ -190,27 +181,6 @@ class PostgresSourceSSLTest {
         "replication_slot", "slot",
         "publication", "ab_pub")));
     assertTrue(PostgresSource.isCdc(config));
-  }
-
-  private static AirbyteMessage createRecord(final String stream, final Map<Object, Object> data) {
-    return new AirbyteMessage().withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(data)).withStream(stream).withNamespace(SCHEMA_NAME));
-  }
-
-  private static Map<Object, Object> map(final Object... entries) {
-    if (entries.length % 2 != 0) {
-      throw new IllegalArgumentException("Entries must have even length");
-    }
-
-    return new HashMap<>() {
-
-      {
-        for (int i = 0; i < entries.length; i++) {
-          put(entries[i++], entries[i]);
-        }
-      }
-
-    };
   }
 
 }

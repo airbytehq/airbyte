@@ -19,9 +19,10 @@
    USE [test_normalization];
    EXEC('create view test_normalization."exchange_rate__dbt_tmp_temp_view" as
     
-with __dbt__CTE__exchange_rate_ab1 as (
+with __dbt__cte__exchange_rate_ab1 as (
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
+-- depends_on: "test_normalization".test_normalization._airbyte_raw_exchange_rate
 select
     json_value(_airbyte_data, ''$."id"'') as id,
     json_value(_airbyte_data, ''$."currency"'') as currency,
@@ -38,9 +39,10 @@ select
 from "test_normalization".test_normalization._airbyte_raw_exchange_rate as table_alias
 -- exchange_rate
 where 1 = 1
-),  __dbt__CTE__exchange_rate_ab2 as (
+),  __dbt__cte__exchange_rate_ab2 as (
 
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+-- depends_on: __dbt__cte__exchange_rate_ab1
 select
     cast(id as 
     bigint
@@ -65,12 +67,13 @@ select
     _airbyte_ab_id,
     _airbyte_emitted_at,
     SYSDATETIME() as _airbyte_normalized_at
-from __dbt__CTE__exchange_rate_ab1
+from __dbt__cte__exchange_rate_ab1
 -- exchange_rate
 where 1 = 1
-),  __dbt__CTE__exchange_rate_ab3 as (
+),  __dbt__cte__exchange_rate_ab3 as (
 
 -- SQL model to build a hash column based on the values of this record
+-- depends_on: __dbt__cte__exchange_rate_ab2
 select
     convert(varchar(32), HashBytes(''md5'',  coalesce(cast(
     
@@ -88,10 +91,11 @@ select
     VARCHAR(max)), ''''),''''), '''') as 
     VARCHAR(max)), '''')), 2) as _airbyte_exchange_rate_hashid,
     tmp.*
-from __dbt__CTE__exchange_rate_ab2 tmp
+from __dbt__cte__exchange_rate_ab2 tmp
 -- exchange_rate
 where 1 = 1
 )-- Final base SQL model
+-- depends_on: __dbt__cte__exchange_rate_ab3
 select
     id,
     currency,
@@ -106,7 +110,7 @@ select
     _airbyte_emitted_at,
     SYSDATETIME() as _airbyte_normalized_at,
     _airbyte_exchange_rate_hashid
-from __dbt__CTE__exchange_rate_ab3
+from __dbt__cte__exchange_rate_ab3
 -- exchange_rate from "test_normalization".test_normalization._airbyte_raw_exchange_rate
 where 1 = 1
     ');

@@ -1,6 +1,7 @@
 import React, { Suspense, useEffect, useState } from "react";
 import styled from "styled-components";
 import { useResource } from "rest-hooks";
+import { FormattedMessage } from "react-intl";
 
 import { Button } from "components";
 import HeadTitle from "components/HeadTitle";
@@ -23,13 +24,12 @@ import WelcomeStep from "./components/WelcomeStep";
 import FinalStep from "./components/FinalStep";
 import LetterLine from "./components/LetterLine";
 import { StepType } from "./types";
-import { useAnalytics } from "hooks/useAnalytics";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import StepsCounter from "./components/StepsCounter";
 import LoadingPage from "components/LoadingPage";
 import useWorkspace from "hooks/services/useWorkspace";
 import useRouterHook from "hooks/useRouter";
-import { Routes } from "pages/routes";
-import { FormattedMessage } from "react-intl";
+import { RoutePaths } from "pages/routes";
 
 const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   width: 100%;
@@ -60,7 +60,7 @@ const ScreenContent = styled.div`
 `;
 
 const OnboardingPage: React.FC = () => {
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
   const { push } = useRouterHook();
 
   useEffect(() => {
@@ -111,7 +111,7 @@ const OnboardingPage: React.FC = () => {
 
   const handleFinishOnboarding = () => {
     finishOnboarding();
-    push(Routes.Connections);
+    push(RoutePaths.Connections);
   };
 
   const renderStep = () => {
@@ -152,7 +152,6 @@ const OnboardingPage: React.FC = () => {
       return (
         <SourceStep
           afterSelectConnector={() => setErrorStatusRequest(null)}
-          jobInfo={errorStatusRequest?.response}
           onSubmit={onSubmitSourceStep}
           availableServices={sourceDefinitions}
           hasSuccess={successRequest}
@@ -198,7 +197,6 @@ const OnboardingPage: React.FC = () => {
       return (
         <DestinationStep
           afterSelectConnector={() => setErrorStatusRequest(null)}
-          jobInfo={errorStatusRequest?.response}
           onSubmit={onSubmitDestinationStep}
           availableServices={destinationDefinitions}
           hasSuccess={successRequest}

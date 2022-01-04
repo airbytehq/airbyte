@@ -12,7 +12,7 @@ from urllib import parse
 import requests
 import vcr
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from requests.exceptions import HTTPError
 from vcr.cassette import Cassette
 
@@ -57,6 +57,11 @@ class GithubStream(HttpStream, ABC):
         super().__init__(**kwargs)
         self.repositories = repositories
 
+        MAX_RETRIES = 3
+        adapter = requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES)
+        self._session.mount("https://", adapter)
+        self._session.mount("http://", adapter)
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/{self.name}"
 
@@ -85,8 +90,8 @@ class GithubStream(HttpStream, ABC):
         # `X-RateLimit-Reset` header which contains time when this hour will be finished and limits will be reset so
         # we again could have 5000 per another hour.
 
-        if response.status_code == requests.codes.BAD_GATEWAY:
-            return 0.5
+        if response.status_code in [requests.codes.BAD_GATEWAY, requests.codes.SERVER_ERROR]:
+            return None
 
         reset_time = response.headers.get("X-RateLimit-Reset")
         backoff_time = float(reset_time) - time.time() if reset_time else 60
@@ -284,55 +289,6 @@ class Assignees(GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/issues#list-assignees
     """
-
-
-class PullRequestStats(GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
-    """
-
-    top_level_stream = False
-
-    @property
-    def record_keys(self) -> List[str]:
-        return list(self.get_json_schema()["properties"].keys())
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}"
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        for stream_slice in super().stream_slices(**kwargs):
-            pull_requests_stream = PullRequests(authenticator=self.authenticator, repositories=[stream_slice["repository"]], start_date="")
-            for pull_request in pull_requests_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
-                yield {"pull_request_number": pull_request["number"], "repository": stream_slice["repository"]}
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        yield self.transform(response.json(), repository=stream_slice["repository"])
-
-    def transform(self, record: MutableMapping[str, Any], repository: str = None) -> MutableMapping[str, Any]:
-        record = super().transform(record=record, repository=repository)
-        return {key: value for key, value in record.items() if key in self.record_keys}
-
-
-class Reviews(GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request
-    """
-
-    top_level_stream = False
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}/reviews"
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        for stream_slice in super().stream_slices(**kwargs):
-            pull_requests_stream = PullRequests(authenticator=self.authenticator, repositories=[stream_slice["repository"]], start_date="")
-            for pull_request in pull_requests_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
-                yield {"pull_request_number": pull_request["number"], "repository": stream_slice["repository"]}
 
 
 class Branches(GithubStream):
@@ -725,6 +681,60 @@ class ReviewComments(IncrementalGithubStream):
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/pulls/comments"
+
+
+# Pull request substreams
+
+
+class PullRequestSubstream(HttpSubStream, GithubStream, ABC):
+    top_level_stream = False
+
+    def __init__(self, parent: PullRequests, **kwargs):
+        super().__init__(parent=parent, **kwargs)
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream_slices = super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+
+        for parent_stream_slice in parent_stream_slices:
+            yield {
+                "pull_request_number": parent_stream_slice["parent"]["number"],
+                "repository": parent_stream_slice["parent"]["repository"],
+            }
+
+
+class PullRequestStats(PullRequestSubstream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
+    """
+
+    @property
+    def record_keys(self) -> List[str]:
+        return list(self.get_json_schema()["properties"].keys())
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}"
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        yield self.transform(response.json(), repository=stream_slice["repository"])
+
+    def transform(self, record: MutableMapping[str, Any], repository: str = None) -> MutableMapping[str, Any]:
+        record = super().transform(record=record, repository=repository)
+        return {key: value for key, value in record.items() if key in self.record_keys}
+
+
+class Reviews(PullRequestSubstream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request
+    """
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}/reviews"
 
 
 # Reactions streams

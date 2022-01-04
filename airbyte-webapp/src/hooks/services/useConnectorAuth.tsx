@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import { useAsyncFn } from "react-use";
+import { useCallback, useMemo, useRef } from "react";
+import { useAsyncFn, useEffectOnce, useEvent } from "react-use";
 
 import {
   ConnectorDefinitionSpecification,
@@ -16,67 +16,6 @@ import { useGetService } from "core/servicesProvider";
 import { RequestMiddleware } from "core/request/RequestMiddleware";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
 import useRouter from "../useRouter";
-import { ConnectionConfiguration } from "core/domain/connection";
-
-export function useConnectorAuth() {
-  const { workspaceId } = useCurrentWorkspace();
-  const { apiUrl, oauthRedirectUrl } = useConfig();
-  const middlewares = useGetService<RequestMiddleware[]>(
-    "DefaultRequestMiddlewares"
-  );
-
-  const sourceAuthService = useMemo(
-    () => new SourceAuthService(apiUrl, middlewares),
-    [apiUrl, middlewares]
-  );
-  const destinationAuthService = useMemo(
-    () => new DestinationAuthService(apiUrl, middlewares),
-    [apiUrl, middlewares]
-  );
-
-  return {
-    getConsentUrl: async (
-      connector: ConnectorDefinitionSpecification,
-      inputParams: Record<string, unknown>
-    ): Promise<{
-      payload: SourceGetConsentPayload | DestinationGetConsentPayload;
-      consentUrl: string;
-    }> => {
-      if (isSourceDefinitionSpecification(connector)) {
-        const payload = {
-          workspaceId,
-          sourceDefinitionId: ConnectorSpecification.id(connector),
-          redirectUrl: `${oauthRedirectUrl}/auth_flow`,
-          inputParams,
-        };
-        const response = await sourceAuthService.getConsentUrl(payload);
-        return { consentUrl: response.consentUrl, payload };
-      } else {
-        const payload = {
-          workspaceId,
-          destinationDefinitionId: ConnectorSpecification.id(connector),
-          redirectUrl: `${oauthRedirectUrl}/auth_flow`,
-          inputParams,
-        };
-        const response = await destinationAuthService.getConsentUrl(payload);
-
-        return { consentUrl: response.consentUrl, payload };
-      }
-    },
-    completeOauthRequest: async (
-      params: SourceGetConsentPayload | DestinationGetConsentPayload,
-      queryParams: Record<string, unknown>
-    ): Promise<Record<string, unknown>> => {
-      const payload: any = {
-        ...params,
-        queryParams,
-      };
-      return (payload as SourceGetConsentPayload).sourceDefinitionId
-        ? sourceAuthService.completeOauth(payload)
-        : destinationAuthService.completeOauth(payload);
-    },
-  };
-}
 
 let windowObjectReference: Window | null = null; // global variable
 
@@ -99,18 +38,89 @@ function openWindow(url: string): void {
   }
 }
 
+export function useConnectorAuth(): {
+  getConsentUrl: (
+    connector: ConnectorDefinitionSpecification,
+    oAuthInputConfiguration: Record<string, unknown>
+  ) => Promise<{
+    payload: SourceGetConsentPayload | DestinationGetConsentPayload;
+    consentUrl: string;
+  }>;
+  completeOauthRequest: (
+    params: SourceGetConsentPayload | DestinationGetConsentPayload,
+    queryParams: Record<string, unknown>
+  ) => Promise<Record<string, unknown>>;
+} {
+  const { workspaceId } = useCurrentWorkspace();
+  const { apiUrl, oauthRedirectUrl } = useConfig();
+  const middlewares = useGetService<RequestMiddleware[]>(
+    "DefaultRequestMiddlewares"
+  );
+
+  // TODO: move to separate initFacade and use refs instead
+  const sourceAuthService = useMemo(
+    () => new SourceAuthService(apiUrl, middlewares),
+    [apiUrl, middlewares]
+  );
+  const destinationAuthService = useMemo(
+    () => new DestinationAuthService(apiUrl, middlewares),
+    [apiUrl, middlewares]
+  );
+
+  return {
+    getConsentUrl: async (
+      connector: ConnectorDefinitionSpecification,
+      oAuthInputConfiguration: Record<string, unknown>
+    ): Promise<{
+      payload: SourceGetConsentPayload | DestinationGetConsentPayload;
+      consentUrl: string;
+    }> => {
+      if (isSourceDefinitionSpecification(connector)) {
+        const payload = {
+          workspaceId,
+          sourceDefinitionId: ConnectorSpecification.id(connector),
+          redirectUrl: `${oauthRedirectUrl}/auth_flow`,
+          oAuthInputConfiguration,
+        };
+        const response = await sourceAuthService.getConsentUrl(payload);
+
+        return { consentUrl: response.consentUrl, payload };
+      } else {
+        const payload = {
+          workspaceId,
+          destinationDefinitionId: ConnectorSpecification.id(connector),
+          redirectUrl: `${oauthRedirectUrl}/auth_flow`,
+          oAuthInputConfiguration,
+        };
+        const response = await destinationAuthService.getConsentUrl(payload);
+
+        return { consentUrl: response.consentUrl, payload };
+      }
+    },
+    completeOauthRequest: async (
+      params: SourceGetConsentPayload | DestinationGetConsentPayload,
+      queryParams: Record<string, unknown>
+    ): Promise<Record<string, unknown>> => {
+      const payload: any = {
+        ...params,
+        queryParams,
+      };
+      return (payload as SourceGetConsentPayload).sourceDefinitionId
+        ? sourceAuthService.completeOauth(payload)
+        : destinationAuthService.completeOauth(payload);
+    },
+  };
+}
+
 export function useRunOauthFlow(
   connector: ConnectorDefinitionSpecification,
-  onDone?: (values: {
-    connectionConfiguration: ConnectionConfiguration;
-  }) => void
+  onDone?: (values: Record<string, unknown>) => void
 ): {
   loading: boolean;
   done?: boolean;
   run: (oauthInputParams: Record<string, unknown>) => void;
 } {
   const { getConsentUrl, completeOauthRequest } = useConnectorAuth();
-
   const param = useRef<
     SourceGetConsentPayload | DestinationGetConsentPayload
   >();
@@ -129,21 +139,22 @@ export function useRunOauthFlow(
   );
 
   const [{ loading: loadingCompleteOauth, value }, completeOauth] = useAsyncFn(
-    async (queryParams: Record<string, unknown>): Promise<boolean> => {
+    async (queryParams: Record<string, unknown>) => {
       const oauthStartedPayload = param.current;
 
       if (oauthStartedPayload) {
-        const connectionConfiguration = await completeOauthRequest(
+        const completeOauthResponse = await completeOauthRequest(
           oauthStartedPayload,
           queryParams
         );
 
-        onDone?.({ connectionConfiguration });
+        onDone?.(completeOauthResponse);
+        return true;
       }
 
       return !!oauthStartedPayload;
     },
-    [connector]
+    [connector, onDone]
   );
 
   const onOathGranted = useCallback(
@@ -161,11 +172,7 @@ export function useRunOauthFlow(
     [completeOauth]
   );
 
-  useEffect(() => {
-    window.addEventListener("message", onOathGranted, false);
-
-    return () => window.removeEventListener("message", onOathGranted);
-  }, [onOathGranted]);
+  useEvent("message", onOathGranted);
 
   return {
     loading: loadingCompleteOauth || loading,
@@ -174,11 +181,11 @@ export function useRunOauthFlow(
   };
 }
 
-export function useResolveRedirect(): void {
+export function useResolveNavigate(): void {
   const { query } = useRouter();
 
-  useEffect(() => {
+  useEffectOnce(() => {
     window.opener.postMessage(query);
     window.close();
-  }, [query]);
+  });
 }
