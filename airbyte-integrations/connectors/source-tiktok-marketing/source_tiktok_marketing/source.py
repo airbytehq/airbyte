@@ -5,7 +5,7 @@
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import ConnectorSpecification, SyncMode, AuthSpecification, AuthType, OAuth2Specification
+from airbyte_cdk.models import ConnectorSpecification, SyncMode, AdvancedAuth, OAuthConfigSpecification, AuthFlowType
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -44,19 +44,70 @@ class TiktokTokenAuthenticator(TokenAuthenticator):
 class SourceTiktokMarketing(AbstractSource):
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
         """Returns the spec for this integration."""
+        complete_oauth_output_specification = {
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
+                "access_token": {
+                    "type": "string",
+                    "path_in_connector_config": ["credentials", "access_token"]
+                }
+            }
+        }
+        complete_oauth_server_input_specification = {
+            "type": "object",
+            "additionalProperties": True,
+            "properties": {
+                "client_id": {
+                    "type": "string"
+                },
+                "client_secret": {
+                    "type": "string"
+                }
+            }
+        }
+        complete_oauth_server_output_specification = {
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
+                "client_id": {
+                    "type": "string",
+                    "path_in_connector_config": ["credentials", "client_id"]
+                },
+                "client_secret": {
+                    "type": "string",
+                    "path_in_connector_config": ["credentials", "client_secret"]
+                }
+            }
+        }
+        oauth_user_input_from_connector_config_specification = {
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
+                "subdomain": {
+                    "type": "string",
+                    "path_in_connector_config": ["credentials", "subdomain"]
+                }
+            }
+        }
+
         return ConnectorSpecification(
             documentationUrl=DOCUMENTATION_URL,
             changelogUrl=DOCUMENTATION_URL,
             supportsIncremental=True,
             supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
             connectionSpecification=SourceTiktokMarketingSpec.schema(),
-            authSpecification=AuthSpecification(
-                auth_type=AuthType.oauth2_0,
-                oauth2Specification=OAuth2Specification(
-                    rootObject=["credentials", 0],
-                    oauthFlowInitParameters=[["client_id"], ["client_secret"]],
-                    oauthFlowOutputParameters=[["access_token"]]
-                )
+            additionalProperties=True,
+            advanced_auth=AdvancedAuth(
+                auth_flow_type=AuthFlowType.oauth2_0,
+                predicate_key=["credentials", "auth_type"],
+                predicate_value="oauth2.0",
+                oauth_config_specification=OAuthConfigSpecification(
+                    complete_oauth_output_specification=complete_oauth_output_specification,
+                    complete_oauth_server_input_specification=complete_oauth_server_input_specification,
+                    complete_oauth_server_output_specification=complete_oauth_server_output_specification,
+                    oauth_user_input_from_connector_config_specification=oauth_user_input_from_connector_config_specification,
+                ),
             )
         )
 
@@ -89,9 +140,9 @@ class SourceTiktokMarketing(AbstractSource):
         return {
             "authenticator": TiktokTokenAuthenticator(access_token),
             "start_date": config.get("start_date") or DEFAULT_START_DATE,
-            "advertiser_id": int(config["environment"].get("advertiser_id", 0)),
-            "app_id": int(config["environment"].get("app_id", 0)),
-            "secret": config["environment"].get("secret"),
+            "advertiser_id": advertiser_id,
+            "app_id": app_id,
+            "secret": secret,
         }
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
