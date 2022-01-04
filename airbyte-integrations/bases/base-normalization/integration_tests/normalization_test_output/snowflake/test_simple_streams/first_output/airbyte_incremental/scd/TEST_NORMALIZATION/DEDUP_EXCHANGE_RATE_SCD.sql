@@ -61,7 +61,10 @@ dedup_data as (
         -- we need to ensure de-duplicated rows for merge/update queries
         -- additionally, we generate a unique key for the scd table
         row_number() over (
-            partition by _AIRBYTE_UNIQUE_KEY, _AIRBYTE_START_AT, _AIRBYTE_EMITTED_AT
+            partition by
+                _AIRBYTE_UNIQUE_KEY,
+                _AIRBYTE_START_AT,
+                _AIRBYTE_EMITTED_AT
             order by _AIRBYTE_ACTIVE_ROW desc, _AIRBYTE_AB_ID
         ) as _AIRBYTE_ROW_NUM,
         md5(cast(coalesce(cast(_AIRBYTE_UNIQUE_KEY as 

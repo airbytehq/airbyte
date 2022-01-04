@@ -52,7 +52,10 @@ dedup_data as (
         -- we need to ensure de-duplicated rows for merge/update queries
         -- additionally, we generate a unique key for the scd table
         row_number() over (
-            partition by _airbyte_unique_key, _airbyte_start_at, _airbyte_emitted_at, cast(_ab_cdc_deleted_at as 
+            partition by
+                _airbyte_unique_key,
+                _airbyte_start_at,
+                _airbyte_emitted_at, cast(_ab_cdc_deleted_at as 
     varchar
 ), cast(_ab_cdc_updated_at as 
     varchar

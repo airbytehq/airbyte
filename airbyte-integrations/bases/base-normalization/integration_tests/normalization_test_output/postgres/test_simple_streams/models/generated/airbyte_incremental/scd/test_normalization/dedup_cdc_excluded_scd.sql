@@ -63,19 +63,19 @@ scd_data as (
         _ab_cdc_lsn,
         _ab_cdc_updated_at,
         _ab_cdc_deleted_at,
-      _airbyte_emitted_at as _airbyte_start_at,
-      lag(_airbyte_emitted_at) over (
+      _ab_cdc_lsn as _airbyte_start_at,
+      lag(_ab_cdc_lsn) over (
         partition by {{ adapter.quote('id') }}
         order by
-            _airbyte_emitted_at is null asc,
-            _airbyte_emitted_at desc,
+            _ab_cdc_lsn is null asc,
+            _ab_cdc_lsn desc,
             _airbyte_emitted_at desc, _ab_cdc_updated_at desc
       ) as _airbyte_end_at,
       case when row_number() over (
         partition by {{ adapter.quote('id') }}
         order by
-            _airbyte_emitted_at is null asc,
-            _airbyte_emitted_at desc,
+            _ab_cdc_lsn is null asc,
+            _ab_cdc_lsn desc,
             _airbyte_emitted_at desc, _ab_cdc_updated_at desc
       ) = 1 and _ab_cdc_deleted_at is null then 1 else 0 end as _airbyte_active_row,
       _airbyte_ab_id,
@@ -88,7 +88,10 @@ dedup_data as (
         -- we need to ensure de-duplicated rows for merge/update queries
         -- additionally, we generate a unique key for the scd table
         row_number() over (
-            partition by _airbyte_unique_key, _airbyte_start_at, _airbyte_emitted_at, cast(_ab_cdc_deleted_at as {{ dbt_utils.type_string() }}), cast(_ab_cdc_updated_at as {{ dbt_utils.type_string() }})
+            partition by
+                _airbyte_unique_key,
+                _airbyte_start_at,
+                _airbyte_emitted_at, cast(_ab_cdc_deleted_at as {{ dbt_utils.type_string() }}), cast(_ab_cdc_updated_at as {{ dbt_utils.type_string() }})
             order by _airbyte_active_row desc, _airbyte_ab_id
         ) as _airbyte_row_num,
         {{ dbt_utils.surrogate_key([

@@ -88,7 +88,10 @@ dedup_data as (
         -- we need to ensure de-duplicated rows for merge/update queries
         -- additionally, we generate a unique key for the scd table
         row_number() over (
-            partition by _airbyte_unique_key, _airbyte_start_at, _airbyte_emitted_at, cast(_ab_cdc_deleted_at as {{ dbt_utils.type_string() }}), cast(_ab_cdc_updated_at as {{ dbt_utils.type_string() }})
+            partition by
+                _airbyte_unique_key,
+                _airbyte_start_at,
+                _airbyte_emitted_at, cast(_ab_cdc_deleted_at as {{ dbt_utils.type_string() }}), cast(_ab_cdc_updated_at as {{ dbt_utils.type_string() }})
             order by _airbyte_active_row desc, _airbyte_ab_id
         ) as _airbyte_row_num,
         {{ dbt_utils.surrogate_key([

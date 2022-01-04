@@ -39,14 +39,14 @@ scd_data as (
       lag("DATE") over (
         partition by id, currency, cast(nzd as varchar2(4000))
         order by
-            "DATE" asc nulls last,
+            "DATE" desc nulls last,
             "DATE" desc,
             "_AIRBYTE_EMITTED_AT" desc
       ) as "_AIRBYTE_END_AT",
       case when row_number() over (
         partition by id, currency, cast(nzd as varchar2(4000))
         order by
-            "DATE" asc nulls last,
+            "DATE" desc nulls last,
             "DATE" desc,
             "_AIRBYTE_EMITTED_AT" desc
       ) = 1 then 1 else 0 end as "_AIRBYTE_ACTIVE_ROW",
@@ -60,7 +60,10 @@ dedup_data as (
         -- we need to ensure de-duplicated rows for merge/update queries
         -- additionally, we generate a unique key for the scd table
         row_number() over (
-            partition by "_AIRBYTE_UNIQUE_KEY", "_AIRBYTE_START_AT", "_AIRBYTE_EMITTED_AT"
+            partition by
+                "_AIRBYTE_UNIQUE_KEY",
+                "_AIRBYTE_START_AT",
+                "_AIRBYTE_EMITTED_AT"
             order by "_AIRBYTE_ACTIVE_ROW" desc, "_AIRBYTE_AB_ID"
         ) as "_AIRBYTE_ROW_NUM",
         ora_hash(

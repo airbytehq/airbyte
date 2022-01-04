@@ -73,14 +73,14 @@ scd_data as (
       lag({{ quote('DATE') }}) over (
         partition by id, currency, cast(nzd as {{ dbt_utils.type_string() }})
         order by
-            {{ quote('DATE') }} asc nulls last,
+            {{ quote('DATE') }} desc nulls last,
             {{ quote('DATE') }} desc,
             {{ quote('_AIRBYTE_EMITTED_AT') }} desc
       ) as {{ quote('_AIRBYTE_END_AT') }},
       case when row_number() over (
         partition by id, currency, cast(nzd as {{ dbt_utils.type_string() }})
         order by
-            {{ quote('DATE') }} asc nulls last,
+            {{ quote('DATE') }} desc nulls last,
             {{ quote('DATE') }} desc,
             {{ quote('_AIRBYTE_EMITTED_AT') }} desc
       ) = 1 then 1 else 0 end as {{ quote('_AIRBYTE_ACTIVE_ROW') }},
@@ -94,7 +94,10 @@ dedup_data as (
         -- we need to ensure de-duplicated rows for merge/update queries
         -- additionally, we generate a unique key for the scd table
         row_number() over (
-            partition by {{ quote('_AIRBYTE_UNIQUE_KEY') }}, {{ quote('_AIRBYTE_START_AT') }}, {{ quote('_AIRBYTE_EMITTED_AT') }}
+            partition by
+                {{ quote('_AIRBYTE_UNIQUE_KEY') }},
+                {{ quote('_AIRBYTE_START_AT') }},
+                {{ quote('_AIRBYTE_EMITTED_AT') }}
             order by {{ quote('_AIRBYTE_ACTIVE_ROW') }} desc, {{ quote('_AIRBYTE_AB_ID') }}
         ) as {{ quote('_AIRBYTE_ROW_NUM') }},
         {{ dbt_utils.surrogate_key([
