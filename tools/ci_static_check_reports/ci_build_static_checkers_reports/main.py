@@ -16,6 +16,7 @@ from ci_common_utils import Logger
 
 LOGGER = Logger()
 
+CURRENT_DIR = Path(os.getcwd())
 ROOT_DIR = Path(os.getcwd())
 while str(ROOT_DIR) != "/" and not (ROOT_DIR / "pyproject.toml").is_file():
     ROOT_DIR = ROOT_DIR.parent
@@ -77,7 +78,7 @@ def print_commands(folder: str, output_folder: str, venv_folder: str, test_name:
     toml_config_file = str(ROOT_DIR / "pyproject.toml")
     for cmd in TASK_COMMANDS[test_name]:
         rendered_cmd = cmd.replace(
-            "{source_path}", folder).replace(
+            "{source_path}", folder.replace(str(CURRENT_DIR), ".")).replace(
             "{reports_path}", output_folder).replace(
             "{venv}", venv_folder).replace("{toml_config_file}", toml_config_file).replace(
             "{source_acceptance_test_path}", str(ROOT_DIR / "airbyte-integrations/bases/source-acceptance-test"))
