@@ -602,7 +602,7 @@ class Orders(IncrementalAmazonSPStream):
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
-        params.update({"MarketplaceIds": ",".join(self.marketplace_ids)})
+        params.update({"MarketplaceIds": self.marketplace_id})
         return params
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
