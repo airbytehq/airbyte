@@ -58,10 +58,10 @@ class SourceTiktokMarketing(AbstractSource):
             "type": "object",
             "additionalProperties": True,
             "properties": {
-                "client_id": {
+                "app_id": {
                     "type": "string"
                 },
-                "client_secret": {
+                "secret": {
                     "type": "string"
                 }
             }
@@ -70,13 +70,13 @@ class SourceTiktokMarketing(AbstractSource):
             "type": "object",
             "additionalProperties": False,
             "properties": {
-                "client_id": {
+                "app_id": {
                     "type": "string",
-                    "path_in_connector_config": ["credentials", "client_id"]
+                    "path_in_connector_config": ["credentials", "app_id"]
                 },
-                "client_secret": {
+                "secret": {
                     "type": "string",
-                    "path_in_connector_config": ["credentials", "client_secret"]
+                    "path_in_connector_config": ["credentials", "secret"]
                 }
             }
         }
@@ -84,9 +84,9 @@ class SourceTiktokMarketing(AbstractSource):
             "type": "object",
             "additionalProperties": False,
             "properties": {
-                "subdomain": {
+                "rid": {
                     "type": "string",
-                    "path_in_connector_config": ["credentials", "subdomain"]
+                    "path_in_connector_config": ["credentials", "rid"]
                 }
             }
         }
@@ -117,22 +117,22 @@ class SourceTiktokMarketing(AbstractSource):
         credentials = config.get("credentials")
         if credentials:
             auth_type = credentials["auth_type"]
-            if auth_type == "Oauth":
+            if auth_type == "oauth2.0":
                 access_token = credentials["access_token"]
-                app_id = credentials["app_id"]
+                app_id = int(credentials["app_id"])
                 secret = credentials["secret"]
-                advertiser_id = int(credentials.get("advertiser_id", 0))
-            elif auth_type == "Access token":
+                advertiser_id = 0
+            elif auth_type == "access_token":
                 access_token = credentials["access_token"]
                 app_id = int(credentials["environment"].get("app_id", 0))
                 secret = credentials["environment"].get("secret")
                 advertiser_id = int(credentials["environment"].get("advertiser_id", 0))
             else:
-                raise Exception(f"Invalid auth type: {auth_type}")
+                raise Exception(f"Invalid auth type in config: {auth_type}")
         else:
             access_token = config.get("access_token")
             if not access_token:
-                raise Exception("No access_token in creds")
+                raise Exception("No access_token in config")
             app_id = int(config["environment"].get("app_id", 0))
             secret = config["environment"].get("secret")
             advertiser_id = int(config["environment"].get("advertiser_id", 0))
