@@ -6,9 +6,15 @@ target-version = ["py37"]
 fail_under = 100
 skip_empty = true
 sort = "-cover"
+omit = ./*_tests/*,setup.py
 
 [tool.flake8]
-extend-exclude = ".venv"
+extend-exclude = 
+  .venv
+  build
+  models # generated protocol models
+  .eggs # python libraries"
+  .tox
 max-complexity = 10
 max-line-length = 140
 

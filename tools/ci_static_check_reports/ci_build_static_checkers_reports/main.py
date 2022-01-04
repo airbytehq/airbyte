@@ -64,8 +64,8 @@ TASK_COMMANDS: Dict[str, List[str]] = {
         "[ -f requirements.txt ] && pip install --quiet -r requirements.txt",
         "pip install .",
         "pip install .[tests]",
-        "coverage run -m pytest {source_path}/unit_tests || true",
-        "coverage xml --fail-under 0  --skip-empty --omit=./*_tests/*,setup.py --rcfile={toml_config_file} -o {reports_path}/coverage.xml",
+        "coverage run --rcfile={toml_config_file} -m pytest {source_path}/unit_tests || true",
+        "coverage xml :--rcfile={toml_config_file} -o {reports_path}/coverage.xml || true",
     ],
     "test": [
         "mkdir {venv}/source-acceptance-test",
