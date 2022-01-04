@@ -22,7 +22,7 @@ class BasicAuthenticator(TokenAuthenticator):
 
 class Links(HttpStream, ABC):
 
-    url_base = "https://api.short.io/api"
+    url_base = "https://api.short.io/api/"
     limit = 150
     primary_key = "id"
     before_id = None
@@ -60,7 +60,7 @@ class Links(HttpStream, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> str:
         # Get all the links
-        return "/links"
+        return "links"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """

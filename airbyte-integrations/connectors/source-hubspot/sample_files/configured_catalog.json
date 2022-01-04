@@ -13,28 +13,37 @@
       "stream": {
         "name": "companies",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
         "name": "contact_lists",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
         "name": "contacts",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -49,10 +58,13 @@
       "stream": {
         "name": "deals",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -88,10 +100,13 @@
       "stream": {
         "name": "line_items",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -118,19 +133,25 @@
       "stream": {
         "name": "products",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
         "name": "quotes",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -148,10 +169,13 @@
       "stream": {
         "name": "tickets",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {

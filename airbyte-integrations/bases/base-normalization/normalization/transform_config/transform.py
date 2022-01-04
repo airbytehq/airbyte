@@ -22,6 +22,7 @@ class DestinationType(Enum):
     mysql = "mysql"
     oracle = "oracle"
     mssql = "mssql"
+    clickhouse = "clickhouse"
 
 
 class TransformConfig:
@@ -66,6 +67,7 @@ class TransformConfig:
             DestinationType.mysql.value: self.transform_mysql,
             DestinationType.oracle.value: self.transform_oracle,
             DestinationType.mssql.value: self.transform_mssql,
+            DestinationType.clickhouse.value: self.transform_clickhouse,
         }[integration_type.value](config)
 
         # merge pre-populated base_profile with destination-specific configuration.
@@ -260,6 +262,20 @@ class TransformConfig:
             "threads": 32,
             # "authentication": "sql",
             # "trusted_connection": True,
+        }
+        return dbt_config
+
+    @staticmethod
+    def transform_clickhouse(config: Dict[str, Any]):
+        print("transform_clickhouse")
+        # https://docs.getdbt.com/reference/warehouse-profiles/clickhouse-profile
+        dbt_config = {
+            "type": "clickhouse",
+            "host": config["host"],
+            "port": config["port"],
+            "schema": config["database"],
+            "user": config["username"],
+            "password": config["password"],
         }
         return dbt_config
 

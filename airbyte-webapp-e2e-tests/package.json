@@ -1,0 +1,25 @@
+{
+  "name": "airbyte-webapp-e2e-tests",
+  "version": "0.0.0",
+  "description": "Airbyte e2e testing",
+  "scripts": {
+    "cypress:open": "cypress open",
+    "cypress:ci": "CYPRESS_BASE_URL=http://localhost:8000 cypress run"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "node": true
+    },
+    "rules": {
+      "cypress/no-unnecessary-waiting": "warn"
+    },
+    "extends": [
+      "plugin:cypress/recommended"
+    ]
+  },
+  "devDependencies": {
+    "cypress": "^9.2.0",
+    "eslint-plugin-cypress": "^2.12.1"
+  }
+}

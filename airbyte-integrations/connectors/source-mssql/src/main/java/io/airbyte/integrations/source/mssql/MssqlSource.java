@@ -42,7 +42,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MssqlSource extends AbstractJdbcSource implements Source {
+public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlSource.class);
 

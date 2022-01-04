@@ -48,7 +48,7 @@ The Iterable connector should not run into Iterable API limitations under normal
 ### Requirements
 
 * Iterable Account
-* Iterable API Key
+* Iterable API Key with `standard` permissions. See [API Keys docs](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-) for more details.
 
 ### Setup guide
 <!-- markdown-link-check-disable-next-line -->
@@ -58,6 +58,8 @@ Please read [How to find your API key](https://support.iterable.com/hc/en-us/art
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| `0.1.15` | 2021-12-06 | [8524](https://github.com/airbytehq/airbyte/pull/8524) | Update connector fields title/description |
+| `0.1.14` | 2021-12-01 | [8380](https://github.com/airbytehq/airbyte/pull/8380) | Update `Events` stream to use `export/userEvents` endpoint |
 | `0.1.13` | 2021-11-22 | [8091](https://github.com/airbytehq/airbyte/pull/8091) | Adjust slice ranges for email streams |
 | `0.1.12` | 2021-11-09 | [7780](https://github.com/airbytehq/airbyte/pull/7780) | Split EmailSend stream into slices to fix premature connection close error |
 | `0.1.11` | 2021-11-03 | [7619](https://github.com/airbytehq/airbyte/pull/7619) | Bugfix type error while incrementally loading the `Templates` stream |

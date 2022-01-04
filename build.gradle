@@ -14,7 +14,7 @@ buildscript {
 plugins {
     id 'base'
     id 'pmd'
-    id 'com.diffplug.spotless' version '5.7.0'
+    id 'com.diffplug.spotless' version '6.0.0'
     id 'com.github.hierynomus.license' version '0.16.1'
 }
 
@@ -103,7 +103,7 @@ spotless {
 
         importOrder()
 
-        eclipse('4.16.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
+        eclipse('4.21.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
 
         licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE_SHORT'))
         removeUnusedImports()
@@ -132,7 +132,7 @@ def Task getDockerBuildTask(String artifactName, String projectDir) {
         def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
         def alpineImage = System.getenv('ALPINE_IMAGE') ?: 'alpine:3.4'
         def postgresImage = System.getenv('POSTGRES_IMAGE') ?: 'postgres:13-alpine'
-        def jdkVersion = System.getenv('JDK_VERSION') ?: '14.0.2'
+        def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
         def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: 'amd64'
 
         inputDir = file("$projectDir/build/docker")
@@ -171,15 +171,15 @@ allprojects {
 // Java projects common configurations
 subprojects {
 
-    if (project.name == 'airbyte-webapp' || project.name == 'airbyte-e2e-testing') {
+    if (project.name == 'airbyte-webapp' || project.name == 'airbyte-webapp-e2e-tests') {
         return
     }
 
     apply plugin: 'java'
     apply plugin: 'jacoco'
 
-    sourceCompatibility = JavaVersion.VERSION_14
-    targetCompatibility = JavaVersion.VERSION_14
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 
     repositories {
         mavenCentral()
@@ -199,10 +199,14 @@ subprojects {
 
     def integrationTagName = 'platform-integration'
     def slowIntegrationTagName = 'platform-slow-integration'
+    // make tag accessible in submodules.
+    ext {
+        cloudStorageTestTagName = 'cloud-storage'
+    }
 
     test {
         useJUnitPlatform {
-            excludeTags(integrationTagName, slowIntegrationTagName)
+            excludeTags(integrationTagName, slowIntegrationTagName, cloudStorageTestTagName)
         }
         testLogging() {
             events 'failed'
@@ -248,7 +252,7 @@ subprojects {
             implementation project(':airbyte-commons')
         }
 
-        implementation(platform("com.fasterxml.jackson:jackson-bom:2.10.4"))
+        implementation(platform("com.fasterxml.jackson:jackson-bom:2.13.0"))
         implementation(platform("org.glassfish.jersey:jersey-bom:2.31"))
 
 
@@ -269,10 +273,10 @@ subprojects {
 
 
         // SLF4J as a facade over Log4j2 required dependencies
-        implementation 'org.apache.logging.log4j:log4j-api:2.11.0'
-        implementation 'org.apache.logging.log4j:log4j-core:2.11.0'
-        implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.11.0'
-        implementation 'org.apache.logging.log4j:log4j-web:2.14.1'
+        implementation 'org.apache.logging.log4j:log4j-api:2.16.0'
+        implementation 'org.apache.logging.log4j:log4j-core:2.16.0'
+        implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.16.0'
+        implementation 'org.apache.logging.log4j:log4j-web:2.16.0'
 
         // Bridges from other logging implementations to SLF4J
         implementation 'org.slf4j:jul-to-slf4j:1.7.30' // JUL bridge
@@ -280,9 +284,9 @@ subprojects {
         implementation 'org.slf4j:log4j-over-slf4j:1.7.30' // log4j1.2 bridge
 
         // Dependencies for logging to cloud storage, as well as the various clients used to do so.
-        implementation 'com.therealvan:appender-log4j2:3.1.2-SNAPSHOT'
+        implementation 'com.therealvan:appender-log4j2:3.3.0'
         implementation 'com.amazonaws:aws-java-sdk-s3:1.12.6'
-        implementation 'com.google.cloud:google-cloud-storage:1.115.0'
+        implementation 'com.google.cloud:google-cloud-storage:2.2.2'
 
         implementation 'software.amazon.awssdk:s3:2.16.84'
 
@@ -296,7 +300,7 @@ subprojects {
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
         testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
         testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.2'
-        testImplementation 'org.mockito:mockito-junit-jupiter:3.12.4'
+        testImplementation 'org.mockito:mockito-junit-jupiter:4.0.0'
         testImplementation 'org.assertj:assertj-core:3.21.0'
 
     }
@@ -350,11 +354,11 @@ subprojects {
 }
 
 task('generate-docker') {
+    dependsOn(':airbyte-bootloader:assemble')
     dependsOn(':airbyte-workers:assemble')
     dependsOn(':airbyte-webapp:assemble')
     dependsOn(':airbyte-server:assemble')
     dependsOn(':airbyte-scheduler:app:assemble')
-    dependsOn(':airbyte-migration:assemble')
     dependsOn(':airbyte-db:lib:assemble')
     dependsOn(':airbyte-config:init:assemble')
     dependsOn(':airbyte-temporal:assemble')
@@ -379,7 +383,6 @@ tasks.withType(AbstractArchiveTask) {
 //        ':airbyte-config:persistence',
 //        ':airbyte-db:lib',
 //        ':airbyte-json-validation',
-//        ':airbyte-migration',
 //        ':airbyte-notification',
 //        ':airbyte-protocol:models',
 //        ':airbyte-scheduler:client',

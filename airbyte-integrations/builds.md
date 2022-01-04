@@ -4,6 +4,7 @@
 
 |name |status |
 | :--- | :--- |
+| 3PL Central  | [![source-amazon-seller-partner](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-tplcentral%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-tplcentral) |
 | Airtable  | [![source-airtable](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-airtable%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-airtable) |
 | Amazon Seller Partner  | [![source-amazon-seller-partner](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-amazon-seller-partner%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-amazon-seller-partner) |
 | Amplitude   | [![source-amplitude](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-amplitude%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-amplitude) |
@@ -59,9 +60,11 @@
 | Mixpanel   | [![source-mixpanel](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-mixpanel%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-mixpanel) |
 | Mongo DB  | [![source-mongodb-v2](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-mongodb-v2%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-mongodb-v2) |
 | Monday  | [![source-monday](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-monday%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-monday) |
+| My Hours   | [![source-my-hours](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-my-hours%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-my-hours) |
 | MySQL   | [![source-mysql](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-mysql%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-mysql) |
 | Notion   | [![source-notion](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-notion%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-notion) |
 | OneSignal   | [![source-onesignal](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-onesignal%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-onesignal) |
+| OpenWeather   | [![source-openweather](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-openweather%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-openweather) |
 | Oracle DB   | [![source-oracle](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-oracle%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-oracle) |
 | Paypal Transaction   | [![paypal-transaction](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-paypal-transaction%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-paypal-transaction) |
 | Paystack   | [![source-paystack](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-paystack%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-paystack) |
@@ -72,6 +75,7 @@
 | PrestaShop   | [![source-prestashop](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-prestashop%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-prestashop) |
 | CockroachDb   | [![source-cockroachdb](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-cockroachdb%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-cockroachdb) |
 | Confluence   | [![source-confluence](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-confluence%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-confluence) |
+| Qualaroo   | [![source-qualaroo](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-qualaroo%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-qualaroo) |
 | Quickbooks   | [![source-quickbooks-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-quickbooks-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-quickbooks-singer) |
 | Recharge   | [![source-recharge](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-recharge%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-recharge) |
 | Recurly   | [![source-recurly](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-recurly%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-recurly) |
@@ -108,11 +112,14 @@
 | :--- | :--- |
 | Azure Blob Storage | [![destination-azure-blob-storage](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-azure-blob-storage%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-azure-blob-storage) |
 | BigQuery   | [![destination-bigquery](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-bigquery%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-bigquery) |
+| ClickHouse   | [![destination-clickhouse](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-clickhouse%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-clickhouse) |
+| Cassandra   | [![destination-cassandra](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-cassandra%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-cassandra) |
 | Databricks | (Temporarily Not Available) |
+| Dev Null   | [![destination-dev-null](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-dev-null%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-dev-null) |
 | Elasticsearch | (Temporarily Not Available) |
+| End-to-End Testing   | [![destination-e2e-test](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-e2e-test%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-e2e-test) |
 | Google Cloud Storage (GCS) | [![destination-gcs](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-gcs%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-gcs) |
 | Google Firestore | [![destination-firestore](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-firestore%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-firestore) |
-
 | Google PubSub   | [![destination-pubsub](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-pubsub%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-pubsub) |
 | Kafka   | [![destination-kafka](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-kafka%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-kafka) |
 | Keen (Chargify)   | [![destination-keen](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-keen%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-keen) |
@@ -124,7 +131,7 @@
 | Postgres   | [![destination-postgres](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-postgres%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-postgres) |
 | Pulsar   | [![destination-pulsar](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-pulsar%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-pulsar) |
 | Redshift   | [![destination-redshift](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-redshift%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-redshift) |
+| Rockset   | [![destination-rockset](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-rockset%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-rockset) |
 | S3         | [![destination-s3](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-s3%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-s3) |
 | SFTP-JSON   | [![destination-sftp-json](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-sftp-json%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-sftp-json) |
-| Snowflake   | [![destination-snowflake](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-snowflake%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-snowflake) |
-| Cassandra   | [![destination-cassandra](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-cassandra%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-cassandra) |
+| Snowflake   | [![destination-snowflake](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-snowflake%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-snowflake) |\

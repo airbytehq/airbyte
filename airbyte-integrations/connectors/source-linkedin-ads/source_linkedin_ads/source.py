@@ -67,6 +67,18 @@ class LinkedinAdsStream(HttpStream, ABC):
         """
         yield from transform_data(response.json().get("elements"))
 
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 429:
+            error_message = (
+                f"Stream {self.name}: LinkedIn API requests are rate limited. "
+                f"Rate limits specify the maximum number of API calls that can be made in a 24 hour period. "
+                f"These limits reset at midnight UTC every day. "
+                f"You can find more information here https://docs.airbyte.io/integrations/sources/linkedin-ads. "
+                f"Also quotas and usage are here: https://www.linkedin.com/developers/apps."
+            )
+            self.logger.error(error_message)
+        return super().should_retry(response)
+
 
 class Accounts(LinkedinAdsStream):
     """

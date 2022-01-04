@@ -49,6 +49,7 @@ public class MongoUtils {
   private static final String MISSING_TYPE = "missing";
   private static final String NULL_TYPE = "null";
   private static final String AIRBYTE_SUFFIX = "_aibyte_transform";
+  private static final int DISCOVER_LIMIT = 10000;
 
   public static JsonSchemaPrimitive getType(final BsonType dataType) {
     return switch (dataType) {
@@ -123,7 +124,7 @@ public class MongoUtils {
       if (data != null) {
         jsonNodes.put(fieldName, data.asText());
       } else {
-        LOGGER.error("Field list out of sync, Document doesn't contain field: {}", fieldName);
+        LOGGER.debug("WARNING Field list out of sync, Document doesn't contain field: {}", fieldName);
       }
     }
   }
@@ -161,7 +162,7 @@ public class MongoUtils {
       case DOUBLE -> o.put(fieldName, reader.readDouble());
       case DECIMAL128 -> o.put(fieldName, toDouble(reader.readDecimal128()));
       case TIMESTAMP -> o.put(fieldName, DataTypeUtils.toISO8601StringWithMilliseconds(reader.readTimestamp().getValue()));
-      case DATE_TIME -> o.put(fieldName, DataTypeUtils.toISO8601String(reader.readDateTime()));
+      case DATE_TIME -> o.put(fieldName, DataTypeUtils.toISO8601StringWithMilliseconds(reader.readDateTime()));
       case BINARY -> o.put(fieldName, toByteArray(reader.readBinaryData()));
       case SYMBOL -> o.put(fieldName, reader.readSymbol());
       case STRING -> o.put(fieldName, reader.readString());
@@ -194,6 +195,7 @@ public class MongoUtils {
 
   private static List<String> getFieldsName(MongoCollection<Document> collection) {
     AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
+        new Document("$limit", DISCOVER_LIMIT),
         new Document("$project", new Document("arrayofkeyvalue", new Document("$objectToArray", "$$ROOT"))),
         new Document("$unwind", "$arrayofkeyvalue"),
         new Document("$group", new Document("_id", null).append("allkeys", new Document("$addToSet", "$arrayofkeyvalue.k")))));
@@ -207,6 +209,7 @@ public class MongoUtils {
   private static ArrayList<String> getTypes(MongoCollection<Document> collection, String name) {
     var fieldName = "$" + name;
     AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
+        new Document("$limit", DISCOVER_LIMIT),
         new Document("$project", new Document("_id", 0).append("fieldType", new Document("$type", fieldName))),
         new Document("$group", new Document("_id", new Document("fieldType", "$fieldType"))
             .append("count", new Document("$sum", 1)))));

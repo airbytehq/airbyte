@@ -3,5 +3,6 @@
   "name": "Freshsales",
   "dockerRepository": "airbyte/source-freshsales",
   "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/freshsales"
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/freshsales",
+  "icon": "freshsales.svg"
 }

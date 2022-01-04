@@ -2,7 +2,9 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import json
 import logging
+import re
 from collections import Counter, defaultdict
 from functools import reduce
 from logging import Logger
@@ -13,9 +15,11 @@ import pytest
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Status, Type
 from docker.errors import ContainerError
 from jsonschema import validate
+from jsonschema._utils import flatten
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, make_hashable, verify_records_schema
+from source_acceptance_test.utils.common import find_key_inside_schema
 from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
 
 
@@ -37,6 +41,10 @@ class TestSpec(BaseTest):
             spec = spec_messages[0].spec
             request.spec_cache = spec
         return request.spec_cache
+
+    @pytest.fixture(name="connector_spec_dict")
+    def connector_spec_dict_fixture(request: BaseTest, actual_connector_spec):
+        return json.loads(actual_connector_spec.json())
 
     def test_match_expected(
         self, connector_spec: ConnectorSpecification, actual_connector_spec: ConnectorSpecification, connector_config: SecretDict
@@ -65,6 +73,12 @@ class TestSpec(BaseTest):
 
     def test_secret_never_in_the_output(self):
         """This test should be injected into any docker command it needs to know current config and spec"""
+
+    def test_defined_refs_exist_in_json_spec_file(self, connector_spec_dict: dict):
+        """Checking for the presence of unresolved `$ref`s values within each json spec file"""
+        check_result = find_key_inside_schema(schema_item=connector_spec_dict)
+
+        assert not check_result, "Found unresolved `$refs` value in spec.json file"
 
     def test_oauth_flow_parameters(self, actual_connector_spec: ConnectorSpecification):
         """
@@ -148,6 +162,16 @@ class TestDiscovery(BaseTest):
                     properties, cursor_path
                 ), f"Some of defined cursor fields {stream.default_cursor_field} are not specified in discover schema properties for {stream_name} stream"
 
+    def test_defined_refs_exist_in_schema(self, connector_config, discovered_catalog):
+        """Checking for the presence of unresolved `$ref`s values within each json schema"""
+        schemas_errors = []
+        for stream_name, stream in discovered_catalog.items():
+            check_result = find_key_inside_schema(schema_item=stream.json_schema, key="$ref")
+            if check_result is not None:
+                schemas_errors.append({stream_name: check_result})
+
+        assert not schemas_errors, f"Found unresolved `$refs` values for selected streams: {tuple(schemas_errors)}."
+
 
 def primary_keys_for_records(streams, records):
     streams_with_primary_key = [stream for stream in streams if stream.stream.source_defined_primary_key]
@@ -219,6 +243,45 @@ class TestBasicRead(BaseTest):
         streams_without_records = streams_without_records - allowed_empty_streams
         assert not streams_without_records, f"All streams should return some records, streams without records: {streams_without_records}"
 
+    def _validate_field_appears_at_least_once_in_stream(self, records: List, schema: Dict):
+        """
+        Get all possible schema paths, then diff with existing record paths.
+        In case of `oneOf` or `anyOf` schema props, compare only choice which is present in records.
+        """
+        expected_paths = get_expected_schema_structure(schema, annotate_one_of=True)
+        expected_paths = set(flatten(tuple(expected_paths)))
+
+        for record in records:
+            record_paths = set(get_object_structure(record))
+            paths_to_remove = {path for path in expected_paths if re.sub(r"\([0-9]*\)", "", path) in record_paths}
+            for path in paths_to_remove:
+                path_parts = re.split(r"\([0-9]*\)", path)
+                if len(path_parts) > 1:
+                    expected_paths -= {path for path in expected_paths if path_parts[0] in path}
+            expected_paths -= paths_to_remove
+
+        return sorted(list(expected_paths))
+
+    def _validate_field_appears_at_least_once(self, records: List, configured_catalog: ConfiguredAirbyteCatalog):
+        """
+        Validate if each field in a stream has appeared at least once in some record.
+        """
+
+        stream_name_to_empty_fields_mapping = {}
+        for stream in configured_catalog.streams:
+            stream_records = [record.data for record in records if record.stream == stream.stream.name]
+
+            empty_field_paths = self._validate_field_appears_at_least_once_in_stream(
+                records=stream_records, schema=stream.stream.json_schema
+            )
+            if empty_field_paths:
+                stream_name_to_empty_fields_mapping[stream.stream.name] = empty_field_paths
+
+        msg = "Following streams has records with fields, that are either null or not present in each output record:\n"
+        for stream_name, fields in stream_name_to_empty_fields_mapping.items():
+            msg += f"`{stream_name}` stream has `{fields}` empty fields\n"
+        assert not stream_name_to_empty_fields_mapping, msg
+
     def _validate_expected_records(
         self, records: List[AirbyteMessage], expected_records: List[AirbyteMessage], flags, detailed_logger: Logger
     ):
@@ -267,6 +330,10 @@ class TestBasicRead(BaseTest):
                 assert pk_value is not None, (
                     f"Primary key subkeys {repr(pk_path)} " f"have null values or not present in {record.stream} stream records."
                 )
+
+        # TODO: remove this condition after https://github.com/airbytehq/airbyte/issues/8312 is done
+        if inputs.validate_data_points:
+            self._validate_field_appears_at_least_once(records=records, configured_catalog=configured_catalog)
 
         if expected_records:
             self._validate_expected_records(

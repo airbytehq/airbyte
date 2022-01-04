@@ -100,9 +100,9 @@ Please read the [CDC docs](../../understanding-airbyte/cdc.md) for an overview o
 
 Follow one of these guides to enable logical replication:
 
-* [Bare Metal, VMs \(EC2/GCE/etc\), Docker, etc.](postgres.md#setting-up-cdc-on-bare-metal-vms-ec2gceetc-docker-etc)
-* [AWS Postgres RDS or Aurora](postgres.md#setting-up-cdc-on-aws-postgres-rds-or-aurora)
-* [Azure Database for Postgres](postgres.md#setting-up-cdc-on-azure-database-for-postgres)
+* [Bare Metal, VMs \(EC2/GCE/etc\), Docker, etc.](postgres.md#cdc-on-bare-metal-vms-ec2-gce-etc-docker-etc.)
+* [AWS Postgres RDS or Aurora](postgres.md#cdc-on-aws-postgres-rds-or-aurora)
+* [Azure Database for Postgres](postgres.md#cdc-on-azure-database-for-postgres)
 
 #### 2. Add user-level permissions
 
@@ -203,93 +203,91 @@ This produces the private key in pem format, and the public key remains in the s
 
 ## Data type mapping
 
-Postgres data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/PostresSourceComprehensiveTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
+According to Postgres [documentation](https://www.postgresql.org/docs/14/datatype.html), Postgres data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/PostgresSourceDatatypeTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
-| Postgres Type | Resulting Type | Notes |
-| :--- | :--- | :--- |
-| `bigint` | number |  |
-| `bigserial` | number |  |
-| `bit` | boolean |  |
-| `blob` | boolean |  |
-| `boolean` | boolean |  |
-| `box` | string |  |
-| `bytea` | object |  |
-| `character` | string |  |
-| `character varying` | string |  |
-| `cidr` | string |  |
-| `circle` | string |  |
-| `citext` | string |  |
-| `date` | string |  |
-| `double precision` | string |  |
-| `enum` | number |  |
-| `float` | number |  |
-| `float8` | number |  |
-| `hstore` | object | may be de-nested depending on the destination you are syncing into |
-| `inet` | string |  |
-| `int` | number |  |
-| `interval` | string |  |
-| `inventory_item` | string |  |
-| `json` | string |  |
-| `jsonb` | string |  |
-| `line` | string |  |
-| `lseg` | string |  |
-| `macaddr` | string |  |
-| `macaddr8` | string |  |
-| `money` | string | When running logical replication (CDC), `money` values larger than 999999999999999 (15 nines) or smaller than -999999999999999 (15 nines)  are transmitted as null; |
-| `mood` | string |  |
-| `numeric` | number |  |
-| `path` | string |  |
-| `point` | number |  |
-| `polygon` | number |  |
-| `real` | number |  |
-| `serial` | number |  |
-| `smallint` | number |  |
-| `smallserial` | number |  |
-| `text` | string |  |
-| `text[]` | string |  |
-| `time` | string |  |
-| `timez` | string |  |
-| `time with timezone` | string | may be written as a native date type depending on the destination |
-| `time without timezone` | string | may be written as a native date type depending on the destination |
-| `timestamp with timezone` | string | may be written as a native date type depending on the destination |
-| `timestamp without timezone` | string | may be written as a native date type depending on the destination |
-| `tsrange` | string |  |
-| `tsvector` | string |  |
-| `uuid` | string |  |
-| `varchar` | string |  |
-| `xml` | string |  |
+| Postgres Type                         | Resulting Type | Notes                                                                                                                                           |
+|:--------------------------------------|:---------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| `bigint`                              | number         |                                                                                                                                                 |
+| `bigserial`, `serial8`                | number         |                                                                                                                                                 |
+| `bit`                                 | string         | Fixed-length bit string (e.g. "0100").                                                                                                          |
+| `bit varying`, `varbit`               | string         | Variable-length bit string (e.g. "0100").                                                                                                       |
+| `boolean`, `bool`                     | boolean        |                                                                                                                                                 |
+| `box`                                 | string         |                                                                                                                                                 |
+| `bytea`                               | string         | Variable length binary string with hex output format prefixed with "\x" (e.g. "\x6b707a").                                                      |
+| `character`, `char`                   | string         |                                                                                                                                                 |
+| `character varying`, `varchar`        | string         |                                                                                                                                                 |
+| `cidr`                                | string         |                                                                                                                                                 |
+| `circle`                              | string         |                                                                                                                                                 |
+| `date`                                | string         | Parsed as ISO8601 date time at midnight. Does not support B.C. dates. Issue: [#8903](https://github.com/airbytehq/airbyte/issues/8903).         |
+| `double precision`, `float`, `float8` | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902). |
+| `inet`                                | string         |                                                                                                                                                 |
+| `integer`, `int`, `int4`              | number         |                                                                                                                                                 |
+| `interval`                            | string         |                                                                                                                                                 |
+| `json`                                | string         |                                                                                                                                                 |
+| `jsonb`                               | string         |                                                                                                                                                 |
+| `line`                                | string         |                                                                                                                                                 |
+| `lseg`                                | string         |                                                                                                                                                 |
+| `macaddr`                             | string         |                                                                                                                                                 |
+| `macaddr8`                            | string         |                                                                                                                                                 |
+| `money`                               | number         |                                                                                                                                                 |
+| `numeric`, `decimal`                  | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902). |
+| `path`                                | string         |                                                                                                             |
+| `pg_lsn`                              | string         |                                                                                                             |
+| `point`                               | string         |                                                                                                             |
+| `polygon`                             | string         |                                                                                                             |
+| `real`, `float4`                      | number         |                                                                                                             |
+| `smallint`, `int2`                    | number         |                                                                                                             |
+| `smallserial`, `serial2`              | number         |                                                                                                             |
+| `serial`, `serial4`                   | number         |                                                                                                             |
+| `text`                                | string         |                                                                                                             |
+| `time`                                | string         |                                                                                                             |
+| `timetz`                              | string         |                                                                                                             |
+| `timestamp`                           | string         |                                                                                                             |
+| `timestamptz`                         | string         |                                                                                                             |
+| `tsquery`                             | string         | Not supported with CDC node. Parsed value is null. Issue: [#7911](https://github.com/airbytehq/airbyte/issues/7911) |
+| `tsvector`                            | string         |                                                                                                             |
+| `uuid`                                | string         |                                                                                                             |
+| `xml`                                 | string         |                                                                                                             |
+| `enum`                                | string         |                                                                                                             |
+| `tsrange`                             | string         |                                                                                                             |
+| `array`                               | array          | E.g. "[\"10001\",\"10002\",\"10003\",\"10004\"]".                                                           |
+| composite type                        | string         |                                                                                                             |
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.3.14 | 2021-11-17 | [8010](https://github.com/airbytehq/airbyte/pull/8010) | Added checking of privileges before table internal discovery |
-| 0.3.13 | 2021-10-26 | [7339](https://github.com/airbytehq/airbyte/pull/7339) | Support or improve support for Interval, Money, Date, various geometric data types, inventory_items, and others |
-| 0.3.12 | 2021-09-30 | [6585](https://github.com/airbytehq/airbyte/pull/6585) | Improved SSH Tunnel key generation steps |
-| 0.3.11 | 2021-09-02 | [5742](https://github.com/airbytehq/airbyte/pull/5742) | Add SSH Tunnel support |
-| 0.3.9 | 2021-08-17 | [5304](https://github.com/airbytehq/airbyte/pull/5304) | Fix CDC OOM issue |
-| 0.3.8 | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |
-| 0.3.4 | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
-| 0.3.3 | 2021-06-08 | [3960](https://github.com/airbytehq/airbyte/pull/3960) | Add method field in specification parameters |
-| 0.3.2 | 2021-05-26 | [3179](https://github.com/airbytehq/airbyte/pull/3179) | Remove `isCDC` logging |
-| 0.3.1 | 2021-04-21 | [2878](https://github.com/airbytehq/airbyte/pull/2878) | Set defined cursor for CDC |
-| 0.3.0 | 2021-04-21 | [2990](https://github.com/airbytehq/airbyte/pull/2990) | Support namespaces |
-| 0.2.7 | 2021-04-16 | [2923](https://github.com/airbytehq/airbyte/pull/2923) | SSL spec as optional |
-| 0.2.6 | 2021-04-16 | [2757](https://github.com/airbytehq/airbyte/pull/2757) | Support SSL connection |
-| 0.2.5 | 2021-04-12 | [2859](https://github.com/airbytehq/airbyte/pull/2859) | CDC bugfix |
-| 0.2.4 | 2021-04-09 | [2548](https://github.com/airbytehq/airbyte/pull/2548) | Support CDC |
-| 0.2.3 | 2021-03-28 | [2600](https://github.com/airbytehq/airbyte/pull/2600) | Add NCHAR and NVCHAR support to DB and cursor type casting |
-| 0.2.2 | 2021-03-26 | [2460](https://github.com/airbytehq/airbyte/pull/2460) | Destination supports destination sync mode |
-| 0.2.1 | 2021-03-18 | [2488](https://github.com/airbytehq/airbyte/pull/2488) | Sources support primary keys |
-| 0.2.0 | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238) | Protocol allows future/unknown properties |
-| 0.1.13 | 2021-02-02 | [1887](https://github.com/airbytehq/airbyte/pull/1887) | Migrate AbstractJdbcSource to use iterators |
-| 0.1.12 | 2021-01-25 | [1746](https://github.com/airbytehq/airbyte/pull/1746) | Fix NPE in State Decorator |
-| 0.1.11 | 2021-01-25 | [1765](https://github.com/airbytehq/airbyte/pull/1765) | Add field titles to specification |
-| 0.1.10 | 2021-01-19 | [1724](https://github.com/airbytehq/airbyte/pull/1724) | Fix JdbcSource handling of tables with same names in different schemas |
-| 0.1.9 | 2021-01-14 | [1655](https://github.com/airbytehq/airbyte/pull/1655) | Fix JdbcSource OOM |
-| 0.1.8 | 2021-01-13 | [1588](https://github.com/airbytehq/airbyte/pull/1588) | Handle invalid numeric values in JDBC source |
-| 0.1.7 | 2021-01-08 | [1307](https://github.com/airbytehq/airbyte/pull/1307) | Migrate Postgres and MySql to use new JdbcSource |
-| 0.1.6 | 2020-12-09 | [1172](https://github.com/airbytehq/airbyte/pull/1172) | Support incremental sync |
-| 0.1.5 | 2020-11-30 | [1038](https://github.com/airbytehq/airbyte/pull/1038) | Change JDBC sources to discover more than standard schemas |
-| 0.1.4 | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file |
+| Version | Date       | Pull Request                                           | Subject                                                                                                         |
+|:--------|:-----------|:-------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 0.4.0   | 2021-12-13 | [8726](https://github.com/airbytehq/airbyte/pull/8726) | Support all Postgres types                                                                                      |
+| 0.3.17  | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key                                                                        |
+| 0.3.16  | 2021-11-28 | [7995](https://github.com/airbytehq/airbyte/pull/7995) | Fixed money type with amount > 1000                                                                             |
+| 0.3.15  | 2021-11-26 | [8066](https://github.com/airbytehq/airbyte/pull/8266) | Fixed the case, when Views are not listed during schema discovery                                               |
+| 0.3.14  | 2021-11-17 | [8010](https://github.com/airbytehq/airbyte/pull/8010) | Added checking of privileges before table internal discovery                                                    |
+| 0.3.13  | 2021-10-26 | [7339](https://github.com/airbytehq/airbyte/pull/7339) | Support or improve support for Interval, Money, Date, various geometric data types, inventory_items, and others |
+| 0.3.12  | 2021-09-30 | [6585](https://github.com/airbytehq/airbyte/pull/6585) | Improved SSH Tunnel key generation steps                                                                        |
+| 0.3.11  | 2021-09-02 | [5742](https://github.com/airbytehq/airbyte/pull/5742) | Add SSH Tunnel support                                                                                          |
+| 0.3.9   | 2021-08-17 | [5304](https://github.com/airbytehq/airbyte/pull/5304) | Fix CDC OOM issue                                                                                               |
+| 0.3.8   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator                                                                                     |
+| 0.3.4   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support                                                                 |
+| 0.3.3   | 2021-06-08 | [3960](https://github.com/airbytehq/airbyte/pull/3960) | Add method field in specification parameters                                                                    |
+| 0.3.2   | 2021-05-26 | [3179](https://github.com/airbytehq/airbyte/pull/3179) | Remove `isCDC` logging                                                                                          |
+| 0.3.1   | 2021-04-21 | [2878](https://github.com/airbytehq/airbyte/pull/2878) | Set defined cursor for CDC                                                                                      |
+| 0.3.0   | 2021-04-21 | [2990](https://github.com/airbytehq/airbyte/pull/2990) | Support namespaces                                                                                              |
+| 0.2.7   | 2021-04-16 | [2923](https://github.com/airbytehq/airbyte/pull/2923) | SSL spec as optional                                                                                            |
+| 0.2.6   | 2021-04-16 | [2757](https://github.com/airbytehq/airbyte/pull/2757) | Support SSL connection                                                                                          |
+| 0.2.5   | 2021-04-12 | [2859](https://github.com/airbytehq/airbyte/pull/2859) | CDC bugfix                                                                                                      |
+| 0.2.4   | 2021-04-09 | [2548](https://github.com/airbytehq/airbyte/pull/2548) | Support CDC                                                                                                     |
+| 0.2.3   | 2021-03-28 | [2600](https://github.com/airbytehq/airbyte/pull/2600) | Add NCHAR and NVCHAR support to DB and cursor type casting                                                      |
+| 0.2.2   | 2021-03-26 | [2460](https://github.com/airbytehq/airbyte/pull/2460) | Destination supports destination sync mode                                                                      |
+| 0.2.1   | 2021-03-18 | [2488](https://github.com/airbytehq/airbyte/pull/2488) | Sources support primary keys                                                                                    |
+| 0.2.0   | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238) | Protocol allows future/unknown properties                                                                       |
+| 0.1.13  | 2021-02-02 | [1887](https://github.com/airbytehq/airbyte/pull/1887) | Migrate AbstractJdbcSource to use iterators                                                                     |
+| 0.1.12  | 2021-01-25 | [1746](https://github.com/airbytehq/airbyte/pull/1746) | Fix NPE in State Decorator                                                                                      |
+| 0.1.11  | 2021-01-25 | [1765](https://github.com/airbytehq/airbyte/pull/1765) | Add field titles to specification                                                                               |
+| 0.1.10  | 2021-01-19 | [1724](https://github.com/airbytehq/airbyte/pull/1724) | Fix JdbcSource handling of tables with same names in different schemas                                          |
+| 0.1.9   | 2021-01-14 | [1655](https://github.com/airbytehq/airbyte/pull/1655) | Fix JdbcSource OOM                                                                                              |
+| 0.1.8   | 2021-01-13 | [1588](https://github.com/airbytehq/airbyte/pull/1588) | Handle invalid numeric values in JDBC source                                                                    |
+| 0.1.7   | 2021-01-08 | [1307](https://github.com/airbytehq/airbyte/pull/1307) | Migrate Postgres and MySql to use new JdbcSource                                                                |
+| 0.1.6   | 2020-12-09 | [1172](https://github.com/airbytehq/airbyte/pull/1172) | Support incremental sync                                                                                        |
+| 0.1.5   | 2020-11-30 | [1038](https://github.com/airbytehq/airbyte/pull/1038) | Change JDBC sources to discover more than standard schemas                                                      |
+| 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file                                                                         |
 

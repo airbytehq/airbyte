@@ -1,5 +1,5 @@
-name: 'Runner Start (AWS)'
-description: 'Starting Runner on AWS Cloud'
+name: "Runner Start (AWS)"
+description: "Starting Runner on AWS Cloud"
 inputs:
   aws-access-key-id:
     required: true
@@ -8,16 +8,16 @@ inputs:
   github-token:
     required: true
   ec2-image-id:
-    default: 'ami-04bd6e81239f4f3fb'
+    default: "ami-04bd6e81239f4f3fb"
     required: true
   ec2-instance-type:
-    default: 'c5.2xlarge'
+    default: "c5.2xlarge"
     required: true
   subnet-id:
-    default: 'subnet-0469a9e68a379c1d3'
+    default: "subnet-0469a9e68a379c1d3"
     required: true
   security-group-id:
-    default: 'sg-0793f3c9413f21970'
+    default: "sg-0793f3c9413f21970"
     required: true
   label:
     required: false
@@ -40,7 +40,7 @@ runs:
         aws-region: us-east-2
     - name: Start EC2 runner
       id: start-ec2-runner
-      uses: machulav/ec2-github-runner@v2.2.1
+      uses: machulav/ec2-github-runner@v2.3.0
       with:
         mode: start
         github-token: ${{ inputs.github-token }}

@@ -37,6 +37,11 @@ public class EmptyAirbyteSource implements AirbyteSource {
   }
 
   @Override
+  public int getExitValue() {
+    return 0;
+  }
+
+  @Override
   public Optional<AirbyteMessage> attemptRead() {
     if (!hasEmittedState.get()) {
       hasEmittedState.compareAndSet(false, true);

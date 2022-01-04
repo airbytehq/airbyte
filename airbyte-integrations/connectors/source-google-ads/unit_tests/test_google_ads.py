@@ -5,6 +5,7 @@
 from datetime import date
 
 import pendulum
+from pendulum.tz.timezone import Timezone
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.streams import IncrementalGoogleAdsStream, chunk_date_range
 
@@ -109,11 +110,46 @@ def test_get_date_params():
     # Please note that this is equal to inputted stream_slice start date + 1 day
     mock_start_date = "2021-05-19"
     mock_end_date = "2021-06-18"
-    start_date, end_date = IncrementalGoogleAdsStream.get_date_params(
+    mock_conversion_window_days = 14
+
+    incremental_stream_config = dict(
+        conversion_window_days=mock_conversion_window_days,
+        start_date=mock_start_date,
+        api=MockGoogleAdsClient(SAMPLE_CONFIG),
+        time_zone="local",
+    )
+
+    start_date, end_date = IncrementalGoogleAdsStream(**incremental_stream_config).get_date_params(
         stream_slice={"segments.date": "2021-05-18"}, cursor_field="segments.date", end_date=pendulum.parse("2021-08-15")
     )
 
     assert mock_start_date == start_date and mock_end_date == end_date
+
+
+def test_get_date_params_with_time_zone():
+    time_zone_chatham = Timezone("Pacific/Chatham")  # UTC+12:45
+    mock_start_date_chatham = pendulum.today(tz=time_zone_chatham).subtract(days=1).to_date_string()
+    time_zone_honolulu = Timezone("Pacific/Honolulu")  # UTC-10:00
+    mock_start_date_honolulu = pendulum.today(tz=time_zone_honolulu).subtract(days=1).to_date_string()
+
+    mock_conversion_window_days = 14
+
+    incremental_stream_config = dict(
+        conversion_window_days=mock_conversion_window_days,
+        start_date=mock_start_date_chatham,
+        api=MockGoogleAdsClient(SAMPLE_CONFIG),
+        time_zone=time_zone_chatham,
+    )
+    start_date_chatham, end_date_chatham = IncrementalGoogleAdsStream(**incremental_stream_config).get_date_params(
+        stream_slice={"segments.date": mock_start_date_chatham}, cursor_field="segments.date"
+    )
+
+    incremental_stream_config.update({"start_date": mock_start_date_honolulu, "time_zone": time_zone_honolulu})
+    start_date_honolulu, end_date_honolulu = IncrementalGoogleAdsStream(**incremental_stream_config).get_date_params(
+        stream_slice={"segments.date": mock_start_date_honolulu}, cursor_field="segments.date"
+    )
+
+    assert start_date_honolulu != start_date_chatham and end_date_honolulu != end_date_chatham
 
 
 def test_convert_schema_into_query():

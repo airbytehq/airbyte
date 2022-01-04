@@ -1,6 +1,5 @@
 {{ config(
     cluster_by = ["_AIRBYTE_EMITTED_AT"],
-    unique_key = '_AIRBYTE_AB_ID',
     schema = "_AIRBYTE_TEST_NORMALIZATION",
     tags = [ "nested-intermediate" ]
 ) }}

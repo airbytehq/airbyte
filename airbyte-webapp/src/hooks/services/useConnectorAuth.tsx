@@ -1,7 +1,5 @@
-import { useFormikContext } from "formik";
 import { useCallback, useMemo, useRef } from "react";
 import { useAsyncFn, useEffectOnce, useEvent } from "react-use";
-import merge from "lodash.merge";
 
 import {
   ConnectorDefinitionSpecification,
@@ -40,13 +38,26 @@ function openWindow(url: string): void {
   }
 }
 
-export function useConnectorAuth() {
+export function useConnectorAuth(): {
+  getConsentUrl: (
+    connector: ConnectorDefinitionSpecification,
+    oAuthInputConfiguration: Record<string, unknown>
+  ) => Promise<{
+    payload: SourceGetConsentPayload | DestinationGetConsentPayload;
+    consentUrl: string;
+  }>;
+  completeOauthRequest: (
+    params: SourceGetConsentPayload | DestinationGetConsentPayload,
+    queryParams: Record<string, unknown>
+  ) => Promise<Record<string, unknown>>;
+} {
   const { workspaceId } = useCurrentWorkspace();
   const { apiUrl, oauthRedirectUrl } = useConfig();
   const middlewares = useGetService<RequestMiddleware[]>(
     "DefaultRequestMiddlewares"
   );
 
+  // TODO: move to separate initFacade and use refs instead
   const sourceAuthService = useMemo(
     () => new SourceAuthService(apiUrl, middlewares),
     [apiUrl, middlewares]
@@ -58,7 +69,8 @@ export function useConnectorAuth() {
 
   return {
     getConsentUrl: async (
-      connector: ConnectorDefinitionSpecification
+      connector: ConnectorDefinitionSpecification,
+      oAuthInputConfiguration: Record<string, unknown>
     ): Promise<{
       payload: SourceGetConsentPayload | DestinationGetConsentPayload;
       consentUrl: string;
@@ -68,6 +80,7 @@ export function useConnectorAuth() {
           workspaceId,
           sourceDefinitionId: ConnectorSpecification.id(connector),
           redirectUrl: `${oauthRedirectUrl}/auth_flow`,
+          oAuthInputConfiguration,
         };
         const response = await sourceAuthService.getConsentUrl(payload);
 
@@ -77,6 +90,7 @@ export function useConnectorAuth() {
           workspaceId,
           destinationDefinitionId: ConnectorSpecification.id(connector),
           redirectUrl: `${oauthRedirectUrl}/auth_flow`,
+          oAuthInputConfiguration,
         };
         const response = await destinationAuthService.getConsentUrl(payload);
 
@@ -99,42 +113,48 @@ export function useConnectorAuth() {
 }
 
 export function useRunOauthFlow(
-  connector: ConnectorDefinitionSpecification
+  connector: ConnectorDefinitionSpecification,
+  onDone?: (values: Record<string, unknown>) => void
 ): {
   loading: boolean;
   done?: boolean;
-  run: () => void;
+  run: (oauthInputParams: Record<string, unknown>) => void;
 } {
-  const { values, setValues } = useFormikContext();
   const { getConsentUrl, completeOauthRequest } = useConnectorAuth();
   const param = useRef<
     SourceGetConsentPayload | DestinationGetConsentPayload
   >();
 
-  const [{ loading }, onStartOauth] = useAsyncFn(async () => {
-    const consentRequestInProgress = await getConsentUrl(connector);
+  const [{ loading }, onStartOauth] = useAsyncFn(
+    async (oauthInputParams: Record<string, unknown>) => {
+      const consentRequestInProgress = await getConsentUrl(
+        connector,
+        oauthInputParams
+      );
 
-    param.current = consentRequestInProgress.payload;
-    openWindow(consentRequestInProgress.consentUrl);
-  }, [connector]);
+      param.current = consentRequestInProgress.payload;
+      openWindow(consentRequestInProgress.consentUrl);
+    },
+    [connector]
+  );
 
   const [{ loading: loadingCompleteOauth, value }, completeOauth] = useAsyncFn(
     async (queryParams: Record<string, unknown>) => {
       const oauthStartedPayload = param.current;
 
       if (oauthStartedPayload) {
-        const connectionConfiguration = await completeOauthRequest(
+        const completeOauthResponse = await completeOauthRequest(
           oauthStartedPayload,
           queryParams
         );
 
-        setValues(merge(values, { connectionConfiguration }));
+        onDone?.(completeOauthResponse);
         return true;
       }
 
-      return false;
+      return !!oauthStartedPayload;
     },
-    [connector, values]
+    [connector, onDone]
   );
 
   const onOathGranted = useCallback(
@@ -161,7 +181,7 @@ export function useRunOauthFlow(
   };
 }
 
-export function useResolveRedirect(): void {
+export function useResolveNavigate(): void {
   const { query } = useRouter();
 
   useEffectOnce(() => {

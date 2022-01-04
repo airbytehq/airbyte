@@ -84,7 +84,7 @@ public class HubspotOAuthFlow extends BaseOAuth2Flow {
    *
    */
   @Override
-  protected String getAccessTokenUrl() {
+  protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
     return "https://api.hubapi.com/oauth/v1/token";
   }
 

@@ -219,17 +219,6 @@ class Stream(ABC):
     def list(self, fields) -> Iterable:
         yield from self.read(partial(self._api.get, url=self.url))
 
-    def _filter_dynamic_fields(self, records: Iterable) -> Iterable:
-        """Skip certain fields because they are too dynamic and change every call (timers, etc),
-        see https://github.com/airbytehq/airbyte/issues/2397
-        """
-        for record in records:
-            if isinstance(record, Mapping) and "properties" in record:
-                for key in list(record["properties"].keys()):
-                    if key.startswith("hs_time_in"):
-                        record["properties"].pop(key)
-            yield record
-
     @staticmethod
     def _cast_value(declared_field_types: List, field_name: str, field_value: Any, declared_format: str = None) -> Any:
         """
@@ -358,7 +347,7 @@ class Stream(ABC):
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         default_params = {self.limit_field: self.limit}
         params = {**default_params, **params} if params else {**default_params}
-        yield from self._filter_dynamic_fields(self._filter_old_records(self._read(getter, params)))
+        yield from self._filter_old_records(self._read(getter, params))
 
     def parse_response(self, response: Union[Mapping[str, Any], List[dict]]) -> Iterator:
         if isinstance(response, Mapping):
@@ -447,6 +436,9 @@ class IncrementalStream(Stream, ABC):
 
     state_pk = "timestamp"
     limit = 1000
+    # Flag which enable/disable chunked read in read_chunked method
+    # False -> chunk size is max (only one slice), True -> chunk_size is 30 days
+    need_chunk = True
 
     @property
     @abstractmethod
@@ -457,12 +449,15 @@ class IncrementalStream(Stream, ABC):
     def state(self) -> Optional[Mapping[str, Any]]:
         """Current state, if wasn't set return None"""
         if self._state:
-            return {self.state_pk: str(self._state)}
+            return (
+                {self.state_pk: int(self._state.timestamp() * 1000)} if self.state_pk == "timestamp" else {self.state_pk: str(self._state)}
+            )
         return None
 
     @state.setter
     def state(self, value):
-        self._state = pendulum.parse(value[self.state_pk])
+        state = value[self.state_pk]
+        self._state = pendulum.parse(str(pendulum.from_timestamp(state / 1000))) if isinstance(state, int) else pendulum.parse(state)
         self._start_date = max(self._state, self._start_date)
 
     def __init__(self, *args, **kwargs):
@@ -488,12 +483,13 @@ class IncrementalStream(Stream, ABC):
                 self._start_date = self._state
 
     def read_chunked(
-        self, getter: Callable, params: Mapping[str, Any] = None, chunk_size: pendulum.duration = pendulum.duration(days=1)
+        self, getter: Callable, params: Mapping[str, Any] = None, chunk_size: pendulum.duration = pendulum.duration(days=30)
     ) -> Iterator:
         params = {**params} if params else {}
         now_ts = int(pendulum.now().timestamp() * 1000)
         start_ts = int(self._start_date.timestamp() * 1000)
-        chunk_size = int(chunk_size.total_seconds() * 1000)
+        max_delta = now_ts - start_ts
+        chunk_size = int(chunk_size.total_seconds() * 1000) if self.need_chunk else max_delta
 
         for ts in range(start_ts, now_ts, chunk_size):
             end_ts = ts + chunk_size
@@ -564,6 +560,12 @@ class CRMObjectStream(Stream):
             yield record
 
 
+class CRMObjectIncrementalStream(CRMObjectStream, IncrementalStream):
+    state_pk = "updatedAt"
+    limit = 100
+    need_chunk = False
+
+
 class CampaignStream(Stream):
     """Email campaigns, API v1
     There is some confusion between emails and campaigns in docs, this endpoint returns actual emails
@@ -582,7 +584,7 @@ class CampaignStream(Stream):
             yield {**row, **record}
 
 
-class ContactListStream(Stream):
+class ContactListStream(IncrementalStream):
     """Contact lists, API v1
     Docs: https://legacydocs.hubspot.com/docs/methods/lists/get_lists
     """
@@ -593,6 +595,7 @@ class ContactListStream(Stream):
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
     limit_field = "count"
+    need_chunk = False
 
 
 class DealStageHistoryStream(Stream):
@@ -619,7 +622,7 @@ class DealStageHistoryStream(Stream):
         yield from self.read(partial(self._api.get, url=self.url), params)
 
 
-class DealStream(CRMObjectStream):
+class DealStream(CRMObjectIncrementalStream):
     """Deals, API v3"""
 
     def __init__(self, **kwargs):

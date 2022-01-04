@@ -25,8 +25,11 @@ def reports_stream():
         url_base="https://test.url",
         aws_signature=aws_signature,
         replication_start_date="2017-01-25T00:00:00Z",
-        marketplace_ids=["id"],
+        marketplace_id="id",
         authenticator=NoAuth(),
+        period_in_days=0,
+        report_options=None,
+        max_wait_seconds=500,
     )
     return stream
 
