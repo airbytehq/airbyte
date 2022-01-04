@@ -649,151 +649,6 @@ where 1 = 1
         return col
 
     def generate_scd_type_2_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
-        scd_sql_template = """
--- depends_on: {{ from_table }}
-with
-{{ '{% if is_incremental() %}' }}
-new_data as (
-    -- retrieve incremental "new" data
-    select
-        *
-    from {{'{{'}} {{ from_table }}  {{'}}'}}
-    {{ sql_table_comment }}
-    where 1 = 1
-    {{'{{'}} incremental_clause({{ quoted_col_emitted_at }}) {{'}}'}}
-),
-new_data_ids as (
-    -- build a subset of {{ unique_key }} from rows that are new
-    select distinct
-        {{ '{{' }} dbt_utils.surrogate_key([
-          {%- for primary_key in primary_keys %}
-            {{ primary_key }},
-          {%- endfor %}
-        ]) {{ '}}' }} as {{ unique_key }}
-    from new_data
-),
-empty_new_data as (
-    -- build an empty table to only keep the table's column types
-    select * from new_data where 1 = 0
-),
-previous_active_scd_data as (
-    -- retrieve "incomplete old" data that needs to be updated with an end date because of new changes
-    select
-        {{ '{{' }} star_intersect({{ from_table }}, this, from_alias='inc_data', intersect_alias='this_data') {{ '}}' }}
-    from {{ '{{ this }}' }} as this_data
-    -- make a join with new_data using primary key to filter active data that need to be updated only
-    join new_data_ids on this_data.{{ unique_key }} = new_data_ids.{{ unique_key }}
-    -- force left join to NULL values (we just need to transfer column types only for the star_intersect macro on schema changes)
-    {{ enable_left_join_null }}left join empty_new_data as inc_data on this_data.{{ col_ab_id }} = inc_data.{{ col_ab_id }}
-    where {{ active_row }} = 1
-),
-input_data as (
-    select {{ '{{' }} dbt_utils.star({{ from_table }}) {{ '}}' }} from new_data
-    union all
-    select {{ '{{' }} dbt_utils.star({{ from_table }}) {{ '}}' }} from previous_active_scd_data
-),
-{{ '{% else %}' }}
-input_data as (
-    select *
-    from {{'{{'}} {{ from_table }}  {{'}}'}}
-    {{ sql_table_comment }}
-),
-{{ '{% endif %}' }}
-{{ '{%- if var("destination") == "clickhouse" %}' }}
-input_data_with_active_row_num as (
-    select *,
-      row_number() over (
-        partition by {{ primary_key_partition | join(", ") }}
-        order by
-            {{ cursor_field }} {{ order_null }},
-            {{ cursor_field }} desc,
-            {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
-      ) as _airbyte_active_row_num
-    from input_data
-),
-{{ '{%- endif %}' }}
-scd_data as (
-    -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
-    select
-      {%- if parent_hash_id %}
-        {{ parent_hash_id }},
-      {%- endif %}
-      {{ '{{' }} dbt_utils.surrogate_key([
-          {%- for primary_key in primary_keys %}
-            {{ primary_key }},
-          {%- endfor %}
-      ]) {{ '}}' }} as {{ unique_key }},
-      {%- for field in fields %}
-        {{ field }},
-      {%- endfor %}
-      {{ cursor_field }} as {{ airbyte_start_at }},
-      {{ '{%- if var("destination") == "clickhouse" %}' }}
-        case when _airbyte_active_row_num = 1{{ cdc_active_row }} then 1 else 0 end as {{ active_row }},
-        {{ lag_begin }}({{ cursor_field }}) over (
-        partition by {{ primary_key_partition | join(", ") }}
-        order by
-            {{ cursor_field }} {{ order_null }},
-            {{ cursor_field }} desc,
-            {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
-        {{ lag_end }}
-      ) as {{ airbyte_end_at }},
-      {{ '{%- else %}' }}
-        lag({{ cursor_field }}) over (
-        partition by {{ primary_key_partition | join(", ") }}
-        order by
-            {{ cursor_field }} {{ order_null }},
-            {{ cursor_field }} desc,
-            {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
-      ) as {{ airbyte_end_at }},
-        case when row_number() over (
-        partition by {{ primary_key_partition | join(", ") }}
-        order by
-            {{ cursor_field }} {{ order_null }},
-            {{ cursor_field }} desc,
-            {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
-      ) = 1{{ cdc_active_row }} then 1 else 0 end as {{ active_row }},
-      {{ '{%- endif %}' }}
-      {{ col_ab_id }},
-      {{ col_emitted_at }},
-      {{ hash_id }}
-    from {{ input_data_table }}
-),
-dedup_data as (
-    select
-        -- we need to ensure de-duplicated rows for merge/update queries
-        -- additionally, we generate a unique key for the scd table
-        row_number() over (
-            partition by {{ unique_key }}, {{ airbyte_start_at }}, {{ col_emitted_at }}{{ cdc_cols }}
-            order by {{ active_row }} desc, {{ col_ab_id }}
-        ) as {{ airbyte_row_num }},
-        {{ '{{' }} dbt_utils.surrogate_key([
-          {{ quoted_unique_key }},
-          {{ quoted_airbyte_start_at }},
-          {{ quoted_col_emitted_at }}{{ quoted_cdc_cols }}
-        ]) {{ '}}' }} as {{ airbyte_unique_key_scd }},
-        scd_data.*
-    from scd_data
-)
-select
-    {%- if parent_hash_id %}
-        {{ parent_hash_id }},
-    {%- endif %}
-    {{ unique_key }},
-    {{ airbyte_unique_key_scd }},
-    {%- for field in fields %}
-        {{ field }},
-    {%- endfor %}
-    {{ airbyte_start_at }},
-    {{ airbyte_end_at }},
-    {{ active_row }},
-    {{ col_ab_id }},
-    {{ col_emitted_at }},
-    {{ '{{ current_timestamp() }}' }} as {{ col_normalized_at }},
-    {{ hash_id }}
-from dedup_data where {{ airbyte_row_num }} = 1
-        """
-        template = Template(scd_sql_template)
-
         order_null = "is null asc"
         if self.destination_type.value == DestinationType.ORACLE.value:
             order_null = "asc nulls last"
@@ -850,38 +705,194 @@ from dedup_data where {{ airbyte_row_num }} = 1
             cdc_cols += f", {cast_begin}{col_cdc_log_pos}{cast_as}" + "{{ dbt_utils.type_string() }}" + f"{cast_end}"
             quoted_cdc_cols += f", {quoted_col_cdc_log_pos}"
 
-        sql = template.render(
-            order_null=order_null,
-            airbyte_start_at=self.name_transformer.normalize_column_name("_airbyte_start_at"),
-            quoted_airbyte_start_at=self.name_transformer.normalize_column_name("_airbyte_start_at", in_jinja=True),
-            airbyte_end_at=self.name_transformer.normalize_column_name("_airbyte_end_at"),
-            active_row=self.name_transformer.normalize_column_name("_airbyte_active_row"),
-            airbyte_row_num=self.name_transformer.normalize_column_name("_airbyte_row_num"),
-            quoted_airbyte_row_num=self.name_transformer.normalize_column_name("_airbyte_row_num", in_jinja=True),
-            airbyte_unique_key_scd=self.name_transformer.normalize_column_name(f"{self.airbyte_unique_key}_scd"),
-            unique_key=self.get_unique_key(),
-            quoted_unique_key=self.get_unique_key(in_jinja=True),
-            col_ab_id=self.get_ab_id(),
-            col_emitted_at=self.get_emitted_at(),
-            quoted_col_emitted_at=self.get_emitted_at(in_jinja=True),
-            col_normalized_at=self.get_normalized_at(),
-            parent_hash_id=self.parent_hash_id(),
-            fields=self.list_fields(column_names),
-            cursor_field=self.get_cursor_field(column_names),
-            primary_keys=self.list_primary_keys(column_names),
-            primary_key_partition=self.get_primary_key_partition(column_names),
-            hash_id=self.hash_id(),
-            from_table=from_table,
-            sql_table_comment=self.sql_table_comment(include_from_table=True),
-            cdc_active_row=cdc_active_row_pattern,
-            cdc_updated_at_order=cdc_updated_order_pattern,
-            cdc_cols=cdc_cols,
-            quoted_cdc_cols=quoted_cdc_cols,
-            lag_begin=lag_begin,
-            lag_end=lag_end,
-            enable_left_join_null=enable_left_join_null,
-            input_data_table=input_data_table,
-        )
+        jinja_variables = {
+            "active_row": self.name_transformer.normalize_column_name("_airbyte_active_row"),
+            "airbyte_end_at": self.name_transformer.normalize_column_name("_airbyte_end_at"),
+            "airbyte_row_num": self.name_transformer.normalize_column_name("_airbyte_row_num"),
+            "airbyte_start_at": self.name_transformer.normalize_column_name("_airbyte_start_at"),
+            "airbyte_unique_key_scd": self.name_transformer.normalize_column_name(f"{self.airbyte_unique_key}_scd"),
+            "cdc_active_row": cdc_active_row_pattern,
+            "cdc_cols": cdc_cols,
+            "cdc_updated_at_order": cdc_updated_order_pattern,
+            "col_ab_id": self.get_ab_id(),
+            "col_emitted_at": self.get_emitted_at(),
+            "col_normalized_at": self.get_normalized_at(),
+            "cursor_field": self.get_cursor_field(column_names),
+            "enable_left_join_null": enable_left_join_null,
+            "fields": self.list_fields(column_names),
+            "from_table": from_table,
+            "hash_id": self.hash_id(),
+            "input_data_table": input_data_table,
+            "lag_begin": lag_begin,
+            "lag_end": lag_end,
+            "order_null": order_null,
+            "parent_hash_id": self.parent_hash_id(),
+            "primary_key_partition": self.get_primary_key_partition(column_names),
+            "primary_keys": self.list_primary_keys(column_names),
+            "quoted_airbyte_row_num": self.name_transformer.normalize_column_name("_airbyte_row_num", in_jinja=True),
+            "quoted_airbyte_start_at": self.name_transformer.normalize_column_name("_airbyte_start_at", in_jinja=True),
+            "quoted_cdc_cols": quoted_cdc_cols,
+            "quoted_col_emitted_at": self.get_emitted_at(in_jinja=True),
+            "quoted_unique_key": self.get_unique_key(in_jinja=True),
+            "sql_table_comment": self.sql_table_comment(include_from_table=True),
+            "unique_key": self.get_unique_key(),
+        }
+        if self.destination_type == DestinationType.CLICKHOUSE:
+            clickhouse_active_row_sql = Template(
+                """
+input_data_with_active_row_num as (
+    select *,
+      row_number() over (
+        partition by {{ primary_key_partition | join(", ") }}
+        order by
+            {{ cursor_field }} {{ order_null }},
+            {{ cursor_field }} desc,
+            {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
+      ) as _airbyte_active_row_num
+    from input_data
+),"""
+            ).render(jinja_variables)
+            jinja_variables["clickhouse_active_row_sql"] = clickhouse_active_row_sql
+            scd_columns_sql = Template(
+                """
+      case when _airbyte_active_row_num = 1{{ cdc_active_row }} then 1 else 0 end as {{ active_row }},
+      {{ lag_begin }}({{ cursor_field }}) over (
+        partition by {{ primary_key_partition | join(", ") }}
+        order by
+            {{ cursor_field }} {{ order_null }},
+            {{ cursor_field }} desc,
+            {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
+            {{ lag_end }}
+      ) as {{ airbyte_end_at }}"""
+            ).render(jinja_variables)
+            jinja_variables["scd_columns_sql"] = scd_columns_sql
+        else:
+            scd_columns_sql = Template(
+                """
+      lag({{ cursor_field }}) over (
+        partition by {{ primary_key_partition | join(", ") }}
+        order by
+            {{ cursor_field }} {{ order_null }},
+            {{ cursor_field }} desc,
+            {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
+      ) as {{ airbyte_end_at }},
+      case when row_number() over (
+        partition by {{ primary_key_partition | join(", ") }}
+        order by
+            {{ cursor_field }} {{ order_null }},
+            {{ cursor_field }} desc,
+            {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
+      ) = 1{{ cdc_active_row }} then 1 else 0 end as {{ active_row }}"""
+            ).render(jinja_variables)
+            jinja_variables["scd_columns_sql"] = scd_columns_sql
+        sql = Template(
+            """
+-- depends_on: {{ from_table }}
+with
+{{ '{% if is_incremental() %}' }}
+new_data as (
+    -- retrieve incremental "new" data
+    select
+        *
+    from {{'{{'}} {{ from_table }}  {{'}}'}}
+    {{ sql_table_comment }}
+    where 1 = 1
+    {{'{{'}} incremental_clause({{ quoted_col_emitted_at }}) {{'}}'}}
+),
+new_data_ids as (
+    -- build a subset of {{ unique_key }} from rows that are new
+    select distinct
+        {{ '{{' }} dbt_utils.surrogate_key([
+          {%- for primary_key in primary_keys %}
+            {{ primary_key }},
+          {%- endfor %}
+        ]) {{ '}}' }} as {{ unique_key }}
+    from new_data
+),
+empty_new_data as (
+    -- build an empty table to only keep the table's column types
+    select * from new_data where 1 = 0
+),
+previous_active_scd_data as (
+    -- retrieve "incomplete old" data that needs to be updated with an end date because of new changes
+    select
+        {{ '{{' }} star_intersect({{ from_table }}, this, from_alias='inc_data', intersect_alias='this_data') {{ '}}' }}
+    from {{ '{{ this }}' }} as this_data
+    -- make a join with new_data using primary key to filter active data that need to be updated only
+    join new_data_ids on this_data.{{ unique_key }} = new_data_ids.{{ unique_key }}
+    -- force left join to NULL values (we just need to transfer column types only for the star_intersect macro on schema changes)
+    {{ enable_left_join_null }}left join empty_new_data as inc_data on this_data.{{ col_ab_id }} = inc_data.{{ col_ab_id }}
+    where {{ active_row }} = 1
+),
+input_data as (
+    select {{ '{{' }} dbt_utils.star({{ from_table }}) {{ '}}' }} from new_data
+    union all
+    select {{ '{{' }} dbt_utils.star({{ from_table }}) {{ '}}' }} from previous_active_scd_data
+),
+{{ '{% else %}' }}
+input_data as (
+    select *
+    from {{'{{'}} {{ from_table }}  {{'}}'}}
+    {{ sql_table_comment }}
+),
+{{ '{% endif %}' }}
+{{ clickhouse_active_row_sql }}
+scd_data as (
+    -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
+    select
+      {%- if parent_hash_id %}
+        {{ parent_hash_id }},
+      {%- endif %}
+      {{ '{{' }} dbt_utils.surrogate_key([
+          {%- for primary_key in primary_keys %}
+            {{ primary_key }},
+          {%- endfor %}
+      ]) {{ '}}' }} as {{ unique_key }},
+      {%- for field in fields %}
+        {{ field }},
+      {%- endfor %}
+      {{ cursor_field }} as {{ airbyte_start_at }},
+      {{ scd_columns_sql }},
+      {{ col_ab_id }},
+      {{ col_emitted_at }},
+      {{ hash_id }}
+    from {{ input_data_table }}
+),
+dedup_data as (
+    select
+        -- we need to ensure de-duplicated rows for merge/update queries
+        -- additionally, we generate a unique key for the scd table
+        row_number() over (
+            partition by {{ unique_key }}, {{ airbyte_start_at }}, {{ col_emitted_at }}{{ cdc_cols }}
+            order by {{ active_row }} desc, {{ col_ab_id }}
+        ) as {{ airbyte_row_num }},
+        {{ '{{' }} dbt_utils.surrogate_key([
+          {{ quoted_unique_key }},
+          {{ quoted_airbyte_start_at }},
+          {{ quoted_col_emitted_at }}{{ quoted_cdc_cols }}
+        ]) {{ '}}' }} as {{ airbyte_unique_key_scd }},
+        scd_data.*
+    from scd_data
+)
+select
+    {%- if parent_hash_id %}
+        {{ parent_hash_id }},
+    {%- endif %}
+    {{ unique_key }},
+    {{ airbyte_unique_key_scd }},
+    {%- for field in fields %}
+        {{ field }},
+    {%- endfor %}
+    {{ airbyte_start_at }},
+    {{ airbyte_end_at }},
+    {{ active_row }},
+    {{ col_ab_id }},
+    {{ col_emitted_at }},
+    {{ '{{ current_timestamp() }}' }} as {{ col_normalized_at }},
+    {{ hash_id }}
+from dedup_data where {{ airbyte_row_num }} = 1
+"""
+        ).render(jinja_variables)
         return sql
 
     def get_cursor_field(self, column_names: Dict[str, Tuple[str, str]], in_jinja: bool = False) -> str:
