@@ -41,7 +41,7 @@ runs:
       run: |
          rm -rf .venv
          virtualenv .venv
-         source venv/bin/activate
+         source .venv/bin/activate
          JSON_CONFIG='{"module": "${{ inputs.module-name }}", "folder": "${{ inputs.module-folder }}", "lang": "py"}'
          REPORT_FOLDER=reports_${RANDOM}
          mkdir -p ${REPORT_FOLDER}
