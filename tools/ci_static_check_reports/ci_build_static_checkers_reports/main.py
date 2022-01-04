@@ -66,7 +66,7 @@ TASK_COMMANDS: Dict[str, List[str]] = {
         "pip install .",
         "pip install .[tests]",
         "coverage run -m pytest {source_path}/unit_tests || true",
-        "coverage xml --fail-under 0 --skip-covered --omit=./*_tests/*,setup.py --rcfile={toml_config_file} -o {reports_path}/coverage.xml",
+        "coverage xml --fail-under 0  --skip-empty --omit=./*_tests/*,setup.py --rcfile={toml_config_file} -o {reports_path}/coverage.xml",
     ],
     "test": [
         "mkdir {venv}/source-acceptance-test",

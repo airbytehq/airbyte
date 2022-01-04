@@ -171,11 +171,12 @@ class SonarQubeApi:
                 for rule in data["rules"]:
                     if rule["key"] == needed_rule:
                         rules[needed_rule] = rule["name"]
-            if data["total"] <= len(issues):
+            if data["paging"]["total"] <= len(issues):
                 break
             page += 1
         data = self.__get(f"measures/component?component={project_name}&additionalFields=metrics&metricKeys={','.join(REPORT_METRICS)}")
         measures = {}
+        total_coverage = None
         for measure in data["component"]["measures"]:
             metric = measure["metric"]
             if measure["metric"].startswith("new_") and measure.get("periods"):
@@ -202,6 +203,7 @@ class SonarQubeApi:
                 continue
             name, metric_type = metrics[metric]
             value = overall_value if (latest_value is None or latest_value == "0") else latest_value
+
             if metric_type == "PERCENT":
                 value = str(round(float(value), 1))
             elif metric_type == "INT":
@@ -214,6 +216,8 @@ class SonarQubeApi:
                     if value <= k:
                         value = v
                         break
+            if metric == "coverage":
+                total_coverage = value
             values.append([name, value])
 
         values += [
@@ -248,7 +252,52 @@ class SonarQubeApi:
                 ]
 
             md_file.new_table(columns=4, rows=len(issues) + 1, text=table_items, text_align='left')
-
+        coverage_files = [(k, v) for k, v in self.load_coverage_component(project_name).items()]
+        if total_coverage is not None:
+            md_file.new_line(f'#### Coverage ({total_coverage}%)')
+            while len(coverage_files) % 2:
+                coverage_files.append(("", ""))
+            table_items = ["File", "Coverage"] * 2 + list(itertools.chain.from_iterable(coverage_files))
+            md_file.new_table(columns=4, rows=int(len(coverage_files) / 2 + 1), text=table_items, text_align='left')
         md_file.create_md_file()
         self.logger.info(f"The {report_file} was generated")
         return True
+
+    def load_coverage_component(self, base_component: str) -> Mapping[str, Any]:
+
+        page = 0
+        coverage_files = {}
+        read_count = 0
+        while True:
+            page += 1
+            url = f"measures/component_tree?p={page}&component={base_component}&additionalFields=metrics&metricKeys=coverage,uncovered_lines,uncovered_conditions&strategy=children"
+            data = self.__get(url)
+            read_count += len(data["components"])
+            for component in data["components"]:
+                if component["qualifier"] == "DIR":
+                    coverage_files.update(self.load_coverage_component(base_component + ":" + component["name"]))
+                    continue
+                elif not component["measures"]:
+                    continue
+                elif component["qualifier"] == "FIL":
+                    coverage_files[component["path"]] = [m["value"] for m in component["measures"] if m["metric"] == "coverage"][0]
+            if data["paging"]["total"] <= read_count:
+                break
+        return coverage_files
+
+    # page = 1
+    # rules = {}
+    # while True:
+    #     data = self.__get(
+    #         f"measures/component_tree?p={page}&component={project_name}&additionalFields=metrics&metricKeys=coverage,uncovered_lines,uncovered_conditions&strategy=children")
+    #     needed_rules = set(issue["rule"] for issue in data["issues"])
+    #     issues += data["issues"]
+    #     for needed_rule in needed_rules:
+    #         if needed_rule in rules:
+    #             continue
+    #         for rule in data["rules"]:
+    #             if rule["key"] == needed_rule:
+    #                 rules[needed_rule] = rule["name"]
+    #     if data["paging"]["total"] <= len(issues):
+    #         break
+    #     page += 1
