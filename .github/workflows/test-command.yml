@@ -40,14 +40,6 @@ jobs:
     runs-on: ${{ needs.start-test-runner.outputs.label }}
     environment: more-secrets
     steps:
-      # GCloud SDK is needed for downloading build dependencies (e.g. Databricks JDBC driver)
-      # from gs://io-airbyte-build-dependencies. The SPEC_CACHE_SERVICE_ACCOUNT_KEY is reused
-      # for this bucket.
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
-        with:
-          service_account_key: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY }}
-          export_default_credentials: true
       - name: Search for valid connector name format
         id: regex
         uses: AsasInnab/regex-action@v1
