@@ -47,6 +47,9 @@
         "title": "Azure Blob Storage output buffer size",
         "type": "integer",
         "description": "The amount of bytes to buffer for the output stream to Azure. This will impact memory footprint on workers, but may need adjustment for performance and appropriate block size in Azure.",
+        "minimum": 1,
+        "maximum": 2147483647,
+        "default": 104857600,
         "examples": [104857600]
       },
       "format": {
