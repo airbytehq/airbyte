@@ -4716,7 +4716,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-notion:0.1.0"
+- dockerImage: "airbyte/source-notion:0.1.1"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -4730,11 +4730,13 @@
       properties:
         access_token:
           type: "string"
+          title: "Access Token"
           description: "Notion API access token, see the <a href=\"https://developers.notion.com/docs/authorization\"\
             >docs</a> for more information on how to obtain this token."
           airbyte_secret: true
         start_date:
           type: "string"
+          title: "Start Date"
           description: "The date from which you'd like to replicate data for Notion\
             \ API, in the format YYYY-MM-DDT00:00:00.000Z. All data generated after\
             \ this date will be replicated."
