@@ -154,14 +154,15 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
       final ReplicationAttemptSummary summary = new ReplicationAttemptSummary()
           .withStatus(outputStatus)
-          .withRecordsSynced(messageTracker.getRecordCount())
-          .withBytesSynced(messageTracker.getBytesCount())
+          .withRecordsSynced(messageTracker.getTotalRecordsEmitted())
+          .withBytesSynced(messageTracker.getTotalBytesEmitted())
           .withStartTime(startTime)
           .withEndTime(System.currentTimeMillis());
 
       LOGGER.info("sync summary: {}", summary);
 
       LOGGER.info("Per-Stream Committed Records: {}", messageTracker.getCommittedRecordsByStream());
+      LOGGER.info("Per-Stream Emitted Records: {}", messageTracker.getEmittedRecordsByStream());
 
       final ReplicationOutput output = new ReplicationOutput()
           .withReplicationAttemptSummary(summary)
