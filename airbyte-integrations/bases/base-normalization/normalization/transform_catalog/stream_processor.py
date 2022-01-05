@@ -1034,7 +1034,7 @@ where 1 = 1
             if suffix == "scd":
                 stg_schema = self.get_schema(True)
                 stg_table = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "stg", truncate_name)
-                if self.destination_type.value == DestinationType.SNOWFLAKE.value and stg_table[0].isdigit():
+                if stg_table[0].isdigit():
                     stg_table = f'"{stg_table}"'
                 if self.destination_type.value == DestinationType.POSTGRES.value:
                     # Keep only rows with the max emitted_at to keep incremental behavior
