@@ -1922,9 +1922,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-freshsales:0.1.0"
+- dockerImage: "airbyte/source-freshsales:0.1.1"
   spec:
-    documentationUrl: "https://docsurl.com"
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/freshsales"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Freshsales Spec"
@@ -1936,12 +1936,14 @@
       properties:
         domain_name:
           type: "string"
-          description: "Freshsales domain"
+          title: "Domain Name"
+          description: "The Name of your Freshsales domain"
           examples:
           - "mydomain.myfreshworks.com"
         api_key:
           type: "string"
-          description: "Your API Access Key. See <a href=\"https://crmsupport.freshworks.com/support/solutions/articles/50000002503-how-to-find-my-api-key-\"\
+          title: "API Key"
+          description: "Freshsales API Key. See <a href=\"https://crmsupport.freshworks.com/support/solutions/articles/50000002503-how-to-find-my-api-key-\"\
             >here</a>. The key is case sensitive."
           airbyte_secret: true
     supportsNormalization: false
