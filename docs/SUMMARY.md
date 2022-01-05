@@ -28,6 +28,7 @@
     * [Transformations with SQL (Part 1/3)](operator-guides/transformation-and-normalization/transformations-with-sql.md)
     * [Transformations with dbt (Part 2/3)](operator-guides/transformation-and-normalization/transformations-with-dbt.md)
     * [Transformations with Airbyte (Part 3/3)](operator-guides/transformation-and-normalization/transformations-with-airbyte.md)
+  * [Configuring Airbyte](operator-guides/configuring-airbyte.md)
   * [Scaling Airbyte](operator-guides/scaling-airbyte.md)
 * [Connector Catalog](integrations/README.md)
   * [Sources](integrations/sources/README.md)
