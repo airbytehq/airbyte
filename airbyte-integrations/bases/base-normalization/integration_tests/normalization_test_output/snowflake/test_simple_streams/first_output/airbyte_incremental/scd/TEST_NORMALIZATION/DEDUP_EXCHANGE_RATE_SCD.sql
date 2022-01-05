@@ -33,7 +33,7 @@ scd_data as (
         NZD,
         USD,
       DATE as _AIRBYTE_START_AT,
-        lag(DATE) over (
+      lag(DATE) over (
         partition by ID, CURRENCY, cast(NZD as 
     varchar
 )
@@ -42,7 +42,7 @@ scd_data as (
             DATE desc,
             _AIRBYTE_EMITTED_AT desc
       ) as _AIRBYTE_END_AT,
-        case when row_number() over (
+      case when row_number() over (
         partition by ID, CURRENCY, cast(NZD as 
     varchar
 )
