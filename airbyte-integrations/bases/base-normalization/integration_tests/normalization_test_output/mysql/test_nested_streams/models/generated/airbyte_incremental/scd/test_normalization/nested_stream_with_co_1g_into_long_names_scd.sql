@@ -1,7 +1,7 @@
 {{ config(
     unique_key = "_airbyte_unique_key_scd",
     schema = "test_normalization",
-    post_hook = ['drop view _airbyte_test_normalization.nested_stream_with_co_1g_into_long_names_stg'],
+    post_hook = ["drop view _airbyte_test_normalization.nested_stream_with_co_1g_into_long_names_stg"],
     tags = [ "top-level" ]
 ) }}
 -- depends_on: ref('nested_stream_with_co_1g_into_long_names_stg')

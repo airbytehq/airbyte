@@ -150,6 +150,8 @@ class DestinationNameTransformer:
         if truncate:
             result = self.truncate_identifier_name(input_name=result, conflict=conflict, conflict_level=conflict_level)
         result = self.__normalize_identifier_case(result, is_quoted=False)
+        # if input_name[0].isdigit():
+        #    result = f"adapter.quote('{result}')"
         return result
 
     def __normalize_identifier_name(

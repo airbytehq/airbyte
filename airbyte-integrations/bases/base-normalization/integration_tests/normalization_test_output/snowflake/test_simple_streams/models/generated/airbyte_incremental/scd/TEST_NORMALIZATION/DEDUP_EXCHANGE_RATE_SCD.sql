@@ -2,7 +2,7 @@
     cluster_by = ["_AIRBYTE_ACTIVE_ROW", "_AIRBYTE_UNIQUE_KEY_SCD", "_AIRBYTE_EMITTED_AT"],
     unique_key = "_AIRBYTE_UNIQUE_KEY_SCD",
     schema = "TEST_NORMALIZATION",
-    post_hook = ['drop view _AIRBYTE_TEST_NORMALIZATION.DEDUP_EXCHANGE_RATE_STG'],
+    post_hook = ["drop view _AIRBYTE_TEST_NORMALIZATION.DEDUP_EXCHANGE_RATE_STG"],
     tags = [ "top-level" ]
 ) }}
 -- depends_on: ref('DEDUP_EXCHANGE_RATE_STG')

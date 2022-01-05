@@ -1034,15 +1034,16 @@ where 1 = 1
             if suffix == "scd":
                 stg_schema = self.get_schema(True)
                 stg_table = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "stg", truncate_name)
+                stg_table = self.name_transformer.normalize_column_name(stg_table, in_jinja=False)
                 if self.destination_type.value == DestinationType.POSTGRES.value:
                     # Keep only rows with the max emitted_at to keep incremental behavior
                     config["post_hook"] = (
-                        f"['delete from {stg_schema}.{stg_table} "
+                        f'["delete from {stg_schema}.{stg_table} '
                         + f"where {self.airbyte_emitted_at} != (select max({self.airbyte_emitted_at}) "
-                        + f"from {stg_schema}.{stg_table})']"
+                        + f'from {stg_schema}.{stg_table})"]'
                     )
                 else:
-                    config["post_hook"] = f"['drop view {stg_schema}.{{ adapter.quote('{stg_table}') }}']"
+                    config["post_hook"] = f'["drop view {stg_schema}.{stg_table}"]'
             else:
                 # incremental is handled in the SCD SQL already
                 sql = self.add_incremental_clause(sql)
