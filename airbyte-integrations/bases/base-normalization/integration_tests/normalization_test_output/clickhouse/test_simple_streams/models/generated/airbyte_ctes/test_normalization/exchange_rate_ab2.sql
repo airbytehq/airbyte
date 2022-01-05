@@ -4,6 +4,7 @@
     tags = [ "top-level-intermediate" ]
 ) }}
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+-- depends_on: {{ ref('exchange_rate_ab1') }}
 select
     accurateCastOrNull(id, '{{ dbt_utils.type_bigint() }}') as id,
     nullif(accurateCastOrNull(trim(BOTH '"' from currency), '{{ dbt_utils.type_string() }}'), 'null') as currency,

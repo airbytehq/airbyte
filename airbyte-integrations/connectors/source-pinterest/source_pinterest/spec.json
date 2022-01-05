@@ -9,32 +9,32 @@
     "properties": {
       "client_id": {
         "type": "string",
-        "title": "Client id",
-        "description": "Your Pinterest client id. See the <a href=\"https://developers.pinterest.com/docs/api/v5/#tag/Authentication\">docs</a> for instructions on how to generate it.",
+        "title": "Client ID",
+        "description": "Your Pinterest client ID. See the <a href=\"https://developers.pinterest.com/docs/api/v5/#tag/Authentication\">docs</a> for instructions on how to generate it.",
         "airbyte_secret": true
       },
       "client_secret": {
         "type": "string",
-        "title": "Client secret",
+        "title": "Client Secret",
         "description": "Your Pinterest client secret. See the <a href=\"https://developers.pinterest.com/docs/api/v5/#tag/Authentication\">docs</a> for instructions on how to generate it.",
         "airbyte_secret": true
       },
       "refresh_token": {
         "type": "string",
-        "title": "Refresh token",
+        "title": "Refresh Token",
         "description": "Your Pinterest refresh token. See the <a href=\"https://developers.pinterest.com/docs/api/v5/#tag/Authentication\">docs</a> for instructions on how to generate it.",
         "airbyte_secret": true
       },
       "access_token": {
         "type": "string",
-        "title": "Access token",
+        "title": "Access Token",
         "description": "Your Pinterest access token. See the <a href=\"https://developers.pinterest.com/docs/api/v5/#tag/Authentication\">docs</a> for instructions on how to generate it.",
         "airbyte_secret": true
       },
       "start_date": {
         "type": "string",
-        "title": "Start date",
-        "description": "A date in the format YYYY-MM-DD. If you have not set a date, it will be 2020-07-28 by default.",
+        "title": "Start Date",
+        "description": "A date in the format YYYY-MM-DD. If you have not set a date, it would be defaulted to 2020-07-28.",
         "examples": ["2020-07-28"]
       }
     }
