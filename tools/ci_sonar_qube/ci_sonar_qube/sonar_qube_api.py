@@ -258,10 +258,13 @@ class SonarQubeApi:
                     link=f'{self._host}/coding_rules?open={rule_name}&rule_key={rule_name}',
                     text=rule_name
                 )
+                filename = issue["component"].split("/")[-1]
+                if issue.get("line"):
+                    filename += ":" + issue["line"]
                 table_items += [
                     f'{rule_link} ({issue["severity"]})',
                     # issue["component"].replace(issue["project"] + ":", ""),
-                    f'{issue["component"].split("/")[-1]}:{issue["line"]}',
+                    filename,
                     rules[rule_name],
                     issue["message"],
                 ]
