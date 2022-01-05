@@ -18,6 +18,8 @@ import org.slf4j.LoggerFactory;
 class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
+  private static final String SHOW_SCHEMAS = "show schemas;";
+  private static final String NAME = "name";
 
   @Override
   public void createTableIfNotExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
@@ -29,6 +31,10 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
             + ") data_retention_time_in_days = 0;",
         schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     database.execute(createTableQuery);
+  }
+
+  public boolean isSchemaExists(JdbcDatabase database, String outputSchema) throws Exception {
+    return database.query(SHOW_SCHEMAS).map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equalsIgnoreCase);
   }
 
   @Override

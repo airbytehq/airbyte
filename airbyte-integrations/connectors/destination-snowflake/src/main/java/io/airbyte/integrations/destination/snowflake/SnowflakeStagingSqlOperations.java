@@ -20,6 +20,8 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeStagingSqlOperations extends JdbcSqlOperations implements SqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
+  private static final String SHOW_SCHEMAS = "show schemas;";
+  private static final String NAME = "name";
 
   @Override
   protected void insertRecordsInternal(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String stage) throws Exception {
@@ -75,6 +77,11 @@ public class SnowflakeStagingSqlOperations extends JdbcSqlOperations implements 
             + "%s TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()\n"
             + ") data_retention_time_in_days = 0;",
         schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+  }
+
+  @Override
+  public boolean isSchemaExists(JdbcDatabase database, String outputSchema) throws Exception {
+    return database.query(SHOW_SCHEMAS).map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equalsIgnoreCase);
   }
 
 }

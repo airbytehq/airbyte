@@ -28,7 +28,9 @@ public abstract class JdbcSqlOperations implements SqlOperations {
 
   @Override
   public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
-    database.execute(createSchemaQuery(schemaName));
+    if (!isSchemaExists(database, schemaName)) {
+      database.execute(createSchemaQuery(schemaName));;
+    }
   }
 
   private String createSchemaQuery(final String schemaName) {
