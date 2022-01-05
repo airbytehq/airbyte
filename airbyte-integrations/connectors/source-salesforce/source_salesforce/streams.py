@@ -21,7 +21,6 @@ from .rate_limiting import default_backoff_handler
 
 
 class SalesforceStream(HttpStream, ABC):
-
     page_size = 2000
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
@@ -99,7 +98,6 @@ class SalesforceStream(HttpStream, ABC):
 
 
 class BulkSalesforceStream(SalesforceStream):
-
     page_size = 30000
     DEFAULT_WAIT_TIMEOUT_MINS = 10
     MAX_CHECK_INTERVAL_SECONDS = 2.0
@@ -143,20 +141,34 @@ class BulkSalesforceStream(SalesforceStream):
             return job_id
         except exceptions.HTTPError as error:
             if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
+                # A part of streams can't be used by BULK API. Every API version can have a custom list of
+                # these sobjects. Another part of them can be generated dynamically. That's why we can't track
+                # them preliminarily and there is only one way is to except error with necessary messages about
+                # their limitations. Now we know about 3 different reasons of similar errors:
+                # 1) some SaleForce sobjects(streams) is not supported by the BULK API simply (as is).
+                # 2) Access to a sobject(stream) is not available
+                # 3) sobject is not queryable. It means this sobject can't be called directly.
+                #    We can call it as part of response from another sobject only.  E.g.:
+                #        initial query: "Select Id, Subject from ActivityHistory" -> error
+                #        updated query: "Select Name, (Select Subject,ActivityType from ActivityHistories) from Contact"
+                #    The second variant forces customisation for every case (ActivityHistory, ActivityHistories etc).
+                #    And the main problem is these subqueries doesn't support CSV response format.
                 error_data = error.response.json()[0]
-                if (error_data.get("message", "") == "Selecting compound data not supported in Bulk Query") or (
-                    error_data.get("errorCode", "") == "INVALIDENTITY"
-                    and "is not supported by the Bulk API" in error_data.get("message", "")
+                error_code = error_data.get("errorCode")
+                error_message = error_data.get("message", "")
+                if error_message == "Selecting compound data not supported in Bulk Query" or (
+                    error_code == "INVALIDENTITY" and "is not supported by the Bulk API" in error_message
                 ):
-                    self.logger.error(
-                        f"Cannot receive data for stream '{self.name}' using BULK API, error message: '{error_data.get('message')}'"
-                    )
-                elif error.response.status_code == codes.FORBIDDEN and not error_data.get("errorCode", "") == "REQUEST_LIMIT_EXCEEDED":
-                    self.logger.error(f"Cannot receive data for stream '{self.name}', error message: '{error_data.get('message')}'")
+                    self.logger.error(f"Cannot receive data for stream '{self.name}' using BULK API, error message: '{error_message}'")
+                elif error.response.status_code == codes.FORBIDDEN and error_code != "REQUEST_LIMIT_EXCEEDED":
+                    self.logger.error(f"Cannot receive data for stream '{self.name}', error message: '{error_message}'")
+                elif error.response.status_code == codes.BAD_REQUEST and error_message.endswith("does not support query"):
+                    self.logger.error(f"The stream '{self.name}' is not queryable, error message: '{error_message}'")
                 else:
                     raise error
             else:
                 raise error
+        return None
 
     def wait_for_job(self, url: str) -> str:
         # using "seconds" argument because self._wait_timeout can be changed by tests
@@ -197,7 +209,7 @@ class BulkSalesforceStream(SalesforceStream):
             job_status = self.wait_for_job(url=job_full_url)
             if job_status not in ["UploadComplete", "InProgress"]:
                 break
-            self.logger.error(f"Waiting error. Try to run this job again {i+1}/{self.MAX_RETRY_NUMBER}...")
+            self.logger.error(f"Waiting error. Try to run this job again {i + 1}/{self.MAX_RETRY_NUMBER}...")
             self.abort_job(url=job_full_url)
             job_status = "Aborted"
 

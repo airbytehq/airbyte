@@ -4,6 +4,7 @@
     tags = [ "top-level-intermediate" ]
 ) }}
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+-- depends_on: {{ ref('pos_dedup_cdcx_ab1') }}
 select
     accurateCastOrNull(id, '{{ dbt_utils.type_bigint() }}') as id,
     nullif(accurateCastOrNull(trim(BOTH '"' from name), '{{ dbt_utils.type_string() }}'), 'null') as name,

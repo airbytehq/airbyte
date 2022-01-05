@@ -10,7 +10,7 @@ from typing import Iterable, List, Mapping, Optional
 
 import docker
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
-from docker.errors import ContainerError
+from docker.errors import ContainerError, NotFound
 from docker.models.containers import Container
 from pydantic import ValidationError
 
@@ -98,11 +98,10 @@ class ConnectorRunner:
             command=cmd,
             working_dir="/data",
             volumes=volumes,
-            auto_remove=True,
+            network_mode="host",
             detach=True,
             **kwargs,
         )
-
         with open(self.output_folder / "raw", "wb+") as f:
             for line in self.read(container, command=cmd):
                 f.write(line.encode())
@@ -115,24 +114,39 @@ class ConnectorRunner:
     def read(cls, container: Container, command: str = None, with_ext: bool = True) -> Iterable[str]:
         """Reads connector's logs per line"""
         buffer = b""
-        has_exception = False
+        exception = ""
+        line = ""
         for chunk in container.logs(stdout=True, stderr=True, stream=True, follow=True):
+
             buffer += chunk
-            found = buffer.find(b"\n")
-            if found <= -1:
-                continue
-            line = buffer[:found].decode("utf-8")
-            if has_exception or "Traceback (most recent call last)" in line:
-                has_exception = True
+            while True:
+                # every chunk can include several lines
+                found = buffer.find(b"\n")
+                if found <= -1:
+                    break
+
+                line = buffer[: found + 1].decode("utf-8")
+                if len(exception) > 0 or line.startswith("Traceback (most recent call last)"):
+                    exception += line
+                else:
+                    yield line
+                buffer = buffer[found + 1 :]
+
+        if buffer:
+            # send the latest chunk if exists
+            line = buffer.decode("utf-8")
+            if exception:
+                exception += line
             else:
                 yield line
-                buffer = buffer[found + 1 :]
-        if not has_exception and buffer:
-            yield buffer.decode("utf-8")
-
-        exit_status = container.wait()
+        try:
+            exit_status = container.wait()
+            container.remove()
+        except NotFound as err:
+            logging.error(f"Waiting error: {err}, logs: {exception or line}")
+            raise
         if exit_status["StatusCode"]:
-            error = buffer.decode("utf-8") if has_exception else exit_status["Error"]
+            error = exit_status["Error"] or exception or line
             logging.error(f"Docker container was failed, " f'code {exit_status["StatusCode"]}, error:\n{error}')
             if with_ext:
                 raise ContainerError(

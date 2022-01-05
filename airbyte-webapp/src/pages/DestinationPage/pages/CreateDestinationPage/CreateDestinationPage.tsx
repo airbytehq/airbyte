@@ -67,7 +67,6 @@ const CreateDestinationPage: React.FC = () => {
           destinationDefinitions={destinationDefinitions}
           hasSuccess={successRequest}
           error={errorStatusRequest}
-          jobInfo={errorStatusRequest?.response}
         />
       </FormPageContent>
     </>

@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useIntl } from "react-intl";
+import { useLocation } from "react-use";
 
 import { useConfig } from "config";
 
@@ -23,13 +24,13 @@ import {
 import { useListWorkspaces } from "services/workspaces/WorkspacesService";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { useLocation } from "react-use";
 import { Workspace } from "core/domain/workspace/Workspace";
 
 export enum RoutePaths {
   AuthFlow = "/auth_flow",
   Root = "/",
 
+  Workspaces = "workspaces",
   Preferences = "preferences",
   Onboarding = "onboarding",
   Connections = "connections",
@@ -117,14 +118,18 @@ const PreferencesRoutes = () => (
   </Routes>
 );
 
-export const AutoSelectFirstWorkspace: React.FC = () => {
+export const AutoSelectFirstWorkspace: React.FC<{ includePath?: boolean }> = ({
+  includePath,
+}) => {
   const location = useLocation();
   const workspaces = useListWorkspaces();
   const currentWorkspace = workspaces[0];
 
   return (
     <Navigate
-      to={`/${currentWorkspace.workspaceId}${location.pathname}`}
+      to={`/${RoutePaths.Workspaces}/${currentWorkspace.workspaceId}${
+        includePath ? location.pathname : ""
+      }`}
       replace={true}
     />
   );
@@ -152,7 +157,11 @@ export const Routing: React.FC = () => {
   const OldRoutes = useMemo(
     () =>
       Object.values(RoutePaths).map((r) => (
-        <Route path={`${r}/*`} key={r} element={<AutoSelectFirstWorkspace />} />
+        <Route
+          path={`${r}/*`}
+          key={r}
+          element={<AutoSelectFirstWorkspace includePath />}
+        />
       )),
     []
   );
@@ -160,7 +169,11 @@ export const Routing: React.FC = () => {
     <Routes>
       {OldRoutes}
       <Route path={RoutePaths.AuthFlow} element={<CompleteOauthRequest />} />
-      <Route path="/:workspaceId/*" element={<RoutingWithWorkspace />} />
+      <Route
+        path={`${RoutePaths.Workspaces}/:workspaceId/*`}
+        element={<RoutingWithWorkspace />}
+      />
+      <Route path="*" element={<AutoSelectFirstWorkspace />} />
     </Routes>
   );
 };

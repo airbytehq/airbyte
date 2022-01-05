@@ -225,6 +225,43 @@ public class BigQueryDenormalizedTestDataUtils {
             + "  ");
   }
 
+  public static JsonNode getSchemaWithNestedDatetimeInsideNullObject() {
+    return Jsons.deserialize("{\n" +
+        "  \"type\": [\n" +
+        "    \"object\"\n" +
+        "  ],\n" +
+        "  \"properties\": {\n" +
+        "    \"name\": {\n" +
+        "      \"type\": [\n" +
+        "        \"null\",\n" +
+        "        \"string\"\n" +
+        "      ]\n" +
+        "    },\n" +
+        "    \"appointment\": {\n" +
+        "      \"type\": [\n" +
+        "        \"null\",\n" +
+        "        \"object\"\n" +
+        "      ],\n" +
+        "      \"properties\": {\n" +
+        "        \"street\": {\n" +
+        "          \"type\": [\n" +
+        "            \"null\",\n" +
+        "            \"string\"\n" +
+        "          ]\n" +
+        "        },\n" +
+        "        \"expTime\": {\n" +
+        "          \"type\": [\n" +
+        "            \"null\",\n" +
+        "            \"string\"\n" +
+        "          ],\n" +
+        "          \"format\": \"date-time\"\n" +
+        "        }\n" +
+        "      }\n" +
+        "    }\n" +
+        "  }\n" +
+        "}");
+  }
+
   public static JsonNode getDataWithEmptyObjectAndArray() {
     return Jsons.deserialize(
         "{\n"
@@ -247,6 +284,14 @@ public class BigQueryDenormalizedTestDataUtils {
             + "    }\n"
             + "  ]\n"
             + "}");
+  }
+
+  public static JsonNode getDataWithNestedDatetimeInsideNullObject() {
+    return Jsons.deserialize("{\n" +
+        "  \"name\": \"Alice in Wonderland\",\n" +
+        "  \"appointment\": null\n" +
+        "}");
+
   }
 
 }

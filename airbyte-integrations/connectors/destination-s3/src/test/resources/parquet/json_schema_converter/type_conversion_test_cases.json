@@ -199,5 +199,18 @@
       { "type": "long", "logicalType": "time-micros" },
       "string"
     ]
+  },
+  {
+    "fieldName": "array_field_without_items_type",
+    "jsonFieldSchema": {
+      "type": "array"
+    },
+    "avroFieldType": [
+      "null",
+      {
+        "type": "array",
+        "items": ["null", "string"]
+      }
+    ]
   }
 ]

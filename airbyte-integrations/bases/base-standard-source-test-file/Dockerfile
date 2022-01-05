@@ -21,7 +21,9 @@ ENV APPLICATION base-standard-source-test-file
 WORKDIR /app
 
 COPY entrypoint.sh .
-ADD build/distributions/${APPLICATION}*.tar /app
+COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
+
+RUN tar xf ${APPLICATION}.tar --strip-components=1
 
 ENTRYPOINT ["/app/entrypoint.sh"]
 

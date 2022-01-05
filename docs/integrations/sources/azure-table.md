@@ -67,4 +67,5 @@ We recommend creating a restricted key specifically for Airbyte access. This wil
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.1   | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434) | Update fields in source-connectors specifications |
 

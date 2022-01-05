@@ -10,6 +10,27 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on.
 
+## 11/25/2021
+
+New sources:
+
+* [**Airtable**](https://docs.airbyte.io/integrations/sources/airtable)
+* [**Notion**](https://docs.airbyte.io/integrations/sources/notion)
+* [**Pardot**](https://docs.airbyte.io/integrations/sources/pardot)
+* [**Notion**](https://docs.airbyte.io/integrations/sources/linnworks)
+* [**YouTube Analytics**](https://docs.airbyte.io/integrations/sources/youtube-analytics)
+
+New features:
+
+**Exchange Rates** Source: add `ignore_weekends` option.
+**Facebook** Source: add the videos stream.
+**Freshdesk** Source: removed the limitation in streams pagination.
+**Jira** Source: add option to render fields in HTML format. 
+**MongoDB v2** Source: improve read performance. 
+**Pipedrive** Source: specify schema for "persons" stream. 
+**PostgreSQL** Source: exclude tables on which user doesn't have select privileges.
+**SurveyMonkey** Source: improve connection check.
+
 ## 11/17/2021
 
 New destination:

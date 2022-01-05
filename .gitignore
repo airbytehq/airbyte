@@ -10,6 +10,8 @@ data
 .classpath
 .project
 .settings
+**/gmon.out
+static_checker_reports/
 
 # Logs
 acceptance_tests_logs/

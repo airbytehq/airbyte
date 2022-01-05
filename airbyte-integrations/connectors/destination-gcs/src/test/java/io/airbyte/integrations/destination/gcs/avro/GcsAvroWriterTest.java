@@ -17,7 +17,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Instant;
-import org.apache.avro.Schema;
 import org.junit.jupiter.api.Test;
 
 class GcsAvroWriterTest {
@@ -37,7 +36,6 @@ class GcsAvroWriterTest {
                 .withNamespace("fake-namespace")
                 .withName("fake-stream")),
         Timestamp.from(Instant.ofEpochMilli(1234)),
-        mock(Schema.class),
         null);
 
     assertEquals("fake-bucketPath/fake_namespace/fake_stream/1970_01_01_1234_0.avro", writer.getOutputPath());
