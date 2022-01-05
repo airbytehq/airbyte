@@ -187,7 +187,8 @@ class LogParser(SonarQubeApi):
             ^
             source_airtable/helpers.py:8:1: note: Hint: "python3 -m pip install types-requests"
         """
-        if len(lines) < 1:
+        cls.logger.debug(f"raw data: {lines}")
+        if not lines:
             return None
         path, line_number, column_number, error_or_note, *others = " ".join(lines).split(":")
         if error_or_note.strip() == "note":
