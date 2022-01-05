@@ -90,8 +90,8 @@ class GithubStream(HttpStream, ABC):
         # `X-RateLimit-Reset` header which contains time when this hour will be finished and limits will be reset so
         # we again could have 5000 per another hour.
 
-        if response.status_code == requests.codes.BAD_GATEWAY:
-            return 0.5
+        if response.status_code in [requests.codes.BAD_GATEWAY, requests.codes.SERVER_ERROR]:
+            return None
 
         reset_time = response.headers.get("X-RateLimit-Reset")
         backoff_time = float(reset_time) - time.time() if reset_time else 60
