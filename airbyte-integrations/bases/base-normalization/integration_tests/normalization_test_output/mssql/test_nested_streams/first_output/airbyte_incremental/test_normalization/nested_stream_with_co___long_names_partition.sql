@@ -27,7 +27,7 @@ with __dbt__cte__nested_stream_with_co___long_names_partition_ab1 as (
 select
     _airbyte_nested_strea__nto_long_names_hashid,
     json_query("partition", ''$."double_array_data"'') as double_array_data,
-    json_query("partition", ''$."DATA"'') as "DATA",
+    json_query("partition", ''$."DATA"'') as "data",
     _airbyte_ab_id,
     _airbyte_emitted_at,
     SYSDATETIME() as _airbyte_normalized_at
@@ -43,7 +43,7 @@ and "partition" is not null
 select
     _airbyte_nested_strea__nto_long_names_hashid,
     double_array_data,
-    "DATA",
+    "data",
     _airbyte_ab_id,
     _airbyte_emitted_at,
     SYSDATETIME() as _airbyte_normalized_at
@@ -63,7 +63,7 @@ select
     concat(concat(coalesce(cast(_airbyte_nested_strea__nto_long_names_hashid as 
     VARCHAR(max)), ''''), ''-'', coalesce(cast(cast(double_array_data as 
     VARCHAR(max)) as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast(cast("DATA" as 
+    VARCHAR(max)), ''''), ''-'', coalesce(cast(cast("data" as 
     VARCHAR(max)) as 
     VARCHAR(max)), ''''),''''), '''') as 
     VARCHAR(max)), '''')), 2) as _airbyte_partition_hashid,
@@ -77,7 +77,7 @@ where 1 = 1
 select
     _airbyte_nested_strea__nto_long_names_hashid,
     double_array_data,
-    "DATA",
+    "data",
     _airbyte_ab_id,
     _airbyte_emitted_at,
     SYSDATETIME() as _airbyte_normalized_at,

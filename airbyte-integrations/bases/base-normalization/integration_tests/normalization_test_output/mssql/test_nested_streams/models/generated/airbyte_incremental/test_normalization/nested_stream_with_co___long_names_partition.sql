@@ -7,7 +7,7 @@
 select
     _airbyte_nested_strea__nto_long_names_hashid,
     double_array_data,
-    {{ adapter.quote('DATA') }},
+    {{ adapter.quote('data') }},
     _airbyte_ab_id,
     _airbyte_emitted_at,
     {{ current_timestamp() }} as _airbyte_normalized_at,

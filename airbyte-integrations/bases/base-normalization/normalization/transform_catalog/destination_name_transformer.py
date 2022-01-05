@@ -210,8 +210,7 @@ class DestinationNameTransformer:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()
         elif self.destination_type.value == DestinationType.MSSQL.value:
-            if not is_quoted and not self.needs_quotes(input_name):
-                result = input_name.lower()
+            result = input_name.lower()
         elif self.destination_type.value == DestinationType.ORACLE.value:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()

@@ -7,7 +7,7 @@
 select
     _airbyte_nested_strea__nto_long_names_hashid,
     {{ json_extract_array(adapter.quote('partition'), ['double_array_data'], ['double_array_data']) }} as double_array_data,
-    {{ json_extract_array(adapter.quote('partition'), ['DATA'], ['DATA']) }} as {{ adapter.quote('DATA') }},
+    {{ json_extract_array(adapter.quote('partition'), ['DATA'], ['DATA']) }} as {{ adapter.quote('data') }},
     _airbyte_ab_id,
     _airbyte_emitted_at,
     {{ current_timestamp() }} as _airbyte_normalized_at
