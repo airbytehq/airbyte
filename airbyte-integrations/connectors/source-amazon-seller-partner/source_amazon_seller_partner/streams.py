@@ -462,6 +462,7 @@ class BrandAnalyticsSearchTermsReports(BrandAnalyticsStream):
 
 class BrandAnalyticsRepeatPurchaseReports(BrandAnalyticsStream):
     name = "GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT"
+    result_key = "dataByAsin"
 
 
 class BrandAnalyticsAlternatePurchaseReports(BrandAnalyticsStream):
