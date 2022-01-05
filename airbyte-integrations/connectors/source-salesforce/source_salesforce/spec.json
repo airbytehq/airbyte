@@ -44,6 +44,36 @@
         "enum": ["BULK", "REST"],
         "default": "BULK"
       },
+      "streams_criteria": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["criteria", "value"],
+          "properties": {
+            "criteria": {
+              "type": "string",
+              "title": "Search criteria",
+              "enum": [
+                "starts with",
+                "ends with",
+                "contains",
+                "exacts",
+                "starts not with",
+                "ends not with",
+                "not contains",
+                "not exacts"
+              ],
+              "default": "contains"
+            },
+            "value": {
+              "type": "string",
+              "title": "Search value"
+            }
+          }
+        },
+        "title": "Streams filter criteria",
+        "description": "Add selection criteria for streams to get only streams that are relevant to you"
+      },
       "wait_timeout": {
         "title": "Response Waiting Time",
         "description": "Maximum wait time of Safesforce responses in minutes. This option is used for the BULK mode only",
