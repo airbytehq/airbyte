@@ -6,11 +6,12 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Callable, TextIO, List, Optional, Mapping, Any
 
-from mypy.errorcodes import error_codes as mypy_error_codes
+from mypy.errorcodes import error_codes as mypy_error_codes, ErrorCode
 
 from .sonar_qube_api import SonarQubeApi
 
 RE_MYPY_LINE = re.compile(r"^(.+):(\d+):(\d+):")
+RE_MYPY_LINE_WO_COORDINATES = re.compile(r"^(.+): error: (.+)")
 
 
 # RE_MYPY_OTHER_LINES = re.compile("")
@@ -50,6 +51,11 @@ class Rule:
 
 
 def generate_mypy_rules() -> Mapping[str, Rule]:
+    addl_code = ErrorCode(
+        code="unknown",
+        description="Unknown error",
+        category="General",
+    )
     return {f"[{err.code}]": Rule(
         rule_type=Rule.Type.code_smell,
         key=err.code,
@@ -58,7 +64,7 @@ def generate_mypy_rules() -> Mapping[str, Rule]:
         tool_name="mypy",
         severity=IssueSeverity.minor,
         template="python:CommentRegularExpression"
-    ) for err in mypy_error_codes.values()}
+    ) for err in list(mypy_error_codes.values()) + [addl_code]}
 
 
 class LogParser(SonarQubeApi):
@@ -71,6 +77,26 @@ class LogParser(SonarQubeApi):
         column_number: int  # 1-indexed
         rule: Rule
         description: str
+
+        def to_json(self):
+            data = {
+                "engineId": self.rule.tool_name,
+                "ruleId": self.rule.sq_key,
+                "severity": self.rule.severity.value,
+                "type": self.rule.rule_type.value,
+                "primaryLocation": {
+                    "message": self.description,
+                    "filePath": self.path,
+                }
+            }
+            if self.line_number is not None:
+                data["primaryLocation"]["textRange"] = {
+                    "startLine": self.line_number,
+                    "endLine": self.line_number,
+                    "startColumn": issue.column_number - 1,  # 0-indexed
+                    "endColumn": issue.column_number,  # 0-indexed
+                }
+            return data
 
     def __init__(self, output_file: str, host: str, token: str):
         super().__init__(host=host, token=token, pr_name="0")
@@ -142,30 +168,14 @@ class LogParser(SonarQubeApi):
                 ...
         ]}"""
         return {
-            "issues": [
-                {
-                    "engineId": issue.rule.tool_name,
-                    "ruleId": issue.rule.sq_key,
-                    "severity": issue.rule.severity.value,
-                    "type": issue.rule.rule_type.value,
-                    "primaryLocation": {
-                        "message": issue.description,
-                        "filePath": issue.path,
-                        "textRange": {
-                            "startLine": issue.line_number,
-                            "endLine": issue.line_number,
-                            "startColumn": issue.column_number - 1,  # 0-indexed
-                            "endColumn": issue.column_number  # 0-indexed
-                        }
-                    }
-
-                } for issue in issues]
+            "issues": [issue.to_json() for issue in issues]
         }
 
     @prepare_file
     def from_mypy(self, file: TextIO) -> List[Issue]:
         buff = None
         items = []
+
         for line in file:
             line = line.strip()
             if RE_MYPY_LINE.match(line):
@@ -174,6 +184,22 @@ class LogParser(SonarQubeApi):
                 buff = []
             if buff is not None:
                 buff.append(line)
+        if buff is None:
+            # mypy can return an error without line/column values
+            file.seek(0)
+            for line in file:
+                m = RE_MYPY_LINE_WO_COORDINATES.match(line.strip())
+                if not m:
+                    continue
+                items.append(self.Issue(
+                    path=m.group(1).strip(),
+                    line_number=None,
+                    column_number=None,
+                    description=m.group(2).strip(),
+                    rule=self._mypy_rules["[unknown]"],
+                ))
+                self.logger.info(f"detected an error without coordinates: {line}")
+
         items.append(self.__parse_mypy_issue(buff))
         return [i for i in items if i]
 
@@ -187,7 +213,6 @@ class LogParser(SonarQubeApi):
             ^
             source_airtable/helpers.py:8:1: note: Hint: "python3 -m pip install types-requests"
         """
-        cls.logger.debug(f"raw data: {lines}")
         if not lines:
             return None
         path, line_number, column_number, error_or_note, *others = " ".join(lines).split(":")

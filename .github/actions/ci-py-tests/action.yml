@@ -26,7 +26,7 @@ runs:
          virtualenv .venv
          source .venv/bin/activate
          JSON_CONFIG='{"module": "${{ inputs.module-name }}", "folder": "${{ inputs.module-folder }}", "lang": "py"}'
-         REPORT_FOLDER=reports_${RANDOM}
+         REPORT_FOLDER=reports
          ci_build_checkers_reports --venv_folder .venv --output_folder "${REPORT_FOLDER}" "${JSON_CONFIG}" --print_commands pycoverage | while read cmd
          do
            echo "CMD: ${cmd}"
@@ -44,7 +44,7 @@ runs:
          virtualenv .venv
          source .venv/bin/activate
          JSON_CONFIG='{"module": "${{ inputs.module-name }}", "folder": "${{ inputs.module-folder }}", "lang": "py"}'
-         REPORT_FOLDER=reports_${RANDOM}
+         REPORT_FOLDER=reports
          mkdir -p ${REPORT_FOLDER}
          ci_build_checkers_reports --venv_folder .venv --output_folder "${REPORT_FOLDER}" "${JSON_CONFIG}" --print_commands mypy,flake | while read cmd
          do
