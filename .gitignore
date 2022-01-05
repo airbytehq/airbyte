@@ -12,6 +12,7 @@ data
 .settings
 **/gmon.out
 static_checker_reports/
+.vscode
 
 # Logs
 acceptance_tests_logs/
