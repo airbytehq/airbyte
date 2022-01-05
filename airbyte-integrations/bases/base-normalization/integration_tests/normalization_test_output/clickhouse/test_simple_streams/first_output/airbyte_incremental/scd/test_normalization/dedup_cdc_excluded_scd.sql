@@ -55,7 +55,7 @@ scd_data as (
             _ab_cdc_lsn desc,
             _ab_cdc_updated_at desc,
             _airbyte_emitted_at desc
-      ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING) as _airbyte_end_at,
+            ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING) as _airbyte_end_at,
       _airbyte_ab_id,
       _airbyte_emitted_at,
       _airbyte_dedup_cdc_excluded_hashid

@@ -664,7 +664,7 @@ where 1 = 1
             # ClickHouse doesn't support lag() yet, this is a workaround solution
             # Ref: https://clickhouse.com/docs/en/sql-reference/window-functions/
             lag_begin = "anyOrNull"
-            lag_end = "ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING"
+            lag_end = "      ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING"
             input_data_table = "input_data_with_active_row_num"
 
         enable_left_join_null = ""
