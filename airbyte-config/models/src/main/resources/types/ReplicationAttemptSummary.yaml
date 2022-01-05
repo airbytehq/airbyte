@@ -9,7 +9,7 @@ required:
   - bytesSynced
   - startTime
   - endTime
-additionalProperties: false
+additionalProperties: true
 properties:
   status:
     "$ref": ReplicationStatus.yaml
@@ -23,3 +23,17 @@ properties:
     type: integer
   endTime:
     type: integer
+  totalRecordsEmitted: # TODO make required
+    type: integer
+    minValue: 0
+  totalRecordsCommitted:
+    type: integer
+    minValue: 0
+  streamNameToRecordsEmitted: # TODO make required
+    type: object
+  streamNameToRecordsCommitted:
+    type: object
+  totalStateMessagesEmitted: # TODO make required
+    type: integer
+  streamNameToBytesEmitted: # TODO make required
+    type: object
