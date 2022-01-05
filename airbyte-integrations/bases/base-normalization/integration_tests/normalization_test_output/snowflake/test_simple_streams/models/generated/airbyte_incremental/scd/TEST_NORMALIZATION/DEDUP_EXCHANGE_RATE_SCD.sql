@@ -54,6 +54,17 @@ input_data as (
     -- DEDUP_EXCHANGE_RATE from {{ source('TEST_NORMALIZATION', '_AIRBYTE_RAW_DEDUP_EXCHANGE_RATE') }}
 ),
 {% endif %}
+input_data_with_active_row_num as (
+    select *,
+      row_number() over (
+        partition by ID, CURRENCY, cast(NZD as {{ dbt_utils.type_string() }})
+        order by
+            DATE is null asc,
+            DATE desc,
+            _AIRBYTE_EMITTED_AT desc
+      ) as _airbyte_active_row_num
+    from input_data
+),
 scd_data as (
     -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
     select
@@ -78,17 +89,11 @@ scd_data as (
             DATE desc,
             _AIRBYTE_EMITTED_AT desc
       ) as _AIRBYTE_END_AT,
-      case when row_number() over (
-        partition by ID, CURRENCY, cast(NZD as {{ dbt_utils.type_string() }})
-        order by
-            DATE is null asc,
-            DATE desc,
-            _AIRBYTE_EMITTED_AT desc
-      ) = 1 then 1 else 0 end as _AIRBYTE_ACTIVE_ROW,
+      case when _airbyte_active_row_num = 1 then 1 else 0 end as _AIRBYTE_ACTIVE_ROW,
       _AIRBYTE_AB_ID,
       _AIRBYTE_EMITTED_AT,
       _AIRBYTE_DEDUP_EXCHANGE_RATE_HASHID
-    from input_data
+    from input_data_with_active_row_num
 ),
 dedup_data as (
     select

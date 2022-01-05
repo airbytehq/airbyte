@@ -174,6 +174,33 @@
       "cursor_field": [],
       "destination_sync_mode": "append_dedup",
       "primary_key": [["id"]]
+    },
+    {
+      "stream": {
+        "name": "1_prefix_startwith_number",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "date": {
+              "type": "string",
+              "format": "date"
+            },
+            "text": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["date"],
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["id"]]
     }
   ]
 }
