@@ -95,9 +95,10 @@ public class KubePodProcess extends Process {
 
   private static final String INIT_CONTAINER_NAME = "init";
   public static final Duration DEFAULT_STATUS_CHECK_INTERVAL = Duration.ofSeconds(30);
-  private static final String DEFAULT_MEMORY_LIMIT = "25Mi";
+  private static final String DEFAULT_MEMORY_REQUEST = "25Mi";
+  private static final String DEFAULT_MEMORY_LIMIT = "50Mi";
   private static final ResourceRequirements DEFAULT_SIDECAR_RESOURCES = new ResourceRequirements()
-      .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_LIMIT);
+      .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_REQUEST);
 
   private static final String PIPES_DIR = "/pipes";
   private static final String STDIN_PIPE_FILE = PIPES_DIR + "/stdin";
@@ -243,7 +244,7 @@ public class KubePodProcess extends Process {
           // Copying the success indicator file to the init container causes the container to immediately
           // exit, causing the `kubectl cp` command to exit with code 137. This check ensures that an error is
           // not thrown in this case if the init container exits successfully.
-          if (file.getKey().equals(SUCCESS_FILE_NAME) && waitForInitPodToTerminate(client, podDefinition, 10, TimeUnit.SECONDS) == 0) {
+          if (file.getKey().equals(SUCCESS_FILE_NAME) && waitForInitPodToTerminate(client, podDefinition, 5, TimeUnit.MINUTES) == 0) {
             LOGGER.info("Init was successful; ignoring non-zero kubectl cp exit code for success indicator file.");
           } else {
             throw new IOException("kubectl cp failed with exit code " + exitCode);

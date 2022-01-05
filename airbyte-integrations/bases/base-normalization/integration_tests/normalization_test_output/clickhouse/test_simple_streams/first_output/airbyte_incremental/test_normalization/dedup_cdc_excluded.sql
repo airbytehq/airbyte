@@ -13,6 +13,7 @@
   as (
     
 -- Final base SQL model
+-- depends_on: test_normalization.dedup_cdc_excluded_scd
 select
     _airbyte_unique_key,
     id,
