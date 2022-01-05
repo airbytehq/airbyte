@@ -78,7 +78,7 @@
         start_date:
           type: "string"
           title: "Start Date"
-          description: "The date you would like to replicate data. Data in ClouTraid\
+          description: "The date you would like to replicate data. Data in AWS CloudTrail\
             \ is available for last 90 days only. Format: YYYY-MM-DD."
           examples:
           - "2021-01-01"
