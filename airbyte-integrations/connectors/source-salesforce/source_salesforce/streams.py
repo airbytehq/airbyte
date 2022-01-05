@@ -22,7 +22,7 @@ from .rate_limiting import default_backoff_handler
 
 class SalesforceStream(HttpStream, ABC):
     page_size = 2000
-
+    api_type = "REST"
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, sf_api: Salesforce, pk: str, stream_name: str, schema: dict = None, **kwargs):
@@ -62,7 +62,7 @@ class SalesforceStream(HttpStream, ABC):
         selected_properties = self.get_json_schema().get("properties", {})
 
         # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
-        if self.sf_api.api_type == "BULK":
+        if self.api_type == "BULK":
             selected_properties = {
                 key: value
                 for key, value in selected_properties.items()
@@ -102,6 +102,7 @@ class BulkSalesforceStream(SalesforceStream):
     DEFAULT_WAIT_TIMEOUT_MINS = 10
     MAX_CHECK_INTERVAL_SECONDS = 2.0
     MAX_RETRY_NUMBER = 3
+    api_type = "BULK"
 
     def __init__(self, wait_timeout: Optional[int], **kwargs):
         super().__init__(**kwargs)
@@ -306,7 +307,7 @@ class IncrementalSalesforceStream(SalesforceStream, ABC):
         selected_properties = self.get_json_schema().get("properties", {})
 
         # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
-        if self.sf_api.api_type == "BULK":
+        if self.api_type == "BULK":
             selected_properties = {
                 key: value
                 for key, value in selected_properties.items()
