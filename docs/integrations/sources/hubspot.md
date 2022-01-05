@@ -13,7 +13,7 @@
 
 Check out common troubleshooting issues for the HubSpot connector on our Discourse [here](https://discuss.airbyte.io/tags/c/connector/11/source-hubspot).
 
-## Supported Tables
+## Supported Streams
 
 This source is capable of syncing the following tables and their data:
 
@@ -34,6 +34,18 @@ This source is capable of syncing the following tables and their data:
 * [Subscription Changes](https://developers.hubspot.com/docs/methods/email/get_subscriptions_timeline) \(Incremental\)
 * [Tickets](https://developers.hubspot.com/docs/api/crm/tickets) \(Incremental\)
 * [Workflows](https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows)
+
+### A note on the `engagements` stream
+Objects in the `engagements` stream can have one of the following types: `note`, `email`, `task`, `meeting`, `call`. 
+
+Depending on the type of engagement, different properties will be set for that object in the `engagements_metadata` table in the destination. 
+
+* A `call` engagement will have a corresponding `engagements_metadata` object with non-null values in the `toNumber`, `fromNumber`, `status`, `externalId`, `durationMilliseconds`, `externalAccountId`, `recordingUrl`, `body`, and `disposition` columns.
+* An `email` engagement will have a corresponding `engagements_metadata` object with with non-null values in the `subject`, `html`, and `text` columns. In addition, there will be records in four related tables, `engagements_metadata_from`, `engagements_metadata_to`, `engagements_metadata_cc`, `engagements_metadata_bcc`. 
+* A `meeting` engagement will have a corresponding `engagements_metadata` object with non-null values in the `body`, `startTime`, `endTime`, and `title` columns. 
+* A `note` engagement will have a corresponding `engagements_metadata` object with non-null values in the `body` column. 
+* A `task` engagement will have a corresponding `engagements_metadata` object with non-null values in the `body`, `status`, and `forObjectType` columns. 
+
 
 **Note**: HubSpot API currently only supports `quotes` endpoint using API Key, using Oauth it is impossible to access this stream (as reported by [community.hubspot.com](https://community.hubspot.com/t5/APIs-Integrations/Help-with-using-Feedback-CRM-API-and-Quotes-CRM-API/m-p/449104/highlight/true#M44411)).
 
