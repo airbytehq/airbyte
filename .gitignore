@@ -1,5 +1,6 @@
 .gradle
 .idea
+.vscode
 *.iml
 *.swp
 build
