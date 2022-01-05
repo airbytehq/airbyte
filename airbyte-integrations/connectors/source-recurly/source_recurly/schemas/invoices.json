@@ -1,110 +1,265 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "http://json-schema.org/schema#",
   "type": "object",
   "properties": {
-    "id": {
-      "type": "string"
-    },
     "object": {
-      "type": "string"
+      "type": ["null", "string"],
+      "title": "Object type",
+      "readOnly": true
+    },
+    "id": {
+      "type": ["null", "string"],
+      "title": "Invoice ID",
+      "readOnly": true
     },
     "type": {
-      "type": "string"
+      "title": "Invoice type",
+      "description": "Invoices are either charge, credit, or legacy invoices.",
+      "type": ["null", "string"],
+      "enum": [
+        "charge",
+        "credit",
+        "legacy"
+      ]
     },
     "origin": {
-      "type": "string"
+      "title": "Origin",
+      "description": "The event that created the invoice.",
+      "type": ["null", "string"],
+      "enum": [
+        "carryforward_credit",
+        "carryforward_gift_credit",
+        "credit",
+        "external_refund",
+        "gift_card",
+        "immediate_change",
+        "import",
+        "line_item_refund",
+        "open_amount_refund",
+        "prepayment",
+        "purchase",
+        "refund",
+        "renewal",
+        "termination",
+        "usage_correction",
+        "write_off",
+        "null"
+      ]
     },
     "state": {
-      "type": "string"
+      "title": "Invoice state",
+      "type": ["null", "string"],
+      "enum": [
+        "open",
+        "pending",
+        "processing",
+        "past_due",
+        "paid",
+        "closed",
+        "failed",
+        "voided",
+        "null"
+      ]
     },
     "account": {
       "type": "object",
+      "title": "Account mini details",
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 13,
+          "readOnly": true
         },
         "object": {
-          "type": "string"
+          "type": ["null", "string"],
+          "title": "Object type",
+          "readOnly": true
         },
         "code": {
-          "type": "string"
+          "type": ["null", "string"],
+          "description": "The unique identifier of the account.",
+          "maxLength": 50
         },
         "email": {
-          "type": "string"
+          "type": ["null", "string"],
+          "description": "The email address used for communicating with this customer.",
+          "maxLength": 255
         },
         "first_name": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 255
         },
         "last_name": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 255
         },
         "company": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 255
         },
         "parent_account_id": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "maxLength": 13
         },
         "bill_to": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 6
+        },
+        "dunning_campaign_id": {
+          "type": ["null", "string"],
+          "title": "Dunning Campaign ID",
+          "description": "Unique ID to identify a dunning campaign. Available when the Dunning Campaigns feature is enabled. Used to specify if a non-default dunning campaign should be assigned to this account. For sites without multiple dunning campaigns enabled, the default dunning campaign will always be used."
         }
       }
     },
     "billing_info_id": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "title": "Billing info ID",
+      "description": "The `billing_info_id` is the value that represents a specific billing info for an end customer. When `billing_info_id` is used to assign billing info to the subscription, all future billing events for the subscription will bill to the specified billing info. `billing_info_id` can ONLY be used for sites utilizing the Wallet feature."
     },
     "subscription_ids": {
-      "type": "array"
+      "type": "array",
+      "title": "Subscription IDs",
+      "description": "If the invoice is charging or refunding for one or more subscriptions, these are their IDs.",
+      "items": {
+        "type": ["null", "string"],
+        "title": "Subscription ID",
+        "maxLength": 13
+      }
     },
     "previous_invoice_id": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "title": "Previous invoice ID",
+      "description": "On refund invoices, this value will exist and show the invoice ID of the purchase invoice the refund was created from.",
+      "maxLength": 13
     },
     "number": {
-      "type": "string"
+      "type": ["null", "string"],
+      "title": "Invoice number",
+      "description": "If VAT taxation and the Country Invoice Sequencing feature are enabled, invoices will have country-specific invoice numbers for invoices billed to EU countries (ex: FR1001). Non-EU invoices will continue to use the site-level invoice number sequence."
     },
     "collection_method": {
-      "type": "string"
+      "title": "Collection method",
+      "description": "An automatic invoice means a corresponding transaction is run using the account's billing information at the same time the invoice is created. Manual invoices are created without a corresponding transaction. The merchant must enter a manual payment transaction or have the customer pay the invoice with an automatic method, like credit card, PayPal, Amazon, or ACH bank payment.",
+      "default": "automatic",
+      "type": ["null", "string"],
+      "enum": [
+        "automatic",
+        "manual"
+      ]
     },
     "po_number": {
-      "type": "string"
+      "type": ["null", "string"],
+      "title": "Purchase order number",
+      "description": "For manual invoicing, this identifies the PO number associated with the subscription.",
+      "maxLength": 50
     },
     "net_terms": {
-      "type": "number"
+      "type": ["null", "integer"],
+      "title": "Net terms",
+      "description": "Integer representing the number of days after an invoice's creation that the invoice will become past due. If an invoice's net terms are set to '0', it is due 'On Receipt' and will become past due 24 hours after it\u2019s created. If an invoice is due net 30, it will become past due at 31 days exactly.",
+      "minimum": 0,
+      "default": 0
     },
     "address": {
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "phone": {
+              "type": ["null", "string"],
+              "title": "Phone number"
+            },
+            "street1": {
+              "type": ["null", "string"],
+              "title": "Street 1"
+            },
+            "street2": {
+              "type": ["null", "string"],
+              "title": "Street 2"
+            },
+            "city": {
+              "type": ["null", "string"],
+              "title": "City"
+            },
+            "region": {
+              "type": ["null", "string"],
+              "title": "State/Province",
+              "description": "State or province."
+            },
+            "postal_code": {
+              "type": ["null", "string"],
+              "title": "Zip/Postal code",
+              "description": "Zip or postal code."
+            },
+            "country": {
+              "type": ["null", "string"],
+              "title": "Country",
+              "description": "Country, 2-letter ISO 3166-1 alpha-2 code."
+            }
+          }
+        },
+        {
+          "allOf": [
+            {
+              "type": "object",
+              "properties": {
+                "phone": {
+                  "type": ["null", "string"],
+                  "title": "Phone number"
+                },
+                "street1": {
+                  "type": ["null", "string"],
+                  "title": "Street 1"
+                },
+                "street2": {
+                  "type": ["null", "string"],
+                  "title": "Street 2"
+                },
+                "city": {
+                  "type": ["null", "string"],
+                  "title": "City"
+                },
+                "region": {
+                  "type": ["null", "string"],
+                  "title": "State/Province",
+                  "description": "State or province."
+                },
+                "postal_code": {
+                  "type": ["null", "string"],
+                  "title": "Zip/Postal code",
+                  "description": "Zip or postal code."
+                },
+                "country": {
+                  "type": ["null", "string"],
+                  "title": "Country",
+                  "description": "Country, 2-letter ISO 3166-1 alpha-2 code."
+                }
+              }
+            }
+          ],
+          "type": "object",
+          "properties": {
+            "first_name": {
+              "type": ["null", "string"],
+              "title": "First name"
+            },
+            "last_name": {
+              "type": ["null", "string"],
+              "title": "Last name"
+            }
+          }
+        }
+      ],
       "type": "object",
       "properties": {
         "name_on_account": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "title": "Name on account"
         },
         "company": {
-          "type": "string"
-        },
-        "first_name": {
-          "type": "string"
-        },
-        "last_name": {
-          "type": "string"
-        },
-        "phone": {
-          "type": "string"
-        },
-        "street1": {
-          "type": "string"
-        },
-        "street2": {
-          "type": "string"
-        },
-        "city": {
-          "type": "string"
-        },
-        "region": {
-          "type": "string"
-        },
-        "postal_code": {
-          "type": "string"
-        },
-        "country": {
-          "type": "string"
+          "type": ["null", "string"],
+          "title": "Company"
         }
       }
     },
@@ -112,145 +267,2051 @@
       "type": ["null", "object"],
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["null", "string"],
+          "title": "Shipping Address ID",
+          "maxLength": 13,
+          "readOnly": true
         },
         "object": {
-          "type": "string"
+          "type": ["null", "string"],
+          "title": "Object type",
+          "readOnly": true
         },
         "account_id": {
-          "type": "string"
+          "type": ["null", "string"],
+          "title": "Account ID",
+          "maxLength": 13,
+          "readOnly": true
         },
         "nickname": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 255
         },
         "first_name": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 255
         },
         "last_name": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 255
         },
         "company": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 255
         },
         "email": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 255
         },
         "vat_number": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 20
         },
         "phone": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 30
         },
         "street1": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 255
         },
         "street2": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 255
         },
         "city": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 255
         },
         "region": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 255,
+          "description": "State or province."
         },
         "postal_code": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 20,
+          "description": "Zip or postal code."
         },
         "country": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 50,
+          "description": "Country, 2-letter ISO 3166-1 alpha-2 code."
         },
         "created_at": {
-          "type": "string"
+          "type": ["null", "string"],
+          "title": "Created at",
+          "format": "date-time",
+          "readOnly": true
         },
         "updated_at": {
-          "type": "string"
+          "type": ["null", "string"],
+          "title": "Updated at",
+          "format": "date-time",
+          "readOnly": true
         }
       }
     },
     "currency": {
-      "type": "string"
+      "type": ["null", "string"],
+      "title": "Currency",
+      "description": "3-letter ISO 4217 currency code.",
+      "maxLength": 3
     },
     "discount": {
-      "type": "number"
+      "type": ["null", "number"],
+      "format": "float",
+      "title": "Discount",
+      "description": "Total discounts applied to this invoice."
     },
     "subtotal": {
-      "type": "number"
+      "type": ["null", "number"],
+      "format": "float",
+      "title": "Subtotal",
+      "description": "The summation of charges and credits, before discounts and taxes."
     },
     "tax": {
-      "type": "number"
+      "type": ["null", "number"],
+      "format": "float",
+      "title": "Tax",
+      "description": "The total tax on this invoice."
     },
     "total": {
-      "type": "number"
+      "type": ["null", "number"],
+      "format": "float",
+      "title": "Total",
+      "description": "The final total on this invoice. The summation of invoice charges, discounts, credits, and tax."
     },
     "refundable_amount": {
-      "type": "number"
+      "type": ["null", "number"],
+      "format": "float",
+      "title": "Refundable amount",
+      "description": "The refundable amount on a charge invoice. It will be null for all other invoices."
     },
     "paid": {
-      "type": "number"
+      "type": ["null", "number"],
+      "format": "float",
+      "title": "Paid",
+      "description": "The total amount of successful payments transaction on this invoice."
     },
     "balance": {
-      "type": "number"
+      "type": ["null", "number"],
+      "format": "float",
+      "title": "Balance",
+      "description": "The outstanding balance remaining on this invoice."
     },
     "tax_info": {
       "type": ["null", "object"],
+      "title": "Tax info",
       "properties": {
         "type": {
-          "type": "string"
+          "type": ["null", "string"],
+          "title": "Type",
+          "description": "Provides the tax type as \"vat\" for EU VAT, \"usst\" for U.S. Sales Tax, or the 2 letter country code for country level tax types like Canada, Australia, New Zealand, Israel, and all non-EU European countries."
         },
         "region": {
-          "type": "string"
+          "type": ["null", "string"],
+          "title": "Region",
+          "description": "Provides the tax region applied on an invoice. For U.S. Sales Tax, this will be the 2 letter state code. For EU VAT this will be the 2 letter country code. For all country level tax types, this will display the regional tax, like VAT, GST, or PST."
         },
         "rate": {
-          "type": "number"
+          "type": ["null", "number"],
+          "format": "float",
+          "title": "Rate"
+        },
+        "tax_details": {
+          "type": "array",
+          "description": "Provides additional tax details for Canadian Sales Tax when there is tax applied at both the country and province levels. This will only be populated for the Invoice response when fetching a single invoice and not for the InvoiceList or LineItem.",
+          "items": {
+            "type": "object",
+            "title": "Tax detail",
+            "properties": {
+              "type": {
+                "type": ["null", "string"],
+                "title": "Type",
+                "description": "Provides the tax type for the region. For Canadian Sales Tax, this will be GST, HST, QST or PST."
+              },
+              "region": {
+                "type": ["null", "string"],
+                "title": "Region",
+                "description": "Provides the tax region applied on an invoice. For Canadian Sales Tax, this will be either the 2 letter province code or country code."
+              },
+              "rate": {
+                "type": ["null", "number"],
+                "format": "float",
+                "title": "Rate",
+                "description": "Provides the tax rate for the region."
+              },
+              "tax": {
+                "type": ["null", "number"],
+                "format": "float",
+                "title": "Tax",
+                "description": "The total tax applied for this tax type."
+              }
+            }
+          }
         }
       }
     },
     "vat_number": {
-      "type": "string"
+      "type": ["null", "string"],
+      "title": "VAT number",
+      "description": "VAT registration number for the customer on this invoice. This will come from the VAT Number field in the Billing Info or the Account Info depending on your tax settings and the invoice collection method.",
+      "maxLength": 20
     },
     "vat_reverse_charge_notes": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "title": "VAT reverse charge notes",
+      "description": "VAT Reverse Charge Notes only appear if you have EU VAT enabled or are using your own Avalara AvaTax account and the customer is in the EU, has a VAT number, and is in a different country than your own. This will default to the VAT Reverse Charge Notes text specified on the Tax Settings page in your Recurly admin, unless custom notes were created with the original subscription."
     },
     "terms_and_conditions": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "title": "Terms and conditions",
+      "description": "This will default to the Terms and Conditions text specified on the Invoice Settings page in your Recurly admin. Specify custom notes to add or override Terms and Conditions."
     },
     "customer_notes": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "title": "Customer notes",
+      "description": "This will default to the Customer Notes text specified on the Invoice Settings. Specify custom notes to add or override Customer Notes."
     },
     "line_items": {
-      "type": "object",
-      "properties": {
-        "object": {
-          "type": "string"
-        },
-        "has_more": {
-          "type": "boolean"
-        },
-        "next": {
-          "type": ["null", "string"]
-        },
-        "data": {
-          "type": "array"
+      "type": "array",
+      "title": "Line Items",
+      "items": {
+        "type": "object",
+        "title": "Line item",
+        "properties": {
+          "id": {
+            "type": ["null", "string"],
+            "title": "Line item ID",
+            "maxLength": 13
+          },
+          "object": {
+            "type": ["null", "string"],
+            "title": "Object type"
+          },
+          "uuid": {
+            "type": ["null", "string"],
+            "title": "UUID",
+            "description": "The UUID is useful for matching data with the CSV exports and building URLs into Recurly's UI.",
+            "maxLength": 32
+          },
+          "type": {
+            "title": "Line item type",
+            "description": "Charges are positive line items that debit the account. Credits are negative line items that credit the account.",
+            "type": ["null", "string"],
+            "enum": [
+              "charge",
+              "credit"
+            ]
+          },
+          "item_code": {
+            "type": ["null", "string"],
+            "title": "Item Code",
+            "description": "Unique code to identify an item. Available when the Credit Invoices and Subscription Billing Terms features are enabled.",
+            "pattern": "/^[a-z0-9_+-]+$/",
+            "maxLength": 50
+          },
+          "item_id": {
+            "type": ["null", "string"],
+            "title": "Item ID",
+            "description": "System-generated unique identifier for an item. Available when the Credit Invoices and Subscription Billing Terms features are enabled.",
+            "maxLength": 13
+          },
+          "external_sku": {
+            "type": ["null", "string"],
+            "title": "External SKU",
+            "description": "Optional Stock Keeping Unit assigned to an item. Available when the Credit Invoices and Subscription Billing Terms features are enabled.",
+            "maxLength": 50
+          },
+          "revenue_schedule_type": {
+            "title": "Revenue schedule type",
+            "type": ["null", "string"]
+          },
+          "state": {
+            "title": "Current state of the line item",
+            "description": "Pending line items are charges or credits on an account that have not been applied to an invoice yet. Invoiced line items will always have an `invoice_id` value.",
+            "type": ["null", "string"],
+            "enum": [
+              "invoiced",
+              "pending"
+            ]
+          },
+          "legacy_category": {
+            "title": "Legacy category",
+            "description": "Category to describe the role of a line item on a legacy invoice:\n- \"charges\" refers to charges being billed for on this invoice.\n- \"credits\" refers to refund or proration credits. This portion of the invoice can be considered a credit memo.\n- \"applied_credits\" refers to previous credits applied to this invoice. See their original_line_item_id to determine where the credit first originated.\n- \"carryforwards\" can be ignored. They exist to consume any remaining credit balance. A new credit with the same amount will be created and placed back on the account.\n",
+            "type": ["null", "string"]
+          },
+          "account": {
+            "type": "object",
+            "title": "Account mini details",
+            "properties": {
+              "id": {
+                "type": ["null", "string"],
+                "maxLength": 13,
+                "readOnly": true
+              },
+              "object": {
+                "type": ["null", "string"],
+                "title": "Object type",
+                "readOnly": true
+              },
+              "code": {
+                "type": ["null", "string"],
+                "description": "The unique identifier of the account.",
+                "maxLength": 50
+              },
+              "email": {
+                "type": ["null", "string"],
+                "description": "The email address used for communicating with this customer.",
+                "maxLength": 255
+              },
+              "first_name": {
+                "type": ["null", "string"],
+                "maxLength": 255
+              },
+              "last_name": {
+                "type": ["null", "string"],
+                "maxLength": 255
+              },
+              "company": {
+                "type": ["null", "string"],
+                "maxLength": 255
+              },
+              "parent_account_id": {
+                "type": ["null", "string"],
+                "maxLength": 13
+              },
+              "bill_to": {
+                "type": ["null", "string"],
+                "maxLength": 6
+              },
+              "dunning_campaign_id": {
+                "type": ["null", "string"],
+                "title": "Dunning Campaign ID",
+                "description": "Unique ID to identify a dunning campaign. Available when the Dunning Campaigns feature is enabled. Used to specify if a non-default dunning campaign should be assigned to this account. For sites without multiple dunning campaigns enabled, the default dunning campaign will always be used."
+              }
+            }
+          },
+          "bill_for_account_id": {
+            "type": ["null", "string"],
+            "title": "Bill For Account ID",
+            "maxLength": 13,
+            "description": "The UUID of the account responsible for originating the line item."
+          },
+          "subscription_id": {
+            "type": ["null", "string"],
+            "title": "Subscription ID",
+            "description": "If the line item is a charge or credit for a subscription, this is its ID.",
+            "maxLength": 13
+          },
+          "plan_id": {
+            "type": ["null", "string"],
+            "title": "Plan ID",
+            "description": "If the line item is a charge or credit for a plan or add-on, this is the plan's ID.",
+            "maxLength": 13
+          },
+          "plan_code": {
+            "type": ["null", "string"],
+            "title": "Plan code",
+            "description": "If the line item is a charge or credit for a plan or add-on, this is the plan's code.",
+            "maxLength": 50
+          },
+          "add_on_id": {
+            "type": ["null", "string"],
+            "title": "Add-on ID",
+            "description": "If the line item is a charge or credit for an add-on this is its ID.",
+            "maxLength": 13
+          },
+          "add_on_code": {
+            "type": ["null", "string"],
+            "title": "Add-on code",
+            "description": "If the line item is a charge or credit for an add-on, this is its code.",
+            "maxLength": 50
+          },
+          "invoice_id": {
+            "type": ["null", "string"],
+            "title": "Invoice ID",
+            "description": "Once the line item has been invoiced this will be the invoice's ID.",
+            "maxLength": 13
+          },
+          "invoice_number": {
+            "type": ["null", "string"],
+            "title": "Invoice number",
+            "description": "Once the line item has been invoiced this will be the invoice's number. If VAT taxation and the Country Invoice Sequencing feature are enabled, invoices will have country-specific invoice numbers for invoices billed to EU countries (ex: FR1001). Non-EU invoices will continue to use the site-level invoice number sequence."
+          },
+          "previous_line_item_id": {
+            "type": ["null", "string"],
+            "title": "Previous line item ID",
+            "description": "Will only have a value if the line item is a credit created from a previous credit, or if the credit was created from a charge refund.",
+            "maxLength": 13
+          },
+          "original_line_item_invoice_id": {
+            "type": ["null", "string"],
+            "title": "Original line item's invoice ID",
+            "description": "The invoice where the credit originated. Will only have a value if the line item is a credit created from a previous credit, or if the credit was created from a charge refund.",
+            "maxLength": 13
+          },
+          "origin": {
+            "title": "Origin of line item",
+            "description": "A credit created from an original charge will have the value of the charge's origin.",
+            "type": ["null", "string"],
+            "enum": [
+              "add_on",
+              "add_on_trial",
+              "carryforward",
+              "coupon",
+              "credit",
+              "debit",
+              "one_time",
+              "plan",
+              "plan_trial",
+              "setup_fee",
+              "prepayment"
+            ]
+          },
+          "accounting_code": {
+            "type": ["null", "string"],
+            "title": "Accounting code",
+            "description": "Internal accounting code to help you reconcile your revenue to the correct ledger. Line items created as part of a subscription invoice will use the plan or add-on's accounting code, otherwise the value will only be present if you define an accounting code when creating the line item.",
+            "maxLength": 20
+          },
+          "product_code": {
+            "type": ["null", "string"],
+            "title": "Product code",
+            "description": "For plan-related line items this will be the plan's code, for add-on related line items it will be the add-on's code. For item-related line items it will be the item's `external_sku`.",
+            "maxLength": 50
+          },
+          "credit_reason_code": {
+            "title": "Credit reason code",
+            "description": "The reason the credit was given when line item is `type=credit`.",
+            "default": "general",
+            "type": ["null", "string"]
+          },
+          "currency": {
+            "type": ["null", "string"],
+            "title": "Currency",
+            "description": "3-letter ISO 4217 currency code.",
+            "maxLength": 3
+          },
+          "amount": {
+            "type": ["null", "number"],
+            "format": "float",
+            "title": "Total after discounts and taxes",
+            "description": "`(quantity * unit_amount) - (discount + tax)`"
+          },
+          "description": {
+            "type": ["null", "string"],
+            "title": "Description",
+            "description": "Description that appears on the invoice. For subscription related items this will be filled in automatically.",
+            "maxLength": 255
+          },
+          "quantity": {
+            "type": ["null", "integer"],
+            "title": "Quantity",
+            "description": "This number will be multiplied by the unit amount to compute the subtotal before any discounts or taxes.",
+            "default": 1
+          },
+          "unit_amount": {
+            "type": ["null", "number"],
+            "format": "float",
+            "title": "Unit amount",
+            "description": "Positive amount for a charge, negative amount for a credit."
+          },
+          "unit_amount_decimal": {
+            "type": ["null", "string"],
+            "title": "Unit amount decimal",
+            "description": "Positive amount for a charge, negative amount for a credit."
+          },
+          "subtotal": {
+            "type": ["null", "number"],
+            "format": "float",
+            "title": "Total before discounts and taxes",
+            "description": "`quantity * unit_amount`"
+          },
+          "discount": {
+            "type": ["null", "number"],
+            "format": "float",
+            "title": "Discount",
+            "description": "The discount applied to the line item."
+          },
+          "tax": {
+            "type": ["null", "number"],
+            "format": "float",
+            "title": "Tax",
+            "description": "The tax amount for the line item."
+          },
+          "taxable": {
+            "type": ["null", "boolean"],
+            "title": "Taxable?",
+            "description": "`true` if the line item is taxable, `false` if it is not."
+          },
+          "tax_exempt": {
+            "type": ["null", "boolean"],
+            "title": "Tax exempt?",
+            "description": "`true` exempts tax on charges, `false` applies tax on charges. If not defined, then defaults to the Plan and Site settings. This attribute does not work for credits (negative line items). Credits are always applied post-tax. Pre-tax discounts should use the Coupons feature."
+          },
+          "avalara_transaction_type": {
+            "type": ["null", "integer"],
+            "title": "Avalara Transaction Type",
+            "description": "Used by Avalara for Communications taxes. The transaction type in combination with the service type describe how the line item is taxed. Refer to [the documentation](https://help.avalara.com/AvaTax_for_Communications/Tax_Calculation/AvaTax_for_Communications_Tax_Engine/Mapping_Resources/TM_00115_AFC_Modules_Corresponding_Transaction_Types) for more available t/s types.",
+            "minimum": 0
+          },
+          "avalara_service_type": {
+            "type": ["null", "integer"],
+            "title": "Avalara Service Type",
+            "description": "Used by Avalara for Communications taxes. The transaction type in combination with the service type describe how the line item is taxed. Refer to [the documentation](https://help.avalara.com/AvaTax_for_Communications/Tax_Calculation/AvaTax_for_Communications_Tax_Engine/Mapping_Resources/TM_00115_AFC_Modules_Corresponding_Transaction_Types) for more available t/s types.",
+            "minimum": 0
+          },
+          "tax_code": {
+            "type": ["null", "string"],
+            "title": "Tax code",
+            "description": "Used by Avalara, Vertex, and Recurly\u2019s EU VAT tax feature. The tax code values are specific to each tax system. If you are using Recurly\u2019s EU VAT feature you can use `unknown`, `physical`, or `digital`.",
+            "maxLength": 50
+          },
+          "tax_info": {
+            "type": ["null", "object"],
+            "title": "Tax info",
+            "properties": {
+              "type": {
+                "type": ["null", "string"],
+                "title": "Type",
+                "description": "Provides the tax type as \"vat\" for EU VAT, \"usst\" for U.S. Sales Tax, or the 2 letter country code for country level tax types like Canada, Australia, New Zealand, Israel, and all non-EU European countries."
+              },
+              "region": {
+                "type": ["null", "string"],
+                "title": "Region",
+                "description": "Provides the tax region applied on an invoice. For U.S. Sales Tax, this will be the 2 letter state code. For EU VAT this will be the 2 letter country code. For all country level tax types, this will display the regional tax, like VAT, GST, or PST."
+              },
+              "rate": {
+                "type": ["null", "number"],
+                "format": "float",
+                "title": "Rate"
+              },
+              "tax_details": {
+                "type": "array",
+                "description": "Provides additional tax details for Canadian Sales Tax when there is tax applied at both the country and province levels. This will only be populated for the Invoice response when fetching a single invoice and not for the InvoiceList or LineItem.",
+                "items": {
+                  "type": "object",
+                  "title": "Tax detail",
+                  "properties": {
+                    "type": {
+                      "type": ["null", "string"],
+                      "title": "Type",
+                      "description": "Provides the tax type for the region. For Canadian Sales Tax, this will be GST, HST, QST or PST."
+                    },
+                    "region": {
+                      "type": ["null", "string"],
+                      "title": "Region",
+                      "description": "Provides the tax region applied on an invoice. For Canadian Sales Tax, this will be either the 2 letter province code or country code."
+                    },
+                    "rate": {
+                      "type": ["null", "number"],
+                      "format": "float",
+                      "title": "Rate",
+                      "description": "Provides the tax rate for the region."
+                    },
+                    "tax": {
+                      "type": ["null", "number"],
+                      "format": "float",
+                      "title": "Tax",
+                      "description": "The total tax applied for this tax type."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "proration_rate": {
+            "type": ["null", "number"],
+            "format": "float",
+            "title": "Proration rate",
+            "description": "When a line item has been prorated, this is the rate of the proration. Proration rates were made available for line items created after March 30, 2017. For line items created prior to that date, the proration rate will be `null`, even if the line item was prorated.",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "refund": {
+            "type": ["null", "boolean"],
+            "title": "Refund?"
+          },
+          "refunded_quantity": {
+            "type": ["null", "integer"],
+            "title": "Refunded Quantity",
+            "description": "For refund charges, the quantity being refunded. For non-refund charges, the total quantity refunded (possibly over multiple refunds)."
+          },
+          "credit_applied": {
+            "type": ["null", "number"],
+            "format": "float",
+            "title": "Credit Applied",
+            "description": "The amount of credit from this line item that was applied to the invoice."
+          },
+          "shipping_address": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "type": ["null", "string"],
+                "title": "Shipping Address ID",
+                "maxLength": 13,
+                "readOnly": true
+              },
+              "object": {
+                "type": ["null", "string"],
+                "title": "Object type",
+                "readOnly": true
+              },
+              "account_id": {
+                "type": ["null", "string"],
+                "title": "Account ID",
+                "maxLength": 13,
+                "readOnly": true
+              },
+              "nickname": {
+                "type": ["null", "string"],
+                "maxLength": 255
+              },
+              "first_name": {
+                "type": ["null", "string"],
+                "maxLength": 255
+              },
+              "last_name": {
+                "type": ["null", "string"],
+                "maxLength": 255
+              },
+              "company": {
+                "type": ["null", "string"],
+                "maxLength": 255
+              },
+              "email": {
+                "type": ["null", "string"],
+                "maxLength": 255
+              },
+              "vat_number": {
+                "type": ["null", "string"],
+                "maxLength": 20
+              },
+              "phone": {
+                "type": ["null", "string"],
+                "maxLength": 30
+              },
+              "street1": {
+                "type": ["null", "string"],
+                "maxLength": 255
+              },
+              "street2": {
+                "type": ["null", "string"],
+                "maxLength": 255
+              },
+              "city": {
+                "type": ["null", "string"],
+                "maxLength": 255
+              },
+              "region": {
+                "type": ["null", "string"],
+                "maxLength": 255,
+                "description": "State or province."
+              },
+              "postal_code": {
+                "type": ["null", "string"],
+                "maxLength": 20,
+                "description": "Zip or postal code."
+              },
+              "country": {
+                "type": ["null", "string"],
+                "maxLength": 50,
+                "description": "Country, 2-letter ISO 3166-1 alpha-2 code."
+              },
+              "created_at": {
+                "type": ["null", "string"],
+                "title": "Created at",
+                "format": "date-time",
+                "readOnly": true
+              },
+              "updated_at": {
+                "type": ["null", "string"],
+                "title": "Updated at",
+                "format": "date-time",
+                "readOnly": true
+              }
+            }
+          },
+          "start_date": {
+            "type": ["null", "string"],
+            "format": "date-time",
+            "title": "Start date",
+            "description": "If an end date is present, this is value indicates the beginning of a billing time range. If no end date is present it indicates billing for a specific date."
+          },
+          "end_date": {
+            "type": ["null", "string"],
+            "format": "date-time",
+            "title": "End date",
+            "description": "If this date is provided, it indicates the end of a time range."
+          },
+          "created_at": {
+            "type": ["null", "string"],
+            "format": "date-time",
+            "title": "Created at",
+            "description": "When the line item was created."
+          },
+          "updated_at": {
+            "type": ["null", "string"],
+            "format": "date-time",
+            "title": "Last updated at",
+            "description": "When the line item was last changed."
+          }
         }
       }
     },
+    "has_more_line_items": {
+      "type": ["null", "boolean"],
+      "title": "Has more Line Items",
+      "description": "Identifies if the invoice has more line items than are returned in `line_items`. If `has_more_line_items` is `true`, then a request needs to be made to the `list_invoice_line_items` endpoint."
+    },
     "transactions": {
-      "type": "array"
+      "type": "array",
+      "title": "Transactions",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": ["null", "string"],
+            "title": "Transaction ID",
+            "maxLength": 13
+          },
+          "object": {
+            "type": ["null", "string"],
+            "title": "Object type"
+          },
+          "uuid": {
+            "type": ["null", "string"],
+            "title": "Recurly UUID",
+            "description": "The UUID is useful for matching data with the CSV exports and building URLs into Recurly's UI.",
+            "maxLength": 32
+          },
+          "original_transaction_id": {
+            "type": ["null", "string"],
+            "title": "Original Transaction ID",
+            "description": "If this transaction is a refund (`type=refund`), this will be the ID of the original transaction on the invoice being refunded.",
+            "maxLength": 13
+          },
+          "account": {
+            "type": "object",
+            "title": "Account mini details",
+            "properties": {
+              "id": {
+                "type": ["null", "string"],
+                "maxLength": 13,
+                "readOnly": true
+              },
+              "object": {
+                "type": ["null", "string"],
+                "title": "Object type",
+                "readOnly": true
+              },
+              "code": {
+                "type": ["null", "string"],
+                "description": "The unique identifier of the account.",
+                "maxLength": 50
+              },
+              "email": {
+                "type": ["null", "string"],
+                "description": "The email address used for communicating with this customer.",
+                "maxLength": 255
+              },
+              "first_name": {
+                "type": ["null", "string"],
+                "maxLength": 255
+              },
+              "last_name": {
+                "type": ["null", "string"],
+                "maxLength": 255
+              },
+              "company": {
+                "type": ["null", "string"],
+                "maxLength": 255
+              },
+              "parent_account_id": {
+                "type": ["null", "string"],
+                "maxLength": 13
+              },
+              "bill_to": {
+                "type": ["null", "string"],
+                "maxLength": 6
+              },
+              "dunning_campaign_id": {
+                "type": ["null", "string"],
+                "title": "Dunning Campaign ID",
+                "description": "Unique ID to identify a dunning campaign. Available when the Dunning Campaigns feature is enabled. Used to specify if a non-default dunning campaign should be assigned to this account. For sites without multiple dunning campaigns enabled, the default dunning campaign will always be used."
+              }
+            }
+          },
+          "invoice": {
+            "type": "object",
+            "title": "Invoice mini details",
+            "properties": {
+              "id": {
+                "type": ["null", "string"],
+                "title": "Invoice ID",
+                "maxLength": 13
+              },
+              "object": {
+                "type": ["null", "string"],
+                "title": "Object type"
+              },
+              "number": {
+                "type": ["null", "string"],
+                "title": "Invoice number"
+              },
+              "type": {
+                "title": "Invoice type",
+                "type": ["null", "string"],
+                "enum": [
+                  "charge",
+                  "credit",
+                  "legacy"
+                ]
+              },
+              "state": {
+                "title": "Invoice state",
+                "type": ["null", "string"],
+                "enum": [
+                  "open",
+                  "pending",
+                  "processing",
+                  "past_due",
+                  "paid",
+                  "closed",
+                  "failed",
+                  "voided"
+                ]
+              }
+            }
+          },
+          "voided_by_invoice": {
+            "type": "object",
+            "title": "Invoice mini details",
+            "properties": {
+              "id": {
+                "type": ["null", "string"],
+                "title": "Invoice ID",
+                "maxLength": 13
+              },
+              "object": {
+                "type": ["null", "string"],
+                "title": "Object type"
+              },
+              "number": {
+                "type": ["null", "string"],
+                "title": "Invoice number"
+              },
+              "type": {
+                "title": "Invoice type",
+                "type": ["null", "string"],
+                "enum": [
+                  "charge",
+                  "credit",
+                  "legacy"
+                ]
+              },
+              "state": {
+                "title": "Invoice state",
+                "type": ["null", "string"],
+                "enum": [
+                  "open",
+                  "pending",
+                  "processing",
+                  "past_due",
+                  "paid",
+                  "closed",
+                  "failed",
+                  "voided"
+                ]
+              }
+            }
+          },
+          "subscription_ids": {
+            "type": "array",
+            "title": "Subscription IDs",
+            "description": "If the transaction is charging or refunding for one or more subscriptions, these are their IDs.",
+            "items": {
+              "type": ["null", "string"],
+              "title": "Subscription ID",
+              "maxLength": 13
+            }
+          },
+          "type": {
+            "title": "Transaction type",
+            "description": "- `authorization` \u2013 verifies billing information and places a hold on money in the customer's account.\n- `capture` \u2013 captures funds held by an authorization and completes a purchase.\n- `purchase` \u2013 combines the authorization and capture in one transaction.\n- `refund` \u2013 returns all or a portion of the money collected in a previous transaction to the customer.\n- `verify` \u2013 a $0 or $1 transaction used to verify billing information which is immediately voided.\n",
+            "type": ["null", "string"],
+            "enum": [
+              "authorization",
+              "capture",
+              "purchase",
+              "refund",
+              "verify"
+            ]
+          },
+          "origin": {
+            "title": "Origin of transaction",
+            "description": "Describes how the transaction was triggered.",
+            "type": ["null", "string"],
+            "enum": [
+              "api",
+              "chargeback",
+              "force_collect",
+              "hpp",
+              "merchant",
+              "recurly_admin",
+              "recurlyjs",
+              "recurring",
+              "refunded_externally",
+              "transparent"
+            ]
+          },
+          "currency": {
+            "type": ["null", "string"],
+            "title": "Currency",
+            "description": "3-letter ISO 4217 currency code.",
+            "maxLength": 3
+          },
+          "amount": {
+            "type": ["null", "number"],
+            "format": "float",
+            "title": "Amount",
+            "description": "Total transaction amount sent to the payment gateway."
+          },
+          "status": {
+            "title": "Transaction status",
+            "description": "The current transaction status. Note that the status may change, e.g. a `pending` transaction may become `declined` or `success` may later become `void`.",
+            "type": ["null", "string"],
+            "enum": [
+              "chargeback",
+              "declined",
+              "error",
+              "pending",
+              "processing",
+              "scheduled",
+              "success",
+              "void"
+            ]
+          },
+          "success": {
+            "type": ["null", "boolean"],
+            "title": "Success?",
+            "description": "Did this transaction complete successfully?"
+          },
+          "backup_payment_method_used": {
+            "type": ["null", "boolean"],
+            "title": "Backup Payment Method Used?",
+            "description": "Indicates if the transaction was completed using a backup payment"
+          },
+          "refunded": {
+            "type": ["null", "boolean"],
+            "title": "Refunded?",
+            "description": "Indicates if part or all of this transaction was refunded."
+          },
+          "billing_address": {
+            "allOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "phone": {
+                    "type": ["null", "string"],
+                    "title": "Phone number"
+                  },
+                  "street1": {
+                    "type": ["null", "string"],
+                    "title": "Street 1"
+                  },
+                  "street2": {
+                    "type": ["null", "string"],
+                    "title": "Street 2"
+                  },
+                  "city": {
+                    "type": ["null", "string"],
+                    "title": "City"
+                  },
+                  "region": {
+                    "type": ["null", "string"],
+                    "title": "State/Province",
+                    "description": "State or province."
+                  },
+                  "postal_code": {
+                    "type": ["null", "string"],
+                    "title": "Zip/Postal code",
+                    "description": "Zip or postal code."
+                  },
+                  "country": {
+                    "type": ["null", "string"],
+                    "title": "Country",
+                    "description": "Country, 2-letter ISO 3166-1 alpha-2 code."
+                  }
+                }
+              }
+            ],
+            "type": "object",
+            "properties": {
+              "first_name": {
+                "type": ["null", "string"],
+                "title": "First name"
+              },
+              "last_name": {
+                "type": ["null", "string"],
+                "title": "Last name"
+              }
+            }
+          },
+          "collection_method": {
+            "description": "The method by which the payment was collected.",
+            "type": ["null", "string"],
+            "enum": [
+              "automatic",
+              "manual"
+            ]
+          },
+          "payment_method": {
+            "properties": {
+              "object": {
+                "type": ["null", "string"],
+                "enum": [
+                  "amazon",
+                  "amazon_billing_agreement",
+                  "apple_pay",
+                  "bank_account_info",
+                  "check",
+                  "credit_card",
+                  "eft",
+                  "gateway_token",
+                  "iban_bank_account",
+                  "money_order",
+                  "other",
+                  "paypal",
+                  "paypal_billing_agreement",
+                  "roku",
+                  "sepadirectdebit",
+                  "wire_transfer",
+                  "braintree_v_zero"
+                ]
+              },
+              "card_type": {
+                "description": "Visa, MasterCard, American Express, Discover, JCB, etc.",
+                "type": ["null", "string"],
+                "enum": [
+                  "American Express",
+                  "Dankort",
+                  "Diners Club",
+                  "Discover",
+                  "Forbrugsforeningen",
+                  "JCB",
+                  "Laser",
+                  "Maestro",
+                  "MasterCard",
+                  "Test Card",
+                  "Union Pay",
+                  "Unknown",
+                  "Visa",
+                  "Tarjeta Naranja"
+                ]
+              },
+              "first_six": {
+                "type": ["null", "string"],
+                "description": "Credit card number's first six digits.",
+                "maxLength": 6
+              },
+              "last_four": {
+                "type": ["null", "string"],
+                "description": "Credit card number's last four digits. Will refer to bank account if payment method is ACH.",
+                "maxLength": 4
+              },
+              "last_two": {
+                "type": ["null", "string"],
+                "description": "The IBAN bank account's last two digits.",
+                "maxLength": 2
+              },
+              "exp_month": {
+                "type": ["null", "integer"],
+                "description": "Expiration month.",
+                "maxLength": 2
+              },
+              "exp_year": {
+                "type": ["null", "integer"],
+                "description": "Expiration year.",
+                "maxLength": 4
+              },
+              "gateway_token": {
+                "type": ["null", "string"],
+                "description": "A token used in place of a credit card in order to perform transactions.",
+                "maxLength": 50
+              },
+              "cc_bin_country": {
+                "type": ["null", "string"],
+                "description": "The 2-letter ISO 3166-1 alpha-2 country code associated with the credit card BIN, if known by Recurly. Available on the BillingInfo object only. Available when the BIN country lookup feature is enabled."
+              },
+              "gateway_code": {
+                "type": ["null", "string"],
+                "description": "An identifier for a specific payment gateway.",
+                "maxLength": 13
+              },
+              "billing_agreement_id": {
+                "type": ["null", "string"],
+                "description": "Billing Agreement identifier. Only present for Amazon or Paypal payment methods."
+              },
+              "name_on_account": {
+                "type": ["null", "string"],
+                "description": "The name associated with the bank account."
+              },
+              "account_type": {
+                "description": "The bank account type. Only present for ACH payment methods.",
+                "type": ["null", "string"],
+                "enum": [
+                  "checking",
+                  "savings"
+                ]
+              },
+              "routing_number": {
+                "type": ["null", "string"],
+                "description": "The bank account's routing number. Only present for ACH payment methods."
+              },
+              "routing_number_bank": {
+                "type": ["null", "string"],
+                "description": "The bank name of this routing number."
+              }
+            },
+            "type": "object"
+          },
+          "ip_address_v4": {
+            "type": ["null", "string"],
+            "title": "IP address",
+            "description": "IP address provided when the billing information was collected:\n\n- When the customer enters billing information into the Recurly.js or Hosted Payment Pages, Recurly records the IP address.\n- When the merchant enters billing information using the API, the merchant may provide an IP address.\n- When the merchant enters billing information using the UI, no IP address is recorded.\n"
+          },
+          "ip_address_country": {
+            "type": ["null", "string"],
+            "title": "Origin IP address country, 2-letter ISO 3166-1 alpha-2 code, if known by Recurly."
+          },
+          "status_code": {
+            "type": ["null", "string"],
+            "title": "Status code"
+          },
+          "status_message": {
+            "type": ["null", "string"],
+            "title": "Status message",
+            "description": "For declined (`success=false`) transactions, the message displayed to the merchant."
+          },
+          "customer_message": {
+            "type": ["null", "string"],
+            "title": "Customer message",
+            "description": "For declined (`success=false`) transactions, the message displayed to the customer."
+          },
+          "customer_message_locale": {
+            "type": ["null", "string"],
+            "title": "Language code for the message"
+          },
+          "payment_gateway": {
+            "type": "object",
+            "x-class-name": "TransactionPaymentGateway",
+            "properties": {
+              "id": {
+                "type": ["null", "string"]
+              },
+              "object": {
+                "type": ["null", "string"],
+                "title": "Object type"
+              },
+              "type": {
+                "type": ["null", "string"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "gateway_message": {
+            "type": ["null", "string"],
+            "title": "Gateway message",
+            "description": "Transaction message from the payment gateway."
+          },
+          "gateway_reference": {
+            "type": ["null", "string"],
+            "title": "Gateway reference",
+            "description": "Transaction reference number from the payment gateway."
+          },
+          "gateway_approval_code": {
+            "type": ["null", "string"],
+            "title": "Transaction approval code from the payment gateway."
+          },
+          "gateway_response_code": {
+            "type": ["null", "string"],
+            "title": "For declined transactions (`success=false`), this field lists the gateway error code."
+          },
+          "gateway_response_time": {
+            "type": ["null", "number"],
+            "format": "float",
+            "title": "Gateway response time",
+            "description": "Time, in seconds, for gateway to process the transaction."
+          },
+          "gateway_response_values": {
+            "type": "object",
+            "title": "Gateway response values",
+            "description": "The values in this field will vary from gateway to gateway."
+          },
+          "cvv_check": {
+            "title": "CVV check",
+            "description": "When processed, result from checking the CVV/CVC value on the transaction.",
+            "type": ["null", "string"],
+            "enum": [
+              "D",
+              "I",
+              "M",
+              "N",
+              "P",
+              "S",
+              "U",
+              "X"
+            ]
+          },
+          "avs_check": {
+            "title": "AVS check",
+            "description": "When processed, result from checking the overall AVS on the transaction.",
+            "type": ["null", "string"],
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I",
+              "J",
+              "K",
+              "L",
+              "M",
+              "N",
+              "O",
+              "P",
+              "Q",
+              "R",
+              "S",
+              "T",
+              "U",
+              "V",
+              "W",
+              "X",
+              "Y",
+              "Z"
+            ]
+          },
+          "created_at": {
+            "type": ["null", "string"],
+            "format": "date-time",
+            "title": "Created at"
+          },
+          "updated_at": {
+            "type": ["null", "string"],
+            "format": "date-time",
+            "title": "Updated at"
+          },
+          "voided_at": {
+            "type": ["null", "string"],
+            "format": "date-time",
+            "title": "Voided at"
+          },
+          "collected_at": {
+            "type": ["null", "string"],
+            "format": "date-time",
+            "title": "Collected at, or if not collected yet, the time the transaction was created."
+          }
+        }
+      }
     },
     "credit_payments": {
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": ["null", "string"],
+            "title": "Credit Payment ID",
+            "maxLength": 13
+          },
+          "object": {
+            "type": ["null", "string"],
+            "title": "Object type"
+          },
+          "uuid": {
+            "type": ["null", "string"],
+            "title": "Recurly UUID",
+            "description": "The UUID is useful for matching data with the CSV exports and building URLs into Recurly's UI.",
+            "maxLength": 32
+          },
+          "action": {
+            "title": "Action",
+            "description": "The action for which the credit was created.",
+            "type": ["null", "string"],
+            "enum": [
+              "payment",
+              "reduction",
+              "refund",
+              "write_off"
+            ]
+          },
+          "account": {
+            "type": "object",
+            "title": "Account mini details",
+            "properties": {
+              "id": {
+                "type": ["null", "string"],
+                "maxLength": 13,
+                "readOnly": true
+              },
+              "object": {
+                "type": ["null", "string"],
+                "title": "Object type",
+                "readOnly": true
+              },
+              "code": {
+                "type": ["null", "string"],
+                "description": "The unique identifier of the account.",
+                "maxLength": 50
+              },
+              "email": {
+                "type": ["null", "string"],
+                "description": "The email address used for communicating with this customer.",
+                "maxLength": 255
+              },
+              "first_name": {
+                "type": ["null", "string"],
+                "maxLength": 255
+              },
+              "last_name": {
+                "type": ["null", "string"],
+                "maxLength": 255
+              },
+              "company": {
+                "type": ["null", "string"],
+                "maxLength": 255
+              },
+              "parent_account_id": {
+                "type": ["null", "string"],
+                "maxLength": 13
+              },
+              "bill_to": {
+                "type": ["null", "string"],
+                "maxLength": 6
+              },
+              "dunning_campaign_id": {
+                "type": ["null", "string"],
+                "title": "Dunning Campaign ID",
+                "description": "Unique ID to identify a dunning campaign. Available when the Dunning Campaigns feature is enabled. Used to specify if a non-default dunning campaign should be assigned to this account. For sites without multiple dunning campaigns enabled, the default dunning campaign will always be used."
+              }
+            }
+          },
+          "applied_to_invoice": {
+            "type": "object",
+            "title": "Invoice mini details",
+            "properties": {
+              "id": {
+                "type": ["null", "string"],
+                "title": "Invoice ID",
+                "maxLength": 13
+              },
+              "object": {
+                "type": ["null", "string"],
+                "title": "Object type"
+              },
+              "number": {
+                "type": ["null", "string"],
+                "title": "Invoice number"
+              },
+              "type": {
+                "title": "Invoice type",
+                "type": ["null", "string"],
+                "enum": [
+                  "charge",
+                  "credit",
+                  "legacy"
+                ]
+              },
+              "state": {
+                "title": "Invoice state",
+                "type": ["null", "string"],
+                "enum": [
+                  "open",
+                  "pending",
+                  "processing",
+                  "past_due",
+                  "paid",
+                  "closed",
+                  "failed",
+                  "voided"
+                ]
+              }
+            }
+          },
+          "original_invoice": {
+            "type": "object",
+            "title": "Invoice mini details",
+            "properties": {
+              "id": {
+                "type": ["null", "string"],
+                "title": "Invoice ID",
+                "maxLength": 13
+              },
+              "object": {
+                "type": ["null", "string"],
+                "title": "Object type"
+              },
+              "number": {
+                "type": ["null", "string"],
+                "title": "Invoice number"
+              },
+              "type": {
+                "title": "Invoice type",
+                "type": ["null", "string"],
+                "enum": [
+                  "charge",
+                  "credit",
+                  "legacy"
+                ]
+              },
+              "state": {
+                "title": "Invoice state",
+                "type": ["null", "string"],
+                "enum": [
+                  "open",
+                  "pending",
+                  "processing",
+                  "past_due",
+                  "paid",
+                  "closed",
+                  "failed",
+                  "voided"
+                ]
+              }
+            }
+          },
+          "currency": {
+            "type": ["null", "string"],
+            "title": "Currency",
+            "description": "3-letter ISO 4217 currency code.",
+            "maxLength": 3
+          },
+          "amount": {
+            "type": ["null", "number"],
+            "format": "float",
+            "title": "Amount",
+            "description": "Total credit payment amount applied to the charge invoice."
+          },
+          "original_credit_payment_id": {
+            "type": ["null", "string"],
+            "title": "Original Credit Payment ID",
+            "description": "For credit payments with action `refund`, this is the credit payment that was refunded.",
+            "maxLength": 13
+          },
+          "refund_transaction": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "type": ["null", "string"],
+                "title": "Transaction ID",
+                "maxLength": 13
+              },
+              "object": {
+                "type": ["null", "string"],
+                "title": "Object type"
+              },
+              "uuid": {
+                "type": ["null", "string"],
+                "title": "Recurly UUID",
+                "description": "The UUID is useful for matching data with the CSV exports and building URLs into Recurly's UI.",
+                "maxLength": 32
+              },
+              "original_transaction_id": {
+                "type": ["null", "string"],
+                "title": "Original Transaction ID",
+                "description": "If this transaction is a refund (`type=refund`), this will be the ID of the original transaction on the invoice being refunded.",
+                "maxLength": 13
+              },
+              "account": {
+                "type": "object",
+                "title": "Account mini details",
+                "properties": {
+                  "id": {
+                    "type": ["null", "string"],
+                    "maxLength": 13,
+                    "readOnly": true
+                  },
+                  "object": {
+                    "type": ["null", "string"],
+                    "title": "Object type",
+                    "readOnly": true
+                  },
+                  "code": {
+                    "type": ["null", "string"],
+                    "description": "The unique identifier of the account.",
+                    "maxLength": 50
+                  },
+                  "email": {
+                    "type": ["null", "string"],
+                    "description": "The email address used for communicating with this customer.",
+                    "maxLength": 255
+                  },
+                  "first_name": {
+                    "type": ["null", "string"],
+                    "maxLength": 255
+                  },
+                  "last_name": {
+                    "type": ["null", "string"],
+                    "maxLength": 255
+                  },
+                  "company": {
+                    "type": ["null", "string"],
+                    "maxLength": 255
+                  },
+                  "parent_account_id": {
+                    "type": ["null", "string"],
+                    "maxLength": 13
+                  },
+                  "bill_to": {
+                    "type": ["null", "string"],
+                    "maxLength": 6
+                  },
+                  "dunning_campaign_id": {
+                    "type": ["null", "string"],
+                    "title": "Dunning Campaign ID",
+                    "description": "Unique ID to identify a dunning campaign. Available when the Dunning Campaigns feature is enabled. Used to specify if a non-default dunning campaign should be assigned to this account. For sites without multiple dunning campaigns enabled, the default dunning campaign will always be used."
+                  }
+                }
+              },
+              "invoice": {
+                "type": "object",
+                "title": "Invoice mini details",
+                "properties": {
+                  "id": {
+                    "type": ["null", "string"],
+                    "title": "Invoice ID",
+                    "maxLength": 13
+                  },
+                  "object": {
+                    "type": ["null", "string"],
+                    "title": "Object type"
+                  },
+                  "number": {
+                    "type": ["null", "string"],
+                    "title": "Invoice number"
+                  },
+                  "type": {
+                    "title": "Invoice type",
+                    "type": ["null", "string"],
+                    "enum": [
+                      "charge",
+                      "credit",
+                      "legacy"
+                    ]
+                  },
+                  "state": {
+                    "title": "Invoice state",
+                    "type": ["null", "string"],
+                    "enum": [
+                      "open",
+                      "pending",
+                      "processing",
+                      "past_due",
+                      "paid",
+                      "closed",
+                      "failed",
+                      "voided"
+                    ]
+                  }
+                }
+              },
+              "voided_by_invoice": {
+                "type": "object",
+                "title": "Invoice mini details",
+                "properties": {
+                  "id": {
+                    "type": ["null", "string"],
+                    "title": "Invoice ID",
+                    "maxLength": 13
+                  },
+                  "object": {
+                    "type": ["null", "string"],
+                    "title": "Object type"
+                  },
+                  "number": {
+                    "type": ["null", "string"],
+                    "title": "Invoice number"
+                  },
+                  "type": {
+                    "title": "Invoice type",
+                    "type": ["null", "string"],
+                    "enum": [
+                      "charge",
+                      "credit",
+                      "legacy"
+                    ]
+                  },
+                  "state": {
+                    "title": "Invoice state",
+                    "type": ["null", "string"],
+                    "enum": [
+                      "open",
+                      "pending",
+                      "processing",
+                      "past_due",
+                      "paid",
+                      "closed",
+                      "failed",
+                      "voided"
+                    ]
+                  }
+                }
+              },
+              "subscription_ids": {
+                "type": "array",
+                "title": "Subscription IDs",
+                "description": "If the transaction is charging or refunding for one or more subscriptions, these are their IDs.",
+                "items": {
+                  "type": ["null", "string"],
+                  "title": "Subscription ID",
+                  "maxLength": 13
+                }
+              },
+              "type": {
+                "title": "Transaction type",
+                "description": "- `authorization` \u2013 verifies billing information and places a hold on money in the customer's account.\n- `capture` \u2013 captures funds held by an authorization and completes a purchase.\n- `purchase` \u2013 combines the authorization and capture in one transaction.\n- `refund` \u2013 returns all or a portion of the money collected in a previous transaction to the customer.\n- `verify` \u2013 a $0 or $1 transaction used to verify billing information which is immediately voided.\n",
+                "type": ["null", "string"],
+                "enum": [
+                  "authorization",
+                  "capture",
+                  "purchase",
+                  "refund",
+                  "verify"
+                ]
+              },
+              "origin": {
+                "title": "Origin of transaction",
+                "description": "Describes how the transaction was triggered.",
+                "type": ["null", "string"],
+                "enum": [
+                  "api",
+                  "chargeback",
+                  "force_collect",
+                  "hpp",
+                  "merchant",
+                  "recurly_admin",
+                  "recurlyjs",
+                  "recurring",
+                  "refunded_externally",
+                  "transparent"
+                ]
+              },
+              "currency": {
+                "type": ["null", "string"],
+                "title": "Currency",
+                "description": "3-letter ISO 4217 currency code.",
+                "maxLength": 3
+              },
+              "amount": {
+                "type": ["null", "number"],
+                "format": "float",
+                "title": "Amount",
+                "description": "Total transaction amount sent to the payment gateway."
+              },
+              "status": {
+                "title": "Transaction status",
+                "description": "The current transaction status. Note that the status may change, e.g. a `pending` transaction may become `declined` or `success` may later become `void`.",
+                "type": ["null", "string"],
+                "enum": [
+                  "chargeback",
+                  "declined",
+                  "error",
+                  "pending",
+                  "processing",
+                  "scheduled",
+                  "success",
+                  "void"
+                ]
+              },
+              "success": {
+                "type": ["null", "boolean"],
+                "title": "Success?",
+                "description": "Did this transaction complete successfully?"
+              },
+              "backup_payment_method_used": {
+                "type": ["null", "boolean"],
+                "title": "Backup Payment Method Used?",
+                "description": "Indicates if the transaction was completed using a backup payment"
+              },
+              "refunded": {
+                "type": ["null", "boolean"],
+                "title": "Refunded?",
+                "description": "Indicates if part or all of this transaction was refunded."
+              },
+              "billing_address": {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "phone": {
+                        "type": ["null", "string"],
+                        "title": "Phone number"
+                      },
+                      "street1": {
+                        "type": ["null", "string"],
+                        "title": "Street 1"
+                      },
+                      "street2": {
+                        "type": ["null", "string"],
+                        "title": "Street 2"
+                      },
+                      "city": {
+                        "type": ["null", "string"],
+                        "title": "City"
+                      },
+                      "region": {
+                        "type": ["null", "string"],
+                        "title": "State/Province",
+                        "description": "State or province."
+                      },
+                      "postal_code": {
+                        "type": ["null", "string"],
+                        "title": "Zip/Postal code",
+                        "description": "Zip or postal code."
+                      },
+                      "country": {
+                        "type": ["null", "string"],
+                        "title": "Country",
+                        "description": "Country, 2-letter ISO 3166-1 alpha-2 code."
+                      }
+                    }
+                  }
+                ],
+                "type": "object",
+                "properties": {
+                  "first_name": {
+                    "type": ["null", "string"],
+                    "title": "First name"
+                  },
+                  "last_name": {
+                    "type": ["null", "string"],
+                    "title": "Last name"
+                  }
+                }
+              },
+              "collection_method": {
+                "description": "The method by which the payment was collected.",
+                "type": ["null", "string"],
+                "enum": [
+                  "automatic",
+                  "manual"
+                ]
+              },
+              "payment_method": {
+                "type": "object",
+                "properties": {
+                  "object": {
+                    "type": ["null", "string"],
+                    "enum": [
+                      "amazon",
+                      "amazon_billing_agreement",
+                      "apple_pay",
+                      "bank_account_info",
+                      "check",
+                      "credit_card",
+                      "eft",
+                      "gateway_token",
+                      "iban_bank_account",
+                      "money_order",
+                      "other",
+                      "paypal",
+                      "paypal_billing_agreement",
+                      "roku",
+                      "sepadirectdebit",
+                      "wire_transfer",
+                      "braintree_v_zero"
+                    ]
+                  },
+                  "card_type": {
+                    "description": "Visa, MasterCard, American Express, Discover, JCB, etc.",
+                    "type": ["null", "string"],
+                    "enum": [
+                      "American Express",
+                      "Dankort",
+                      "Diners Club",
+                      "Discover",
+                      "Forbrugsforeningen",
+                      "JCB",
+                      "Laser",
+                      "Maestro",
+                      "MasterCard",
+                      "Test Card",
+                      "Union Pay",
+                      "Unknown",
+                      "Visa",
+                      "Tarjeta Naranja"
+                    ]
+                  },
+                  "first_six": {
+                    "type": ["null", "string"],
+                    "description": "Credit card number's first six digits.",
+                    "maxLength": 6
+                  },
+                  "last_four": {
+                    "type": ["null", "string"],
+                    "description": "Credit card number's last four digits. Will refer to bank account if payment method is ACH.",
+                    "maxLength": 4
+                  },
+                  "last_two": {
+                    "type": ["null", "string"],
+                    "description": "The IBAN bank account's last two digits.",
+                    "maxLength": 2
+                  },
+                  "exp_month": {
+                    "type": ["null", "integer"],
+                    "description": "Expiration month.",
+                    "maxLength": 2
+                  },
+                  "exp_year": {
+                    "type": ["null", "integer"],
+                    "description": "Expiration year.",
+                    "maxLength": 4
+                  },
+                  "gateway_token": {
+                    "type": ["null", "string"],
+                    "description": "A token used in place of a credit card in order to perform transactions.",
+                    "maxLength": 50
+                  },
+                  "cc_bin_country": {
+                    "type": ["null", "string"],
+                    "description": "The 2-letter ISO 3166-1 alpha-2 country code associated with the credit card BIN, if known by Recurly. Available on the BillingInfo object only. Available when the BIN country lookup feature is enabled."
+                  },
+                  "gateway_code": {
+                    "type": ["null", "string"],
+                    "description": "An identifier for a specific payment gateway.",
+                    "maxLength": 13
+                  },
+                  "billing_agreement_id": {
+                    "type": ["null", "string"],
+                    "description": "Billing Agreement identifier. Only present for Amazon or Paypal payment methods."
+                  },
+                  "name_on_account": {
+                    "type": ["null", "string"],
+                    "description": "The name associated with the bank account."
+                  },
+                  "account_type": {
+                    "description": "The bank account type. Only present for ACH payment methods.",
+                    "type": ["null", "string"],
+                    "enum": [
+                      "checking",
+                      "savings"
+                    ]
+                  },
+                  "routing_number": {
+                    "type": ["null", "string"],
+                    "description": "The bank account's routing number. Only present for ACH payment methods."
+                  },
+                  "routing_number_bank": {
+                    "type": ["null", "string"],
+                    "description": "The bank name of this routing number."
+                  }
+                }
+
+              },
+              "ip_address_v4": {
+                "type": ["null", "string"],
+                "title": "IP address",
+                "description": "IP address provided when the billing information was collected:\n\n- When the customer enters billing information into the Recurly.js or Hosted Payment Pages, Recurly records the IP address.\n- When the merchant enters billing information using the API, the merchant may provide an IP address.\n- When the merchant enters billing information using the UI, no IP address is recorded.\n"
+              },
+              "ip_address_country": {
+                "type": ["null", "string"],
+                "title": "Origin IP address country, 2-letter ISO 3166-1 alpha-2 code, if known by Recurly."
+              },
+              "status_code": {
+                "type": ["null", "string"],
+                "title": "Status code"
+              },
+              "status_message": {
+                "type": ["null", "string"],
+                "title": "Status message",
+                "description": "For declined (`success=false`) transactions, the message displayed to the merchant."
+              },
+              "customer_message": {
+                "type": ["null", "string"],
+                "title": "Customer message",
+                "description": "For declined (`success=false`) transactions, the message displayed to the customer."
+              },
+              "customer_message_locale": {
+                "type": ["null", "string"],
+                "title": "Language code for the message"
+              },
+              "payment_gateway": {
+                "type": "object",
+                "x-class-name": "TransactionPaymentGateway",
+                "properties": {
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "object": {
+                    "type": ["null", "string"],
+                    "title": "Object type"
+                  },
+                  "type": {
+                    "type": ["null", "string"]
+                  },
+                  "name": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "gateway_message": {
+                "type": ["null", "string"],
+                "title": "Gateway message",
+                "description": "Transaction message from the payment gateway."
+              },
+              "gateway_reference": {
+                "type": ["null", "string"],
+                "title": "Gateway reference",
+                "description": "Transaction reference number from the payment gateway."
+              },
+              "gateway_approval_code": {
+                "type": ["null", "string"],
+                "title": "Transaction approval code from the payment gateway."
+              },
+              "gateway_response_code": {
+                "type": ["null", "string"],
+                "title": "For declined transactions (`success=false`), this field lists the gateway error code."
+              },
+              "gateway_response_time": {
+                "type": ["null", "number"],
+                "format": "float",
+                "title": "Gateway response time",
+                "description": "Time, in seconds, for gateway to process the transaction."
+              },
+              "gateway_response_values": {
+                "type": "object",
+                "title": "Gateway response values",
+                "description": "The values in this field will vary from gateway to gateway."
+              },
+              "cvv_check": {
+                "title": "CVV check",
+                "description": "When processed, result from checking the CVV/CVC value on the transaction.",
+                "type": ["null", "string"],
+                "enum": [
+                  "D",
+                  "I",
+                  "M",
+                  "N",
+                  "P",
+                  "S",
+                  "U",
+                  "X"
+                ]
+              },
+              "avs_check": {
+                "title": "AVS check",
+                "description": "When processed, result from checking the overall AVS on the transaction.",
+                "type": ["null", "string"],
+                "enum": [
+                  "A",
+                  "B",
+                  "C",
+                  "D",
+                  "E",
+                  "F",
+                  "G",
+                  "H",
+                  "I",
+                  "J",
+                  "K",
+                  "L",
+                  "M",
+                  "N",
+                  "O",
+                  "P",
+                  "Q",
+                  "R",
+                  "S",
+                  "T",
+                  "U",
+                  "V",
+                  "W",
+                  "X",
+                  "Y",
+                  "Z"
+                ]
+              },
+              "created_at": {
+                "type": ["null", "string"],
+                "format": "date-time",
+                "title": "Created at"
+              },
+              "updated_at": {
+                "type": ["null", "string"],
+                "format": "date-time",
+                "title": "Updated at"
+              },
+              "voided_at": {
+                "type": ["null", "string"],
+                "format": "date-time",
+                "title": "Voided at"
+              },
+              "collected_at": {
+                "type": ["null", "string"],
+                "format": "date-time",
+                "title": "Collected at, or if not collected yet, the time the transaction was created."
+              }
+            }
+          },
+          "created_at": {
+            "type": ["null", "string"],
+            "title": "Created at",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "updated_at": {
+            "type": ["null", "string"],
+            "title": "Last updated at",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "voided_at": {
+            "type": ["null", "string"],
+            "title": "Voided at",
+            "format": "date-time",
+            "readOnly": true
+          }
+        }
+      }
     },
     "created_at": {
-      "type": "string"
+      "type": ["null", "string"],
+      "format": "date-time",
+      "title": "Created at",
+      "readOnly": true
     },
     "updated_at": {
-      "type": "string"
+      "type": ["null", "string"],
+      "format": "date-time",
+      "title": "Last updated at",
+      "readOnly": true
     },
     "due_at": {
-      "type": "string"
+      "type": ["null", "string"],
+      "format": "date-time",
+      "title": "Due at",
+      "description": "Date invoice is due. This is the date the net terms are reached."
     },
     "closed_at": {
-      "type": "string"
+      "type": ["null", "string"],
+      "format": "date-time",
+      "title": "Closed at",
+      "description": "Date invoice was marked paid or failed."
+    },
+    "dunning_campaign_id": {
+      "type": ["null", "string"],
+      "title": "Dunning Campaign ID",
+      "description": "Unique ID to identify the dunning campaign used when dunning the invoice. Available when the Dunning Campaigns feature is enabled. For sites without multiple dunning campaigns enabled, this will always be the default dunning campaign."
     }
   }
 }

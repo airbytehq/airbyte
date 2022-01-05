@@ -119,6 +119,7 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date | Pull Request                                             | Subject |
 |:--------| :--- |:---------------------------------------------------------| :--- |
+| 0.1.13  | 2021-12-28 | [\#9158](https://github.com/airbytehq/airbyte/pull/9158) | Update connector fields title/description |
 | 0.1.12  | 2021-12-01 | [\#8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key  |
 | 0.1.11  | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719)  | Improve handling of wide rows by buffering records based on their byte size rather than their count | 
 | 0.1.10  | 2021-10-11 | [\#6877](https://github.com/airbytehq/airbyte/pull/6877) | Add `normalization` capability, add `append+deduplication` sync mode |
@@ -135,5 +136,6 @@ Using this feature requires additional configuration, when creating the source. 
 ### Changelog (Strict Encrypt)
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
+| 0.1.3   | 2021-12-28 | [\#9158](https://github.com/airbytehq/airbyte/pull/9158) | Update connector fields title/description |
 | 0.1.2   | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key  |
 | 0.1.1   | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count | 
