@@ -35,7 +35,16 @@ class SourceSalesforce(AbstractSource):
         for stream_name in stream_names:
             streams_kwargs = {}
             stream_state = state.get(stream_name, {})
-            if stream_state or stream_name in UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS:
+
+            selected_properties = sf_object.generate_schema([stream_name]).get("properties", {})
+            # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
+            properties_not_supported_by_bulk = {
+                key: value
+                for key, value in selected_properties.items()
+                if value.get("format") == "base64" or "object" in value["type"]
+            }
+
+            if stream_state or stream_name in UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS or properties_not_supported_by_bulk:
                 # Use REST API
                 full_refresh, incremental = SalesforceStream, IncrementalSalesforceStream
             else:

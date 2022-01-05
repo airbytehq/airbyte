@@ -22,7 +22,6 @@ from .rate_limiting import default_backoff_handler
 
 class SalesforceStream(HttpStream, ABC):
     page_size = 2000
-    api_type = "REST"
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, sf_api: Salesforce, pk: str, stream_name: str, schema: dict = None, **kwargs):
@@ -60,15 +59,6 @@ class SalesforceStream(HttpStream, ABC):
         """
 
         selected_properties = self.get_json_schema().get("properties", {})
-
-        # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
-        if self.api_type == "BULK":
-            selected_properties = {
-                key: value
-                for key, value in selected_properties.items()
-                if value.get("format") != "base64" and "object" not in value["type"]
-            }
-
         query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
         if next_page_token:
             query += next_page_token
@@ -102,7 +92,6 @@ class BulkSalesforceStream(SalesforceStream):
     DEFAULT_WAIT_TIMEOUT_MINS = 10
     MAX_CHECK_INTERVAL_SECONDS = 2.0
     MAX_RETRY_NUMBER = 3
-    api_type = "BULK"
 
     def __init__(self, wait_timeout: Optional[int], **kwargs):
         super().__init__(**kwargs)
@@ -305,14 +294,6 @@ class IncrementalSalesforceStream(SalesforceStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         selected_properties = self.get_json_schema().get("properties", {})
-
-        # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
-        if self.api_type == "BULK":
-            selected_properties = {
-                key: value
-                for key, value in selected_properties.items()
-                if value.get("format") != "base64" and "object" not in value["type"]
-            }
 
         stream_date = stream_state.get(self.cursor_field)
         start_date = next_page_token or stream_date or self.start_date
