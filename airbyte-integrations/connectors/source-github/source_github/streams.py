@@ -2,7 +2,6 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import os
 import time
 from abc import ABC, abstractmethod
 from copy import deepcopy
