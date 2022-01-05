@@ -67,8 +67,8 @@ class LogParser(SonarQubeApi):
     @dataclass
     class Issue:
         path: str
-        line_number: int
-        column_number: int
+        line_number: int  # 1-indexed
+        column_number: int  # 1-indexed
         rule: Rule
         description: str
 
@@ -154,8 +154,8 @@ class LogParser(SonarQubeApi):
                         "textRange": {
                             "startLine": issue.line_number,
                             "endLine": issue.line_number,
-                            "startColumn": issue.column_number,
-                            "endColumn": issue.column_number
+                            "startColumn": issue.column_number - 1,  # 0-indexed
+                            "endColumn": issue.column_number  # 0-indexed
                         }
                     }
 
@@ -191,6 +191,10 @@ class LogParser(SonarQubeApi):
         if not lines:
             return None
         path, line_number, column_number, error_or_note, *others = " ".join(lines).split(":")
+        for part in path.split("/"):
+            if "test" in part:
+                cls.logger.info(f"skip the test file: {path}")
+                return None
         if error_or_note.strip() == "note":
             return None
         others = ":".join(others)

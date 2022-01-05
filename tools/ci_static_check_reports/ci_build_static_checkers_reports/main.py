@@ -59,7 +59,7 @@ TASK_COMMANDS: Dict[str, List[str]] = {
     ],
     "pycoverage": [
         f"pip install coverage[toml]~={TOOLS_VERSIONS['coverage']}",
-        "mkdir {venv}/source-acceptance-test",
+        "mkdir -p {venv}/source-acceptance-test",
         "git ls-tree -r HEAD --name-only {source_acceptance_test_path} | while read src; do cp -f $src {venv}/source-acceptance-test; done",
         "pip install build",
         f"python -m build {os.path.join('{venv}', 'source-acceptance-test')}",
