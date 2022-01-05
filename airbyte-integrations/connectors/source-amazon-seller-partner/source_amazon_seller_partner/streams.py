@@ -391,7 +391,6 @@ class VendorInventoryHealthReports(ReportsAmazonSPStream):
 class BrandAnalyticsStream(ReportsAmazonSPStream):
     def parse_document(self, document):
         parsed = json_lib.loads(document)
-        print(parsed)
         return parsed.get(self.result_key, [])
 
     def _report_data(
