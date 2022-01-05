@@ -40,9 +40,11 @@ if [ "$FOLLOW_SYMLINKS" == "true" ]; then
   tar cL "${exclusions[@]}" . | docker build - "${args[@]}"
 else
   JDK_VERSION="${JDK_VERSION:-17.0.1}"
+  BUILD_ID=$(uuidgen)
   if [[ -z "${DOCKER_BUILD_PLATFORM}" ]]; then
-    docker build --build-arg JDK_VERSION="$JDK_VERSION" . "${args[@]}"
+    docker build --build-arg JDK_VERSION="$JDK_VERSION" --build-arg BUILD_ID="$BUILD_ID" . "${args[@]}"
   else
-    docker build --build-arg JDK_VERSION="$JDK_VERSION" --platform="$DOCKER_BUILD_PLATFORM" . "${args[@]}"
+    docker build --build-arg JDK_VERSION="$JDK_VERSION" --build-arg BUILD_ID="$BUILD_ID" --platform="$DOCKER_BUILD_PLATFORM" . "${args[@]}"
   fi
+  flock -x /tmp/build_image.lock docker image prune -f --filter label=io.airbyte.build=$BUILD_ID
 fi
