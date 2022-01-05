@@ -236,6 +236,24 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         """
         With the existing nested loop implementation, we have to store a `cursor_field` for each `site_url`
         and `searchType`. This functionality is placed in `get_update_state`.
+
+        {
+          "stream": {
+            "http://domain1.com": {
+              "web": {"date": "2022-01-03"},
+              "news": {"date": "2022-01-03"},
+              "image": {"date": "2022-01-03"},
+              "video": {"date": "2022-01-03"}
+            },
+            "http://domain2.com": {
+              "web": {"date": "2022-01-03"},
+              "news": {"date": "2022-01-03"},
+              "image": {"date": "2022-01-03"},
+              "video": {"date": "2022-01-03"}
+            },
+            "date": "2022-01-03",
+          }
+        }
         """
 
         latest_benchmark = latest_record[self.cursor_field]
