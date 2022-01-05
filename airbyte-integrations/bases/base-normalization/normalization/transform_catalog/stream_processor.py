@@ -706,9 +706,8 @@ where 1 = 1
             cdc_cols += f", {cast_begin}{col_cdc_log_pos}{cast_as}" + "{{ dbt_utils.type_string() }}" + f"{cast_end}"
             quoted_cdc_cols += f", {quoted_col_cdc_log_pos}"
 
-        if (
-            self.destination_type == DestinationType.BIGQUERY
-            and is_number(self.properties[self.get_cursor_field_property_name(column_names)]["type"])
+        if self.destination_type == DestinationType.BIGQUERY and is_number(
+            self.properties[self.get_cursor_field_property_name(column_names)]["type"]
         ):
             # partition by float columns is not allowed in BigQuery, cast it to string
             airbyte_start_at_string = (
