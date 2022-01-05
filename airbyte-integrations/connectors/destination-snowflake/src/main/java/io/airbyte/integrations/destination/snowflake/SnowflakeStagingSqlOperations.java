@@ -20,8 +20,6 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeStagingSqlOperations extends JdbcSqlOperations implements SqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
-  private static final String SHOW_SCHEMAS = "show schemas;";
-  private static final String NAME = "name";
 
   @Override
   protected void insertRecordsInternal(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String stage) throws Exception {

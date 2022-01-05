@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 public abstract class JdbcSqlOperations implements SqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSqlOperations.class);
+  protected static final String SHOW_SCHEMAS = "show schemas;";
+  protected static final String NAME = "name";
 
   @Override
   public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {

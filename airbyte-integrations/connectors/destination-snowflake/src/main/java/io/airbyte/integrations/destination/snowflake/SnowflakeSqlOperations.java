@@ -18,8 +18,6 @@ import org.slf4j.LoggerFactory;
 class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
-  private static final String SHOW_SCHEMAS = "show schemas;";
-  private static final String NAME = "name";
 
   @Override
   public void createTableIfNotExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
