@@ -9,7 +9,7 @@
     "title": "DynamoDB Destination Spec",
     "type": "object",
     "required": [
-      "dynamodb_table_name",
+      "dynamodb_table_name_prefix",
       "dynamodb_region",
       "access_key_id",
       "secret_access_key"
@@ -23,10 +23,10 @@
         "description": "This is your DynamoDB endpoint url.(if you are working with AWS DynamoDB, just leave empty).",
         "examples": ["http://localhost:9000"]
       },
-      "dynamodb_table_name": {
-        "title": "DynamoDB Table Name",
+      "dynamodb_table_name_prefix": {
+        "title": "DynamoDB table name prefix",
         "type": "string",
-        "description": "The name of the DynamoDB table.",
+        "description": "Prefix use to name DynamoDB tables.",
         "examples": ["airbyte_sync"]
       },
       "dynamodb_region": {
