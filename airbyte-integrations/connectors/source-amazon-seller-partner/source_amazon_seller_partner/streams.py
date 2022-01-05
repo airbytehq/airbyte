@@ -286,11 +286,10 @@ class ReportsAmazonSPStream(Stream, ABC):
             payload,
         )
 
-        document_records = self.parse_document(document, self.result_key)
+        document_records = self.parse_document(document)
         yield from document_records
 
-    @staticmethod
-    def parse_document(document):
+    def parse_document(self, document):
         return csv.DictReader(StringIO(document), delimiter="\t")
 
     def report_options(self) -> Mapping[str, Any]:
@@ -390,11 +389,10 @@ class VendorInventoryHealthReports(ReportsAmazonSPStream):
 
 
 class BrandAnalyticsStream(ReportsAmazonSPStream):
-    @staticmethod
-    def parse_document(document, result_key):
+    def parse_document(self, document):
         parsed = json_lib.loads(document)
         print(parsed)
-        return parsed.get(result_key, [])
+        return parsed.get(self.result_key, [])
 
     def _report_data(
         self,
