@@ -63,7 +63,7 @@ runs:
       run: |
         REPORT_FOLDER=reports_external_issues_${RANDOM}
         mkdir -p ${REPORT_FOLDER}
-        [ -f ${{ steps.ci-py-tests.outputs.mypy-logs }} ] && ci_sonar_qube --mypy_log ${{ steps.ci-py-tests.outputs.mypy-logs }} --output_file ${REPORT_FOLDER}/issues_mypy.json --host ${{ github.event.inputs.sonar-host }} --token ${{ github.event.inputs.sonar-token }}
+        [ -f ${{ steps.ci-py-tests.outputs.mypy-logs }} ] && ci_sonar_qube --mypy_log ${{ steps.ci-py-tests.outputs.mypy-logs }} --output_file ${REPORT_FOLDER}/issues_mypy.json --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
         echo "::set-output name=external_issues_folder::$REPORT_FOLDER/issues_*.json"
 
     - name: Create SonarQube Project
