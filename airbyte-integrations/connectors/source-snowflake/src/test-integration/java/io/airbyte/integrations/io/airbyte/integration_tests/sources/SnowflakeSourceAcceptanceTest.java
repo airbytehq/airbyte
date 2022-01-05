@@ -29,7 +29,7 @@ import java.util.List;
 
 public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
 
-  private static final String SCHEMA_NAME = "SOURCE_INTEGRATION_TEST";
+  private static final String SCHEMA_NAME = "SOURCE_INTEGRATION_TEST_B2";
   private static final String STREAM_NAME1 = "ID_AND_NAME1";
   private static final String STREAM_NAME2 = "ID_AND_NAME2";
 

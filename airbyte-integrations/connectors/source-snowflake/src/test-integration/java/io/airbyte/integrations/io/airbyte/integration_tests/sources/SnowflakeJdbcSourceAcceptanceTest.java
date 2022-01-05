@@ -30,8 +30,8 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @BeforeEach
   public void setup() throws Exception {
     // due to case sensitiveness in SnowflakeDB
-    SCHEMA_NAME = "JDBC_INTEGRATION_TEST1";
-    SCHEMA_NAME2 = "JDBC_INTEGRATION_TEST2";
+    SCHEMA_NAME = "JDBC_INTEGRATION_TEST1_B2";
+    SCHEMA_NAME2 = "JDBC_INTEGRATION_TEST2_B2";
     TEST_SCHEMAS = ImmutableSet.of(SCHEMA_NAME, SCHEMA_NAME2);
     TABLE_NAME = "ID_AND_NAME";
     TABLE_NAME_WITH_SPACES = "ID AND NAME";
