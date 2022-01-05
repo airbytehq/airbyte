@@ -177,6 +177,41 @@
       "cursor_field": [],
       "destination_sync_mode": "append_dedup",
       "primary_key": [["id"]]
+    },
+    {
+      "stream": {
+        "name": "multiple_column_names_conflicts",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "User Id": {
+              "type": ["string", "null"]
+            },
+            "user_id": {
+              "type": ["null", "number"]
+            },
+            "User id": {
+              "type": ["null", "number"]
+            },
+            "user id": {
+              "type": ["null", "number"]
+            },
+            "UserId": {
+              "type": ["null", "number"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["id"]]
     }
   ]
 }
