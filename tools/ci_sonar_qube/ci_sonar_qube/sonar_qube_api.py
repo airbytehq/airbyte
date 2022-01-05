@@ -260,7 +260,7 @@ class SonarQubeApi:
                 )
                 filename = issue["component"].split("/")[-1]
                 if issue.get("line"):
-                    filename += ":" + issue["line"]
+                    filename += ':{issue["line"]}'
                 table_items += [
                     f'{rule_link} ({issue["severity"]})',
                     # issue["component"].replace(issue["project"] + ":", ""),
