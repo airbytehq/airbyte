@@ -14,7 +14,7 @@ Each stream will be output into its own table in Snowflake. Each table will cont
 * `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in Snowflake is `TIMESTAMP WITH TIME ZONE`.
 * `_airbyte_data`: a json blob representing with the event data. The column type in Snowflake is `VARIANT`.
 
-Note that Airbyte will create **permanent** tables. If you prefer to create transient tables (see [Snowflake docs](https://docs.snowflake.com/en/user-guide/tables-temp-transient.html) for a comparison), you may want to create a dedicated transient database for Airbyte (`CREATE TRANSIENT DATABASE airbyte_database`).
+Note that Airbyte will create **permanent** tables. If you prefer to create transient tables (see [Snowflake docs](https://docs.snowflake.com/en/user-guide/tables-temp-transient.html) for a comparison), you will want to create a dedicated transient database for Airbyte (`CREATE TRANSIENT DATABASE airbyte_database`).
 
 #### Features
 
