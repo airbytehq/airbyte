@@ -15,6 +15,8 @@ _get_databricks_jdbc_driver() {
   else
     echo "[Databricks] Downloading Spark JDBC driver..."
     curl -o "${connector_path}/lib/${driver_zip}" "${driver_url}"
+
+    echo "[Databricks] Extracting Spark JDBC driver..."
     unzip "${connector_path}/lib/${driver_zip}" "${driver_file}"
     mv "${driver_file}" "${connector_path}/lib/"
     rm "${connector_path}/lib/${driver_zip}"
