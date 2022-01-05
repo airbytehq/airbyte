@@ -100,9 +100,9 @@ Please read the [CDC docs](../../understanding-airbyte/cdc.md) for an overview o
 
 Follow one of these guides to enable logical replication:
 
-* [Bare Metal, VMs \(EC2/GCE/etc\), Docker, etc.](postgres.md#setting-up-cdc-on-bare-metal-vms-ec2gceetc-docker-etc)
-* [AWS Postgres RDS or Aurora](postgres.md#setting-up-cdc-on-aws-postgres-rds-or-aurora)
-* [Azure Database for Postgres](postgres.md#setting-up-cdc-on-azure-database-for-postgres)
+* [Bare Metal, VMs \(EC2/GCE/etc\), Docker, etc.](postgres.md#cdc-on-bare-metal-vms-ec2-gce-etc-docker-etc.)
+* [AWS Postgres RDS or Aurora](postgres.md#cdc-on-aws-postgres-rds-or-aurora)
+* [Azure Database for Postgres](postgres.md#cdc-on-azure-database-for-postgres)
 
 #### 2. Add user-level permissions
 
