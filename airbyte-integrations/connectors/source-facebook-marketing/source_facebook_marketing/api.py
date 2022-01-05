@@ -121,6 +121,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
         api_version=None,
     ):
         """Makes an API call, delegate actual work to parent class and handles call rates"""
+        # print(f"CALL {method} {path} {params}")
         response = super().call(method, path, params, headers, files, url_override, api_version)
         self._update_insigths_throttle_limit(response)
         self.handle_call_rate_limit(response, params)

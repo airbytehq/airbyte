@@ -89,12 +89,6 @@ class ConnectorConfig(BaseModel):
         maximum=28,
     )
 
-    insights_days_per_job: int = Field(
-        default=7,
-        description="Number of days to sync in one job (the more data you have, the smaller this parameter should be)",
-        minimum=1,
-        maximum=30,
-    )
     custom_insights: Optional[List[InsightConfig]] = Field(
         description="A list wich contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)"
     )
@@ -134,7 +128,6 @@ class SourceFacebookMarketing(AbstractSource):
             start_date=config.start_date,
             end_date=config.end_date,
             buffer_days=config.insights_lookback_window,
-            days_per_job=config.insights_days_per_job,
         )
 
         streams = [

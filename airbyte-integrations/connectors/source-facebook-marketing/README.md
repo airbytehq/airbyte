@@ -73,7 +73,7 @@ Then run any of the connector commands as follows:
 docker run --rm airbyte/source-facebook-marketing:dev spec
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-facebook-marketing:dev check --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-facebook-marketing:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files airbyte/source-facebook-marketing:dev read --config /secrets/config.json --catalog /sample_files/configured_catalog.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-facebook-marketing:20211222-rc1 read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 ## Testing
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.

@@ -1,7 +1,8 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
+import copy
+import logging
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import airbyte_cdk.sources.utils.casing as casing
@@ -11,12 +12,16 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from cached_property import cached_property
+from facebook_business.adobjects.campaign import Campaign
+from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
+from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob
+from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
 
-from .async_job_manager import InsightsAsyncJobManager
 from .common import retry_pattern
 from .streams import FBMarketingIncrementalStream
 
+logger = logging.getLogger("airbyte")
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
 
@@ -41,11 +46,11 @@ class AdsInsights(FBMarketingIncrementalStream):
         "action_destination",
     ]
 
-    # Facebook store metrics maximum of 37 monthes old. Any time range that
-    # older that 37 monthes from current date would result in 400 Bad request
+    # Facebook store metrics maximum of 37 months old. Any time range that
+    # older that 37 months from current date would result in 400 Bad request
     # HTTP response.
     # https://developers.facebook.com/docs/marketing-api/reference/ad-account/insights/#overview
-    INSIGHTS_RETENTION_PERIOD_MONTHES = 37
+    INSIGHTS_RETENTION_PERIOD_MONTHS = 37
 
     action_breakdowns = ALL_ACTION_BREAKDOWNS
     level = "ad"
@@ -57,7 +62,6 @@ class AdsInsights(FBMarketingIncrementalStream):
     def __init__(
         self,
         buffer_days,
-        days_per_job,
         name: str = None,
         fields: List[str] = None,
         breakdowns: List[str] = None,
@@ -80,6 +84,41 @@ class AdsInsights(FBMarketingIncrementalStream):
         name = self._new_class_name or self.__class__.__name__
         return casing.camel_to_snake(name)
 
+    @backoff_policy
+    def execute_in_batch(self, requests: Iterable[FacebookRequest]) -> List[List[MutableMapping[str, Any]]]:
+        """Execute list of requests in batches"""
+        records = []
+        ad_ids = set()
+
+        def success(response: FacebookResponse):
+            # logger.info("GOT data, headers=%s, paging=%s", response.headers(), response.json()["paging"])
+            # records.append(response.json()["data"])
+            for record in response.json()["data"]:
+                ad_ids.add(record["ad_id"])
+                records.append({"record": 1, "date_start": record["date_start"], "ad_id": record["ad_id"]})
+
+        def failure(response: FacebookResponse):
+            logger.info(f"Request failed with response: {response.body()}")
+
+        api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
+        for request in requests:
+            api_batch.add_request(request, success=success, failure=failure)
+
+        while api_batch:
+            logger.info(f"Batch starting: {pendulum.now()}")
+            api_batch = api_batch.execute()
+            logger.info(f"Batch executed: {pendulum.now()}")
+            if api_batch:
+                logger.info("Retry failed requests in batch")
+
+        return records
+
+    def _get_campaign_ids(self, params) -> List[str]:
+        campaign_params = copy.deepcopy(params)
+        campaign_params.update(fields=["campaign_id", "actions", "action_values", "unique_actions"], level="campaign")
+        result = self._api.account.get_insights(params=campaign_params)
+        return list(set(row["campaign_id"] for row in result))
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -88,10 +127,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
-        job = stream_slice["job"]
-        # because we query `lookback_window` days before actual cursor we might get records older then cursor
-
-        for obj in job.get_result():
+        for obj in stream_slice["insight_job"].get_result():
             yield obj.export_all_data()
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -101,20 +137,22 @@ class AdsInsights(FBMarketingIncrementalStream):
         2. we should run as many job as possible before checking for result
         3. we shouldn't proceed to consumption of the next job before previous succeed
         """
+        date_range = pendulum.period(self.get_start_date(stream_state), self._end_date)
+        for ts_start in date_range.range("days", 1):
+            params = {
+                **self.request_params(stream_state=stream_state),
+                "time_range": {
+                    "since": ts_start.to_date_string(),
+                    "until": ts_start.to_date_string(),
+                },
+            }
+            campaign_ids = self._get_campaign_ids(params)
+            logger.info("PARAMS %s", params)
+            jobs = [InsightAsyncJob(Campaign(pk), params) for pk in campaign_ids]
+            InsightAsyncJobManager(api=self._api, jobs=jobs).wait_for_completion()
+            yield {"insight_job": ParentAsyncJob(jobs)}
 
-        job_params = self.request_params(stream_state=stream_state)
-        job_manager = InsightsAsyncJobManager(
-            api=self._api,
-            job_params=job_params,
-            from_date=self.get_start_date(stream_state),
-            to_date=self._end_date,
-        )
-        job_manager.add_async_jobs()
-
-        while not job_manager.done():
-            yield {"job": job_manager.get_next_completed_job()}
-
-    def get_start_date(self, stream_state: Mapping[str, Any]) -> pendulum.Date:
+    def get_start_date(self, stream_state: Mapping[str, Any]) -> pendulum.DateTime:
         state_value = stream_state.get(self.cursor_field) if stream_state else None
         if state_value:
             """
@@ -124,7 +162,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             start_date = pendulum.parse(state_value) - self.lookback_window
         else:
             start_date = self._start_date
-        return max(self._end_date.subtract(months=self.INSIGHTS_RETENTION_PERIOD_MONTHES), start_date)
+        return max(self._end_date.subtract(months=self.INSIGHTS_RETENTION_PERIOD_MONTHS), start_date)
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         return {

@@ -1,18 +1,18 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
+import itertools
 import logging
+from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Mapping, Optional
+from typing import Any, Mapping, Optional, List
 
 import backoff
 import pendulum
 from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.adobjects.objectparser import ObjectParser
-from facebook_business.api import FacebookRequest, FacebookResponse
+from facebook_business.api import FacebookResponse, FacebookAdsApiBatch
 from facebook_business.exceptions import FacebookRequestError
-from source_facebook_marketing.api import API
 
 from .common import retry_pattern
 
@@ -31,18 +31,88 @@ class Status(str, Enum):
     NOT_STARTED = "Job Not Started"
 
 
-class AsyncJob:
+class AsyncJob(ABC):
+    """Abstract AsyncJob base class"""
+
+    @abstractmethod
+    def start(self):
+        """Start remote job"""
+
+    @abstractmethod
+    def restart(self):
+        """Restart failed job"""
+
+    @property
+    @abstractmethod
+    def completed(self) -> bool:
+        """Check job status and return True if it is completed, use failed/succeeded to check if it was successful"""
+
+    @property
+    @abstractmethod
+    def failed(self) -> bool:
+        """Tell if the job previously failed"""
+
+    @abstractmethod
+    def update_job(self, batch = None):
+        """Method to retrieve job's status, separated because of retry handler"""
+
+    @abstractmethod
+    def get_result(self) -> Any:
+        """Retrieve result of the finished job."""
+
+
+class ParentAsyncJob(AsyncJob):
+    def __init__(self, jobs: List[AsyncJob]):
+        self._jobs = jobs
+
+    def start(self):
+        """Start remote job"""
+        for job in self._jobs:
+            job.start()
+
+    def restart(self):
+        """Restart failed job"""
+        for job in self._jobs:
+            job.restart()
+
+    @property
+    def completed(self) -> bool:
+        """Check job status and return True if all jobs are completed, use failed/succeeded to check if it was successful"""
+        return all(job.completed for job in self._jobs)
+
+    @property
+    def failed(self) -> bool:
+        """Tell if any job previously failed"""
+        return any(job.failed for job in self._jobs)
+
+    def update_job(self, batch=None):
+        """Checks jobs status in advance and restart if some failed."""
+        for job in self._jobs:
+            job.update_job(batch=batch)
+
+        while batch:
+            # If some of the calls from batch have failed, it returns  a new
+            # FacebookAdsApiBatch object with those calls
+            batch = batch.execute()
+
+    def get_result(self) -> Any:
+        """Retrieve result of the finished job."""
+        for job in self._jobs:
+            yield from job.get_result()
+
+
+class InsightAsyncJob(AsyncJob):
     """AsyncJob wraps FB AdReport class and provides interface to restart/retry the async job"""
 
-    def __init__(self, api: API, params: Mapping[str, Any]):
+    def __init__(self, edge_object: Any, params: Mapping[str, Any]):
         """Initialize
 
-        :param api: Facebook Api wrapper
+        :param edge_object: Account, Campaign, AdSet or Ad
         :param params: job params, required to start/restart job
         """
         self._params = params
-        self._api = api
-        self._job: AdReportRun = None
+        self._edge_object = edge_object
+        self._job: Optional[AdReportRun] = None
         self._start_time = None
         self._finish_time = None
         self._failed = False
@@ -53,12 +123,12 @@ class AsyncJob:
         if self._job:
             raise RuntimeError(f"{self}: Incorrect usage of start - the job already started, use restart instead")
 
-        self._job = self._api.account.get_insights(params=self._params, is_async=True)
+        self._job = self._edge_object.get_insights(params=self._params, is_async=True)
         self._start_time = pendulum.now()
         job_id = self._job["report_run_id"]
         time_range = self._params["time_range"]
         breakdowns = self._params["breakdowns"]
-        logger.info(f"Created AdReportRun: {job_id} to sync insights {time_range} with breakdown {breakdowns}")
+        logger.info(f"Created AdReportRun: {job_id} to sync insights {time_range} with breakdown {breakdowns} for {self._edge_object}")
 
     def restart(self):
         """Restart failed job"""
@@ -155,4 +225,4 @@ class AsyncJob:
         job_id = self._job["report_run_id"] if self._job else "<None>"
         time_range = self._params["time_range"]
         breakdowns = self._params["breakdowns"]
-        return f"AdReportRun(id={job_id}, time_range={time_range}, breakdowns={breakdowns}"
+        return f"AdReportRun(id={job_id}, {self._edge_object}, time_range={time_range}, breakdowns={breakdowns}"
