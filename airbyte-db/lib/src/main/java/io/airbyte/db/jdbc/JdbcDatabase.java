@@ -178,7 +178,7 @@ public abstract class JdbcDatabase extends SqlDatabase {
       return statement;
     },
         ResultSet::getMetaData)) {
-      return q.findFirst().get();
+      return q.findFirst().orElse(null);
     }
   }
 

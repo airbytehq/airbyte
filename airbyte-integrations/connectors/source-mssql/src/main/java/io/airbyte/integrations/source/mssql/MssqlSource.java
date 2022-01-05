@@ -147,9 +147,12 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                   enquoteIdentifierList(columnNames),
                   getFullTableName(schemaName, tableName)));
 
-      for (int i = 1; i <= sqlServerResultSetMetaData.getColumnCount(); i++) {
-        if (HIERARCHYID.equals(sqlServerResultSetMetaData.getColumnTypeName(i))) {
-          hierarchyIdColumns.add(sqlServerResultSetMetaData.getColumnName(i));
+      // metadata will be null if table doesn't contain records
+      if (sqlServerResultSetMetaData != null) {
+        for (int i = 1; i <= sqlServerResultSetMetaData.getColumnCount(); i++) {
+          if (HIERARCHYID.equals(sqlServerResultSetMetaData.getColumnTypeName(i))) {
+            hierarchyIdColumns.add(sqlServerResultSetMetaData.getColumnName(i));
+          }
         }
       }
 

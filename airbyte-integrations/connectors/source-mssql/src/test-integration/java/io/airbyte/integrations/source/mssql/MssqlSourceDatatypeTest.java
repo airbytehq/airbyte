@@ -361,6 +361,13 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("LINESTRING(-122.36 47.656, -122.343 47.656)", null)
             .build());
 
+    // test the case when table is empty, should not crash on pre-flight (get MetaData) sql request
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("hierarchyid")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .build());
+
   }
 
 }
