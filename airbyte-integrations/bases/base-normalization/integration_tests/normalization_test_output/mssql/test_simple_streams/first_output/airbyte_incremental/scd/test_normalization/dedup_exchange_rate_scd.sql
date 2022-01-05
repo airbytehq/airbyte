@@ -41,20 +41,19 @@ scd_data as (
     VARCHAR(max)), ''''), ''-'', coalesce(cast(nzd as 
     VARCHAR(max)), ''''),''''), '''') as 
     VARCHAR(max)), '''')), 2) as _airbyte_unique_key,
-        id,
-        currency,
-        "date",
-        timestamp_col,
-        "HKD@spéçiäl & characters",
-        hkd_special___characters,
-        nzd,
-        usd,
+      id,
+      currency,
+      "date",
+      timestamp_col,
+      "HKD@spéçiäl & characters",
+      hkd_special___characters,
+      nzd,
+      usd,
       "date" as _airbyte_start_at,
       lag("date") over (
         partition by id, currency, cast(nzd as 
     VARCHAR(max))
         order by
-            "date" desc,
             "date" desc,
             _airbyte_emitted_at desc
       ) as _airbyte_end_at,
@@ -62,7 +61,6 @@ scd_data as (
         partition by id, currency, cast(nzd as 
     VARCHAR(max))
         order by
-            "date" desc,
             "date" desc,
             _airbyte_emitted_at desc
       ) = 1 then 1 else 0 end as _airbyte_active_row,
@@ -97,14 +95,14 @@ dedup_data as (
 select
     _airbyte_unique_key,
     _airbyte_unique_key_scd,
-        id,
-        currency,
-        "date",
-        timestamp_col,
-        "HKD@spéçiäl & characters",
-        hkd_special___characters,
-        nzd,
-        usd,
+    id,
+    currency,
+    "date",
+    timestamp_col,
+    "HKD@spéçiäl & characters",
+    hkd_special___characters,
+    nzd,
+    usd,
     _airbyte_start_at,
     _airbyte_end_at,
     _airbyte_active_row,

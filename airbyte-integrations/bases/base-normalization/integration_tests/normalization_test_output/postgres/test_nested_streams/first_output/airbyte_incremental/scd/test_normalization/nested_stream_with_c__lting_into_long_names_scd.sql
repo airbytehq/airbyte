@@ -21,9 +21,9 @@ scd_data as (
 ), '') as 
     varchar
 )) as _airbyte_unique_key,
-        "id",
-        "date",
-        "partition",
+      "id",
+      "date",
+      "partition",
       "date" as _airbyte_start_at,
       lag("date") over (
         partition by "id"
@@ -70,9 +70,9 @@ dedup_data as (
 select
     _airbyte_unique_key,
     _airbyte_unique_key_scd,
-        "id",
-        "date",
-        "partition",
+    "id",
+    "date",
+    "partition",
     _airbyte_start_at,
     _airbyte_end_at,
     _airbyte_active_row,

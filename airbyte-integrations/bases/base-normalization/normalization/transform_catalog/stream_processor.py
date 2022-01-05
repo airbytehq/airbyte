@@ -376,12 +376,12 @@ class StreamProcessor(object):
 -- depends_on: {{ from_table }}
 {{ unnesting_before_query }}
 select
-  {%- if parent_hash_id %}
+{%- if parent_hash_id %}
     {{ parent_hash_id }},
-  {%- endif %}
-  {%- for field in fields %}
+{%- endif %}
+{%- for field in fields %}
     {{ field }},
-  {%- endfor %}
+{%- endfor %}
     {{ col_ab_id }},
     {{ col_emitted_at }},
     {{ '{{ current_timestamp() }}' }} as {{ col_normalized_at }}
@@ -454,12 +454,12 @@ where 1 = 1
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
 -- depends_on: {{ from_table }}
 select
-  {%- if parent_hash_id %}
+{%- if parent_hash_id %}
     {{ parent_hash_id }},
-  {%- endif %}
-  {%- for field in fields %}
+{%- endif %}
+{%- for field in fields %}
     {{ field }},
-  {%- endfor %}
+{%- endfor %}
     {{ col_ab_id }},
     {{ col_emitted_at }},
     {{ '{{ current_timestamp() }}' }} as {{ col_normalized_at }}
@@ -573,9 +573,9 @@ where 1 = 1
         template = Template(
             """
     case
-    {% for format_item in formats %}
+{% for format_item in formats %}
         when {{column_name}} regexp '{{format_item['regex']}}' then to_timestamp_tz({{column_name}}, '{{format_item['format']}}')
-    {% endfor %}
+{% endfor %}
         when {{column_name}} = '' then NULL
     else to_timestamp_tz({{column_name}})
     end as {{column_name}}
@@ -591,12 +591,12 @@ where 1 = 1
 -- depends_on: {{ from_table }}
 select
     {{ '{{' }} dbt_utils.surrogate_key([
-      {%- if parent_hash_id %}
+{%- if parent_hash_id %}
         {{ parent_hash_id }},
-      {%- endif %}
-      {%- for field in fields %}
+{%- endif %}
+{%- for field in fields %}
         {{ field }},
-      {%- endfor %}
+{%- endfor %}
     ]) {{ '}}' }} as {{ hash_id }},
     tmp.*
 from {{ from_table }} tmp
@@ -649,11 +649,12 @@ where 1 = 1
         return col
 
     def generate_scd_type_2_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
-        order_null = "is null asc"
+        cursor_field = self.get_cursor_field(column_names)
+        order_null = f"is null asc,\n            {cursor_field} desc"
         if self.destination_type.value == DestinationType.ORACLE.value:
             order_null = "desc nulls last"
         if self.destination_type.value == DestinationType.MSSQL.value:
-            # SQL Server treats NULL values as the lowest values, then sorted in ascending order, NULLs come first.
+            # SQL Server treats NULL values as the lowest values, thus NULLs come last when desc.
             order_null = "desc"
 
         lag_begin = "lag"
@@ -687,7 +688,7 @@ where 1 = 1
             quoted_col_cdc_deleted_at = self.name_transformer.normalize_column_name("_ab_cdc_deleted_at", in_jinja=True)
             quoted_col_cdc_updated_at = self.name_transformer.normalize_column_name("_ab_cdc_updated_at", in_jinja=True)
             cdc_active_row_pattern = f" and {col_cdc_deleted_at} is null"
-            cdc_updated_order_pattern = f", {col_cdc_updated_at} desc"
+            cdc_updated_order_pattern = f"\n            {col_cdc_updated_at} desc,"
             cdc_cols = (
                 f", {cast_begin}{col_cdc_deleted_at}{cast_as}"
                 + "{{ dbt_utils.type_string() }}"
@@ -701,14 +702,13 @@ where 1 = 1
         if "_ab_cdc_log_pos" in column_names.keys():
             col_cdc_log_pos = self.name_transformer.normalize_column_name("_ab_cdc_log_pos")
             quoted_col_cdc_log_pos = self.name_transformer.normalize_column_name("_ab_cdc_log_pos", in_jinja=True)
-            cdc_updated_order_pattern += f", {col_cdc_log_pos} desc"
+            cdc_updated_order_pattern += f"\n            {col_cdc_log_pos} desc,"
             cdc_cols += f", {cast_begin}{col_cdc_log_pos}{cast_as}" + "{{ dbt_utils.type_string() }}" + f"{cast_end}"
             quoted_cdc_cols += f", {quoted_col_cdc_log_pos}"
 
         if (
             self.destination_type == DestinationType.BIGQUERY
-            and len(self.cursor_field) == 1
-            and is_number(self.properties[self.cursor_field[0]]["type"])
+            and is_number(self.properties[self.get_cursor_field_property_name(column_names)]["type"])
         ):
             # partition by float columns is not allowed in BigQuery, cast it to string
             airbyte_start_at_string = (
@@ -734,7 +734,7 @@ where 1 = 1
             "col_ab_id": self.get_ab_id(),
             "col_emitted_at": self.get_emitted_at(),
             "col_normalized_at": self.get_normalized_at(),
-            "cursor_field": self.get_cursor_field(column_names),
+            "cursor_field": cursor_field,
             "enable_left_join_null": enable_left_join_null,
             "fields": self.list_fields(column_names),
             "from_table": from_table,
@@ -762,9 +762,8 @@ input_data_with_active_row_num as (
       row_number() over (
         partition by {{ primary_key_partition | join(", ") }}
         order by
-            {{ cursor_field }} {{ order_null }},
-            {{ cursor_field }} desc,
-            {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
+            {{ cursor_field }} {{ order_null }},{{ cdc_updated_at_order }}
+            {{ col_emitted_at }} desc
       ) as _airbyte_active_row_num
     from input_data
 ),"""
@@ -776,11 +775,9 @@ input_data_with_active_row_num as (
       {{ lag_begin }}({{ cursor_field }}) over (
         partition by {{ primary_key_partition | join(", ") }}
         order by
-            {{ cursor_field }} {{ order_null }},
-            {{ cursor_field }} desc,
-            {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
-            {{ lag_end }}
-      ) as {{ airbyte_end_at }}"""
+            {{ cursor_field }} {{ order_null }},{{ cdc_updated_at_order }}
+            {{ col_emitted_at }} desc
+      {{ lag_end }}) as {{ airbyte_end_at }}"""
             ).render(jinja_variables)
             jinja_variables["scd_columns_sql"] = scd_columns_sql
         else:
@@ -789,16 +786,14 @@ input_data_with_active_row_num as (
       lag({{ cursor_field }}) over (
         partition by {{ primary_key_partition | join(", ") }}
         order by
-            {{ cursor_field }} {{ order_null }},
-            {{ cursor_field }} desc,
-            {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
+            {{ cursor_field }} {{ order_null }},{{ cdc_updated_at_order }}
+            {{ col_emitted_at }} desc
       ) as {{ airbyte_end_at }},
       case when row_number() over (
         partition by {{ primary_key_partition | join(", ") }}
         order by
-            {{ cursor_field }} {{ order_null }},
-            {{ cursor_field }} desc,
-            {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
+            {{ cursor_field }} {{ order_null }},{{ cdc_updated_at_order }}
+            {{ col_emitted_at }} desc
       ) = 1{{ cdc_active_row }} then 1 else 0 end as {{ active_row }}"""
             ).render(jinja_variables)
             jinja_variables["scd_columns_sql"] = scd_columns_sql
@@ -820,9 +815,9 @@ new_data_ids as (
     -- build a subset of {{ unique_key }} from rows that are new
     select distinct
         {{ '{{' }} dbt_utils.surrogate_key([
-          {%- for primary_key in primary_keys %}
+{%- for primary_key in primary_keys %}
             {{ primary_key }},
-          {%- endfor %}
+{%- endfor %}
         ]) {{ '}}' }} as {{ unique_key }}
     from new_data
 ),
@@ -857,17 +852,17 @@ input_data as (
 scd_data as (
     -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
     select
-      {%- if parent_hash_id %}
-        {{ parent_hash_id }},
-      {%- endif %}
+{%- if parent_hash_id %}
+      {{ parent_hash_id }},
+{%- endif %}
       {{ '{{' }} dbt_utils.surrogate_key([
-          {%- for primary_key in primary_keys %}
-            {{ primary_key }},
-          {%- endfor %}
+{%- for primary_key in primary_keys %}
+      {{ primary_key }},
+{%- endfor %}
       ]) {{ '}}' }} as {{ unique_key }},
-      {%- for field in fields %}
-        {{ field }},
-      {%- endfor %}
+{%- for field in fields %}
+      {{ field }},
+{%- endfor %}
       {{ cursor_field }} as {{ airbyte_start_at }},
       {{ scd_columns_sql }},
       {{ col_ab_id }},
@@ -895,14 +890,14 @@ dedup_data as (
     from scd_data
 )
 select
-    {%- if parent_hash_id %}
-        {{ parent_hash_id }},
-    {%- endif %}
+{%- if parent_hash_id %}
+    {{ parent_hash_id }},
+{%- endif %}
     {{ unique_key }},
     {{ airbyte_unique_key_scd }},
-    {%- for field in fields %}
-        {{ field }},
-    {%- endfor %}
+{%- for field in fields %}
+    {{ field }},
+{%- endfor %}
     {{ airbyte_start_at }},
     {{ airbyte_end_at }},
     {{ active_row }},
@@ -915,9 +910,22 @@ from dedup_data where {{ airbyte_row_num }} = 1
         ).render(jinja_variables)
         return sql
 
+    def get_cursor_field_property_name(self, column_names: Dict[str, Tuple[str, str]]) -> str:
+        if not self.cursor_field:
+            if "_ab_cdc_updated_at" in column_names.keys():
+                return "_ab_cdc_updated_at"
+            elif "_ab_cdc_log_pos" in column_names.keys():
+                return "_ab_cdc_log_pos"
+            else:
+                return self.airbyte_emitted_at
+        elif len(self.cursor_field) == 1:
+            return self.cursor_field[0]
+        else:
+            raise ValueError(f"Unsupported nested cursor field {'.'.join(self.cursor_field)} for stream {self.stream_name}")
+
     def get_cursor_field(self, column_names: Dict[str, Tuple[str, str]], in_jinja: bool = False) -> str:
         if not self.cursor_field:
-            cursor = self.name_transformer.normalize_column_name(self.airbyte_emitted_at, in_jinja)
+            cursor = self.name_transformer.normalize_column_name(self.get_cursor_field_property_name(column_names), in_jinja)
         elif len(self.cursor_field) == 1:
             if not is_airbyte_column(self.cursor_field[0]):
                 cursor = column_names[self.cursor_field[0]][0]
@@ -926,7 +934,6 @@ from dedup_data where {{ airbyte_row_num }} = 1
                 cursor = self.cursor_field[0]
         else:
             raise ValueError(f"Unsupported nested cursor field {'.'.join(self.cursor_field)} for stream {self.stream_name}")
-
         return cursor
 
     def list_primary_keys(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
@@ -972,15 +979,15 @@ from dedup_data where {{ airbyte_row_num }} = 1
 -- Final base SQL model
 -- depends_on: {{ from_table }}
 select
-  {%- if parent_hash_id %}
+{%- if parent_hash_id %}
     {{ parent_hash_id }},
-  {%- endif %}
-  {%- if unique_key %}
+{%- endif %}
+{%- if unique_key %}
     {{ unique_key }},
-  {%- endif %}
-  {%- for field in fields %}
+{%- endif %}
+{%- for field in fields %}
     {{ field }},
-  {%- endfor %}
+{%- endfor %}
     {{ col_ab_id }},
     {{ col_emitted_at }},
     {{ '{{ current_timestamp() }}' }} as {{ col_normalized_at }},

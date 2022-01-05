@@ -58,7 +58,8 @@ input_data_with_active_row_num as (
         order by
             _ab_cdc_lsn is null asc,
             _ab_cdc_lsn desc,
-            _airbyte_emitted_at desc, _ab_cdc_updated_at desc
+            _ab_cdc_updated_at desc,
+            _airbyte_emitted_at desc
       ) as _airbyte_active_row_num
     from input_data
 ),
@@ -66,13 +67,13 @@ scd_data as (
     -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
     select
       {{ dbt_utils.surrogate_key([
-            'id',
+      'id',
       ]) }} as _airbyte_unique_key,
-        id,
-        name,
-        _ab_cdc_lsn,
-        _ab_cdc_updated_at,
-        _ab_cdc_deleted_at,
+      id,
+      name,
+      _ab_cdc_lsn,
+      _ab_cdc_updated_at,
+      _ab_cdc_deleted_at,
       _ab_cdc_lsn as _airbyte_start_at,
       case when _airbyte_active_row_num = 1 and _ab_cdc_deleted_at is null then 1 else 0 end as _airbyte_active_row,
       anyOrNull(_ab_cdc_lsn) over (
@@ -80,9 +81,9 @@ scd_data as (
         order by
             _ab_cdc_lsn is null asc,
             _ab_cdc_lsn desc,
-            _airbyte_emitted_at desc, _ab_cdc_updated_at desc
-            ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING
-      ) as _airbyte_end_at,
+            _ab_cdc_updated_at desc,
+            _airbyte_emitted_at desc
+      ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING) as _airbyte_end_at,
       _airbyte_ab_id,
       _airbyte_emitted_at,
       _airbyte_dedup_cdc_excluded_hashid
@@ -110,11 +111,11 @@ dedup_data as (
 select
     _airbyte_unique_key,
     _airbyte_unique_key_scd,
-        id,
-        name,
-        _ab_cdc_lsn,
-        _ab_cdc_updated_at,
-        _ab_cdc_deleted_at,
+    id,
+    name,
+    _ab_cdc_lsn,
+    _ab_cdc_updated_at,
+    _ab_cdc_deleted_at,
     _airbyte_start_at,
     _airbyte_end_at,
     _airbyte_active_row,

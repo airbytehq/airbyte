@@ -27,27 +27,25 @@ scd_data as (
                 nzd
             
     ) as "_AIRBYTE_UNIQUE_KEY",
-        id,
-        currency,
-        "DATE",
-        timestamp_col,
-        hkd_special___characters,
-        hkd_special___characters_1,
-        nzd,
-        usd,
+      id,
+      currency,
+      "DATE",
+      timestamp_col,
+      hkd_special___characters,
+      hkd_special___characters_1,
+      nzd,
+      usd,
       "DATE" as "_AIRBYTE_START_AT",
       lag("DATE") over (
         partition by id, currency, cast(nzd as varchar2(4000))
         order by
             "DATE" desc nulls last,
-            "DATE" desc,
             "_AIRBYTE_EMITTED_AT" desc
       ) as "_AIRBYTE_END_AT",
       case when row_number() over (
         partition by id, currency, cast(nzd as varchar2(4000))
         order by
             "DATE" desc nulls last,
-            "DATE" desc,
             "_AIRBYTE_EMITTED_AT" desc
       ) = 1 then 1 else 0 end as "_AIRBYTE_ACTIVE_ROW",
       "_AIRBYTE_AB_ID",
@@ -83,14 +81,14 @@ dedup_data as (
 select
     "_AIRBYTE_UNIQUE_KEY",
     "_AIRBYTE_UNIQUE_KEY_SCD",
-        id,
-        currency,
-        "DATE",
-        timestamp_col,
-        hkd_special___characters,
-        hkd_special___characters_1,
-        nzd,
-        usd,
+    id,
+    currency,
+    "DATE",
+    timestamp_col,
+    hkd_special___characters,
+    hkd_special___characters_1,
+    nzd,
+    usd,
     "_AIRBYTE_START_AT",
     "_AIRBYTE_END_AT",
     "_AIRBYTE_ACTIVE_ROW",

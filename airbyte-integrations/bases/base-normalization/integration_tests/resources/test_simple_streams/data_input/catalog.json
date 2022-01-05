@@ -96,6 +96,9 @@
           "properties": {
             "id": {
               "type": "integer"
+            },
+            "_ab_cdc_updated_at": {
+              "type": ["null", "number"]
             }
           }
         },

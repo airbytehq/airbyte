@@ -57,30 +57,28 @@ scd_data as (
     -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
     select
       {{ dbt_utils.surrogate_key([
-            'id',
-            'currency',
-            'nzd',
+      'id',
+      'currency',
+      'nzd',
       ]) }} as _airbyte_unique_key,
-        id,
-        currency,
-        {{ adapter.quote('date') }},
-        timestamp_col,
-        {{ adapter.quote('HKD@spéçiäl & characters') }},
-        hkd_special___characters,
-        nzd,
-        usd,
+      id,
+      currency,
+      {{ adapter.quote('date') }},
+      timestamp_col,
+      {{ adapter.quote('HKD@spéçiäl & characters') }},
+      hkd_special___characters,
+      nzd,
+      usd,
       {{ adapter.quote('date') }} as _airbyte_start_at,
       lag({{ adapter.quote('date') }}) over (
         partition by id, currency, cast(nzd as {{ dbt_utils.type_string() }})
         order by
-            {{ adapter.quote('date') }} desc,
             {{ adapter.quote('date') }} desc,
             _airbyte_emitted_at desc
       ) as _airbyte_end_at,
       case when row_number() over (
         partition by id, currency, cast(nzd as {{ dbt_utils.type_string() }})
         order by
-            {{ adapter.quote('date') }} desc,
             {{ adapter.quote('date') }} desc,
             _airbyte_emitted_at desc
       ) = 1 then 1 else 0 end as _airbyte_active_row,
@@ -111,14 +109,14 @@ dedup_data as (
 select
     _airbyte_unique_key,
     _airbyte_unique_key_scd,
-        id,
-        currency,
-        {{ adapter.quote('date') }},
-        timestamp_col,
-        {{ adapter.quote('HKD@spéçiäl & characters') }},
-        hkd_special___characters,
-        nzd,
-        usd,
+    id,
+    currency,
+    {{ adapter.quote('date') }},
+    timestamp_col,
+    {{ adapter.quote('HKD@spéçiäl & characters') }},
+    hkd_special___characters,
+    nzd,
+    usd,
     _airbyte_start_at,
     _airbyte_end_at,
     _airbyte_active_row,

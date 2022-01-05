@@ -21,25 +21,27 @@ scd_data as (
 ), '') as 
     varchar
 )) as _airbyte_unique_key,
-        "id",
-        "name",
-        _ab_cdc_lsn,
-        _ab_cdc_updated_at,
-        _ab_cdc_deleted_at,
+      "id",
+      "name",
+      _ab_cdc_lsn,
+      _ab_cdc_updated_at,
+      _ab_cdc_deleted_at,
       _ab_cdc_lsn as _airbyte_start_at,
       lag(_ab_cdc_lsn) over (
         partition by "id"
         order by
             _ab_cdc_lsn is null asc,
             _ab_cdc_lsn desc,
-            _airbyte_emitted_at desc, _ab_cdc_updated_at desc
+            _ab_cdc_updated_at desc,
+            _airbyte_emitted_at desc
       ) as _airbyte_end_at,
       case when row_number() over (
         partition by "id"
         order by
             _ab_cdc_lsn is null asc,
             _ab_cdc_lsn desc,
-            _airbyte_emitted_at desc, _ab_cdc_updated_at desc
+            _ab_cdc_updated_at desc,
+            _airbyte_emitted_at desc
       ) = 1 and _ab_cdc_deleted_at is null then 1 else 0 end as _airbyte_active_row,
       _airbyte_ab_id,
       _airbyte_emitted_at,
@@ -80,11 +82,11 @@ dedup_data as (
 select
     _airbyte_unique_key,
     _airbyte_unique_key_scd,
-        "id",
-        "name",
-        _ab_cdc_lsn,
-        _ab_cdc_updated_at,
-        _ab_cdc_deleted_at,
+    "id",
+    "name",
+    _ab_cdc_lsn,
+    _ab_cdc_updated_at,
+    _ab_cdc_deleted_at,
     _airbyte_start_at,
     _airbyte_end_at,
     _airbyte_active_row,

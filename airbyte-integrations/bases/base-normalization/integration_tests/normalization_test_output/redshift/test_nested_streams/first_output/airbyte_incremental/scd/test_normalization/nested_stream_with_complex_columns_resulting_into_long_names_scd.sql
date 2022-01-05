@@ -21,9 +21,9 @@ scd_data as (
     -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
     select
       md5(cast(coalesce(cast(id as varchar), '') as varchar)) as _airbyte_unique_key,
-        id,
-        date,
-        "partition",
+      id,
+      date,
+      "partition",
       date as _airbyte_start_at,
       lag(date) over (
         partition by id
@@ -62,9 +62,9 @@ dedup_data as (
 select
     _airbyte_unique_key,
     _airbyte_unique_key_scd,
-        id,
-        date,
-        "partition",
+    id,
+    date,
+    "partition",
     _airbyte_start_at,
     _airbyte_end_at,
     _airbyte_active_row,

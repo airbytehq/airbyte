@@ -20,9 +20,9 @@ scd_data as (
 ), '') as 
     varchar
 )) as _AIRBYTE_UNIQUE_KEY,
-        ID,
-        DATE,
-        PARTITION,
+      ID,
+      DATE,
+      PARTITION,
       DATE as _AIRBYTE_START_AT,
       lag(DATE) over (
         partition by ID
@@ -69,9 +69,9 @@ dedup_data as (
 select
     _AIRBYTE_UNIQUE_KEY,
     _AIRBYTE_UNIQUE_KEY_SCD,
-        ID,
-        DATE,
-        PARTITION,
+    ID,
+    DATE,
+    PARTITION,
     _AIRBYTE_START_AT,
     _AIRBYTE_END_AT,
     _AIRBYTE_ACTIVE_ROW,

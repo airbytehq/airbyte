@@ -39,21 +39,19 @@ scd_data as (
     concat(concat(coalesce(cast(id as 
     VARCHAR(max)), ''''),''''), '''') as 
     VARCHAR(max)), '''')), 2) as _airbyte_unique_key,
-        id,
-        "date",
-        "partition",
+      id,
+      "date",
+      "partition",
       "date" as _airbyte_start_at,
       lag("date") over (
         partition by id
         order by
-            "date" desc,
             "date" desc,
             _airbyte_emitted_at desc
       ) as _airbyte_end_at,
       case when row_number() over (
         partition by id
         order by
-            "date" desc,
             "date" desc,
             _airbyte_emitted_at desc
       ) = 1 then 1 else 0 end as _airbyte_active_row,
@@ -88,9 +86,9 @@ dedup_data as (
 select
     _airbyte_unique_key,
     _airbyte_unique_key_scd,
-        id,
-        "date",
-        "partition",
+    id,
+    "date",
+    "partition",
     _airbyte_start_at,
     _airbyte_end_at,
     _airbyte_active_row,

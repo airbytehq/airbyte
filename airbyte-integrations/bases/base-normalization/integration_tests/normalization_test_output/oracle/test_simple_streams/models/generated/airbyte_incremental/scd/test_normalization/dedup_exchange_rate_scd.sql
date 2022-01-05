@@ -57,31 +57,29 @@ scd_data as (
     -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
     select
       {{ dbt_utils.surrogate_key([
-            'id',
-            'currency',
-            'nzd',
+      'id',
+      'currency',
+      'nzd',
       ]) }} as {{ quote('_AIRBYTE_UNIQUE_KEY') }},
-        id,
-        currency,
-        {{ quote('DATE') }},
-        timestamp_col,
-        hkd_special___characters,
-        hkd_special___characters_1,
-        nzd,
-        usd,
+      id,
+      currency,
+      {{ quote('DATE') }},
+      timestamp_col,
+      hkd_special___characters,
+      hkd_special___characters_1,
+      nzd,
+      usd,
       {{ quote('DATE') }} as {{ quote('_AIRBYTE_START_AT') }},
       lag({{ quote('DATE') }}) over (
         partition by id, currency, cast(nzd as {{ dbt_utils.type_string() }})
         order by
             {{ quote('DATE') }} desc nulls last,
-            {{ quote('DATE') }} desc,
             {{ quote('_AIRBYTE_EMITTED_AT') }} desc
       ) as {{ quote('_AIRBYTE_END_AT') }},
       case when row_number() over (
         partition by id, currency, cast(nzd as {{ dbt_utils.type_string() }})
         order by
             {{ quote('DATE') }} desc nulls last,
-            {{ quote('DATE') }} desc,
             {{ quote('_AIRBYTE_EMITTED_AT') }} desc
       ) = 1 then 1 else 0 end as {{ quote('_AIRBYTE_ACTIVE_ROW') }},
       {{ quote('_AIRBYTE_AB_ID') }},
@@ -111,14 +109,14 @@ dedup_data as (
 select
     {{ quote('_AIRBYTE_UNIQUE_KEY') }},
     {{ quote('_AIRBYTE_UNIQUE_KEY_SCD') }},
-        id,
-        currency,
-        {{ quote('DATE') }},
-        timestamp_col,
-        hkd_special___characters,
-        hkd_special___characters_1,
-        nzd,
-        usd,
+    id,
+    currency,
+    {{ quote('DATE') }},
+    timestamp_col,
+    hkd_special___characters,
+    hkd_special___characters_1,
+    nzd,
+    usd,
     {{ quote('_AIRBYTE_START_AT') }},
     {{ quote('_AIRBYTE_END_AT') }},
     {{ quote('_AIRBYTE_ACTIVE_ROW') }},
