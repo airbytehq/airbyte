@@ -1,12 +1,13 @@
 
 
-  create view _airbyte_test_normalization.dedup_exchange_rate_ab3__dbt_tmp 
+  create view _airbyte_test_normalization.dedup_exchange_rate_stg__dbt_tmp 
   
   as (
     
 with __dbt__cte__dedup_exchange_rate_ab1 as (
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
+-- depends_on: test_normalization._airbyte_raw_dedup_exchange_rate
 select
     JSONExtractRaw(_airbyte_data, 'id') as id,
     JSONExtractRaw(_airbyte_data, 'currency') as currency,
@@ -26,6 +27,7 @@ where 1 = 1
 ),  __dbt__cte__dedup_exchange_rate_ab2 as (
 
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+-- depends_on: __dbt__cte__dedup_exchange_rate_ab1
 select
     accurateCastOrNull(id, '
     BIGINT
@@ -51,6 +53,7 @@ from __dbt__cte__dedup_exchange_rate_ab1
 where 1 = 1
 
 )-- SQL model to build a hash column based on the values of this record
+-- depends_on: __dbt__cte__dedup_exchange_rate_ab2
 select
     assumeNotNull(hex(MD5(
             
