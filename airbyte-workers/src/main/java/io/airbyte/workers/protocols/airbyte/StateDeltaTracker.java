@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.protocols.airbyte;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * This class tracks "deltas" between states in compact {@code byte[]}s with the following schema:
@@ -20,7 +22,11 @@ import java.util.Set;
  * <p>
  * This class also maintains a {@code Set} of {@code committedStateHashes} so that it can accumulate both
  * committed and total record counts per stream.
+ * <p>
+ * The StateDeltaTracker is initialized with a memory limit. If this memory limit is exceeded, new states deltas will not be added
+ * and per-stream record counts will not be able to be computed. This is to prevent OutOfMemoryErrors from crashing the sync.
  */
+@Slf4j
 public class StateDeltaTracker {
 
   private static final int STATE_HASH_BYTES = Integer.BYTES;
@@ -34,16 +40,35 @@ public class StateDeltaTracker {
   private final Set<Integer> committedStateHashes;
   private final List<byte[]> stateDeltas;
 
-  public StateDeltaTracker() {
+  @VisibleForTesting
+  protected int remainingCapacity;
+  @VisibleForTesting
+  protected boolean capacityExceeded;
+
+  public StateDeltaTracker(final int memoryLimitBytes) {
     this.stateDeltas = new ArrayList<>();
     this.stateHashByteBuffer = ByteBuffer.allocate(STATE_HASH_BYTES);
     this.streamIndexByteBuffer = ByteBuffer.allocate(STREAM_INDEX_BYTES);
     this.recordCountByteBuffer = ByteBuffer.allocate(RECORD_COUNT_BYTES);
     this.committedStateHashes = new HashSet<>();
+    this.remainingCapacity = memoryLimitBytes;
+    this.capacityExceeded = false;
   }
 
-  public void addState(final int stateHash, final Map<Short, Long> streamIndexToRecordCount) {
-    final byte[] delta = new byte[STATE_HASH_BYTES + (streamIndexToRecordCount.size() * BYTES_PER_STREAM)]; // state hash + room for every stream
+  /**
+   * Converts the given state hash and per-stream record count map into a {@code byte[]} and stores it.
+   * <p>
+   * Tracks total capacity to avoid OutOfMemoryErrors.
+   */
+  public void addState(final int stateHash, final Map<Short, Long> streamIndexToRecordCount) throws CapacityExceededException {
+    final int size = STATE_HASH_BYTES + (streamIndexToRecordCount.size() * BYTES_PER_STREAM);
+
+    if (capacityExceeded || remainingCapacity < size) {
+      capacityExceeded = true;
+      throw new CapacityExceededException("Memory capacity is exceeded for StateDeltaTracker.");
+    }
+
+    final byte[] delta = new byte[size];
     int offset = 0;
 
     stateHashByteBuffer.putInt(stateHash);
@@ -73,6 +98,7 @@ public class StateDeltaTracker {
     }
 
     this.stateDeltas.add(delta);
+    this.remainingCapacity -= delta.length;
   }
 
   /**
@@ -134,5 +160,14 @@ public class StateDeltaTracker {
       }
     }
     return streamIndexToTotalRecordCount;
+  }
+
+  /**
+   * Thrown when the StateDeltaTracker capacity has been exceeded, and per-stream record counts cannot be reliably returned.
+   */
+  public class CapacityExceededException extends Exception {
+    public CapacityExceededException(final String message) {
+      super(message);
+    }
   }
 }

@@ -30,8 +30,8 @@ class AirbyteMessageTrackerTest {
     messageTracker.acceptFromSource(message);
     messageTracker.acceptFromSource(message);
 
-    assertEquals(3, messageTracker.getRecordCount());
-    assertEquals(3 * Jsons.serialize(message.getRecord().getData()).getBytes(Charsets.UTF_8).length, messageTracker.getBytesCount());
+    assertEquals(3, messageTracker.getTotalRecordsEmitted());
+    assertEquals(3 * Jsons.serialize(message.getRecord().getData()).getBytes(Charsets.UTF_8).length, messageTracker.getTotalBytesEmitted());
   }
 
   @Test

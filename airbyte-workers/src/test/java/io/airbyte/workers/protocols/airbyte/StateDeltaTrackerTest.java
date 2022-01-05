@@ -1,10 +1,10 @@
 package io.airbyte.workers.protocols.airbyte;
 
+import io.airbyte.workers.protocols.airbyte.StateDeltaTracker.CapacityExceededException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class StateDeltaTrackerTest {
@@ -19,13 +19,38 @@ public class StateDeltaTrackerTest {
 
   private StateDeltaTracker stateDeltaTracker;
 
-  @BeforeEach
-  public void setup() {
-    stateDeltaTracker = new StateDeltaTracker();
+  @Test
+  public void testAddState() {
+    final Map<Short, Long> state1Counts = new HashMap<>();
+    state1Counts.put(STREAM_INDEX_1, 10L);
+    state1Counts.put(STREAM_INDEX_2, 20L);
+
+    final Map<Short, Long> state2Counts = new HashMap<>();
+    state2Counts.put(STREAM_INDEX_2, 30L);
+    state2Counts.put(STREAM_INDEX_3, 40L);
+
+    final Map<Short, Long> state3Counts = new HashMap<>();
+    state3Counts.put(STREAM_INDEX_3, 80L);
+
+    // initialize with capacity for first two states, which are each 24 bytes (8 byte hash + two 10 byte stream counts)
+    stateDeltaTracker = new StateDeltaTracker(48);
+
+    try {
+      stateDeltaTracker.addState(STATE_1_HASH, state1Counts);
+      stateDeltaTracker.addState(STATE_2_HASH, state2Counts);
+      Assertions.assertEquals(0, stateDeltaTracker.remainingCapacity);
+      Assertions.assertFalse(stateDeltaTracker.capacityExceeded);
+
+      stateDeltaTracker.addState(STATE_3_HASH, state3Counts);
+      Assertions.fail("Should have thrown exception");
+    } catch (CapacityExceededException e) {
+      Assertions.assertTrue(stateDeltaTracker.capacityExceeded);
+    }
   }
 
   @Test
-  public void testAddStateAndGetStreamIndexToTotalRecordCount() {
+  public void testGetStreamIndexToTotalRecordCount_includingUncommittedStates() throws CapacityExceededException {
+    stateDeltaTracker = new StateDeltaTracker(1000);
     final Map<Short, Long> streamIndexToRecordCount = new HashMap<>();
     final long state1Stream1Count = 10L;
     final long state1Stream2Count = Long.MAX_VALUE;
@@ -57,7 +82,8 @@ public class StateDeltaTrackerTest {
   }
 
   @Test
-  public void testCommitStateHash() {
+  public void testGetStreamIndexToTotalRecordCount_countingOnlyCommittedStates() throws CapacityExceededException {
+    stateDeltaTracker = new StateDeltaTracker(1000);
     final Map<Short, Long> streamIndexToRecordCount = new HashMap<>();
     final long state1Stream1Count = 10L;
     final long state1Stream2Count = Long.MAX_VALUE;

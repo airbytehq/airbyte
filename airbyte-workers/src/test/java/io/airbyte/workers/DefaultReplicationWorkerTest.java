@@ -242,8 +242,8 @@ class DefaultReplicationWorkerTest {
   @Test
   void testPopulatesOutputOnSuccess() throws WorkerException {
     final JsonNode expectedState = Jsons.jsonNode(ImmutableMap.of("updated_at", 10L));
-    when(messageTracker.getRecordCount()).thenReturn(12L);
-    when(messageTracker.getBytesCount()).thenReturn(100L);
+    when(messageTracker.getTotalRecordsEmitted()).thenReturn(12L);
+    when(messageTracker.getTotalBytesEmitted()).thenReturn(100L);
     when(messageTracker.getDestinationOutputState()).thenReturn(Optional.of(new State().withState(expectedState)));
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
@@ -339,7 +339,7 @@ class DefaultReplicationWorkerTest {
 
   @Test
   void testDoesNotPopulateOnIrrecoverableFailure() {
-    doThrow(new IllegalStateException("induced exception")).when(messageTracker).getRecordCount();
+    doThrow(new IllegalStateException("induced exception")).when(messageTracker).getTotalRecordsEmitted();
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,

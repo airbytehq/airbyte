@@ -10,66 +10,71 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Interface to handle extracting metadata from the stream of data flowing from a Source to a
- * Destination.
+ * Interface to handle extracting metadata from the stream of data flowing from a Source to a Destination.
  */
-public interface MessageTracker { // TODO parker: no longer extends Consumer<AirbyteMessage> is that fine? look into BiConsumer?
-
-  // /**
-  // * Accepts an AirbyteMessage and tracks any metadata about it that is required by the Platform.
-  // *
-  // * @param message message to derive metadata from.
-  // */
-  // @Override
-  // void accept(AirbyteMessage message);
+public interface MessageTracker {
 
   /**
-   * TODO javadoc
+   * Accepts an AirbyteMessage emitted from a source and tracks any metadata about it that is required by the Platform.
+   *
+   * @param message message to derive metadata from.
    */
   void acceptFromSource(AirbyteMessage message);
 
   /**
-   * TODO javadoc
+   * Accepts an AirbyteMessage emitted from a destination and tracks any metadata about it that is required by the Platform.
+   *
+   * @param message message to derive metadata from.
    */
   void acceptFromDestination(AirbyteMessage message);
 
   /**
-   * Gets the records replicated.
+   * Get the current source state of the stream.
    *
-   * @return total records that passed from Source to Destination.
-   */
-  long getRecordCount();
-
-  /**
-   * Gets the bytes replicated.
-   *
-   * @return total bytes that passed from Source to Destination.
-   */
-  long getBytesCount();
-
-  // /**
-  // * Get the current state of the stream.
-  // *
-  // * @return returns the last StateMessage that was accepted. If no StateMessage was accepted,
-  // empty.
-  // */
-  // Optional<State> getOutputState();
-
-  /**
-   * Get the current state of the stream.
-   *
-   * @return returns the last StateMessage that was accepted. If no StateMessage was accepted, empty.
+   * @return returns the last StateMessage that was accepted from the source. If no StateMessage was accepted, empty.
    */
   Optional<State> getSourceOutputState();
 
   /**
-   * Get the current state of the stream.
+   * Get the current destination state of the stream.
    *
-   * @return returns the last StateMessage that was accepted. If no StateMessage was accepted, empty.
+   * @return returns the last StateMessage that was accepted from the destination. If no StateMessage was accepted, empty.
    */
   Optional<State> getDestinationOutputState();
 
-  // TODO javadoc
-  Map<String, Long> getCommittedRecordsByStream();
+  /**
+   * Get the per-stream committed record count.
+   *
+   * @return returns a map of committed record count by stream name. If committed record counts cannot be computed, empty.
+   */
+  Optional<Map<String, Long>> getCommittedRecordsByStream();
+
+  /**
+   * Get the per-stream emitted record count. This includes messages that were emitted by the source, but never committed by the destination.
+   *
+   * @return returns a map of emitted record count by stream name.
+   */
+  Map<String, Long> getEmittedRecordsByStream();
+
+  /**
+   * Get the overall emitted record count. This includes messages that were emitted by the source, but never committed by the destination.
+   *
+   * @return returns the total count of emitted records across all streams.
+   */
+  Long getTotalRecordsEmitted();
+
+  /**
+   * Get the overall emitted bytes. This includes messages that were emitted by the source, but never committed by the destination.
+   *
+   * @return returns the total emitted bytes across all streams.
+   */
+  Long getTotalBytesEmitted();
+
+  /**
+   * Get the overall committed record count.
+   *
+   * @return returns the total count of committed records across all streams. If total committed record count cannot be computed, empty.
+   */
+  Optional<Long> getTotalRecordsCommitted();
 
 }
