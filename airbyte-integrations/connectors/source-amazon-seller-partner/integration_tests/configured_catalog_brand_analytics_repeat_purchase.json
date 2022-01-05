@@ -10,65 +10,38 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "startDate": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date"
             },
             "endDate": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date"
             },
             "asin": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "orders": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "uniqueCustomers": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "repeatCustomersPctTotal": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "repeatPurchaseRevenue": {
               "type": "object",
               "properties": {
                 "amount": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "currencyCode": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 }
               }
             },
             "repeatPurchaseRevenuePctTotal": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             }
           }
         },

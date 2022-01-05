@@ -27,7 +27,7 @@
     "repeatPurchaseRevenue": {
       "type": "object",
       "properties": {
-        "amount":  {
+        "amount": {
           "type": ["null", "number"]
         },
         "currencyCode": {

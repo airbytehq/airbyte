@@ -10,42 +10,24 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "startDate": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date"
             },
             "endDate": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date"
             },
             "asin": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "comparedAsin": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "comparedRank": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "comparedPct": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             }
           }
         },

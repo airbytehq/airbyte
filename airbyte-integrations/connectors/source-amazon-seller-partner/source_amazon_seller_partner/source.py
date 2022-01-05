@@ -16,10 +16,10 @@ from source_amazon_seller_partner.auth import AWSAuthenticator, AWSSignature
 from source_amazon_seller_partner.constants import AWSEnvironment, AWSRegion, get_marketplaces
 from source_amazon_seller_partner.streams import (
     BrandAnalyticsAlternatePurchaseReports,
+    BrandAnalyticsItemComparisonReports,
     BrandAnalyticsMarketBasketReports,
     BrandAnalyticsRepeatPurchaseReports,
     BrandAnalyticsSearchTermsReports,
-    BrandAnalyticsItemComparisonReports,
     FbaInventoryReports,
     FbaOrdersReports,
     FbaShipmentsReports,
