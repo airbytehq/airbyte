@@ -93,8 +93,8 @@ class LogParser(SonarQubeApi):
                 data["primaryLocation"]["textRange"] = {
                     "startLine": self.line_number,
                     "endLine": self.line_number,
-                    "startColumn": issue.column_number - 1,  # 0-indexed
-                    "endColumn": issue.column_number,  # 0-indexed
+                    "startColumn": self.column_number - 1,  # 0-indexed
+                    "endColumn": self.column_number,  # 0-indexed
                 }
             return data
 
