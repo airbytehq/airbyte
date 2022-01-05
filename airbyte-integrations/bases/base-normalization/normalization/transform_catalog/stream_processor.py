@@ -720,6 +720,7 @@ where 1 = 1
             )
         else:
             airbyte_start_at_string = self.name_transformer.normalize_column_name("_airbyte_start_at")
+
         jinja_variables = {
             "active_row": self.name_transformer.normalize_column_name("_airbyte_active_row"),
             "airbyte_end_at": self.name_transformer.normalize_column_name("_airbyte_end_at"),

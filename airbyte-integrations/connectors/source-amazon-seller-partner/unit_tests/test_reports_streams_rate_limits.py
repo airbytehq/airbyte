@@ -6,7 +6,6 @@ import time
 
 import pytest
 import requests
-from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from source_amazon_seller_partner.auth import AWSSignature
 from source_amazon_seller_partner.streams import MerchantListingsReports
@@ -26,7 +25,7 @@ def reports_stream():
         aws_signature=aws_signature,
         replication_start_date="2017-01-25T00:00:00Z",
         marketplace_id="id",
-        authenticator=NoAuth(),
+        authenticator=None,
         period_in_days=0,
         report_options=None,
         max_wait_seconds=500,
