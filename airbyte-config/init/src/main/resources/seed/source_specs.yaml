@@ -1947,9 +1947,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-freshservice:0.1.0"
+- dockerImage: "airbyte/source-freshservice:0.1.1"
   spec:
-    documentationUrl: "https://hub.docker.com/r/airbyte/source-freshservice"
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/freshservice"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Freshservice Spec"
@@ -1962,17 +1962,18 @@
       properties:
         domain_name:
           type: "string"
-          description: "Freshservice domain"
+          title: "Domain Name"
+          description: "The name of your Freshservice domain"
           examples:
           - "mydomain.freshservice.com"
         api_key:
-          title: "Api Key"
+          title: "API Key"
           type: "string"
-          description: "Your API Access Key. See <a href=\"https://api.freshservice.com/#authentication\"\
+          description: "Freshservice API Key. See <a href=\"https://api.freshservice.com/#authentication\"\
             >here</a>. The key is case sensitive."
           airbyte_secret: true
         start_date:
-          title: "Replication Start Date"
+          title: "Start Date"
           type: "string"
           description: "UTC date and time in the format 2020-10-01T00:00:00Z. Any\
             \ data before this date will not be replicated."
