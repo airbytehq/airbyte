@@ -12,7 +12,9 @@ outputs:
   linter-reports:
     description: "Linter Options"
     value: ${{ steps.build-linter-reports.outputs.linter-reports }}
-
+  mypy-logs:
+    description: "MyPy Logs"
+    value: ${{ steps.build-linter-reports.outputs.mypy-logs }}
 runs:
   using: "composite"
   steps:
@@ -50,7 +52,7 @@ runs:
            eval ${cmd}
          done
          rm -rf .venv
-         cat ${REPORT_FOLDER}/mypy_junit.xml
-         echo "::set-output name=linter-reports::-Dsonar.python.flake8.reportPaths=${REPORT_FOLDER}/flake.txt -Dsonar.junit.reportPaths=${REPORT_FOLDER}/mypy_junit.xml"
+         echo "::set-output name=mypy-logs::${REPORT_FOLDER}/mypy.log"
+         echo "::set-output name=linter-reports::-Dsonar.python.flake8.reportPaths=${REPORT_FOLDER}/flake.txt"
 
 

@@ -39,7 +39,7 @@ TASK_COMMANDS: Dict[str, List[str]] = {
     "flake": [
         f"pip install mccabe~={TOOLS_VERSIONS['mccabe']}",
         f"pip install pyproject-flake8~={TOOLS_VERSIONS['flake']}",
-        "pflake8 --exit-zero {source_path} |  grep ^. > {reports_path}/flake.txt",
+        "pflake8 --exit-zero {source_path} |  grep ^. | tee {reports_path}/flake.txt",
 
     ],
     "isort": [
@@ -49,7 +49,7 @@ TASK_COMMANDS: Dict[str, List[str]] = {
     ],
     "mypy": [
         f"pip install lxml~={TOOLS_VERSIONS['lxml']} mypy~={TOOLS_VERSIONS['mypy']} .",
-        "mypy {source_path} --config-file={toml_config_file} --junit-xml {reports_path}/mypy_junit.xml || true",
+        "mypy {source_path} --config-file={toml_config_file} | tee {reports_path}/mypy.log || true",
     ],
     "mypycoverage": [
         "pip install .",

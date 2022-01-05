@@ -1,7 +1,7 @@
 import itertools
 import re
 from functools import reduce
-from typing import Mapping, Any, Optional
+from typing import Mapping, Any, Optional, List
 from urllib.parse import urljoin
 
 import requests
@@ -58,12 +58,13 @@ class SonarQubeApi:
         self._pr_id = (pr_name or '').split("/")[-1]
         if not self._pr_id.isdigit():
             self.logger.critical(f"PR id should be integer. Current value: {pr_name}")
+
         self._pr_id = int(self._pr_id)
         # check token
         # https://sonarcloud.io/web_api/api/authentication/validate
         if not self._host:
             return
-        resp = self.__get("authentication/validate")
+        resp = self._get("authentication/validate")
         if not resp["valid"]:
             self.logger.critical("provided token is not valid")
 
@@ -82,13 +83,27 @@ class SonarQubeApi:
     def generate_url(self, endpoint: str) -> str:
         return reduce(urljoin, [self._host, "/api/", endpoint])
 
-    def __post(self, endpoint: str, json: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _post(self, endpoint: str, json: Mapping[str, Any]) -> Mapping[str, Any]:
         url = self.generate_url(endpoint)
         return self.__parse_response(url, requests.post(url, auth=self.__auth, params=json, json=json))
 
-    def __get(self, endpoint: str) -> Mapping[str, Any]:
+    def _get(self, endpoint: str) -> Mapping[str, Any]:
         url = self.generate_url(endpoint)
         return self.__parse_response(url, requests.get(url, auth=self.__auth))
+
+    def _get_list(self, endpoint: str, list_name: str) -> List[Mapping[str, Any]]:
+
+        page = 0
+        items = []
+        while True:
+            page += 1
+            url = endpoint + "&" if "?" in endpoint else "?" + f"p={page}"
+            data = self._get(url)
+            items += data[list_name]
+            total = data.get("total") or data.get("paging", {}).get("total", 0)
+            if len(items) >= total:
+                break
+        return items
 
     @classmethod
     def module2project(cls, module_name: str) -> str:
@@ -103,7 +118,7 @@ class SonarQubeApi:
 
     def __search_project(self, project_name: str) -> Optional[Mapping[str, Any]]:
         """https://sonarcloud.io/web_api/api/projects/search"""
-        data = self.__get(f"projects/search?q={project_name}")
+        data = self._get(f"projects/search?q={project_name}")
         exists_projects = data["components"]
         if len(exists_projects) > 1:
             self.logger.critical(f"there are several projects with the name '{project_name}'")
@@ -132,7 +147,7 @@ class SonarQubeApi:
             self.logger.info(f"The project '{project_name}' was created before")
             return True
 
-        self.__post("projects/create", data)
+        self._post("projects/create", data)
         self.logger.info(f"The project '{project_name}' was created")
         return True
 
@@ -147,7 +162,7 @@ class SonarQubeApi:
         body = {
             "project": project_name
         }
-        self.__post("projects/delete", body)
+        self._post("projects/delete", body)
         self.logger.info(f"The project '{project_name}' was removed")
         return True
 
@@ -162,7 +177,7 @@ class SonarQubeApi:
         page = 1
         rules = {}
         while True:
-            data = self.__get(f"issues/search?componentKeys={project_name}&additionalFields=_all&p={page}")
+            data = self._get(f"issues/search?componentKeys={project_name}&additionalFields=_all&p={page}")
             needed_rules = set(issue["rule"] for issue in data["issues"])
             issues += data["issues"]
             for needed_rule in needed_rules:
@@ -174,7 +189,7 @@ class SonarQubeApi:
             if data["paging"]["total"] <= len(issues):
                 break
             page += 1
-        data = self.__get(f"measures/component?component={project_name}&additionalFields=metrics&metricKeys={','.join(REPORT_METRICS)}")
+        data = self._get(f"measures/component?component={project_name}&additionalFields=metrics&metricKeys={','.join(REPORT_METRICS)}")
         measures = {}
         total_coverage = None
         for measure in data["component"]["measures"]:
@@ -271,7 +286,7 @@ class SonarQubeApi:
         while True:
             page += 1
             url = f"measures/component_tree?p={page}&component={base_component}&additionalFields=metrics&metricKeys=coverage,uncovered_lines,uncovered_conditions&strategy=children"
-            data = self.__get(url)
+            data = self._get(url)
             read_count += len(data["components"])
             for component in data["components"]:
                 if component["qualifier"] == "DIR":
@@ -284,20 +299,3 @@ class SonarQubeApi:
             if data["paging"]["total"] <= read_count:
                 break
         return coverage_files
-
-    # page = 1
-    # rules = {}
-    # while True:
-    #     data = self.__get(
-    #         f"measures/component_tree?p={page}&component={project_name}&additionalFields=metrics&metricKeys=coverage,uncovered_lines,uncovered_conditions&strategy=children")
-    #     needed_rules = set(issue["rule"] for issue in data["issues"])
-    #     issues += data["issues"]
-    #     for needed_rule in needed_rules:
-    #         if needed_rule in rules:
-    #             continue
-    #         for rule in data["rules"]:
-    #             if rule["key"] == needed_rule:
-    #                 rules[needed_rule] = rule["name"]
-    #     if data["paging"]["total"] <= len(issues):
-    #         break
-    #     page += 1
