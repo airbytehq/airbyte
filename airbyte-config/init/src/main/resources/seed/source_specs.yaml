@@ -1280,7 +1280,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-delighted:0.1.1"
+- dockerImage: "airbyte/source-delighted:0.1.2"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -6047,7 +6047,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-s3:0.1.8"
+- dockerImage: "airbyte/source-s3:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/s3"
@@ -6103,7 +6103,8 @@
               delimiter:
                 title: "Delimiter"
                 description: "The character delimiting individual cells in the CSV\
-                  \ data. This may only be a 1-character string."
+                  \ data. This may only be a 1-character string. For tab-delimited\
+                  \ data enter '\\t'."
                 default: ","
                 minLength: 1
                 type: "string"
