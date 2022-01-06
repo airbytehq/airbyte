@@ -446,7 +446,7 @@ bootloader:
   image:
     repository: airbyte/bootloader
     pullPolicy: IfNotPresent
-    tag: 0.34.0-alpha
+    tag: 0.35.3-alpha
 
 ## @section Temporal parameters
 ## TODO: Move to consuming temporal from a dedicated helm chart

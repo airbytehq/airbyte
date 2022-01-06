@@ -148,7 +148,7 @@
 | ----------------------------- | -------------------------------------------------------------------- | -------------------- |
 | `bootloader.image.repository` | The repository to use for the airbyte bootloader image.              | `airbyte/bootloader` |
 | `bootloader.image.pullPolicy` | the pull policy to use for the airbyte bootloader image              | `IfNotPresent`       |
-| `bootloader.image.tag`        | The airbyte bootloader image tag. Defaults to the chart's AppVersion | `0.34.0-alpha`       |
+| `bootloader.image.tag`        | The airbyte bootloader image tag. Defaults to the chart's AppVersion | `0.35.3-alpha`       |
 
 
 ### Temporal parameters
