@@ -277,6 +277,8 @@ class TransformConfig:
             "user": config["username"],
             "password": config["password"],
         }
+        if "tcp-port" in config:
+            dbt_config["port"] = config["tcp-port"]
         return dbt_config
 
     @staticmethod
