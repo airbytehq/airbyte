@@ -73,11 +73,16 @@ task airbyteDockerClickhouse(type: Exec, dependsOn: checkSshScriptCopy) {
     configure buildAirbyteDocker('clickhouse')
     dependsOn assemble
 }
+task airbyteDockerSnowflake(type: Exec, dependsOn: checkSshScriptCopy) {
+    configure buildAirbyteDocker('snowflake')
+    dependsOn assemble
+}
 
 airbyteDocker.dependsOn(airbyteDockerMSSql)
 airbyteDocker.dependsOn(airbyteDockerMySql)
 airbyteDocker.dependsOn(airbyteDockerOracle)
 airbyteDocker.dependsOn(airbyteDockerClickhouse)
+airbyteDocker.dependsOn(airbyteDockerSnowflake)
 
 task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs) {
     module = "pytest"
