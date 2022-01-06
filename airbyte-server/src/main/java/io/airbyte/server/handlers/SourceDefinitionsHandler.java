@@ -32,12 +32,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SourceDefinitionsHandler {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(SourceDefinitionsHandler.class);
 
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
@@ -173,8 +169,6 @@ public class SourceDefinitionsHandler {
   }
 
   private ConnectorSpecification getSpecForImage(final String dockerRepository, final String imageTag) throws IOException {
-    LOGGER.info("Inside getSpecForImage...");
-    LOGGER.info("Getting imageName from dockerRepository {} and imageTag {}", dockerRepository, imageTag);
     final String imageName = DockerUtils.getTaggedImageName(dockerRepository, imageTag);
     final SynchronousResponse<ConnectorSpecification> getSpecResponse = schedulerSynchronousClient.createGetSpecJob(imageName);
     return SpecFetcher.getSpecFromJob(getSpecResponse);
