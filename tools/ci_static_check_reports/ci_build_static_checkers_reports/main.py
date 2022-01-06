@@ -45,7 +45,7 @@ TASK_COMMANDS: Dict[str, List[str]] = {
     "isort": [
         f"pip install colorama~={TOOLS_VERSIONS['colorama']}",
         f"pip install isort~={TOOLS_VERSIONS['isort']}",
-        "isort --check --diff {source_path} | sed 's/\x1b\[[0-9;]*m//g' | tee {reports_path}/isort.diff",
+        "isort --diff {source_path} | sed 's/\x1b\[[0-9;]*m//g' | tee {reports_path}/isort.diff",
     ],
     "mypy": [
         f"pip install lxml~={TOOLS_VERSIONS['lxml']} mypy~={TOOLS_VERSIONS['mypy']} .",
