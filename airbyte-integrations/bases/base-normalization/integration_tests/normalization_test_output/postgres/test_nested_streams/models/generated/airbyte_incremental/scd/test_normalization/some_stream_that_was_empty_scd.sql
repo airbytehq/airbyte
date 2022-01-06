@@ -2,7 +2,7 @@
     indexes = [{'columns':['_airbyte_active_row','_airbyte_unique_key_scd','_airbyte_emitted_at'],'type': 'btree'}],
     unique_key = "_airbyte_unique_key_scd",
     schema = "test_normalization",
-    post_hook = ['delete from _airbyte_test_normalization.{{ adapter.quote('some_stream_that_was_empty_stg') }} where _airbyte_emitted_at != (select max(_airbyte_emitted_at) from _airbyte_test_normalization.{{ adapter.quote('some_stream_that_was_empty_stg') }}'],
+    post_hook = ["delete from _airbyte_test_normalization.some_stream_that_was_empty_stg where _airbyte_emitted_at != (select max(_airbyte_emitted_at) from _airbyte_test_normalization.some_stream_that_was_empty_stg)"],
     tags = [ "top-level" ]
 ) }}
 -- depends_on: ref('some_stream_that_was_empty_stg')

@@ -167,13 +167,7 @@ class DestinationNameTransformer:
                 result = result.replace("`", "_")
             result = result.replace("'", "\\'")
             result = self.__normalize_identifier_case(result, is_quoted=True)
-            if self.destination_type == DestinationType.ORACLE:
-                # Oracle dbt lib doesn't implemented adapter quote yet.
-                result = f"quote('{result}')"
-            elif self.destination_type == DestinationType.CLICKHOUSE:
-                result = f"quote('{result}')"
-            else:
-                result = f"adapter.quote('{result}')"
+            result = self.apply_quote(result)
             if not in_jinja:
                 result = jinja_call(result)
             return result
@@ -183,6 +177,14 @@ class DestinationNameTransformer:
             # to refer to columns while already in jinja context, always quote
             return f"'{result}'"
         return result
+
+    def apply_quote(self, input: str) -> str:
+        if self.destination_type == DestinationType.ORACLE:
+            # Oracle dbt lib doesn't implemented adapter quote yet.
+            return f"quote('{input}')"
+        elif self.destination_type == DestinationType.CLICKHOUSE:
+            return f"quote('{input}')"
+        return f"adapter.quote('{input}')"
 
     def __normalize_naming_conventions(self, input_name: str) -> str:
         result = input_name
