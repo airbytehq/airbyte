@@ -31,14 +31,14 @@ properties:
     type: integer
     minValue: 0
   streamNameToRecordsEmitted:
-    type: object
+    "$ref": MapInt.yaml
   totalStateMessagesEmitted:
     type: integer
     minValue: 0
   streamNameToBytesEmitted:
-    type: object
+    "$ref": MapInt.yaml
   totalRecordsCommitted:
     type: integer
     minValue: 0
   streamNameToRecordsCommitted:
-    type: object
+    "$ref": MapInt.yaml

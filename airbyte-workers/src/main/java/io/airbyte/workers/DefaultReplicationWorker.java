@@ -4,14 +4,12 @@
 
 package io.airbyte.workers;
 
+import io.airbyte.config.MapInt;
 import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.config.State;
-import io.airbyte.config.StreamNameToBytesEmitted;
-import io.airbyte.config.StreamNameToRecordsCommitted;
-import io.airbyte.config.StreamNameToRecordsEmitted;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -155,10 +153,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         outputStatus = ReplicationStatus.COMPLETED;
       }
 
-      final StreamNameToBytesEmitted streamNameToBytesEmitted = new StreamNameToBytesEmitted();
+      final MapInt streamNameToBytesEmitted = new MapInt();
       messageTracker.getEmittedBytesByStream().forEach((stream, bytes) -> streamNameToBytesEmitted.setAdditionalProperty(stream, bytes));
 
-      final StreamNameToRecordsEmitted streamNameToRecordsEmitted = new StreamNameToRecordsEmitted();
+      final MapInt streamNameToRecordsEmitted = new MapInt();
       messageTracker.getEmittedRecordsByStream().forEach((stream, records) -> streamNameToRecordsEmitted.setAdditionalProperty(stream, records));
 
       final ReplicationAttemptSummary summary = new ReplicationAttemptSummary()
@@ -172,7 +170,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           .withStartTime(startTime)
           .withEndTime(System.currentTimeMillis());
 
-      final StreamNameToRecordsCommitted streamNameToRecordsCommitted = new StreamNameToRecordsCommitted();
+      final MapInt streamNameToRecordsCommitted = new MapInt();
       if (messageTracker.getCommittedRecordsByStream().isPresent()) {
         messageTracker.getCommittedRecordsByStream().get().forEach((stream, records) -> {
           streamNameToRecordsCommitted.setAdditionalProperty(stream, records);

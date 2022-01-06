@@ -90,15 +90,15 @@ public class AirbyteMessageTracker implements MessageTracker {
     final short streamIndex = getStreamIndex(recordMessage.getStream());
 
     final long currentRunningCount = runningCountByStream.getOrDefault(streamIndex, 0L);
-    this.runningCountByStream.put(streamIndex, currentRunningCount + 1);
+    runningCountByStream.put(streamIndex, currentRunningCount + 1);
 
     final long currentTotalCount = totalRecordsEmittedByStream.getOrDefault(streamIndex, 0L);
-    this.totalRecordsEmittedByStream.put(streamIndex, currentTotalCount + 1);
+    totalRecordsEmittedByStream.put(streamIndex, currentTotalCount + 1);
 
     // todo (cgardens) - pretty wasteful to do an extra serialization just to get size.
     final int numBytes = Jsons.serialize(recordMessage.getData()).getBytes(Charsets.UTF_8).length;
     final long currentTotalStreamBytes = totalBytesEmittedByStream.getOrDefault(streamIndex, 0L);
-    this.totalBytesEmittedByStream.put(streamIndex, currentTotalStreamBytes + numBytes);
+    totalBytesEmittedByStream.put(streamIndex, currentTotalStreamBytes + numBytes);
   }
 
   /**
