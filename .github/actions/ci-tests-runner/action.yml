@@ -57,33 +57,37 @@ runs:
         module-folder: ${{ inputs.module-folder }}
 
     - name: Auth with gcloud CLI
-      uses: google-github-actions/setup-gcloud@master
+      uses: google-github-actions/setup-gcloud@v0
       with:
         service_account_key: ${{ inputs.sonar-gcp-access-key }}
         project_id: dataline-integration-testing
         export_default_credentials: true
 
     - name: Create IAP tunnel to the SonarQube VM
+      id: gcloud-tunnel
       shell: bash
-      run: gcloud compute start-iap-tunnel sonarqube-1-vm 80 --local-host-port=localhost:3300 --zone=europe-central2-a --project dataline-integration-testing &
-
+      run: |
+          gcloud compute start-iap-tunnel sonarqube-1-vm 80 --local-host-port=localhost:3300 --zone=europe-central2-a --project dataline-integration-testing &
+          echo ::set-output name=pid::$!
 
 
     - name: Prepare External Issues
       shell: bash
       id: external-issues
+      env:
+        SONAR_HOST_URL: "localhost:3300"
       working-directory: ${{ inputs.module-folder }}
       run: |
         REPORT_FOLDER=reports
         mkdir -p ${REPORT_FOLDER}
         declare -a REPORT_FILES
-        [ -f ${{ steps.ci-py-tests.outputs.mypy-logs }} ] && ci_sonar_qube --mypy_log ${{ steps.ci-py-tests.outputs.mypy-logs }} --output_file ${REPORT_FOLDER}/issues_mypy.json --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
+        [ -f ${{ steps.ci-py-tests.outputs.mypy-logs }} ] && ci_sonar_qube --mypy_log ${{ steps.ci-py-tests.outputs.mypy-logs }} --output_file ${REPORT_FOLDER}/issues_mypy.json --host ${{ env.SONAR_HOST_URL }} --token ${{ inputs.sonar-token }}
         [ -f ${{ steps.ci-py-tests.outputs.mypy-logs }} ] && REPORT_FILES+=(${REPORT_FOLDER}/issues_mypy.json)
 
-        [ -f ${{ steps.ci-py-tests.outputs.black-diff }} ] && ci_sonar_qube --black_diff ${{ steps.ci-py-tests.outputs.black-diff }} --output_file ${REPORT_FOLDER}/issues_black.json --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
+        [ -f ${{ steps.ci-py-tests.outputs.black-diff }} ] && ci_sonar_qube --black_diff ${{ steps.ci-py-tests.outputs.black-diff }} --output_file ${REPORT_FOLDER}/issues_black.json --host ${{ env.SONAR_HOST_URL }} --token ${{ inputs.sonar-token }}
         [ -f ${{ steps.ci-py-tests.outputs.black-diff }} ] && REPORT_FILES+=(${REPORT_FOLDER}/issues_black.json)
 
-        [ -f ${{ steps.ci-py-tests.outputs.isort-diff }} ] && ci_sonar_qube --isort_diff ${{ steps.ci-py-tests.outputs.isort-diff }} --output_file ${REPORT_FOLDER}/issues_isort.json --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
+        [ -f ${{ steps.ci-py-tests.outputs.isort-diff }} ] && ci_sonar_qube --isort_diff ${{ steps.ci-py-tests.outputs.isort-diff }} --output_file ${REPORT_FOLDER}/issues_isort.json --host ${{ env.SONAR_HOST_URL }} --token ${{ inputs.sonar-token }}
         [ -f ${{ steps.ci-py-tests.outputs.isort-diff }} ] && REPORT_FILES+=(${REPORT_FOLDER}/issues_isort.json)
 
         # join the array to string format
@@ -139,12 +143,7 @@ runs:
 
     - name: Add Comment
       if: ${{ inputs.module-lang == 'py' && github.event_name == 'pull_request' }}
-#      uses: unsplash/comment-on-pr@v1.3.1
-#      env:
-#        GITHUB_TOKEN: ${{ inputs.token }}
-#      with:
-#        check_for_duplicate_msg: false
-#        msg: ${{ steps.generate-sq-report.outputs.sq-report }}
+
       uses: thollander/actions-comment-pull-request@v1
       with:
         message: ${{ steps.generate-sq-report.outputs.sq-report }}
@@ -163,5 +162,5 @@ runs:
     - name: Remove IAP tunnel
       if: always()
       shell: bash
-      run: |-
-        kill %1
+      run: |
+        kill ${{ steps.gcloud-tunnel.outputs.pid }}
