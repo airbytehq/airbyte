@@ -7,106 +7,276 @@ package io.airbyte.workers.protocols.airbyte;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.workers.protocols.airbyte.StateDeltaTracker.CapacityExceededException;
+import io.airbyte.workers.protocols.airbyte.StateDeltaTracker.StateHashConflictException;
+import java.util.HashMap;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class AirbyteMessageTrackerTest {
 
-  @Test
-  public void testIncrementsWhenRecord() {
-    final AirbyteMessage message = new AirbyteMessage()
-        .withType(AirbyteMessage.Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(ImmutableMap.of("name", "rudolph"))));
+  private static final String STREAM_1 = "stream1";
+  private static final String STREAM_2 = "stream2";
+  private static final String STREAM_3 = "stream3";
 
-    final AirbyteMessageTracker messageTracker = new AirbyteMessageTracker();
-    messageTracker.acceptFromSource(message);
-    messageTracker.acceptFromSource(message);
-    messageTracker.acceptFromSource(message);
+  private AirbyteMessageTracker messageTracker;
+
+  @Mock
+  private StateDeltaTracker mStateDeltaTracker;
+
+  @BeforeEach
+  public void setup() {
+    this.messageTracker = new AirbyteMessageTracker(mStateDeltaTracker);
+  }
+
+  @Test
+  public void testGetTotalRecordsStatesAndBytesEmitted() {
+    final AirbyteMessage r1 = createRecordMessage(STREAM_1, 123);
+    final AirbyteMessage s1 = createStateMessage(1);
+    final AirbyteMessage s2 = createStateMessage(2);
+
+    messageTracker.acceptFromSource(r1);
+    messageTracker.acceptFromSource(r1);
+    messageTracker.acceptFromSource(r1);
+    messageTracker.acceptFromSource(s1);
+    messageTracker.acceptFromSource(s2);
 
     assertEquals(3, messageTracker.getTotalRecordsEmitted());
-    assertEquals(3 * Jsons.serialize(message.getRecord().getData()).getBytes(Charsets.UTF_8).length, messageTracker.getTotalBytesEmitted());
+    assertEquals(3 * Jsons.serialize(r1.getRecord().getData()).getBytes(Charsets.UTF_8).length, messageTracker.getTotalBytesEmitted());
+    assertEquals(2, messageTracker.getTotalStateMessagesEmitted());
   }
 
   @Test
-  public void testRetainsLatestSourceState() {
-    final JsonNode oldStateValue = Jsons.jsonNode(ImmutableMap.builder().put("lastSync", "1598900000").build());
-    final AirbyteMessage oldStateMessage = new AirbyteMessage()
-        .withType(AirbyteMessage.Type.STATE)
-        .withState(new AirbyteStateMessage().withData(oldStateValue));
+  public void testRetainsLatestSourceAndDestinationState() {
+    final int s1Value = 111;
+    final int s2Value = 222;
+    final int s3Value = 333;
+    final AirbyteMessage s1 = createStateMessage(s1Value);
+    final AirbyteMessage s2 = createStateMessage(s2Value);
+    final AirbyteMessage s3 = createStateMessage(s3Value);
 
-    final JsonNode newStateValue = Jsons.jsonNode(ImmutableMap.builder().put("lastSync", "1598993526").build());
-    final AirbyteMessage newStateMessage = new AirbyteMessage()
-        .withType(AirbyteMessage.Type.STATE)
-        .withState(new AirbyteStateMessage().withData(newStateValue));
-
-    final AirbyteMessageTracker messageTracker = new AirbyteMessageTracker();
-    messageTracker.acceptFromSource(oldStateMessage);
-    messageTracker.acceptFromSource(oldStateMessage);
-    messageTracker.acceptFromSource(newStateMessage);
+    messageTracker.acceptFromSource(s1);
+    messageTracker.acceptFromSource(s2);
+    messageTracker.acceptFromSource(s3);
+    messageTracker.acceptFromDestination(s1);
+    messageTracker.acceptFromDestination(s2);
 
     assertTrue(messageTracker.getSourceOutputState().isPresent());
-    assertEquals(new State().withState(newStateValue), messageTracker.getSourceOutputState().get());
-  }
-
-  // TODO parker: dry up?
-  @Test
-  public void testRetainsLatestDestinationState() {
-    final JsonNode oldStateValue = Jsons.jsonNode(ImmutableMap.builder().put("lastSync", "1598900000").build());
-    final AirbyteMessage oldStateMessage = new AirbyteMessage()
-        .withType(AirbyteMessage.Type.STATE)
-        .withState(new AirbyteStateMessage().withData(oldStateValue));
-
-    final JsonNode newStateValue = Jsons.jsonNode(ImmutableMap.builder().put("lastSync", "1598993526").build());
-    final AirbyteMessage newStateMessage = new AirbyteMessage()
-        .withType(AirbyteMessage.Type.STATE)
-        .withState(new AirbyteStateMessage().withData(newStateValue));
-
-    final AirbyteMessageTracker messageTracker = new AirbyteMessageTracker();
-    messageTracker.acceptFromDestination(oldStateMessage);
-    messageTracker.acceptFromDestination(oldStateMessage);
-    messageTracker.acceptFromDestination(newStateMessage);
+    assertEquals(new State().withState(Jsons.jsonNode(s3Value)), messageTracker.getSourceOutputState().get());
 
     assertTrue(messageTracker.getDestinationOutputState().isPresent());
-    assertEquals(new State().withState(newStateValue), messageTracker.getDestinationOutputState().get());
+    assertEquals(new State().withState(Jsons.jsonNode(s2Value)), messageTracker.getDestinationOutputState().get());
   }
 
   @Test
   public void testReturnEmptyStateIfNoneEverAccepted() {
-    final AirbyteMessageTracker MessageTracker = new AirbyteMessageTracker();
-    assertTrue(MessageTracker.getSourceOutputState().isEmpty());
-    assertTrue(MessageTracker.getDestinationOutputState().isEmpty());
+    assertTrue(messageTracker.getSourceOutputState().isEmpty());
+    assertTrue(messageTracker.getDestinationOutputState().isEmpty());
   }
 
   @Test
-  public void hashStuff() {
-    // final AirbyteMessageTracker messageTracker = new AirbyteMessageTracker();
-    //
-    // final AirbyteMessage stateMessage = new AirbyteMessage().withType(Type.STATE).withState(
-    // new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint",
-    // 20).build())));
-    //
-    // final AirbyteStateMessage state = stateMessage.getState();
-    //
-    // final int hashcode =
-    // Hashing.murmur3_32_fixed().hashBytes(Jsons.serialize(state.getData()).getBytes(Charsets.UTF_8)).hashCode();
-    //
-    // assertTrue(true);
-    //
-    // final ConcurrentLinkedQueue<Integer> queue = new ConcurrentLinkedQueue<>();
-    // final Iterator<Integer> queueIter = queue.;
-    // queue.add(1);
-    // System.out.println(queueIter.next());
-    // queue.add(2);
-    // queue.add(3);
-    // assertTrue(true);
+  public void testEmittedRecordsByStream() {
+    final AirbyteMessage r1 = createRecordMessage(STREAM_1, 1);
+    final AirbyteMessage r2 = createRecordMessage(STREAM_2, 2);
+    final AirbyteMessage r3 = createRecordMessage(STREAM_3, 3);
 
+    messageTracker.acceptFromSource(r1);
+    messageTracker.acceptFromSource(r2);
+    messageTracker.acceptFromSource(r2);
+    messageTracker.acceptFromSource(r3);
+    messageTracker.acceptFromSource(r3);
+    messageTracker.acceptFromSource(r3);
+
+    final Map<String, Long> expected = new HashMap<>();
+    expected.put(STREAM_1, 1L);
+    expected.put(STREAM_2, 2L);
+    expected.put(STREAM_3, 3L);
+
+    assertEquals(expected, messageTracker.getEmittedRecordsByStream());
+  }
+
+  @Test
+  public void testEmittedBytesByStream() {
+    final AirbyteMessage r1 = createRecordMessage(STREAM_1, 1);
+    final AirbyteMessage r2 = createRecordMessage(STREAM_2, 2);
+    final AirbyteMessage r3 = createRecordMessage(STREAM_3, 3);
+
+    final long r1Bytes = Jsons.serialize(r1.getRecord().getData()).getBytes(Charsets.UTF_8).length;
+    final long r2Bytes = Jsons.serialize(r2.getRecord().getData()).getBytes(Charsets.UTF_8).length;
+    final long r3Bytes = Jsons.serialize(r3.getRecord().getData()).getBytes(Charsets.UTF_8).length;
+
+    messageTracker.acceptFromSource(r1);
+    messageTracker.acceptFromSource(r2);
+    messageTracker.acceptFromSource(r2);
+    messageTracker.acceptFromSource(r3);
+    messageTracker.acceptFromSource(r3);
+    messageTracker.acceptFromSource(r3);
+
+    final Map<String, Long> expected = new HashMap<>();
+    expected.put(STREAM_1, r1Bytes);
+    expected.put(STREAM_2, r2Bytes * 2);
+    expected.put(STREAM_3, r3Bytes * 3);
+
+    assertEquals(expected, messageTracker.getEmittedBytesByStream());
+  }
+
+  @Test
+  public void testGetCommittedRecordsByStream() {
+    final AirbyteMessage r1 = createRecordMessage(STREAM_1, 1);
+    final AirbyteMessage r2 = createRecordMessage(STREAM_2, 2);
+    final AirbyteMessage r3 = createRecordMessage(STREAM_3, 3);
+    final AirbyteMessage s1 = createStateMessage(1);
+    final AirbyteMessage s2 = createStateMessage(2);
+
+    messageTracker.acceptFromSource(r1); // should make stream 1 index 0
+    messageTracker.acceptFromSource(r2); // should make stream 2 index 1
+    messageTracker.acceptFromSource(r2);
+    messageTracker.acceptFromSource(s1); // emit state 1
+    messageTracker.acceptFromSource(r1);
+    messageTracker.acceptFromSource(r2);
+    messageTracker.acceptFromDestination(s1); // commit state 1
+    messageTracker.acceptFromSource(r3); // should make stream 3 index 2
+    messageTracker.acceptFromSource(r1);
+    messageTracker.acceptFromSource(s2); // emit state 2
+
+    final Map<Short, Long> countsByIndex = new HashMap<>();
+    final Map<String, Long> expected = new HashMap<>();
+    Mockito.when(mStateDeltaTracker.getCommittedRecordsByStream()).thenReturn(countsByIndex);
+
+    countsByIndex.put((short) 0, 1L);
+    countsByIndex.put((short) 1, 2L);
+    // result only contains counts up to state 1
+    expected.put(STREAM_1, 1L);
+    expected.put(STREAM_2, 2L);
+    assertEquals(expected, messageTracker.getCommittedRecordsByStream().get());
+
+    countsByIndex.clear();
+    expected.clear();
+    messageTracker.acceptFromDestination(s2); // now commit state 2
+    countsByIndex.put((short) 0, 3L);
+    countsByIndex.put((short) 1, 3L);
+    countsByIndex.put((short) 2, 1L);
+    // result updated with counts between state 1 and state 2
+    expected.put(STREAM_1, 3L);
+    expected.put(STREAM_2, 3L);
+    expected.put(STREAM_3, 1L);
+    assertEquals(expected, messageTracker.getCommittedRecordsByStream().get());
+  }
+
+  @Test
+  public void testGetCommittedRecordsByStream_emptyWhenMemoryCapacityExceeded() throws Exception {
+    Mockito.doThrow(new CapacityExceededException("induced exception")).when(mStateDeltaTracker).addState(Mockito.anyInt(), Mockito.anyMap());
+
+    final AirbyteMessage r1 = createRecordMessage(STREAM_1, 1);
+    final AirbyteMessage s1 = createStateMessage(1);
+
+    messageTracker.acceptFromSource(r1);
+    messageTracker.acceptFromSource(s1);
+    messageTracker.acceptFromDestination(s1);
+
+    assertTrue(messageTracker.getCommittedRecordsByStream().isEmpty());
+  }
+
+  @Test
+  public void testGetCommittedRecordsByStream_emptyWhenStateHashConflict() throws Exception {
+    Mockito.doThrow(new StateHashConflictException("induced exception")).when(mStateDeltaTracker).commitStateHash(Mockito.anyInt());
+
+    final AirbyteMessage r1 = createRecordMessage(STREAM_1, 1);
+    final AirbyteMessage s1 = createStateMessage(1);
+
+    messageTracker.acceptFromSource(r1);
+    messageTracker.acceptFromSource(s1);
+    messageTracker.acceptFromDestination(s1);
+
+    assertTrue(messageTracker.getCommittedRecordsByStream().isEmpty());
+  }
+
+  @Test
+  public void testTotalRecordsCommitted() {
+    final AirbyteMessage r1 = createRecordMessage(STREAM_1, 1);
+    final AirbyteMessage r2 = createRecordMessage(STREAM_2, 2);
+    final AirbyteMessage r3 = createRecordMessage(STREAM_3, 3);
+    final AirbyteMessage s1 = createStateMessage(1);
+    final AirbyteMessage s2 = createStateMessage(2);
+
+    messageTracker.acceptFromSource(r1);
+    messageTracker.acceptFromSource(r2);
+    messageTracker.acceptFromSource(r2);
+    messageTracker.acceptFromSource(s1); // emit state 1
+    messageTracker.acceptFromSource(r1);
+    messageTracker.acceptFromSource(r2);
+    messageTracker.acceptFromDestination(s1); // commit state 1
+    messageTracker.acceptFromSource(r3);
+    messageTracker.acceptFromSource(r1);
+    messageTracker.acceptFromSource(s2); // emit state 2
+
+    final Map<Short, Long> countsByIndex = new HashMap<>();
+    Mockito.when(mStateDeltaTracker.getCommittedRecordsByStream()).thenReturn(countsByIndex);
+
+    countsByIndex.put((short) 0, 1L);
+    countsByIndex.put((short) 1, 2L);
+    // result only contains counts up to state 1
+    assertEquals(3L, messageTracker.getTotalRecordsCommitted().get());
+
+    countsByIndex.clear();
+    messageTracker.acceptFromDestination(s2); // now commit state 2
+    countsByIndex.put((short) 0, 3L);
+    countsByIndex.put((short) 1, 3L);
+    countsByIndex.put((short) 2, 1L);
+    // result updated with counts between state 1 and state 2
+    assertEquals(7L, messageTracker.getTotalRecordsCommitted().get());
+  }
+
+  @Test
+  public void testGetTotalRecordsCommitted_emptyWhenMemoryCapacityExceeded() throws Exception {
+    Mockito.doThrow(new CapacityExceededException("induced exception")).when(mStateDeltaTracker).addState(Mockito.anyInt(), Mockito.anyMap());
+
+    final AirbyteMessage r1 = createRecordMessage(STREAM_1, 1);
+    final AirbyteMessage s1 = createStateMessage(1);
+
+    messageTracker.acceptFromSource(r1);
+    messageTracker.acceptFromSource(s1);
+    messageTracker.acceptFromDestination(s1);
+
+    assertTrue(messageTracker.getTotalRecordsCommitted().isEmpty());
+  }
+
+  @Test
+  public void testGetTotalRecordsCommitted_emptyWhenStateHashConflict() throws Exception {
+    Mockito.doThrow(new StateHashConflictException("induced exception")).when(mStateDeltaTracker).commitStateHash(Mockito.anyInt());
+
+    final AirbyteMessage r1 = createRecordMessage(STREAM_1, 1);
+    final AirbyteMessage s1 = createStateMessage(1);
+
+    messageTracker.acceptFromSource(r1);
+    messageTracker.acceptFromSource(s1);
+    messageTracker.acceptFromDestination(s1);
+
+    assertTrue(messageTracker.getTotalRecordsCommitted().isEmpty());
+  }
+
+  private AirbyteMessage createRecordMessage(final String streamName, final int recordData) {
+    return new AirbyteMessage()
+        .withType(AirbyteMessage.Type.RECORD)
+        .withRecord(new AirbyteRecordMessage().withStream(streamName).withData(Jsons.jsonNode(recordData)));
+  }
+
+  private AirbyteMessage createStateMessage(final int stateData) {
+    return new AirbyteMessage()
+        .withType(AirbyteMessage.Type.STATE)
+        .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(stateData)));
   }
 
 }

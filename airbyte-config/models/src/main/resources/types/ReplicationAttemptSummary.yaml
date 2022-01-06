@@ -9,31 +9,36 @@ required:
   - bytesSynced
   - startTime
   - endTime
+  - totalRecordsEmitted
+  - streamNameToRecordsEmitted
+  - streamNameToBytesEmitted
+  - totalStateMessagesEmitted
 additionalProperties: true
 properties:
   status:
     "$ref": ReplicationStatus.yaml
-  recordsSynced:
+  recordsSynced: # TODO (parker) remove in favor of totalRecordsEmitted
     type: integer
     minValue: 0
-  bytesSynced:
+  bytesSynced: # TODO (parker) should we also remove this in favor of a better-named 'totalBytesEmitted' field?
     type: integer
     minValue: 0
   startTime:
     type: integer
   endTime:
     type: integer
-  totalRecordsEmitted: # TODO make required
+  totalRecordsEmitted:
     type: integer
     minValue: 0
+  streamNameToRecordsEmitted:
+    type: object
+  totalStateMessagesEmitted:
+    type: integer
+    minValue: 0
+  streamNameToBytesEmitted:
+    type: object
   totalRecordsCommitted:
     type: integer
     minValue: 0
-  streamNameToRecordsEmitted: # TODO make required
-    type: object
   streamNameToRecordsCommitted:
-    type: object
-  totalStateMessagesEmitted: # TODO make required
-    type: integer
-  streamNameToBytesEmitted: # TODO make required
     type: object

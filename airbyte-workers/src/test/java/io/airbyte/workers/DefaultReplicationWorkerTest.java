@@ -29,6 +29,9 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.config.State;
+import io.airbyte.config.StreamNameToBytesEmitted;
+import io.airbyte.config.StreamNameToRecordsCommitted;
+import io.airbyte.config.StreamNameToRecordsEmitted;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
@@ -44,6 +47,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -245,6 +249,11 @@ class DefaultReplicationWorkerTest {
     when(messageTracker.getTotalRecordsEmitted()).thenReturn(12L);
     when(messageTracker.getTotalBytesEmitted()).thenReturn(100L);
     when(messageTracker.getDestinationOutputState()).thenReturn(Optional.of(new State().withState(expectedState)));
+    when(messageTracker.getEmittedBytesByStream()).thenReturn(Collections.singletonMap("stream1", 100L));
+    when(messageTracker.getEmittedRecordsByStream()).thenReturn(Collections.singletonMap("stream1", 12L));
+    when(messageTracker.getCommittedRecordsByStream()).thenReturn(Optional.of(Collections.singletonMap("stream1", 6L)));
+    when(messageTracker.getTotalRecordsCommitted()).thenReturn(Optional.of(6L));
+    when(messageTracker.getTotalStateMessagesEmitted()).thenReturn(3L);
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -259,7 +268,13 @@ class DefaultReplicationWorkerTest {
         .withReplicationAttemptSummary(new ReplicationAttemptSummary()
             .withRecordsSynced(12L)
             .withBytesSynced(100L)
-            .withStatus(ReplicationStatus.COMPLETED))
+            .withStatus(ReplicationStatus.COMPLETED)
+            .withStreamNameToBytesEmitted(new StreamNameToBytesEmitted().withAdditionalProperty("stream1", 100L))
+            .withStreamNameToRecordsEmitted(new StreamNameToRecordsEmitted().withAdditionalProperty("stream1", 12L))
+            .withStreamNameToRecordsCommitted(new StreamNameToRecordsCommitted().withAdditionalProperty("stream1", 6L))
+            .withTotalRecordsCommitted(6L)
+            .withTotalRecordsEmitted(12L)
+            .withTotalStateMessagesEmitted(3L))
         .withOutputCatalog(syncInput.getCatalog())
         .withState(new State().withState(expectedState));
 

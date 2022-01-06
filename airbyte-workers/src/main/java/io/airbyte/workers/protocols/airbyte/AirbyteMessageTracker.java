@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.protocols.airbyte;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -15,11 +16,11 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.workers.protocols.airbyte.StateDeltaTracker.CapacityExceededException;
-import java.util.ArrayList;
+import io.airbyte.workers.protocols.airbyte.StateDeltaTracker.StateHashConflictException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -29,8 +30,8 @@ public class AirbyteMessageTracker implements MessageTracker {
 
   private final AtomicReference<State> sourceOutputState;
   private final AtomicReference<State> destinationOutputState;
+  private final AtomicLong totalEmittedStateMessages;
   private final Map<Short, Long> runningCountByStream;
-  private final List<Integer> orderedStateHashes;
   private final HashFunction hashFunction;
   private final BiMap<String, Short> streamIndexByName;
   private final Map<Short, Long> totalBytesEmittedByStream;
@@ -38,22 +39,30 @@ public class AirbyteMessageTracker implements MessageTracker {
   private final StateDeltaTracker stateDeltaTracker;
 
   private short nextStreamIndex;
-  private short nextStateIndexToCommit;
-  private boolean exceededDeltaTrackerCapacity;
+
+  /**
+   * If the StateDeltaTracker throws an exception, this flag is set to true and committed counts are
+   * not returned.
+   */
+  private boolean unreliableCommittedCounts;
 
   public AirbyteMessageTracker() {
+    this(new StateDeltaTracker(10L * 1024L * 1024L * 1024L)); // 10 GiB memory limit, arbitrary TODO what should be set here?)
+  }
+
+  @VisibleForTesting
+  protected AirbyteMessageTracker(final StateDeltaTracker stateDeltaTracker) {
     this.sourceOutputState = new AtomicReference<>();
     this.destinationOutputState = new AtomicReference<>();
+    this.totalEmittedStateMessages = new AtomicLong(0L);
     this.runningCountByStream = new HashMap<>();
-    this.orderedStateHashes = new ArrayList<>();
     this.streamIndexByName = HashBiMap.create();
     this.hashFunction = Hashing.murmur3_32_fixed();
     this.totalBytesEmittedByStream = new HashMap<>();
     this.totalRecordsEmittedByStream = new HashMap<>();
-    this.stateDeltaTracker = new StateDeltaTracker(10 * 1024 * 1024 * 1024); // 10 GiB memory limit, arbitrary TODO what should be set here?
+    this.stateDeltaTracker = stateDeltaTracker;
     this.nextStreamIndex = 0;
-    this.nextStateIndexToCommit = 0;
-    this.exceededDeltaTrackerCapacity = false;
+    this.unreliableCommittedCounts = false;
   }
 
   @Override
@@ -74,7 +83,8 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   /**
-   * When a source emits a record, increment the running record count, the total record count, and the total byte count for the record's stream.
+   * When a source emits a record, increment the running record count, the total record count, and the
+   * total byte count for the record's stream.
    */
   private void handleSourceEmittedRecord(final AirbyteRecordMessage recordMessage) {
     final short streamIndex = getStreamIndex(recordMessage.getStream());
@@ -92,41 +102,43 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   /**
-   * When a source emits a state, persist the current running count per stream to the {@link StateDeltaTracker}. Then, reset the running count per
-   * stream so that new counts can start recording for the next state. Also add the state to list so that state order is tracked correctly.
+   * When a source emits a state, persist the current running count per stream to the
+   * {@link StateDeltaTracker}. Then, reset the running count per stream so that new counts can start
+   * recording for the next state. Also add the state to list so that state order is tracked
+   * correctly.
    */
   private void handleSourceEmittedState(final AirbyteStateMessage stateMessage) {
     sourceOutputState.set(new State().withState(stateMessage.getData()));
+    totalEmittedStateMessages.incrementAndGet();
     final int stateHash = getStateHashCode(stateMessage);
     try {
-      if (!exceededDeltaTrackerCapacity) {
+      if (!unreliableCommittedCounts) {
         stateDeltaTracker.addState(stateHash, runningCountByStream);
       }
     } catch (final CapacityExceededException e) {
-      log.warn("Exceeded stateDeltaTracker capacity, no longer able to compute committed record counts");
-      exceededDeltaTrackerCapacity = true;
+      log.error("Exceeded stateDeltaTracker capacity, no longer able to compute committed record counts", e);
+      unreliableCommittedCounts = true;
     }
     runningCountByStream.clear();
-    orderedStateHashes.add(stateHash);
   }
 
   /**
-   * When a destination emits a state, mark all uncommitted states up to and including this state as committed in the {@link StateDeltaTracker}. Also
-   * record this state as the last committed state.
+   * When a destination emits a state, mark all uncommitted states up to and including this state as
+   * committed in the {@link StateDeltaTracker}. Also record this state as the last committed state.
    */
   private void handleDestinationEmittedState(final AirbyteStateMessage stateMessage) {
     destinationOutputState.set(new State().withState(stateMessage.getData()));
-
-    final int emittedStateHash = getStateHashCode(stateMessage);
-    int nextStateHash;
-
-    // do-while because we want to execute the loop body exactly once in cases where the next state hash
-    // to commit is the emitted state hash.
-    do {
-      nextStateHash = orderedStateHashes.get(nextStateIndexToCommit);
-      stateDeltaTracker.commitStateHash(nextStateHash);
-      nextStateIndexToCommit++;
-    } while (nextStateHash != emittedStateHash);
+    try {
+      if (!unreliableCommittedCounts) {
+        stateDeltaTracker.commitStateHash(getStateHashCode(stateMessage));
+      }
+    } catch (final StateHashConflictException e) {
+      log.error("State hash conflict detected, no longer able to compute committed record counts", e);
+      unreliableCommittedCounts = true;
+    } catch (final CapacityExceededException e) {
+      log.error("Exceeded stateDeltaTracker capacity, no longer able to compute committed record counts", e);
+      unreliableCommittedCounts = true;
+    }
   }
 
   private short getStreamIndex(final String streamName) {
@@ -152,22 +164,21 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   /**
-   * Fetch committed stream index to record count from the {@link StateDeltaTracker}. Then, swap out stream indices for stream names.
-   * If the delta tracker has exceeded its capacity, return empty because committed record counts cannot be reliably computed.
+   * Fetch committed stream index to record count from the {@link StateDeltaTracker}. Then, swap out
+   * stream indices for stream names. If the delta tracker has exceeded its capacity, return empty
+   * because committed record counts cannot be reliably computed.
    */
   @Override
   public Optional<Map<String, Long>> getCommittedRecordsByStream() {
-    if (exceededDeltaTrackerCapacity) {
+    if (unreliableCommittedCounts) {
       return Optional.empty();
     }
-    final Map<Short, Long> streamIndexToCommittedRecordCount = this.stateDeltaTracker.getStreamIndexToTotalRecordCount(true);
+    final Map<Short, Long> streamIndexToCommittedRecordCount = this.stateDeltaTracker.getCommittedRecordsByStream();
     return Optional.of(
         streamIndexToCommittedRecordCount.entrySet().stream().collect(
             Collectors.toMap(
                 entry -> streamIndexByName.inverse().get(entry.getKey()),
-                Map.Entry::getValue
-            ))
-    );
+                Map.Entry::getValue)));
   }
 
   /**
@@ -177,8 +188,17 @@ public class AirbyteMessageTracker implements MessageTracker {
   public Map<String, Long> getEmittedRecordsByStream() {
     return totalRecordsEmittedByStream.entrySet().stream().collect(Collectors.toMap(
         entry -> streamIndexByName.inverse().get(entry.getKey()),
-        Map.Entry::getValue
-    ));
+        Map.Entry::getValue));
+  }
+
+  /**
+   * Swap out stream indices for stream names and return total bytes emitted by stream.
+   */
+  @Override
+  public Map<String, Long> getEmittedBytesByStream() {
+    return totalBytesEmittedByStream.entrySet().stream().collect(Collectors.toMap(
+        entry -> streamIndexByName.inverse().get(entry.getKey()),
+        Map.Entry::getValue));
   }
 
   /**
@@ -198,14 +218,20 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   /**
-   * Compute sum of committed record counts across all streams.
-   * If the delta tracker has exceeded its capacity, return empty because committed record counts cannot be reliably computed.
+   * Compute sum of committed record counts across all streams. If the delta tracker has exceeded its
+   * capacity, return empty because committed record counts cannot be reliably computed.
    */
   @Override
   public Optional<Long> getTotalRecordsCommitted() {
-    if (exceededDeltaTrackerCapacity) {
+    if (unreliableCommittedCounts) {
       return Optional.empty();
     }
-    return Optional.of(stateDeltaTracker.getStreamIndexToTotalRecordCount(true).values().stream().reduce(0L, Long::sum));
+    return Optional.of(stateDeltaTracker.getCommittedRecordsByStream().values().stream().reduce(0L, Long::sum));
   }
+
+  @Override
+  public Long getTotalStateMessagesEmitted() {
+    return totalEmittedStateMessages.get();
+  }
+
 }
