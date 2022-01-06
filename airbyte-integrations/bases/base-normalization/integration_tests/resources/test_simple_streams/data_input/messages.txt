@@ -42,6 +42,7 @@
 {"type":"RECORD","record":{"stream":"pos_dedup_cdcx","data":{"id":5,"name":"lotus","_ab_cdc_updated_at":1623850868371,"_ab_cdc_lsn":27010048,"_ab_cdc_log_pos": 33280,"_ab_cdc_deleted_at":null},"emitted_at":1623861660}}
 {"type":"RECORD","record":{"stream":"pos_dedup_cdcx","data":{"id":5,"name":"lily","_ab_cdc_updated_at":1623850868371,"_ab_cdc_lsn":27010232,"_ab_cdc_log_pos": 33281,"_ab_cdc_deleted_at":null},"emitted_at":1623861660}}
 
+<<<<<<< HEAD
 {"type": "RECORD", "record": {"stream": "1_prefix_startwith_number", "emitted_at": 1602637589000, "data": { "id": 1, "date": "2020-08-29", "text": "hi 1"}}}
 {"type": "RECORD", "record": {"stream": "1_prefix_startwith_number", "emitted_at": 1602637689100, "data": { "id": 1, "date": "2020-08-30", "text": "hi 2"}}}
 {"type": "RECORD", "record": {"stream": "1_prefix_startwith_number", "emitted_at": 1602637789200, "data": { "id": 2, "date": "2020-08-31", "text": "hi 1"}}}
@@ -49,3 +50,6 @@
 {"type": "RECORD", "record": {"stream": "1_prefix_startwith_number", "emitted_at": 1602637989400, "data": { "id": 2, "date": "2020-09-01", "text": "hi 3"}}}
 {"type": "RECORD", "record": {"stream": "1_prefix_startwith_number", "emitted_at": 1602637990700, "data": { "id": 1, "date": "2020-09-01", "text": "hi 3"}}}
 {"type": "RECORD", "record": {"stream": "1_prefix_startwith_number", "emitted_at": 1602637990800, "data": { "id": 2, "date": "2020-09-01", "text": "hi 4"}}}
+=======
+{"type":"RECORD","record":{"stream":"multiple_column_names_conflicts","data":{"id":1,"User Id":"chris","user_id":42,"User id":300,"user id": 102,"UserId":101},"emitted_at":1623959926}}
+>>>>>>> master

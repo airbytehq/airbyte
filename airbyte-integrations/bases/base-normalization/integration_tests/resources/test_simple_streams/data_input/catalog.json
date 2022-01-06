@@ -96,6 +96,9 @@
           "properties": {
             "id": {
               "type": "integer"
+            },
+            "_ab_cdc_updated_at": {
+              "type": ["null", "number"]
             }
           }
         },
@@ -136,7 +139,7 @@
         "default_cursor_field": []
       },
       "sync_mode": "incremental",
-      "cursor_field": [],
+      "cursor_field": ["_ab_cdc_lsn"],
       "destination_sync_mode": "append_dedup",
       "primary_key": [["id"]]
     },
@@ -177,13 +180,18 @@
     },
     {
       "stream": {
+<<<<<<< HEAD
         "name": "1_prefix_startwith_number",
+=======
+        "name": "multiple_column_names_conflicts",
+>>>>>>> master
         "json_schema": {
           "type": ["null", "object"],
           "properties": {
             "id": {
               "type": "integer"
             },
+<<<<<<< HEAD
             "date": {
               "type": "string",
               "format": "date"
@@ -199,6 +207,34 @@
       },
       "sync_mode": "incremental",
       "cursor_field": ["date"],
+=======
+            "User Id": {
+              "type": ["string", "null"]
+            },
+            "user_id": {
+              "type": ["null", "number"]
+            },
+            "User id": {
+              "type": ["null", "number"]
+            },
+            "user id": {
+              "type": ["null", "number"]
+            },
+            "User@Id": {
+              "type": ["null", "string"]
+            },
+            "UserId": {
+              "type": ["null", "number"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+>>>>>>> master
       "destination_sync_mode": "append_dedup",
       "primary_key": [["id"]]
     }

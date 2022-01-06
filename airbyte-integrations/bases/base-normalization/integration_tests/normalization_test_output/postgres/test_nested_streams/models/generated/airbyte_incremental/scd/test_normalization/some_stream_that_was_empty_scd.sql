@@ -56,10 +56,10 @@ scd_data as (
     -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
     select
       {{ dbt_utils.surrogate_key([
-            adapter.quote('id'),
+      adapter.quote('id'),
       ]) }} as _airbyte_unique_key,
-        {{ adapter.quote('id') }},
-        {{ adapter.quote('date') }},
+      {{ adapter.quote('id') }},
+      {{ adapter.quote('date') }},
       {{ adapter.quote('date') }} as _airbyte_start_at,
       lag({{ adapter.quote('date') }}) over (
         partition by {{ adapter.quote('id') }}
@@ -85,7 +85,10 @@ dedup_data as (
         -- we need to ensure de-duplicated rows for merge/update queries
         -- additionally, we generate a unique key for the scd table
         row_number() over (
-            partition by _airbyte_unique_key, _airbyte_start_at, _airbyte_emitted_at
+            partition by
+                _airbyte_unique_key,
+                _airbyte_start_at,
+                _airbyte_emitted_at
             order by _airbyte_active_row desc, _airbyte_ab_id
         ) as _airbyte_row_num,
         {{ dbt_utils.surrogate_key([
@@ -99,8 +102,8 @@ dedup_data as (
 select
     _airbyte_unique_key,
     _airbyte_unique_key_scd,
-        {{ adapter.quote('id') }},
-        {{ adapter.quote('date') }},
+    {{ adapter.quote('id') }},
+    {{ adapter.quote('date') }},
     _airbyte_start_at,
     _airbyte_end_at,
     _airbyte_active_row,
