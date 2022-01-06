@@ -121,7 +121,7 @@ runs:
 
     - name: Add Comment
       if: ${{ inputs.module-lang == 'py' }}
-      uses: unsplash/comment-on-pr@v1.3.0
+      uses: unsplash/comment-on-pr@v1.3.1
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       with:
