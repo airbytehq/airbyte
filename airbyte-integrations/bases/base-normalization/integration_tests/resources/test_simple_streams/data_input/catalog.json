@@ -96,6 +96,9 @@
           "properties": {
             "id": {
               "type": "integer"
+            },
+            "_ab_cdc_updated_at": {
+              "type": ["null", "number"]
             }
           }
         },
@@ -136,7 +139,7 @@
         "default_cursor_field": []
       },
       "sync_mode": "incremental",
-      "cursor_field": [],
+      "cursor_field": ["_ab_cdc_lsn"],
       "destination_sync_mode": "append_dedup",
       "primary_key": [["id"]]
     },
