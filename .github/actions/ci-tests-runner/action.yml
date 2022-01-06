@@ -120,13 +120,18 @@ runs:
         echo "::set-output name=sq-report::$body"
 
     - name: Add Comment
-      if: ${{ inputs.module-lang == 'py' }}
-      uses: unsplash/comment-on-pr@v1.3.1
-      env:
-        GITHUB_TOKEN: ${{ inputs.token }}
+      if: ${{ inputs.module-lang == 'py' && github.event_name == 'pull_request' }}
+#      uses: unsplash/comment-on-pr@v1.3.1
+#      env:
+#        GITHUB_TOKEN: ${{ inputs.token }}
+#      with:
+#        check_for_duplicate_msg: false
+#        msg: ${{ steps.generate-sq-report.outputs.sq-report }}
+      uses: thollander/actions-comment-pull-request@v1
       with:
-        check_for_duplicate_msg: false
-        msg: ${{ steps.generate-sq-report.outputs.sq-report }}
+        message: ${{ steps.generate-sq-report.outputs.sq-report }}
+        GITHUB_TOKEN: ${{ inputs.token }}
+
 
     - name: Remove SonarQube Project
       if: ${{ inputs.remove-sonar-project == true }}

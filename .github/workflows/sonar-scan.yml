@@ -1,7 +1,7 @@
 name: Sonar Scan
 on:
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [opened, synchronize, reopened, closed, ready_for_review]
 
 jobs:
 
@@ -30,6 +30,7 @@ jobs:
           echo "::set-output name=changed-modules::{ \"include\": $CHANGES }"
 
   run-ci-tests:
+    if: github.event.pull_request.draft == false
     needs: detect-changes
     name:  Tests for ${{ matrix.module }}
     runs-on: ubuntu-latest
