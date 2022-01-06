@@ -397,6 +397,7 @@ class BigQueryDestinationTest {
   }
 
   private static Stream<Arguments> datasetIdResetterProvider() {
+    // parameterized test with two dataset-id patterns: `dataset_id` and `project-id:dataset_id`
     return Stream.of(
       Arguments.arguments(new DatasetIdResetter(config -> {})),
       Arguments.arguments(new DatasetIdResetter(
