@@ -75,7 +75,7 @@ runs:
       shell: bash
       id: external-issues
       env:
-        SONAR_HOST_URL: "localhost:3300"
+        SONAR_HOST_URL: "http://localhost:3300/"
       working-directory: ${{ inputs.module-folder }}
       run: |
         REPORT_FOLDER=reports
@@ -98,7 +98,7 @@ runs:
       shell: bash
       id: create-sq-project
       env:
-        SONAR_HOST_URL: "localhost:3300"
+        SONAR_HOST_URL: "http://localhost:3300/"
       run: |
         ci_sonar_qube --pr ${{ inputs.pull-request-id }} --create --module ${{ inputs.module-name }} --host ${{ env.SONAR_HOST_URL }} --token ${{ inputs.sonar-token }}
         echo "::set-output name=sq_project_name::$(ci_sonar_qube --pr ${{ inputs.pull-request-id }} --print_key --module ${{ inputs.module-name }})"
@@ -110,7 +110,7 @@ runs:
       env:
         SONAR_TOKEN: ${{ inputs.sonar-token }}
         # SONAR_HOST_URL: ${{ inputs.sonar-host }}
-        SONAR_HOST_URL: "localhost:3300"
+        SONAR_HOST_URL: "http://localhost:3300/"
       with:
           projectBaseDir: ${{ inputs.module-folder }}
           args: >
@@ -129,7 +129,7 @@ runs:
       shell: bash
       id: generate-sq-report
       env:
-        SONAR_HOST_URL: "localhost:3300"
+        SONAR_HOST_URL: "http://localhost:3300/"
       run: |
         # delay because SQ needs time for processing of all input data
         sleep 10
@@ -155,7 +155,7 @@ runs:
       shell: bash
       id: remove-sq-project
       env:
-        SONAR_HOST_URL: "localhost:3300"
+        SONAR_HOST_URL: "http://localhost:3300/"
       run: |
         ci_sonar_qube --pr ${{ inputs.pull-request-id }} --remove --module ${{ inputs.module-name }} --host ${{ env.SONAR_HOST_URL }} --token ${{ inputs.sonar-token }}
 
