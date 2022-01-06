@@ -9,5 +9,6 @@ sources:
   - name: airbyte_raw_dedup_cdc_excluded
   - name: airbyte_raw_dedup_exchange_rate
   - name: airbyte_raw_exchange_rate
+  - name: airbyte_raw_multiple_column_names_conflicts
   - name: airbyte_raw_pos_dedup_cdcx
   - name: airbyte_raw_renamed_dedup_cdc_excluded

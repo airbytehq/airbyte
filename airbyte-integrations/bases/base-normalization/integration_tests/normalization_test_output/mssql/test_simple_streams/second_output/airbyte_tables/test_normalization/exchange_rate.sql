@@ -28,7 +28,7 @@ select
     json_value(_airbyte_data, ''$."currency"'') as currency,
     json_value(_airbyte_data, ''$."date"'') as "date",
     json_value(_airbyte_data, ''$."timestamp_col"'') as timestamp_col,
-    json_value(_airbyte_data, ''$."HKD@spéçiäl & characters"'') as "hkd@spéçiäl & characters",
+    json_value(_airbyte_data, ''$."HKD@spéçiäl & characters"'') as "HKD@spéçiäl & characters",
     json_value(_airbyte_data, ''$."HKD_special___characters"'') as hkd_special___characters,
     json_value(_airbyte_data, ''$."NZD"'') as nzd,
     json_value(_airbyte_data, ''$."USD"'') as usd,
@@ -51,9 +51,9 @@ select
     VARCHAR(max)) as currency,
     try_parse(nullif("date", '''') as date) as "date",
     try_parse(nullif(timestamp_col, '''') as datetime) as timestamp_col,
-    cast("hkd@spéçiäl & characters" as 
+    cast("HKD@spéçiäl & characters" as 
     float
-) as "hkd@spéçiäl & characters",
+) as "HKD@spéçiäl & characters",
     cast(hkd_special___characters as 
     VARCHAR(max)) as hkd_special___characters,
     cast(nzd as 
@@ -83,7 +83,7 @@ select
     VARCHAR(max)), ''''), ''-'', coalesce(cast(currency as 
     VARCHAR(max)), ''''), ''-'', coalesce(cast("date" as 
     VARCHAR(max)), ''''), ''-'', coalesce(cast(timestamp_col as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast("hkd@spéçiäl & characters" as 
+    VARCHAR(max)), ''''), ''-'', coalesce(cast("HKD@spéçiäl & characters" as 
     VARCHAR(max)), ''''), ''-'', coalesce(cast(hkd_special___characters as 
     VARCHAR(max)), ''''), ''-'', coalesce(cast(nzd as 
     VARCHAR(max)), ''''), ''-'', coalesce(cast(usd as 
@@ -101,7 +101,7 @@ select
     currency,
     "date",
     timestamp_col,
-    "hkd@spéçiäl & characters",
+    "HKD@spéçiäl & characters",
     hkd_special___characters,
     nzd,
     usd,

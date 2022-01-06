@@ -314,15 +314,17 @@ class StreamProcessor(object):
         field_names = set()
         for field in fields:
             field_name = self.name_transformer.normalize_column_name(field, in_jinja=False)
+            field_name_lookup = self.name_transformer.normalize_column_identifier_case_for_lookup(field_name)
             jinja_name = self.name_transformer.normalize_column_name(field, in_jinja=True)
-            if field_name in field_names:
+            if field_name_lookup in field_names:
                 # TODO handle column name duplicates or collisions deterministically in this stream
                 for i in range(1, 1000):
                     field_name = self.name_transformer.normalize_column_name(f"{field}_{i}", in_jinja=False)
+                    field_name_lookup = self.name_transformer.normalize_column_identifier_case_for_lookup(field_name)
                     jinja_name = self.name_transformer.normalize_column_name(f"{field}_{i}", in_jinja=True)
-                    if field_name not in field_names:
+                    if field_name_lookup not in field_names:
                         break
-            field_names.add(field_name)
+            field_names.add(field_name_lookup)
             result[field] = (field_name, jinja_name)
         return result
 
@@ -706,8 +708,10 @@ where 1 = 1
             cdc_cols += f", {cast_begin}{col_cdc_log_pos}{cast_as}" + "{{ dbt_utils.type_string() }}" + f"{cast_end}"
             quoted_cdc_cols += f", {quoted_col_cdc_log_pos}"
 
-        if self.destination_type == DestinationType.BIGQUERY and is_number(
-            self.properties[self.get_cursor_field_property_name(column_names)]["type"]
+        if (
+            self.destination_type == DestinationType.BIGQUERY
+            and self.get_cursor_field_property_name(column_names) != self.airbyte_emitted_at
+            and is_number(self.properties[self.get_cursor_field_property_name(column_names)]["type"])
         ):
             # partition by float columns is not allowed in BigQuery, cast it to string
             airbyte_start_at_string = (

@@ -11,7 +11,7 @@ select
         'currency',
         adapter.quote('date'),
         'timestamp_col',
-        adapter.quote('hkd@spéçiäl & characters'),
+        adapter.quote('HKD@spéçiäl & characters'),
         'hkd_special___characters',
         'nzd',
         'usd',

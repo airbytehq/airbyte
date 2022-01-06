@@ -28,7 +28,7 @@ select
     currency,
     "date",
     timestamp_col,
-    "hkd@spéçiäl & characters",
+    "HKD@spéçiäl & characters",
     hkd_special___characters,
     nzd,
     usd,

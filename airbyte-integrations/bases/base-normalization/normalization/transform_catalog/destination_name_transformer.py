@@ -210,7 +210,8 @@ class DestinationNameTransformer:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()
         elif self.destination_type.value == DestinationType.MSSQL.value:
-            result = input_name.lower()
+            if not is_quoted and not self.needs_quotes(input_name):
+                result = input_name.lower()
         elif self.destination_type.value == DestinationType.ORACLE.value:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()
@@ -222,6 +223,43 @@ class DestinationNameTransformer:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result
 
+    def normalize_column_identifier_case_for_lookup(self, input_name: str, is_quoted: bool = False) -> str:
+        """
+        This function adds an additional normalization regarding the column name casing to determine if multiple columns
+        are in collisions. On certain destinations/settings, case sensitivity matters, in others it does not.
+        We separate this from standard identifier normalization "__normalize_identifier_case",
+        so the generated SQL queries are keeping the original casing from the catalog.
+        But we still need to determine if casing matters or not, thus by using this function.
+        """
+        result = input_name
+        if self.destination_type.value == DestinationType.BIGQUERY.value:
+            # Columns are considered identical regardless of casing
+            result = input_name.lower()
+        elif self.destination_type.value == DestinationType.REDSHIFT.value:
+            # Columns are considered identical regardless of casing (even quoted ones)
+            result = input_name.lower()
+        elif self.destination_type.value == DestinationType.POSTGRES.value:
+            if not is_quoted and not self.needs_quotes(input_name):
+                result = input_name.lower()
+        elif self.destination_type.value == DestinationType.SNOWFLAKE.value:
+            if not is_quoted and not self.needs_quotes(input_name):
+                result = input_name.upper()
+        elif self.destination_type.value == DestinationType.MYSQL.value:
+            # Columns are considered identical regardless of casing (even quoted ones)
+            result = input_name.lower()
+        elif self.destination_type.value == DestinationType.MSSQL.value:
+            # Columns are considered identical regardless of casing (even quoted ones)
+            result = input_name.lower()
+        elif self.destination_type.value == DestinationType.ORACLE.value:
+            if not is_quoted and not self.needs_quotes(input_name):
+                result = input_name.lower()
+            else:
+                result = input_name.upper()
+        elif self.destination_type.value == DestinationType.CLICKHOUSE.value:
+            pass
+        else:
+            raise KeyError(f"Unknown destination type {self.destination_type}")
+        return result
 
 # Static Functions
 
