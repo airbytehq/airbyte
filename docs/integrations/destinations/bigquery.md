@@ -114,7 +114,16 @@ This is the recommended configuration for uploading data to BigQuery. It works b
   * See [this](https://cloud.google.com/storage/docs/creating-buckets) for instructions on how to create a GCS bucket. The bucket cannot have a retention policy. Set Protection Tools to none or Object versioning.
 * **HMAC Key Access ID**
   * See [this](https://cloud.google.com/storage/docs/authentication/managing-hmackeys) on how to generate an access key. For more information on hmac keys please reference the [GCP docs](https://cloud.google.com/storage/docs/authentication/hmackeys)
-  * We recommend creating an Airbyte-specific user or service account. This user or account will require the following permissions for the bucket: `Storage Object Admin` and `Storage Admin`. You can set those by going to the permissions tab in the GCS bucket and adding the appropriate the email address of the service account or user and adding the aforementioned permissions.
+  * We recommend creating an Airbyte-specific user or service account. This user or account will require the following permissions for the bucket:
+    ```
+    storage.multipartUploads.abort
+    storage.multipartUploads.create
+    storage.objects.create
+    storage.objects.delete
+    storage.objects.get
+    storage.objects.list
+    ```
+    You can set those by going to the permissions tab in the GCS bucket and adding the appropriate the email address of the service account or user and adding the aforementioned permissions.
 * **Secret Access Key**
   * Corresponding key to the above access ID.
 * Make sure your GCS bucket is accessible from the machine running Airbyte. This depends on your networking setup. The easiest way to verify if Airbyte is able to connect to your GCS bucket is via the check connection tool in the UI.
