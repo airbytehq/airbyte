@@ -6,6 +6,7 @@ package io.airbyte.config;
 
 import static org.mockito.Mockito.when;
 
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.AirbyteVersion;
 import java.nio.file.Paths;
 import java.util.List;
@@ -202,6 +203,16 @@ class EnvConfigsTest {
 
     when(function.apply(EnvConfigs.JOB_KUBE_NODE_SELECTORS)).thenReturn("airbyte=server,something=nothing");
     Assertions.assertEquals(config.getJobKubeNodeSelectors(), Map.of("airbyte", "server", "something", "nothing"));
+  }
+
+  @Test
+  void testEnvMapRetrieval() {
+    when(function.apply(EnvConfigs.JOB_DEFAULT_ENV_MAP)).thenReturn(Jsons.serialize(Map.of()));
+    Assertions.assertEquals(Map.of(), config.getJobDefaultEnvMap());
+
+    final var map = Map.of("ENV1", "VAL1", "ENV2", "VAL\"2WithQuotesand$ymbols");
+    when(function.apply(EnvConfigs.JOB_DEFAULT_ENV_MAP)).thenReturn(Jsons.serialize(map));
+    Assertions.assertEquals(map, config.getJobDefaultEnvMap());
   }
 
 }

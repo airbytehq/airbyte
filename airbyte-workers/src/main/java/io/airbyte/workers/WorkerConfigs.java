@@ -37,7 +37,7 @@ public class WorkerConfigs {
     this.jobSocatImage = configs.getJobKubeSocatImage();
     this.jobBusyboxImage = configs.getJobKubeBusyboxImage();
     this.jobCurlImage = configs.getJobKubeCurlImage();
-    this.envMap = Map.of(); // todo: fill in from configs
+    this.envMap = configs.getJobDefaultEnvMap();
   }
 
   public Configs.WorkerEnvironment getWorkerEnvironment() {
