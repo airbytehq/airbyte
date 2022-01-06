@@ -205,31 +205,31 @@ This produces the private key in pem format, and the public key remains in the s
 
 According to Postgres [documentation](https://www.postgresql.org/docs/14/datatype.html), Postgres data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/PostgresSourceDatatypeTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
-| Postgres Type                         | Resulting Type | Notes                                                                                                       |
-|:--------------------------------------|:---------------|:------------------------------------------------------------------------------------------------------------|
-| `bigint`                              | number         |                                                                                                             |
-| `bigserial`, `serial8`                | number         |                                                                                                             |
-| `bit`                                 | string         | Fixed-length bit string (e.g. "0100").                                                                      |
-| `bit varying`, `varbit`               | string         | Variable-length bit string (e.g. "0100").                                                                   |
-| `boolean`, `bool`                     | boolean        |                                                                                                             |
-| `box`                                 | string         |                                                                                                             |
-| `bytea`                               | string         | Variable length binary string with hex output format prefixed with "\x" (e.g. "\x6b707a").                  |
-| `character`, `char`                   | string         |                                                                                                             |
-| `character varying`, `varchar`        | string         |                                                                                                             |
-| `cidr`                                | string         |                                                                                                             |
-| `circle`                              | string         |                                                                                                             |
-| `date`                                | string         | Parsed as ISO8601 date time at midnight. Does not support B.C. dates. Issue: [#8903](https://github.com/airbytehq/airbyte/issues/8903). |
+| Postgres Type                         | Resulting Type | Notes                                                                                                                                           |
+|:--------------------------------------|:---------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| `bigint`                              | number         |                                                                                                                                                 |
+| `bigserial`, `serial8`                | number         |                                                                                                                                                 |
+| `bit`                                 | string         | Fixed-length bit string (e.g. "0100").                                                                                                          |
+| `bit varying`, `varbit`               | string         | Variable-length bit string (e.g. "0100").                                                                                                       |
+| `boolean`, `bool`                     | boolean        |                                                                                                                                                 |
+| `box`                                 | string         |                                                                                                                                                 |
+| `bytea`                               | string         | Variable length binary string with hex output format prefixed with "\x" (e.g. "\x6b707a").                                                      |
+| `character`, `char`                   | string         |                                                                                                                                                 |
+| `character varying`, `varchar`        | string         |                                                                                                                                                 |
+| `cidr`                                | string         |                                                                                                                                                 |
+| `circle`                              | string         |                                                                                                                                                 |
+| `date`                                | string         | Parsed as ISO8601 date time at midnight. Does not support B.C. dates. Issue: [#8903](https://github.com/airbytehq/airbyte/issues/8903).         |
 | `double precision`, `float`, `float8` | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902). |
-| `inet`                                | string         |                                                                                                             |
-| `integer`, `int`, `int4`              | number         |                                                                                                             |
-| `interval`                            | string         |                                                                                                             |
-| `json`                                | string         |                                                                                                             |
-| `jsonb`                               | string         |                                                                                                             |
-| `line`                                | string         |                                                                                                             |
-| `lseg`                                | string         |                                                                                                             |
-| `macaddr`                             | string         |                                                                                                             |
-| `macaddr8`                            | string         |                                                                                                             |
-| `money`                               | number         |                                                                                                             |
+| `inet`                                | string         |                                                                                                                                                 |
+| `integer`, `int`, `int4`              | number         |                                                                                                                                                 |
+| `interval`                            | string         |                                                                                                                                                 |
+| `json`                                | string         |                                                                                                                                                 |
+| `jsonb`                               | string         |                                                                                                                                                 |
+| `line`                                | string         |                                                                                                                                                 |
+| `lseg`                                | string         |                                                                                                                                                 |
+| `macaddr`                             | string         |                                                                                                                                                 |
+| `macaddr8`                            | string         |                                                                                                                                                 |
+| `money`                               | number         |                                                                                                                                                 |
 | `numeric`, `decimal`                  | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902). |
 | `path`                                | string         |                                                                                                             |
 | `pg_lsn`                              | string         |                                                                                                             |
@@ -250,7 +250,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | `xml`                                 | string         |                                                                                                             |
 | `enum`                                | string         |                                                                                                             |
 | `tsrange`                             | string         |                                                                                                             |
-| array                                 | string         | E.g. "{10001,10002,10003,10004}".                                                                           |
+| `array`                               | array          | E.g. "[\"10001\",\"10002\",\"10003\",\"10004\"]".                                                           |
 | composite type                        | string         |                                                                                                             |
 
 ## Changelog

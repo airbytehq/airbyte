@@ -146,14 +146,20 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     uiWidgetsInfo
   );
 
+  const getValues = useCallback(
+    (values: ServiceFormValues) =>
+      validationSchema.cast(values, {
+        stripUnknown: true,
+      }),
+    [validationSchema]
+  );
+
   const onFormSubmit = useCallback(
     async (values) => {
-      const valuesToSend = validationSchema.cast(values, {
-        stripUnknown: true,
-      });
+      const valuesToSend = getValues(values);
       return onSubmit(valuesToSend);
     },
-    [onSubmit, validationSchema]
+    [getValues, onSubmit]
   );
 
   const onRetestForm = useCallback(
@@ -161,12 +167,11 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       if (!onRetest) {
         return null;
       }
-      const valuesToSend = validationSchema.cast(values, {
-        stripUnknown: true,
-      });
+      const valuesToSend = getValues(values);
+
       return onRetest(valuesToSend);
     },
-    [onRetest, validationSchema]
+    [onRetest, getValues]
   );
 
   return (
@@ -180,6 +185,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       {({ values, setSubmitting }) => (
         <ServiceFormContextProvider
           widgetsInfo={uiWidgetsInfo}
+          getValues={getValues}
           setUiWidgetsInfo={setUiWidgetsInfo}
           formType={formType}
           selectedConnector={selectedConnector}

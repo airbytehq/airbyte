@@ -34,8 +34,6 @@ import io.airbyte.workers.protocols.airbyte.NamespacingMapper;
 import io.airbyte.workers.temporal.sync.ReplicationLauncherWorker;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.kubernetes.client.openapi.ApiClient;
-import io.kubernetes.client.util.Config;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Files;
@@ -126,7 +124,7 @@ public class ContainerOrchestratorApp {
     LOGGER.info("Replication runner complete!");
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     WorkerHeartbeatServer heartbeatServer = null;
 
     try {
@@ -163,17 +161,16 @@ public class ContainerOrchestratorApp {
    */
   private static ProcessFactory getProcessBuilderFactory(final Configs configs, final WorkerConfigs workerConfigs) throws IOException {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
-      final ApiClient officialClient = Config.defaultClient();
       final KubernetesClient fabricClient = new DefaultKubernetesClient();
       final String localIp = InetAddress.getLocalHost().getHostAddress();
       final String kubeHeartbeatUrl = localIp + ":" + WorkerApp.KUBE_HEARTBEAT_PORT;
-      LOGGER.info("Using Kubernetes namespace: {}", configs.getJobPodKubeNamespace());
+      LOGGER.info("Using Kubernetes namespace: {}", configs.getJobKubeNamespace());
 
       // this needs to have two ports for the source and two ports for the destination (all four must be
       // exposed)
       KubePortManagerSingleton.init(ReplicationLauncherWorker.PORTS);
 
-      return new KubeProcessFactory(workerConfigs, configs.getJobPodKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl, false);
+      return new KubeProcessFactory(workerConfigs, configs.getJobKubeNamespace(), fabricClient, kubeHeartbeatUrl, false);
     } else {
       return new DockerProcessFactory(
           workerConfigs,

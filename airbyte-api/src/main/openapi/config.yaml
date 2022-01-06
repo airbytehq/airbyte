@@ -2660,7 +2660,9 @@ components:
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
-          $ref: "#/components/schemas/ConnectionSchedule"
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/ConnectionSchedule"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:

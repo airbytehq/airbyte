@@ -5,7 +5,6 @@
 package io.airbyte.server.handlers;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
@@ -20,12 +19,11 @@ import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationSearch;
-import io.airbyte.api.model.ResourceRequirements;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
@@ -38,17 +36,18 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
-import io.airbyte.server.converters.CatalogConverter;
 import io.airbyte.server.handlers.helpers.ConnectionMatcher;
 import io.airbyte.server.handlers.helpers.DestinationMatcher;
 import io.airbyte.server.handlers.helpers.SourceMatcher;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.workers.helper.CatalogConverter;
+import io.airbyte.workers.helper.ConnectionHelper;
+import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -63,6 +62,9 @@ public class ConnectionsHandler {
   private final Supplier<UUID> uuidGenerator;
   private final WorkspaceHelper workspaceHelper;
   private final TrackingClient trackingClient;
+  private final TemporalWorkerRunFactory temporalWorkerRunFactory;
+  private final FeatureFlags featureFlags;
+  private final ConnectionHelper connectionHelper;
   private final WorkerConfigs workerConfigs;
 
   @VisibleForTesting
@@ -70,44 +72,38 @@ public class ConnectionsHandler {
                      final Supplier<UUID> uuidGenerator,
                      final WorkspaceHelper workspaceHelper,
                      final TrackingClient trackingClient,
+                     final TemporalWorkerRunFactory temporalWorkerRunFactory,
+                     final FeatureFlags featureFlags,
+                     final ConnectionHelper connectionHelper,
                      final WorkerConfigs workerConfigs) {
     this.configRepository = configRepository;
     this.uuidGenerator = uuidGenerator;
     this.workspaceHelper = workspaceHelper;
     this.trackingClient = trackingClient;
+    this.temporalWorkerRunFactory = temporalWorkerRunFactory;
+    this.featureFlags = featureFlags;
+    this.connectionHelper = connectionHelper;
     this.workerConfigs = workerConfigs;
   }
 
-  public ConnectionsHandler(final ConfigRepository configRepository,
+  public ConnectionsHandler(
+                            final ConfigRepository configRepository,
                             final WorkspaceHelper workspaceHelper,
                             final TrackingClient trackingClient,
+                            final TemporalWorkerRunFactory temporalWorkerRunFactory,
+                            final FeatureFlags featureFlags,
+                            final ConnectionHelper connectionHelper,
                             final WorkerConfigs workerConfigs) {
-    this(configRepository, UUID::randomUUID, workspaceHelper, trackingClient, workerConfigs);
-  }
+    this(
+        configRepository,
+        UUID::randomUUID,
+        workspaceHelper,
+        trackingClient,
+        temporalWorkerRunFactory,
+        featureFlags,
+        connectionHelper,
+        workerConfigs);
 
-  private void validateWorkspace(final UUID sourceId, final UUID destinationId, final Set<UUID> operationIds) {
-    final UUID sourceWorkspace = workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceId);
-    final UUID destinationWorkspace = workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(destinationId);
-
-    Preconditions.checkArgument(
-        sourceWorkspace.equals(destinationWorkspace),
-        String.format(
-            "Source and destination do not belong to the same workspace. Source id: %s, Source workspace id: %s, Destination id: %s, Destination workspace id: %s",
-            sourceId,
-            sourceWorkspace,
-            destinationId,
-            destinationWorkspace));
-
-    for (final UUID operationId : operationIds) {
-      final UUID operationWorkspace = workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(operationId);
-      Preconditions.checkArgument(
-          sourceWorkspace.equals(operationWorkspace),
-          String.format(
-              "Operation and connection do not belong to the same workspace. Workspace id: %s, Operation id: %s, Operation workspace id: %s",
-              sourceWorkspace,
-              operationId,
-              operationWorkspace));
-    }
   }
 
   public ConnectionRead createConnection(final ConnectionCreate connectionCreate)
@@ -115,7 +111,8 @@ public class ConnectionsHandler {
     // Validate source and destination
     configRepository.getSourceConnection(connectionCreate.getSourceId());
     configRepository.getDestinationConnection(connectionCreate.getDestinationId());
-    validateWorkspace(connectionCreate.getSourceId(), connectionCreate.getDestinationId(), new HashSet<>(connectionCreate.getOperationIds()));
+    connectionHelper.validateWorkspace(connectionCreate.getSourceId(), connectionCreate.getDestinationId(),
+        new HashSet<>(connectionCreate.getOperationIds()));
 
     final UUID connectionId = uuidGenerator.get();
 
@@ -162,7 +159,17 @@ public class ConnectionsHandler {
 
     trackNewConnection(standardSync);
 
-    return buildConnectionRead(connectionId);
+    if (featureFlags.usesNewScheduler()) {
+      try {
+        temporalWorkerRunFactory.createNewSchedulerWorkflow(connectionId);
+      } catch (final Exception e) {
+        LOGGER.error("Start of the temporal connection manager workflow failed", e);
+        configRepository.deleteStandardSyncDefinition(standardSync.getConnectionId());
+        throw e;
+      }
+    }
+
+    return connectionHelper.buildConnectionRead(connectionId);
   }
 
   private void trackNewConnection(final StandardSync standardSync) {
@@ -202,42 +209,14 @@ public class ConnectionsHandler {
 
   public ConnectionRead updateConnection(final ConnectionUpdate connectionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    // retrieve and update sync
-    final StandardSync persistedSync = configRepository.getStandardSync(connectionUpdate.getConnectionId());
+    if (featureFlags.usesNewScheduler()) {
+      connectionHelper.updateConnection(connectionUpdate);
 
-    validateWorkspace(persistedSync.getSourceId(), persistedSync.getDestinationId(), new HashSet<>(connectionUpdate.getOperationIds()));
+      temporalWorkerRunFactory.update(connectionUpdate);
 
-    final StandardSync newConnection = Jsons.clone(persistedSync)
-        .withNamespaceDefinition(Enums.convertTo(connectionUpdate.getNamespaceDefinition(), NamespaceDefinitionType.class))
-        .withNamespaceFormat(connectionUpdate.getNamespaceFormat())
-        .withPrefix(connectionUpdate.getPrefix())
-        .withOperationIds(connectionUpdate.getOperationIds())
-        .withCatalog(CatalogConverter.toProtocol(connectionUpdate.getSyncCatalog()))
-        .withStatus(toPersistenceStatus(connectionUpdate.getStatus()));
-
-    // update Resource Requirements
-    if (connectionUpdate.getResourceRequirements() != null) {
-      newConnection.withResourceRequirements(new io.airbyte.config.ResourceRequirements()
-          .withCpuRequest(connectionUpdate.getResourceRequirements().getCpuRequest())
-          .withCpuLimit(connectionUpdate.getResourceRequirements().getCpuLimit())
-          .withMemoryRequest(connectionUpdate.getResourceRequirements().getMemoryRequest())
-          .withMemoryLimit(connectionUpdate.getResourceRequirements().getMemoryLimit()));
-    } else {
-      newConnection.withResourceRequirements(workerConfigs.getResourceRequirements());
+      return connectionHelper.buildConnectionRead(connectionUpdate.getConnectionId());
     }
-
-    // update sync schedule
-    if (connectionUpdate.getSchedule() != null) {
-      final Schedule newSchedule = new Schedule()
-          .withTimeUnit(toPersistenceTimeUnit(connectionUpdate.getSchedule().getTimeUnit()))
-          .withUnits(connectionUpdate.getSchedule().getUnits());
-      newConnection.withManual(false).withSchedule(newSchedule);
-    } else {
-      newConnection.withManual(true).withSchedule(null);
-    }
-
-    configRepository.writeStandardSync(newConnection);
-    return buildConnectionRead(connectionUpdate.getConnectionId());
+    return connectionHelper.updateConnection(connectionUpdate);
   }
 
   public ConnectionReadList listConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
@@ -262,7 +241,7 @@ public class ConnectionsHandler {
         continue;
       }
 
-      connectionReads.add(buildConnectionRead(standardSync.getConnectionId()));
+      connectionReads.add(connectionHelper.buildConnectionRead(standardSync.getConnectionId()));
     }
 
     return new ConnectionReadList().connections(connectionReads);
@@ -275,7 +254,7 @@ public class ConnectionsHandler {
       if (standardSync.getStatus() == StandardSync.Status.DEPRECATED) {
         continue;
       }
-      connectionReads.add(buildConnectionRead(standardSync.getConnectionId()));
+      connectionReads.add(connectionHelper.buildConnectionRead(standardSync.getConnectionId()));
     }
 
     return new ConnectionReadList().connections(connectionReads);
@@ -283,7 +262,7 @@ public class ConnectionsHandler {
 
   public ConnectionRead getConnection(final ConnectionIdRequestBody connectionIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return buildConnectionRead(connectionIdRequestBody.getConnectionId());
+    return connectionHelper.buildConnectionRead(connectionIdRequestBody.getConnectionId());
   }
 
   public ConnectionReadList searchConnections(final ConnectionSearch connectionSearch)
@@ -291,7 +270,7 @@ public class ConnectionsHandler {
     final List<ConnectionRead> reads = Lists.newArrayList();
     for (final StandardSync standardSync : configRepository.listStandardSyncs()) {
       if (standardSync.getStatus() != StandardSync.Status.DEPRECATED) {
-        final ConnectionRead connectionRead = buildConnectionRead(standardSync.getConnectionId());
+        final ConnectionRead connectionRead = connectionHelper.buildConnectionRead(standardSync.getConnectionId());
         if (matchSearch(connectionSearch, connectionRead)) {
           reads.add(connectionRead);
         }
@@ -338,8 +317,12 @@ public class ConnectionsHandler {
 
   public void deleteConnection(final ConnectionIdRequestBody connectionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final ConnectionRead connectionRead = getConnection(connectionIdRequestBody);
-    deleteConnection(connectionRead);
+    if (featureFlags.usesNewScheduler()) {
+      temporalWorkerRunFactory.deleteConnection(connectionIdRequestBody.getConnectionId());
+    } else {
+      final ConnectionRead connectionRead = getConnection(connectionIdRequestBody);
+      deleteConnection(connectionRead);
+    }
   }
 
   public void deleteConnection(final ConnectionRead connectionRead) throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -363,65 +346,12 @@ public class ConnectionsHandler {
     return configRepository.getSourceConnection(standardSync.getSourceId()).getWorkspaceId().equals(workspaceId);
   }
 
-  private ConnectionRead buildConnectionRead(final UUID connectionId)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-    final StandardSync standardSync = configRepository.getStandardSync(connectionId);
-    return buildConnectionRead(standardSync);
-  }
-
-  private ConnectionRead buildConnectionRead(final StandardSync standardSync) {
-    ConnectionSchedule apiSchedule = null;
-
-    if (!standardSync.getManual()) {
-      apiSchedule = new ConnectionSchedule()
-          .timeUnit(toApiTimeUnit(standardSync.getSchedule().getTimeUnit()))
-          .units(standardSync.getSchedule().getUnits());
-    }
-
-    final ConnectionRead connectionRead = new ConnectionRead()
-        .connectionId(standardSync.getConnectionId())
-        .sourceId(standardSync.getSourceId())
-        .destinationId(standardSync.getDestinationId())
-        .operationIds(standardSync.getOperationIds())
-        .status(toApiStatus(standardSync.getStatus()))
-        .schedule(apiSchedule)
-        .name(standardSync.getName())
-        .namespaceDefinition(Enums.convertTo(standardSync.getNamespaceDefinition(), io.airbyte.api.model.NamespaceDefinitionType.class))
-        .namespaceFormat(standardSync.getNamespaceFormat())
-        .prefix(standardSync.getPrefix())
-        .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()));
-
-    if (standardSync.getResourceRequirements() != null) {
-      connectionRead.resourceRequirements(new ResourceRequirements()
-          .cpuRequest(standardSync.getResourceRequirements().getCpuRequest())
-          .cpuLimit(standardSync.getResourceRequirements().getCpuLimit())
-          .memoryRequest(standardSync.getResourceRequirements().getMemoryRequest())
-          .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit()));
-    } else {
-      final io.airbyte.config.ResourceRequirements resourceRequirements = workerConfigs.getResourceRequirements();
-      connectionRead.resourceRequirements(new ResourceRequirements()
-          .cpuRequest(resourceRequirements.getCpuRequest())
-          .cpuLimit(resourceRequirements.getCpuLimit())
-          .memoryRequest(resourceRequirements.getMemoryRequest())
-          .memoryLimit(resourceRequirements.getMemoryLimit()));
-    }
-    return connectionRead;
-  }
-
   private StandardSync.Status toPersistenceStatus(final ConnectionStatus apiStatus) {
     return Enums.convertTo(apiStatus, StandardSync.Status.class);
   }
 
-  private ConnectionStatus toApiStatus(final StandardSync.Status status) {
-    return Enums.convertTo(status, ConnectionStatus.class);
-  }
-
   private Schedule.TimeUnit toPersistenceTimeUnit(final ConnectionSchedule.TimeUnitEnum apiTimeUnit) {
     return Enums.convertTo(apiTimeUnit, Schedule.TimeUnit.class);
-  }
-
-  private ConnectionSchedule.TimeUnitEnum toApiTimeUnit(final Schedule.TimeUnit apiTimeUnit) {
-    return Enums.convertTo(apiTimeUnit, ConnectionSchedule.TimeUnitEnum.class);
   }
 
 }

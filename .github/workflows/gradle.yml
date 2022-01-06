@@ -505,6 +505,12 @@ jobs:
         run: |
           CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube.sh
 
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: Kubernetes Logs
+          path: /tmp/kubernetes_logs/*
+
       - name: Run Logging Tests
         run: ./tools/bin/cloud_storage_logging_test.sh
         env:

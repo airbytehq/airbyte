@@ -98,6 +98,7 @@ class ConnectorRunner:
             command=cmd,
             working_dir="/data",
             volumes=volumes,
+            network_mode="host",
             detach=True,
             **kwargs,
         )

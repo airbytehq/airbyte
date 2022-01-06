@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.Configs;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
@@ -29,6 +30,7 @@ import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflow;
 import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.temporal.client.WorkflowClient;
+import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -63,13 +65,16 @@ class TemporalClientTest {
   private WorkflowClient workflowClient;
   private TemporalClient temporalClient;
   private Path logPath;
+  private WorkflowServiceStubs workflowServiceStubs;
+  private Configs configs;
 
   @BeforeEach
   void setup() throws IOException {
     final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_client_test");
     logPath = workspaceRoot.resolve(String.valueOf(JOB_ID)).resolve(String.valueOf(ATTEMPT_ID)).resolve(LogClientSingleton.LOG_FILENAME);
     workflowClient = mock(WorkflowClient.class);
-    temporalClient = new TemporalClient(workflowClient, workspaceRoot);
+    workflowServiceStubs = mock(WorkflowServiceStubs.class);
+    temporalClient = new TemporalClient(workflowClient, workspaceRoot, workflowServiceStubs, configs);
   }
 
   @Nested

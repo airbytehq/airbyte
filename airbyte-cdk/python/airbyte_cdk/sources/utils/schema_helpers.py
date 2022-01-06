@@ -7,8 +7,9 @@ import importlib
 import json
 import os
 import pkgutil
-from typing import Any, ClassVar, Dict, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, ClassVar, Dict, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 
+import dpath.util
 import jsonref
 from airbyte_cdk.models import ConnectorSpecification
 from jsonschema import RefResolver, validate
@@ -191,3 +192,32 @@ def split_config(config: Mapping[str, Any]) -> Tuple[dict, InternalConfig]:
         else:
             main_config[k] = v
     return main_config, InternalConfig.parse_obj(internal_config)
+
+
+def get_secret_values(schema: Mapping[str, Any], config: Mapping[str, Any]) -> List[str]:
+    def get_secret_pathes(schema: Mapping[str, Any]) -> Set[str]:
+        pathes = set()
+
+        def traverse_schema(schema: Any, path: List[str]):
+            if isinstance(schema, dict):
+                for k, v in schema.items():
+                    traverse_schema(v, [*path, k])
+            elif isinstance(schema, list):
+                for i in schema:
+                    traverse_schema(i, path)
+            else:
+                if path[-1] == "airbyte_secret" and schema is True:
+                    path = "/".join([p for p in path[:-1] if p not in ["properties", "oneOf"]])
+                    pathes.add(path)
+
+        traverse_schema(schema, [])
+        return pathes
+
+    secret_pathes = get_secret_pathes(schema)
+    result = []
+    for path in secret_pathes:
+        try:
+            result.append(dpath.util.get(config, path))
+        except KeyError:
+            pass
+    return result

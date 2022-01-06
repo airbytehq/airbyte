@@ -136,7 +136,8 @@ public class BigQueryUtils {
         .put(BigQueryConsts.CREDENTIAL, loadingMethod.get(BigQueryConsts.CREDENTIAL))
         .put(BigQueryConsts.FORMAT, Jsons.deserialize("{\n"
             + "  \"format_type\": \"CSV\",\n"
-            + "  \"flattening\": \"No flattening\"\n"
+            + "  \"flattening\": \"No flattening\",\n"
+            + "  \"part_size_mb\": \"" + loadingMethod.get(BigQueryConsts.PART_SIZE) + "\"\n"
             + "}"))
         .build());
 
@@ -153,7 +154,8 @@ public class BigQueryUtils {
         .put(BigQueryConsts.CREDENTIAL, loadingMethod.get(BigQueryConsts.CREDENTIAL))
         .put(BigQueryConsts.FORMAT, Jsons.deserialize("{\n"
             + "  \"format_type\": \"AVRO\",\n"
-            + "  \"flattening\": \"No flattening\"\n"
+            + "  \"flattening\": \"No flattening\",\n"
+            + "  \"part_size_mb\": \"" + loadingMethod.get(BigQueryConsts.PART_SIZE) + "\"\n"
             + "}"))
         .build());
 
