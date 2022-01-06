@@ -60,7 +60,7 @@ runs:
          rm -rf .venv
          echo "::set-output name=mypy-logs::${REPORT_FOLDER}/mypy.log"
          echo "::set-output name=black-diff::${REPORT_FOLDER}/black.diff"
-         echo "::set-output name=black-isort::${REPORT_FOLDER}/isort.diff"
+         echo "::set-output name=isort-diff::${REPORT_FOLDER}/isort.diff"
          echo "::set-output name=linter-reports::-Dsonar.python.flake8.reportPaths=${REPORT_FOLDER}/flake.txt"
 
 
