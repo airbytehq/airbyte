@@ -8,6 +8,9 @@ COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
 RUN tar xf ${APPLICATION}.tar --strip-components=1 && rm -rf ${APPLICATION}.tar
 
+ARG BUILD_ID
+LABEL io.airbyte.build=$BUILD_ID
+
 FROM airbyte/integration-base-java:dev
 
 WORKDIR /airbyte
