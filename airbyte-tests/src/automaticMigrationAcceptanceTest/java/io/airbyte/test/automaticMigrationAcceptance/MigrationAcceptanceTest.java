@@ -22,7 +22,6 @@ import io.airbyte.api.client.invoker.ApiException;
 import io.airbyte.api.client.model.ConnectionRead;
 import io.airbyte.api.client.model.ConnectionStatus;
 import io.airbyte.api.client.model.DestinationDefinitionRead;
-import io.airbyte.api.client.model.HealthCheckRead;
 import io.airbyte.api.client.model.ImportRead;
 import io.airbyte.api.client.model.ImportRead.StatusEnum;
 import io.airbyte.api.client.model.SourceDefinitionRead;
