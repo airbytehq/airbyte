@@ -28,6 +28,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AirbyteMessageTracker implements MessageTracker {
 
+  private static final long STATE_DELTA_TRACKER_MEMORY_LIMIT_BYTES = 10L * 1024L * 1024L * 1024L; // 10 GB, TODO (parker) use a reasonable limit
+
   private final AtomicReference<State> sourceOutputState;
   private final AtomicReference<State> destinationOutputState;
   private final AtomicLong totalEmittedStateMessages;
@@ -47,7 +49,7 @@ public class AirbyteMessageTracker implements MessageTracker {
   private boolean unreliableCommittedCounts;
 
   public AirbyteMessageTracker() {
-    this(new StateDeltaTracker(10L * 1024L * 1024L * 1024L)); // 10 GiB memory limit, arbitrary TODO what should be set here?)
+    this(new StateDeltaTracker(STATE_DELTA_TRACKER_MEMORY_LIMIT_BYTES));
   }
 
   @VisibleForTesting
