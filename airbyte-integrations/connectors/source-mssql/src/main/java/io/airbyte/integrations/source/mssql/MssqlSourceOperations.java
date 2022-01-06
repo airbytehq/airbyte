@@ -82,7 +82,6 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
   public JDBCType getFieldType(final JsonNode field) {
     try {
       final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText();
-      // Postgres boolean is mapped to JDBCType.BIT, but should be BOOLEAN
       if (typeName.equalsIgnoreCase("geography")
           || typeName.equalsIgnoreCase("geometry")
           || typeName.equalsIgnoreCase("hierarchyid")) {

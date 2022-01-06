@@ -32,7 +32,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
 import java.io.File;
-import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -106,7 +105,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                   columnNames, schemaName, tableName, identifierQuoteString);
 
               final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
-                  getWrappedColumn(connection, newColumnNames),
+                  enquoteIdentifierList(newColumnNames),
                   sourceOperations
                       .getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
                   sourceOperations.enquoteIdentifier(connection, cursorField));
@@ -170,31 +169,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                 .format("%s.ToString() as %s%s%s", el, enquoteSymbol, el, enquoteSymbol)
                 : el)
         .collect(toList());
-  }
-
-  /**
-   * There is no support for hierarchyid even in the native SQL Server JDBC driver. Its value can be
-   * converted to a nvarchar(4000) data type by calling the ToString() method. So we make a separate
-   * query to get Table's MetaData, check is there any hierarchyid columns, and wrap required fields
-   * with the ToString() function in the final Select query. Reference:
-   * https://docs.microsoft.com/en-us/sql/t-sql/data-types/hierarchyid-data-type-method-reference?view=sql-server-ver15#data-type-conversion
-   *
-   * @return the list with Column names updated to handle functions (if nay) properly
-   */
-  public String getWrappedColumn(final Connection connection, final List<String> identifiers)
-      throws SQLException {
-
-    final StringJoiner joiner = new StringJoiner(",");
-    for (final String col : identifiers) {
-      if (col.contains("()")) {
-        joiner.add(col); // this query field's name is already prepared for function and quoted
-      } else {
-        final String s = sourceOperations.enquoteIdentifier(connection, col);
-        joiner.add(s);
-      }
-
-    }
-    return joiner.toString();
   }
 
   protected String enquoteIdentifierList(final List<String> identifiers) {
