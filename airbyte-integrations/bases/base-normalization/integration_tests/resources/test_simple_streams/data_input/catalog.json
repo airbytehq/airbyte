@@ -180,18 +180,13 @@
     },
     {
       "stream": {
-<<<<<<< HEAD
         "name": "1_prefix_startwith_number",
-=======
-        "name": "multiple_column_names_conflicts",
->>>>>>> master
         "json_schema": {
           "type": ["null", "object"],
           "properties": {
             "id": {
               "type": "integer"
             },
-<<<<<<< HEAD
             "date": {
               "type": "string",
               "format": "date"
@@ -207,7 +202,18 @@
       },
       "sync_mode": "incremental",
       "cursor_field": ["date"],
-=======
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["id"]]
+    },
+    {
+      "stream": {
+        "name": "multiple_column_names_conflicts",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
             "User Id": {
               "type": ["string", "null"]
             },
@@ -234,7 +240,6 @@
       },
       "sync_mode": "full_refresh",
       "cursor_field": [],
->>>>>>> master
       "destination_sync_mode": "append_dedup",
       "primary_key": [["id"]]
     }
