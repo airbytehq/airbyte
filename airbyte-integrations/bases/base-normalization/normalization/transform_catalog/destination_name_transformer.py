@@ -261,6 +261,7 @@ class DestinationNameTransformer:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result
 
+
 # Static Functions
 
 
