@@ -46,7 +46,6 @@ runs:
       shell: bash
       working-directory: ${{ inputs.module-folder }}
       run: |
-         # rm -rf .venv
          virtualenv .venv
          source .venv/bin/activate
          JSON_CONFIG='{"module": "${{ inputs.module-name }}", "folder": "${{ inputs.module-folder }}", "lang": "py"}'
@@ -62,5 +61,3 @@ runs:
          echo "::set-output name=black-diff::${REPORT_FOLDER}/black.diff"
          echo "::set-output name=isort-diff::${REPORT_FOLDER}/isort.diff"
          echo "::set-output name=linter-reports::-Dsonar.python.flake8.reportPaths=${REPORT_FOLDER}/flake.txt"
-
-

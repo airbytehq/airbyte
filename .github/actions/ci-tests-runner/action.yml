@@ -109,6 +109,7 @@ runs:
       shell: bash
       id: generate-sq-report
       run: |
+        # delay because SQ needs time for processing of all input data
         sleep 10
         REPORT_FILE=/tmp/sq_report_$RANDOM.md
         ci_sonar_qube --pr ${{ inputs.pull-request-id }} --report ${REPORT_FILE} --module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
