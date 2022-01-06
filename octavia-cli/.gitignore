@@ -1,2 +1,3 @@
 .coverage
 .venv
+airbyte_api_client/
