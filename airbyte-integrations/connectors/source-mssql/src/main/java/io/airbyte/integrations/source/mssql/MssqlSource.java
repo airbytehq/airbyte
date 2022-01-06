@@ -41,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.StringJoiner;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +76,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         columnNames,
         schemaName, tableName, "\"");
     String preparedSqlQuery = String
-        .format("SELECT %s FROM %s", enquoteIdentifierList(newIdentifiersList),
+        .format("SELECT %s FROM %s", String.join(",", newIdentifiersList),
             getFullTableName(schemaName, tableName));
 
     LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
@@ -105,7 +104,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                   columnNames, schemaName, tableName, identifierQuoteString);
 
               final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
-                  enquoteIdentifierList(newColumnNames),
+                  String.join(",", newColumnNames),
                   sourceOperations
                       .getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
                   sourceOperations.enquoteIdentifier(connection, cursorField));
@@ -167,22 +166,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         .map(
             el -> hierarchyIdColumns.contains(el) ? String
                 .format("%s.ToString() as %s%s%s", el, enquoteSymbol, el, enquoteSymbol)
-                : el)
+                : getIdentifierWithQuoting(el))
         .collect(toList());
-  }
-
-  protected String enquoteIdentifierList(final List<String> identifiers) {
-    final StringJoiner joiner = new StringJoiner(",");
-    for (final String identifier : identifiers) {
-      // do not quote fields that uses a native sql functions on requests
-      if (identifier.contains("()")) {
-        joiner
-            .add(identifier); // this query field's name is already prepared for function and quoted
-      } else {
-        joiner.add(getIdentifierWithQuoting(identifier));
-      }
-    }
-    return joiner.toString();
   }
 
   @Override
