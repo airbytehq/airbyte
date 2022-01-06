@@ -26,6 +26,7 @@ scd_data as (
       user_id,
       "User id",
       "user id",
+      "User@Id",
       userid,
       _airbyte_emitted_at as _airbyte_start_at,
       lag(_airbyte_emitted_at) over (
@@ -78,6 +79,7 @@ select
     user_id,
     "User id",
     "user id",
+    "User@Id",
     userid,
     _airbyte_start_at,
     _airbyte_end_at,

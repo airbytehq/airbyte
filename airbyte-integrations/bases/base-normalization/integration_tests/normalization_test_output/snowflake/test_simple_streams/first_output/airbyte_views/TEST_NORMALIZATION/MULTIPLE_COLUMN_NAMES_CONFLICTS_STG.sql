@@ -11,6 +11,7 @@ select
     to_varchar(get_path(parse_json(_airbyte_data), '"user_id"')) as USER_ID,
     to_varchar(get_path(parse_json(_airbyte_data), '"User id"')) as "User id",
     to_varchar(get_path(parse_json(_airbyte_data), '"user id"')) as "user id",
+    to_varchar(get_path(parse_json(_airbyte_data), '"User@Id"')) as "User@Id",
     to_varchar(get_path(parse_json(_airbyte_data), '"UserId"')) as USERID,
     _AIRBYTE_AB_ID,
     _AIRBYTE_EMITTED_AT,
@@ -39,6 +40,9 @@ select
     cast("user id" as 
     float
 ) as "user id",
+    cast("User@Id" as 
+    varchar
+) as "User@Id",
     cast(USERID as 
     float
 ) as USERID,
@@ -61,6 +65,8 @@ select
 ), '') || '-' || coalesce(cast("User id" as 
     varchar
 ), '') || '-' || coalesce(cast("user id" as 
+    varchar
+), '') || '-' || coalesce(cast("User@Id" as 
     varchar
 ), '') || '-' || coalesce(cast(USERID as 
     varchar

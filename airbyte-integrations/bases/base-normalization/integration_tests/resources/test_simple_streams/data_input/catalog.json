@@ -199,6 +199,9 @@
             "user id": {
               "type": ["null", "number"]
             },
+            "User@Id": {
+              "type": ["null", "string"]
+            },
             "UserId": {
               "type": ["null", "number"]
             }

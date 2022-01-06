@@ -14,6 +14,7 @@ select
     JSONExtractRaw(_airbyte_data, 'user_id') as user_id,
     JSONExtractRaw(_airbyte_data, 'User id') as "User id",
     JSONExtractRaw(_airbyte_data, 'user id') as "user id",
+    JSONExtractRaw(_airbyte_data, 'User@Id') as "User@Id",
     JSONExtractRaw(_airbyte_data, 'UserId') as UserId,
     _airbyte_ab_id,
     _airbyte_emitted_at,
@@ -40,6 +41,7 @@ select
     accurateCastOrNull("user id", '
     Float64
 ') as "user id",
+    nullif(accurateCastOrNull(trim(BOTH '"' from "User@Id"), 'String'), 'null') as "User@Id",
     accurateCastOrNull(UserId, '
     Float64
 ') as UserId,
@@ -68,6 +70,9 @@ select
             
             
                 toString("user id") || '~' ||
+            
+            
+                toString("User@Id") || '~' ||
             
             
                 toString(UserId)

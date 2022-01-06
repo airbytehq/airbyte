@@ -11,6 +11,7 @@ select
     json_value("_AIRBYTE_DATA", '$."user_id"') as user_id_1,
     json_value("_AIRBYTE_DATA", '$."User id"') as user_id_2,
     json_value("_AIRBYTE_DATA", '$."user id"') as user_id_3,
+    json_value("_AIRBYTE_DATA", '$."User@Id"') as user_id_4,
     json_value("_AIRBYTE_DATA", '$."UserId"') as userid,
     "_AIRBYTE_AB_ID",
     "_AIRBYTE_EMITTED_AT",
@@ -39,6 +40,7 @@ select
     cast(user_id_3 as 
     float
 ) as user_id_3,
+    cast(user_id_4 as varchar2(4000)) as user_id_4,
     cast(userid as 
     float
 ) as userid,
@@ -69,6 +71,9 @@ select
             
             
                 user_id_3 || '~' ||
+            
+            
+                user_id_4 || '~' ||
             
             
                 userid

@@ -13,6 +13,7 @@ select
     json_extract_scalar(_airbyte_data, "$['user_id']") as user_id_1,
     json_extract_scalar(_airbyte_data, "$['User id']") as User_id_2,
     json_extract_scalar(_airbyte_data, "$['user id']") as user_id_3,
+    json_extract_scalar(_airbyte_data, "$['User@Id']") as User_Id_4,
     json_extract_scalar(_airbyte_data, "$['UserId']") as UserId,
     _airbyte_ab_id,
     _airbyte_emitted_at,
@@ -41,6 +42,9 @@ select
     cast(user_id_3 as 
     float64
 ) as user_id_3,
+    cast(User_Id_4 as 
+    string
+) as User_Id_4,
     cast(UserId as 
     float64
 ) as UserId,
@@ -63,6 +67,8 @@ select
 ), ''), '-', coalesce(cast(User_id_2 as 
     string
 ), ''), '-', coalesce(cast(user_id_3 as 
+    string
+), ''), '-', coalesce(cast(User_Id_4 as 
     string
 ), ''), '-', coalesce(cast(UserId as 
     string

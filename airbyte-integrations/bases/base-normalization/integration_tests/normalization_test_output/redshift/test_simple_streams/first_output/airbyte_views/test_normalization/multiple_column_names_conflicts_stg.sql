@@ -12,6 +12,7 @@ select
     case when json_extract_path_text(_airbyte_data, 'user_id', true) != '' then json_extract_path_text(_airbyte_data, 'user_id', true) end as user_id,
     case when json_extract_path_text(_airbyte_data, 'User id', true) != '' then json_extract_path_text(_airbyte_data, 'User id', true) end as "user id_1",
     case when json_extract_path_text(_airbyte_data, 'user id', true) != '' then json_extract_path_text(_airbyte_data, 'user id', true) end as "user id_2",
+    case when json_extract_path_text(_airbyte_data, 'User@Id', true) != '' then json_extract_path_text(_airbyte_data, 'User@Id', true) end as "user@id",
     case when json_extract_path_text(_airbyte_data, 'UserId', true) != '' then json_extract_path_text(_airbyte_data, 'UserId', true) end as userid,
     _airbyte_ab_id,
     _airbyte_emitted_at,
@@ -38,6 +39,7 @@ select
     cast("user id_2" as 
     float
 ) as "user id_2",
+    cast("user@id" as varchar) as "user@id",
     cast(userid as 
     float
 ) as userid,
@@ -51,7 +53,7 @@ where 1 = 1
 )-- SQL model to build a hash column based on the values of this record
 -- depends_on: __dbt__cte__multiple_column_names_conflicts_ab2
 select
-    md5(cast(coalesce(cast(id as varchar), '') || '-' || coalesce(cast("user id" as varchar), '') || '-' || coalesce(cast(user_id as varchar), '') || '-' || coalesce(cast("user id_1" as varchar), '') || '-' || coalesce(cast("user id_2" as varchar), '') || '-' || coalesce(cast(userid as varchar), '') as varchar)) as _airbyte_multiple_column_names_conflicts_hashid,
+    md5(cast(coalesce(cast(id as varchar), '') || '-' || coalesce(cast("user id" as varchar), '') || '-' || coalesce(cast(user_id as varchar), '') || '-' || coalesce(cast("user id_1" as varchar), '') || '-' || coalesce(cast("user id_2" as varchar), '') || '-' || coalesce(cast("user@id" as varchar), '') || '-' || coalesce(cast(userid as varchar), '') as varchar)) as _airbyte_multiple_column_names_conflicts_hashid,
     tmp.*
 from __dbt__cte__multiple_column_names_conflicts_ab2 tmp
 -- multiple_column_names_conflicts

@@ -13,6 +13,7 @@ select
     user_id,
     {{ adapter.quote('User id') }},
     {{ adapter.quote('user id') }},
+    {{ adapter.quote('User@Id') }},
     userid,
     _airbyte_ab_id,
     _airbyte_emitted_at,

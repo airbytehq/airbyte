@@ -14,6 +14,7 @@ select
     jsonb_extract_path_text(_airbyte_data, 'user_id') as user_id,
     jsonb_extract_path_text(_airbyte_data, 'User id') as "User id",
     jsonb_extract_path_text(_airbyte_data, 'user id') as "user id",
+    jsonb_extract_path_text(_airbyte_data, 'User@Id') as "User@Id",
     jsonb_extract_path_text(_airbyte_data, 'UserId') as userid,
     _airbyte_ab_id,
     _airbyte_emitted_at,
@@ -42,6 +43,9 @@ select
     cast("user id" as 
     float
 ) as "user id",
+    cast("User@Id" as 
+    varchar
+) as "User@Id",
     cast(userid as 
     float
 ) as userid,
@@ -64,6 +68,8 @@ select
 ), '') || '-' || coalesce(cast("User id" as 
     varchar
 ), '') || '-' || coalesce(cast("user id" as 
+    varchar
+), '') || '-' || coalesce(cast("User@Id" as 
     varchar
 ), '') || '-' || coalesce(cast(userid as 
     varchar

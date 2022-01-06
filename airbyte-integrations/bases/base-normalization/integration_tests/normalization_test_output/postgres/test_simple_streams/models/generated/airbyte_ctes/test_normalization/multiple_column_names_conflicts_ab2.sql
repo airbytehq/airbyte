@@ -12,6 +12,7 @@ select
     cast(user_id as {{ dbt_utils.type_float() }}) as user_id,
     cast({{ adapter.quote('User id') }} as {{ dbt_utils.type_float() }}) as {{ adapter.quote('User id') }},
     cast({{ adapter.quote('user id') }} as {{ dbt_utils.type_float() }}) as {{ adapter.quote('user id') }},
+    cast({{ adapter.quote('User@Id') }} as {{ dbt_utils.type_string() }}) as {{ adapter.quote('User@Id') }},
     cast(userid as {{ dbt_utils.type_float() }}) as userid,
     _airbyte_ab_id,
     _airbyte_emitted_at,

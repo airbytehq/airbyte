@@ -12,6 +12,7 @@ select
     {{ json_extract_scalar('_airbyte_data', ['user_id'], ['user_id']) }} as user_id,
     {{ json_extract_scalar('_airbyte_data', ['User id'], ['User id']) }} as {{ adapter.quote('User id') }},
     {{ json_extract_scalar('_airbyte_data', ['user id'], ['user id']) }} as {{ adapter.quote('user id') }},
+    {{ json_extract_scalar('_airbyte_data', ['User@Id'], ['User@Id']) }} as {{ adapter.quote('User@Id') }},
     {{ json_extract_scalar('_airbyte_data', ['UserId'], ['UserId']) }} as userid,
     _airbyte_ab_id,
     _airbyte_emitted_at,

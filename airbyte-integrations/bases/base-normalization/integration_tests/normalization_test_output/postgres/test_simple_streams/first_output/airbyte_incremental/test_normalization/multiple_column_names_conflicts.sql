@@ -13,6 +13,7 @@ select
     user_id,
     "User id",
     "user id",
+    "User@Id",
     userid,
     _airbyte_ab_id,
     _airbyte_emitted_at,

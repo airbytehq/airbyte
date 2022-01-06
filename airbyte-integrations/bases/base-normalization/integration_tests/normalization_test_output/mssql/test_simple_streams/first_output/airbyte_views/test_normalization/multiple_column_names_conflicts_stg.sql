@@ -11,6 +11,7 @@ select
     json_value(_airbyte_data, ''$."user_id"'') as user_id,
     json_value(_airbyte_data, ''$."User id"'') as "User id_1",
     json_value(_airbyte_data, ''$."user id"'') as "user id_2",
+    json_value(_airbyte_data, ''$."User@Id"'') as "User@Id",
     json_value(_airbyte_data, ''$."UserId"'') as userid,
     _airbyte_ab_id,
     _airbyte_emitted_at,
@@ -38,6 +39,8 @@ select
     cast("user id_2" as 
     float
 ) as "user id_2",
+    cast("User@Id" as 
+    VARCHAR(max)) as "User@Id",
     cast(userid as 
     float
 ) as userid,
@@ -60,6 +63,7 @@ select
     VARCHAR(max)), ''''), ''-'', coalesce(cast(user_id as 
     VARCHAR(max)), ''''), ''-'', coalesce(cast("User id_1" as 
     VARCHAR(max)), ''''), ''-'', coalesce(cast("user id_2" as 
+    VARCHAR(max)), ''''), ''-'', coalesce(cast("User@Id" as 
     VARCHAR(max)), ''''), ''-'', coalesce(cast(userid as 
     VARCHAR(max)), ''''),''''), '''') as 
     VARCHAR(max)), '''')), 2) as _airbyte_multiple_col__ames_conflicts_hashid,

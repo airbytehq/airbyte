@@ -17,6 +17,8 @@ select
     json_value(_airbyte_data, 
     '$."user id"') as `user id_2`,
     json_value(_airbyte_data, 
+    '$."User@Id"') as `User@Id`,
+    json_value(_airbyte_data, 
     '$."UserId"') as userid,
     _airbyte_ab_id,
     _airbyte_emitted_at,
@@ -45,6 +47,7 @@ select
     cast(`user id_2` as 
     float
 ) as `user id_2`,
+    cast(`User@Id` as char) as `User@Id`,
     cast(userid as 
     float
 ) as userid,
@@ -60,7 +63,7 @@ where 1 = 1
 )-- SQL model to build a hash column based on the values of this record
 -- depends_on: __dbt__CTE__multiple_column_names_conflicts_ab2
 select
-    md5(cast(concat(coalesce(cast(id as char), ''), '-', coalesce(cast(`User Id` as char), ''), '-', coalesce(cast(user_id as char), ''), '-', coalesce(cast(`User id_1` as char), ''), '-', coalesce(cast(`user id_2` as char), ''), '-', coalesce(cast(userid as char), '')) as char)) as _airbyte_multiple_col__ames_conflicts_hashid,
+    md5(cast(concat(coalesce(cast(id as char), ''), '-', coalesce(cast(`User Id` as char), ''), '-', coalesce(cast(user_id as char), ''), '-', coalesce(cast(`User id_1` as char), ''), '-', coalesce(cast(`user id_2` as char), ''), '-', coalesce(cast(`User@Id` as char), ''), '-', coalesce(cast(userid as char), '')) as char)) as _airbyte_multiple_col__ames_conflicts_hashid,
     tmp.*
 from __dbt__CTE__multiple_column_names_conflicts_ab2 tmp
 -- multiple_column_names_conflicts

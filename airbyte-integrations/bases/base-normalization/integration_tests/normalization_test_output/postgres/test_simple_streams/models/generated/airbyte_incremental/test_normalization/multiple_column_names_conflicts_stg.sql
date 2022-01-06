@@ -13,6 +13,7 @@ select
         'user_id',
         adapter.quote('User id'),
         adapter.quote('user id'),
+        adapter.quote('User@Id'),
         'userid',
     ]) }} as _airbyte_multiple_co__ames_conflicts_hashid,
     tmp.*
