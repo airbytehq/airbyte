@@ -4,8 +4,6 @@
 
 import datetime
 import json
-import pathlib
-from abc import abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import plaid
