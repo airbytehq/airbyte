@@ -117,7 +117,7 @@ def test_transform_standard_naming(input_str: str, expected: str):
         ("a-Unicode_name_文6", "MSSQL", "a_unicode_name__6", "{{ adapter.quote('a-Unicode_name_文6') }}"),
         # Doesnt start with alpha or underscore
         ("100x2001", "Postgres", "100x2001", "{{ adapter.quote('100x2001') }}"),
-        ("100x2002", "BigQuery", "_100x2002", "_100x2002"),
+        ("100x2002", "BigQuery", "100x2002", "100x2002"),
         ("100x2003", "Snowflake", "100x2003", "{{ adapter.quote('100x2003') }}"),
         ("100x2004", "Redshift", "100x2004", "{{ adapter.quote('100x2004') }}"),
         ("100x2005", "MySQL", "100x2005", "{{ adapter.quote('100x2005') }}"),

@@ -188,8 +188,8 @@ class DestinationNameTransformer:
             return transform_standard_naming(result)
         elif self.destination_type.value == DestinationType.BIGQUERY.value:
             result = transform_standard_naming(result)
-            doesnt_start_with_alphaunderscore = match("[^A-Za-z_]", result[0]) is not None
-            if doesnt_start_with_alphaunderscore:
+            doesnt_start_with_alphaunderscorenumber = match("[^A-Za-z_0-9]", result[0]) is not None
+            if doesnt_start_with_alphaunderscorenumber:
                 result = f"_{result}"
         return result
 
