@@ -314,15 +314,17 @@ class StreamProcessor(object):
         field_names = set()
         for field in fields:
             field_name = self.name_transformer.normalize_column_name(field, in_jinja=False)
+            field_name_lookup = self.name_transformer.normalize_column_identifier_case_for_lookup(field_name)
             jinja_name = self.name_transformer.normalize_column_name(field, in_jinja=True)
-            if field_name in field_names:
+            if field_name_lookup in field_names:
                 # TODO handle column name duplicates or collisions deterministically in this stream
                 for i in range(1, 1000):
                     field_name = self.name_transformer.normalize_column_name(f"{field}_{i}", in_jinja=False)
+                    field_name_lookup = self.name_transformer.normalize_column_identifier_case_for_lookup(field_name)
                     jinja_name = self.name_transformer.normalize_column_name(f"{field}_{i}", in_jinja=True)
-                    if field_name not in field_names:
+                    if field_name_lookup not in field_names:
                         break
-            field_names.add(field_name)
+            field_names.add(field_name_lookup)
             result[field] = (field_name, jinja_name)
         return result
 

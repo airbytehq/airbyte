@@ -20,6 +20,7 @@ integration_tests/normalization_test_output/**/*.yml
 # Simple Streams
 !integration_tests/normalization_test_output/**/dedup_exchange_rate*.sql
 !integration_tests/normalization_test_output/**/exchange_rate.sql
+!integration_tests/normalization_test_output/**/test_simple_streams/first_output/airbyte_views/**/multiple_column_names_conflicts_stg.sql
 # Nested Streams
 # Parent table
 !integration_tests/normalization_test_output/**/nested_stream_with*_names_ab*.sql
