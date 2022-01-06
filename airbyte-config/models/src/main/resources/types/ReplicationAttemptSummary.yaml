@@ -14,7 +14,7 @@ required:
   - streamNameToRecordsEmitted
   - streamNameToBytesEmitted
   - totalStateMessagesEmitted
-additionalProperties: true
+additionalProperties: false
 properties:
   status:
     "$ref": ReplicationStatus.yaml
