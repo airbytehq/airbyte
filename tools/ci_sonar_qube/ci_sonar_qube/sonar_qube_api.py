@@ -200,6 +200,10 @@ class SonarQubeApi:
                 if public_name.startswith("flake"):
                     # single link for all descriptions
                     link = "https://flake8.pycqa.org/en/latest/user/error-codes.html"
+                elif "isort_" in public_name:
+                    link = "https://pycqa.github.io/isort/index.html"
+                elif "black_" in public_name:
+                    link = "https://black.readthedocs.io/en/stable/the_black_code_style/index.html"
             else:
                 # link's example
                 # https://rules.sonarsource.com/python/RSPEC-6287

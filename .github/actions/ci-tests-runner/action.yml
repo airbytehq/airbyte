@@ -10,7 +10,7 @@ inputs:
   module-lang:
     description: "Detected module language. Available values: py, java"
     required: true
-  sonar-host:
+  sonar-gcp-access-key:
     required: true
   sonar-token:
     description: "Access token for using SonarQube API"
@@ -56,6 +56,19 @@ runs:
         module-name: ${{ inputs.module-name }}
         module-folder: ${{ inputs.module-folder }}
 
+    - name: Auth with gcloud CLI
+      uses: google-github-actions/setup-gcloud@master
+      with:
+        service_account_key: ${{ inputs.sonar-gcp-access-key }}
+        project_id: dataline-integration-testing
+        export_default_credentials: true
+
+    - name: Create IAP tunnel to the SonarQube VM
+      shell: bash
+      run: gcloud compute start-iap-tunnel sonarqube-1-vm 80 --local-host-port=localhost:3300 --zone=europe-central2-a --project dataline-integration-testing &
+
+
+
     - name: Prepare External Issues
       shell: bash
       id: external-issues
@@ -80,8 +93,10 @@ runs:
     - name: Create SonarQube Project
       shell: bash
       id: create-sq-project
+      env:
+        SONAR_HOST_URL: "localhost:3300"
       run: |
-        ci_sonar_qube --pr ${{ inputs.pull-request-id }} --create --module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
+        ci_sonar_qube --pr ${{ inputs.pull-request-id }} --create --module ${{ inputs.module-name }} --host ${{ env.SONAR_HOST_URL }} --token ${{ inputs.sonar-token }}
         echo "::set-output name=sq_project_name::$(ci_sonar_qube --pr ${{ inputs.pull-request-id }} --print_key --module ${{ inputs.module-name }})"
 
     - name: SonarQube Scan
@@ -90,7 +105,8 @@ runs:
       uses: sonarsource/sonarqube-scan-action@master
       env:
         SONAR_TOKEN: ${{ inputs.sonar-token }}
-        SONAR_HOST_URL: ${{ inputs.sonar-host }}
+        # SONAR_HOST_URL: ${{ inputs.sonar-host }}
+        SONAR_HOST_URL: "localhost:3300"
       with:
           projectBaseDir: ${{ inputs.module-folder }}
           args: >
@@ -108,11 +124,13 @@ runs:
     - name: Generate SonarQube Report
       shell: bash
       id: generate-sq-report
+      env:
+        SONAR_HOST_URL: "localhost:3300"
       run: |
         # delay because SQ needs time for processing of all input data
         sleep 10
         REPORT_FILE=/tmp/sq_report_$RANDOM.md
-        ci_sonar_qube --pr ${{ inputs.pull-request-id }} --report ${REPORT_FILE} --module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
+        ci_sonar_qube --pr ${{ inputs.pull-request-id }} --report ${REPORT_FILE} --module ${{ inputs.module-name }} --host ${{ env.SONAR_HOST_URL }} --token ${{ inputs.sonar-token }}
         body="$(cat ${REPORT_FILE})"
         body="${body//'%'/'%25'}"
         body="${body//$'\n'/'%0A'}"
@@ -137,6 +155,13 @@ runs:
       if: ${{ inputs.remove-sonar-project == true }}
       shell: bash
       id: remove-sq-project
+      env:
+        SONAR_HOST_URL: "localhost:3300"
       run: |
-        ci_sonar_qube --pr ${{ inputs.pull-request-id }} --remove --module ${{ inputs.module-name }} --host ${{ inputs.sonar-host }} --token ${{ inputs.sonar-token }}
+        ci_sonar_qube --pr ${{ inputs.pull-request-id }} --remove --module ${{ inputs.module-name }} --host ${{ env.SONAR_HOST_URL }} --token ${{ inputs.sonar-token }}
 
+    - name: Remove IAP tunnel
+      if: always()
+      shell: bash
+      run: |-
+        kill %1

@@ -69,7 +69,7 @@ jobs:
         module-folder: ${{ env.MODULE_FOLDER }}
         module-lang: ${{ env.MODULE_LANG }}
         sonar-token: ${{ secrets.SONAR_TOKEN }}
-        sonar-host: ${{ secrets.SONAR_HOST_URL }}
+        sonar-gcp-access-key: ${{ secrets.GCP_SONAR_SA_KEY }}
         pull-request-id: "${{ github.repository }}/${{ github.event.pull_request.number }}"
         remove-sonar-project: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
 
