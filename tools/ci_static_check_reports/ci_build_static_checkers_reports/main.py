@@ -29,7 +29,7 @@ from tasks import CONFIG_FILE, TOOLS_VERSIONS, _run_task  # noqa
 TASK_COMMANDS: Dict[str, List[str]] = {
     "black": [
         f"pip install black~={TOOLS_VERSIONS['black']}",
-        f"XDG_CACHE_HOME={os.devnull} black -v {{check_option}} --diff {{source_path}}/. > {{reports_path}}/black.txt",
+        f"XDG_CACHE_HOME={os.devnull} black --config {{toml_config_file}} --diff {{source_path}} | tee {{reports_path}}/black.diff",
     ],
     "coverage": [
         "pip install .",
@@ -45,7 +45,7 @@ TASK_COMMANDS: Dict[str, List[str]] = {
     "isort": [
         f"pip install colorama~={TOOLS_VERSIONS['colorama']}",
         f"pip install isort~={TOOLS_VERSIONS['isort']}",
-        "isort -v {check_option} {source_path}/. > {reports_path}/isort.txt",
+        "isort --check --diff {source_path} | sed 's/\x1b\[[0-9;]*m//g' | tee {reports_path}/isort.diff",
     ],
     "mypy": [
         f"pip install lxml~={TOOLS_VERSIONS['lxml']} mypy~={TOOLS_VERSIONS['mypy']} .",

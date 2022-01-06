@@ -16,8 +16,6 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 from .helpers import Helpers
-
-
 # Basic full refresh stream
 class AirtableStream(HttpStream, ABC):
     url_base = "https://api.airtable.com/v0/"
@@ -61,6 +59,8 @@ class AirtableStream(HttpStream, ABC):
         json_response = response.json()
         records = json_response.get("records", [])
         records = self.process_records(records)
+
+
         yield from records
 
     def path(

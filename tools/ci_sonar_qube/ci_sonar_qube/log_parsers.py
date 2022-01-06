@@ -4,12 +4,15 @@ import re
 from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
+from pathlib import Path
 from typing import Callable, TextIO, List, Optional, Mapping, Any
 
 from mypy.errorcodes import error_codes as mypy_error_codes, ErrorCode
+from unidiff import PatchSet
 
 from .sonar_qube_api import SonarQubeApi
 
+HERE = Path(os.getcwd())
 RE_MYPY_LINE = re.compile(r"^(.+):(\d+):(\d+):")
 RE_MYPY_LINE_WO_COORDINATES = re.compile(r"^(.+): error: (.+)")
 
@@ -69,14 +72,35 @@ def generate_mypy_rules() -> Mapping[str, Rule]:
 
 class LogParser(SonarQubeApi):
     _mypy_rules: Mapping[str, Rule] = generate_mypy_rules()
+    _black_rule = Rule(
+        rule_type=Rule.Type.code_smell,
+        key="need_format",
+        name="Should be formatted (black)",
+        description='Please run one of the commands: "black --config ./pyproject.toml <path_to_updated_folder>" or "./gradlew format"',
+        tool_name="black",
+        severity=IssueSeverity.minor,
+        template="python:CommentRegularExpression"
+    )
+
+    _isort_rule = Rule(
+        rule_type=Rule.Type.code_smell,
+        key="need_format",
+        name="Should be formatted (isort)",
+        description='Please run one of the commands: "isort <path_to_updated_folder>" or "./gradlew format"',
+        tool_name="isort",
+        severity=IssueSeverity.minor,
+        template="python:CommentRegularExpression"
+    )
 
     @dataclass
     class Issue:
         path: str
-        line_number: int  # 1-indexed
-        column_number: int  # 1-indexed
+
         rule: Rule
         description: str
+
+        line_number: int = None  # 1-indexed
+        column_number: int = None  # 1-indexed
 
         def to_json(self):
             data = {
@@ -193,8 +217,6 @@ class LogParser(SonarQubeApi):
                     continue
                 items.append(self.Issue(
                     path=m.group(1).strip(),
-                    line_number=None,
-                    column_number=None,
                     description=m.group(2).strip(),
                     rule=self._mypy_rules["[unknown]"],
                 ))
@@ -242,3 +264,43 @@ class LogParser(SonarQubeApi):
             description=description.strip(),
             rule=rule,
         )
+
+    @staticmethod
+    def __parse_diff(lines: List[str]) -> Mapping[str, int]:
+        """Converts diff lines to mapping:
+           {file1: <updated_code_part1>, file2: <updated_code_part2>}
+        """
+        patch = PatchSet(lines, metadata_only=True)
+        return {updated_file.path: len(updated_file) for updated_file in patch}
+
+    @prepare_file
+    def from_black(self, file: TextIO) -> List[Issue]:
+        return [self.Issue(
+            path=path,
+            description=f"{count} code part(s) should be updated.",
+            rule=self._black_rule,
+        ) for path, count in self.__parse_diff(file.readlines()).items()]
+
+    @prepare_file
+    def from_isort(self, file: TextIO) -> List[Issue]:
+        # remove latest line with "Skipped ..."
+        # because diff parser can't parse it
+        changes = defaultdict(lambda: 0)
+        for path, count in self.__parse_diff(list(file.readlines())[:-1]).items():
+            # check path value
+            # path in isort diff file has the following format
+            # <absolute path>:before|after
+            if path.startswith(str(HERE) + "/"):
+                # remove a parent part of path
+                path = path[len(str(HERE) + "/"):]
+            if path.endswith(":before"):
+                path = path[:-len(":before")]
+            elif path.endswith(":after"):
+                path = path[:-len(":after")]
+            changes[path] += count
+
+        return [self.Issue(
+            path=path,
+            description=f"{count} code part(s) should be updated.",
+            rule=self._isort_rule,
+        ) for path, count in changes.items()]

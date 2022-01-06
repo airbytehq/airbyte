@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["requests", "ci_common_utils", "mdutils~=1.3.1", "mypy"]
+MAIN_REQUIREMENTS = ["requests", "ci_common_utils", "mdutils~=1.3.1", "mypy", "unidiff"]
 
 TEST_REQUIREMENTS = ["requests-mock", "pytest"]
 

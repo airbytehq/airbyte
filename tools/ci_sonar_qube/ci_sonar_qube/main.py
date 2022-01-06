@@ -6,7 +6,7 @@ from .sonar_qube_api import SonarQubeApi
 
 
 def main() -> int:
-    convert_key = "--mypy_log" in sys.argv
+    convert_key = len(set(["--mypy_log", "--black_diff", "--isort_diff"]) & set(sys.argv)) > 0
     need_print_key = "--print_key" in sys.argv
 
     parser = argparse.ArgumentParser(description='Working with SonarQube instance.')
@@ -25,6 +25,8 @@ def main() -> int:
     command.add_argument('--remove', help='remove project', action="store_true")
 
     parser.add_argument('--mypy_log', help='Path to MyPy Logs', required=False, type=str)
+    parser.add_argument('--black_diff', help='Path to Black Diff', required=False, type=str)
+    parser.add_argument('--isort_diff', help='Path to iSort Diff', required=False, type=str)
     parser.add_argument('--output_file', help='Path of output file', required=convert_key, type=str)
 
     args = parser.parse_args()
@@ -32,6 +34,10 @@ def main() -> int:
         parser = LogParser(output_file=args.output_file, host=args.host, token=args.token)
         if args.mypy_log:
             return parser.from_mypy(args.mypy_log)
+        if args.black_diff:
+            return parser.from_black(args.black_diff)
+        if args.isort_diff:
+            return parser.from_isort(args.isort_diff)
     api = SonarQubeApi(host=args.host, token=args.token, pr_name=args.pr)
 
     project_name = api.module2project(args.module) if args.module else args.project
