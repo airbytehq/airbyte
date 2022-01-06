@@ -17,8 +17,6 @@ from plaid.api import plaid_api
 from plaid.model.accounts_balance_get_request import AccountsBalanceGetRequest
 from plaid.model.transactions_get_request import TransactionsGetRequest
 
-from .plaid_requester import PlaidRequester
-
 SPEC_ENV_TO_PLAID_ENV = {
     "production": plaid.Environment.Production,
     "development": plaid.Environment.Development,
@@ -70,9 +68,6 @@ class IncrementalTransactionStream(PlaidStream):
 
     @property
     def source_defined_cursor(self) -> bool:
-        """
-        Return False if the cursor can be configured by the user.
-        """
         return True
 
     @property
