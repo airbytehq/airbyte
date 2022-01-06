@@ -14,9 +14,9 @@ The project is under development: readers can refer to our [tech spec deck](http
 We encourage users to use the CLI with docker to avoid the hassle of setting up a Python installation. 
 The project is under development: we have not yet published any docker image to our Docker registry.
 
-1. Build the image locally:
+1. Build the image locally (from the root of the repo):
 ```bash
-docker build -t octavia-cli:dev --rm .
+SUB_BUILD=OCTAVIA_CLI ./gradlew build #from the root of the repo
 ```
 2. Run the CLI from docker:
 ```bash
