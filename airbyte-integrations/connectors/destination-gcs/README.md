@@ -35,7 +35,7 @@ Two service accounts have been created in our GCP for testing this destination. 
   - LastPass entry: `destination gcs creds`
 
 - Account: `gcs-destination-failure-test@dataline-integration-testing.iam.gserviceaccount.com`
-  - This account does not have the `storage.multipartUploads` permissions, and will fail the integration test.
+  - This account does not have the `storage.multipartUploads` permissions, and will fail the integration test. The purpose of this account is to test that the `check` command can correctly detect the lack of these permissions and return an error message.
   - Role: `GCS Destination User Without Multipart Permission`
     - Permissions:
       ```
