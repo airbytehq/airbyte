@@ -708,6 +708,7 @@ where 1 = 1
 
         if (
             self.destination_type == DestinationType.BIGQUERY
+            and self.get_cursor_field_property_name(column_names) != self.airbyte_emitted_at
             and is_number(self.properties[self.get_cursor_field_property_name(column_names)]["type"])
         ):
             # partition by float columns is not allowed in BigQuery, cast it to string
