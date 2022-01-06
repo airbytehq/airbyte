@@ -272,6 +272,7 @@ class DefaultReplicationWorkerTest {
             .withStreamNameToRecordsCommitted(new MapInt().withAdditionalProperty("stream1", 6L))
             .withTotalRecordsCommitted(6L)
             .withTotalRecordsEmitted(12L)
+            .withTotalBytesEmitted(100L)
             .withTotalStateMessagesEmitted(3L))
         .withOutputCatalog(syncInput.getCatalog())
         .withState(new State().withState(expectedState));

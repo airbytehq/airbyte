@@ -10,6 +10,7 @@ required:
   - startTime
   - endTime
   - totalRecordsEmitted
+  - totalBytesEmitted
   - streamNameToRecordsEmitted
   - streamNameToBytesEmitted
   - totalStateMessagesEmitted
@@ -20,7 +21,7 @@ properties:
   recordsSynced: # TODO (parker) remove in favor of totalRecordsEmitted
     type: integer
     minValue: 0
-  bytesSynced: # TODO (parker) should we also remove this in favor of a better-named 'totalBytesEmitted' field?
+  bytesSynced: # TODO (parker) remove in favor of totalBytesEmitted
     type: integer
     minValue: 0
   startTime:
@@ -33,6 +34,9 @@ properties:
   streamNameToRecordsEmitted:
     "$ref": MapInt.yaml
   totalStateMessagesEmitted:
+    type: integer
+    minValue: 0
+  totalBytesEmitted:
     type: integer
     minValue: 0
   streamNameToBytesEmitted:

@@ -162,8 +162,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       final ReplicationAttemptSummary summary = new ReplicationAttemptSummary()
           .withStatus(outputStatus)
           .withRecordsSynced(messageTracker.getTotalRecordsEmitted()) // TODO (parker) remove in favor of totalRecordsEmitted
+          .withBytesSynced(messageTracker.getTotalBytesEmitted()) // TODO (parker) remove in favor of totalBytesEmitted
           .withTotalRecordsEmitted(messageTracker.getTotalRecordsEmitted())
-          .withBytesSynced(messageTracker.getTotalBytesEmitted()) // TODO (parker) rename to totalBytesEmitted?
+          .withTotalBytesEmitted(messageTracker.getTotalBytesEmitted())
           .withTotalStateMessagesEmitted(messageTracker.getTotalStateMessagesEmitted())
           .withStreamNameToBytesEmitted(streamNameToBytesEmitted)
           .withStreamNameToRecordsEmitted(streamNameToRecordsEmitted)
