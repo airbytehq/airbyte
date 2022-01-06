@@ -11,6 +11,7 @@ from requests.auth import HTTPBasicAuth
 from ci_common_utils import Logger
 
 AIRBYTE_PROJECT_PREFIX = "airbyte"
+RE_RULE_NAME = re.compile(r"(.+):[A-Za-z]+(\d+)")
 
 REPORT_METRICS = (
     "alert_status",
@@ -173,22 +174,50 @@ class SonarQubeApi:
         md_file.new_line(f'### SonarQube report for {project_data["name"]}')
 
         project_name = project_data["project"]
-        issues = []
-        page = 1
+
+        issues = self._get_list(f"issues/search?componentKeys={project_name}&additionalFields=_all", "issues")
         rules = {}
-        while True:
-            data = self._get(f"issues/search?componentKeys={project_name}&additionalFields=_all&p={page}")
-            needed_rules = set(issue["rule"] for issue in data["issues"])
-            issues += data["issues"]
-            for needed_rule in needed_rules:
-                if needed_rule in rules:
-                    continue
-                for rule in data["rules"]:
-                    if rule["key"] == needed_rule:
-                        rules[needed_rule] = rule["name"]
-            if data["paging"]["total"] <= len(issues):
-                break
-            page += 1
+        for rule_key in set(issue["rule"] for issue in issues):
+            key_parts = rule_key.split(":")
+            while len(key_parts) > 2:
+                key_parts.pop(0)
+            key = ":".join(key_parts)
+
+            data = self._get(f"rules/search?rule_key={key}")["rules"]
+            if not data:
+                data = self._get(f"rules/show?key={rule_key}")["rule"]
+            else:
+                data = data[0]
+
+            description = data["name"]
+            public_name = key
+            link = None
+            if rule_key.startswith("external_"):
+                public_name = key.replace("external_", "")
+                if not data["isExternal"]:
+                    # this is custom rule
+                    description = data["htmlDesc"]
+                if public_name.startswith("flake"):
+                    # single link for all descriptions
+                    link = "https://flake8.pycqa.org/en/latest/user/error-codes.html"
+            else:
+                # link's example
+                # https://rules.sonarsource.com/python/RSPEC-6287
+                m = RE_RULE_NAME.match(public_name)
+                if not m:
+                    # for local server
+                    link = f"{self._host}coding_rules?open={key}&rule_key={key}"
+                else:
+                    # to public SQ docs
+                    link = f"https://rules.sonarsource.com/{m.group(1)}/RSPEC-{m.group(2)}"
+            if link:
+                public_name = md_file.new_inline_link(
+                    link=link,
+                    text=public_name
+                )
+
+            rules[rule_key] = (public_name, description)
+
         data = self._get(f"measures/component?component={project_name}&additionalFields=metrics&metricKeys={','.join(REPORT_METRICS)}")
         measures = {}
         total_coverage = None
@@ -250,22 +279,23 @@ class SonarQubeApi:
         if issues:
             md_file.new_line('#### Detected Issues')
             table_items = [
-                "Rule", "Component", "Description", "Message"
+                "Rule", "File", "Description", "Message"
             ]
             for issue in issues:
-                rule_name = issue["rule"]
-                rule_link = md_file.new_inline_link(
-                    link=f'{self._host}/coding_rules?open={rule_name}&rule_key={rule_name}',
-                    text=rule_name
-                )
-                filename = issue["component"].split("/")[-1]
+                rule_name, description = rules[issue["rule"]]
+                path = issue["component"].split(":")[-1].split("/")
+                # need to show only 2 last path parts
+                while len(path) > 2:
+                    path.pop(0)
+                path = "/".join(path)
+
+                # add line number in the end
                 if issue.get("line"):
-                    filename += ':{issue["line"]}'
+                    path += f':{issue["line"]}'
                 table_items += [
-                    f'{rule_link} ({issue["severity"]})',
-                    # issue["component"].replace(issue["project"] + ":", ""),
-                    filename,
-                    rules[rule_name],
+                    f'{rule_name} ({issue["severity"]})',
+                    path,
+                    description,
                     issue["message"],
                 ]
 
