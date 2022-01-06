@@ -31,24 +31,24 @@ def init() -> None:
 
 @octavia.command(name="list", help="List existing resources on the Airbyte instance.")
 def _list() -> None:
-    raise click.ClickException("The init command is not yet implemented.")
+    raise click.ClickException("The list command is not yet implemented.")
 
 
 @octavia.command(name="import", help="Import an existing resources from the Airbyte instance.")
 def _import() -> None:
-    raise click.ClickException("The init command is not yet implemented.")
+    raise click.ClickException("The import command is not yet implemented.")
 
 
 @octavia.command(help="Generate a YAML configuration file to manage a resource.")
 def create() -> None:
-    raise click.ClickException("The init command is not yet implemented.")
+    raise click.ClickException("The create command is not yet implemented.")
 
 
 @octavia.command(help="Create or update resources according to YAML configurations.")
 def apply() -> None:
-    raise click.ClickException("The init command is not yet implemented.")
+    raise click.ClickException("The apply command is not yet implemented.")
 
 
 @octavia.command(help="Delete resources")
 def delete() -> None:
-    raise click.ClickException("The init command is not yet implemented.")
+    raise click.ClickException("The delete command is not yet implemented.")
