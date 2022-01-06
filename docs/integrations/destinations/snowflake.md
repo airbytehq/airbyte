@@ -198,7 +198,7 @@ Finally, you need to add read/write permissions to your bucket with that email.
 
 | Version | Date      | Pull Request | Subject |
 |:--------| :-------- | :-----       | :------ |
-| 0.3.25  | 2021-12-27 | [#9063](https://github.com/airbytehq/airbyte/pull/9063) | Updated normalization to produce permanent tables |
+| 0.4.0  | 2021-12-27 | [#9063](https://github.com/airbytehq/airbyte/pull/9063) | Updated normalization to produce permanent tables |
 | 0.3.24  | 2021-12-23 | [#8869](https://github.com/airbytehq/airbyte/pull/8869) | Changed staging approach to Byte-Buffered |
 | 0.3.23  | 2021-12-22 | [#9039](https://github.com/airbytehq/airbyte/pull/9039) | Added part_size configuration in UI for S3 loading method |
 | 0.3.22  | 2021-12-21 | [#9006](https://github.com/airbytehq/airbyte/pull/9006) | Updated jdbc schema naming to follow Snowflake Naming Conventions |
