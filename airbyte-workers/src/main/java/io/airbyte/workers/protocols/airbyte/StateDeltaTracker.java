@@ -43,8 +43,8 @@ public class StateDeltaTracker {
    * Every time a state is added, a new byte[] containing the state hash and per-stream delta will be
    * added to this list. Every time a state is committed, state deltas up to the committed state are
    * removed from the head of the list and aggregated into the committed count map. The source thread
-   * adds while the destination thread removes, so those respective methods are synchronized to
-   * prevent thread-safety issues.
+   * adds while the destination thread removes, so synchronization is necessary to provide
+   * thread-safety.
    */
   @VisibleForTesting
   protected final List<byte[]> stateDeltas;
@@ -66,13 +66,13 @@ public class StateDeltaTracker {
    * Converts the given state hash and per-stream record count map into a {@code byte[]} and stores
    * it.
    *
-   * This method is synchronized to provide thread safety between the source thread calling addState
+   * This method leverages a synchronized block to provide thread safety between the source thread calling addState
    * while the destination thread calls commitStateHash.
    *
    * @throws CapacityExceededException thrown when the memory footprint of stateDeltas exceeds
    *         available capacity.
    */
-  public synchronized void addState(final int stateHash, final Map<Short, Long> streamIndexToRecordCount) throws CapacityExceededException {
+  public void addState(final int stateHash, final Map<Short, Long> streamIndexToRecordCount) throws CapacityExceededException {
     final int size = STATE_HASH_BYTES + (streamIndexToRecordCount.size() * BYTES_PER_STREAM);
 
     if (capacityExceeded || remainingCapacity < size) {
@@ -89,14 +89,16 @@ public class StateDeltaTracker {
       delta.putLong(entry.getValue());
     }
 
-    stateDeltas.add(delta.array());
-    remainingCapacity -= delta.array().length;
+    synchronized (this) {
+      stateDeltas.add(delta.array());
+      remainingCapacity -= delta.array().length;
+    }
   }
 
   /**
    * Mark the given {@code stateHash} as committed.
    *
-   * This method is synchronized to provide thread safety between the source thread calling addState
+   * This method leverages a synchronized block to provide thread safety between the source thread calling addState
    * while the destination thread calls commitStateHash.
    *
    * @throws StateHashConflictException thrown when the given {@code stateHash} is already committed
@@ -111,34 +113,35 @@ public class StateDeltaTracker {
       throw new StateHashConflictException(String.format("State hash %d was already committed, likely indicating a state hash collision", stateHash));
     }
 
-    this.committedStateHashes.add(stateHash);
-    int currStateHash;
+    synchronized (this) {
+      this.committedStateHashes.add(stateHash);
+      int currStateHash;
+      do {
+        if (stateDeltas.isEmpty()) {
+          // Should never happen as long as addState always called before commitStateHash
+          throw new IllegalStateException(String.format("Delta was not stored for state hash %d", stateHash));
+        }
 
-    do {
-      if (stateDeltas.isEmpty()) {
-        // Should never happen as long as addState always called before commitStateHash
-        throw new IllegalStateException(String.format("Delta was not stored for state hash %d", stateHash));
-      }
+        // as deltas are removed and aggregated into committed count map, reclaim capacity
+        final ByteBuffer currDelta = ByteBuffer.wrap(stateDeltas.remove(0));
+        remainingCapacity += currDelta.capacity();
 
-      // as deltas are removed and aggregated into committed count map, reclaim capacity
-      final ByteBuffer currDelta = ByteBuffer.wrap(stateDeltas.remove(0));
-      remainingCapacity += currDelta.capacity();
+        // read stateHash from byte[] and move offset forward
+        currStateHash = currDelta.getInt();
 
-      // read stateHash from byte[] and move offset forward
-      currStateHash = currDelta.getInt();
+        final int numStreams = (currDelta.capacity() - STATE_HASH_BYTES) / BYTES_PER_STREAM;
+        for (int i = 0; i < numStreams; i++) {
+          final short streamIndex = currDelta.getShort();
 
-      final int numStreams = (currDelta.capacity() - STATE_HASH_BYTES) / BYTES_PER_STREAM;
-      for (int i = 0; i < numStreams; i++) {
-        final short streamIndex = currDelta.getShort();
+          // read record count from byte[] and move offset forward
+          final long recordCount = currDelta.getLong();
 
-        // read record count from byte[] and move offset forward
-        final long recordCount = currDelta.getLong();
-
-        // aggregate delta into committed count map
-        final long committedRecordCount = streamToCommittedRecords.getOrDefault(streamIndex, 0L);
-        streamToCommittedRecords.put(streamIndex, committedRecordCount + recordCount);
-      }
-    } while (currStateHash != stateHash); // repeat until each delta up to the committed state is aggregated
+          // aggregate delta into committed count map
+          final long committedRecordCount = streamToCommittedRecords.getOrDefault(streamIndex, 0L);
+          streamToCommittedRecords.put(streamIndex, committedRecordCount + recordCount);
+        }
+      } while (currStateHash != stateHash); // repeat until each delta up to the committed state is aggregated
+    }
   }
 
   public Map<Short, Long> getStreamToCommittedRecords() {
