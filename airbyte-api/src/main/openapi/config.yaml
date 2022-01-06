@@ -2053,6 +2053,7 @@ components:
           format: uri
         icon:
           type: string
+          nullable: true
     SourceDefinitionReadList:
       type: object
       required:
@@ -2316,6 +2317,7 @@ components:
           format: uri
         icon:
           type: string
+          nullable: true
     DestinationDefinitionReadList:
       type: object
       required:

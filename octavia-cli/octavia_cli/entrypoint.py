@@ -6,6 +6,8 @@ import airbyte_api_client
 import click
 from airbyte_api_client.api import workspace_api
 
+from .list import commands as list_commands
+
 
 @click.group()
 @click.option("--airbyte-url", envvar="AIRBYTE_URL", default="http://localhost:8000", help="The URL of your Airbyte instance.")
@@ -24,14 +26,12 @@ def octavia(ctx: click.Context, airbyte_url: str) -> None:
     ctx.obj["WORKSPACE_ID"] = workspace_id
 
 
+octavia.add_command(list_commands._list)
+
+
 @octavia.command(help="Scaffolds a local project directories.")
 def init() -> None:
     raise click.ClickException("The init command is not yet implemented.")
-
-
-@octavia.command(name="list", help="List existing resources on the Airbyte instance.")
-def _list() -> None:
-    raise click.ClickException("The list command is not yet implemented.")
 
 
 @octavia.command(name="import", help="Import an existing resources from the Airbyte instance.")
