@@ -3,7 +3,7 @@
     partition_by = {"field": "_airbyte_active_row", "data_type": "int64", "range": {"start": 0, "end": 1, "interval": 1}},
     unique_key = "_airbyte_unique_key_scd",
     schema = "test_normalization",
-    post_hook = ['drop view _airbyte_test_normalization.nested_stream_with_complex_columns_resulting_into_long_names_stg'],
+    post_hook = ["drop view _airbyte_test_normalization.nested_stream_with_complex_columns_resulting_into_long_names_stg"],
     tags = [ "top-level" ]
 ) }}
 -- depends_on: ref('nested_stream_with_complex_columns_resulting_into_long_names_stg')

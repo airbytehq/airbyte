@@ -3,7 +3,7 @@
     partition_by = {"field": "_airbyte_active_row", "data_type": "int64", "range": {"start": 0, "end": 1, "interval": 1}},
     unique_key = "_airbyte_unique_key_scd",
     schema = "test_normalization",
-    post_hook = ['drop view _airbyte_test_normalization.dedup_exchange_rate_stg'],
+    post_hook = ["drop view _airbyte_test_normalization.dedup_exchange_rate_stg"],
     tags = [ "top-level" ]
 ) }}
 -- depends_on: ref('dedup_exchange_rate_stg')

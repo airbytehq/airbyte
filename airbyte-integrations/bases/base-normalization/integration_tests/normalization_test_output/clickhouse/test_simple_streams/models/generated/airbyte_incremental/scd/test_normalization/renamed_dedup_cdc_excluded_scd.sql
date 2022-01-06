@@ -1,7 +1,7 @@
 {{ config(
     unique_key = "_airbyte_unique_key_scd",
     schema = "test_normalization",
-    post_hook = ['drop view _airbyte_test_normalization.renamed_dedup_cdc_excluded_stg'],
+    post_hook = ["drop view _airbyte_test_normalization.renamed_dedup_cdc_excluded_stg"],
     tags = [ "top-level" ]
 ) }}
 -- depends_on: ref('renamed_dedup_cdc_excluded_stg')
