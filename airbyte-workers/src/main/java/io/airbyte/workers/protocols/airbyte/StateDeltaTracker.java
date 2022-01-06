@@ -36,9 +36,6 @@ public class StateDeltaTracker {
   private static final int RECORD_COUNT_BYTES = Long.BYTES;
   private static final int BYTES_PER_STREAM = STREAM_INDEX_BYTES + RECORD_COUNT_BYTES;
 
-  private final ByteBuffer stateHashByteBuffer;
-  private final ByteBuffer streamIndexByteBuffer;
-  private final ByteBuffer recordCountByteBuffer;
   private final Set<Integer> committedStateHashes;
   private final HashMap<Short, Long> committedRecordsByStream;
 
@@ -58,9 +55,6 @@ public class StateDeltaTracker {
   protected boolean capacityExceeded;
 
   public StateDeltaTracker(final long memoryLimitBytes) {
-    this.stateHashByteBuffer = ByteBuffer.allocate(STATE_HASH_BYTES);
-    this.streamIndexByteBuffer = ByteBuffer.allocate(STREAM_INDEX_BYTES);
-    this.recordCountByteBuffer = ByteBuffer.allocate(RECORD_COUNT_BYTES);
     this.committedStateHashes = new HashSet<>();
     this.committedRecordsByStream = new HashMap<>();
     this.stateDeltas = new ArrayList<>();
@@ -86,37 +80,17 @@ public class StateDeltaTracker {
       throw new CapacityExceededException("Memory capacity is exceeded for StateDeltaTracker.");
     }
 
-    final byte[] delta = new byte[size];
-    int offset = 0;
+    final ByteBuffer delta = ByteBuffer.allocate(size);
 
-    stateHashByteBuffer.putInt(stateHash);
-    stateHashByteBuffer.flip();
-    stateHashByteBuffer.get(delta, offset, STATE_HASH_BYTES);
-    stateHashByteBuffer.clear();
-
-    // move offset forward now that the int state hash was inserted
-    offset += STATE_HASH_BYTES;
+    delta.putInt(stateHash);
 
     for (final Map.Entry<Short, Long> entry : streamIndexToRecordCount.entrySet()) {
-      streamIndexByteBuffer.putShort(entry.getKey().shortValue());
-      streamIndexByteBuffer.flip();
-      streamIndexByteBuffer.get(delta, offset, STREAM_INDEX_BYTES);
-      streamIndexByteBuffer.clear();
-
-      // move offset forward now that the short stream index was inserted
-      offset += STREAM_INDEX_BYTES;
-
-      recordCountByteBuffer.putLong(entry.getValue().longValue());
-      recordCountByteBuffer.flip();
-      recordCountByteBuffer.get(delta, offset, RECORD_COUNT_BYTES);
-      recordCountByteBuffer.clear();
-
-      // move offset forward now that the long record count was inserted
-      offset += RECORD_COUNT_BYTES;
+      delta.putShort(entry.getKey());
+      delta.putLong(entry.getValue());
     }
 
-    stateDeltas.add(delta);
-    remainingCapacity -= delta.length;
+    stateDeltas.add(delta.array());
+    remainingCapacity -= delta.array().length;
   }
 
   /**
@@ -147,32 +121,18 @@ public class StateDeltaTracker {
       }
 
       // as deltas are removed and aggregated into committed count map, reclaim capacity
-      final byte[] currDelta = stateDeltas.remove(0);
-      remainingCapacity += currDelta.length;
+      final ByteBuffer currDelta = ByteBuffer.wrap(stateDeltas.remove(0));
+      remainingCapacity += currDelta.capacity();
 
-      int offset = 0;
       // read stateHash from byte[] and move offset forward
-      stateHashByteBuffer.put(currDelta, offset, STATE_HASH_BYTES);
-      stateHashByteBuffer.flip();
-      currStateHash = stateHashByteBuffer.getInt();
-      stateHashByteBuffer.clear();
-      offset += STATE_HASH_BYTES;
+      currStateHash = currDelta.getInt();
 
-      final int numStreams = (currDelta.length - STATE_HASH_BYTES) / BYTES_PER_STREAM;
+      final int numStreams = (currDelta.capacity() - STATE_HASH_BYTES) / BYTES_PER_STREAM;
       for (int i = 0; i < numStreams; i++) {
-        // read stream index from byte[] and move offset forward
-        streamIndexByteBuffer.put(currDelta, offset, STREAM_INDEX_BYTES);
-        streamIndexByteBuffer.flip();
-        final short streamIndex = streamIndexByteBuffer.getShort();
-        streamIndexByteBuffer.clear();
-        offset += STREAM_INDEX_BYTES;
+        final short streamIndex = currDelta.getShort();
 
         // read record count from byte[] and move offset forward
-        recordCountByteBuffer.put(currDelta, offset, RECORD_COUNT_BYTES);
-        recordCountByteBuffer.flip();
-        final long recordCount = recordCountByteBuffer.getLong();
-        recordCountByteBuffer.clear();
-        offset += RECORD_COUNT_BYTES;
+        final long recordCount = currDelta.getLong();
 
         // aggregate delta into committed count map
         final long committedRecordCount = committedRecordsByStream.getOrDefault(streamIndex, 0L);
