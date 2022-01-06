@@ -272,7 +272,7 @@ public class SetupForNormalizedTablesTest {
   public static List<SourceOAuthParameter> sourceOauthParameters() {
     final SourceOAuthParameter sourceOAuthParameter1 = new SourceOAuthParameter()
         .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
-        .withWorkspaceId(WORKSPACE_ID)
+        .withWorkspaceId(null)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_1)
         .withOauthParameterId(SOURCE_OAUTH_PARAMETER_ID_1);
     final SourceOAuthParameter sourceOAuthParameter2 = new SourceOAuthParameter()
@@ -286,7 +286,7 @@ public class SetupForNormalizedTablesTest {
   public static List<DestinationOAuthParameter> destinationOauthParameters() {
     final DestinationOAuthParameter destinationOAuthParameter1 = new DestinationOAuthParameter()
         .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
-        .withWorkspaceId(WORKSPACE_ID)
+        .withWorkspaceId(null)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_1)
         .withOauthParameterId(DESTINATION_OAUTH_PARAMETER_ID_1);
     final DestinationOAuthParameter destinationOAuthParameter2 = new DestinationOAuthParameter()

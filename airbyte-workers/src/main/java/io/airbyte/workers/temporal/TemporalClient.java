@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -150,6 +151,15 @@ public class TemporalClient {
             connectionId));
   }
 
+  public void migrateSyncIfNeeded(final Set<UUID> connectionIds) {
+    connectionIds.forEach((connectionId) -> {
+      if (!isWorkflowRunning(getConnectionManagerName(connectionId))) {
+        log.info("Migrating: " + connectionId);
+        submitConnectionUpdaterAsync(connectionId);
+      }
+    });
+  }
+
   public void submitConnectionUpdaterAsync(final UUID connectionId) {
     log.info("Starting the scheduler temporal wf");
     final ConnectionManagerWorkflow connectionManagerWorkflow = getWorkflowOptionsWithWorkflowId(ConnectionManagerWorkflow.class,
@@ -185,7 +195,7 @@ public class TemporalClient {
 
   public ManualSyncSubmissionResult startNewManualSync(final UUID connectionId) {
     log.info("Manual sync request");
-    final boolean isWorflowRunning = isWorkflowRunning("connection_updater_" + connectionId);
+    final boolean isWorflowRunning = isWorkflowRunning(getConnectionManagerName(connectionId));
 
     if (!isWorflowRunning) {
       return new ManualSyncSubmissionResult(
@@ -194,7 +204,7 @@ public class TemporalClient {
     }
 
     final ConnectionManagerWorkflow connectionManagerWorkflow =
-        getExistingWorkflow(ConnectionManagerWorkflow.class, "connection_updater_" + connectionId);
+        getExistingWorkflow(ConnectionManagerWorkflow.class, getConnectionManagerName(connectionId));
     final WorkflowState workflowState = connectionManagerWorkflow.getState();
 
     if (workflowState.isRunning()) {
@@ -236,7 +246,7 @@ public class TemporalClient {
   public ManualSyncSubmissionResult startNewCancelation(final UUID connectionId) {
     log.info("Manual sync request");
 
-    final boolean isWorflowRunning = isWorkflowRunning("connection_updater_" + connectionId);
+    final boolean isWorflowRunning = isWorkflowRunning(getConnectionManagerName(connectionId));
 
     if (!isWorflowRunning) {
       return new ManualSyncSubmissionResult(
@@ -245,7 +255,7 @@ public class TemporalClient {
     }
 
     final ConnectionManagerWorkflow connectionManagerWorkflow =
-        getExistingWorkflow(ConnectionManagerWorkflow.class, "connection_updater_" + connectionId);
+        getExistingWorkflow(ConnectionManagerWorkflow.class, getConnectionManagerName(connectionId));
 
     connectionManagerWorkflow.cancelJob();
 
@@ -343,7 +353,8 @@ public class TemporalClient {
     return false;
   }
 
-  private String getConnectionManagerName(final UUID connectionId) {
+  @VisibleForTesting
+  static String getConnectionManagerName(final UUID connectionId) {
     return "connection_manager_" + connectionId;
   }
 

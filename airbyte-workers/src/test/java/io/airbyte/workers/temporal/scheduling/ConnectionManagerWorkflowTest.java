@@ -159,7 +159,7 @@ public class ConnectionManagerWorkflowTest {
           workflowState);
 
       WorkflowClient.start(workflow::run, input);
-      testEnv.sleep(Duration.ofSeconds(4L));
+      testEnv.sleep(Duration.ofSeconds(50L));
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
       Assertions.assertThat(events)
@@ -190,8 +190,9 @@ public class ConnectionManagerWorkflowTest {
           workflowState);
 
       WorkflowClient.start(workflow::run, input);
+      testEnv.sleep(Duration.ofSeconds(30L));
       workflow.submitManualSync();
-      testEnv.sleep(Duration.ofSeconds(50L));
+      testEnv.sleep(Duration.ofSeconds(20L));
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
@@ -230,8 +231,9 @@ public class ConnectionManagerWorkflowTest {
           workflowState);
 
       WorkflowClient.start(workflow::run, input);
+      testEnv.sleep(Duration.ofSeconds(30L));
       workflow.connectionUpdated();
-      testEnv.sleep(Duration.ofSeconds(4L));
+      testEnv.sleep(Duration.ofSeconds(20L));
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
@@ -270,9 +272,9 @@ public class ConnectionManagerWorkflowTest {
           workflowState);
 
       WorkflowClient.start(workflow::run, input);
-      testEnv.sleep(Duration.ofSeconds(4L));
+      testEnv.sleep(Duration.ofSeconds(30L));
       workflow.cancelJob();
-      testEnv.sleep(Duration.ofSeconds(4L));
+      testEnv.sleep(Duration.ofSeconds(20L));
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
@@ -311,8 +313,9 @@ public class ConnectionManagerWorkflowTest {
           workflowState);
 
       WorkflowClient.start(workflow::run, input);
+      testEnv.sleep(Duration.ofSeconds(30L));
       workflow.deleteConnection();
-      testEnv.sleep(Duration.ofSeconds(4L));
+      testEnv.sleep(Duration.ofMinutes(20L));
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
@@ -378,7 +381,7 @@ public class ConnectionManagerWorkflowTest {
           workflowState);
 
       WorkflowClient.start(workflow::run, input);
-      testEnv.sleep(Duration.ofSeconds(61L));
+      testEnv.sleep(Duration.ofMinutes(2L));
       workflow.submitManualSync();
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
@@ -408,15 +411,15 @@ public class ConnectionManagerWorkflowTest {
 
       WorkflowClient.start(workflow::run, input);
       workflow.submitManualSync();
-      testEnv.sleep(Duration.ofSeconds(1L));
+      testEnv.sleep(Duration.ofSeconds(30L));
       workflow.cancelJob();
-      testEnv.sleep(Duration.ofSeconds(2L));
+      testEnv.sleep(Duration.ofMinutes(1L));
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
       Assertions.assertThat(events)
           .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.CANCELLED && changedStateEvent.isValue())
-          .hasSize(1);
+          .hasSizeGreaterThanOrEqualTo(1);
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity).jobCancelled(Mockito.any());
 
