@@ -2,7 +2,14 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+from typing import List
+
+import airbyte_api_client
 import click
+
+from .list import commands as list_commands
+
+AVAILABLE_COMMANDS: List[click.Command] = [list_commands._list]
 
 
 @click.group()
@@ -12,13 +19,13 @@ def octavia(airbyte_url):
     click.secho(f"🐙 - Octavia is targetting your Airbyte instance running at {airbyte_url}")
 
 
+def add_commands_to_octavia():
+    for command in AVAILABLE_COMMANDS:
+        octavia.add_command(command)
+
+
 @octavia.command(help="Scaffolds a local project directories.")
 def init():
-    raise click.ClickException("The init command is not yet implemented.")
-
-
-@octavia.command(name="list", help="List existing resources on the Airbyte instance.")
-def _list():
     raise click.ClickException("The init command is not yet implemented.")
 
 
@@ -38,5 +45,8 @@ def apply():
 
 
 @octavia.command(help="Delete resources")
-def delete():
-    raise click.ClickException("The init command is not yet implemented.")
+def delete() -> None:
+    raise click.ClickException("The delete command is not yet implemented.")
+
+
+add_commands_to_octavia()
