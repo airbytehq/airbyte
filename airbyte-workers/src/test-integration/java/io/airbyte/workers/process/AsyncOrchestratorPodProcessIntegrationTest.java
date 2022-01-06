@@ -168,7 +168,7 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
     }
 
     try {
-      // kubernetesClient.pods().delete();
+      // kubernetesClient.pods().delete(); // todo: revert after mostly fixed here
     } catch (Exception e) {
       e.printStackTrace();
     }
