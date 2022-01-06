@@ -134,6 +134,8 @@ def setup_test_dir(integration_type: str) -> str:
         copy_tree("../dbt-project-template-mysql", test_root_dir)
     elif integration_type == DestinationType.ORACLE.value:
         copy_tree("../dbt-project-template-oracle", test_root_dir)
+    elif integration_type == DestinationType.SNOWFLAKE.value:
+        copy_tree("../dbt-project-template-snowflake", test_root_dir)
     return test_root_dir
 
 

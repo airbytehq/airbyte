@@ -1,6 +1,6 @@
 
 
-      create or replace transient table "AIRBYTE_DATABASE".TEST_NORMALIZATION."DEDUP_EXCHANGE_RATE_SCD"  as
+      create or replace  table "AIRBYTE_DATABASE".TEST_NORMALIZATION."DEDUP_EXCHANGE_RATE_SCD"  as
       (select * from(
             
 -- depends_on: ref('DEDUP_EXCHANGE_RATE_STG')
