@@ -28,7 +28,7 @@ public class OrchestratorConstants {
       EnvConfigs.JOB_MAIN_CONTAINER_CPU_LIMIT,
       EnvConfigs.JOB_MAIN_CONTAINER_MEMORY_REQUEST,
       EnvConfigs.JOB_MAIN_CONTAINER_MEMORY_LIMIT,
-      // EnvConfigs.JOB_ENV_MAP,
+      EnvConfigs.JOB_DEFAULT_ENV_MAP,
       EnvConfigs.LOCAL_ROOT);
 
   public static final String INIT_FILE_ENV_MAP = "envMap.json";
