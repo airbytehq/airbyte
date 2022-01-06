@@ -27,10 +27,6 @@ public class CatalogHelpers {
     return new AirbyteCatalog().withStreams(Lists.newArrayList(createAirbyteStream(streamName, fields)));
   }
 
-  public static AirbyteCatalog createAirbyteCatalog(final AirbyteStream... streams) {
-    return new AirbyteCatalog().withStreams(Arrays.asList(streams));
-  }
-
   public static AirbyteStream createAirbyteStream(final String streamName, final Field... fields) {
     // Namespace is null since not all sources set it.
     return createAirbyteStream(streamName, null, Arrays.asList(fields));
