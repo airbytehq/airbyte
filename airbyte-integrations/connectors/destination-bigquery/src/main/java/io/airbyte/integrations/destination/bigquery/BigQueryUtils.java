@@ -38,8 +38,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -49,7 +47,6 @@ public class BigQueryUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUtils.class);
   private static final String BIG_QUERY_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss.SSSSSS";
-  private static final Pattern DATASET_ID_PATTERN = Pattern.compile("^(([a-z]([a-z0-9\\-]*[a-z0-9])?):)?([a-zA-Z0-9_]+)$");
 
   public static ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
     final JobId jobId = JobId.of(UUID.randomUUID().toString());
@@ -166,23 +163,21 @@ public class BigQueryUtils {
 
   public static String getDatasetId(final JsonNode config) {
     String datasetId = config.get(BigQueryConsts.CONFIG_DATASET_ID).asText();
-    Matcher matcher = DATASET_ID_PATTERN.matcher(datasetId);
 
-    if (matcher.matches()) {
-      if (!isNull(matcher.group(1))) {
-        final String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
-        if (!(projectId.equals(matcher.group(2)))) {
-          throw new IllegalArgumentException(String.format(
-              "Project ID included in Dataset ID must match Project ID field's value: Project ID is %s, but you specified %s in Dataset ID",
-              projectId,
-              matcher.group(2)));
-        }
+    int colonIndex = datasetId.indexOf(":");
+    if (colonIndex != -1) {
+      String projectIdPart = datasetId.substring(0, colonIndex);
+      String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
+      if (!(projectId.equals(projectIdPart))) {
+        throw new IllegalArgumentException(String.format(
+          "Project ID included in Dataset ID must match Project ID field's value: Project ID is `%s`, but you specified `%s` in Dataset ID",
+          projectId,
+          projectIdPart));
       }
-      return matcher.group(4);
     }
-    throw new IllegalArgumentException(String.format(
-        "BigQuery Dataset ID format must match '[project-id:]dataset_id': %s",
-        datasetId));
+    // if colonIndex is -1, then this returns the entire string
+    // otherwise it returns everything after the colon
+    return datasetId.substring(colonIndex + 1);
   }
 
   public static String getDatasetLocation(final JsonNode config) {

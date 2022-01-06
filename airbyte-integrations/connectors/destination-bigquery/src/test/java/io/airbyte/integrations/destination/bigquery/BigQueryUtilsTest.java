@@ -61,11 +61,9 @@ public class BigQueryUtilsTest {
 
   private static Stream<Arguments> invalidBigQueryIdProvider() {
     return Stream.of(
-        Arguments.arguments("my-project", ":my_dataset", "BigQuery Dataset ID format must match '[project-id:]dataset_id': :my_dataset"),
-        Arguments.arguments("my-project", "my-project:my-project:my_dataset", "BigQuery Dataset ID format must match '[project-id:]dataset_id': my-project:my-project:my_dataset"),
-        Arguments.arguments("my-project", "my-project-:my_dataset", "BigQuery Dataset ID format must match '[project-id:]dataset_id': my-project-:my_dataset"),
-        Arguments.arguments("my-project", "my-project:", "BigQuery Dataset ID format must match '[project-id:]dataset_id': my-project:"),
+        Arguments.arguments("my-project", ":my_dataset",
+            "Project ID included in Dataset ID must match Project ID field's value: Project ID is `my-project`, but you specified `` in Dataset ID"),
         Arguments.arguments("my-project", "your-project:my_dataset",
-            "Project ID included in Dataset ID must match Project ID field's value: Project ID is my-project, but you specified your-project in Dataset ID"));
+            "Project ID included in Dataset ID must match Project ID field's value: Project ID is `my-project`, but you specified `your-project` in Dataset ID"));
   }
 }
