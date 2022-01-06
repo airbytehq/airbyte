@@ -94,7 +94,7 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
           Math.toIntExact(jobRunConfig.getAttemptId()),
           Collections.emptyMap());
 
-      final var podName = "container-launcher-j-" + jobRunConfig.getJobId() + "-a-" + jobRunConfig.getAttemptId();
+      final var podName = "orchestrator-repl-j-" + jobRunConfig.getJobId() + "-a-" + jobRunConfig.getAttemptId();
       final var kubePodInfo = new KubePodInfo(containerOrchestratorConfig.namespace(), podName);
 
       process = new AsyncOrchestratorPodProcess(

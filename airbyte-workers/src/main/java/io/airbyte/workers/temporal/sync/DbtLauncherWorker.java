@@ -4,7 +4,6 @@
 
 package io.airbyte.workers.temporal.sync;
 
-import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper;
 import io.airbyte.commons.logging.MdcScope;
@@ -15,13 +14,13 @@ import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerException;
-import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.process.AsyncKubePodStatus;
+import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
+import io.airbyte.workers.process.KubePodInfo;
 import io.airbyte.workers.process.KubeProcessFactory;
-import io.airbyte.workers.process.ProcessFactory;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -40,7 +39,7 @@ public class DbtLauncherWorker implements Worker<OperatorDbtInput, Void> {
   public static final String INIT_FILE_DESTINATION_LAUNCHER_CONFIG = "destinationLauncherConfig.json";
 
   private final WorkerConfigs workerConfigs;
-  private final ProcessFactory processFactory;
+  private final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig;
   private final String airbyteVersion;
   private final Path workspaceRoot;
   private final IntegrationLauncherConfig destinationLauncherConfig;
@@ -48,30 +47,27 @@ public class DbtLauncherWorker implements Worker<OperatorDbtInput, Void> {
 
   private final AtomicBoolean cancelled = new AtomicBoolean(false);
 
-  private Process process;
+  private AsyncOrchestratorPodProcess process;
 
   public DbtLauncherWorker(
                            final Path workspaceRoot,
                            final IntegrationLauncherConfig destinationLauncherConfig,
                            final JobRunConfig jobRunConfig,
                            final WorkerConfigs workerConfigs,
-                           final ProcessFactory processFactory,
+                           final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig,
                            final String airbyteVersion) {
     this.workspaceRoot = workspaceRoot;
     this.destinationLauncherConfig = destinationLauncherConfig;
     this.jobRunConfig = jobRunConfig;
     this.workerConfigs = workerConfigs;
-    this.processFactory = processFactory;
+    this.containerOrchestratorConfig = containerOrchestratorConfig;
     this.airbyteVersion = airbyteVersion;
   }
 
+  // todo: DRY with other launcher workers
   @Override
   public Void run(OperatorDbtInput operatorDbtInput, Path jobRoot) throws WorkerException {
     try {
-      final Path jobPath = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
-
-      // we want to filter down to remove secrets, so we aren't writing over a bunch of unnecessary
-      // secrets
       final Map<String, String> envMap = System.getenv().entrySet().stream()
           .filter(entry -> OrchestratorConstants.ENV_VARS_TO_TRANSFER.contains(entry.getKey()))
           .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -83,40 +79,50 @@ public class DbtLauncherWorker implements Worker<OperatorDbtInput, Void> {
           OrchestratorConstants.INIT_FILE_ENV_MAP, Jsons.serialize(envMap),
           INIT_FILE_DESTINATION_LAUNCHER_CONFIG, Jsons.serialize(destinationLauncherConfig));
 
-      process = processFactory.create(
-          "runner-" + UUID.randomUUID().toString().substring(0, 10),
-          0,
-          jobPath,
-          "airbyte/container-orchestrator:" + airbyteVersion,
-          false,
-          fileMap,
-          null,
-          workerConfigs.getResourceRequirements(),
-          Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_RUNNER),
-          Map.of(
-              WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT,
-              OrchestratorConstants.PORT1, OrchestratorConstants.PORT1,
-              OrchestratorConstants.PORT2, OrchestratorConstants.PORT2,
-              OrchestratorConstants.PORT3, OrchestratorConstants.PORT3,
-              OrchestratorConstants.PORT4, OrchestratorConstants.PORT4));
+      final Map<Integer, Integer> portMap = Map.of(
+          WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT,
+          OrchestratorConstants.PORT1, OrchestratorConstants.PORT1,
+          OrchestratorConstants.PORT2, OrchestratorConstants.PORT2,
+          OrchestratorConstants.PORT3, OrchestratorConstants.PORT3,
+          OrchestratorConstants.PORT4, OrchestratorConstants.PORT4);
 
-      LineGobbler.gobble(process.getInputStream(), LOGGER::info, LOG_MDC_BUILDER);
-      LineGobbler.gobble(process.getErrorStream(), LOGGER::error, LOG_MDC_BUILDER);
+      final var allLabels = KubeProcessFactory.getLabels(
+          jobRunConfig.getJobId(),
+          Math.toIntExact(jobRunConfig.getAttemptId()),
+          Collections.emptyMap());
 
-      WorkerUtils.wait(process);
+      final var podName = "orchestrator-dbt-j-" + jobRunConfig.getJobId() + "-a-" + jobRunConfig.getAttemptId();
+      final var kubePodInfo = new KubePodInfo(containerOrchestratorConfig.namespace(), podName);
+
+      process = new AsyncOrchestratorPodProcess(
+          kubePodInfo,
+          containerOrchestratorConfig.documentStoreClient(),
+          containerOrchestratorConfig.kubernetesClient());
+
+      if (process.getDocStoreStatus().equals(AsyncKubePodStatus.NOT_STARTED)) {
+        process.create(
+            airbyteVersion,
+            allLabels,
+            workerConfigs.getResourceRequirements(),
+            fileMap,
+            portMap);
+      }
+
+      // this waitFor can resume if the activity is re-run
+      process.waitFor();
 
       if (process.exitValue() != 0) {
         throw new WorkerException("Non-zero exit code!");
       }
+
+      return null;
     } catch (Exception e) {
       if (cancelled.get()) {
-        throw new WorkerException("Sync was cancelled.", e);
+        throw new WorkerException("Dbt was cancelled.", e);
       } else {
-        throw new WorkerException("Running the sync attempt failed", e);
+        throw new WorkerException("Running dbt failed", e);
       }
     }
-
-    return null;
   }
 
   @Override
@@ -127,10 +133,20 @@ public class DbtLauncherWorker implements Worker<OperatorDbtInput, Void> {
       return;
     }
 
-    LOGGER.debug("Closing dbt launcher process");
-    WorkerUtils.gentleClose(workerConfigs, process, 1, TimeUnit.MINUTES);
-    if (process.isAlive() || process.exitValue() != 0) {
-      LOGGER.error("Dbt launcher process wasn't successful");
+    LOGGER.debug("Closing sync runner process");
+    process.destroy();
+
+    if (process.hasExited()) {
+      LOGGER.info("Successfully cancelled process.");
+    } else {
+      // try again
+      process.destroy();
+
+      if (process.hasExited()) {
+        LOGGER.info("Successfully cancelled process.");
+      } else {
+        LOGGER.error("Unable to cancel process");
+      }
     }
   }
 

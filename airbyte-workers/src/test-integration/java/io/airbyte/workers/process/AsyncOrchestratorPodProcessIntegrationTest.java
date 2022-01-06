@@ -6,10 +6,15 @@ package io.airbyte.workers.process;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
 import io.airbyte.config.storage.MinioS3ClientFactory;
+import io.airbyte.workers.WorkerApp;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.storage.DocumentStoreClient;
 import io.airbyte.workers.storage.S3DocumentStoreClient;
+import io.airbyte.workers.temporal.sync.OrchestratorConstants;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.EnvVar;
@@ -18,13 +23,17 @@ import io.fabric8.kubernetes.api.model.PodBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
+// todo: this should actually test the launcher worker
 public class AsyncOrchestratorPodProcessIntegrationTest {
 
   private static KubernetesClient kubernetesClient;
@@ -62,17 +71,9 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
     kubernetesClient.pods().inNamespace("default").create(minioPod);
     kubernetesClient.resource(minioPod).waitUntilReady(1, TimeUnit.MINUTES);
 
-    final var podIp = kubernetesClient.pods()
-        .inNamespace("default")
-        .withName(podName)
-        .get()
-        .getStatus()
-        .getPodIP();
+    portForwardProcess = new ProcessBuilder("kubectl", "port-forward", "pod/" + podName, "9432:9000").start();
 
-    portForwardProcess = new ProcessBuilder("kubectl", "port-forward", "pod/" + podName, "9000").start();
-
-    final var kubeMinioEndpoint = "http://" + podIp + ":9000";
-    final var localMinioEndpoint = "http://localhost:9000";
+    final var localMinioEndpoint = "http://localhost:9432";
 
     final var minioConfig = new CloudStorageConfigs.MinioConfig(
         "anything",
@@ -114,10 +115,21 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
         documentStoreClient,
         kubernetesClient);
 
-    // copy config files should be own volume?
+    final Map<Integer, Integer> portMap = Map.of(
+        WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT,
+        OrchestratorConstants.PORT1, OrchestratorConstants.PORT1,
+        OrchestratorConstants.PORT2, OrchestratorConstants.PORT2,
+        OrchestratorConstants.PORT3, OrchestratorConstants.PORT3,
+        OrchestratorConstants.PORT4, OrchestratorConstants.PORT4);
 
-    // expect first call to have a failure
-    assertThrows(InterruptedException.class, asyncProcess::exitValue);
+    final Map<String, String> envMap = System.getenv().entrySet().stream()
+            .filter(entry -> OrchestratorConstants.ENV_VARS_TO_TRANSFER.contains(entry.getKey()))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+    asyncProcess.create("dev", Map.of(), new WorkerConfigs(new EnvConfigs()).getResourceRequirements(), Map.of(
+        OrchestratorConstants.INIT_FILE_APPLICATION, AsyncOrchestratorPodProcess.NO_OP,
+            OrchestratorConstants.INIT_FILE_ENV_MAP, Jsons.serialize(envMap)
+    ), portMap);
 
     // a final activity waits until there is output from the kube pod process
     asyncProcess.waitFor(10, TimeUnit.SECONDS);
@@ -156,7 +168,7 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
     }
 
     try {
-      kubernetesClient.pods().delete();
+      // kubernetesClient.pods().delete();
     } catch (Exception e) {
       e.printStackTrace();
     }

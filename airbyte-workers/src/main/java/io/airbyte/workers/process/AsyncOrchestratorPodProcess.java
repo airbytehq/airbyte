@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.process;
 
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.storage.DocumentStoreClient;
@@ -16,6 +17,7 @@ import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -34,6 +36,9 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class AsyncOrchestratorPodProcess implements KubePod {
+
+  public static final String KUBE_POD_INFO = "KUBE_POD_INFO";
+  public static final String NO_OP = "NO_OP";
 
   private final KubePodInfo kubePodInfo;
   private final DocumentStoreClient documentStoreClient;
@@ -55,55 +60,49 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   }
 
   private int computeExitValue() {
-    final var optionalExitValue = documentStoreClient.read(getInfo().namespace() + "/" + getInfo().name() + "/exit-value");
+    final AsyncKubePodStatus docStoreStatus = getDocStoreStatus();
 
-    if (optionalExitValue.isPresent()) {
-      return Integer.parseInt(optionalExitValue.get());
-    } else {
-      final AsyncKubePodStatus docStoreStatus = getDocStoreStatus();
+    // trust the doc store if it's in a terminal state
+    if (docStoreStatus.equals(AsyncKubePodStatus.FAILED)) {
+      return 1;
+    } else if (docStoreStatus.equals(AsyncKubePodStatus.SUCCEEDED)) {
+      return 0;
+    }
 
-      // trust the doc store if it's in a terminal state
-      if (docStoreStatus.equals(AsyncKubePodStatus.FAILED)) {
+    final Pod pod = kubernetesClient.pods()
+        .inNamespace(getInfo().namespace())
+        .withName(getInfo().name())
+        .get();
+
+    // Since the pod creation blocks until the pod is created the first time,
+    // if the pod no longer exists (and we don't have a success/fail document)
+    // we must be in a state where it completed and therefore failed
+    if (pod == null) {
+      return 1;
+    }
+
+    // If the pod does exist, it may be in a terminal (error or completed) state.
+    final boolean isTerminal = KubePodProcess.isTerminal(pod);
+
+    if (isTerminal) {
+      // In case the doc store was updated in between when we pulled it and when
+      // we read the status from the Kubernetes API, we need to check the doc store again.
+      final AsyncKubePodStatus secondDocStoreStatus = getDocStoreStatus();
+      if (secondDocStoreStatus.equals(AsyncKubePodStatus.FAILED)) {
         return 1;
-      } else if (docStoreStatus.equals(AsyncKubePodStatus.SUCCEEDED)) {
+      } else if (secondDocStoreStatus.equals(AsyncKubePodStatus.SUCCEEDED)) {
         return 0;
-      }
-
-      final Pod pod = kubernetesClient.pods()
-          .inNamespace(getInfo().namespace())
-          .withName(getInfo().name())
-          .get();
-
-      // Since the pod creation blocks until the pod is created the first time,
-      // if the pod no longer exists (and we don't have a success/fail document)
-      // we must be in a state where it completed and therefore failed
-      if (pod == null) {
+      } else {
+        // otherwise, the actual pod is terminal when the doc store says it shouldn't be.
         return 1;
       }
+    }
 
-      // If the pod does exist, it may be in a terminal (error or completed) state.
-      final boolean isTerminal = KubePodProcess.isTerminal(pod);
-
-      if (isTerminal) {
-        // In case the doc store was updated in between when we pulled it and when
-        // we read the status from the Kubernetes API, we need to check the doc store again.
-        final AsyncKubePodStatus secondDocStoreStatus = getDocStoreStatus();
-        if (secondDocStoreStatus.equals(AsyncKubePodStatus.FAILED)) {
-          return 1;
-        } else if (secondDocStoreStatus.equals(AsyncKubePodStatus.SUCCEEDED)) {
-          return 0;
-        } else {
-          // otherwise, the actual pod is terminal when the doc store says it shouldn't be.
-          return 1;
-        }
-      }
-
-      // Otherwise, throw an exception because this is still running.
-      switch (docStoreStatus) {
-        case NOT_STARTED -> throw new IllegalThreadStateException("Pod hasn't started yet.");
-        case INITIALIZING -> throw new IllegalThreadStateException("Pod is initializing.");
-        default -> throw new IllegalThreadStateException("Pod is running.");
-      }
+    // Otherwise, throw an exception because this is still running.
+    switch (docStoreStatus) {
+      case NOT_STARTED -> throw new IllegalThreadStateException("Pod hasn't started yet.");
+      case INITIALIZING -> throw new IllegalThreadStateException("Pod is initializing.");
+      default -> throw new IllegalThreadStateException("Pod is running.");
     }
   }
 
@@ -248,7 +247,36 @@ public class AsyncOrchestratorPodProcess implements KubePod {
 
     // should only create after the kubernetes API creates the pod
     final var createdPod = kubernetesClient.pods().createOrReplace(pod);
-    KubePodProcess.copyFilesToKubeConfigVolume(kubernetesClient, createdPod, fileMap);
+
+    log.info("Waiting for pod to be running...");
+    try {
+      kubernetesClient.pods()
+          .inNamespace(kubePodInfo.namespace())
+          .withName(kubePodInfo.name())
+          .waitUntilCondition(p -> {
+            return !p.getStatus().getContainerStatuses().isEmpty() && p.getStatus().getContainerStatuses().get(0).getState().getWaiting() == null;
+          }, 5, TimeUnit.MINUTES);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+
+    final var containerState = kubernetesClient.pods()
+        .inNamespace(kubePodInfo.namespace())
+        .withName(kubePodInfo.name())
+        .get()
+        .getStatus()
+        .getContainerStatuses()
+        .get(0)
+        .getState();
+
+    if (containerState.getRunning() == null) {
+      throw new RuntimeException("Pod was not running, state was: " + containerState);
+    }
+
+    final var updatedFileMap = new HashMap<>(fileMap);
+    updatedFileMap.put(KUBE_POD_INFO, Jsons.serialize(kubePodInfo));
+
+    KubePodProcess.copyFilesToKubeConfigVolumeMain(createdPod, updatedFileMap);
   }
 
 }

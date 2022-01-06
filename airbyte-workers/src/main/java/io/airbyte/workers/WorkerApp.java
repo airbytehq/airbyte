@@ -143,10 +143,9 @@ public class WorkerApp {
 
     final NormalizationActivityImpl normalizationActivity =
         new NormalizationActivityImpl(
-            containerOrchestratorEnabled,
+            containerOrchestratorConfig,
             workerConfigs,
             jobProcessFactory,
-            orchestratorProcessFactory,
             secretsHydrator,
             workspaceRoot,
             workerEnvironment,
@@ -157,10 +156,9 @@ public class WorkerApp {
             airbyteVersion);
     final DbtTransformationActivityImpl dbtTransformationActivity =
         new DbtTransformationActivityImpl(
-            containerOrchestratorEnabled,
+            containerOrchestratorConfig,
             workerConfigs,
             jobProcessFactory,
-            orchestratorProcessFactory,
             secretsHydrator,
             workspaceRoot,
             workerEnvironment,

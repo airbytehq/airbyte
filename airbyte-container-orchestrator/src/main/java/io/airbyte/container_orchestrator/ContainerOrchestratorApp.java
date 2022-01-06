@@ -11,11 +11,17 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.workers.process.AsyncKubePodStatus;
+import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
 import io.airbyte.workers.process.DockerProcessFactory;
+import io.airbyte.workers.process.KubePodInfo;
+import io.airbyte.workers.process.KubePodProcess;
 import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.process.WorkerHeartbeatServer;
+import io.airbyte.workers.storage.DocumentStoreClient;
+import io.airbyte.workers.storage.StateClients;
 import io.airbyte.workers.temporal.sync.DbtLauncherWorker;
 import io.airbyte.workers.temporal.sync.NormalizationLauncherWorker;
 import io.airbyte.workers.temporal.sync.OrchestratorConstants;
@@ -43,7 +49,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ContainerOrchestratorApp {
 
-  // todo: merge in other prs before doing this, otherwise there will be conflicts
   // todo: publish logs itself instead of reporting via stdout to the parent
   // todo: use document store to publish states as part of the job orchestrator
 
@@ -53,14 +58,33 @@ public class ContainerOrchestratorApp {
 
   public static void main(final String[] args) throws Exception {
     WorkerHeartbeatServer heartbeatServer = null;
+    DocumentStoreClient documentStoreClient = null;
+    KubePodInfo kubePodInfo = null;
 
     try {
+      // wait for config files to be copied
+      final var successFile = Path.of(KubePodProcess.CONFIG_DIR, KubePodProcess.SUCCESS_FILE_NAME);
+
+      while (!successFile.toFile().exists()) {
+        log.info("Waiting for config file transfers to complete...");
+        Thread.sleep(1000);
+      }
+
       // read files that contain all necessary configuration
-      final String application = Files.readString(Path.of(OrchestratorConstants.INIT_FILE_APPLICATION));
+      final String application = Files.readString(Path.of(KubePodProcess.CONFIG_DIR, OrchestratorConstants.INIT_FILE_APPLICATION));
       final Map<String, String> envMap =
-          (Map<String, String>) Jsons.deserialize(Files.readString(Path.of(OrchestratorConstants.INIT_FILE_ENV_MAP)), Map.class);
+          (Map<String, String>) Jsons.deserialize(Files.readString(Path.of(KubePodProcess.CONFIG_DIR, OrchestratorConstants.INIT_FILE_ENV_MAP)),
+              Map.class);
+
+      kubePodInfo =
+          Jsons.deserialize(Files.readString(Path.of(KubePodProcess.CONFIG_DIR, AsyncOrchestratorPodProcess.KUBE_POD_INFO)), KubePodInfo.class);
 
       final Configs configs = new EnvConfigs(envMap::get);
+
+      documentStoreClient = StateClients.create(configs.getStateStorageCloudConfigs(), Path.of("/")); // todo: use different prefix
+
+      // todo: use a helper to get the path
+      documentStoreClient.write("/" + kubePodInfo.name() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.INITIALIZING, "");
 
       heartbeatServer = new WorkerHeartbeatServer(WorkerApp.KUBE_HEARTBEAT_PORT);
       heartbeatServer.startBackground();
@@ -70,8 +94,16 @@ public class ContainerOrchestratorApp {
       final JobOrchestrator<?> jobOrchestrator = getJobOrchestrator(configs, workerConfigs, processFactory, application);
 
       log.info("Starting {} orchestrator...", jobOrchestrator.getOrchestratorName());
+      documentStoreClient.write("/" + kubePodInfo.name() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.RUNNING, "");
       jobOrchestrator.runJob();
+      documentStoreClient.write("/" + kubePodInfo.name() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.SUCCEEDED, "");
       log.info("{} orchestrator complete!", jobOrchestrator.getOrchestratorName());
+    } catch (Throwable t) {
+      if (documentStoreClient != null && kubePodInfo != null) {
+        documentStoreClient.write("/" + kubePodInfo.name() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.FAILED, "");
+      }
+
+      throw t;
     } finally {
       if (heartbeatServer != null) {
         log.info("Shutting down heartbeat server...");
@@ -94,6 +126,8 @@ public class ContainerOrchestratorApp {
       return new NormalizationJobOrchestrator(configs, workerConfigs, processFactory);
     } else if (application.equals(DbtLauncherWorker.DBT)) {
       return new DbtJobOrchestrator(configs, workerConfigs, processFactory);
+    } else if (application.equals(AsyncOrchestratorPodProcess.NO_OP)) {
+      return new NoOpOrchestrator();
     } else {
       log.error("Runner failed", new IllegalStateException("Unexpected value: " + application));
       System.exit(1);
