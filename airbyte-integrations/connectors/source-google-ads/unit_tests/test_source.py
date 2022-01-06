@@ -10,7 +10,7 @@ from source_google_ads.streams import AdGroupAdReport, chunk_date_range
 import pendulum
 
 
-## Test chunck date range without end date
+# Test chunck date range without end date
 def test_chunk_date_range_without_end_date():
     start_date = pendulum.now().subtract(days=5).to_date_string()
     conversion_window = 0
