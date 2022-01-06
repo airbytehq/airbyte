@@ -80,7 +80,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
       return fullInput;
     };
 
-    CheckedSupplier<Worker<NormalizationInput, Void>, Exception> workerFactory;
+    final CheckedSupplier<Worker<NormalizationInput, Void>, Exception> workerFactory;
 
     if (containerOrchestratorEnabled) {
       workerFactory = getContainerLauncherWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig);
@@ -108,7 +108,8 @@ public class NormalizationActivityImpl implements NormalizationActivity {
         NormalizationRunnerFactory.create(
             workerConfigs,
             destinationLauncherConfig.getDockerImage(),
-            jobProcessFactory),
+            jobProcessFactory,
+            NormalizationRunnerFactory.NORMALIZATION_VERSION),
         workerEnvironment);
   }
 
