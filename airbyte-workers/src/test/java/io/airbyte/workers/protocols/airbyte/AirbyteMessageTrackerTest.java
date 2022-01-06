@@ -104,7 +104,7 @@ class AirbyteMessageTrackerTest {
     expected.put(STREAM_2, 2L);
     expected.put(STREAM_3, 3L);
 
-    assertEquals(expected, messageTracker.getEmittedRecordsByStream());
+    assertEquals(expected, messageTracker.getStreamToEmittedRecords());
   }
 
   @Test
@@ -129,7 +129,7 @@ class AirbyteMessageTrackerTest {
     expected.put(STREAM_2, r2Bytes * 2);
     expected.put(STREAM_3, r3Bytes * 3);
 
-    assertEquals(expected, messageTracker.getEmittedBytesByStream());
+    assertEquals(expected, messageTracker.getStreamToEmittedBytes());
   }
 
   @Test
@@ -153,14 +153,14 @@ class AirbyteMessageTrackerTest {
 
     final Map<Short, Long> countsByIndex = new HashMap<>();
     final Map<String, Long> expected = new HashMap<>();
-    Mockito.when(mStateDeltaTracker.getCommittedRecordsByStream()).thenReturn(countsByIndex);
+    Mockito.when(mStateDeltaTracker.getStreamToCommittedRecords()).thenReturn(countsByIndex);
 
     countsByIndex.put((short) 0, 1L);
     countsByIndex.put((short) 1, 2L);
     // result only contains counts up to state 1
     expected.put(STREAM_1, 1L);
     expected.put(STREAM_2, 2L);
-    assertEquals(expected, messageTracker.getCommittedRecordsByStream().get());
+    assertEquals(expected, messageTracker.getStreamToCommittedRecords().get());
 
     countsByIndex.clear();
     expected.clear();
@@ -172,7 +172,7 @@ class AirbyteMessageTrackerTest {
     expected.put(STREAM_1, 3L);
     expected.put(STREAM_2, 3L);
     expected.put(STREAM_3, 1L);
-    assertEquals(expected, messageTracker.getCommittedRecordsByStream().get());
+    assertEquals(expected, messageTracker.getStreamToCommittedRecords().get());
   }
 
   @Test
@@ -186,7 +186,7 @@ class AirbyteMessageTrackerTest {
     messageTracker.acceptFromSource(s1);
     messageTracker.acceptFromDestination(s1);
 
-    assertTrue(messageTracker.getCommittedRecordsByStream().isEmpty());
+    assertTrue(messageTracker.getStreamToCommittedRecords().isEmpty());
   }
 
   @Test
@@ -200,7 +200,7 @@ class AirbyteMessageTrackerTest {
     messageTracker.acceptFromSource(s1);
     messageTracker.acceptFromDestination(s1);
 
-    assertTrue(messageTracker.getCommittedRecordsByStream().isEmpty());
+    assertTrue(messageTracker.getStreamToCommittedRecords().isEmpty());
   }
 
   @Test
@@ -223,7 +223,7 @@ class AirbyteMessageTrackerTest {
     messageTracker.acceptFromSource(s2); // emit state 2
 
     final Map<Short, Long> countsByIndex = new HashMap<>();
-    Mockito.when(mStateDeltaTracker.getCommittedRecordsByStream()).thenReturn(countsByIndex);
+    Mockito.when(mStateDeltaTracker.getStreamToCommittedRecords()).thenReturn(countsByIndex);
 
     countsByIndex.put((short) 0, 1L);
     countsByIndex.put((short) 1, 2L);

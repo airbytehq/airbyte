@@ -53,7 +53,7 @@ public interface MessageTracker {
    * @return returns a map of committed record count by stream name. If committed record counts cannot
    *         be computed, empty.
    */
-  Optional<Map<String, Long>> getCommittedRecordsByStream();
+  Optional<Map<String, Long>> getStreamToCommittedRecords();
 
   /**
    * Get the per-stream emitted record count. This includes messages that were emitted by the source,
@@ -61,7 +61,7 @@ public interface MessageTracker {
    *
    * @return returns a map of emitted record count by stream name.
    */
-  Map<String, Long> getEmittedRecordsByStream();
+  Map<String, Long> getStreamToEmittedRecords();
 
   /**
    * Get the per-stream emitted byte count. This includes messages that were emitted by the source,
@@ -69,7 +69,7 @@ public interface MessageTracker {
    *
    * @return returns a map of emitted record count by stream name.
    */
-  Map<String, Long> getEmittedBytesByStream();
+  Map<String, Long> getStreamToEmittedBytes();
 
   /**
    * Get the overall emitted record count. This includes messages that were emitted by the source, but

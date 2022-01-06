@@ -154,10 +154,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       }
 
       final MapInt streamNameToBytesEmitted = new MapInt();
-      messageTracker.getEmittedBytesByStream().forEach((stream, bytes) -> streamNameToBytesEmitted.setAdditionalProperty(stream, bytes));
+      messageTracker.getStreamToEmittedBytes().forEach((stream, bytes) -> streamNameToBytesEmitted.setAdditionalProperty(stream, bytes));
 
       final MapInt streamNameToRecordsEmitted = new MapInt();
-      messageTracker.getEmittedRecordsByStream().forEach((stream, records) -> streamNameToRecordsEmitted.setAdditionalProperty(stream, records));
+      messageTracker.getStreamToEmittedRecords().forEach((stream, records) -> streamNameToRecordsEmitted.setAdditionalProperty(stream, records));
 
       final ReplicationAttemptSummary summary = new ReplicationAttemptSummary()
           .withStatus(outputStatus)
@@ -171,8 +171,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           .withEndTime(System.currentTimeMillis());
 
       final MapInt streamNameToRecordsCommitted = new MapInt();
-      if (messageTracker.getCommittedRecordsByStream().isPresent()) {
-        messageTracker.getCommittedRecordsByStream().get().forEach((stream, records) -> {
+      if (messageTracker.getStreamToCommittedRecords().isPresent()) {
+        messageTracker.getStreamToCommittedRecords().get().forEach((stream, records) -> {
           streamNameToRecordsCommitted.setAdditionalProperty(stream, records);
         });
         summary.setStreamNameToRecordsCommitted(streamNameToRecordsCommitted);
@@ -190,8 +190,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
       LOGGER.info("sync summary: {}", summary);
 
-      LOGGER.info("Per-Stream Committed Records: {}", messageTracker.getCommittedRecordsByStream());
-      LOGGER.info("Per-Stream Emitted Records: {}", messageTracker.getEmittedRecordsByStream());
+      LOGGER.info("Per-Stream Committed Records: {}", messageTracker.getStreamToCommittedRecords());
+      LOGGER.info("Per-Stream Emitted Records: {}", messageTracker.getStreamToEmittedRecords());
 
       final ReplicationOutput output = new ReplicationOutput()
           .withReplicationAttemptSummary(summary)

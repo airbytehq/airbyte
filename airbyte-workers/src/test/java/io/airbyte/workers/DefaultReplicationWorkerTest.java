@@ -247,9 +247,9 @@ class DefaultReplicationWorkerTest {
     when(messageTracker.getTotalRecordsEmitted()).thenReturn(12L);
     when(messageTracker.getTotalBytesEmitted()).thenReturn(100L);
     when(messageTracker.getDestinationOutputState()).thenReturn(Optional.of(new State().withState(expectedState)));
-    when(messageTracker.getEmittedBytesByStream()).thenReturn(Collections.singletonMap("stream1", 100L));
-    when(messageTracker.getEmittedRecordsByStream()).thenReturn(Collections.singletonMap("stream1", 12L));
-    when(messageTracker.getCommittedRecordsByStream()).thenReturn(Optional.of(Collections.singletonMap("stream1", 6L)));
+    when(messageTracker.getStreamToEmittedBytes()).thenReturn(Collections.singletonMap("stream1", 100L));
+    when(messageTracker.getStreamToEmittedRecords()).thenReturn(Collections.singletonMap("stream1", 12L));
+    when(messageTracker.getStreamToCommittedRecords()).thenReturn(Optional.of(Collections.singletonMap("stream1", 6L)));
     when(messageTracker.getTotalRecordsCommitted()).thenReturn(Optional.of(6L));
     when(messageTracker.getTotalStateMessagesEmitted()).thenReturn(3L);
 

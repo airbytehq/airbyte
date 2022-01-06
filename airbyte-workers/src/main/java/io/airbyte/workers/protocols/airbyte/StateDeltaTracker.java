@@ -37,7 +37,7 @@ public class StateDeltaTracker {
   private static final int BYTES_PER_STREAM = STREAM_INDEX_BYTES + RECORD_COUNT_BYTES;
 
   private final Set<Integer> committedStateHashes;
-  private final HashMap<Short, Long> committedRecordsByStream;
+  private final Map<Short, Long> streamToCommittedRecords;
 
   /**
    * Every time a state is added, a new byte[] containing the state hash and per-stream delta will be
@@ -56,7 +56,7 @@ public class StateDeltaTracker {
 
   public StateDeltaTracker(final long memoryLimitBytes) {
     this.committedStateHashes = new HashSet<>();
-    this.committedRecordsByStream = new HashMap<>();
+    this.streamToCommittedRecords = new HashMap<>();
     this.stateDeltas = new ArrayList<>();
     this.remainingCapacity = memoryLimitBytes;
     this.capacityExceeded = false;
@@ -135,14 +135,14 @@ public class StateDeltaTracker {
         final long recordCount = currDelta.getLong();
 
         // aggregate delta into committed count map
-        final long committedRecordCount = committedRecordsByStream.getOrDefault(streamIndex, 0L);
-        committedRecordsByStream.put(streamIndex, committedRecordCount + recordCount);
+        final long committedRecordCount = streamToCommittedRecords.getOrDefault(streamIndex, 0L);
+        streamToCommittedRecords.put(streamIndex, committedRecordCount + recordCount);
       }
     } while (currStateHash != stateHash); // repeat until each delta up to the committed state is aggregated
   }
 
-  public Map<Short, Long> getCommittedRecordsByStream() {
-    return committedRecordsByStream;
+  public Map<Short, Long> getStreamToCommittedRecords() {
+    return streamToCommittedRecords;
   }
 
   /**

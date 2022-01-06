@@ -31,11 +31,11 @@ public class AirbyteMessageTracker implements MessageTracker {
   private final AtomicReference<State> sourceOutputState;
   private final AtomicReference<State> destinationOutputState;
   private final AtomicLong totalEmittedStateMessages;
-  private final Map<Short, Long> runningCountByStream;
+  private final Map<Short, Long> streamToRunningCount;
   private final HashFunction hashFunction;
-  private final BiMap<String, Short> streamIndexByName;
-  private final Map<Short, Long> totalBytesEmittedByStream;
-  private final Map<Short, Long> totalRecordsEmittedByStream;
+  private final BiMap<String, Short> streamNameToIndex;
+  private final Map<Short, Long> streamToTotalBytesEmitted;
+  private final Map<Short, Long> streamToTotalRecordsEmitted;
   private final StateDeltaTracker stateDeltaTracker;
 
   private short nextStreamIndex;
@@ -55,11 +55,11 @@ public class AirbyteMessageTracker implements MessageTracker {
     this.sourceOutputState = new AtomicReference<>();
     this.destinationOutputState = new AtomicReference<>();
     this.totalEmittedStateMessages = new AtomicLong(0L);
-    this.runningCountByStream = new HashMap<>();
-    this.streamIndexByName = HashBiMap.create();
+    this.streamToRunningCount = new HashMap<>();
+    this.streamNameToIndex = HashBiMap.create();
     this.hashFunction = Hashing.murmur3_32_fixed();
-    this.totalBytesEmittedByStream = new HashMap<>();
-    this.totalRecordsEmittedByStream = new HashMap<>();
+    this.streamToTotalBytesEmitted = new HashMap<>();
+    this.streamToTotalRecordsEmitted = new HashMap<>();
     this.stateDeltaTracker = stateDeltaTracker;
     this.nextStreamIndex = 0;
     this.unreliableCommittedCounts = false;
@@ -89,16 +89,16 @@ public class AirbyteMessageTracker implements MessageTracker {
   private void handleSourceEmittedRecord(final AirbyteRecordMessage recordMessage) {
     final short streamIndex = getStreamIndex(recordMessage.getStream());
 
-    final long currentRunningCount = runningCountByStream.getOrDefault(streamIndex, 0L);
-    runningCountByStream.put(streamIndex, currentRunningCount + 1);
+    final long currentRunningCount = streamToRunningCount.getOrDefault(streamIndex, 0L);
+    streamToRunningCount.put(streamIndex, currentRunningCount + 1);
 
-    final long currentTotalCount = totalRecordsEmittedByStream.getOrDefault(streamIndex, 0L);
-    totalRecordsEmittedByStream.put(streamIndex, currentTotalCount + 1);
+    final long currentTotalCount = streamToTotalRecordsEmitted.getOrDefault(streamIndex, 0L);
+    streamToTotalRecordsEmitted.put(streamIndex, currentTotalCount + 1);
 
     // todo (cgardens) - pretty wasteful to do an extra serialization just to get size.
     final int numBytes = Jsons.serialize(recordMessage.getData()).getBytes(Charsets.UTF_8).length;
-    final long currentTotalStreamBytes = totalBytesEmittedByStream.getOrDefault(streamIndex, 0L);
-    totalBytesEmittedByStream.put(streamIndex, currentTotalStreamBytes + numBytes);
+    final long currentTotalStreamBytes = streamToTotalBytesEmitted.getOrDefault(streamIndex, 0L);
+    streamToTotalBytesEmitted.put(streamIndex, currentTotalStreamBytes + numBytes);
   }
 
   /**
@@ -113,13 +113,13 @@ public class AirbyteMessageTracker implements MessageTracker {
     final int stateHash = getStateHashCode(stateMessage);
     try {
       if (!unreliableCommittedCounts) {
-        stateDeltaTracker.addState(stateHash, runningCountByStream);
+        stateDeltaTracker.addState(stateHash, streamToRunningCount);
       }
     } catch (final CapacityExceededException e) {
       log.error("Exceeded stateDeltaTracker capacity, no longer able to compute committed record counts", e);
       unreliableCommittedCounts = true;
     }
-    runningCountByStream.clear();
+    streamToRunningCount.clear();
   }
 
   /**
@@ -142,11 +142,11 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   private short getStreamIndex(final String streamName) {
-    if (!streamIndexByName.containsKey(streamName)) {
-      streamIndexByName.put(streamName, nextStreamIndex);
+    if (!streamNameToIndex.containsKey(streamName)) {
+      streamNameToIndex.put(streamName, nextStreamIndex);
       nextStreamIndex++;
     }
-    return streamIndexByName.get(streamName);
+    return streamNameToIndex.get(streamName);
   }
 
   private int getStateHashCode(final AirbyteStateMessage stateMessage) {
@@ -169,15 +169,15 @@ public class AirbyteMessageTracker implements MessageTracker {
    * because committed record counts cannot be reliably computed.
    */
   @Override
-  public Optional<Map<String, Long>> getCommittedRecordsByStream() {
+  public Optional<Map<String, Long>> getStreamToCommittedRecords() {
     if (unreliableCommittedCounts) {
       return Optional.empty();
     }
-    final Map<Short, Long> streamIndexToCommittedRecordCount = this.stateDeltaTracker.getCommittedRecordsByStream();
+    final Map<Short, Long> streamIndexToCommittedRecordCount = stateDeltaTracker.getStreamToCommittedRecords();
     return Optional.of(
         streamIndexToCommittedRecordCount.entrySet().stream().collect(
             Collectors.toMap(
-                entry -> streamIndexByName.inverse().get(entry.getKey()),
+                entry -> streamNameToIndex.inverse().get(entry.getKey()),
                 Map.Entry::getValue)));
   }
 
@@ -185,9 +185,9 @@ public class AirbyteMessageTracker implements MessageTracker {
    * Swap out stream indices for stream names and return total records emitted by stream.
    */
   @Override
-  public Map<String, Long> getEmittedRecordsByStream() {
-    return totalRecordsEmittedByStream.entrySet().stream().collect(Collectors.toMap(
-        entry -> streamIndexByName.inverse().get(entry.getKey()),
+  public Map<String, Long> getStreamToEmittedRecords() {
+    return streamToTotalRecordsEmitted.entrySet().stream().collect(Collectors.toMap(
+        entry -> streamNameToIndex.inverse().get(entry.getKey()),
         Map.Entry::getValue));
   }
 
@@ -195,9 +195,9 @@ public class AirbyteMessageTracker implements MessageTracker {
    * Swap out stream indices for stream names and return total bytes emitted by stream.
    */
   @Override
-  public Map<String, Long> getEmittedBytesByStream() {
-    return totalBytesEmittedByStream.entrySet().stream().collect(Collectors.toMap(
-        entry -> streamIndexByName.inverse().get(entry.getKey()),
+  public Map<String, Long> getStreamToEmittedBytes() {
+    return streamToTotalBytesEmitted.entrySet().stream().collect(Collectors.toMap(
+        entry -> streamNameToIndex.inverse().get(entry.getKey()),
         Map.Entry::getValue));
   }
 
@@ -206,7 +206,7 @@ public class AirbyteMessageTracker implements MessageTracker {
    */
   @Override
   public Long getTotalRecordsEmitted() {
-    return totalRecordsEmittedByStream.values().stream().reduce(0L, Long::sum);
+    return streamToTotalRecordsEmitted.values().stream().reduce(0L, Long::sum);
   }
 
   /**
@@ -214,7 +214,7 @@ public class AirbyteMessageTracker implements MessageTracker {
    */
   @Override
   public Long getTotalBytesEmitted() {
-    return totalBytesEmittedByStream.values().stream().reduce(0L, Long::sum);
+    return streamToTotalBytesEmitted.values().stream().reduce(0L, Long::sum);
   }
 
   /**
@@ -226,7 +226,7 @@ public class AirbyteMessageTracker implements MessageTracker {
     if (unreliableCommittedCounts) {
       return Optional.empty();
     }
-    return Optional.of(stateDeltaTracker.getCommittedRecordsByStream().values().stream().reduce(0L, Long::sum));
+    return Optional.of(stateDeltaTracker.getStreamToCommittedRecords().values().stream().reduce(0L, Long::sum));
   }
 
   @Override
