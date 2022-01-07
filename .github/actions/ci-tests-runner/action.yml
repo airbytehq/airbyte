@@ -156,7 +156,7 @@ runs:
 #        GITHUB_TOKEN: ${{ inputs.token }}
       uses: actions/github-script@v5
       with:
-        github-token: ${{ inputs.token }}
+        # github-token: ${{ inputs.token }}
         script: |
           await github.rest.issues.createComment({
                 issue_number: context.issue.number,
