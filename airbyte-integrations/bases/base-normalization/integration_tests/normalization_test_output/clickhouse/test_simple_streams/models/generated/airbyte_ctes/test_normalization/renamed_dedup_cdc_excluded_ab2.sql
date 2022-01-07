@@ -7,6 +7,7 @@
 -- depends_on: {{ ref('renamed_dedup_cdc_excluded_ab1') }}
 select
     accurateCastOrNull(id, '{{ dbt_utils.type_bigint() }}') as id,
+    accurateCastOrNull(_ab_cdc_updated_at, '{{ dbt_utils.type_float() }}') as _ab_cdc_updated_at,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     {{ current_timestamp() }} as _airbyte_normalized_at

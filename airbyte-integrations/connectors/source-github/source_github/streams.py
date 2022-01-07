@@ -2,7 +2,6 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import os
 import time
 from abc import ABC, abstractmethod
 from copy import deepcopy
@@ -10,43 +9,16 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
 
 import requests
-import vcr
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from requests.exceptions import HTTPError
-from vcr.cassette import Cassette
-
-
-def request_cache() -> Cassette:
-    """
-    Builds VCR instance.
-    It deletes file everytime we create it, normally should be called only once.
-    We can't use NamedTemporaryFile here because yaml serializer doesn't work well with empty files.
-    """
-    filename = "request_cache.yml"
-    try:
-        os.remove(filename)
-    except FileNotFoundError:
-        pass
-
-    return vcr.use_cassette(str(filename), record_mode="new_episodes", serializer="yaml")
 
 
 class GithubStream(HttpStream, ABC):
-    cache = request_cache()
     url_base = "https://api.github.com/"
 
-    # To prevent dangerous behavior, the `vcr` library prohibits the use of nested caching.
-    # Here's an example of dangerous behavior:
-    # cache = Cassette.use('whatever')
-    # with cache:
-    #     with cache:
-    #         pass
-    #
-    # Therefore, we will only use `cache` for the top-level stream, so as not to cause possible difficulties.
-    top_level_stream = True
-
     primary_key = "id"
+    use_cache = True
 
     # GitHub pagination could be from 1 to 100.
     page_size = 100
@@ -100,11 +72,7 @@ class GithubStream(HttpStream, ABC):
 
     def read_records(self, stream_slice: Mapping[str, any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         try:
-            if self.top_level_stream:
-                with self.cache:
-                    yield from super().read_records(stream_slice=stream_slice, **kwargs)
-            else:
-                yield from super().read_records(stream_slice=stream_slice, **kwargs)
+            yield from super().read_records(stream_slice=stream_slice, **kwargs)
         except HTTPError as e:
             error_msg = str(e)
 
@@ -422,6 +390,7 @@ class PullRequests(SemiIncrementalGithubStream):
     """
 
     page_size = 50
+    first_read_override_key = "first_read_override"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -431,7 +400,7 @@ class PullRequests(SemiIncrementalGithubStream):
         """
         Decide if this a first read or not by the presence of the state object
         """
-        self._first_read = not bool(stream_state)
+        self._first_read = not bool(stream_state) or stream_state.get(self.first_read_override_key, False)
         yield from super().read_records(stream_state=stream_state, **kwargs)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -459,7 +428,7 @@ class PullRequests(SemiIncrementalGithubStream):
         """
         Depending if there any state we read stream in ascending or descending order.
         """
-        return self._first_read
+        return not self._first_read
 
 
 class CommitComments(SemiIncrementalGithubStream):
@@ -686,8 +655,8 @@ class ReviewComments(IncrementalGithubStream):
 # Pull request substreams
 
 
-class PullRequestSubstream(HttpSubStream, GithubStream, ABC):
-    top_level_stream = False
+class PullRequestSubstream(HttpSubStream, SemiIncrementalGithubStream, ABC):
+    use_cache = False
 
     def __init__(self, parent: PullRequests, **kwargs):
         super().__init__(parent=parent, **kwargs)
@@ -695,13 +664,32 @@ class PullRequestSubstream(HttpSubStream, GithubStream, ABC):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent_stream_slices = super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
-
+        """
+        Override the parent PullRequests stream configuration to always fetch records in ascending order
+        """
+        parent_state = deepcopy(stream_state) or {}
+        parent_state[PullRequests.first_read_override_key] = True
+        parent_stream_slices = super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=parent_state)
         for parent_stream_slice in parent_stream_slices:
             yield {
                 "pull_request_number": parent_stream_slice["parent"]["number"],
                 "repository": parent_stream_slice["parent"]["repository"],
             }
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """
+        We've already determined the list of pull requests to run the stream against.
+        Skip the start_point_map and cursor_field logic in SemiIncrementalGithubStream.read_records.
+        """
+        yield from super(SemiIncrementalGithubStream, self).read_records(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+        )
 
 
 class PullRequestStats(PullRequestSubstream):
@@ -731,10 +719,20 @@ class Reviews(PullRequestSubstream):
     API docs: https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request
     """
 
+    cursor_field = "submitted_at"
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}/reviews"
+
+    # Set the parent stream state's cursor field before fetching its records
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_state = deepcopy(stream_state) or {}
+        for repository in self.repositories:
+            if repository in parent_state and self.cursor_field in parent_state[repository]:
+                parent_state[repository][self.parent.cursor_field] = parent_state[repository][self.cursor_field]
+        yield from super().stream_slices(stream_state=parent_state, **kwargs)
 
 
 # Reactions streams
@@ -743,7 +741,7 @@ class Reviews(PullRequestSubstream):
 class ReactionStream(GithubStream, ABC):
 
     parent_key = "id"
-    top_level_stream = False
+    use_cache = False
 
     def __init__(self, **kwargs):
         self._stream_kwargs = deepcopy(kwargs)
