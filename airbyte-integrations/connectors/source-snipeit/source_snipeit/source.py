@@ -1,18 +1,31 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
-
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
-import requests
-import arrow
 from copy import deepcopy
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+
+from .full_refresh_streams import (
+    Hardware,
+    Companies,
+    Locations,
+    Accessories,
+    Consumables,
+    Components,
+    Users,
+    StatusLabels,
+    Models,
+    Licenses,
+    Categories,
+    Manufacturers,
+    Maintenances,
+    Departments,
+)
+from .incremental_streams import Events
 
 """
 This file provides a stubbed example of how to use the Airbyte CDK to develop both a source connector which supports full refresh or and an
@@ -25,239 +38,6 @@ The approach here is not authoritative, and devs are free to use their own judge
 
 There are additional required TODOs in the files within the integration_tests folder and the spec.json file.
 """
-
-
-# Basic full refresh stream
-class SnipeitStream(HttpStream, ABC):
-    """
-    This class represents a stream output by the connector.
-    This is an abstract base class meant to contain all the common functionality at the API level e.g: the API base URL, pagination strategy,
-    parsing responses etc..
-
-    Each stream should extend this class (or another abstract subclass of it) to specify behavior unique to that stream.
-
-    Typically for REST APIs each stream corresponds to a resource in the API. For example if the API
-    contains the endpoints
-        - GET v1/customers
-        - GET v1/employees
-
-    then you should have three classes:
-    `class SnipeitStream(HttpStream, ABC)` which is the current class
-    `class Customers(SnipeitStream)` contains behavior to pull data for customers using v1/customers
-    `class Employees(SnipeitStream)` contains behavior to pull data for employees using v1/employees
-
-    If some streams implement incremental sync, it is typical to create another class
-    `class IncrementalSnipeitStream((SnipeitStream), ABC)` then have concrete stream implementations extend it. An example
-    is provided below.
-
-    See the reference docs for the full list of configurable options.
-    """
-
-    # TODO: Fill in the url base. Required.
-    url_base = "https://infinit-o.snipe-it.io/api/v1/"
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        TODO: Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
-
-        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
-        to most other methods in this class to help you form headers, request bodies, query params, etc..
-
-        For example, if the API accepts a 'page' parameter to determine which page of the result to return, and a response from the API contains a
-        'page' number, then this method should probably return a dict {'page': response.json()['page'] + 1} to increment the page count by 1.
-        The request_params method should then read the input next_page_token and set the 'page' param to next_page_token['page'].
-
-        :param response: the most recent response from the API
-        :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
-                If there are no more pages in the result, return None.
-        """
-        return None
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
-        Usually contains common params e.g. pagination size etc.
-        """
-        return {}
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
-        """
-        yield from response.json().get("rows", [])
-
-class Hardware(SnipeitStream):
-    primary_key = "id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "hardware/"
-
-class Companies(SnipeitStream):
-    primary_key = "id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "companies/"
-
-class Locations(SnipeitStream):
-    primary_key = "id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "locations/"
-
-class Accessories(SnipeitStream):
-    primary_key = "id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "accessories/"
-
-class Consumables(SnipeitStream):
-    primary_key = "id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "consumables/"
-
-class Components(SnipeitStream):
-    primary_key = "id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "components/"
-
-class Users(SnipeitStream):
-    primary_key = "id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "users/"
-
-class StatusLabels(SnipeitStream):
-    primary_key = "id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "statuslabels/"
-
-class Models(SnipeitStream):
-    primary_key = "id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "models/"
-
-class Licenses(SnipeitStream):
-    primary_key = "id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "licenses/"
-
-class Categories(SnipeitStream):
-    primary_key = "id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "categories/"
-
-class Manufacturers(SnipeitStream):
-    primary_key = "id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "manufacturers/"
-
-class Maintenances(SnipeitStream):
-    primary_key = "id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "maintenances/"
-
-class Departments(SnipeitStream):
-    primary_key = "id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "departments/"
-
-class Events(SnipeitStream, ABC):
-    primary_key = "id"
-
-    state_checkpoint_interval = 10
-
-    @property
-    def cursor_field(self):
-        return "updated_at/datetime"
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        if current_stream_state == {}:
-            return {self.cursor_field: latest_record["updated_at"]["datetime"]}
-        else:
-            records = {}
-            records[current_stream_state[self.cursor_field]] = arrow.get(current_stream_state[self.cursor_field])
-            records[latest_record["updated_at"]["datetime"]] = arrow.get(latest_record["updated_at"]["datetime"])
-            latest_record = max(records.items(), key=lambda x: x[1])
-            return {self.cursor_field: latest_record[0]}
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "reports/activity/"
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
-        Usually contains common params e.g. pagination size etc.
-        """
-        return {'limit': 1000}
-
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] , **kwargs) -> Iterable[Mapping]:
-        """
-        Parses response and returns a result set suitable for incremental sync. It takes in the stream state saved
-        by Airbyte, and uses it to filter out records that have already been synced, leaving only the newest records.
-
-        :return an iterable containing each record in the response
-        """
-        def _newer_than_latest(latest_record_date: arrow.Arrow, record: Mapping[str, Any]) -> bool:
-            current_record_date = arrow.get(record["updated_at"]["datetime"])
-            if current_record_date > latest_record_date:
-                return True
-            else:
-                return False
-
-        base: list = response.json().get("rows")
-        ascending_list = reversed(base)
-
-        if stream_state != {}:
-            latest_record_date: arrow.Arrow = arrow.get(stream_state[self.cursor_field])
-            # NOTE: There's probably a more succint way of doing this but I can't think of it right now.
-            only_the_newest: list = [x for x in ascending_list if _newer_than_latest(latest_record_date, x)]
-            yield from only_the_newest
-        else:
-            yield from ascending_list
 
 
 # Source
