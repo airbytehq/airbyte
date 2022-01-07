@@ -118,6 +118,7 @@ def get_instance_from_config_with_end_date(config, query):
         conversion_window_days=conversion_window_days,
         start_date=start_date,
         end_date=end_date,
+        time_zone= "local",
         custom_query_config={"query": query, "table_name": "whatever_table"},
     )
     return instance
