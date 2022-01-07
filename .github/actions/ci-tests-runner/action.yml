@@ -157,8 +157,8 @@ runs:
       uses: ActionsDesk/add-comment-action@master
       with:
         message: ${{ steps.generate-sq-report.outputs.sq-report }}
-        env:
-          GITHUB_TOKEN: ${{ inputs.token }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
 
     - name: Remove SonarQube Project
       if: ${{ inputs.remove-sonar-project == true }}
