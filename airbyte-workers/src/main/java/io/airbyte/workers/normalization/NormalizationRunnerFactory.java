@@ -14,7 +14,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 public class NormalizationRunnerFactory {
 
   public static final String BASE_NORMALIZATION_IMAGE_NAME = "airbyte/normalization";
-  public static final String NORMALIZATION_VERSION = "0.1.62";
+  public static final String NORMALIZATION_VERSION = "0.1.63";
 
   static final Map<String, ImmutablePair<String, DefaultNormalizationRunner.DestinationType>> NORMALIZATION_MAPPING =
       ImmutableMap.<String, ImmutablePair<String, DefaultNormalizationRunner.DestinationType>>builder()
@@ -33,16 +33,19 @@ public class NormalizationRunnerFactory {
           .put("airbyte/destination-postgres", ImmutablePair.of(BASE_NORMALIZATION_IMAGE_NAME, DestinationType.POSTGRES))
           .put("airbyte/destination-postgres-strict-encrypt", ImmutablePair.of(BASE_NORMALIZATION_IMAGE_NAME, DestinationType.POSTGRES))
           .put("airbyte/destination-redshift", ImmutablePair.of(BASE_NORMALIZATION_IMAGE_NAME, DestinationType.REDSHIFT))
-          .put("airbyte/destination-snowflake", ImmutablePair.of(BASE_NORMALIZATION_IMAGE_NAME, DestinationType.SNOWFLAKE))
+          .put("airbyte/destination-snowflake", ImmutablePair.of("airbyte/normalization-snowflake", DestinationType.SNOWFLAKE))
           .build();
 
-  public static NormalizationRunner create(final WorkerConfigs workerConfigs, final String connectorImageName, final ProcessFactory processFactory) {
+  public static NormalizationRunner create(final WorkerConfigs workerConfigs,
+                                           final String connectorImageName,
+                                           final ProcessFactory processFactory,
+                                           final String normalizationVersion) {
     final var valuePair = getNormalizationInfoForConnector(connectorImageName);
     return new DefaultNormalizationRunner(
         workerConfigs,
         valuePair.getRight(),
         processFactory,
-        String.format("%s:%s", valuePair.getLeft(), NORMALIZATION_VERSION));
+        String.format("%s:%s", valuePair.getLeft(), normalizationVersion));
   }
 
   public static ImmutablePair<String, DestinationType> getNormalizationInfoForConnector(final String connectorImageName) {
