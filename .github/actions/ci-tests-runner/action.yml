@@ -67,11 +67,19 @@ runs:
       id: gcloud-tunnel
       shell: bash
       run: |
+          while true; do
+            PORT=$(( ((RANDOM<<15)|RANDOM) % 49152 + 10000 ))
+            status="$(nc -z 127.0.0.1 $PORT < /dev/null &>/dev/null; echo $?)"
+            if [ "${status}" != "0" ]; then
+                echo "$PORT is free to use";
+                break;
+            fi
+          done
           IPS=($(hostname -I))
-          LOCAL_IP=${IPS[0]}
-          gcloud compute start-iap-tunnel sonarqube-1-vm 80 --local-host-port=${LOCAL_IP}:3300 --zone=europe-central2-a --project dataline-integration-testing &
+          LOCAL_IP_PORT="${IPS[0]}:${PORT}"
+          gcloud compute start-iap-tunnel sonarqube-1-vm 80 --local-host-port=${LOCAL_IP_PORT} --zone=europe-central2-a --project dataline-integration-testing &
           echo ::set-output name=pid::$!
-          echo "::set-output name=sonar-host::http://${LOCAL_IP}:3300/"
+          echo "::set-output name=sonar-host::http://${LOCAL_IP_PORT}/"
 
 
 
