@@ -259,7 +259,7 @@ def test_failed_reading(traceback, container_error, last_line, expected_error):
     "command,wait_timeout,expected_count",
     (
         (
-            "cnt=0; while [ $cnt -lt 10 ]; do cnt=$((cnt+1)); echo something; done",
+            "cnt=0; while [ $cnt -lt 10 ]; do cnt=$((cnt+1)); sleep 0.5; echo something; done",
             0,
             10,
         ),
