@@ -35,9 +35,15 @@ def test_octavia(mock_airbyte_api_client: mock.Mock, mock_workspace_api: mock.Mo
     assert result.exit_code == 0
 
 
+def test_commands_in_octavia_group():
+    octavia_commands = entrypoint.octavia.commands.values()
+    for command in entrypoint.AVAILABLE_COMMANDS:
+        assert command in octavia_commands
+
+
 @pytest.mark.parametrize(
     "command",
-    [entrypoint.init, entrypoint.apply, entrypoint.create, entrypoint.delete, entrypoint._list, entrypoint._import],
+    [entrypoint.init, entrypoint.apply, entrypoint.create, entrypoint.delete, entrypoint._import],
 )
 def test_not_implemented_commands(command):
     runner = CliRunner()
