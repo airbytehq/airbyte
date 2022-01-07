@@ -39,6 +39,7 @@ runs:
         pip install --quiet tox==3.24.4
         tox -r -c ./tools/tox_ci.ini
         pip install --quiet -e ./tools/ci_*
+        echo "::echo::off"
 
     - name: Python Tests
       id: ci-py-tests
@@ -154,11 +155,10 @@ runs:
 #      with:
 #        message: ${{ steps.generate-sq-report.outputs.sq-report }}
 #        GITHUB_TOKEN: ${{ inputs.token }}
-      uses: ActionsDesk/add-comment-action@master
+      uses: peter-evans/commit-comment@v1r
       with:
-        message: ${{ steps.generate-sq-report.outputs.sq-report }}
-      env:
-        GITHUB_TOKEN: ${{ inputs.token }}
+        body: ${{ steps.generate-sq-report.outputs.sq-report }}
+        token: ${{ inputs.token }}
 
     - name: Remove SonarQube Project
       if: ${{ inputs.remove-sonar-project == true }}
