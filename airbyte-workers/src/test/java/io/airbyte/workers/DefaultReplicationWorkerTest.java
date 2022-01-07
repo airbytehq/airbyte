@@ -23,13 +23,14 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs.WorkerEnvironment;
-import io.airbyte.config.MapInt;
 import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.config.State;
+import io.airbyte.config.StreamNameToSyncStats;
+import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
@@ -267,13 +268,17 @@ class DefaultReplicationWorkerTest {
             .withRecordsSynced(12L)
             .withBytesSynced(100L)
             .withStatus(ReplicationStatus.COMPLETED)
-            .withStreamNameToBytesEmitted(new MapInt().withAdditionalProperty("stream1", 100L))
-            .withStreamNameToRecordsEmitted(new MapInt().withAdditionalProperty("stream1", 12L))
-            .withStreamNameToRecordsCommitted(new MapInt().withAdditionalProperty("stream1", 6L))
-            .withTotalRecordsCommitted(6L)
-            .withTotalRecordsEmitted(12L)
-            .withTotalBytesEmitted(100L)
-            .withTotalStateMessagesEmitted(3L))
+            .withTotalStats(new SyncStats()
+                .withRecordsEmitted(12L)
+                .withBytesEmitted(100L)
+                .withStateMessagesEmitted(3L)
+                .withRecordsCommitted(6L))
+            .withStreamStats(new StreamNameToSyncStats()
+                .withAdditionalProperty("stream1", new SyncStats()
+                    .withBytesEmitted(100L)
+                    .withRecordsEmitted(12L)
+                    .withRecordsCommitted(6L)
+                    .withStateMessagesEmitted(null))))
         .withOutputCatalog(syncInput.getCatalog())
         .withState(new State().withState(expectedState));
 

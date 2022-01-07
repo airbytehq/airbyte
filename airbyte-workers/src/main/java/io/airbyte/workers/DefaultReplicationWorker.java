@@ -4,12 +4,13 @@
 
 package io.airbyte.workers;
 
-import io.airbyte.config.MapInt;
 import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.config.State;
+import io.airbyte.config.StreamNameToSyncStats;
+import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -20,6 +21,7 @@ import io.airbyte.workers.protocols.airbyte.MessageTracker;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -153,46 +155,42 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         outputStatus = ReplicationStatus.COMPLETED;
       }
 
-      final MapInt streamNameToBytesEmitted = new MapInt();
-      messageTracker.getStreamToEmittedBytes().forEach((stream, bytes) -> streamNameToBytesEmitted.setAdditionalProperty(stream, bytes));
-
-      final MapInt streamNameToRecordsEmitted = new MapInt();
-      messageTracker.getStreamToEmittedRecords().forEach((stream, records) -> streamNameToRecordsEmitted.setAdditionalProperty(stream, records));
+      final SyncStats totalSyncStats = new SyncStats()
+          .withRecordsEmitted(messageTracker.getTotalRecordsEmitted())
+          .withBytesEmitted(messageTracker.getTotalBytesEmitted())
+          .withStateMessagesEmitted(messageTracker.getTotalStateMessagesEmitted());
+      if (messageTracker.getTotalRecordsCommitted().isPresent()) {
+        totalSyncStats.setRecordsCommitted(messageTracker.getTotalRecordsCommitted().get());
+      } else {
+        LOGGER.warn("Could not reliably determine committed record counts, committed record stats will be set to null");
+        totalSyncStats.setRecordsCommitted(null);
+      }
+      final StreamNameToSyncStats streamNameToSyncStats = new StreamNameToSyncStats();
+      // assume every stream with stats is in streamToEmittedRecords map
+      final Set<String> allStreams = messageTracker.getStreamToEmittedRecords().keySet();
+      allStreams.forEach(stream -> {
+        final SyncStats streamSyncStats = new SyncStats()
+            .withRecordsEmitted(messageTracker.getStreamToEmittedRecords().get(stream))
+            .withBytesEmitted(messageTracker.getStreamToEmittedBytes().get(stream))
+            .withStateMessagesEmitted(null); // TODO populate per-stream state messages emitted once supported in V2
+        if (messageTracker.getStreamToCommittedRecords().isPresent()) {
+          streamSyncStats.setRecordsCommitted(messageTracker.getStreamToCommittedRecords().get().get(stream));
+        } else {
+          streamSyncStats.setRecordsCommitted(null);
+        }
+        streamNameToSyncStats.setAdditionalProperty(stream, streamSyncStats);
+      });
 
       final ReplicationAttemptSummary summary = new ReplicationAttemptSummary()
           .withStatus(outputStatus)
           .withRecordsSynced(messageTracker.getTotalRecordsEmitted()) // TODO (parker) remove in favor of totalRecordsEmitted
           .withBytesSynced(messageTracker.getTotalBytesEmitted()) // TODO (parker) remove in favor of totalBytesEmitted
-          .withTotalRecordsEmitted(messageTracker.getTotalRecordsEmitted())
-          .withTotalBytesEmitted(messageTracker.getTotalBytesEmitted())
-          .withTotalStateMessagesEmitted(messageTracker.getTotalStateMessagesEmitted())
-          .withStreamNameToBytesEmitted(streamNameToBytesEmitted)
-          .withStreamNameToRecordsEmitted(streamNameToRecordsEmitted)
+          .withTotalStats(totalSyncStats)
+          .withStreamStats(streamNameToSyncStats)
           .withStartTime(startTime)
           .withEndTime(System.currentTimeMillis());
 
-      final MapInt streamNameToRecordsCommitted = new MapInt();
-      if (messageTracker.getStreamToCommittedRecords().isPresent()) {
-        messageTracker.getStreamToCommittedRecords().get().forEach((stream, records) -> {
-          streamNameToRecordsCommitted.setAdditionalProperty(stream, records);
-        });
-        summary.setStreamNameToRecordsCommitted(streamNameToRecordsCommitted);
-      } else {
-        LOGGER.warn("Could not reliably determine committed records per stream, setting streamNameToRecordsCommitted to null.");
-        summary.setStreamNameToRecordsCommitted(null); // TODO (parker) handle this more explicitly?
-      }
-
-      if (messageTracker.getTotalRecordsCommitted().isPresent()) {
-        summary.setTotalRecordsCommitted(messageTracker.getTotalRecordsCommitted().get());
-      } else {
-        LOGGER.warn("Could not reliably determine committed records per stream, setting totalRecordsCommitted to null.");
-        summary.setTotalRecordsCommitted(null); // TODO (parker) handle this more explicitly?
-      }
-
       LOGGER.info("sync summary: {}", summary);
-
-      LOGGER.info("Per-Stream Committed Records: {}", messageTracker.getStreamToCommittedRecords());
-      LOGGER.info("Per-Stream Emitted Records: {}", messageTracker.getStreamToEmittedRecords());
 
       final ReplicationOutput output = new ReplicationOutput()
           .withReplicationAttemptSummary(summary)
