@@ -35,6 +35,8 @@ class Events(SnipeitStream, ABC):
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
                 If there are no more pages in the result, return None.
         """
+        # NOTE: This function is overridden so that I can include functionality to immediately
+        #       stop the sync should the latest record not be up-to-date.
         if self.stop_immediately:
             return {}
         elif self.offset < self.total:
