@@ -41,22 +41,6 @@ runs:
         pip install --quiet -e ./tools/ci_*
         echo "::echo::off"
 
-    - name: Python Tests
-      id: ci-py-tests
-      if: ${{ inputs.module-lang == 'py' }}
-      uses: ./.github/actions/ci-py-tests
-      with:
-        module-name: ${{ inputs.module-name }}
-        module-folder: ${{ inputs.module-folder }}
-
-    - name: Java Tests
-      id: ci-java-tests
-      if: ${{ inputs.module-lang == 'java' }}
-      uses: ./.github/actions/ci-java-tests
-      with:
-        module-name: ${{ inputs.module-name }}
-        module-folder: ${{ inputs.module-folder }}
-
     - name: Auth with gcloud CLI
       uses: google-github-actions/setup-gcloud@v0
       with:
@@ -81,6 +65,25 @@ runs:
           gcloud compute start-iap-tunnel sonarqube-1-vm 80 --local-host-port=${LOCAL_IP_PORT} --zone=europe-central2-a --project dataline-integration-testing &
           echo ::set-output name=pid::$!
           echo "::set-output name=sonar-host::http://${LOCAL_IP_PORT}/"
+          echo "::echo::on"
+
+    - name: Python Tests
+      id: ci-py-tests
+      if: ${{ inputs.module-lang == 'py' }}
+      uses: ./.github/actions/ci-py-tests
+      with:
+        module-name: ${{ inputs.module-name }}
+        module-folder: ${{ inputs.module-folder }}
+
+    - name: Java Tests
+      id: ci-java-tests
+      if: ${{ inputs.module-lang == 'java' }}
+      uses: ./.github/actions/ci-java-tests
+      with:
+        module-name: ${{ inputs.module-name }}
+        module-folder: ${{ inputs.module-folder }}
+
+
 
 
 
@@ -155,7 +158,7 @@ runs:
 #      with:
 #        message: ${{ steps.generate-sq-report.outputs.sq-report }}
 #        GITHUB_TOKEN: ${{ inputs.token }}
-      uses: peter-evans/commit-comment@v1r
+      uses: peter-evans/commit-comment@v1
       with:
         body: ${{ steps.generate-sq-report.outputs.sq-report }}
         token: ${{ inputs.token }}
