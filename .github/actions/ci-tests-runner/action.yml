@@ -154,16 +154,16 @@ runs:
 #      with:
 #        message: ${{ steps.generate-sq-report.outputs.sq-report }}
 #        GITHUB_TOKEN: ${{ inputs.token }}
-      uses: actions/github-script@v3
+      uses: actions/github-script@v5
       with:
         github-token: ${{ inputs.token }}
         script: |
-            github.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: ${{ steps.generate-sq-report.outputs.sq-report }}
-            })
+          await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: '${{ steps.generate-sq-report.outputs.sq-report }}'
+          })
 
     - name: Remove SonarQube Project
       if: ${{ inputs.remove-sonar-project == true }}
