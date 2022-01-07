@@ -264,7 +264,7 @@ def test_failed_reading(traceback, container_error, last_line, expected_error):
             10,
         ),
         # Sometimes a container can finish own work before python tries to read it
-        ("echo something;", 0.1, 1),
+        ("echo something;", 3, 1),
     ),
     ids=["standard", "waiting"],
 )
