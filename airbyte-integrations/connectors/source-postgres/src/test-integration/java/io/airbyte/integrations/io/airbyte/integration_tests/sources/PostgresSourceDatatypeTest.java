@@ -14,17 +14,16 @@ import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Set;
 import org.jooq.SQLDialect;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private PostgreSQLContainer<?> container;
   private JsonNode config;
-  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSourceDatatypeTest.class);
+  private static final String SCHEMA_NAME = "test";
 
   @Override
   protected Database setupDatabase() throws SQLException {
@@ -37,6 +36,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
         .put("database", container.getDatabaseName())
+        .put("schemas", List.of(SCHEMA_NAME))
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("ssl", false)
@@ -54,7 +54,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         SQLDialect.POSTGRES);
 
     database.query(ctx -> {
-      ctx.execute("CREATE SCHEMA TEST;");
+      ctx.execute(String.format("CREATE SCHEMA %S;", SCHEMA_NAME));
       ctx.execute("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');");
       ctx.execute("CREATE TYPE inventory_item AS (name text, supplier_id integer, price numeric);");
       // In one of the test case, we have some money values with currency symbol. Postgres can only
@@ -74,7 +74,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   @Override
   protected String getNameSpace() {
-    return "test";
+    return SCHEMA_NAME;
   }
 
   @Override
