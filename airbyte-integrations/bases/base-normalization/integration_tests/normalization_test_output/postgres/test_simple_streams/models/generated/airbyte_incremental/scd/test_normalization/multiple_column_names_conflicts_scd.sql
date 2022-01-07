@@ -2,7 +2,7 @@
     indexes = [{'columns':['_airbyte_active_row','_airbyte_unique_key_scd','_airbyte_emitted_at'],'type': 'btree'}],
     unique_key = "_airbyte_unique_key_scd",
     schema = "test_normalization",
-    post_hook = ['delete from _airbyte_test_normalization.multiple_column_names_conflicts_stg where _airbyte_emitted_at != (select max(_airbyte_emitted_at) from _airbyte_test_normalization.multiple_column_names_conflicts_stg)'],
+    post_hook = ["delete from _airbyte_test_normalization.multiple_column_names_conflicts_stg where _airbyte_emitted_at != (select max(_airbyte_emitted_at) from _airbyte_test_normalization.multiple_column_names_conflicts_stg)"],
     tags = [ "top-level" ]
 ) }}
 -- depends_on: ref('multiple_column_names_conflicts_stg')

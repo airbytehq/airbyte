@@ -5,18 +5,16 @@
     tags = [ "top-level-intermediate" ]
 ) }}
 -- SQL model to build a hash column based on the values of this record
--- depends_on: {{ ref('renamed_dedup_cdc_excluded_ab2') }}
+-- depends_on: {{ ref('1_prefix_startwith_number_ab2') }}
 select
     {{ dbt_utils.surrogate_key([
         adapter.quote('id'),
-        adapter.quote('name'),
-        '_ab_cdc_lsn',
-        '_ab_cdc_updated_at',
-        '_ab_cdc_deleted_at',
-    ]) }} as _airbyte_renamed_dedup_cdc_excluded_hashid,
+        adapter.quote('date'),
+        adapter.quote('text'),
+    ]) }} as _airbyte_1_prefix_startwith_number_hashid,
     tmp.*
-from {{ ref('renamed_dedup_cdc_excluded_ab2') }} tmp
--- renamed_dedup_cdc_excluded
+from {{ ref('1_prefix_startwith_number_ab2') }} tmp
+-- 1_prefix_startwith_number
 where 1 = 1
 {{ incremental_clause('_airbyte_emitted_at') }}
 
