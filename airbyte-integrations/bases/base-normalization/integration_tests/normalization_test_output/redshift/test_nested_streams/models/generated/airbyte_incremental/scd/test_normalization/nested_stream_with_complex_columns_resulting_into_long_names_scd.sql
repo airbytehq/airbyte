@@ -2,7 +2,7 @@
     sort = ["_airbyte_active_row", "_airbyte_unique_key_scd", "_airbyte_emitted_at"],
     unique_key = "_airbyte_unique_key_scd",
     schema = "test_normalization",
-    post_hook = ['drop view _airbyte_test_normalization.nested_stream_with_complex_columns_resulting_into_long_names_stg'],
+    post_hook = ["drop view _airbyte_test_normalization.nested_stream_with_complex_columns_resulting_into_long_names_stg"],
     tags = [ "top-level" ]
 ) }}
 -- depends_on: ref('nested_stream_with_complex_columns_resulting_into_long_names_stg')
