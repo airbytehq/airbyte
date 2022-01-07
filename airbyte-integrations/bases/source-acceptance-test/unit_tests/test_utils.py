@@ -259,12 +259,12 @@ def test_failed_reading(traceback, container_error, last_line, expected_error):
     "command,wait_timeout,expected_count",
     (
         (
-            "cnt=0; while [ $cnt -lt 10 ]; do cnt=$((cnt+1)); sleep 0.5; echo something; done",
-            0,
+            "cnt=0; while [ $cnt -lt 10 ]; do cnt=$((cnt+1)); echo something; done",
+            2,
             10,
         ),
         # Sometimes a container can finish own work before python tries to read it
-        ("echo something;", 3, 1),
+        ("echo something;", 2, 1),
     ),
     ids=["standard", "waiting"],
 )
