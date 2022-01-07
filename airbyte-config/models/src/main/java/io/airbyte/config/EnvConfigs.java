@@ -53,8 +53,6 @@ public class EnvConfigs implements Configs {
   public static final String CONFIG_DATABASE_PASSWORD = "CONFIG_DATABASE_PASSWORD";
   public static final String CONFIG_DATABASE_URL = "CONFIG_DATABASE_URL";
   public static final String RUN_DATABASE_MIGRATION_ON_STARTUP = "RUN_DATABASE_MIGRATION_ON_STARTUP";
-  public static final String LOG_LEVEL = "LOG_LEVEL";
-  public static final String S3_PATH_STYLE_ACCESS = "S3_PATH_STYLE_ACCESS";
   public static final String WEBAPP_URL = "WEBAPP_URL";
   public static final String JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY = "JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY";
   public static final String JOB_KUBE_TOLERATIONS = "JOB_KUBE_TOLERATIONS";
@@ -86,6 +84,7 @@ public class EnvConfigs implements Configs {
   private static final String CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS = "CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS";
   private static final String JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION = "JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION";
   private static final String JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS = "JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS";
+  private static final String CONTAINER_ORCHESTRATOR_ENABLED = "CONTAINER_ORCHESTRATOR_ENABLED";
 
   private static final String STATE_STORAGE_S3_BUCKET_NAME = "STATE_STORAGE_S3_BUCKET_NAME";
   private static final String STATE_STORAGE_S3_REGION = "STATE_STORAGE_S3_REGION";
@@ -546,7 +545,7 @@ public class EnvConfigs implements Configs {
 
   @Override
   public boolean getContainerOrchestratorEnabled() {
-    return getEnvOrDefault("CONTAINER_ORCHESTRATOR_ENABLED", false, Boolean::valueOf);
+    return getEnvOrDefault(CONTAINER_ORCHESTRATOR_ENABLED, false, Boolean::valueOf);
   }
 
   // Helpers

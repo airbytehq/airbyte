@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -148,6 +149,15 @@ public class TemporalClient {
             destinationLauncherConfig,
             input,
             connectionId));
+  }
+
+  public void migrateSyncIfNeeded(final Set<UUID> connectionIds) {
+    connectionIds.forEach((connectionId) -> {
+      if (!isWorkflowRunning(getConnectionManagerName(connectionId))) {
+        log.info("Migrating: " + connectionId);
+        submitConnectionUpdaterAsync(connectionId);
+      }
+    });
   }
 
   public void submitConnectionUpdaterAsync(final UUID connectionId) {
@@ -343,7 +353,8 @@ public class TemporalClient {
     return false;
   }
 
-  private String getConnectionManagerName(final UUID connectionId) {
+  @VisibleForTesting
+  static String getConnectionManagerName(final UUID connectionId) {
     return "connection_manager_" + connectionId;
   }
 

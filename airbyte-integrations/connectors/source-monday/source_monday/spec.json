@@ -14,7 +14,12 @@
           {
             "type": "object",
             "title": "OAuth2.0",
-            "required": ["auth_type", "client_id", "client_secret", "access_token"],
+            "required": [
+              "auth_type",
+              "client_id",
+              "client_secret",
+              "access_token"
+            ],
             "properties": {
               "subdomain": {
                 "type": "string",

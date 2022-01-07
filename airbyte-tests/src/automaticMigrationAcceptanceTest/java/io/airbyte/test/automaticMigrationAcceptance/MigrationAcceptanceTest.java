@@ -22,7 +22,6 @@ import io.airbyte.api.client.invoker.ApiException;
 import io.airbyte.api.client.model.ConnectionRead;
 import io.airbyte.api.client.model.ConnectionStatus;
 import io.airbyte.api.client.model.DestinationDefinitionRead;
-import io.airbyte.api.client.model.HealthCheckRead;
 import io.airbyte.api.client.model.ImportRead;
 import io.airbyte.api.client.model.ImportRead.StatusEnum;
 import io.airbyte.api.client.model.SourceDefinitionRead;
@@ -318,8 +317,7 @@ public class MigrationAcceptanceTest {
   private static void healthCheck(final ApiClient apiClient) {
     final HealthApi healthApi = new HealthApi(apiClient);
     try {
-      final HealthCheckRead healthCheck = healthApi.getHealthCheck();
-      assertTrue(healthCheck.getDb());
+      healthApi.getHealthCheck();
     } catch (final ApiException e) {
       throw new RuntimeException("Health check failed, usually due to auto migration failure. Please check the logs for details.");
     }

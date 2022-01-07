@@ -50,7 +50,7 @@ CREATE TABLE "cars" (
 
 ## Normalization metadata columns
 
-You'll notice that some metadata are added to keep track of important information about each record. 
+You'll notice that some metadata are added to keep track of important information about each record.
 - Some are introduced at the destination connector level: These are propagated by the normalization process from the raw table to the final table
   - `_airbyte_ab_id`: uuid value assigned by connectors to each row of the data written in the destination.
   - `_airbyte_emitted_at`: time at which the record was emitted and recorded by destination connector.
@@ -329,7 +329,7 @@ Normalization produces tables that are partitioned, clustered, sorted or indexed
 
 In general, normalization needs to do lookup on the last emitted_at column to know if a record is freshly produced and need to be
 incrementally processed or not. But in certain models, such as SCD tables for example, we also need to retrieve older data to update their type 2 SCD end_date and active_row flags, thus a different partitioning scheme is used to optimize that use case.
- 
+
 On Postgres destination, an additional table suffixed with `_stg` for every stream replicated in  [incremental deduped history](connections/incremental-deduped-history.md) needs to be persisted (in a different staging schema) for incremental transformations to work because of a [limitation](https://github.com/dbt-labs/docs.getdbt.com/issues/335#issuecomment-694199569).
 
 ## Extending Basic Normalization
@@ -350,7 +350,8 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- | :--- |
-| 0.32.11-alpha | 0.1.61 | 2021-12-02 | [\#8394](https://github.com/airbytehq/airbyte/pull/8394) | Fix incremental queries not updating empty tables |
+| 0.32.11-alpha | 0.1.62 | 2021-12-23 | [\#9063](https://github.com/airbytehq/airbyte/pull/9063) | Add Snowflake-specific normalization |
+| | 0.1.61 | 2021-12-02 | [\#8394](https://github.com/airbytehq/airbyte/pull/8394) | Fix incremental queries not updating empty tables |
 | | 0.1.61 | 2021-12-01 | [\#8378](https://github.com/airbytehq/airbyte/pull/8378) | Fix un-nesting queries and add proper ref hints |
 | 0.32.5-alpha | 0.1.60 | 2021-11-22 | [\#8088](https://github.com/airbytehq/airbyte/pull/8088) | Speed-up incremental queries for SCD table on Snowflake |
 | 0.30.32-alpha | 0.1.59 | 2021-11-08 | [\#7669](https://github.com/airbytehq/airbyte/pull/7169) | Fix nested incremental dbt |
