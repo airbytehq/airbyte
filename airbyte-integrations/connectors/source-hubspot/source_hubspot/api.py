@@ -10,7 +10,6 @@ from abc import ABC, abstractmethod
 from functools import lru_cache, partial
 from http import HTTPStatus
 from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
-from uuid import uuid4
 
 import backoff
 import pendulum as pendulum
@@ -716,8 +715,9 @@ class FormSubmissionStream(Stream):
     def _transform(self, records: Iterable) -> Iterable:
         for record in super()._transform(records):
             keys = record.keys()
-            if "id" not in keys:
-                record["id"] = uuid4()
+
+            # There's no updatedAt field in the submission however forms fetched by using this field,
+            # so it has to be added to the submissions otherwise it would fail when calling _filter_old_records
             if "updatedAt" not in keys:
                 record["updatedAt"] = record["submittedAt"]
 
@@ -726,9 +726,6 @@ class FormSubmissionStream(Stream):
     def list(self, fields) -> Iterable:
         for form in self.read(getter=partial(self._api.get, url="/marketing/v3/forms")):
             for submission in self.read(getter=partial(self._api.get, url=f"{self.url}/{form['id']}")):
-                del submission["id"]
-                del submission["updatedAt"]
-
                 submission["formId"] = form["id"]
                 yield submission
 
