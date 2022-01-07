@@ -89,3 +89,19 @@ def test_state(current_stream_state, latest_record, expected):
 
     value = stream.get_updated_state(current_stream_state, latest_record)
     assert value == expected
+
+
+def test_updated_state():
+    stream = SearchAnalyticsByDate(NoAuth(), ["https://domain1.com", "https://domain2.com"], "start_date", "end_date")
+
+    state = {}
+    record = {"site_url": "https://domain1.com", "search_type": "web", "date": "2022-01-01"}
+    state = stream.get_updated_state(state, record)
+    record = {"site_url": "https://domain2.com", "search_type": "web", "date": "2022-01-01"}
+    state = stream.get_updated_state(state, record)
+
+    assert state == {
+        "https://domain1.com": {"web": {"date": "2022-01-01"}},
+        "https://domain2.com": {"web": {"date": "2022-01-01"}},
+        "date": "2022-01-01",
+    }
