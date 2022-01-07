@@ -1,7 +1,7 @@
 {{ config(
     unique_key = "{{ quote('_AIRBYTE_UNIQUE_KEY_SCD') }}",
     schema = "test_normalization",
-    post_hook = ['drop view test_normalization.dedup_exchange_rate_stg'],
+    post_hook = ["drop view test_normalization.dedup_exchange_rate_stg"],
     tags = [ "top-level" ]
 ) }}
 -- depends_on: ref('dedup_exchange_rate_stg')
