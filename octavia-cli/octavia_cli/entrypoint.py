@@ -8,6 +8,8 @@ from airbyte_api_client.api import workspace_api
 
 from .list import commands as list_commands
 
+AVAILABLE_COMMANDS = [list_commands._list]
+
 
 @click.group()
 @click.option("--airbyte-url", envvar="AIRBYTE_URL", default="http://localhost:8000", help="The URL of your Airbyte instance.")
@@ -29,7 +31,9 @@ def octavia(ctx: click.Context, airbyte_url: str) -> None:
     ctx.obj["WORKSPACE_ID"] = workspace_id
 
 
-octavia.add_command(list_commands._list)
+def add_commands_to_octavia():
+    for command in AVAILABLE_COMMANDS:
+        octavia.add_command(command)
 
 
 @octavia.command(help="Scaffolds a local project directories.")
@@ -55,3 +59,6 @@ def apply() -> None:
 @octavia.command(help="Delete resources")
 def delete() -> None:
     raise click.ClickException("The delete command is not yet implemented.")
+
+
+add_commands_to_octavia()
