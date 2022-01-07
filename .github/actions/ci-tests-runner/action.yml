@@ -150,11 +150,20 @@ runs:
     - name: Add Comment
       if: ${{ inputs.module-lang == 'py' && github.event_name == 'pull_request' }}
 
-      uses: thollander/actions-comment-pull-request@v1
+#      uses: thollander/actions-comment-pull-request@v1
+#      with:
+#        message: ${{ steps.generate-sq-report.outputs.sq-report }}
+#        GITHUB_TOKEN: ${{ inputs.token }}
+      uses: actions/github-script@v3
       with:
-        message: ${{ steps.generate-sq-report.outputs.sq-report }}
-        GITHUB_TOKEN: ${{ inputs.token }}
-
+        github-token: ${{ inputs.token }}
+        script: |
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: ${{ steps.generate-sq-report.outputs.sq-report }}
+            })
 
     - name: Remove SonarQube Project
       if: ${{ inputs.remove-sonar-project == true }}
