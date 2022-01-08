@@ -24,7 +24,7 @@ max-line-length = 140
 
 [tool.isort]
 profile = "black"
-color_output = true
+color_output = false
 skip_gitignore = true
 
 [tool.mypy]

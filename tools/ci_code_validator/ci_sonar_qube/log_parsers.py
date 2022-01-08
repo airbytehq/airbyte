@@ -17,8 +17,6 @@ RE_MYPY_LINE = re.compile(r"^(.+):(\d+):(\d+):")
 RE_MYPY_LINE_WO_COORDINATES = re.compile(r"^(.+): error: (.+)")
 
 
-# RE_MYPY_OTHER_LINES = re.compile("")
-
 class IssueSeverity(Enum):
     blocker = "BLOCKER"
     critical = "CRITICAL"
@@ -110,7 +108,7 @@ class LogParser(SonarQubeApi):
                 "type": self.rule.rule_type.value,
                 "primaryLocation": {
                     "message": self.description,
-                    "filePath": self.path,
+                    "filePath": self.checked_path,
                 }
             }
             if self.line_number is not None:
@@ -121,6 +119,13 @@ class LogParser(SonarQubeApi):
                     "endColumn": self.column_number,  # 0-indexed
                 }
             return data
+
+        @property
+        def checked_path(self):
+            if self.path.startswith(str(HERE) + "/"):
+                # remove a parent part of path
+                return self.path[len(str(HERE) + "/"):]
+            return self.path
 
     def __init__(self, output_file: str, host: str, token: str):
         super().__init__(host=host, token=token, pr_name="0")
@@ -238,10 +243,9 @@ class LogParser(SonarQubeApi):
         if not lines:
             return None
         path, line_number, column_number, error_or_note, *others = " ".join(lines).split(":")
-        for part in path.split("/"):
-            if "test" in part:
-                cls.logger.info(f"skip the test file: {path}")
-                return None
+        if "test" in Path(path).name:
+            cls.logger.info(f"skip the test file: {path}")
+            return None
         if error_or_note.strip() == "note":
             return None
         others = ":".join(others)
@@ -283,16 +287,11 @@ class LogParser(SonarQubeApi):
 
     @prepare_file
     def from_isort(self, file: TextIO) -> List[Issue]:
-        # remove latest line with "Skipped ..."
-        # because diff parser can't parse it
         changes = defaultdict(lambda: 0)
-        for path, count in self.__parse_diff(list(file.readlines())[:-1]).items():
+        for path, count in self.__parse_diff(file.readlines()).items():
             # check path value
             # path in isort diff file has the following format
             # <absolute path>:before|after
-            if path.startswith(str(HERE) + "/"):
-                # remove a parent part of path
-                path = path[len(str(HERE) + "/"):]
             if path.endswith(":before"):
                 path = path[:-len(":before")]
             elif path.endswith(":after"):

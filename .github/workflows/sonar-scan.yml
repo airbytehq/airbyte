@@ -21,12 +21,14 @@ jobs:
         with:
           python-version: 3.7
       - name: Intall Requirements
-        run: pip install ./tools/ci_common_utils ./tools/ci_static_check_reports
+        run: |
+           pip install ./tools/ci_common_utils ./tools/ci_code_validator[tests]
+           pytest ./tools/ci_code_validator
       - name: Detect Changed Modules
         id: detect-changed-modules
         run: |
           git fetch
-          CHANGES=$(ci_detect_changed_modules $(git diff --name-only $(git merge-base HEAD origin/master)) | jq -c .)
+          CHANGES=$(ci_changes_detection $(git diff --name-only $(git merge-base HEAD origin/master)) | jq -c .)
           echo "::set-output name=changed-modules::{ \"include\": $CHANGES }"
 
   run-ci-tests:

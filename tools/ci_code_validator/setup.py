@@ -5,9 +5,18 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["requests", "ci_common_utils", "mdutils~=1.3.1", "mypy", "unidiff"]
+MAIN_REQUIREMENTS = ["requests", "ci_common_utils"]
 
-TEST_REQUIREMENTS = ["requests-mock", "pytest"]
+TEST_REQUIREMENTS = [
+    "requests-mock",
+    "pytest",
+    "mdutils~=1.3.1",
+    "black",
+    "mypy",
+    "unidiff",
+    "lxml",
+    "isort"
+]
 
 setup(
     version="0.0.0",
@@ -20,10 +29,12 @@ setup(
     python_requires='>=3.7',
     extras_require={
         "tests": TEST_REQUIREMENTS,
+
     },
     entry_points={
         'console_scripts': [
             'ci_sonar_qube = ci_sonar_qube.main:main',
+            'ci_changes_detection = ci_changes_detection.main:main',
         ],
     },
 )
