@@ -22,7 +22,7 @@ class IssueSeverity(Enum):
     critical = "CRITICAL"
     major = "MAJOR"
     minor = "MINOR"
-    info = "info"
+    info = "INFO"
 
 
 @dataclass
