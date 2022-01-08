@@ -118,20 +118,21 @@ runs:
     - name: SonarQube Scan
       # test for Python only
       if: ${{ inputs.module-lang == 'py' }}
+      working-directory: ${{ inputs.module-folder }}
       uses: sonarsource/sonarqube-scan-action@master
       env:
         SONAR_TOKEN: ${{ inputs.sonar-token }}
         # SONAR_HOST_URL: ${{ inputs.sonar-host }}
         SONAR_HOST_URL: ${{ steps.gcloud-tunnel.outputs.sonar-host }}
       with:
-          projectBaseDir: ${{ inputs.module-folder }}
+          projectBaseDir: .
           args: >
             -Dsonar.projectKey=${{ steps.create-sq-project.outputs.sq_project_name }}
             -Dsonar.verbose=true
             -Dsonar.working.directory=/tmp/scannerwork
             -Dsonar.language=${{ inputs.module-lang }}
             -Dsonar.sourceEncoding=UTF-8
-            -Dsonar.projectBaseDir=${{ inputs.module-folder }}
+            -Dsonar.projectBaseDir=.
             -Dsonar.exclusions=reports/**,*.toml
             -Dsonar.python.coverage.reportPaths=${{ steps.ci-py-tests.outputs.coverage-paths }}
             -Dsonar.externalIssuesReportPaths=${{ steps.external-issues.outputs.external_reports }}
