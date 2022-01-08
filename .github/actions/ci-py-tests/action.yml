@@ -32,32 +32,39 @@ runs:
          virtualenv .venv
          source .venv/bin/activate
          JSON_CONFIG='{"module": "${{ inputs.module-name }}", "folder": "${{ inputs.module-folder }}", "lang": "py"}'
-         REPORT_FOLDER=reports
-         ci_build_checkers_reports --venv_folder .venv --output_folder "${REPORT_FOLDER}" "${JSON_CONFIG}" --print_commands pycoverage | while read cmd
-         do
-           echo "CMD: ${cmd}"
-           eval ${cmd}
-         done
-         rm -rf .venv
-         echo "::set-output name=coverage-paths::${REPORT_FOLDER}/coverage.xml"
+         pip install coverage[toml]~=6.2
+         mkdir -p .venv/source-acceptance-test reports
+         SAT_DIR=$(git rev-parse --show-toplevel)/airbyte-integrations/bases/source-acceptance-test
+         PYPROJECT_CONFIG=$(git rev-parse --show-toplevel)/pyproject.toml
+         git ls-tree -r HEAD --name-only $SAT_DIR | while read src; do cp -f $src .venv/source-acceptance-test; done
+         pip install build
+         python -m build .venv/source-acceptance-test,
+         pip install .venv/source-acceptance-test/dist/source_acceptance_test-*.whl
+         [ -f requirements.txt ] && pip install --quiet -r requirements.txt
+         pip install .[tests]
+         coverage run --rcfile=${PYPROJECT_CONFIG} -m pytest ./unit_tests || true
+         coverage xml --rcfile=${PYPROJECT_CONFIG} -o reports/coverage.xml || true
 
-    - name: Build Linter Reports
-      id: build-linter-reports
-      shell: bash
-      working-directory: ${{ inputs.module-folder }}
-      run: |
-         virtualenv .venv
-         source .venv/bin/activate
-         JSON_CONFIG='{"module": "${{ inputs.module-name }}", "folder": "${{ inputs.module-folder }}", "lang": "py"}'
-         REPORT_FOLDER=reports
-         mkdir -p ${REPORT_FOLDER}
-         ci_build_checkers_reports --venv_folder .venv --output_folder "${REPORT_FOLDER}" "${JSON_CONFIG}" --print_commands mypy,flake,black,isort | while read cmd
-         do
-           echo "CMD: ${cmd}"
-           eval ${cmd}
-         done
          rm -rf .venv
-         echo "::set-output name=mypy-logs::${REPORT_FOLDER}/mypy.log"
-         echo "::set-output name=black-diff::${REPORT_FOLDER}/black.diff"
-         echo "::set-output name=isort-diff::${REPORT_FOLDER}/isort.diff"
-         echo "::set-output name=linter-reports::-Dsonar.python.flake8.reportPaths=${REPORT_FOLDER}/flake.txt"
+         echo "::set-output name=coverage-paths::reports/coverage.xml"
+
+#    - name: Build Linter Reports
+#      id: build-linter-reports
+#      shell: bash
+#      working-directory: ${{ inputs.module-folder }}
+#      run: |
+#         virtualenv .venv
+#         source .venv/bin/activate
+#         JSON_CONFIG='{"module": "${{ inputs.module-name }}", "folder": "${{ inputs.module-folder }}", "lang": "py"}'
+#         REPORT_FOLDER=reports
+#         mkdir -p ${REPORT_FOLDER}
+#         ci_build_checkers_reports --venv_folder .venv --output_folder "${REPORT_FOLDER}" "${JSON_CONFIG}" --print_commands mypy,flake,black,isort | while read cmd
+#         do
+#           echo "CMD: ${cmd}"
+#           eval ${cmd}
+#         done
+#         rm -rf .venv
+#         echo "::set-output name=mypy-logs::${REPORT_FOLDER}/mypy.log"
+#         echo "::set-output name=black-diff::${REPORT_FOLDER}/black.diff"
+#         echo "::set-output name=isort-diff::${REPORT_FOLDER}/isort.diff"
+#         echo "::set-output name=linter-reports::-Dsonar.python.flake8.reportPaths=${REPORT_FOLDER}/flake.txt"
