@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.gcs.util;
 
 public class Consts {
@@ -7,7 +11,8 @@ public class Consts {
 
   public static final String CHECK_ACTIONS_TMP_FILE_NAME = "test";
 
-  // Uploads this text size will automatically use a multipart upload strategy, while uploads smaller than this threshold will use
+  // Uploads this text size will automatically use a multipart upload strategy, while uploads smaller
+  // than this threshold will use
   // a single connection to upload the whole object even if multipart upload option is ON.
   public final static String DUMMY_MIDDLE_SIZE_TEXT =
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque malesuada lacinia aliquet. Nam feugiat mauris vel magna dignissim feugiat. Nam non dapibus sapien, ac mattis purus. Donec mollis libero erat, a rutrum ipsum pretium id. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Integer nec aliquam leo. Aliquam eu dictum augue, a ornare elit.\n"

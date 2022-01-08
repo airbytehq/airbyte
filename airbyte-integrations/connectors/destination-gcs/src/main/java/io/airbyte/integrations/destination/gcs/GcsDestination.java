@@ -63,7 +63,7 @@ public class GcsDestination extends BaseConnector implements Destination {
     }
   }
 
-  private void testSingleUpload(final AmazonS3 s3Client, final GcsDestinationConfig destinationConfig){
+  private void testSingleUpload(final AmazonS3 s3Client, final GcsDestinationConfig destinationConfig) {
     LOGGER.info("Started testing if all required credentials assigned to user for single file uploading");
     s3Client.putObject(destinationConfig.getBucketName(), CHECK_ACTIONS_TMP_FILE_NAME, DUMMY_MIDDLE_SIZE_TEXT);
     s3Client.deleteObject(destinationConfig.getBucketName(), CHECK_ACTIONS_TMP_FILE_NAME);
@@ -78,11 +78,12 @@ public class GcsDestination extends BaseConnector implements Destination {
         .withS3Client(s3Client)
         // Sets the size threshold, in bytes, for when to use multipart uploads. Uploads over this size will
         // automatically use a multipart upload strategy, while uploads smaller than this threshold will use
-        // a single connection to upload the whole object. So we need to set it as small for testing connection
+        // a single connection to upload the whole object. So we need to set it as small for testing
+        // connection
         .withMultipartUploadThreshold(1024L) // set 1KB as part size
         .build();
 
-    try{
+    try {
       // TransferManager processes all transfers asynchronously,
       // so this call returns immediately.
       final Upload upload = tm.upload(destinationConfig.getBucketName(), CHECK_ACTIONS_TMP_FILE_NAME, getTmpFileToUpload());
