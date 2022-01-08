@@ -5,12 +5,16 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["requests", "ci_common_utils", "unidiff"]
+MAIN_REQUIREMENTS = [
+    "requests",
+    "ci_common_utils",
+    "unidiff",
+    "mdutils~=1.3.1"
+]
 
 TEST_REQUIREMENTS = [
     "requests-mock",
     "pytest",
-    "mdutils~=1.3.1",
     "black",
     "mypy",
     "lxml",
@@ -19,7 +23,7 @@ TEST_REQUIREMENTS = [
 
 setup(
     version="0.0.0",
-    name="ci_sonar_qube",
+    name="ci_code_validator",
     description="Load and extract CI secrets for test suites",
     author="Airbyte",
     author_email="contact@airbyte.io",
