@@ -14,7 +14,8 @@ As a community contributor, you can follow these steps to run integration tests.
 
 ## Airbyte Employee
 
-- Access the `destination gcs creds` secrets on Last Pass, and put it in `sample_secrets/config.json`.
+- Access the `SECRET_DESTINATION-GCS__CREDS` secrets on SecretManager, and put it in `sample_secrets/config.json`.
+_ Access the `SECRET_DESTINATION-GCS_NO_MULTIPART_ROLE_CREDS` secrets on SecretManager, and put it in `sample_secrets/insufficientrolesconfig.json`.
 - Rename the directory from `sample_secrets` to `secrets`.
 
 ### GCP Service Account for Testing

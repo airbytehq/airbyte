@@ -48,8 +48,8 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
   protected static final Logger LOGGER = LoggerFactory.getLogger(GcsDestinationAcceptanceTest.class);
   protected static final ObjectMapper MAPPER = MoreMappers.initMapper();
 
-  protected final String secretFilePath = "secrets/config.json";
-  protected final String secretFilePathInsufficientRoles = "secrets/insufficientRolesConfig.json";
+  protected static final String SECRET_FILE_PATH = "secrets/config.json";
+  protected static final String SECRET_FILE_PATH_INSUFFICIENT_ROLES = "secrets/insufficientrolesconfig.json";
   protected final S3Format outputFormat;
   protected JsonNode configJson;
   protected GcsDestinationConfig config;
@@ -60,7 +60,7 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
   }
 
   protected JsonNode getBaseConfigJson() {
-    return Jsons.deserialize(IOs.readFile(Path.of(secretFilePath)));
+    return Jsons.deserialize(IOs.readFile(Path.of(SECRET_FILE_PATH)));
   }
 
   @Override
@@ -159,7 +159,8 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
    */
   @Test
   public void testCheckConnectionInsufficientRoles() throws Exception {
-    final JsonNode baseConfigJson = Jsons.deserialize(IOs.readFile(Path.of(secretFilePathInsufficientRoles)));
+    final JsonNode baseConfigJson = Jsons.deserialize(IOs.readFile(Path.of(
+        SECRET_FILE_PATH_INSUFFICIENT_ROLES)));
 
     // Set a random GCS bucket path for each integration test
     final JsonNode configJson = Jsons.clone(baseConfigJson);
