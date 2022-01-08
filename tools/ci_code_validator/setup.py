@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["requests", "ci_common_utils"]
+MAIN_REQUIREMENTS = ["requests", "ci_common_utils", "unidiff"]
 
 TEST_REQUIREMENTS = [
     "requests-mock",
@@ -13,7 +13,6 @@ TEST_REQUIREMENTS = [
     "mdutils~=1.3.1",
     "black",
     "mypy",
-    "unidiff",
     "lxml",
     "isort"
 ]
