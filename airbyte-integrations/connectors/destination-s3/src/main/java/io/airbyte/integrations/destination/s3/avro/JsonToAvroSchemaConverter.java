@@ -96,47 +96,49 @@ public class JsonToAvroSchemaConverter {
     return standardizedNames;
   }
 
+  /**
+   * @return - Avro schema based on the input {@code jsonSchema}.
+   */
   public Schema getAvroSchema(final JsonNode jsonSchema,
-                              final String name,
+                              final String streamName,
                               @Nullable final String namespace,
-                              final boolean appendAirbyteFields,
-                              final boolean isRootNode) {
-    return getAvroSchema(jsonSchema, name, namespace, appendAirbyteFields, true, true, isRootNode);
+                              final boolean appendAirbyteFields) {
+    return getAvroSchema(jsonSchema, streamName, namespace, appendAirbyteFields, true, true, true);
   }
 
   /**
    * @return - Avro schema based on the input {@code jsonSchema}.
    */
   public Schema getAvroSchema(final JsonNode jsonSchema,
-                              final String name,
-                              @Nullable final String namespace,
+                              final String fieldName,
+                              @Nullable final String fieldNamespace,
                               final boolean appendAirbyteFields,
                               final boolean appendExtraProps,
                               final boolean addStringToLogicalTypes,
                               final boolean isRootNode) {
-    final String stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(name);
+    final String stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(fieldName);
     RecordBuilder<Schema> builder = SchemaBuilder.record(stdName);
     if (isRootNode) {
       obtainPaths("", jsonSchema, jsonNodePathMap);
     }
-    if (!stdName.equals(name)) {
-      standardizedNames.put(name, stdName);
-      LOGGER.warn("Schema name contains illegal character(s) and is standardized: {} -> {}", name,
+    if (!stdName.equals(fieldName)) {
+      standardizedNames.put(fieldName, stdName);
+      LOGGER.warn("Schema name contains illegal character(s) and is standardized: {} -> {}", fieldName,
           stdName);
       builder = builder.doc(
           String.format("%s%s%s",
               AvroConstants.DOC_KEY_ORIGINAL_NAME,
               AvroConstants.DOC_KEY_VALUE_DELIMITER,
-              name));
+              fieldName));
     }
-    if (namespace != null) {
-      builder = builder.namespace(namespace);
+    if (fieldNamespace != null) {
+      builder = builder.namespace(fieldNamespace);
     }
 
     final JsonNode properties = jsonSchema.get("properties");
     // object field with no "properties" will be handled by the default additional properties
     // field during object conversion; so it is fine if there is no "properties"
-    final List<String> fieldNames = properties == null
+    final List<String> subfieldNames = properties == null
         ? Collections.emptyList()
         : new ArrayList<>(MoreIterators.toList(properties.fieldNames()));
 
@@ -148,26 +150,26 @@ public class JsonToAvroSchemaConverter {
           .type(TIMESTAMP_MILLIS_SCHEMA).noDefault();
     }
 
-    for (final String fieldName : fieldNames) {
+    for (final String subfieldName : subfieldNames) {
       // ignore additional properties fields, which will be consolidated
       // into one field at the end
-      if (AvroConstants.JSON_EXTRA_PROPS_FIELDS.contains(fieldName)) {
+      if (AvroConstants.JSON_EXTRA_PROPS_FIELDS.contains(subfieldName)) {
         continue;
       }
 
-      final String stdFieldName = AvroConstants.NAME_TRANSFORMER.getIdentifier(fieldName);
-      final JsonNode fieldDefinition = properties.get(fieldName);
+      final String stdFieldName = AvroConstants.NAME_TRANSFORMER.getIdentifier(subfieldName);
+      final JsonNode fieldDefinition = properties.get(subfieldName);
       SchemaBuilder.FieldBuilder<Schema> fieldBuilder = assembler.name(stdFieldName);
-      if (!stdFieldName.equals(fieldName)) {
-        standardizedNames.put(fieldName, stdFieldName);
+      if (!stdFieldName.equals(subfieldName)) {
+        standardizedNames.put(subfieldName, stdFieldName);
         LOGGER.warn("Field name contains illegal character(s) and is standardized: {} -> {}",
-            fieldName, stdFieldName);
+            subfieldName, stdFieldName);
         fieldBuilder = fieldBuilder.doc(String.format("%s%s%s",
             AvroConstants.DOC_KEY_ORIGINAL_NAME,
             AvroConstants.DOC_KEY_VALUE_DELIMITER,
-            fieldName));
+            subfieldName));
       }
-      assembler = fieldBuilder.type(getNullableFieldTypes(fieldName, fieldDefinition, appendExtraProps, addStringToLogicalTypes))
+      assembler = fieldBuilder.type(getNullableFieldTypes(subfieldName, fieldDefinition, appendExtraProps, addStringToLogicalTypes))
           .withDefault(null);
     }
 

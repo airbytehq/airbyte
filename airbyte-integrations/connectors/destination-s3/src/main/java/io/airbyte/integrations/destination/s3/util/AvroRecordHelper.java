@@ -23,7 +23,7 @@ public class AvroRecordHelper {
 
   public static JsonFieldNameUpdater getFieldNameUpdater(final String streamName, final String namespace, final JsonNode streamSchema) {
     final JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
-    schemaConverter.getAvroSchema(streamSchema, streamName, namespace, true, true);
+    schemaConverter.getAvroSchema(streamSchema, streamName, namespace, true);
     return new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
   }
 
@@ -52,13 +52,13 @@ public class AvroRecordHelper {
     return output;
   }
 
-  public static void obtainPaths(String currentPath, JsonNode jsonNode, Map<JsonNode, String> jsonNodePathMap) {
+  public static void obtainPaths(final String currentPath, final JsonNode jsonNode, final Map<JsonNode, String> jsonNodePathMap) {
     if (jsonNode.isObject()) {
-      ObjectNode objectNode = (ObjectNode) jsonNode;
-      Iterator<Map.Entry<String, JsonNode>> iter = objectNode.fields();
-      String pathPrefix = currentPath.isEmpty() ? "" : currentPath + "/";
-      String[] pathFieldsArray = currentPath.split("/");
-      String parent = Arrays.stream(pathFieldsArray)
+      final ObjectNode objectNode = (ObjectNode) jsonNode;
+      final Iterator<Map.Entry<String, JsonNode>> iter = objectNode.fields();
+      final String pathPrefix = currentPath.isEmpty() ? "" : currentPath + "/";
+      final String[] pathFieldsArray = currentPath.split("/");
+      final String parent = Arrays.stream(pathFieldsArray)
           .filter(x -> !x.equals("items"))
           .filter(x -> !x.equals("properties"))
           .filter(x -> !x.equals(pathFieldsArray[pathFieldsArray.length - 1]))
@@ -67,14 +67,14 @@ public class AvroRecordHelper {
         jsonNodePathMap.put(jsonNode, parent);
       }
       while (iter.hasNext()) {
-        Map.Entry<String, JsonNode> entry = iter.next();
+        final Map.Entry<String, JsonNode> entry = iter.next();
         obtainPaths(pathPrefix + entry.getKey(), entry.getValue(), jsonNodePathMap);
       }
     } else if (jsonNode.isArray()) {
-      ArrayNode arrayNode = (ArrayNode) jsonNode;
+      final ArrayNode arrayNode = (ArrayNode) jsonNode;
 
       for (int i = 0; i < arrayNode.size(); i++) {
-        String arrayPath = currentPath + "/" + i;
+        final String arrayPath = currentPath + "/" + i;
         obtainPaths(arrayPath, arrayNode.get(i), jsonNodePathMap);
       }
     }
