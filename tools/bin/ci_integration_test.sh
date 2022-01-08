@@ -3,6 +3,7 @@
 set -e
 
 . tools/lib/lib.sh
+. tools/lib/databricks.sh
 
 # runs integration tests for an integration name
 
@@ -10,6 +11,7 @@ connector="$1"
 all_integration_tests=$(./gradlew integrationTest --dry-run | grep 'integrationTest SKIPPED' | cut -d: -f 4)
 run() {
 if [[ "$connector" == "all" ]] ; then
+  _get_databricks_jdbc_driver
   echo "Running: ./gradlew --no-daemon --scan integrationTest"
   ./gradlew --no-daemon --scan integrationTest
 else
@@ -34,6 +36,10 @@ else
     integrationTestCommand=":airbyte-integrations:connectors:$connector:integrationTest"
   fi
   if [ -n "$selected_integration_test" ] ; then
+    if [[ "$selected_integration_test" == *"databricks"* ]] ; then
+      _get_databricks_jdbc_driver
+    fi
+
     echo "Running: ./gradlew --no-daemon --scan $integrationTestCommand"
     ./gradlew --no-daemon --scan "$integrationTestCommand"
   else

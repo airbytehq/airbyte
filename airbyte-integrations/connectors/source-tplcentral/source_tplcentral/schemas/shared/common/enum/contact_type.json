@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "integer",
+  "enum": [0, 1, 2],
+  "description": "0: ship_to; 1: sold_to; 2: bill_to"
+}
