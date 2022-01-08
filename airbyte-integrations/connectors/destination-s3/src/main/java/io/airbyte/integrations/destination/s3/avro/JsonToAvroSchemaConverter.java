@@ -101,12 +101,15 @@ public class JsonToAvroSchemaConverter {
    */
   public Schema getAvroSchema(final JsonNode jsonSchema,
                               final String streamName,
-                              @Nullable final String namespace,
-                              final boolean appendAirbyteFields) {
-    return getAvroSchema(jsonSchema, streamName, namespace, appendAirbyteFields, true, true, true);
+                              @Nullable final String namespace) {
+    return getAvroSchema(jsonSchema, streamName, namespace, true, true, true, true);
   }
 
   /**
+   * @param appendAirbyteFields     Add default airbyte fields (e.g. _airbyte_id) to the output Avro schema.
+   * @param appendExtraProps        Add default additional property field to the output Avro schema.
+   * @param addStringToLogicalTypes Default logical type field to string.
+   * @param isRootNode              Whether it is the root field in the input Json schema.
    * @return - Avro schema based on the input {@code jsonSchema}.
    */
   public Schema getAvroSchema(final JsonNode jsonSchema,
