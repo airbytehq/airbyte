@@ -3,23 +3,28 @@
   "type": ["null", "object"],
   "properties": {
     "submittedAt": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
+    },
+    "updatedAt": {
+      "type": ["null", "integer"]
     },
     "values": {
       "type": ["null", "array"],
       "items": {
-          "type": "object",
-          "properties": {
-            "name": {
-                "type": ["null", "string"]
-              },
-            "value": {
-                "type": ["null", "string"]
-              }
-            }
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          },
+          "objectTypeId": {
+            "type": ["null", "string"]
           }
-      },
+        }
+      }
+    },
     "pageUrl": {
       "type": ["null", "string"]
     },
