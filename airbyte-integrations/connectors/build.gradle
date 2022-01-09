@@ -1,0 +1,21 @@
+// connectors
+
+if (!System.getenv().containsKey("SUB_BUILD")) {
+    // include all connector projects
+    def integrationsPath = rootDir.toPath().resolve('./')
+
+    integrationsPath.eachDir { dir ->
+        def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
+
+        if (buildFiles.length == 1) {
+
+            include ":airbyte-integrations:connectors:${dir.getFileName()}"
+        }
+    }
+}
+
+dependencies {
+  integrationsPath.forEach {
+    implementation(project(":airbyte-integrations:connectors:${dir.getFileName()}", "${dir.getFileName()}"))
+  }
+}
