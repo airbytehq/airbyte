@@ -1179,6 +1179,7 @@
           "type": "array",
           "items": [
             { "type": "integer" },
+            { "type": "boolean" },
             {
               "type": "object",
               "properties": {
@@ -1190,18 +1191,20 @@
             {
               "type": "object",
               "properties": {
+                "id": {
+                  "type": "string"
+                },
                 "message": {
                   "type": "string"
                 }
               }
-            },
-            { "type": "boolean" }
+            }
           ]
         }
       }
     },
     "jsonObject": {
-      "object_array": [1234, true, {"id": 1234}, {"message": "test message"}]
+      "object_array": [1234, true, {"id": 1234}, {"id": "abcde", "message": "test message"}]
     },
     "avroSchema": {
       "type": "record",
@@ -1225,7 +1228,7 @@
                   "fields": [
                     {
                       "name": "id",
-                      "type": ["null", "int"],
+                      "type": ["null", "int", "string"],
                       "default": null
                     },
                     {
@@ -1274,7 +1277,7 @@
           "_airbyte_additional_properties": null
         },
         {
-          "id": null,
+          "id": "abcde",
           "message": "test message",
           "_airbyte_additional_properties": null
         }
