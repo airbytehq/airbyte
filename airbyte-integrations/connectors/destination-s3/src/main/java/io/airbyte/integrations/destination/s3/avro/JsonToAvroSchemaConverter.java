@@ -12,21 +12,19 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
-import org.apache.avro.Schema.Type;
 import org.apache.avro.SchemaBuilder;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.allegro.schema.json2avro.converter.AdditionalPropertyField;
@@ -262,9 +260,36 @@ public class JsonToAvroSchemaConverter {
    * <pre>
    * ["number", { ... }] -> ["double", { ... }]
    * </pre>
+   */
+  List<Schema> parseJsonTypeUnion(final String fieldName,
+                                  @Nullable final String fieldNamespace,
+                                  final ArrayNode types,
+                                  final boolean appendExtraProps,
+                                  final boolean addStringToLogicalTypes) {
+    final List<JsonNode> typeList = MoreIterators.toList(types.elements());
+    final List<Schema> schemas = IntStream.range(0, typeList.size())
+        .mapToObj(i -> Pair.of(i, typeList.get(i)))
+        .flatMap(pair -> getNonNullTypes(fieldName, pair.getValue()).stream().flatMap(type -> {
+          final String namespace = fieldNamespace == null
+              ? fieldName + "." + pair.getKey()
+              : fieldNamespace + "." + pair.getKey();
+          final Schema singleFieldSchema = parseSingleType(fieldName, namespace, type, pair.getValue(), appendExtraProps, addStringToLogicalTypes);
+
+          if (singleFieldSchema.isUnion()) {
+            return singleFieldSchema.getTypes().stream();
+          } else {
+            return Stream.of(singleFieldSchema);
+          }
+        }))
+        .distinct()
+        .collect(Collectors.toList());
+
+    return mergeRecordSchemas(fieldName, fieldNamespace, schemas, appendExtraProps);
+  }
+
+  /**
    * If there are multiple object fields, those fields are combined into one Avro record. This is because Avro does not allow specifying a tuple of
-   * types (i.e. the first element is type x, the second element is type y, and so on). For example, the following
-   * Json field types:
+   * types (i.e. the first element is type x, the second element is type y, and so on). For example, the following Json field types:
    * <pre>
    * [
    *   {
@@ -293,29 +318,17 @@ public class JsonToAvroSchemaConverter {
    * }
    * </pre>
    */
-  List<Schema> parseJsonTypeUnion(final String fieldName,
+  List<Schema> mergeRecordSchemas(final String fieldName,
                                   @Nullable final String fieldNamespace,
-                                  final ArrayNode types,
-                                  final boolean appendExtraProps,
-                                  final boolean addStringToLogicalTypes) {
-    final Map<String, List<Schema>> recordFieldSchemas = new LinkedHashMap<>();
+                                  final List<Schema> schemas,
+                                  final boolean appendExtraProps) {
+    final LinkedHashMap<String, List<Schema>> recordFieldSchemas = new LinkedHashMap<>();
     final Map<String, List<String>> recordFieldDocs = new HashMap<>();
 
-    final List<Schema> schemas = MoreIterators.toList(types.elements())
-        .stream()
-        .flatMap(definition -> getNonNullTypes(fieldName, definition).stream().flatMap(type -> {
-          final Schema singleFieldSchema = parseSingleType(fieldName, fieldNamespace, type, definition, appendExtraProps, addStringToLogicalTypes);
-
-          if (singleFieldSchema.isUnion()) {
-            return singleFieldSchema.getTypes().stream();
-          } else {
-            return Stream.of(singleFieldSchema);
-          }
-        }))
-        .distinct()
+    final List<Schema> mergedSchemas = schemas.stream()
         // gather record schemas to construct a single record schema later on
         .peek(schema -> {
-          if (schema.getType() == Type.RECORD) {
+          if (schema.getType() == Schema.Type.RECORD) {
             for (final Schema.Field field : schema.getFields()) {
               recordFieldSchemas.putIfAbsent(field.name(), new LinkedList<>());
               recordFieldSchemas.get(field.name()).add(field.schema());
@@ -327,7 +340,7 @@ public class JsonToAvroSchemaConverter {
           }
         })
         // remove record schemas because they will be merged into one
-        .filter(schema -> schema.getType() != Type.RECORD)
+        .filter(schema -> schema.getType() != Schema.Type.RECORD)
         .collect(Collectors.toList());
 
     // create one record schema from all the record fields
@@ -338,6 +351,7 @@ public class JsonToAvroSchemaConverter {
       }
 
       final SchemaBuilder.FieldAssembler<Schema> assembler = builder.fields();
+
       for (final Map.Entry<String, List<Schema>> entry : recordFieldSchemas.entrySet()) {
         final String subfieldName = entry.getKey();
         // ignore additional properties fields, which will be consolidated
@@ -357,8 +371,10 @@ public class JsonToAvroSchemaConverter {
                 .filter(s -> !s.equals(NULL_SCHEMA)))
             .distinct()
             .collect(Collectors.toList());
-        subfieldSchemas.add(0, NULL_SCHEMA);
-        subfieldBuilder.type(Schema.createUnion(subfieldSchemas)).withDefault(null);
+        // recursively merge schemas of a subfield because they may include multiple record schemas as well
+        final List<Schema> mergedSubfieldSchemas = mergeRecordSchemas(subfieldName, fieldNamespace, subfieldSchemas, appendExtraProps);
+        mergedSubfieldSchemas.add(0, NULL_SCHEMA);
+        subfieldBuilder.type(Schema.createUnion(mergedSubfieldSchemas)).withDefault(null);
       }
 
       if (appendExtraProps) {
@@ -366,15 +382,14 @@ public class JsonToAvroSchemaConverter {
         assembler.name(AvroConstants.AVRO_EXTRA_PROPS_FIELD)
             .type(AdditionalPropertyField.FIELD_SCHEMA).withDefault(null);
       }
-      schemas.add(assembler.endRecord());
+      mergedSchemas.add(assembler.endRecord());
     }
 
-    return schemas;
+    return mergedSchemas;
   }
 
   /**
-   * Take in a Json field definition, and generate a nullable Avro field schema.
-   * For example:
+   * Take in a Json field definition, and generate a nullable Avro field schema. For example:
    * <pre>
    * {"type": ["number", { ... }]} -> ["null", "double", { ... }]
    * </pre>
