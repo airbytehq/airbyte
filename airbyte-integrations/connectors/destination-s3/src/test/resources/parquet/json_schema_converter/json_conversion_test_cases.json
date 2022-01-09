@@ -1175,68 +1175,75 @@
     "appendAirbyteFields": false,
     "jsonSchema": {
       "properties": {
-        "object_array": {
-          "type": "array",
-          "items": [
-            { "type": "integer" },
-            { "type": "boolean" },
-            {
-              "type": "object",
-              "properties": {
-                "id": {
+        "parent_object": {
+          "type": "object",
+          "properties": {
+            "object_array": {
+              "type": "array",
+              "items": [
+                { "type": "integer" },
+                { "type": "boolean" },
+                {
                   "type": "object",
                   "properties": {
-                    "id_part_1": {
-                      "type": "integer"
-                    },
-                    "id_part_2": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            },
-            {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "object",
-                  "properties": {
-                    "id_part_1": {
-                      "type": "string"
-                    },
-                    "id_part_2": {
-                      "type": "integer"
+                    "id": {
+                      "type": "object",
+                      "properties": {
+                        "id_part_1": {
+                          "type": "integer"
+                        },
+                        "id_part_2": {
+                          "type": "string"
+                        }
+                      }
                     }
                   }
                 },
-                ":message": {
-                  "type": "string"
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "object",
+                      "properties": {
+                        "id_part_1": {
+                          "type": "string"
+                        },
+                        "id_part_2": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    ":message": {
+                      "type": "string"
+                    }
+                  }
                 }
-              }
+              ]
             }
-          ]
+          }
         }
       }
     },
     "jsonObject": {
-      "object_array": [
-        1234,
-        true,
-        {
-          "id": {
-            "id_part_1": 1000,
-            "id_part_2": "abcde"
-          }
-        },
-        {
-          "id": {
-            "id_part_1": "wxyz",
-            "id_part_2": 2000
+      "parent_object": {
+        "object_array": [
+          1234,
+          true,
+          {
+            "id": {
+              "id_part_1": 1000,
+              "id_part_2": "abcde"
+            }
           },
-          ":message": "test message"
-        }
-      ]
+          {
+            "id": {
+              "id_part_1": "wxyz",
+              "id_part_2": 2000
+            },
+            ":message": "test message"
+          }
+        ]
+      }
     },
     "avroSchema": {
       "type": "record",
@@ -1244,36 +1251,67 @@
       "namespace": "namespace18",
       "fields": [
         {
-          "name": "object_array",
+          "name": "parent_object",
           "type": [
             "null",
             {
-              "type": "array",
-              "items": [
-                "null",
-                "int",
-                "boolean",
+              "type": "record",
+              "name": "parent_object",
+              "namespace": "",
+              "fields": [
                 {
-                  "type": "record",
                   "name": "object_array",
-                  "namespace": "",
-                  "fields": [
+                  "type": [
+                    "null",
                     {
-                      "name": "id",
-                      "type": [
+                      "type": "array",
+                      "items": [
                         "null",
+                        "int",
+                        "boolean",
                         {
                           "type": "record",
-                          "name": "id",
+                          "name": "object_array",
+                          "namespace": "parent_object",
                           "fields": [
                             {
-                              "name": "id_part_1",
-                              "type": ["null", "int", "string"],
+                              "name": "id",
+                              "type": [
+                                "null",
+                                {
+                                  "type": "record",
+                                  "name": "id",
+                                  "fields": [
+                                    {
+                                      "name": "id_part_1",
+                                      "type": ["null", "int", "string"],
+                                      "default": null
+                                    },
+                                    {
+                                      "name": "id_part_2",
+                                      "type": ["null", "string", "int"],
+                                      "default": null
+                                    },
+                                    {
+                                      "name": "_airbyte_additional_properties",
+                                      "type": [
+                                        "null",
+                                        {
+                                          "type": "map",
+                                          "values": "string"
+                                        }
+                                      ],
+                                      "default": null
+                                    }
+                                  ]
+                                }
+                              ],
                               "default": null
                             },
                             {
-                              "name": "id_part_2",
-                              "type": ["null", "string", "int"],
+                              "name": "_message",
+                              "type": ["null", "string"],
+                              "doc": "_airbyte_original_name::message",
                               "default": null
                             },
                             {
@@ -1289,27 +1327,21 @@
                             }
                           ]
                         }
-                      ],
-                      "default": null
-                    },
-                    {
-                      "name": "_message",
-                      "type": ["null", "string"],
-                      "doc": "_airbyte_original_name::message",
-                      "default": null
-                    },
-                    {
-                      "name": "_airbyte_additional_properties",
-                      "type": [
-                        "null",
-                        {
-                          "type": "map",
-                          "values": "string"
-                        }
-                      ],
-                      "default": null
+                      ]
                     }
-                  ]
+                  ],
+                  "default": null
+                },
+                {
+                  "name": "_airbyte_additional_properties",
+                  "type": [
+                    "null",
+                    {
+                      "type": "map",
+                      "values": "string"
+                    }
+                  ],
+                  "default": null
                 }
               ]
             }
@@ -1330,28 +1362,31 @@
       ]
     },
     "avroObject": {
-      "object_array": [
-        1234,
-        true,
-        {
-          "id": {
-            "id_part_1": 1000,
-            "id_part_2": "abcde",
+      "parent_object": {
+        "object_array": [
+          1234,
+          true,
+          {
+            "id": {
+              "id_part_1": 1000,
+              "id_part_2": "abcde",
+              "_airbyte_additional_properties": null
+            },
+            "_message": null,
             "_airbyte_additional_properties": null
           },
-          "_message": null,
-          "_airbyte_additional_properties": null
-        },
-        {
-          "id": {
-            "id_part_1": "wxyz",
-            "id_part_2": 2000,
+          {
+            "id": {
+              "id_part_1": "wxyz",
+              "id_part_2": 2000,
+              "_airbyte_additional_properties": null
+            },
+            "_message": "test message",
             "_airbyte_additional_properties": null
-          },
-          "_message": "test message",
-          "_airbyte_additional_properties": null
-        }
-      ],
+          }
+        ],
+        "_airbyte_additional_properties": null
+      },
       "_airbyte_additional_properties": null
     }
   }

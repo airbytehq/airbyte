@@ -18,13 +18,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.allegro.schema.json2avro.converter.AdditionalPropertyField;
@@ -172,7 +170,7 @@ public class JsonToAvroSchemaConverter {
           // Omit the namespace for root level fields, because it is directly assigned in the builder above.
           // This may not be the correct choice.
           ? null
-          : (fieldNamespace == null ? fieldName : fieldNamespace + "." + fieldName);
+          : (fieldNamespace == null ? fieldName : (fieldNamespace + "." + fieldName));
       fieldBuilder.type(parseJsonField(subfieldName, subfieldNamespace, subfieldDefinition, appendExtraProps, addStringToLogicalTypes))
           .withDefault(null);
     }
@@ -267,13 +265,13 @@ public class JsonToAvroSchemaConverter {
                                   final boolean appendExtraProps,
                                   final boolean addStringToLogicalTypes) {
     final List<JsonNode> typeList = MoreIterators.toList(types.elements());
-    final List<Schema> schemas = IntStream.range(0, typeList.size())
-        .mapToObj(i -> Pair.of(i, typeList.get(i)))
-        .flatMap(pair -> getNonNullTypes(fieldName, pair.getValue()).stream().flatMap(type -> {
+    final List<Schema> schemas = MoreIterators.toList(types.elements())
+        .stream()
+        .flatMap(definition -> getNonNullTypes(fieldName, definition).stream().flatMap(type -> {
           final String namespace = fieldNamespace == null
-              ? fieldName + "." + pair.getKey()
-              : fieldNamespace + "." + pair.getKey();
-          final Schema singleFieldSchema = parseSingleType(fieldName, namespace, type, pair.getValue(), appendExtraProps, addStringToLogicalTypes);
+              ? fieldName
+              : fieldNamespace + "." + fieldName;
+          final Schema singleFieldSchema = parseSingleType(fieldName, namespace, type, definition, appendExtraProps, addStringToLogicalTypes);
 
           if (singleFieldSchema.isUnion()) {
             return singleFieldSchema.getTypes().stream();
