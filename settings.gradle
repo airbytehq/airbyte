@@ -105,25 +105,39 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':tools:code-generator'
 }
 
-// Only include connector subprojects if any of the following are true:
-// 1)
-// 2)
-// 3)
-def includeConnectorsSubProjects = !System.getenv().containsKey("SUB_BUILD")
+// INCLUDE_CONNECTOR will be set as a CLI arg from gradlew for you
+def includeConnector = System.getenv("INCLUDE_CONNECTOR")
+println("includeConnector: ${includeConnector}")
 
-// connectors
-if (includeConnectorsSubProjects.toBoolean()) {
-    // include all connector projects
-    // TODO: if a specific connector is passed only search for that one
+// Superset of includeConnector or INCLUDE_CONNECTORS environment variable
+def includeAnyConnectors = (System.getenv().containsKey("INCLUDE_CONNECTORS") && System.getenv("INCLUDE_CONNECTORS").toString.toLowerCase() == "true") || includeConnector?.trim()
 
-    def integrationsPath = rootDir.toPath().resolve('airbyte-integrations/connectors')
-    println integrationsPath
-    integrationsPath.eachDir { dir ->
-        println dir
-        def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
+println("includeAnyConnectors: ${includeAnyConnectors}")
+
+// Connector building is conditional
+if (includeAnyConnectors.toBoolean()) {
+    // If a specific connector passed, include it, else, include all
+    if (includeConnector?.trim()) {
+        println "Including connector ${includeConnector}"
+
+        def buildFiles = file(includeConnector).list { file, name -> name == "build.gradle" }
 
         if (buildFiles.length == 1) {
-            include ":airbyte-integrations:connectors:${dir.getFileName()}"
+            include ":airbyte-integrations:connectors:${includeConnector}"
+        }
+    // Include all connector projects
+    } else {
+        def integrationsPath = rootDir.toPath().resolve('airbyte-integrations/connectors')
+        println "Including all connectors in ${integrationsPath}"
+
+        integrationsPath.eachDir { dir ->
+            def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
+
+            if (buildFiles.length == 1) {
+                include ":airbyte-integrations:connectors:${dir.getFileName()}"
+            }
         }
     }
+} else {
+  println "No connectors included"
 }

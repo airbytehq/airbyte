@@ -233,8 +233,9 @@ eval "set -- $(
 
 # Check if the gradle task is a connector, if so, set INCLUDE_CONNECTORS so settings.gradle can
 # conditionally include connector subprojects
-echo "----------------------------"
-echo "gradlew args: $*"
-echo "----------------------------"
+INCLUDE_CONNECTOR=$(echo "$*" | grep -E -o ":airbyte-integrations:connectors:[a-z0-9]+-[a-z0-9]+$")
+if [ -n "${INCLUDE_CONNECTOR}" ]; then
+  export INCLUDE_CONNECTOR
+fi
 
 exec "$JAVACMD" "$@"
