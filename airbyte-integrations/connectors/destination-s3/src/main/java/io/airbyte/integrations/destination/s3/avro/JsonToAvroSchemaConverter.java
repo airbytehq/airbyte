@@ -51,6 +51,9 @@ public class JsonToAvroSchemaConverter {
         .filter(type -> type != JsonSchemaType.NULL).collect(Collectors.toList());
   }
 
+  /**
+   * When no type is specified, it will default to string.
+   */
   static List<JsonSchemaType> getTypes(final String fieldName, final JsonNode fieldDefinition) {
     final Optional<JsonNode> combinedRestriction = getCombinedRestriction(fieldDefinition);
     if (combinedRestriction.isPresent()) {
@@ -59,7 +62,8 @@ public class JsonToAvroSchemaConverter {
 
     final JsonNode typeProperty = fieldDefinition.get("type");
     if (typeProperty == null || typeProperty.isNull()) {
-      throw new IllegalStateException(String.format("Field %s has no type", fieldName));
+      LOGGER.warn("Field {} has no type, it will default to string", fieldName);
+      return Collections.singletonList(JsonSchemaType.STRING);
     }
 
     if (typeProperty.isArray()) {
@@ -120,7 +124,7 @@ public class JsonToAvroSchemaConverter {
     final SchemaBuilder.RecordBuilder<Schema> builder = SchemaBuilder.record(stdName);
     if (!stdName.equals(fieldName)) {
       standardizedNames.put(fieldName, stdName);
-      LOGGER.warn("Schema name contains illegal character(s) and is standardized: {} -> {}", fieldName,
+      LOGGER.warn("Schema name \"{}\" contains illegal character(s) and is standardized to \"{}\"", fieldName,
           stdName);
       builder.doc(
           String.format("%s%s%s",
@@ -159,7 +163,7 @@ public class JsonToAvroSchemaConverter {
       final SchemaBuilder.FieldBuilder<Schema> fieldBuilder = assembler.name(stdFieldName);
       if (!stdFieldName.equals(subfieldName)) {
         standardizedNames.put(subfieldName, stdFieldName);
-        LOGGER.warn("Field name contains illegal character(s) and is standardized: {} -> {}",
+        LOGGER.warn("Field name \"{}\" contains illegal character(s) and is standardized to \"{}\"",
             subfieldName, stdFieldName);
         fieldBuilder.doc(String.format("%s%s%s",
             AvroConstants.DOC_KEY_ORIGINAL_NAME,
@@ -231,12 +235,16 @@ public class JsonToAvroSchemaConverter {
       case ARRAY -> {
         final JsonNode items = fieldDefinition.get("items");
         if (items == null) {
-          LOGGER.warn("Array field {} does not specify the items type. It will be assumed to be an array of strings", fieldName);
+          LOGGER.warn("Array field \"{}\" does not specify the items type. It will default to an array of strings", fieldName);
           fieldSchema = Schema.createArray(Schema.createUnion(NULL_SCHEMA, STRING_SCHEMA));
         } else if (items.isObject()) {
-          fieldSchema =
-              Schema.createArray(
-                  parseJsonField(String.format("%s.items", fieldName), fieldNamespace, items, appendExtraProps, addStringToLogicalTypes));
+          if (!items.has("type") || items.get("type").isNull()) {
+            LOGGER.warn("Array field \"{}\" does not specify the items type. it will default to an array of strings", fieldName);
+            fieldSchema = Schema.createArray(Schema.createUnion(NULL_SCHEMA, STRING_SCHEMA));
+          } else {
+            fieldSchema = Schema.createArray(
+                    parseJsonField(String.format("%s.items", fieldName), fieldNamespace, items, appendExtraProps, addStringToLogicalTypes));
+          }
         } else if (items.isArray()) {
           final List<Schema> arrayElementTypes =
               parseJsonTypeUnion(fieldName, fieldNamespace, (ArrayNode) items, appendExtraProps, addStringToLogicalTypes);
