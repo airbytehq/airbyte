@@ -77,7 +77,7 @@ class JsonToAvroConverterTest {
   public void testFieldTypeConversion(final String fieldName, final JsonNode jsonFieldSchema, final JsonNode avroFieldType) {
     assertEquals(
         avroFieldType,
-        Jsons.deserialize(SCHEMA_CONVERTER.parseJsonField(fieldName, jsonFieldSchema, true, true).toString()),
+        Jsons.deserialize(SCHEMA_CONVERTER.parseJsonField(fieldName, null, jsonFieldSchema, true, true).toString()),
         String.format("Test for %s failed", fieldName));
   }
 

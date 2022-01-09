@@ -5,16 +5,11 @@
 package io.airbyte.integrations.destination.s3.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Helper methods for unit tests. This is needed by multiple modules, so it is in the src directory.
@@ -50,34 +45,6 @@ public class AvroRecordHelper {
     }
 
     return output;
-  }
-
-  public static void obtainPaths(final String currentPath, final JsonNode jsonNode, final Map<JsonNode, String> jsonNodePathMap) {
-    if (jsonNode.isObject()) {
-      final ObjectNode objectNode = (ObjectNode) jsonNode;
-      final Iterator<Map.Entry<String, JsonNode>> iter = objectNode.fields();
-      final String pathPrefix = currentPath.isEmpty() ? "" : currentPath + "/";
-      final String[] pathFieldsArray = currentPath.split("/");
-      final String parent = Arrays.stream(pathFieldsArray)
-          .filter(x -> !x.equals("items"))
-          .filter(x -> !x.equals("properties"))
-          .filter(x -> !x.equals(pathFieldsArray[pathFieldsArray.length - 1]))
-          .collect(Collectors.joining("."));
-      if (!parent.isEmpty()) {
-        jsonNodePathMap.put(jsonNode, parent);
-      }
-      while (iter.hasNext()) {
-        final Map.Entry<String, JsonNode> entry = iter.next();
-        obtainPaths(pathPrefix + entry.getKey(), entry.getValue(), jsonNodePathMap);
-      }
-    } else if (jsonNode.isArray()) {
-      final ArrayNode arrayNode = (ArrayNode) jsonNode;
-
-      for (int i = 0; i < arrayNode.size(); i++) {
-        final String arrayPath = currentPath + "/" + i;
-        obtainPaths(arrayPath, arrayNode.get(i), jsonNodePathMap);
-      }
-    }
   }
 
 }
