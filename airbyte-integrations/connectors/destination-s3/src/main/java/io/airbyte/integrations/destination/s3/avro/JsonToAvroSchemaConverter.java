@@ -279,7 +279,6 @@ public class JsonToAvroSchemaConverter {
                                   final ArrayNode types,
                                   final boolean appendExtraProps,
                                   final boolean addStringToLogicalTypes) {
-    final List<JsonNode> typeList = MoreIterators.toList(types.elements());
     final List<Schema> schemas = MoreIterators.toList(types.elements())
         .stream()
         .flatMap(definition -> getNonNullTypes(fieldName, definition).stream().flatMap(type -> {
