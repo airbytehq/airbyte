@@ -161,7 +161,7 @@ This is not supported in Avro schema. As a compromise, the converter creates a u
 }
 ```
 
-If the Json array has multiple object items, these objects will be recursively merged into one Avro record. For example, the following Json array expects two different objects, each with a different `id` field.
+If the Json array has multiple object items, these objects will be recursively merged into one Avro record. For example, the following Json array expects two different objects. The first object has an `id` field, and second has an `id` and `message` field. Their `id` fields have slightly different types.
 
 Json schema:
 
@@ -223,7 +223,7 @@ Json object:
 }
 ```
 
-Furthermore, the fields under the `id` record, `id_part_1` and `id_part_2`, will also have their schemas merged.
+After conversion, the two object schemas will be merged into one. Furthermore, the fields under the `id` record, `id_part_1` and `id_part_2`, will also be merged. In this way, all possible valid elements from the Json array can be converted to Avro records.
 
 Avro schema:
 
