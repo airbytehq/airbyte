@@ -1168,5 +1168,128 @@
       },
       "_airbyte_additional_properties": null
     }
+  },
+  {
+    "schemaName": "array_with_same_object_name",
+    "namespace": "namespace18",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "properties": {
+        "object_array": {
+          "type": "array",
+          "items": [
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "jsonObject": {
+      "object_array": [{"id": 1234}, {"message": "test message"}]
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "array_with_same_object_name",
+      "namespace": "namespace18",
+      "fields": [
+        {
+          "name": "object_array",
+          "type": [
+            "null",
+            {
+              "type": "array",
+              "items": [
+                "null",
+                {
+                  "type": "record",
+                  "name": "object_array",
+                  "namespace": "object_array.0",
+                  "fields": [
+                    {
+                      "name": "id",
+                      "type": ["null", "int"],
+                      "default": null
+                    },
+                    {
+                      "name": "_airbyte_additional_properties",
+                      "type": [
+                        "null",
+                        {
+                          "type": "map",
+                          "values": "string"
+                        }
+                      ],
+                      "default": null
+                    }
+                  ]
+                },
+                {
+                  "type": "record",
+                  "name": "object_array",
+                  "namespace": "object_array.1",
+                  "fields": [
+                    {
+                      "name": "message",
+                      "type": ["null", "string"],
+                      "default": null
+                    },
+                    {
+                      "name": "_airbyte_additional_properties",
+                      "type": [
+                        "null",
+                        {
+                          "type": "map",
+                          "values": "string"
+                        }
+                      ],
+                      "default": null
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "object_array": [
+        {
+          "id": 1234,
+          "_airbyte_additional_properties": null
+        },
+        {
+          "message": "test message",
+          "_airbyte_additional_properties": null
+        }
+      ],
+      "_airbyte_additional_properties": null
+    }
   }
 ]

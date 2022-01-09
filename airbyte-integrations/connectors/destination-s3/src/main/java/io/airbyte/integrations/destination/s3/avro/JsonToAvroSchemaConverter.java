@@ -12,6 +12,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -261,19 +262,30 @@ public class JsonToAvroSchemaConverter {
                               final ArrayNode types,
                               final boolean appendExtraProps,
                               final boolean addStringToLogicalTypes) {
-    return MoreIterators.toList(types.elements())
-        .stream()
-        .flatMap(definition -> getNonNullTypes(fieldName, definition).stream().flatMap(type -> {
-          final Schema singleFieldSchema = parseSingleType(fieldName, fieldNamespace, type, definition, appendExtraProps, addStringToLogicalTypes);
+    final List<JsonNode> subtypes = MoreIterators.toList(types.elements());
+    final List<Schema> schemas = new LinkedList<>();
+    for (int i = 0; i < subtypes.size(); ++i) {
+      final JsonNode subtype = subtypes.get(i);
+      final int index = i;
+      final List<Schema> schemasFromSubtype = getNonNullTypes(fieldName, subtype)
+          .stream()
+          .flatMap(type -> {
+            final String subtypeNamespace = fieldNamespace == null
+                ? fieldName + "." + index
+                : fieldNamespace + "." + index;
+            final Schema singleFieldSchema = parseSingleType(fieldName, subtypeNamespace, type, subtype, appendExtraProps,
+                addStringToLogicalTypes);
 
-          if (singleFieldSchema.isUnion()) {
-            return singleFieldSchema.getTypes().stream();
-          } else {
-            return Stream.of(singleFieldSchema);
-          }
-        }))
-        .distinct()
-        .collect(Collectors.toList());
+            if (singleFieldSchema.isUnion()) {
+              return singleFieldSchema.getTypes().stream();
+            } else {
+              return Stream.of(singleFieldSchema);
+            }
+          })
+          .toList();
+      schemas.addAll(schemasFromSubtype);
+    }
+    return schemas.stream().distinct().collect(Collectors.toList());
   }
 
   /**
