@@ -243,8 +243,9 @@ public class JsonToAvroSchemaConverter {
             LOGGER.warn("Array field \"{}\" does not specify the items type. it will default to an array of strings", fieldName);
             fieldSchema = Schema.createArray(Schema.createUnion(NULL_SCHEMA, STRING_SCHEMA));
           } else {
-            fieldSchema = Schema.createArray(
-                    parseJsonField(String.format("%s.items", fieldName), fieldNamespace, items, appendExtraProps, addStringToLogicalTypes));
+            // Objects inside Json array has no names. We name it with the ".items" suffix.
+            final String elementFieldName = fieldName + ".items";
+            fieldSchema = Schema.createArray(parseJsonField(elementFieldName, fieldNamespace, items, appendExtraProps, addStringToLogicalTypes));
           }
         } else if (items.isArray()) {
           final List<Schema> arrayElementTypes =

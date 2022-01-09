@@ -229,11 +229,7 @@
   },
   {
     "fieldName": "field_without_type",
-    "jsonFieldSchema": {
-    },
-    "avroFieldType": [
-      "null",
-      "string"
-    ]
+    "jsonFieldSchema": {},
+    "avroFieldType": ["null", "string"]
   }
 ]
