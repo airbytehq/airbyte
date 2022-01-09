@@ -1389,5 +1389,119 @@
       },
       "_airbyte_additional_properties": null
     }
+  },
+  {
+    "schemaName": "object_inside_array_inside_array",
+    "namespace": "namespace19",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "filters": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "filterFamily": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "object_inside_array_inside_array",
+      "namespace": "namespace19",
+      "fields": [
+        {
+          "name": "filters",
+          "type": [
+            "null", {
+              "type": "array",
+              "items": [
+                "null", {
+                  "type": "array",
+                  "items": [
+                    "null", {
+                      "type": "record",
+                      "name": "filters_items_items",
+                      "namespace": "",
+                      "doc": "_airbyte_original_name:filters.items.items",
+                      "fields": [
+                        {
+                          "name": "filterFamily",
+                          "type": ["null", "string"],
+                          "default": null
+                        }, {
+                          "name": "_airbyte_additional_properties",
+                          "type": [
+                            "null", {
+                              "type": "map",
+                              "values": "string"
+                            }
+                          ],
+                          "default": null
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "default": null
+        }, {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null", {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "jsonObject": {
+      "filters": [
+        [
+          {
+            "filterFamily": "type_a"
+          }, {
+          "filterFamily": "type_b"
+        }
+        ], [
+          {
+            "filterFamily": "type_b"
+          }
+        ]
+      ]
+    },
+    "avroObject": {
+      "filters": [
+        [
+          {
+            "filterFamily": "type_a",
+            "_airbyte_additional_properties": null
+          },
+          {
+            "filterFamily": "type_b",
+            "_airbyte_additional_properties": null
+          }
+        ],
+        [
+          {
+            "filterFamily": "type_b",
+            "_airbyte_additional_properties": null
+          }
+        ]
+      ],
+      "_airbyte_additional_properties": null
+    }
   }
 ]
