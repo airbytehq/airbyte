@@ -110,8 +110,6 @@ runs:
         declare -a OPTIONS
         [ -f ${{ steps.ci-py-tests.outputs.coverage-paths }} ] && OPTIONS+=("-Dsonar.python.coverage.reportPaths=${{ steps.ci-py-tests.outputs.coverage-paths }}")
         [ -f ${{ steps.ci-py-tests.outputs.flake8-logs }} ] && OPTIONS+=("-Dsonar.python.flake8.reportPaths=${{ steps.ci-py-tests.outputs.flake8-logs }}")
-        [ -d "${{ inputs.module-folder }}/tests" ] && OPTIONS+=("-Dsonar.tests=tests/")
-        [ -d "${{ inputs.module-folder }}/unit_tests" ] && OPTIONS+=("-Dsonar.tests=unit_tests/")
 
         echo ::set-output name=options::$(IFS=' ' ; echo "${OPTIONS[*]}")
 

@@ -9,8 +9,31 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: "Java TEST"
+    - name: Install Java
+      uses: actions/setup-java@v1
+      with:
+        java-version: '17'
+
+    - name: "Build"
+      shell: bash
+      run: |
+        # pip install virtualenv
+        # python3 -m virtualenv ${{ inputs.module-folder }}/.venv
+        rm -rf ${{ inputs.module-folder }}/.venv ${{ inputs.module-folder }}/build
+        ROOT_DIR=$(git rev-parse --show-toplevel)
+        ARG=:$(python -c "print( '${{ inputs.module-folder }}'.replace('${ROOT_DIR}', '.').replace('/', ':') )")
+        pwd
+        echo "./gradlew --no-daemon $ARG:build"
+
+        ./gradlew --no-daemon "$ARG:clean"
+        echo "cleaned"
+        ./gradlew --no-daemon "$ARG:build"
+        echo "built"
+
+
+    - name: "Prepare"
       shell: bash
       run: |
         echo "Unfortunately this has not been implemented yet"
+        exit 1
 

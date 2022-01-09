@@ -1,5 +1,6 @@
 FROM airbyte/integration-base-java:dev AS build
 
+
 WORKDIR /airbyte
 
 ENV APPLICATION destination-mongodb
