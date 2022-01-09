@@ -153,6 +153,7 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
+| 0.6.2 | 2022-01-09 | [\#9367](https://github.com/airbytehq/airbyte/pull/9367) | Support array field with unknown item type. |
 | 0.6.1   | 2021-12-22 | [\#9039](https://github.com/airbytehq/airbyte/pull/9039)   | Added part_size configuration to UI for GCS staging |
 | 0.6.0   | 2021-12-17 | [\#8788](https://github.com/airbytehq/airbyte/issues/8788) | BigQuery/BiqQuery denorm Destinations : Add possibility to use different types of GCS files |
 | 0.5.1   | 2021-12-16 | [\#8816](https://github.com/airbytehq/airbyte/issues/8816) | Update dataset locations |
@@ -170,6 +171,7 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
+| 0.2.3 | 2022-01-09 | [\#9367](https://github.com/airbytehq/airbyte/pull/9367) | Support array field with unknown item type. |
 | 0.2.2 | 2021-12-22 | [\#9039](https://github.com/airbytehq/airbyte/pull/9039)   | Added part_size configuration to UI for GCS staging |
 | 0.2.1 | 2021-12-21 | [\#8574](https://github.com/airbytehq/airbyte/pull/8574) | Added namespace to Avro and Parquet record types |
 | 0.2.0   | 2021-12-17 | [\#8788](https://github.com/airbytehq/airbyte/pull/8788) |  BigQuery/BiqQuery denorm Destinations : Add possibility to use different types of GCS files |
