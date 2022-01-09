@@ -12,11 +12,14 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -24,7 +27,6 @@ import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
 import org.apache.avro.SchemaBuilder;
-import org.apache.avro.SchemaBuilder.RecordBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.allegro.schema.json2avro.converter.AdditionalPropertyField;
@@ -119,19 +121,19 @@ public class JsonToAvroSchemaConverter {
                               final boolean addStringToLogicalTypes,
                               final boolean isRootNode) {
     final String stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(fieldName);
-    RecordBuilder<Schema> builder = SchemaBuilder.record(stdName);
+    final SchemaBuilder.RecordBuilder<Schema> builder = SchemaBuilder.record(stdName);
     if (!stdName.equals(fieldName)) {
       standardizedNames.put(fieldName, stdName);
       LOGGER.warn("Schema name contains illegal character(s) and is standardized: {} -> {}", fieldName,
           stdName);
-      builder = builder.doc(
+      builder.doc(
           String.format("%s%s%s",
               AvroConstants.DOC_KEY_ORIGINAL_NAME,
               AvroConstants.DOC_KEY_VALUE_DELIMITER,
               fieldName));
     }
     if (fieldNamespace != null) {
-      builder = builder.namespace(fieldNamespace);
+      builder.namespace(fieldNamespace);
     }
 
     final JsonNode properties = jsonSchema.get("properties");
@@ -295,6 +297,7 @@ public class JsonToAvroSchemaConverter {
                                   final boolean addStringToLogicalTypes) {
     final Map<String, List<Schema>> recordFieldSchemas = new LinkedHashMap<>();
 
+    final Set<String> objectFieldDocs = new HashSet<>();
     final List<Schema> schemas = MoreIterators.toList(types.elements())
         .stream()
         .flatMap(definition -> getNonNullTypes(fieldName, definition).stream().flatMap(type -> {
@@ -307,20 +310,55 @@ public class JsonToAvroSchemaConverter {
           }
         }))
         .distinct()
-        // gather record schemas to construct a single record later on
+        // gather record schemas to construct a single record schema later on
         .peek(schema -> {
           if (schema.getType() == Type.RECORD) {
+            if (schema.getDoc() != null) {
+              objectFieldDocs.add(schema.getDoc());
+            }
             for (final Schema.Field field : schema.getFields()) {
               recordFieldSchemas.putIfAbsent(field.name(), new LinkedList<>());
               recordFieldSchemas.get(field.name()).add(field.schema());
             }
           }
         })
-        // remove record schemas
+        // remove record schemas because they will be merged into one
         .filter(schema -> schema.getType() != Type.RECORD)
         .collect(Collectors.toList());
 
+    // create one record schema from all the record fields
     if (!recordFieldSchemas.isEmpty()) {
+      final SchemaBuilder.RecordBuilder<Schema> builder = SchemaBuilder.record(fieldName);
+      if (fieldNamespace != null) {
+        builder.namespace(fieldNamespace);
+      }
+      if (!objectFieldDocs.isEmpty()) {
+        builder.doc(String.join("; ", objectFieldDocs.stream().distinct().toList()));
+      }
+
+      SchemaBuilder.FieldAssembler<Schema> assembler = builder.fields();
+      for (final Map.Entry<String, List<Schema>> entry : recordFieldSchemas.entrySet()) {
+        // ignore additional properties fields, which will be consolidated
+        // into one field at the end
+        if (AvroConstants.JSON_EXTRA_PROPS_FIELDS.contains(entry.getKey())) {
+          continue;
+        }
+
+        SchemaBuilder.FieldBuilder<Schema> subfieldBuilder = assembler.name(entry.getKey());
+        final List<String> subfieldDocs = entry.getValue().stream().map(Schema::getDoc).filter(Objects::nonNull).distinct().toList();
+        if (!subfieldDocs.isEmpty()) {
+          subfieldBuilder = subfieldBuilder.doc(String.join("; ", subfieldDocs));
+        }
+        final List<Schema> subfieldSchemas = entry.getValue().stream()
+            .flatMap(schema -> schema.getTypes().stream()
+                // filter out null and add it later on as the first element
+                .filter(s -> !s.equals(NULL_SCHEMA)))
+            .distinct()
+            .collect(Collectors.toList());
+        subfieldSchemas.add(0, NULL_SCHEMA);
+        assembler = subfieldBuilder.type(Schema.createUnion(subfieldSchemas)).withDefault(null);
+      }
+
       final List<Schema.Field> fields = recordFieldSchemas.entrySet()
           .stream()
           .filter(e -> !e.getKey().equals(AvroConstants.AVRO_EXTRA_PROPS_FIELD))
@@ -332,11 +370,14 @@ public class JsonToAvroSchemaConverter {
                   .toList()),
               null,
               Schema.NULL_VALUE))
-          .collect(Collectors.toList());
+          .toList();
+
       if (appendExtraProps) {
-        fields.add(new Schema.Field(AvroConstants.AVRO_EXTRA_PROPS_FIELD, AdditionalPropertyField.FIELD_SCHEMA, null, Schema.NULL_VALUE));
+        // support additional properties in one field
+        assembler = assembler.name(AvroConstants.AVRO_EXTRA_PROPS_FIELD)
+            .type(AdditionalPropertyField.FIELD_SCHEMA).withDefault(null);
       }
-      schemas.add(Schema.createRecord(fieldName, null, null, false, fields));
+      schemas.add(assembler.endRecord());
     }
 
     return schemas;

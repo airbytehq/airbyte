@@ -1178,6 +1178,7 @@
         "object_array": {
           "type": "array",
           "items": [
+            { "type": "integer" },
             {
               "type": "object",
               "properties": {
@@ -1193,13 +1194,14 @@
                   "type": "string"
                 }
               }
-            }
+            },
+            { "type": "boolean" }
           ]
         }
       }
     },
     "jsonObject": {
-      "object_array": [{"id": 1234}, {"message": "test message"}]
+      "object_array": [1234, true, {"id": 1234}, {"message": "test message"}]
     },
     "avroSchema": {
       "type": "record",
@@ -1214,9 +1216,12 @@
               "type": "array",
               "items": [
                 "null",
+                "int",
+                "boolean",
                 {
                   "type": "record",
                   "name": "object_array",
+                  "namespace": "",
                   "fields": [
                     {
                       "name": "id",
@@ -1261,6 +1266,8 @@
     },
     "avroObject": {
       "object_array": [
+        1234,
+        true,
         {
           "id": 1234,
           "message": null,
