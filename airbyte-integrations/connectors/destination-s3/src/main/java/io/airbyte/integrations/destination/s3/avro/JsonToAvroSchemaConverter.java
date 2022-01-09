@@ -362,19 +362,6 @@ public class JsonToAvroSchemaConverter {
         subfieldBuilder.type(Schema.createUnion(subfieldSchemas)).withDefault(null);
       }
 
-      final List<Schema.Field> fields = recordFieldSchemas.entrySet()
-          .stream()
-          .filter(e -> !e.getKey().equals(AvroConstants.AVRO_EXTRA_PROPS_FIELD))
-          .map(e -> new Schema.Field(e.getKey(), Schema.createUnion(
-              e.getValue()
-                  .stream()
-                  .flatMap(s -> s.getTypes().stream())
-                  .distinct()
-                  .toList()),
-              null,
-              Schema.NULL_VALUE))
-          .toList();
-
       if (appendExtraProps) {
         // support additional properties in one field
         assembler.name(AvroConstants.AVRO_EXTRA_PROPS_FIELD)
