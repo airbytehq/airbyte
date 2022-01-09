@@ -362,7 +362,7 @@ public class JsonToAvroSchemaConverter {
       }
 
       if (appendExtraProps) {
-        // support additional properties in one field
+        // add back additional properties
         assembler.name(AvroConstants.AVRO_EXTRA_PROPS_FIELD)
             .type(AdditionalPropertyField.FIELD_SCHEMA).withDefault(null);
       }
