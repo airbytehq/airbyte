@@ -62,7 +62,7 @@ public class JsonToAvroSchemaConverter {
 
     final JsonNode typeProperty = fieldDefinition.get("type");
     if (typeProperty == null || typeProperty.isNull()) {
-      LOGGER.warn("Field {} has no type, it will default to string", fieldName);
+      LOGGER.warn("Field \"{}\" has no type specification. It will default to string", fieldName);
       return Collections.singletonList(JsonSchemaType.STRING);
     }
 
@@ -76,7 +76,8 @@ public class JsonToAvroSchemaConverter {
       return Collections.singletonList(JsonSchemaType.fromJsonSchemaType(typeProperty.asText()));
     }
 
-    throw new IllegalStateException("Unexpected type: " + typeProperty);
+    LOGGER.warn("Field \"{}\" has unexpected type {}. It will default to string.", fieldName, typeProperty);
+    return Collections.singletonList(JsonSchemaType.STRING);
   }
 
   static Optional<JsonNode> getCombinedRestriction(final JsonNode fieldDefinition) {
@@ -251,14 +252,16 @@ public class JsonToAvroSchemaConverter {
           arrayElementTypes.add(0, NULL_SCHEMA);
           fieldSchema = Schema.createArray(Schema.createUnion(arrayElementTypes));
         } else {
-          throw new IllegalStateException(
-              String.format("Array field %s has invalid items property: %s", fieldName, items));
+          LOGGER.warn("Array field \"{}\" has invalid items specification: {}. It will default to an array of strings.", fieldName, items);
+          fieldSchema = Schema.createArray(Schema.createUnion(NULL_SCHEMA, STRING_SCHEMA));
         }
       }
       case OBJECT -> fieldSchema =
           getAvroSchema(fieldDefinition, fieldName, fieldNamespace, false, appendExtraProps, addStringToLogicalTypes, false);
-      default -> throw new IllegalStateException(
-          String.format("Unexpected type for field %s: %s", fieldName, fieldType));
+      default -> {
+        LOGGER.warn("Field \"{}\" has invalid type definition: {}. It will default to string.", fieldName, fieldDefinition);
+        fieldSchema = Schema.createUnion(NULL_SCHEMA, STRING_SCHEMA);
+      }
     }
     return fieldSchema;
   }
