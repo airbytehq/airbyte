@@ -105,6 +105,7 @@ jobs:
           org.gradle.vfs.watch=false
           EOF
 
+      # TODO
       - name: Generate Template scaffold
         run: ./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates --scan
 
@@ -305,8 +306,8 @@ jobs:
         with:
           java-version: "17"
 
-      # octavia-cli install and testing requires Python. 
-      # We use 3.8 in this project because 3.7 is not supported on Apple M1. 
+      # octavia-cli install and testing requires Python.
+      # We use 3.8 in this project because 3.7 is not supported on Apple M1.
       - uses: actions/setup-python@v2
         with:
           python-version: "3.8"

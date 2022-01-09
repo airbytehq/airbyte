@@ -98,7 +98,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-integrations:connectors:destination-oracle'
     include ':airbyte-integrations:connectors:destination-mssql'
 
-    //Needed by destination-bigquery
+    // Needed by destination-bigquery
     include ':airbyte-integrations:connectors:destination-s3'
     include ':airbyte-integrations:connectors:destination-gcs'
 
@@ -107,37 +107,28 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
 
 // INCLUDE_CONNECTOR will be set as a CLI arg from gradlew for you
 def includeConnector = System.getenv("INCLUDE_CONNECTOR")
-println("includeConnector: ${includeConnector}")
 
-// Superset of includeConnector or INCLUDE_CONNECTORS environment variable
-def includeAnyConnectors = (System.getenv().containsKey("INCLUDE_CONNECTORS") && System.getenv("INCLUDE_CONNECTORS").toString.toLowerCase() == "true") || includeConnector?.trim()
+// Superset of includeConnector or INCLUDE_CONNECTORS=true environment variable
+def includeAllConnectors = (System.getenv().containsKey("INCLUDE_CONNECTORS") && System.getenv("INCLUDE_CONNECTORS").toString().toLowerCase() == "true").toBoolean()
 
-println("includeAnyConnectors: ${includeAnyConnectors}")
+// Connector projects being included is conditional to save unnecessary builds:
+// If a specific connector is passed include that only, check ./gradlew to see how this is found
+if (includeConnector?.trim()) {
+    println "Including connector project ${includeConnector}"
+    include includeConnector
+// Check if environment INCLUDE_CONNECTORS=true, if so include all
+} else if (includeAllConnectors) {
+    def integrationsPath = rootDir.toPath().resolve('airbyte-integrations/connectors')
+    println "Including all connector projects in ${integrationsPath}"
 
-// Connector building is conditional
-if (includeAnyConnectors.toBoolean()) {
-    // If a specific connector passed, include it, else, include all
-    if (includeConnector?.trim()) {
-        println "Including connector ${includeConnector}"
-
-        def buildFiles = file(includeConnector).list { file, name -> name == "build.gradle" }
+    integrationsPath.eachDir { dir ->
+        def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
 
         if (buildFiles.length == 1) {
-            include ":airbyte-integrations:connectors:${includeConnector}"
-        }
-    // Include all connector projects
-    } else {
-        def integrationsPath = rootDir.toPath().resolve('airbyte-integrations/connectors')
-        println "Including all connectors in ${integrationsPath}"
-
-        integrationsPath.eachDir { dir ->
-            def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
-
-            if (buildFiles.length == 1) {
-                include ":airbyte-integrations:connectors:${dir.getFileName()}"
-            }
+            include ":airbyte-integrations:connectors:${dir.getFileName()}"
         }
     }
+// Default to no connectors
 } else {
-  println "No connectors included"
+  println "No connector projects included"
 }

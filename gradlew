@@ -232,8 +232,13 @@ eval "set -- $(
     )" '"$@"'
 
 # Check if the gradle task is a connector, if so, set INCLUDE_CONNECTORS so settings.gradle can
-# conditionally include connector subprojects
-INCLUDE_CONNECTOR=$(echo "$*" | grep -E -o ":airbyte-integrations:connectors:[a-z0-9]+-[a-z0-9]+$")
+# conditionally include connector subprojects. Since settings.gradle is evaluated before any build.gradle
+# files, we can't really make any of the includes conditional based on task/project name variables that
+# Gradle sets _for_ us. So we have to make a light wrapper around gradle commands and check for an environment variable
+# this script will set if necessary.
+#
+# The regex match allows alphanumerics and dashes
+INCLUDE_CONNECTOR=$(echo "$*" | grep -E -o ":airbyte-integrations:connectors:[a-z0-9\-]+")
 if [ -n "${INCLUDE_CONNECTOR}" ]; then
   export INCLUDE_CONNECTOR
 fi
