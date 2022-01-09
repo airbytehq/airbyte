@@ -87,9 +87,9 @@ runs:
 
 
 
-    - name: Prepare External Issues
+    - name: Prepare SQ Options
       shell: bash
-      id: external-issues
+      id: sq-options
       working-directory: ${{ inputs.module-folder }}
       run: |
         REPORT_FOLDER=reports
@@ -107,6 +107,10 @@ runs:
         # join the array to string format
         echo ::set-output name=external_reports::$(IFS=, ; echo "${REPORT_FILES[*]}")
 
+        declare -a OPTIONS
+        [ -f ${{ steps.ci-py-tests.outputs.coverage-paths }} ] && OPTIONS+=("-Dsonar.python.coverage.reportPaths=${{ steps.ci-py-tests.outputs.coverage-paths }}")
+        [ -f ${{ steps.ci-py-tests.outputs.flake8-logs }} ] && OPTIONS+=("-Dsonar.python.flake8.reportPaths=${{ steps.ci-py-tests.outputs.flake8-logs }}")
+        echo ::set-output name=options::$(IFS=' ' ; echo "${OPTIONS[*]}")
 
     - name: Create SonarQube Project
       shell: bash
@@ -124,7 +128,6 @@ runs:
       uses: sonarsource/sonarqube-scan-action@master
       env:
         SONAR_TOKEN: ${{ inputs.sonar-token }}
-        # SONAR_HOST_URL: ${{ inputs.sonar-host }}
         SONAR_HOST_URL: ${{ steps.gcloud-tunnel.outputs.sonar-host }}
       with:
           projectBaseDir: ${{ steps.create-sq-project.outputs.module_dir }}
@@ -136,9 +139,8 @@ runs:
             -Dsonar.sourceEncoding=UTF-8
             -Dsonar.projectBaseDir=${{ steps.create-sq-project.outputs.module_dir }}
             -Dsonar.exclusions=reports/**,*.toml
-            -Dsonar.python.coverage.reportPaths=${{ steps.ci-py-tests.outputs.coverage-paths }}
-            -Dsonar.externalIssuesReportPaths=${{ steps.external-issues.outputs.external_reports }}
-            ${{ steps.ci-py-tests.outputs.linter-reports }}
+            -Dsonar.externalIssuesReportPaths=${{ steps.sq-options.outputs.external_reports }}
+            ${{ steps.sq-options.outputs.options }}
 
     - name: Generate SonarQube Report
       shell: bash

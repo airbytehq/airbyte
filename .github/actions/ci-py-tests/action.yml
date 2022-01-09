@@ -9,9 +9,9 @@ outputs:
   coverage-paths:
     description: "Coverage Paths"
     value: ${{ steps.build-coverage-reports.outputs.coverage-paths }}
-  linter-reports:
-    description: "Linter Options"
-    value: ${{ steps.build-linter-reports.outputs.linter-reports }}
+  flake8-logs:
+    description: "Flake8 Logs"
+    value: ${{ steps.build-linter-reports.outputs.flake8-logs }}
   mypy-logs:
     description: "MyPy Logs"
     value: ${{ steps.build-linter-reports.outputs.mypy-logs }}
@@ -78,4 +78,4 @@ runs:
          echo "::set-output name=mypy-logs::reports/mypy.log"
          echo "::set-output name=black-diff::reports/black.diff"
          echo "::set-output name=isort-diff::reports/isort.diff"
-         echo "::set-output name=linter-reports::-Dsonar.python.flake8.reportPaths=reports/flake.txt"
+         echo "::set-output name=flake8-logs::reports/flake.txt"
