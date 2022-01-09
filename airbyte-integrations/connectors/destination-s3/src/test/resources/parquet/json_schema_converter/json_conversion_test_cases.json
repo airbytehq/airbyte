@@ -1194,7 +1194,7 @@
                 "id": {
                   "type": "string"
                 },
-                "message": {
+                ":message": {
                   "type": "string"
                 }
               }
@@ -1204,7 +1204,7 @@
       }
     },
     "jsonObject": {
-      "object_array": [1234, true, {"id": 1234}, {"id": "abcde", "message": "test message"}]
+      "object_array": [1234, true, {"id": 1234}, {"id": "abcde", ":message": "test message"}]
     },
     "avroSchema": {
       "type": "record",
@@ -1232,7 +1232,8 @@
                       "default": null
                     },
                     {
-                      "name": "message",
+                      "name": "_message",
+                      "doc": "_airbyte_original_name::message",
                       "type": ["null", "string"],
                       "default": null
                     },
@@ -1273,12 +1274,12 @@
         true,
         {
           "id": 1234,
-          "message": null,
+          "_message": null,
           "_airbyte_additional_properties": null
         },
         {
           "id": "abcde",
-          "message": "test message",
+          "_message": "test message",
           "_airbyte_additional_properties": null
         }
       ],
