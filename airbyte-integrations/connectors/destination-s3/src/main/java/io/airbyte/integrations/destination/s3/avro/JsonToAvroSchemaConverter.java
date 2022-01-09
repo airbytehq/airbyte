@@ -12,6 +12,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
+import org.apache.avro.Schema.Type;
 import org.apache.avro.SchemaBuilder;
 import org.apache.avro.SchemaBuilder.RecordBuilder;
 import org.slf4j.Logger;
@@ -31,8 +33,7 @@ import tech.allegro.schema.json2avro.converter.AdditionalPropertyField;
  * The main function of this class is to convert a JsonSchema to Avro schema. It can also
  * standardize schema names, and keep track of a mapping from the original names to the standardized
  * ones, which is needed for unit tests.
- * <p>
- * </p>
+ * <br/>
  * For limitations of this converter, see the README of this connector:
  * https://docs.airbyte.io/integrations/destinations/s3#avro
  */
@@ -95,7 +96,7 @@ public class JsonToAvroSchemaConverter {
   }
 
   /**
-   * @return - Avro schema based on the input {@code jsonSchema}.
+   * @return Avro schema based on the input {@code jsonSchema}.
    */
   public Schema getAvroSchema(final JsonNode jsonSchema,
                               final String streamName,
@@ -108,7 +109,7 @@ public class JsonToAvroSchemaConverter {
    * @param appendExtraProps        Add default additional property field to the output Avro schema.
    * @param addStringToLogicalTypes Default logical type field to string.
    * @param isRootNode              Whether it is the root field in the input Json schema.
-   * @return - Avro schema based on the input {@code jsonSchema}.
+   * @return Avro schema based on the input {@code jsonSchema}.
    */
   public Schema getAvroSchema(final JsonNode jsonSchema,
                               final String fieldName,
@@ -185,9 +186,10 @@ public class JsonToAvroSchemaConverter {
   }
 
   /**
-   * Generate Avro schema for a single Json field type.
-   * <p/>
-   * E.g. "number" -> ["double"]
+   * Generate Avro schema for a single Json field type. For example:
+   * <pre>
+   * "number" -> ["double"]
+   * </pre>
    */
   Schema parseSingleType(final String fieldName,
                          @Nullable final String fieldNamespace,
@@ -223,20 +225,20 @@ public class JsonToAvroSchemaConverter {
       case COMBINED -> {
         final Optional<JsonNode> combinedRestriction = getCombinedRestriction(fieldDefinition);
         final List<Schema> unionTypes =
-            parseJsonTypes(fieldName, fieldNamespace, (ArrayNode) combinedRestriction.get(), appendExtraProps, addStringToLogicalTypes);
+            parseJsonTypeUnion(fieldName, fieldNamespace, (ArrayNode) combinedRestriction.get(), appendExtraProps, addStringToLogicalTypes);
         fieldSchema = Schema.createUnion(unionTypes);
       }
       case ARRAY -> {
         final JsonNode items = fieldDefinition.get("items");
         if (items == null) {
-          LOGGER.warn("Source connector provided schema for ARRAY with missed \"items\", will assume that it's a String type");
+          LOGGER.warn("Array field {} does not specify the items type. It will be assumed to be an array of strings", fieldName);
           fieldSchema = Schema.createArray(Schema.createUnion(NULL_SCHEMA, STRING_SCHEMA));
         } else if (items.isObject()) {
           fieldSchema =
               Schema.createArray(
                   parseJsonField(String.format("%s.items", fieldName), fieldNamespace, items, appendExtraProps, addStringToLogicalTypes));
         } else if (items.isArray()) {
-          final List<Schema> arrayElementTypes = parseJsonTypes(fieldName, fieldNamespace, (ArrayNode) items, appendExtraProps, addStringToLogicalTypes);
+          final List<Schema> arrayElementTypes = parseJsonTypeUnion(fieldName, fieldNamespace, (ArrayNode) items, appendExtraProps, addStringToLogicalTypes);
           arrayElementTypes.add(0, NULL_SCHEMA);
           fieldSchema = Schema.createArray(Schema.createUnion(arrayElementTypes));
         } else {
@@ -253,45 +255,99 @@ public class JsonToAvroSchemaConverter {
   }
 
   /**
-   * Take in a union of Json field definitions, and generate Avro field schema unions.
-   * <p/>
-   * E.g. ["number", { ... }] -> ["double", { ... }]
+   * Take in a union of Json field definitions, and generate Avro field schema unions. For example:
+   * <pre>
+   * ["number", { ... }] -> ["double", { ... }]
+   * </pre>
+   * If there are multiple object fields, those fields are combined into one Avro record. This is because Avro does not allow specifying a tuple of
+   * types (i.e. the first element is type x, the second element is type y, and so on). For example, the following
+   * Json field types:
+   * <pre>
+   * [
+   *   {
+   *     "type": "object",
+   *     "properties": { "id": { "type": "integer" } }
+   *   },
+   *   {
+   *     "type": "object",
+   *     "properties": {
+   *       "id": { "type": "string" }
+   *       "message": { "type": "string" }
+   *     }
+   *   }
+   * ]
+   * </pre>
+   * is converted to this Avro schema:
+   * <pre>
+   * {
+   *   "type": "record",
+   *   "fields": [
+   *     { "name": "id", "type": ["int", "string"] },
+   *     { "name": "message", "type": "string" }
+   *   ]
+   * }
+   * </pre>
    */
-  List<Schema> parseJsonTypes(final String fieldName,
-                              @Nullable final String fieldNamespace,
-                              final ArrayNode types,
-                              final boolean appendExtraProps,
-                              final boolean addStringToLogicalTypes) {
-    final List<JsonNode> subtypes = MoreIterators.toList(types.elements());
-    final List<Schema> schemas = new LinkedList<>();
-    for (int i = 0; i < subtypes.size(); ++i) {
-      final JsonNode subtype = subtypes.get(i);
-      final int index = i;
-      final List<Schema> schemasFromSubtype = getNonNullTypes(fieldName, subtype)
-          .stream()
-          .flatMap(type -> {
-            final String subtypeNamespace = fieldNamespace == null
-                ? fieldName + "." + index
-                : fieldNamespace + "." + index;
-            final Schema singleFieldSchema = parseSingleType(fieldName, subtypeNamespace, type, subtype, appendExtraProps,
-                addStringToLogicalTypes);
+  List<Schema> parseJsonTypeUnion(final String fieldName,
+                                  @Nullable final String fieldNamespace,
+                                  final ArrayNode types,
+                                  final boolean appendExtraProps,
+                                  final boolean addStringToLogicalTypes) {
+    final Map<String, List<Schema>> recordFieldSchemas = new LinkedHashMap<>();
 
-            if (singleFieldSchema.isUnion()) {
-              return singleFieldSchema.getTypes().stream();
-            } else {
-              return Stream.of(singleFieldSchema);
+    final List<Schema> schemas = MoreIterators.toList(types.elements())
+        .stream()
+        .flatMap(definition -> getNonNullTypes(fieldName, definition).stream().flatMap(type -> {
+          final Schema singleFieldSchema = parseSingleType(fieldName, fieldNamespace, type, definition, appendExtraProps, addStringToLogicalTypes);
+
+          if (singleFieldSchema.isUnion()) {
+            return singleFieldSchema.getTypes().stream();
+          } else {
+            return Stream.of(singleFieldSchema);
+          }
+        }))
+        .distinct()
+        // gather record schemas to construct a single record later on
+        .peek(schema -> {
+          if (schema.getType() == Type.RECORD) {
+            for (final Schema.Field field : schema.getFields()) {
+              recordFieldSchemas.putIfAbsent(field.name(), new LinkedList<>());
+              recordFieldSchemas.get(field.name()).add(field.schema());
             }
-          })
-          .toList();
-      schemas.addAll(schemasFromSubtype);
+          }
+        })
+        // remove record schemas
+        .filter(schema -> schema.getType() != Type.RECORD)
+        .collect(Collectors.toList());
+
+    if (!recordFieldSchemas.isEmpty()) {
+      final List<Schema.Field> fields = recordFieldSchemas.entrySet()
+          .stream()
+          .filter(e -> !e.getKey().equals(AvroConstants.AVRO_EXTRA_PROPS_FIELD))
+          .map(e -> new Schema.Field(e.getKey(), Schema.createUnion(
+              e.getValue()
+                  .stream()
+                  .flatMap(s -> s.getTypes().stream())
+                  .distinct()
+                  .toList()),
+              null,
+              Schema.NULL_VALUE))
+          .collect(Collectors.toList());
+      if (appendExtraProps) {
+        fields.add(new Schema.Field(AvroConstants.AVRO_EXTRA_PROPS_FIELD, AdditionalPropertyField.FIELD_SCHEMA, null, Schema.NULL_VALUE));
+      }
+      schemas.add(Schema.createRecord(fieldName, null, null, false, fields));
     }
-    return schemas.stream().distinct().collect(Collectors.toList());
+
+    return schemas;
   }
 
   /**
    * Take in a Json field definition, and generate a nullable Avro field schema.
-   * <p/>
-   * E.g. {"type": ["number", { ... }]} -> ["null", "double", { ... }]
+   * For example:
+   * <pre>
+   * {"type": ["number", { ... }]} -> ["null", "double", { ... }]
+   * </pre>
    */
   Schema parseJsonField(final String fieldName,
                         @Nullable final String fieldNamespace,
