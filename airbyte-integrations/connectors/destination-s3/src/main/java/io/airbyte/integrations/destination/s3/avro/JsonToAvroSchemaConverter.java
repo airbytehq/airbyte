@@ -30,8 +30,7 @@ import tech.allegro.schema.json2avro.converter.AdditionalPropertyField;
 /**
  * The main function of this class is to convert a JsonSchema to Avro schema. It can also
  * standardize schema names, and keep track of a mapping from the original names to the standardized
- * ones, which is needed for unit tests.
- * <br/>
+ * ones, which is needed for unit tests. <br/>
  * For limitations of this converter, see the README of this connector:
  * https://docs.airbyte.io/integrations/destinations/s3#avro
  */
@@ -103,10 +102,11 @@ public class JsonToAvroSchemaConverter {
   }
 
   /**
-   * @param appendAirbyteFields     Add default airbyte fields (e.g. _airbyte_id) to the output Avro schema.
-   * @param appendExtraProps        Add default additional property field to the output Avro schema.
+   * @param appendAirbyteFields Add default airbyte fields (e.g. _airbyte_id) to the output Avro
+   *        schema.
+   * @param appendExtraProps Add default additional property field to the output Avro schema.
    * @param addStringToLogicalTypes Default logical type field to string.
-   * @param isRootNode              Whether it is the root field in the input Json schema.
+   * @param isRootNode Whether it is the root field in the input Json schema.
    * @return Avro schema based on the input {@code jsonSchema}.
    */
   public Schema getAvroSchema(final JsonNode jsonSchema,
@@ -186,6 +186,7 @@ public class JsonToAvroSchemaConverter {
 
   /**
    * Generate Avro schema for a single Json field type. For example:
+   *
    * <pre>
    * "number" -> ["double"]
    * </pre>
@@ -237,7 +238,8 @@ public class JsonToAvroSchemaConverter {
               Schema.createArray(
                   parseJsonField(String.format("%s.items", fieldName), fieldNamespace, items, appendExtraProps, addStringToLogicalTypes));
         } else if (items.isArray()) {
-          final List<Schema> arrayElementTypes = parseJsonTypeUnion(fieldName, fieldNamespace, (ArrayNode) items, appendExtraProps, addStringToLogicalTypes);
+          final List<Schema> arrayElementTypes =
+              parseJsonTypeUnion(fieldName, fieldNamespace, (ArrayNode) items, appendExtraProps, addStringToLogicalTypes);
           arrayElementTypes.add(0, NULL_SCHEMA);
           fieldSchema = Schema.createArray(Schema.createUnion(arrayElementTypes));
         } else {
@@ -255,6 +257,7 @@ public class JsonToAvroSchemaConverter {
 
   /**
    * Take in a union of Json field definitions, and generate Avro field schema unions. For example:
+   *
    * <pre>
    * ["number", { ... }] -> ["double", { ... }]
    * </pre>
@@ -286,8 +289,10 @@ public class JsonToAvroSchemaConverter {
   }
 
   /**
-   * If there are multiple object fields, those fields are combined into one Avro record. This is because Avro does not allow specifying a tuple of
-   * types (i.e. the first element is type x, the second element is type y, and so on). For example, the following Json field types:
+   * If there are multiple object fields, those fields are combined into one Avro record. This is
+   * because Avro does not allow specifying a tuple of types (i.e. the first element is type x, the
+   * second element is type y, and so on). For example, the following Json field types:
+   *
    * <pre>
    * [
    *   {
@@ -305,7 +310,9 @@ public class JsonToAvroSchemaConverter {
    *   }
    * ]
    * </pre>
+   *
    * is converted to this Avro schema:
+   *
    * <pre>
    * {
    *   "type": "record",
@@ -388,6 +395,7 @@ public class JsonToAvroSchemaConverter {
 
   /**
    * Take in a Json field definition, and generate a nullable Avro field schema. For example:
+   *
    * <pre>
    * {"type": ["number", { ... }]} -> ["null", "double", { ... }]
    * </pre>
@@ -401,7 +409,8 @@ public class JsonToAvroSchemaConverter {
     final List<Schema> nonNullFieldTypes = getNonNullTypes(fieldName, fieldDefinition)
         .stream()
         .flatMap(fieldType -> {
-          final Schema singleFieldSchema = parseSingleType(fieldName, fieldNamespace, fieldType, fieldDefinition, appendExtraProps, addStringToLogicalTypes);
+          final Schema singleFieldSchema =
+              parseSingleType(fieldName, fieldNamespace, fieldType, fieldDefinition, appendExtraProps, addStringToLogicalTypes);
           if (singleFieldSchema.isUnion()) {
             return singleFieldSchema.getTypes().stream();
           } else {

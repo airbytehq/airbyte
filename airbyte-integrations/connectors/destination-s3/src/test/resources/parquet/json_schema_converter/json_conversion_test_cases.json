@@ -1421,13 +1421,16 @@
         {
           "name": "filters",
           "type": [
-            "null", {
+            "null",
+            {
               "type": "array",
               "items": [
-                "null", {
+                "null",
+                {
                   "type": "array",
                   "items": [
-                    "null", {
+                    "null",
+                    {
                       "type": "record",
                       "name": "filters_items_items",
                       "namespace": "",
@@ -1437,10 +1440,12 @@
                           "name": "filterFamily",
                           "type": ["null", "string"],
                           "default": null
-                        }, {
+                        },
+                        {
                           "name": "_airbyte_additional_properties",
                           "type": [
-                            "null", {
+                            "null",
+                            {
                               "type": "map",
                               "values": "string"
                             }
@@ -1455,10 +1460,12 @@
             }
           ],
           "default": null
-        }, {
+        },
+        {
           "name": "_airbyte_additional_properties",
           "type": [
-            "null", {
+            "null",
+            {
               "type": "map",
               "values": "string"
             }
@@ -1472,10 +1479,12 @@
         [
           {
             "filterFamily": "type_a"
-          }, {
-          "filterFamily": "type_b"
-        }
-        ], [
+          },
+          {
+            "filterFamily": "type_b"
+          }
+        ],
+        [
           {
             "filterFamily": "type_b"
           }
