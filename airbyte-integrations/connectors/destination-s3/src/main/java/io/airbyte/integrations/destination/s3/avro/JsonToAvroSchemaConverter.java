@@ -143,11 +143,11 @@ public class JsonToAvroSchemaConverter {
         ? Collections.emptyList()
         : new ArrayList<>(MoreIterators.toList(properties.fieldNames()));
 
-    SchemaBuilder.FieldAssembler<Schema> assembler = builder.fields();
+    final SchemaBuilder.FieldAssembler<Schema> assembler = builder.fields();
 
     if (appendAirbyteFields) {
-      assembler = assembler.name(JavaBaseConstants.COLUMN_NAME_AB_ID).type(UUID_SCHEMA).noDefault();
-      assembler = assembler.name(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
+      assembler.name(JavaBaseConstants.COLUMN_NAME_AB_ID).type(UUID_SCHEMA).noDefault();
+      assembler.name(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
           .type(TIMESTAMP_MILLIS_SCHEMA).noDefault();
     }
 
@@ -160,27 +160,28 @@ public class JsonToAvroSchemaConverter {
 
       final String stdFieldName = AvroConstants.NAME_TRANSFORMER.getIdentifier(subfieldName);
       final JsonNode subfieldDefinition = properties.get(subfieldName);
-      SchemaBuilder.FieldBuilder<Schema> fieldBuilder = assembler.name(stdFieldName);
+      final SchemaBuilder.FieldBuilder<Schema> fieldBuilder = assembler.name(stdFieldName);
       if (!stdFieldName.equals(subfieldName)) {
         standardizedNames.put(subfieldName, stdFieldName);
         LOGGER.warn("Field name contains illegal character(s) and is standardized: {} -> {}",
             subfieldName, stdFieldName);
-        fieldBuilder = fieldBuilder.doc(String.format("%s%s%s",
+        fieldBuilder.doc(String.format("%s%s%s",
             AvroConstants.DOC_KEY_ORIGINAL_NAME,
             AvroConstants.DOC_KEY_VALUE_DELIMITER,
             subfieldName));
       }
       final String subfieldNamespace = isRootNode
-          // omit the namespace for root level fields, because it is directly assigned in the builder above
+          // Omit the namespace for root level fields, because it is directly assigned in the builder above.
+          // This may not be the correct choice.
           ? null
           : (fieldNamespace == null ? fieldName : fieldNamespace + "." + fieldName);
-      assembler = fieldBuilder.type(parseJsonField(subfieldName, subfieldNamespace, subfieldDefinition, appendExtraProps, addStringToLogicalTypes))
+      fieldBuilder.type(parseJsonField(subfieldName, subfieldNamespace, subfieldDefinition, appendExtraProps, addStringToLogicalTypes))
           .withDefault(null);
     }
 
     if (appendExtraProps) {
       // support additional properties in one field
-      assembler = assembler.name(AvroConstants.AVRO_EXTRA_PROPS_FIELD)
+      assembler.name(AvroConstants.AVRO_EXTRA_PROPS_FIELD)
           .type(AdditionalPropertyField.FIELD_SCHEMA).withDefault(null);
     }
 
@@ -268,7 +269,9 @@ public class JsonToAvroSchemaConverter {
    * [
    *   {
    *     "type": "object",
-   *     "properties": { "id": { "type": "integer" } }
+   *     "properties": {
+   *       "id": { "type": "integer" }
+   *     }
    *   },
    *   {
    *     "type": "object",
@@ -336,7 +339,7 @@ public class JsonToAvroSchemaConverter {
         builder.doc(String.join("; ", objectFieldDocs.stream().distinct().toList()));
       }
 
-      SchemaBuilder.FieldAssembler<Schema> assembler = builder.fields();
+      final SchemaBuilder.FieldAssembler<Schema> assembler = builder.fields();
       for (final Map.Entry<String, List<Schema>> entry : recordFieldSchemas.entrySet()) {
         // ignore additional properties fields, which will be consolidated
         // into one field at the end
@@ -344,10 +347,10 @@ public class JsonToAvroSchemaConverter {
           continue;
         }
 
-        SchemaBuilder.FieldBuilder<Schema> subfieldBuilder = assembler.name(entry.getKey());
+        final SchemaBuilder.FieldBuilder<Schema> subfieldBuilder = assembler.name(entry.getKey());
         final List<String> subfieldDocs = entry.getValue().stream().map(Schema::getDoc).filter(Objects::nonNull).distinct().toList();
         if (!subfieldDocs.isEmpty()) {
-          subfieldBuilder = subfieldBuilder.doc(String.join("; ", subfieldDocs));
+          subfieldBuilder.doc(String.join("; ", subfieldDocs));
         }
         final List<Schema> subfieldSchemas = entry.getValue().stream()
             .flatMap(schema -> schema.getTypes().stream()
@@ -356,7 +359,7 @@ public class JsonToAvroSchemaConverter {
             .distinct()
             .collect(Collectors.toList());
         subfieldSchemas.add(0, NULL_SCHEMA);
-        assembler = subfieldBuilder.type(Schema.createUnion(subfieldSchemas)).withDefault(null);
+        subfieldBuilder.type(Schema.createUnion(subfieldSchemas)).withDefault(null);
       }
 
       final List<Schema.Field> fields = recordFieldSchemas.entrySet()
@@ -374,7 +377,7 @@ public class JsonToAvroSchemaConverter {
 
       if (appendExtraProps) {
         // support additional properties in one field
-        assembler = assembler.name(AvroConstants.AVRO_EXTRA_PROPS_FIELD)
+        assembler.name(AvroConstants.AVRO_EXTRA_PROPS_FIELD)
             .type(AdditionalPropertyField.FIELD_SCHEMA).withDefault(null);
       }
       schemas.add(assembler.endRecord());
