@@ -231,4 +231,10 @@ eval "set -- $(
         tr '\n' ' '
     )" '"$@"'
 
+# Check if the gradle task is a connector, if so, set INCLUDE_CONNECTORS so settings.gradle can
+# conditionally include connector subprojects
+echo "----------------------------"
+echo "gradlew args: $*"
+echo "----------------------------"
+
 exec "$JAVACMD" "$@"
