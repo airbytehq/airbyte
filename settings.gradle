@@ -106,6 +106,10 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':tools:code-generator'
 }
 
+if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "OCTAVIA_CLI") {
+    include ':octavia-cli'
+}
+
 // INCLUDE_CONNECTOR will be set as a CLI arg from gradlew for you
 def includeConnector = System.getenv("INCLUDE_CONNECTOR")
 
