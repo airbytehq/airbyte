@@ -50,7 +50,7 @@ public class ContainerOrchestratorApp {
       final Map<String, String> envMap =
           (Map<String, String>) Jsons.deserialize(Files.readString(Path.of(OrchestratorConstants.INIT_FILE_ENV_MAP)), Map.class);
 
-      final Configs configs = new EnvConfigs(envMap::get, envMap::keySet);
+      final Configs configs = new EnvConfigs(envMap);
 
       heartbeatServer = new WorkerHeartbeatServer(WorkerApp.KUBE_HEARTBEAT_PORT);
       heartbeatServer.startBackground();

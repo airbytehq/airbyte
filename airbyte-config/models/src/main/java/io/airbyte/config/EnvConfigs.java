@@ -128,13 +128,20 @@ public class EnvConfigs implements Configs {
   private final LogConfigs logConfigs;
   private final CloudStorageConfigs stateStorageCloudConfigs;
 
+  /**
+   * Constructs {@link EnvConfigs} from actual environment variables.
+   */
   public EnvConfigs() {
-    this(System::getenv, () -> System.getenv().keySet());
+    this(System.getenv());
   }
 
-  public EnvConfigs(final Function<String, String> getEnv, final Supplier<Set<String>> getAllEnvKeys) {
-    this.getEnv = getEnv;
-    this.getAllEnvKeys = getAllEnvKeys;
+  /**
+   * Constructs {@link EnvConfigs} from a provided map. This can be used for testing or getting
+   * variables from a non-envvar source.
+   */
+  public EnvConfigs(final Map<String, String> envMap) {
+    this.getEnv = envMap::get;
+    this.getAllEnvKeys = envMap::keySet;
     this.logConfigs = new LogConfigs(getLogConfiguration().orElse(null));
     this.stateStorageCloudConfigs = getStateStorageConfiguration().orElse(null);
   }
