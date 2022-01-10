@@ -37,6 +37,7 @@ configurations {
 dependencies {
     implementation project(':airbyte-api')
 
+    implementation 'joda-time:joda-time:2.10.13'
     implementation 'org.testcontainers:testcontainers:1.15.3'
 
     acceptanceTestsImplementation project(':airbyte-api')
