@@ -36,7 +36,6 @@ jobs:
     needs: detect-changes
     name:  Tests for ${{ matrix.module }}
     runs-on: ubuntu-latest
-    # environment: more-secrets
 
     strategy:
       matrix: ${{fromJson(needs.detect-changes.outputs.changed-modules)}}

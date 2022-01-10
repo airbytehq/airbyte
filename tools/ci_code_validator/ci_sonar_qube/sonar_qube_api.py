@@ -315,19 +315,22 @@ class SonarQubeApi:
         self.logger.info(f"The {report_file} was generated")
         return True
 
-    def load_coverage_component(self, base_component: str) -> Mapping[str, Any]:
+    def load_coverage_component(self, base_component: str, dir_path: str = None) -> Mapping[str, Any]:
 
         page = 0
         coverage_files = {}
         read_count = 0
         while True:
             page += 1
-            url = f"measures/component_tree?p={page}&component={base_component}&additionalFields=metrics&metricKeys=coverage,uncovered_lines,uncovered_conditions&strategy=children"
+            component = base_component
+            if dir_path:
+                component += f":{dir_path}"
+            url = f"measures/component_tree?p={page}&component={component}&additionalFields=metrics&metricKeys=coverage,uncovered_lines,uncovered_conditions&strategy=children"
             data = self._get(url)
             read_count += len(data["components"])
             for component in data["components"]:
                 if component["qualifier"] == "DIR":
-                    coverage_files.update(self.load_coverage_component(base_component + ":" + component["name"]))
+                    coverage_files.update(self.load_coverage_component(base_component, component["path"]))
                     continue
                 elif not component["measures"]:
                     continue
@@ -335,4 +338,5 @@ class SonarQubeApi:
                     coverage_files[component["path"]] = [m["value"] for m in component["measures"] if m["metric"] == "coverage"][0]
             if data["paging"]["total"] <= read_count:
                 break
+
         return coverage_files

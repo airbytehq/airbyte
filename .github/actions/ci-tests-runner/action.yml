@@ -48,7 +48,7 @@ runs:
         project_id: dataline-integration-testing
         export_default_credentials: true
 
-    - name: Create IAP tunnel to the SonarQube VM
+    - name: Create IAP tunnel
       id: gcloud-tunnel
       shell: bash
       run: |
