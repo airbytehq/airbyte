@@ -17,7 +17,9 @@ class DefinitionType(Enum):
 class Definitions(abc.ABC):
     @property
     @abc.abstractmethod
-    def api(self) -> Union[source_definition_api.SourceDefinitionApi, destination_definition_api.DestinationDefinitionApi]:
+    def api(
+        self,
+    ) -> Union[source_definition_api.SourceDefinitionApi, destination_definition_api.DestinationDefinitionApi]:  # pragma: no cover
         pass
 
     def __init__(self, definition_type: DefinitionType, api_client: airbyte_api_client.ApiClient):
@@ -33,7 +35,7 @@ class Definitions(abc.ABC):
         return f"{self.definition_type.value}_definitions"
 
     @abc.abstractmethod
-    def list_latest_definitions(api_instance):
+    def list_latest_definitions(api_instance):  # pragma: no cover
         pass
 
     @property
