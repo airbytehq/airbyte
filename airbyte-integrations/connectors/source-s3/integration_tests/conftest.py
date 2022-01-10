@@ -88,5 +88,6 @@ def minio_setup(minio_credentials):
 
     if os.path.exists(TMP_FOLDER):
         shutil.rmtree(TMP_FOLDER)
-        logger.info("minio was stopped")
-    container.stop()
+
+    # logger.info("minio was stopped")
+    # container.stop()
