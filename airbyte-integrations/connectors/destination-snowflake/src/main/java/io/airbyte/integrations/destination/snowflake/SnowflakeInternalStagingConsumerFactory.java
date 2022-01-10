@@ -46,9 +46,9 @@ public class SnowflakeInternalStagingConsumerFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeInternalStagingConsumerFactory.class);
 
   private static final long MAX_BATCH_SIZE_BYTES = 1024 * 1024 * 1024 / 4; // 256mb
-  private static final String CURRENT_SYNC_PATH = UUID.randomUUID().toString();
+  private final String CURRENT_SYNC_PATH = UUID.randomUUID().toString();
 
-  public static AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
+  public AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
                                               final JdbcDatabase database,
                                               final SnowflakeStagingSqlOperations sqlOperations,
                                               final SnowflakeSQLNameTransformer namingResolver,
@@ -132,7 +132,7 @@ public class SnowflakeInternalStagingConsumerFactory {
     return new AirbyteStreamNameNamespacePair(config.getStreamName(), config.getNamespace());
   }
 
-  private static RecordWriter recordWriterFunction(final JdbcDatabase database,
+  private RecordWriter recordWriterFunction(final JdbcDatabase database,
                                                    final SqlOperations snowflakeSqlOperations,
                                                    final List<WriteConfig> writeConfigs,
                                                    final ConfiguredAirbyteCatalog catalog,
@@ -157,7 +157,7 @@ public class SnowflakeInternalStagingConsumerFactory {
     };
   }
 
-  private static OnCloseFunction onCloseFunction(final JdbcDatabase database,
+  private OnCloseFunction onCloseFunction(final JdbcDatabase database,
                                                  final SnowflakeStagingSqlOperations sqlOperations,
                                                  final List<WriteConfig> writeConfigs,
                                                  final SnowflakeSQLNameTransformer namingResolver) {
