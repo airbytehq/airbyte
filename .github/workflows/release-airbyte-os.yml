@@ -43,6 +43,11 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: "16.13.0"
+
+      # necessary to install pip
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.7"
       - name: Save Old Version
         id: old_version
         run: |
