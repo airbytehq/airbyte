@@ -207,7 +207,7 @@ public class AirbyteMessageTracker implements MessageTracker {
    * Compute sum of emitted record counts across all streams.
    */
   @Override
-  public Long getTotalRecordsEmitted() {
+  public long getTotalRecordsEmitted() {
     return streamToTotalRecordsEmitted.values().stream().reduce(0L, Long::sum);
   }
 
@@ -215,7 +215,7 @@ public class AirbyteMessageTracker implements MessageTracker {
    * Compute sum of emitted bytes across all streams.
    */
   @Override
-  public Long getTotalBytesEmitted() {
+  public long getTotalBytesEmitted() {
     return streamToTotalBytesEmitted.values().stream().reduce(0L, Long::sum);
   }
 

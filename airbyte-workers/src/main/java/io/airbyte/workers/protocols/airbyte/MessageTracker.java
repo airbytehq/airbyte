@@ -72,12 +72,11 @@ public interface MessageTracker {
   Map<String, Long> getStreamToEmittedBytes();
 
   /**
-   * Get the overall emitted record count. This includes messages that were emitted by the source, but
-   * never committed by the destination.
+   * Get the overall emitted record count. This includes messages that were emitted by the source, but never committed by the destination.
    *
    * @return returns the total count of emitted records across all streams.
    */
-  Long getTotalRecordsEmitted();
+  long getTotalRecordsEmitted();
 
   /**
    * Get the overall emitted bytes. This includes messages that were emitted by the source, but never
@@ -85,7 +84,7 @@ public interface MessageTracker {
    *
    * @return returns the total emitted bytes across all streams.
    */
-  Long getTotalBytesEmitted();
+  long getTotalBytesEmitted();
 
   /**
    * Get the overall committed record count.
