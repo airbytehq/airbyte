@@ -2,7 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import json
+
 import os
 from pathlib import Path
 
@@ -15,8 +15,6 @@ from unit_tests.test_csv_parser import generate_big_file
 from .acceptance import TMP_FOLDER
 
 HERE = Path(__file__).resolve().parent
-
-
 
 
 class TestIntegrationCsvFiles:
