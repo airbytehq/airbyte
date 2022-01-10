@@ -1,4 +1,4 @@
-- name: Azure Blob Storage
+s- name: Azure Blob Storage
   destinationDefinitionId: b4c5d105-31fd-4817-96b6-cb923bfc04cb
   dockerRepository: airbyte/destination-azure-blob-storage
   dockerImageTag: 0.1.0
@@ -179,7 +179,7 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.4.0
+  dockerImageTag: 0.3.24
   documentationUrl: https://docs.airbyte.io/integrations/destinations/snowflake
   icon: snowflake.svg
 - name: MariaDB ColumnStore

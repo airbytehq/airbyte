@@ -317,8 +317,7 @@ public class MigrationAcceptanceTest {
   private static void healthCheck(final ApiClient apiClient) {
     final HealthApi healthApi = new HealthApi(apiClient);
     try {
-      final int statusCode = healthApi.getHealthCheckWithHttpInfo().getStatusCode();
-      assertEquals(200, statusCode);
+      healthApi.getHealthCheck();
     } catch (final ApiException e) {
       throw new RuntimeException("Health check failed, usually due to auto migration failure. Please check the logs for details.");
     }
