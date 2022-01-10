@@ -8,7 +8,7 @@ import tempfile
 import time
 from pathlib import Path
 from zipfile import ZipFile
-
+from typing import Mapping
 import docker
 import pytest
 import requests
@@ -16,13 +16,14 @@ from airbyte_cdk import AirbyteLogger
 from docker.errors import APIError
 from netifaces import AF_INET, ifaddresses, interfaces
 from requests.exceptions import ConnectionError
+import json
 
 pytest_plugins = ("source_acceptance_test.plugin",)
 logger = AirbyteLogger()
 TMP_FOLDER = tempfile.mkdtemp()
 
 
-def get_local_ip() -> int:
+def get_local_ip() -> str:
     all_interface_ips = []
     for iface_name in interfaces():
         all_interface_ips += [i["addr"] for i in ifaddresses(iface_name).setdefault(AF_INET, [{"addr": None}]) if i["addr"]]
@@ -34,18 +35,24 @@ def get_local_ip() -> int:
     assert False, "not found an non-localhost interface"
 
 
-def minio_setup():
+@pytest.fixture(scope="session")
+def minio_credentials() -> Mapping:
+    config_template = Path(__file__).parent / "config_minio.template.json"
+    assert config_template.is_file() is not None, f"not found {config_template}"
+    config_file = Path(__file__).parent / "config_minio.json"
+    config_file.write_text(config_template.read_text().replace("<local_ip>", get_local_ip()))
+    with open(str(config_file)) as f:
+        return json.load(f)
+
+
+def minio_setup(minio_credentials):
     with ZipFile("./integration_tests/minio_data.zip") as archive:
         archive.extractall(TMP_FOLDER)
     client = docker.from_env()
     # Minio should be attached to non-localhost interface.
     # Because another test container should have direct connection to it
     local_ip = get_local_ip()
-    config_template = Path(__file__).parent / "config_minio.template.json"
-    assert config_template.is_file() is not None, f"not found {config_template}"
-    config_file = Path(__file__).parent / "config_minio.json"
-    config_file.write_text(config_template.read_text().replace("<local_ip>", local_ip))
-
+    logger.debug(f"minio settings: {minio_credentials}")
     try:
         container = client.containers.run(
             image="minio/minio:RELEASE.2021-10-06T23-36-31Z",
@@ -85,5 +92,5 @@ def minio_setup():
 
 
 @pytest.fixture(scope="session", autouse=True)
-def connector_setup():
-    yield from minio_setup()
+def connector_setup(minio_credentials):
+    yield from minio_setup(minio_credentials)

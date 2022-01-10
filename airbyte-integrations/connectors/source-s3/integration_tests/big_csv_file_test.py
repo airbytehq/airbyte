@@ -5,7 +5,6 @@
 import json
 import os
 from pathlib import Path
-from typing import Mapping
 
 import pytest
 from airbyte_cdk import AirbyteLogger
@@ -18,17 +17,12 @@ from .acceptance import TMP_FOLDER
 HERE = Path(__file__).resolve().parent
 
 
-@pytest.fixture(scope="module")
-def credentials() -> Mapping:
-    filename = HERE / "config_minio.json"
-    with open(filename) as f:
-        return json.load(f)
 
 
 class TestIntegrationCsvFiles:
     logger = AirbyteLogger()
 
-    @memory_limit(150)  # max used memory should be less than 20Mb
+    @memory_limit(150)  # max used memory should be less than 150Mb
     def read_source(self, credentials, catalog):
         read_count = 0
         for msg in SourceS3().read(logger=self.logger, config=credentials, catalog=catalog):
@@ -37,7 +31,7 @@ class TestIntegrationCsvFiles:
         return read_count
 
     @pytest.mark.order(1)
-    def test_big_file(self, credentials):
+    def test_big_file(self, minio_credentials):
         """tests a big csv file (>= 1.0G records)"""
         # generates a big CSV files separately
         big_file_folder = os.path.join(TMP_FOLDER, "minio_data", "test-bucket", "big_files")
@@ -50,9 +44,9 @@ class TestIntegrationCsvFiles:
         expected_count = sum(1 for _ in open(filepath)) - 1
         self.logger.info(f"generated file {filepath} with size {file_size}Gb, lines: {expected_count}")
 
-        credentials["path_pattern"] = "big_files/*.csv"
-        credentials["format"]["block_size"] = 5 * 1024 ** 2
+        minio_credentials["path_pattern"] = "big_files/*.csv"
+        minio_credentials["format"]["block_size"] = 5 * 1024 ** 2
         source = SourceS3()
         catalog = source.read_catalog(HERE / "configured_catalog.json")
 
-        assert self.read_source(credentials, catalog) == expected_count
+        assert self.read_source(minio_credentials, catalog) == expected_count
