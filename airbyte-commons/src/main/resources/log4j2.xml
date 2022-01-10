@@ -128,7 +128,7 @@
                                     s3AwsKey="${s3-aws-key}" s3AwsSecret="${s3-aws-secret}"
                                     s3ServiceEndpoint="${s3-minio-endpoint}" s3PathStyleAccess="${s3-path-style-access}"
                                     gcpStorageBucket="${gcs-log-bucket}" gcpStorageBlobNamePrefix="job-logging${ctx:cloud_job_log_path}">
-                        <PatternLayout pattern="${default-pattern}"/>
+                        <PatternLayout pattern="${simple-pattern}"/>
                     </Log4j2Appender>
                 </Route>
             </Routes>
