@@ -468,6 +468,10 @@ the corresponding Avro schema and record will be:
 }
 ```
 
+### Untyped Field
+
+Any field without property type specification will default to a `string` field, and its value will be serialized to string.
+
 ## Example
 
 Based on the above rules, here is an overall example. Given the following Json schema:
