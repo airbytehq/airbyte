@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -77,6 +78,8 @@ public class EnvConfigs implements Configs {
   public static final String JOB_MAIN_CONTAINER_CPU_LIMIT = "JOB_MAIN_CONTAINER_CPU_LIMIT";
   public static final String JOB_MAIN_CONTAINER_MEMORY_REQUEST = "JOB_MAIN_CONTAINER_MEMORY_REQUEST";
   public static final String JOB_MAIN_CONTAINER_MEMORY_LIMIT = "JOB_MAIN_CONTAINER_MEMORY_LIMIT";
+  public static final String JOB_DEFAULT_ENV_MAP = "JOB_DEFAULT_ENV_MAP";
+  public static final String JOB_DEFAULT_ENV_PREFIX = "JOB_DEFAULT_ENV_";
   private static final String SECRET_PERSISTENCE = "SECRET_PERSISTENCE";
   public static final String JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET = "JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET";
   private static final String PUBLISH_METRICS = "PUBLISH_METRICS";
@@ -121,15 +124,24 @@ public class EnvConfigs implements Configs {
   public static final String DEFAULT_NETWORK = "host";
 
   private final Function<String, String> getEnv;
+  private final Supplier<Set<String>> getAllEnvKeys;
   private final LogConfigs logConfigs;
   private final CloudStorageConfigs stateStorageCloudConfigs;
 
+  /**
+   * Constructs {@link EnvConfigs} from actual environment variables.
+   */
   public EnvConfigs() {
-    this(System::getenv);
+    this(System.getenv());
   }
 
-  public EnvConfigs(final Function<String, String> getEnv) {
-    this.getEnv = getEnv;
+  /**
+   * Constructs {@link EnvConfigs} from a provided map. This can be used for testing or getting
+   * variables from a non-envvar source.
+   */
+  public EnvConfigs(final Map<String, String> envMap) {
+    this.getEnv = envMap::get;
+    this.getAllEnvKeys = envMap::keySet;
     this.logConfigs = new LogConfigs(getLogConfiguration().orElse(null));
     this.stateStorageCloudConfigs = getStateStorageConfiguration().orElse(null);
   }
@@ -479,6 +491,13 @@ public class EnvConfigs implements Configs {
   @Override
   public String getJobMainContainerMemoryLimit() {
     return getEnvOrDefault(JOB_MAIN_CONTAINER_MEMORY_LIMIT, DEFAULT_JOB_MEMORY_REQUIREMENT);
+  }
+
+  @Override
+  public Map<String, String> getJobDefaultEnvMap() {
+    return getAllEnvKeys.get().stream()
+        .filter(key -> key.startsWith(JOB_DEFAULT_ENV_PREFIX))
+        .collect(Collectors.toMap(key -> key.replace(JOB_DEFAULT_ENV_PREFIX, ""), getEnv));
   }
 
   @Override
