@@ -50,6 +50,7 @@
     * [Braintree](integrations/sources/braintree.md)
     * [Cart](integrations/sources/cart.md)
     * [Chargebee](integrations/sources/chargebee.md)
+    * [Chartmogul](integrations/sources/chartmogul.md)
     * [ClickHouse](integrations/sources/clickhouse.md)
     * [Close.com](integrations/sources/close-com.md)
     * [CockroachDB](integrations/sources/cockroachdb.md)
