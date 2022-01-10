@@ -2583,7 +2583,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-sheets:0.2.7"
+- dockerImage: "airbyte/source-google-sheets:0.2.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-sheets"
     connectionSpecification:
@@ -2639,6 +2639,7 @@
               service_account_info:
                 type: "string"
                 description: "The JSON key of the service account to use for authorization"
+                airbyte_secret: true
                 examples:
                 - "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID,\
                   \ \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
@@ -2650,7 +2651,7 @@
       oauth2Specification:
         rootObject:
         - "credentials"
-        - 0
+        - "0"
         oauthFlowInitParameters:
         - - "client_id"
         - - "client_secret"
