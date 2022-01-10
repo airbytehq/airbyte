@@ -12,7 +12,7 @@ from source_s3.source import SourceS3
 from unit_tests.abstract_test_parser import memory_limit
 from unit_tests.test_csv_parser import generate_big_file
 
-from .acceptance import TMP_FOLDER
+from .conftest import TMP_FOLDER
 
 HERE = Path(__file__).resolve().parent
 
