@@ -37,7 +37,6 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.log4j.MDC;
 
 /**
  * Entrypoint for the application responsible for launching containers and handling all message
@@ -87,7 +86,7 @@ public class ContainerOrchestratorApp {
 
       for (String envVar : OrchestratorConstants.ENV_VARS_TO_TRANSFER) {
         if (envMap.containsKey(envVar)) {
-          MDC.put(envVar, envMap.get(envVar)); // todo: limit to logging-related env vars
+          System.setProperty(envVar, envMap.get(envVar));
         }
       }
 
@@ -96,9 +95,9 @@ public class ContainerOrchestratorApp {
       final var jobRoot = WorkerUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
 
       logClient.setJobMdc(
-              configs.getWorkerEnvironment(),
-              configs.getLogConfigs(),
-              jobRoot);
+          configs.getWorkerEnvironment(),
+          configs.getLogConfigs(),
+          jobRoot);
 
       try (final var mdcScope = LOG_MDC_BUILDER.build()) {
         documentStoreClient = StateClients.create(configs.getStateStorageCloudConfigs(), WorkerApp.STATE_STORAGE_PREFIX); // todo: log on writing
