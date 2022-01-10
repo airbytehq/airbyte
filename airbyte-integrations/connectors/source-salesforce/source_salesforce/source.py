@@ -28,15 +28,15 @@ class SourceSalesforce(AbstractSource):
         return True, None
 
     @classmethod
-    def generate_streams(cls, config: Mapping[str, Any], stream_names: List[str], sf_object: Salesforce, state=None) -> List[Stream]:
+    def generate_streams(cls, config: Mapping[str, Any], stream_names: List[str], sf_object: Salesforce, state: Mapping[str, Any] = None) -> List[Stream]:
         """ "Generates a list of stream by their names. It can be used for different tests too"""
         authenticator = TokenAuthenticator(sf_object.access_token)
         streams = []
         for stream_name in stream_names:
             streams_kwargs = {}
-            stream_state = state.get(stream_name, {})
+            stream_state = state.get(stream_name, {}) if state else {}
 
-            selected_properties = sf_object.generate_schema([stream_name]).get("properties", {})
+            selected_properties = sf_object.generate_schema(stream_name).get("properties", {})
             # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
             properties_not_supported_by_bulk = {
                 key: value
@@ -62,7 +62,7 @@ class SourceSalesforce(AbstractSource):
 
         return streams
 
-    def streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None, state=None) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None, state: Mapping[str, Any] = None) -> List[Stream]:
         sf = self._get_sf_object(config)
         stream_names = sf.get_validated_streams(config=config, catalog=catalog)
         return self.generate_streams(config, stream_names, sf, state=state)
