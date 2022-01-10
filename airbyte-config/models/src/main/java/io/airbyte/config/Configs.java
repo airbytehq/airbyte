@@ -228,6 +228,13 @@ public interface Configs {
    */
   String getJobMainContainerMemoryLimit();
 
+  /**
+   * Defines a default map of environment variables to use for any launched job containers. The
+   * expected format is a JSON encoded String -> String map. Make sure to escape properly. Defaults to
+   * an empty map.
+   */
+  Map<String, String> getJobDefaultEnvMap();
+
   // Jobs - Kube only
   /**
    * Define one or more Job pod tolerations. Tolerations are separated by ';'. Each toleration
