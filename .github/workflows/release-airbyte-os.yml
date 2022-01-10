@@ -47,6 +47,9 @@ jobs:
         id: old_version
         run: |
           echo ::set-output name=OLD_VERSION::$(grep -w VERSION .env | cut -d"=" -f2)
+      - name: Install Pip
+        run: |
+          python3 -m ensurepip --upgrade
       - name: Release Airbyte
         id: release_airbyte
         env:

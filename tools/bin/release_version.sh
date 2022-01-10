@@ -28,7 +28,7 @@ PREV_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
 # uses .bumpversion.cfg to find files to bump
 # requires no git diffs to run
 # commits the bumped versions code to your branch
-python3 -m pip install bumpversion
+pip install bumpversion
 bumpversion "$PART_TO_BUMP"
 
 NEW_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
