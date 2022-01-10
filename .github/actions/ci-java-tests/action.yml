@@ -21,7 +21,7 @@ runs:
         # python3 -m virtualenv ${{ inputs.module-folder }}/.venv
         rm -rf ${{ inputs.module-folder }}/.venv ${{ inputs.module-folder }}/build
         ROOT_DIR=$(git rev-parse --show-toplevel)
-        ARG=:$(python -c "print( 'import os; os.path.relpath(${{ inputs.module-folder }}, start=${ROOT_DIR}).replace('/', ':') )")
+        ARG=:$(python -c "import os; print(os.path.relpath('${{ inputs.module-folder }}', start='${ROOT_DIR}').replace('/', ':') )")
         pwd
         echo "./gradlew --no-daemon $ARG:build"
 
