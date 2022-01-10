@@ -28,7 +28,7 @@ def get_stream(input_config: Mapping[str, Any], stream_name: str) -> Stream:
 
 
 def get_any_real_stream(input_config: Mapping[str, Any]) -> Stream:
-    return get_stream(input_config, "Account")
+    return get_stream(input_config, "ActiveFeatureLicenseMetric")
 
 
 def test_not_queryable_stream(caplog, input_config):
