@@ -19,6 +19,17 @@ sourceControl {
 
 rootProject.name = 'airbyte'
 
+// This is here purely to remind people who upgrade gradlew to add back in ./gradlew_airbyte_custom.sh
+if (System.getenv().get("GRADLEW_AIRBYTE_CUSTOM") != "true") {
+  println("\n-------------------------------------------------------")
+  println("./gradlew does not include ./gradlew_airbyte_custom.sh!")
+  println("If you are upgrading gradle, please simply add:\n")
+  println(". ./gradlew_airbyte_custom.sh")
+  println("\nanywhere in ./gradlew to get rid of this error")
+  println("-------------------------------------------------------\n")
+  throw new Exception("GRADLEW_AIRBYTE_CUSTOM is not set to true, ./gradlew does not import ./gradlew_airbyte_custom.sh")
+}
+
 // SUB_BUILD is an enum of <blank>, PLATFORM, CONNECTORS_BASE, OCTAVIA_CLI. Blank is equivalent to all.
 if (!System.getenv().containsKey("SUB_BUILD")) {
     println("Building all of Airbyte.")
@@ -99,7 +110,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-integrations:connectors:destination-mssql'
     include ':airbyte-integrations:connectors:destination-clickhouse'
 
-    //Needed by destination-bigquery
+    // Needed by destination-bigquery
     include ':airbyte-integrations:connectors:destination-s3'
     include ':airbyte-integrations:connectors:destination-gcs'
 
@@ -112,11 +123,10 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
 
 // INCLUDE_CONNECTOR will be set as a CLI arg from gradlew for you
 def includeConnector = System.getenv("INCLUDE_CONNECTOR")
-
 // Superset of includeConnector or INCLUDE_CONNECTORS=true environment variable
 def includeAllConnectors = (System.getenv().containsKey("INCLUDE_CONNECTORS") && System.getenv("INCLUDE_CONNECTORS").toString().toLowerCase() == "true").toBoolean()
 
-// Connector projects being included is conditional to save unnecessary builds:
+// Connector projects being included is conditional to save unnecessary building.
 // If a specific connector is passed include that only, check ./gradlew to see how this is found
 if (includeConnector?.trim()) {
     println "Including connector project ${includeConnector}"
@@ -135,5 +145,5 @@ if (includeConnector?.trim()) {
     }
 // Default to no connectors
 } else {
-  println "No connector projects included"
+  println "No additional connector projects included"
 }
