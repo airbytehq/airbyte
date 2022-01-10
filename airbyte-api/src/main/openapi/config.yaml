@@ -3198,9 +3198,9 @@ components:
     HealthCheckRead:
       type: object
       required:
-        - db
+        - available
       properties:
-        db:
+        available:
           type: boolean
     # General
     CheckConnectionRead:

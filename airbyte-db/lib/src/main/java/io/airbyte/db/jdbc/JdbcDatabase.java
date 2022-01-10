@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Spliterator;
@@ -164,6 +165,21 @@ public abstract class JdbcDatabase extends SqlDatabase {
       }
       return statement;
     }, sourceOperations::rowToJson);
+  }
+
+  public ResultSetMetaData queryMetadata(final String sql, final String... params) throws SQLException {
+    try (final Stream<ResultSetMetaData> q = query(c -> {
+      PreparedStatement statement = c.prepareStatement(sql);
+      int i = 1;
+      for (String param : params) {
+        statement.setString(i, param);
+        ++i;
+      }
+      return statement;
+    },
+        ResultSet::getMetaData)) {
+      return q.findFirst().orElse(null);
+    }
   }
 
   public abstract DatabaseMetaData getMetaData() throws SQLException;
