@@ -73,23 +73,23 @@ public class StateDeltaTracker {
    *         available capacity.
    */
   public void addState(final int stateHash, final Map<Short, Long> streamIndexToRecordCount) throws CapacityExceededException {
-    final int size = STATE_HASH_BYTES + (streamIndexToRecordCount.size() * BYTES_PER_STREAM);
-
-    if (capacityExceeded || remainingCapacity < size) {
-      capacityExceeded = true;
-      throw new CapacityExceededException("Memory capacity is exceeded for StateDeltaTracker.");
-    }
-
-    final ByteBuffer delta = ByteBuffer.allocate(size);
-
-    delta.putInt(stateHash);
-
-    for (final Map.Entry<Short, Long> entry : streamIndexToRecordCount.entrySet()) {
-      delta.putShort(entry.getKey());
-      delta.putLong(entry.getValue());
-    }
-
     synchronized (this) {
+      final int size = STATE_HASH_BYTES + (streamIndexToRecordCount.size() * BYTES_PER_STREAM);
+
+      if (capacityExceeded || remainingCapacity < size) {
+        capacityExceeded = true;
+        throw new CapacityExceededException("Memory capacity is exceeded for StateDeltaTracker.");
+      }
+
+      final ByteBuffer delta = ByteBuffer.allocate(size);
+
+      delta.putInt(stateHash);
+
+      for (final Map.Entry<Short, Long> entry : streamIndexToRecordCount.entrySet()) {
+        delta.putShort(entry.getKey());
+        delta.putLong(entry.getValue());
+      }
+
       stateDeltas.add(delta.array());
       remainingCapacity -= delta.array().length;
     }
@@ -106,14 +106,14 @@ public class StateDeltaTracker {
    *         due earlier exceeded capacity from addState.
    */
   public void commitStateHash(final int stateHash) throws StateHashConflictException, CapacityExceededException {
-    if (capacityExceeded) {
-      throw new CapacityExceededException("Memory capacity exceeded for StateDeltaTracker, so states cannot be reliably committed");
-    }
-    if (committedStateHashes.contains(stateHash)) {
-      throw new StateHashConflictException(String.format("State hash %d was already committed, likely indicating a state hash collision", stateHash));
-    }
-
     synchronized (this) {
+      if (capacityExceeded) {
+        throw new CapacityExceededException("Memory capacity exceeded for StateDeltaTracker, so states cannot be reliably committed");
+      }
+      if (committedStateHashes.contains(stateHash)) {
+        throw new StateHashConflictException(String.format("State hash %d was already committed, likely indicating a state hash collision", stateHash));
+      }
+
       this.committedStateHashes.add(stateHash);
       int currStateHash;
       do {
