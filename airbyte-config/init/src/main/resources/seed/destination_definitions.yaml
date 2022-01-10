@@ -1,4 +1,4 @@
-s- name: Azure Blob Storage
+- name: Azure Blob Storage
   destinationDefinitionId: b4c5d105-31fd-4817-96b6-cb923bfc04cb
   dockerRepository: airbyte/destination-azure-blob-storage
   dockerImageTag: 0.1.0
