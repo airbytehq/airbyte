@@ -29,12 +29,7 @@ public class AzureBlobStorageDestinationConfig {
     this.accountName = accountName;
     this.accountKey = accountKey;
     this.containerName = containerName;
-    if (outputStreamBufferSize > 0) {
-      this.outputStreamBufferSize = outputStreamBufferSize;
-    } else {
-      // Handle input of 0 on settings form
-      this.outputStreamBufferSize = DEFAULT_STORAGE_OUTPUT_BUFFER_SIZE;
-    }
+    this.outputStreamBufferSize = outputStreamBufferSize;
     this.formatConfig = formatConfig;
   }
 
@@ -59,7 +54,8 @@ public class AzureBlobStorageDestinationConfig {
   }
 
   public int getOutputStreamBufferSize() {
-    return outputStreamBufferSize;
+    // Convert from MB to Bytes
+    return outputStreamBufferSize * 1024 * 1024;
   }
 
   public static AzureBlobStorageDestinationConfig getAzureBlobStorageConfig(final JsonNode config) {

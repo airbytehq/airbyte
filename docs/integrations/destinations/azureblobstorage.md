@@ -22,7 +22,7 @@ The Airbyte Azure Blob Storage destination allows you to sync data to Azure Blob
 | Azure blob storage container \(Bucket\) Name | string | A name of the Azure blob storage container. If not exists - will be created automatically. If leave empty, then will be created automatically airbytecontainer+timestamp. |
 | Azure Blob Storage account name | string | The account's name of the Azure Blob Storage. |
 | The Azure blob storage account key | string | Azure blob storage account key. Example: `abcdefghijklmnopqrstuvwxyz/0123456789+ABCDEFGHIJKLMNOPQRSTUVWXYZ/0123456789%++sampleKey==`. |
-| Azure Blob Storage output buffer size | integer | Azure Blob Storage output buffer size, in bytes. Example: 104857600 |
+| Azure Blob Storage output buffer size | integer | Azure Blob Storage output buffer size, in megabytes. Example: 5 |
 | Format | object | Format specific configuration. See below for details. |
 
 ⚠️ Please note that under "Full Refresh Sync" mode, data in the configured blob will be wiped out before each sync. We recommend you to provision a dedicated Azure Blob Storage Container resource for this sync to prevent unexpected data deletion from misconfiguration. ⚠️
