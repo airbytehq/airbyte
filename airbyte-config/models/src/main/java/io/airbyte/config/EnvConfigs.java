@@ -7,7 +7,6 @@ package io.airbyte.config;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
@@ -24,6 +23,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -79,6 +79,7 @@ public class EnvConfigs implements Configs {
   public static final String JOB_MAIN_CONTAINER_MEMORY_REQUEST = "JOB_MAIN_CONTAINER_MEMORY_REQUEST";
   public static final String JOB_MAIN_CONTAINER_MEMORY_LIMIT = "JOB_MAIN_CONTAINER_MEMORY_LIMIT";
   public static final String JOB_DEFAULT_ENV_MAP = "JOB_DEFAULT_ENV_MAP";
+  public static final String JOB_DEFAULT_ENV_PREFIX = "JOB_DEFAULT_ENV_";
   private static final String SECRET_PERSISTENCE = "SECRET_PERSISTENCE";
   public static final String JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET = "JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET";
   private static final String PUBLISH_METRICS = "PUBLISH_METRICS";
@@ -123,15 +124,17 @@ public class EnvConfigs implements Configs {
   public static final String DEFAULT_NETWORK = "host";
 
   private final Function<String, String> getEnv;
+  private final Supplier<Set<String>> getAllEnvKeys;
   private final LogConfigs logConfigs;
   private final CloudStorageConfigs stateStorageCloudConfigs;
 
   public EnvConfigs() {
-    this(System::getenv);
+    this(System::getenv, () -> System.getenv().keySet());
   }
 
-  public EnvConfigs(final Function<String, String> getEnv) {
+  public EnvConfigs(final Function<String, String> getEnv, final Supplier<Set<String>> getAllEnvKeys) {
     this.getEnv = getEnv;
+    this.getAllEnvKeys = getAllEnvKeys;
     this.logConfigs = new LogConfigs(getLogConfiguration().orElse(null));
     this.stateStorageCloudConfigs = getStateStorageConfiguration().orElse(null);
   }
@@ -485,7 +488,9 @@ public class EnvConfigs implements Configs {
 
   @Override
   public Map<String, String> getJobDefaultEnvMap() {
-    return (Map<String, String>) Jsons.deserialize(getEnvOrDefault(JOB_DEFAULT_ENV_MAP, Jsons.serialize(Map.of())), Map.class);
+    return getAllEnvKeys.get().stream()
+        .filter(key -> key.startsWith(JOB_DEFAULT_ENV_PREFIX))
+        .collect(Collectors.toMap(key -> key.replace(JOB_DEFAULT_ENV_PREFIX, ""), getEnv));
   }
 
   @Override

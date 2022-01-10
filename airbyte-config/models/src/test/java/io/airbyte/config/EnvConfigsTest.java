@@ -6,12 +6,13 @@ package io.airbyte.config;
 
 import static org.mockito.Mockito.when;
 
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.AirbyteVersion;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,13 +21,15 @@ import org.mockito.Mockito;
 class EnvConfigsTest {
 
   private Function<String, String> function;
+  private Supplier<Set<String>> getAllEnvKeys;
   private EnvConfigs config;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
   void setUp() {
     function = Mockito.mock(Function.class);
-    config = new EnvConfigs(function);
+    getAllEnvKeys = Mockito.mock(Supplier.class);
+    config = new EnvConfigs(function, getAllEnvKeys);
   }
 
   @Test
@@ -207,12 +210,20 @@ class EnvConfigsTest {
 
   @Test
   void testEnvMapRetrieval() {
-    when(function.apply(EnvConfigs.JOB_DEFAULT_ENV_MAP)).thenReturn(Jsons.serialize(Map.of()));
+    // test with none
+    when(getAllEnvKeys.get()).thenReturn(Set.of());
     Assertions.assertEquals(Map.of(), config.getJobDefaultEnvMap());
 
-    final var map = Map.of("ENV1", "VAL1", "ENV2", "VAL\"2WithQuotesand$ymbols");
-    when(function.apply(EnvConfigs.JOB_DEFAULT_ENV_MAP)).thenReturn(Jsons.serialize(map));
-    Assertions.assertEquals(map, config.getJobDefaultEnvMap());
+    // test retrieving multiple
+    when(getAllEnvKeys.get()).thenReturn(Set.of(
+        EnvConfigs.JOB_DEFAULT_ENV_PREFIX + "ENV1",
+        EnvConfigs.JOB_DEFAULT_ENV_PREFIX + "ENV2"));
+
+    when(function.apply(EnvConfigs.JOB_DEFAULT_ENV_PREFIX + "ENV1")).thenReturn("VAL1");
+    when(function.apply(EnvConfigs.JOB_DEFAULT_ENV_PREFIX + "ENV2")).thenReturn("VAL\"2WithQuotesand$ymbols");
+
+    final var expected = Map.of("ENV1", "VAL1", "ENV2", "VAL\"2WithQuotesand$ymbols");
+    Assertions.assertEquals(expected, config.getJobDefaultEnvMap());
   }
 
 }
