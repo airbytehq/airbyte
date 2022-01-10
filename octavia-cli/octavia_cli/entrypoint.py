@@ -2,13 +2,15 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+from typing import List
+
 import airbyte_api_client
 import click
 from airbyte_api_client.api import workspace_api
 
 from .list import commands as list_commands
 
-AVAILABLE_COMMANDS = [list_commands._list]
+AVAILABLE_COMMANDS: List[click.Command] = [list_commands._list]
 
 
 @click.group()
