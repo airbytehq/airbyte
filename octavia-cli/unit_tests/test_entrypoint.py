@@ -50,3 +50,7 @@ def test_not_implemented_commands(command):
     result = runner.invoke(command)
     assert result.exit_code == 1
     assert result.output.endswith("not yet implemented.\n")
+
+
+def test_available_commands():
+    assert entrypoint.AVAILABLE_COMMANDS == [entrypoint.list_commands._list]

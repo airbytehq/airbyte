@@ -41,7 +41,7 @@ class TestDefinitions:
         assert definitions.api_instance == mock_api.return_value
 
     def test_abstract_methods(self, mock_definition_type, mock_api_client):
-        assert Definitions.__abstractmethods__ == {"api", "list_latest_definitions"}
+        assert Definitions.__abstractmethods__ == {"api", "latest_definitions"}
         with pytest.raises(TypeError):
             Definitions(mock_definition_type, mock_api_client)
 
@@ -54,13 +54,6 @@ class TestDefinitions:
         definitions = Definitions(mock_definition_type, mock_api_client)
         expected_response_definition_list_field = "my_definition_type_definitions"
         assert definitions.response_definition_list_field == expected_response_definition_list_field
-
-    def test_latest_definitions(self, patch_base_class, mock_definition_type, mock_api_client, mocker):
-        mocker.patch.object(Definitions, "list_latest_definitions", mocker.Mock())
-        definitions = Definitions(mock_definition_type, mock_api_client)
-        latest_definitions = definitions.latest_definitions
-        definitions.list_latest_definitions.assert_called_with(definitions.api_instance)
-        assert latest_definitions == definitions.list_latest_definitions.return_value
 
     def test_parse_response(self, patch_base_class, mock_definition_type, mock_api_client):
         definitions = Definitions(mock_definition_type, mock_api_client)
@@ -105,52 +98,47 @@ class TestDefinitions:
         assert Definitions._display_as_table(test_data) == expected_output
 
 
-class TestSourceDefinitions:
+class TestSubDefinitions:
     @pytest.fixture
     def mock_api_client(self, mocker):
         return mocker.Mock()
 
-    def test_init(self, mocker, mock_api_client):
-        mocker.patch.object(Definitions, "__init__", mocker.Mock())
-        SourceDefinitions(mock_api_client)
-        Definitions.__init__.assert_called_with(DefinitionType.SOURCE, mock_api_client)
-
-    def test_class_attributes(self):
-        assert SourceDefinitions.api == source_definition_api.SourceDefinitionApi
-
-    def test_list_latest_definitions(self, mocker, mock_api_client):
-        mocker.patch.object(SourceDefinitions, "api", mocker.Mock())
-        mocker.patch.object(SourceDefinitions, "_parse_response", mocker.Mock())
-
-        source_definitions = SourceDefinitions(mock_api_client)
-        source_definitions.api_instance = mocker.Mock()
-
-        latest_definitions = source_definitions.list_latest_definitions()
-        assert latest_definitions == source_definitions._parse_response.return_value
-        source_definitions.api.list_latest_source_definitions.assert_called_with(source_definitions.api_instance)
-
-
-class TestDestinationDefinitions:
-    @pytest.fixture
-    def mock_api_client(self, mocker):
-        return mocker.Mock()
-
-    def test_init(self, mocker, mock_api_client):
+    @pytest.mark.parametrize(
+        "definition_type,SubDefinitionClass",
+        [
+            (DefinitionType.SOURCE, SourceDefinitions),
+            (DefinitionType.DESTINATION, DestinationDefinitions),
+        ],
+    )
+    def test_init(self, mocker, mock_api_client, definition_type, SubDefinitionClass):
         definitions_init = mocker.Mock()
         mocker.patch.object(Definitions, "__init__", definitions_init)
-        DestinationDefinitions(mock_api_client)
-        definitions_init.assert_called_with(DefinitionType.DESTINATION, mock_api_client)
+        SubDefinitionClass(mock_api_client)
+        definitions_init.assert_called_with(definition_type, mock_api_client)
 
-    def test_class_attributes(self):
-        assert DestinationDefinitions.api == destination_definition_api.DestinationDefinitionApi
+    @pytest.mark.parametrize(
+        "SubDefinitionClass,expected_api",
+        [
+            (SourceDefinitions, source_definition_api.SourceDefinitionApi),
+            (DestinationDefinitions, destination_definition_api.DestinationDefinitionApi),
+        ],
+    )
+    def test_class_attributes(self, SubDefinitionClass, expected_api):
+        assert SubDefinitionClass.api == expected_api
 
-    def test_list_latest_definitions(self, mocker, mock_api_client):
-        mocker.patch.object(DestinationDefinitions, "api", mocker.Mock())
-        mocker.patch.object(DestinationDefinitions, "_parse_response", mocker.Mock())
+    @pytest.mark.parametrize(
+        "SubDefinitionClass,list_latest_fn",
+        [
+            (SourceDefinitions, "list_latest_source_definitions"),
+            (DestinationDefinitions, "list_latest_destination_definitions"),
+        ],
+    )
+    def test_latest_definitions(self, mocker, mock_api_client, SubDefinitionClass, list_latest_fn):
+        mocker.patch.object(SubDefinitionClass, "api", mocker.Mock())
+        mocker.patch.object(SubDefinitionClass, "_parse_response", mocker.Mock())
 
-        destination_definitions = DestinationDefinitions(mock_api_client)
-        destination_definitions.api_instance = mocker.Mock()
+        definitions = SubDefinitionClass(mock_api_client)
+        definitions.api_instance = mocker.Mock()
 
-        latest_definitions = destination_definitions.list_latest_definitions()
-        assert latest_definitions == destination_definitions._parse_response.return_value
-        destination_definitions.api.list_latest_destination_definitions.assert_called_with(destination_definitions.api_instance)
+        assert definitions.latest_definitions == definitions._parse_response.return_value
+        definitions.api.__getattr__(list_latest_fn).assert_called_with(definitions.api_instance)

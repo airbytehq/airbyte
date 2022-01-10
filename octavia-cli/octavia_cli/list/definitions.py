@@ -34,15 +34,10 @@ class Definitions(abc.ABC):
     def response_definition_list_field(self) -> str:
         return f"{self.definition_type.value}_definitions"
 
-    @abc.abstractmethod
-    def list_latest_definitions(
-        api_instance: Union[source_definition_api.SourceDefinitionApi, destination_definition_api.DestinationDefinitionApi]
-    ):  # pragma: no cover
-        pass
-
     @property
-    def latest_definitions(self) -> List[List[str]]:
-        return self.list_latest_definitions(self.api_instance)
+    @abc.abstractmethod
+    def latest_definitions(self) -> List[List[str]]:  # pragma: no cover
+        pass
 
     def _parse_response(self, api_response) -> List[List[str]]:
         definitions = [
@@ -88,7 +83,8 @@ class SourceDefinitions(Definitions):
     def __init__(self, api_client: airbyte_api_client.ApiClient):
         super().__init__(DefinitionType.SOURCE, api_client)
 
-    def list_latest_definitions(self) -> List[List[str]]:
+    @property
+    def latest_definitions(self) -> List[List[str]]:
         api_response = self.api.list_latest_source_definitions(self.api_instance)
         return self._parse_response(api_response)
 
@@ -99,6 +95,7 @@ class DestinationDefinitions(Definitions):
     def __init__(self, api_client: airbyte_api_client.ApiClient):
         super().__init__(DefinitionType.DESTINATION, api_client)
 
-    def list_latest_definitions(self) -> List[List[str]]:
+    @property
+    def latest_definitions(self) -> List[List[str]]:
         api_response = self.api.list_latest_destination_definitions(self.api_instance)
         return self._parse_response(api_response)
