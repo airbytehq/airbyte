@@ -27,22 +27,24 @@ class Definitions(abc.ABC):
         self.api_instance = self.api(api_client)
 
     @property
-    def fields_to_display(self):
+    def fields_to_display(self) -> List[str]:
         return ["name", "docker_repository", "docker_image_tag", f"{self.definition_type.value}_definition_id"]
 
     @property
-    def response_definition_list_field(self):
+    def response_definition_list_field(self) -> str:
         return f"{self.definition_type.value}_definitions"
 
     @abc.abstractmethod
-    def list_latest_definitions(api_instance):  # pragma: no cover
+    def list_latest_definitions(
+        api_instance: Union[source_definition_api.SourceDefinitionApi, destination_definition_api.DestinationDefinitionApi]
+    ):  # pragma: no cover
         pass
 
     @property
-    def latest_definitions(self):
+    def latest_definitions(self) -> List[List[str]]:
         return self.list_latest_definitions(self.api_instance)
 
-    def _parse_response(self, api_response):
+    def _parse_response(self, api_response) -> List[List[str]]:
         definitions = [
             [definition[field] for field in self.fields_to_display] for definition in api_response[self.response_definition_list_field]
         ]
@@ -86,7 +88,7 @@ class SourceDefinitions(Definitions):
     def __init__(self, api_client: airbyte_api_client.ApiClient):
         super().__init__(DefinitionType.SOURCE, api_client)
 
-    def list_latest_definitions(self):
+    def list_latest_definitions(self) -> List[List[str]]:
         api_response = self.api.list_latest_source_definitions(self.api_instance)
         return self._parse_response(api_response)
 
@@ -97,6 +99,6 @@ class DestinationDefinitions(Definitions):
     def __init__(self, api_client: airbyte_api_client.ApiClient):
         super().__init__(DefinitionType.DESTINATION, api_client)
 
-    def list_latest_definitions(self):
+    def list_latest_definitions(self) -> List[List[str]]:
         api_response = self.api.list_latest_destination_definitions(self.api_instance)
         return self._parse_response(api_response)
