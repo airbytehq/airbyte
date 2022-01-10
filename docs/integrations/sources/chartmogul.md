@@ -44,4 +44,4 @@ Please read [How to find your API key](https://dev.chartmogul.com/docs/authentic
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.0 | 2022-01-xx | [7062](https://github.com/airbytehq/airbyte/pull/xxxx) | New Source: Chartmogul |
+| 0.1.0 | 2022-01-10 | [9381](https://github.com/airbytehq/airbyte/pull/9381) | New Source: Chartmogul |
