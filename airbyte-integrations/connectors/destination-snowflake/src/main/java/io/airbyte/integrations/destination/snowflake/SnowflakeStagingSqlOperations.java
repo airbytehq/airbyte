@@ -80,4 +80,9 @@ public class SnowflakeStagingSqlOperations extends JdbcSqlOperations implements 
   public void cleanUpStage(JdbcDatabase database, String path) throws SQLException {
     database.execute(String.format("REMOVE @%s;", path));
   }
+
+  @Override
+  public boolean isSchemaExists(JdbcDatabase database, String outputSchema) throws Exception {
+    return database.query(SHOW_SCHEMAS).map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equalsIgnoreCase);
+  }
 }
