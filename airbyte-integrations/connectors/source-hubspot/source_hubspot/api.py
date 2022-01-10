@@ -200,6 +200,9 @@ class Stream(ABC):
     limit = 100
     offset = 0
 
+    # add auto-generated properties to schema
+    add_properties = True
+
     @property
     @abstractmethod
     def url(self):
@@ -685,6 +688,8 @@ class EngagementStream(Stream):
     limit = 250
     updated_at_field = "lastUpdated"
     created_at_field = "createdAt"
+
+    add_properties = False
 
     def _transform(self, records: Iterable) -> Iterable:
         yield from super()._transform({**record.pop("engagement"), **record} for record in records)
