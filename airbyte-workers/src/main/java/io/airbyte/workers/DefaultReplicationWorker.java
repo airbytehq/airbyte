@@ -9,6 +9,7 @@ import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.config.State;
+import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
@@ -169,9 +170,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       }
 
       // assume every stream with stats is in streamToEmittedRecords map
-      final List<SyncStats> streamSyncStats = messageTracker.getStreamToEmittedRecords().keySet().stream().map(stream -> {
+      final List<StreamSyncStats> streamSyncStats = messageTracker.getStreamToEmittedRecords().keySet().stream().map(stream -> {
         final SyncStats syncStats = new SyncStats()
-            .withStream(stream)
             .withRecordsEmitted(messageTracker.getStreamToEmittedRecords().get(stream))
             .withBytesEmitted(messageTracker.getStreamToEmittedBytes().get(stream))
             .withStateMessagesEmitted(null); // TODO (parker) populate per-stream state messages emitted once supported in V2
@@ -183,7 +183,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         } else {
           syncStats.setRecordsCommitted(null);
         }
-        return syncStats;
+        return new StreamSyncStats()
+            .withStreamName(stream)
+            .withStats(syncStats);
       }).collect(Collectors.toList());
 
       final ReplicationAttemptSummary summary = new ReplicationAttemptSummary()

@@ -29,6 +29,7 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.config.State;
+import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
@@ -46,6 +47,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -244,14 +246,12 @@ class DefaultReplicationWorkerTest {
   @Test
   void testPopulatesOutputOnSuccess() throws WorkerException {
     final JsonNode expectedState = Jsons.jsonNode(ImmutableMap.of("updated_at", 10L));
+    when(messageTracker.getDestinationOutputState()).thenReturn(Optional.of(new State().withState(expectedState)));
     when(messageTracker.getTotalRecordsEmitted()).thenReturn(12L);
     when(messageTracker.getTotalBytesEmitted()).thenReturn(100L);
-    when(messageTracker.getDestinationOutputState()).thenReturn(Optional.of(new State().withState(expectedState)));
+    when(messageTracker.getTotalStateMessagesEmitted()).thenReturn(3L);
     when(messageTracker.getStreamToEmittedBytes()).thenReturn(Collections.singletonMap("stream1", 100L));
     when(messageTracker.getStreamToEmittedRecords()).thenReturn(Collections.singletonMap("stream1", 12L));
-    when(messageTracker.getStreamToCommittedRecords()).thenReturn(Optional.of(Collections.singletonMap("stream1", 6L)));
-    when(messageTracker.getTotalRecordsCommitted()).thenReturn(Optional.of(6L));
-    when(messageTracker.getTotalStateMessagesEmitted()).thenReturn(3L);
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -271,14 +271,15 @@ class DefaultReplicationWorkerTest {
                 .withRecordsEmitted(12L)
                 .withBytesEmitted(100L)
                 .withStateMessagesEmitted(3L)
-                .withRecordsCommitted(6L))
+                .withRecordsCommitted(12L)) // since success, should use emitted count
             .withStreamStats(Collections.singletonList(
-                new SyncStats()
-                    .withStream("stream1")
-                    .withBytesEmitted(100L)
-                    .withRecordsEmitted(12L)
-                    .withRecordsCommitted(6L)
-                    .withStateMessagesEmitted(null))))
+                new StreamSyncStats()
+                    .withStreamName("stream1")
+                    .withStats(new SyncStats()
+                        .withBytesEmitted(100L)
+                        .withRecordsEmitted(12L)
+                        .withRecordsCommitted(12L) // since success, should use emitted count
+                        .withStateMessagesEmitted(null)))))
         .withOutputCatalog(syncInput.getCatalog())
         .withState(new State().withState(expectedState));
 
@@ -333,6 +334,45 @@ class DefaultReplicationWorkerTest {
 
     assertNotNull(actual);
     assertEquals(syncInput.getState().getState(), actual.getState().getState());
+  }
+
+  @Test
+  void testPopulatesStatsOnFailureIfAvailable() throws Exception {
+    doThrow(new IllegalStateException("induced exception")).when(source).close();
+    when(messageTracker.getTotalRecordsEmitted()).thenReturn(12L);
+    when(messageTracker.getTotalBytesEmitted()).thenReturn(100L);
+    when(messageTracker.getTotalRecordsCommitted()).thenReturn(Optional.of(6L));
+    when(messageTracker.getTotalStateMessagesEmitted()).thenReturn(3L);
+    when(messageTracker.getStreamToEmittedBytes()).thenReturn(Collections.singletonMap("stream1", 100L));
+    when(messageTracker.getStreamToEmittedRecords()).thenReturn(Collections.singletonMap("stream1", 12L));
+    when(messageTracker.getStreamToCommittedRecords()).thenReturn(Optional.of(Collections.singletonMap("stream1", 6L)));
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker);
+
+    final ReplicationOutput actual = worker.run(syncInput, jobRoot);
+    final SyncStats expectedTotalStats = new SyncStats()
+        .withRecordsEmitted(12L)
+        .withBytesEmitted(100L)
+        .withStateMessagesEmitted(3L)
+        .withRecordsCommitted(6L);
+    final List<StreamSyncStats> expectedStreamStats = Collections.singletonList(
+        new StreamSyncStats()
+            .withStreamName("stream1")
+            .withStats(new SyncStats()
+                .withBytesEmitted(100L)
+                .withRecordsEmitted(12L)
+                .withRecordsCommitted(6L)
+                .withStateMessagesEmitted(null)));
+
+    assertNotNull(actual);
+    assertEquals(expectedTotalStats, actual.getReplicationAttemptSummary().getTotalStats());
+    assertEquals(expectedStreamStats, actual.getReplicationAttemptSummary().getStreamStats());
   }
 
   @Test

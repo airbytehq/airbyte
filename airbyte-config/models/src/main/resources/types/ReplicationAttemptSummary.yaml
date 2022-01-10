@@ -30,4 +30,4 @@ properties:
   streamStats:
     type: array
     items:
-      "$ref": SyncStats.yaml
+      "$ref": StreamSyncStats.yaml

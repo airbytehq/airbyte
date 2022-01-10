@@ -101,7 +101,8 @@ public class StateDeltaTracker {
    * This method leverages a synchronized block to provide thread safety between the source thread
    * calling addState while the destination thread calls commitStateHash.
    *
-   * @throws StateDeltaTrackerException thrown when committed counts can no longer be reliably computed.
+   * @throws StateDeltaTrackerException thrown when committed counts can no longer be reliably
+   *         computed.
    */
   public void commitStateHash(final int stateHash) throws StateDeltaTrackerException {
     synchronized (this) {
@@ -109,7 +110,8 @@ public class StateDeltaTracker {
         throw new StateDeltaTrackerException("Memory capacity exceeded for StateDeltaTracker, so states cannot be reliably committed");
       }
       if (committedStateHashes.contains(stateHash)) {
-        throw new StateDeltaTrackerException(String.format("State hash %d was already committed, likely indicating a state hash collision", stateHash));
+        throw new StateDeltaTrackerException(
+            String.format("State hash %d was already committed, likely indicating a state hash collision", stateHash));
       }
 
       committedStateHashes.add(stateHash);
@@ -142,7 +144,8 @@ public class StateDeltaTracker {
   }
 
   /**
-   * Thrown when the StateDeltaTracker encounters an issue that prevents it from reliably computing committed record deltas.
+   * Thrown when the StateDeltaTracker encounters an issue that prevents it from reliably computing
+   * committed record deltas.
    */
   public static class StateDeltaTrackerException extends Exception {
 
@@ -151,4 +154,5 @@ public class StateDeltaTracker {
     }
 
   }
+
 }
