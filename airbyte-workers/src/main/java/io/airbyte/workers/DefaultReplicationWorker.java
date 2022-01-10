@@ -158,7 +158,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           .withRecordsEmitted(messageTracker.getTotalRecordsEmitted())
           .withBytesEmitted(messageTracker.getTotalBytesEmitted())
           .withStateMessagesEmitted(messageTracker.getTotalStateMessagesEmitted());
-      if (messageTracker.getTotalRecordsCommitted().isPresent()) {
+
+      if (outputStatus == ReplicationStatus.COMPLETED) {
+        totalSyncStats.setRecordsCommitted(totalSyncStats.getRecordsEmitted());
+      } else if (messageTracker.getTotalRecordsCommitted().isPresent()) {
         totalSyncStats.setRecordsCommitted(messageTracker.getTotalRecordsCommitted().get());
       } else {
         LOGGER.warn("Could not reliably determine committed record counts, committed record stats will be set to null");
@@ -172,7 +175,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             .withRecordsEmitted(messageTracker.getStreamToEmittedRecords().get(stream))
             .withBytesEmitted(messageTracker.getStreamToEmittedBytes().get(stream))
             .withStateMessagesEmitted(null); // TODO (parker) populate per-stream state messages emitted once supported in V2
-        if (messageTracker.getStreamToCommittedRecords().isPresent()) {
+
+        if (outputStatus == ReplicationStatus.COMPLETED) {
+          syncStats.setRecordsCommitted(messageTracker.getStreamToEmittedRecords().get(stream));
+        } else if (messageTracker.getStreamToCommittedRecords().isPresent()) {
           syncStats.setRecordsCommitted(messageTracker.getStreamToCommittedRecords().get().get(stream));
         } else {
           syncStats.setRecordsCommitted(null);
