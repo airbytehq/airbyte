@@ -12,8 +12,6 @@
       "s3_bucket_name",
       "s3_bucket_path",
       "s3_bucket_region",
-      "access_key_id",
-      "secret_access_key",
       "format"
     ],
     "additionalProperties": false,
@@ -72,7 +70,7 @@
       },
       "access_key_id": {
         "type": "string",
-        "description": "The access key id to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket.",
+        "description": "The access key id to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket, if not set, Airbyte will rely on Instance Profile",
         "title": "S3 Key Id",
         "airbyte_secret": true,
         "examples": ["A012345678910EXAMPLE"]

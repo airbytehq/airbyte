@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3;
 
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
@@ -87,8 +88,8 @@ public class S3DestinationConfig {
         config.get("s3_bucket_name").asText(),
         bucketPath,
         config.get("s3_bucket_region").asText(),
-        config.get("access_key_id").asText(),
-        config.get("secret_access_key").asText(),
+        config.get("access_key_id") == null ? "" : config.get("access_key_id").asText(),
+        config.get("secret_access_key") == null ? "" : config.get("secret_access_key").asText(),
         partSize,
         format);
   }
@@ -128,11 +129,10 @@ public class S3DestinationConfig {
   public AmazonS3 getS3Client() {
     final AWSCredentials awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
 
-    if (endpoint == null || endpoint.isEmpty()) {
+    if (accessKeyId == null && secretAccessKey == null || accessKeyId.isEmpty() && secretAccessKey.isEmpty()) {
       return AmazonS3ClientBuilder.standard()
-          .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-          .withRegion(bucketRegion)
-          .build();
+      .withCredentials(new InstanceProfileCredentialsProvider(false))
+      .build();
     }
 
     final ClientConfiguration clientConfiguration = new ClientConfiguration();
