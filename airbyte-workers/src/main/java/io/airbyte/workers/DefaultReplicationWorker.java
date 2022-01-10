@@ -9,7 +9,6 @@ import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.config.State;
-import io.airbyte.config.StreamNameToSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
@@ -19,9 +18,9 @@ import io.airbyte.workers.protocols.airbyte.AirbyteMapper;
 import io.airbyte.workers.protocols.airbyte.AirbyteSource;
 import io.airbyte.workers.protocols.airbyte.MessageTracker;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -165,28 +164,28 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         LOGGER.warn("Could not reliably determine committed record counts, committed record stats will be set to null");
         totalSyncStats.setRecordsCommitted(null);
       }
-      final StreamNameToSyncStats streamNameToSyncStats = new StreamNameToSyncStats();
+
       // assume every stream with stats is in streamToEmittedRecords map
-      final Set<String> allStreams = messageTracker.getStreamToEmittedRecords().keySet();
-      allStreams.forEach(stream -> {
-        final SyncStats streamSyncStats = new SyncStats()
+      final List<SyncStats> streamSyncStats = messageTracker.getStreamToEmittedRecords().keySet().stream().map(stream -> {
+        final SyncStats syncStats = new SyncStats()
+            .withStream(stream)
             .withRecordsEmitted(messageTracker.getStreamToEmittedRecords().get(stream))
             .withBytesEmitted(messageTracker.getStreamToEmittedBytes().get(stream))
-            .withStateMessagesEmitted(null); // TODO populate per-stream state messages emitted once supported in V2
+            .withStateMessagesEmitted(null); // TODO (parker) populate per-stream state messages emitted once supported in V2
         if (messageTracker.getStreamToCommittedRecords().isPresent()) {
-          streamSyncStats.setRecordsCommitted(messageTracker.getStreamToCommittedRecords().get().get(stream));
+          syncStats.setRecordsCommitted(messageTracker.getStreamToCommittedRecords().get().get(stream));
         } else {
-          streamSyncStats.setRecordsCommitted(null);
+          syncStats.setRecordsCommitted(null);
         }
-        streamNameToSyncStats.setAdditionalProperty(stream, streamSyncStats);
-      });
+        return syncStats;
+      }).collect(Collectors.toList());
 
       final ReplicationAttemptSummary summary = new ReplicationAttemptSummary()
           .withStatus(outputStatus)
           .withRecordsSynced(messageTracker.getTotalRecordsEmitted()) // TODO (parker) remove in favor of totalRecordsEmitted
           .withBytesSynced(messageTracker.getTotalBytesEmitted()) // TODO (parker) remove in favor of totalBytesEmitted
           .withTotalStats(totalSyncStats)
-          .withStreamStats(streamNameToSyncStats)
+          .withStreamStats(streamSyncStats)
           .withStartTime(startTime)
           .withEndTime(System.currentTimeMillis());
 

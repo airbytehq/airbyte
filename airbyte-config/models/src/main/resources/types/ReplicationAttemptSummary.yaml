@@ -28,10 +28,6 @@ properties:
   totalStats:
     "$ref": SyncStats.yaml
   streamStats:
-    "$ref": "#/definitions/streamNameToSyncStats"
-    description: map of stream name to sync stats
-definitions:
-  streamNameToSyncStats:
-    type: object
-    additionalProperties:
+    type: array
+    items:
       "$ref": SyncStats.yaml

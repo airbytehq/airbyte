@@ -12,17 +12,25 @@ required:
   - bytesSynced
   - startTime
   - endTime
+  - totalStats
+  - streamStats
 additionalProperties: false
 properties:
   status:
     "$ref": ReplicationStatus.yaml
-  recordsSynced:
+  recordsSynced: # TODO (parker) remove in favor of totalRecordsEmitted
     type: integer
     minValue: 0
-  bytesSynced:
+  bytesSynced: # TODO (parker) remove in favor of totalBytesEmitted
     type: integer
     minValue: 0
   startTime:
     type: integer
   endTime:
     type: integer
+  totalStats:
+    "$ref": SyncStats.yaml
+  streamStats:
+    type: array
+    items:
+      "$ref": SyncStats.yaml

@@ -29,7 +29,6 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.config.State;
-import io.airbyte.config.StreamNameToSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
@@ -273,8 +272,9 @@ class DefaultReplicationWorkerTest {
                 .withBytesEmitted(100L)
                 .withStateMessagesEmitted(3L)
                 .withRecordsCommitted(6L))
-            .withStreamStats(new StreamNameToSyncStats()
-                .withAdditionalProperty("stream1", new SyncStats()
+            .withStreamStats(Collections.singletonList(
+                new SyncStats()
+                    .withStream("stream1")
                     .withBytesEmitted(100L)
                     .withRecordsEmitted(12L)
                     .withRecordsCommitted(6L)

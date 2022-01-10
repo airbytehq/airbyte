@@ -156,6 +156,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     syncSummary.setStartTime(output.getReplicationAttemptSummary().getStartTime());
     syncSummary.setEndTime(output.getReplicationAttemptSummary().getEndTime());
     syncSummary.setStatus(output.getReplicationAttemptSummary().getStatus());
+    syncSummary.setTotalStats(output.getReplicationAttemptSummary().getTotalStats());
+    syncSummary.setStreamStats(output.getReplicationAttemptSummary().getStreamStats());
 
     final StandardSyncOutput standardSyncOutput = new StandardSyncOutput();
     standardSyncOutput.setState(output.getState());

@@ -9,6 +9,8 @@ required:
   - bytesEmitted
 additionalProperties: false
 properties:
+  stream: # if null, represents total stats across all streams
+    type: ["null", string]
   recordsEmitted:
     type: integer
   bytesEmitted:
@@ -16,4 +18,4 @@ properties:
   stateMessagesEmitted: # TODO make required once per-stream state messages are supported in V2
     type: integer
   recordsCommitted:
-    type: integer
+    type: integer # if unset, committed records could not be computed
