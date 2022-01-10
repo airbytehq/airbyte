@@ -117,7 +117,7 @@ public class AirbyteMessageTracker implements MessageTracker {
         stateDeltaTracker.addState(stateHash, streamToRunningCount);
       }
     } catch (final StateDeltaTrackerException e) {
-      log.error("Exceeded stateDeltaTracker capacity, no longer able to compute committed record counts", e);
+      log.error(e.getMessage(), e);
       unreliableCommittedCounts = true;
     }
     streamToRunningCount.clear();
