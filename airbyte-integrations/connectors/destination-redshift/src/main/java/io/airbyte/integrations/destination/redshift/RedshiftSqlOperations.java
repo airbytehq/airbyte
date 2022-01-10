@@ -22,7 +22,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSqlOperations.class);
   protected static final int REDSHIFT_VARCHAR_MAX_BYTE_SIZE = 65535;
-  private RedshiftDataTmpTableMode redshiftDataTmpTableMode;
+  private final RedshiftDataTmpTableMode redshiftDataTmpTableMode;
 
   public RedshiftSqlOperations(RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
     this.redshiftDataTmpTableMode = redshiftDataTmpTableMode;

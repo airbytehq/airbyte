@@ -18,7 +18,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RedshiftInsertDestination extends AbstractJdbcDestination implements Destination {
+public class RedshiftInsertDestination extends AbstractJdbcDestination  {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftDestination.class);
 
@@ -68,5 +68,4 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination implement
         .put("schema", schema)
         .build());
   }
-
 }

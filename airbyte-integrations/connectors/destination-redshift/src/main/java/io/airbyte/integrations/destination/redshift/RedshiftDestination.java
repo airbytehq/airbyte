@@ -5,12 +5,15 @@
 package io.airbyte.integrations.destination.redshift;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
 import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.Map;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,11 +30,11 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftDestination.class);
 
-  private static RedshiftDataTmpTableMode redshiftDataTmpTableMode;
-
   enum DestinationType {
-    INSERT,
-    COPY_S3
+    INSERT_WITH_VARCHAR,
+    INSERT_WITH_SUPER_TMP_TYPE,
+    COPY_S3_WITH_VARCHAR,
+    COPY_S3_WITH_SUPER_TMP_TYPE
   }
 
   public RedshiftDestination() {
@@ -39,30 +42,30 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
   }
 
   public static DestinationType getTypeFromConfig(final JsonNode config) {
-    redshiftDataTmpTableMode = determineTmpTableDatatype(config);
-    if (isCopy(config)) {
-      return DestinationType.COPY_S3;
-    } else {
-      return DestinationType.INSERT;
-    }
+    return determineUploadMode(config);
   }
 
-  private static RedshiftDataTmpTableMode determineTmpTableDatatype(JsonNode config) {
-    if (!config.get("use_super_redshift_type").isNull() && config.get("use_super_redshift_type").asBoolean()) {
-      return RedshiftDataTmpTableMode.SUPER;
-    }
-    return RedshiftDataTmpTableMode.VARCHAR;
+  @Override
+  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog,
+      Consumer<AirbyteMessage> outputRecordCollector) throws Exception {
+    final DestinationType destinationType = super.configToType.apply(config);
+    LOGGER.info("Using destination type: " + destinationType.name());
+    return typeToDestination.get(destinationType).getConsumer(config, catalog, outputRecordCollector);
   }
 
   public static Map<DestinationType, Destination> getTypeToDestination() {
-    final RedshiftInsertDestination insertDestination = new RedshiftInsertDestination(redshiftDataTmpTableMode);
-    final RedshiftCopyS3Destination copyS3Destination = new RedshiftCopyS3Destination(redshiftDataTmpTableMode);
-    return ImmutableMap.of(
-        DestinationType.INSERT, insertDestination,
-        DestinationType.COPY_S3, copyS3Destination);
+    final RedshiftInsertDestination insertDestinationWithVarcharTmp = new RedshiftInsertDestination(RedshiftDataTmpTableMode.VARCHAR);
+    final RedshiftInsertDestination insertDestinationWithSuperTmp = new RedshiftInsertDestination(RedshiftDataTmpTableMode.SUPER);
+    final RedshiftCopyS3Destination copyS3DestinationWithVarcharTmp = new RedshiftCopyS3Destination(RedshiftDataTmpTableMode.VARCHAR);
+    final RedshiftCopyS3Destination copyS3DestinationWithSuperTmp = new RedshiftCopyS3Destination(RedshiftDataTmpTableMode.SUPER);
+    return Map.of(
+        DestinationType.INSERT_WITH_VARCHAR, insertDestinationWithVarcharTmp,
+        DestinationType.INSERT_WITH_SUPER_TMP_TYPE, insertDestinationWithSuperTmp,
+        DestinationType.COPY_S3_WITH_VARCHAR, copyS3DestinationWithVarcharTmp,
+        DestinationType.COPY_S3_WITH_SUPER_TMP_TYPE, copyS3DestinationWithSuperTmp);
   }
 
-  public static boolean isCopy(final JsonNode config) {
+  public static DestinationType determineUploadMode(final JsonNode config) {
     final var bucketNode = config.get("s3_bucket_name");
     final var regionNode = config.get("s3_bucket_region");
     final var accessKeyIdNode = config.get("access_key_id");
@@ -73,13 +76,24 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     final var emptyRegion = regionNode == null || regionNode.asText().equals("");
 
     if (bucketNode == null && emptyRegion && accessKeyIdNode == null && secretAccessKeyNode == null) {
-      return false;
+      return determineTmpTableDatatype(config) == RedshiftDataTmpTableMode.VARCHAR ?
+          DestinationType.INSERT_WITH_VARCHAR :
+          DestinationType.INSERT_WITH_SUPER_TMP_TYPE;
     }
 
     if (bucketNode == null || regionNode == null || accessKeyIdNode == null || secretAccessKeyNode == null) {
       throw new RuntimeException("Error: Partially missing S3 Configuration.");
     }
-    return true;
+    return determineTmpTableDatatype(config) == RedshiftDataTmpTableMode.VARCHAR ?
+        DestinationType.COPY_S3_WITH_VARCHAR :
+        DestinationType.COPY_S3_WITH_SUPER_TMP_TYPE;
+  }
+
+  private static RedshiftDataTmpTableMode determineTmpTableDatatype(JsonNode config) {
+    if (config.get("use_super_redshift_type") != null && !config.get("use_super_redshift_type").isNull() && config.get("use_super_redshift_type").asBoolean()) {
+      return RedshiftDataTmpTableMode.SUPER;
+    }
+    return RedshiftDataTmpTableMode.VARCHAR;
   }
 
   public static void main(final String[] args) throws Exception {
