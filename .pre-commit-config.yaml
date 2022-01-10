@@ -1,5 +1,5 @@
 default_language_version:
-  python: python3.7
+  python: python3
 
 repos:
   - repo: https://github.com/johann-petrak/licenseheaders.git

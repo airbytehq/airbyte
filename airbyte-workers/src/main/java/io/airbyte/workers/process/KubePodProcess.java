@@ -16,6 +16,7 @@ import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
 import io.fabric8.kubernetes.api.model.ContainerStatus;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
+import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.LocalObjectReference;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
@@ -134,7 +135,6 @@ public class KubePodProcess extends Process implements KubePod {
   private final Duration statusCheckInterval;
   private final int stdoutLocalPort;
   private final ServerSocket stderrServerSocket;
-  private final Map<Integer, Integer> internalToExternalPorts;
   private final int stderrLocalPort;
   private final ExecutorService executorService;
 
@@ -173,6 +173,7 @@ public class KubePodProcess extends Process implements KubePod {
                                    final List<VolumeMount> mainVolumeMounts,
                                    final ResourceRequirements resourceRequirements,
                                    final Map<Integer, Integer> internalToExternalPorts,
+                                   final Map<String, String> envMap,
                                    final String[] args)
       throws IOException {
     final var argsStr = String.join(" ", args);
@@ -192,12 +193,17 @@ public class KubePodProcess extends Process implements KubePod {
 
     final List<ContainerPort> containerPorts = createContainerPortList(internalToExternalPorts);
 
+    final List<EnvVar> envVars = envMap.entrySet().stream()
+        .map(entry -> new EnvVar(entry.getKey(), entry.getValue(), null))
+        .collect(Collectors.toList());
+
     final ContainerBuilder containerBuilder = new ContainerBuilder()
         .withName("main")
         .withPorts(containerPorts)
         .withImage(image)
         .withImagePullPolicy(imagePullPolicy)
         .withCommand("sh", "-c", mainCommand)
+        .withEnv(envVars)
         .withWorkingDir(CONFIG_DIR)
         .withVolumeMounts(mainVolumeMounts);
 
@@ -381,6 +387,7 @@ public class KubePodProcess extends Process implements KubePod {
                         final String socatImage,
                         final String busyboxImage,
                         final String curlImage,
+                        final Map<String, String> envMap,
                         final Map<Integer, Integer> internalToExternalPorts,
                         final String... args)
       throws IOException, InterruptedException {
@@ -388,10 +395,8 @@ public class KubePodProcess extends Process implements KubePod {
     this.statusCheckInterval = statusCheckInterval;
     this.stdoutLocalPort = stdoutLocalPort;
     this.stderrLocalPort = stderrLocalPort;
-
     this.stdoutServerSocket = new ServerSocket(stdoutLocalPort);
     this.stderrServerSocket = new ServerSocket(stderrLocalPort);
-    this.internalToExternalPorts = internalToExternalPorts;
     this.executorService = Executors.newFixedThreadPool(2);
     setupStdOutAndStdErrListeners();
 
@@ -442,6 +447,7 @@ public class KubePodProcess extends Process implements KubePod {
         List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount),
         resourceRequirements,
         internalToExternalPorts,
+        envMap,
         args);
 
     final io.fabric8.kubernetes.api.model.ResourceRequirements sidecarResources = getResourceRequirementsBuilder(DEFAULT_SIDECAR_RESOURCES).build();

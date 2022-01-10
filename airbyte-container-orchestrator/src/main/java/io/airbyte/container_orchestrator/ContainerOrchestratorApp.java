@@ -79,7 +79,7 @@ public class ContainerOrchestratorApp {
       kubePodInfo =
           Jsons.deserialize(Files.readString(Path.of(KubePodProcess.CONFIG_DIR, AsyncOrchestratorPodProcess.KUBE_POD_INFO)), KubePodInfo.class);
 
-      final Configs configs = new EnvConfigs(envMap::get);
+      final Configs configs = new EnvConfigs(envMap);
 
       documentStoreClient = StateClients.create(configs.getStateStorageCloudConfigs(), Path.of("/")); // todo: use different prefix
 

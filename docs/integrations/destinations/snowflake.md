@@ -14,6 +14,8 @@ Each stream will be output into its own table in Snowflake. Each table will cont
 * `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in Snowflake is `TIMESTAMP WITH TIME ZONE`.
 * `_airbyte_data`: a json blob representing with the event data. The column type in Snowflake is `VARIANT`.
 
+Note that Airbyte will create **permanent** tables. If you prefer to create transient tables (see [Snowflake docs](https://docs.snowflake.com/en/user-guide/tables-temp-transient.html) for a comparison), you will want to create a dedicated transient database for Airbyte (`CREATE TRANSIENT DATABASE airbyte_database`).
+
 #### Features
 
 | Feature | Supported?\(Yes/No\) | Notes |
@@ -196,7 +198,8 @@ Finally, you need to add read/write permissions to your bucket with that email.
 
 | Version | Date      | Pull Request | Subject |
 |:--------| :-------- | :-----       | :------ |
-| 0.3.24  | 2021-12-23 | [#8869](https://github.com/airbytehq/airbyte/pull/8869) | Changed staging approach to Byte-Buffered |                                                                          |
+| 0.4.0  | 2021-12-27 | [#9063](https://github.com/airbytehq/airbyte/pull/9063) | Updated normalization to produce permanent tables |
+| 0.3.24  | 2021-12-23 | [#8869](https://github.com/airbytehq/airbyte/pull/8869) | Changed staging approach to Byte-Buffered |
 | 0.3.23  | 2021-12-22 | [#9039](https://github.com/airbytehq/airbyte/pull/9039) | Added part_size configuration in UI for S3 loading method |
 | 0.3.22  | 2021-12-21 | [#9006](https://github.com/airbytehq/airbyte/pull/9006) | Updated jdbc schema naming to follow Snowflake Naming Conventions |
 | 0.3.21  | 2021-12-15 | [#8781](https://github.com/airbytehq/airbyte/pull/8781) | Updated check method to verify permissions to create/drop stage for internal staging; compatibility fix for Java 17 |

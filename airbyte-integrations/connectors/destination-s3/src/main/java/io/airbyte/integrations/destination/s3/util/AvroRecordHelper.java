@@ -5,16 +5,11 @@
 package io.airbyte.integrations.destination.s3.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Helper methods for unit tests. This is needed by multiple modules, so it is in the src directory.
@@ -23,7 +18,7 @@ public class AvroRecordHelper {
 
   public static JsonFieldNameUpdater getFieldNameUpdater(final String streamName, final String namespace, final JsonNode streamSchema) {
     final JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
-    schemaConverter.getAvroSchema(streamSchema, streamName, namespace, true, true);
+    schemaConverter.getAvroSchema(streamSchema, streamName, namespace);
     return new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
   }
 
@@ -50,34 +45,6 @@ public class AvroRecordHelper {
     }
 
     return output;
-  }
-
-  public static void obtainPaths(String currentPath, JsonNode jsonNode, Map<JsonNode, String> jsonNodePathMap) {
-    if (jsonNode.isObject()) {
-      ObjectNode objectNode = (ObjectNode) jsonNode;
-      Iterator<Map.Entry<String, JsonNode>> iter = objectNode.fields();
-      String pathPrefix = currentPath.isEmpty() ? "" : currentPath + "/";
-      String[] pathFieldsArray = currentPath.split("/");
-      String parent = Arrays.stream(pathFieldsArray)
-          .filter(x -> !x.equals("items"))
-          .filter(x -> !x.equals("properties"))
-          .filter(x -> !x.equals(pathFieldsArray[pathFieldsArray.length - 1]))
-          .collect(Collectors.joining("."));
-      if (!parent.isEmpty()) {
-        jsonNodePathMap.put(jsonNode, parent);
-      }
-      while (iter.hasNext()) {
-        Map.Entry<String, JsonNode> entry = iter.next();
-        obtainPaths(pathPrefix + entry.getKey(), entry.getValue(), jsonNodePathMap);
-      }
-    } else if (jsonNode.isArray()) {
-      ArrayNode arrayNode = (ArrayNode) jsonNode;
-
-      for (int i = 0; i < arrayNode.size(); i++) {
-        String arrayPath = currentPath + "/" + i;
-        obtainPaths(arrayPath, arrayNode.get(i), jsonNodePathMap);
-      }
-    }
   }
 
 }

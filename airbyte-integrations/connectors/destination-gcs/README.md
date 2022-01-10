@@ -17,6 +17,35 @@ As a community contributor, you can follow these steps to run integration tests.
 - Access the `destination gcs creds` secrets on Last Pass, and put it in `sample_secrets/config.json`.
 - Rename the directory from `sample_secrets` to `secrets`.
 
+### GCP Service Account for Testing
+Two service accounts have been created in our GCP for testing this destination. Both of them have access to Cloud Storage through HMAC keys. The keys are persisted together with the connector integration test credentials in LastPass.
+
+- Account: `gcs-destination-connector-test@dataline-integration-testing.iam.gserviceaccount.com`
+  - This account has the required permission to pass the integration test. Note that the uploader needs `storage.multipartUploads` permissions, which may not be intuitive.
+  - Role: `GCS Destination User`
+    - Permissions:
+      ```
+      storage.multipartUploads.abort
+      storage.multipartUploads.create
+      storage.objects.create
+      storage.objects.delete
+      storage.objects.get
+      storage.objects.list
+      ```
+  - LastPass entry: `destination gcs creds`
+
+- Account: `gcs-destination-failure-test@dataline-integration-testing.iam.gserviceaccount.com`
+  - This account does not have the `storage.multipartUploads` permissions, and will fail the integration test. The purpose of this account is to test that the `check` command can correctly detect the lack of these permissions and return an error message.
+  - Role: `GCS Destination User Without Multipart Permission`
+    - Permissions:
+      ```
+      storage.objects.create
+      storage.objects.delete
+      storage.objects.get
+      storage.objects.list
+      ```
+  - LastPass entry: `destination gcs creds (no multipart permission)`
+
 ## Add New Output Format
 - Add a new enum in `S3Format`.
 - Modify `spec.json` to specify the configuration of this new format.

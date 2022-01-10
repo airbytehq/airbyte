@@ -82,7 +82,7 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
       return fullInput;
     };
 
-    CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> workerFactory;
+    final CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> workerFactory;
 
     if (containerOrchestratorConfig.isPresent()) {
       workerFactory = getContainerLauncherWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig);
@@ -112,7 +112,8 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
             jobProcessFactory, NormalizationRunnerFactory.create(
                 workerConfigs,
                 destinationLauncherConfig.getDockerImage(),
-                jobProcessFactory)));
+                jobProcessFactory,
+                NormalizationRunnerFactory.NORMALIZATION_VERSION)));
   }
 
   private CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> getContainerLauncherWorkerFactory(
