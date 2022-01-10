@@ -133,6 +133,13 @@ public class S3DestinationConfig {
       return AmazonS3ClientBuilder.standard()
       .withCredentials(new InstanceProfileCredentialsProvider(false))
       .build();
+    } 
+    
+    else if (endpoint == null || endpoint.isEmpty()) {
+      return AmazonS3ClientBuilder.standard()
+          .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+          .withRegion(bucketRegion)
+          .build();
     }
 
     final ClientConfiguration clientConfiguration = new ClientConfiguration();
