@@ -6,6 +6,8 @@ import os.path
 import shutil
 import tempfile
 import time
+from pathlib import Path
+from typing import Tuple
 from zipfile import ZipFile
 
 import docker
@@ -13,6 +15,7 @@ import pytest
 import requests
 from airbyte_cdk import AirbyteLogger
 from docker.errors import APIError
+from netifaces import AF_INET, ifaddresses, interfaces
 from requests.exceptions import ConnectionError
 
 pytest_plugins = ("source_acceptance_test.plugin",)
@@ -20,10 +23,30 @@ logger = AirbyteLogger()
 TMP_FOLDER = tempfile.mkdtemp()
 
 
+def get_local_ip() -> int:
+    all_interface_ips = []
+    for iface_name in interfaces():
+        all_interface_ips += [i["addr"] for i in ifaddresses(iface_name).setdefault(AF_INET, [{"addr": None}]) if i["addr"]]
+    logger.info(f"detected interface IPs: {all_interface_ips}")
+    for ip in sorted(all_interface_ips):
+        if not ip.startswith("127."):
+            return ip
+
+    assert False, "not found an non-localhost interface"
+
+
 def minio_setup():
     with ZipFile("./integration_tests/minio_data.zip") as archive:
         archive.extractall(TMP_FOLDER)
     client = docker.from_env()
+    # Minio should be attached to non-localhost interface.
+    # Because another test container should have direct connection to it
+    local_ip = get_local_ip()
+    config_template = Path(__file__).parent / "config_minio.template.json"
+    assert config_template.is_file() is not None, f"not found {config_template}"
+    config_file = Path(__file__).parent / "config_minio.json"
+    config_file.write_text(config_template.read_text().replace("<local_ip>", local_ip))
+
     try:
         container = client.containers.run(
             image="minio/minio:RELEASE.2021-10-06T23-36-31Z",
@@ -32,8 +55,7 @@ def minio_setup():
             auto_remove=True,
             volumes=[f"/{TMP_FOLDER}/minio_data:/{TMP_FOLDER}"],
             detach=True,
-            # ports={"9000/tcp": ("127.0.0.1", 9000)},
-            network_mode="host",
+            ports={"9000/tcp": (local_ip, 9000)},
         )
     except APIError as err:
         if err.status_code == 409:
@@ -44,7 +66,7 @@ def minio_setup():
         else:
             raise
 
-    check_url = "http://127.0.0.1:9000/minio/health/live"
+    check_url = f"http://{local_ip}:9000/minio/health/live"
     while True:
         try:
             data = requests.get(check_url)
@@ -58,6 +80,7 @@ def minio_setup():
     yield
 
     if os.path.exists(TMP_FOLDER):
+        os.remove(str(config_file))
         shutil.rmtree(TMP_FOLDER)
         logger.info("minio was stopped")
     container.stop()

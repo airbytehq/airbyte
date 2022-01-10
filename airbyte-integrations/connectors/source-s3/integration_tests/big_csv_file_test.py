@@ -28,7 +28,7 @@ def credentials() -> Mapping:
 class TestIntegrationCsvFiles:
     logger = AirbyteLogger()
 
-    @memory_limit(20)  # max used memory should be less than 20Mb
+    @memory_limit(150)  # max used memory should be less than 20Mb
     def read_source(self, credentials, catalog):
         read_count = 0
         for msg in SourceS3().read(logger=self.logger, config=credentials, catalog=catalog):

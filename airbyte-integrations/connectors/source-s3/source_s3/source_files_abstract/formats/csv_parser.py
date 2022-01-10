@@ -4,7 +4,6 @@
 
 import csv
 import json
-import os
 import tempfile
 from typing import Any, BinaryIO, Iterator, Mapping, Optional, TextIO, Tuple, Union
 
@@ -147,7 +146,7 @@ class CsvParser(AbstractFileParser):
         field_names = next(reader)
         return {field_name.strip(): pyarrow.string() for field_name in field_names}
 
-    def __read_stream_by_chunks(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
+    def stream_records(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> Iterator[Mapping[str, Any]]:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html
         PyArrow returns lists of values for each column so we zip() these up into records which we then yield
@@ -174,71 +173,3 @@ class CsvParser(AbstractFileParser):
                 for record_values in zip(*columnwise_record_values):
                     # create our record of {col: value, col: value} by dict comprehension, iterating through all cols in batch_columns
                     yield {batch_columns[i]: record_values[i] for i in range(len(batch_columns))}
-
-    def stream_records(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> Iterator[Mapping[str, Any]]:
-        """
-        Read and send data
-        """
-        yield from self.__read_stream_by_chunks(file)
-        return
-        if file_info.size < MAX_CHUNK_SIZE or not file_info.key.endswith(".csv"):
-            yield from self.__read_stream_by_chunks(file)
-            return
-        self.logger.debug(f"The file '{file_info}' is large and try to load it by chunks")
-
-        temp_file = os.path.join(TMP_FOLDER, "chunk.csv")
-        try:
-            for temp_descriptor in self.__create_chunk(temp_file, file):
-                yield from self.__read_stream_by_chunks(temp_descriptor)
-                temp_descriptor.close()
-        finally:
-            if os.path.exists(temp_file):
-                os.remove(temp_file)
-
-    @classmethod
-    def __find_line_end(cls, file: BinaryIO) -> Tuple[bytes, bytes]:
-        """Tries to find a end of current line"""
-        left_part = b""
-        while True:
-            chunk = file.read(1024)
-            if not chunk:
-                break
-            left_part += chunk
-            if len(left_part) > MAX_CHUNK_SIZE:
-                raise Exception("incorrect CSV file because same line is more than 50Mb")
-
-            found = left_part.find(b"\n")
-            if found > -1:
-                right_part = left_part[found:]
-                return left_part[:found], right_part
-        return b"", b""
-
-    @classmethod
-    def __create_chunk(cls, temp_file: str, file: BinaryIO) -> Iterator[BinaryIO]:
-        chunk = None
-        chunk_number = 1
-        # select the first header line
-        headers, tail_part = cls.__find_line_end(file)
-        while True:
-            try:
-                # reuse a temporary file
-                tf = open(temp_file, "wb")
-                tf.write(headers)
-                tf.write(tail_part)
-
-                while os.stat(temp_file).st_size < MAX_CHUNK_SIZE:
-                    chunk = file.read(1024 * 1024)
-                    if not chunk:
-                        break
-                    tf.write(chunk)
-                if chunk:
-                    right_part, tail_part = cls.__find_line_end(file)
-                    tf.write(right_part)
-            finally:
-                tf.close()
-            chunk_size = os.stat(temp_file).st_size / 1024 ** 2
-            cls.logger.debug(f"Chunk #{chunk_number} is created, size: {chunk_size} Mb")
-            yield open(temp_file, "rb")
-            if not chunk:
-                break
-            chunk_number += 1

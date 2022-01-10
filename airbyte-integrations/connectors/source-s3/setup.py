@@ -14,7 +14,14 @@ MAIN_REQUIREMENTS = [
     "pytz",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "source-acceptance-test", "pandas==1.3.1", "psutil", "pytest-order"]
+TEST_REQUIREMENTS = [
+    "pytest~=6.1",
+    "source-acceptance-test",
+    "pandas==1.3.1",
+    "psutil",
+    "pytest-order",
+    "netifaces~=0.11.0",
+]
 
 setup(
     name="source_s3",

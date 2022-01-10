@@ -111,7 +111,7 @@ class AbstractTestParser(ABC):
         raise Exception(f"not supported type: {typ}")
 
     @classmethod
-    @lru_cache
+    @lru_cache(maxsize=None)
     def cached_cases(cls):
         return cls.cases()
 
