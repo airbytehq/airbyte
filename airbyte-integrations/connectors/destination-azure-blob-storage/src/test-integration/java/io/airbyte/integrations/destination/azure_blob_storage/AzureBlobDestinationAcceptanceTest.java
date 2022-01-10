@@ -45,8 +45,8 @@ public class AzureBlobDestinationAcceptanceTest {
     final JsonNode invalidConfig = Jsons.jsonNode(ImmutableMap.builder()
         .put("azure_blob_storage_account_name", "someInvalidName")
         .put("azure_blob_storage_account_key", config.get("azure_blob_storage_account_key"))
+        .put("format", getFormatConfig())
         .build());
-
     final AzureBlobStorageDestination azureBlobStorageDestination = new AzureBlobStorageDestination();
     final AirbyteConnectionStatus checkResult = azureBlobStorageDestination.check(invalidConfig);
 
@@ -58,6 +58,7 @@ public class AzureBlobDestinationAcceptanceTest {
     final JsonNode invalidConfig = Jsons.jsonNode(ImmutableMap.builder()
         .put("azure_blob_storage_account_name", config.get("azure_blob_storage_account_name"))
         .put("azure_blob_storage_account_key", "someInvalidKey")
+        .put("format", getFormatConfig())
         .build());
     final AzureBlobStorageDestination azureBlobStorageDestination = new AzureBlobStorageDestination();
     final AirbyteConnectionStatus checkResult = azureBlobStorageDestination.check(invalidConfig);
@@ -71,6 +72,7 @@ public class AzureBlobDestinationAcceptanceTest {
         .put("azure_blob_storage_account_name", config.get("azure_blob_storage_account_name"))
         .put("azure_blob_storage_account_key", config.get("azure_blob_storage_account_key"))
         .put("azure_blob_storage_endpoint_domain_name", "invalidDomain.com.invalid123")
+        .put("format", getFormatConfig())
         .build());
     final AzureBlobStorageDestination azureBlobStorageDestination = new AzureBlobStorageDestination();
     final AirbyteConnectionStatus checkResult = azureBlobStorageDestination.check(invalidConfig);
