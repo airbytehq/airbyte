@@ -114,7 +114,7 @@ public class StateDeltaTracker {
         throw new StateHashConflictException(String.format("State hash %d was already committed, likely indicating a state hash collision", stateHash));
       }
 
-      this.committedStateHashes.add(stateHash);
+      committedStateHashes.add(stateHash);
       int currStateHash;
       do {
         if (stateDeltas.isEmpty()) {
