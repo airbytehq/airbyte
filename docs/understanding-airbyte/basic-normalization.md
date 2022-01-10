@@ -350,8 +350,12 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- | :--- |
-| 0.32.11-alpha | 0.1.62 | 2021-12-23 | [\#9063](https://github.com/airbytehq/airbyte/pull/9063) | Add Snowflake-specific normalization |
-| | 0.1.61 | 2021-12-02 | [\#8394](https://github.com/airbytehq/airbyte/pull/8394) | Fix incremental queries not updating empty tables |
+| 0.35.4-alpha | 0.1.63 | 2021-01-07 | [\#9301](https://github.com/airbytehq/airbyte/pull/9301) | Fix Snowflake prefix tables starting with numbers |
+|  | 0.1.62 | 2021-01-07 | [\#9340](https://github.com/airbytehq/airbyte/pull/9340) | Use TCP-port support for clickhouse |
+|  | 0.1.62 | 2021-01-07 | [\#9063](https://github.com/airbytehq/airbyte/pull/9063) | Change Snowflake-specific materialization settings |
+|  | 0.1.62 | 2021-01-07 | [\#9317](https://github.com/airbytehq/airbyte/pull/9317) | Fix issue with quoted & case sensitive columns |
+|  | 0.1.62 | 2021-01-07 | [\#9281](https://github.com/airbytehq/airbyte/pull/9281) | Fix SCD partition by float columns in BigQuery |
+| 0.32.11-alpha | 0.1.61 | 2021-12-02 | [\#8394](https://github.com/airbytehq/airbyte/pull/8394) | Fix incremental queries not updating empty tables |
 | | 0.1.61 | 2021-12-01 | [\#8378](https://github.com/airbytehq/airbyte/pull/8378) | Fix un-nesting queries and add proper ref hints |
 | 0.32.5-alpha | 0.1.60 | 2021-11-22 | [\#8088](https://github.com/airbytehq/airbyte/pull/8088) | Speed-up incremental queries for SCD table on Snowflake |
 | 0.30.32-alpha | 0.1.59 | 2021-11-08 | [\#7669](https://github.com/airbytehq/airbyte/pull/7169) | Fix nested incremental dbt |
