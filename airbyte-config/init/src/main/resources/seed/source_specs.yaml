@@ -2583,7 +2583,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-sheets:0.2.7"
+- dockerImage: "airbyte/source-google-sheets:0.2.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-sheets"
     connectionSpecification:
@@ -2639,6 +2639,7 @@
               service_account_info:
                 type: "string"
                 description: "The JSON key of the service account to use for authorization"
+                airbyte_secret: true
                 examples:
                 - "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID,\
                   \ \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
@@ -2650,7 +2651,7 @@
       oauth2Specification:
         rootObject:
         - "credentials"
-        - 0
+        - "0"
         oauthFlowInitParameters:
         - - "client_id"
         - - "client_secret"
@@ -5411,7 +5412,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-plaid:0.2.1"
+- dockerImage: "airbyte/source-plaid:0.3.0"
   spec:
     documentationUrl: "https://plaid.com/docs/api/"
     connectionSpecification:
@@ -5421,6 +5422,7 @@
       - "access_token"
       - "api_key"
       - "client_id"
+      - "plaid_env"
       additionalProperties: false
       properties:
         access_token:

@@ -3,7 +3,7 @@
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
-    "required": ["access_token", "api_key", "client_id"],
+    "required": ["access_token", "api_key", "client_id", "plaid_env"],
     "additionalProperties": false,
     "properties": {
       "access_token": {

@@ -259,7 +259,7 @@
 - name: Google Sheets
   sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
   dockerRepository: airbyte/source-google-sheets
-  dockerImageTag: 0.2.7
+  dockerImageTag: 0.2.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-sheets
   icon: google-sheets.svg
   sourceType: file
@@ -516,7 +516,7 @@
 - name: Plaid
   sourceDefinitionId: ed799e2b-2158-4c66-8da4-b40fe63bc72a
   dockerRepository: airbyte/source-plaid
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.3.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/plaid
   icon: plaid.svg
   sourceType: api
