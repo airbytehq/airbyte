@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.1.36
+Add assert that spec.json file does not have any `$ref` in it: [#8842](https://github.com/airbytehq/airbyte/pull/8842)
+
+## 0.1.32
+Add info about skipped failed tests in /test command message on GitHub: [#8691](https://github.com/airbytehq/airbyte/pull/8691)
+
+## 0.1.31
+Take ConfiguredAirbyteCatalog from discover command by default
+
+## 0.1.30
+Validate if each field in a stream has appeared at least once in some record.
+
+## 0.1.29
+Add assert that output catalog does not have any `$ref` in it
+
 ## 0.1.28
 Print stream name when incremental sync tests fail
 
@@ -10,7 +25,7 @@ Add ignored fields for full refresh test (unit tests)
 Add ignored fields for full refresh test
 
 ## 0.1.25
-Fix incorrect nested strucutres compare.
+Fix incorrect nested structures compare.
 
 ## 0.1.24
 Improve message about errors in the stream's schema: https://github.com/airbytehq/airbyte/pull/6934
@@ -31,7 +46,7 @@ Add oauth init flow parameter verification for spec.
 Assert a non-empty overlap between the fields present in the record and the declared json schema.
 
 ## 0.1.18
-Fix checking date-time format againt nullable field.
+Fix checking date-time format against nullable field.
 
 ## 0.1.17
 Fix serialize function for acceptance-tests: https://github.com/airbytehq/airbyte/pull/5738

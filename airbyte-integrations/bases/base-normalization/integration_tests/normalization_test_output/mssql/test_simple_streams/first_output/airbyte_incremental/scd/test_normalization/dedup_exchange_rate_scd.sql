@@ -20,11 +20,12 @@
    USE [test_normalization];
    EXEC('create view test_normalization."dedup_exchange_rate_scd_temp_view" as
     
+-- depends_on: ref(''dedup_exchange_rate_stg'')
 with
 
 input_data as (
     select *
-    from "test_normalization"._airbyte_test_normalization."dedup_exchange_rate_ab3"
+    from "test_normalization"._airbyte_test_normalization."dedup_exchange_rate_stg"
     -- dedup_exchange_rate from "test_normalization".test_normalization._airbyte_raw_dedup_exchange_rate
 ),
 
@@ -40,20 +41,19 @@ scd_data as (
     VARCHAR(max)), ''''), ''-'', coalesce(cast(nzd as 
     VARCHAR(max)), ''''),''''), '''') as 
     VARCHAR(max)), '''')), 2) as _airbyte_unique_key,
-        id,
-        currency,
-        "date",
-        timestamp_col,
-        "HKD@spéçiäl & characters",
-        hkd_special___characters,
-        nzd,
-        usd,
+      id,
+      currency,
+      "date",
+      timestamp_col,
+      "HKD@spéçiäl & characters",
+      hkd_special___characters,
+      nzd,
+      usd,
       "date" as _airbyte_start_at,
       lag("date") over (
         partition by id, currency, cast(nzd as 
     VARCHAR(max))
         order by
-            "date" desc,
             "date" desc,
             _airbyte_emitted_at desc
       ) as _airbyte_end_at,
@@ -61,7 +61,6 @@ scd_data as (
         partition by id, currency, cast(nzd as 
     VARCHAR(max))
         order by
-            "date" desc,
             "date" desc,
             _airbyte_emitted_at desc
       ) = 1 then 1 else 0 end as _airbyte_active_row,
@@ -75,8 +74,11 @@ dedup_data as (
         -- we need to ensure de-duplicated rows for merge/update queries
         -- additionally, we generate a unique key for the scd table
         row_number() over (
-            partition by _airbyte_unique_key, _airbyte_start_at, _airbyte_emitted_at
-            order by _airbyte_ab_id
+            partition by
+                _airbyte_unique_key,
+                _airbyte_start_at,
+                _airbyte_emitted_at
+            order by _airbyte_active_row desc, _airbyte_ab_id
         ) as _airbyte_row_num,
         convert(varchar(32), HashBytes(''md5'',  coalesce(cast(
     
@@ -93,14 +95,14 @@ dedup_data as (
 select
     _airbyte_unique_key,
     _airbyte_unique_key_scd,
-        id,
-        currency,
-        "date",
-        timestamp_col,
-        "HKD@spéçiäl & characters",
-        hkd_special___characters,
-        nzd,
-        usd,
+    id,
+    currency,
+    "date",
+    timestamp_col,
+    "HKD@spéçiäl & characters",
+    hkd_special___characters,
+    nzd,
+    usd,
     _airbyte_start_at,
     _airbyte_end_at,
     _airbyte_active_row,

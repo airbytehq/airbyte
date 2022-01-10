@@ -23,7 +23,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - uses: actions/setup-java@v1
         with:
-          java-version: '14'
+          java-version: '17'
       - name: Checkout Airbyte
         uses: actions/checkout@v2
       - name: Build CDK Package

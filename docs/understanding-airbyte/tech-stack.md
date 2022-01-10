@@ -2,7 +2,7 @@
 
 ## Airbyte Core Backend
 
-* [Java 14](https://jdk.java.net/archive/)
+* [Java 17](https://jdk.java.net/archive/)
 * Framework: [Jersey](https://eclipse-ee4j.github.io/jersey/)
 * API: [OAS3](https://www.openapis.org/)
 * Databases: [PostgreSQL](https://www.postgresql.org/)
@@ -14,11 +14,11 @@
 Connectors can be written in any language. However the most common languages are:
 
 * Python 3.7.0
-* [Java 14](https://jdk.java.net/archive/)
+* [Java 17](https://jdk.java.net/archive/)
 
 ## **Frontend**
 
-* [Node.js 14](https://nodejs.org/en/)
+* [Node.js 16](https://nodejs.org/en/)
 * [TypeScript](https://www.typescriptlang.org/)
 * Web Framework/Library: [React](https://reactjs.org/)
 

@@ -1,5 +1,6 @@
 import React, { useContext, useMemo } from "react";
-import { Feature, FeatureServiceApi } from "./types";
+import { Feature, FeatureItem, FeatureServiceApi } from "./types";
+import { useConfig } from "config";
 
 const featureServiceContext = React.createContext<FeatureServiceApi | null>(
   null
@@ -7,15 +8,15 @@ const featureServiceContext = React.createContext<FeatureServiceApi | null>(
 
 export function FeatureService({
   children,
-  features = [],
 }: {
   children: React.ReactNode;
   features?: Feature[];
 }) {
+  const { features } = useConfig();
   const featureService = useMemo(
     () => ({
       features,
-      hasFeature: (featureId: string): boolean =>
+      hasFeature: (featureId: FeatureItem): boolean =>
         !!features.find((feature) => feature.id === featureId),
     }),
     [features]
@@ -36,7 +37,7 @@ export const useFeatureService: () => FeatureServiceApi = () => {
   return featureService;
 };
 
-export const WithFeature: React.FC<{ featureId: string }> = ({
+export const WithFeature: React.FC<{ featureId: FeatureItem }> = ({
   featureId,
   children,
 }) => {

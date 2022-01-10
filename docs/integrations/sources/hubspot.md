@@ -13,27 +13,39 @@
 
 Check out common troubleshooting issues for the HubSpot connector on our Discourse [here](https://discuss.airbyte.io/tags/c/connector/11/source-hubspot).
 
-## Supported Tables
+## Supported Streams
 
 This source is capable of syncing the following tables and their data:
 
 * [Campaigns](https://developers.hubspot.com/docs/methods/email/get_campaign_data)
-* [Companies](https://developers.hubspot.com/docs/api/crm/companies)
-* [Contact Lists](http://developers.hubspot.com/docs/methods/lists/get_lists)
-* [Contacts](https://developers.hubspot.com/docs/methods/contacts/get_contacts)
+* [Companies](https://developers.hubspot.com/docs/api/crm/companies) \(Incremental\)
+* [Contact Lists](http://developers.hubspot.com/docs/methods/lists/get_lists) \(Incremental\)
+* [Contacts](https://developers.hubspot.com/docs/methods/contacts/get_contacts) \(Incremental\)
 * [Deal Pipelines](https://developers.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type)
-* [Deals](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\)
+* [Deals](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
 * [Email Events](https://developers.hubspot.com/docs/methods/email/get_events) \(Incremental\)
 * [Engagements](https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements)
 * [Forms](https://developers.hubspot.com/docs/api/marketing/forms)
-* [Line Items](https://developers.hubspot.com/docs/api/crm/line-items)
+* [Line Items](https://developers.hubspot.com/docs/api/crm/line-items) \(Incremental\)
 * [Marketing Emails](https://legacydocs.hubspot.com/docs/methods/cms_email/get-all-marketing-email-statistics)
 * [Owners](https://developers.hubspot.com/docs/methods/owners/get_owners)
-* [Products](https://developers.hubspot.com/docs/api/crm/products)
-* [Quotes](https://developers.hubspot.com/docs/api/crm/quotes)
+* [Products](https://developers.hubspot.com/docs/api/crm/products) \(Incremental\)
+* [Quotes](https://developers.hubspot.com/docs/api/crm/quotes) \(Incremental\)
 * [Subscription Changes](https://developers.hubspot.com/docs/methods/email/get_subscriptions_timeline) \(Incremental\)
-* [Tickets](https://developers.hubspot.com/docs/api/crm/tickets)
+* [Tickets](https://developers.hubspot.com/docs/api/crm/tickets) \(Incremental\)
 * [Workflows](https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows)
+
+### A note on the `engagements` stream
+Objects in the `engagements` stream can have one of the following types: `note`, `email`, `task`, `meeting`, `call`. 
+
+Depending on the type of engagement, different properties will be set for that object in the `engagements_metadata` table in the destination. 
+
+* A `call` engagement will have a corresponding `engagements_metadata` object with non-null values in the `toNumber`, `fromNumber`, `status`, `externalId`, `durationMilliseconds`, `externalAccountId`, `recordingUrl`, `body`, and `disposition` columns.
+* An `email` engagement will have a corresponding `engagements_metadata` object with with non-null values in the `subject`, `html`, and `text` columns. In addition, there will be records in four related tables, `engagements_metadata_from`, `engagements_metadata_to`, `engagements_metadata_cc`, `engagements_metadata_bcc`. 
+* A `meeting` engagement will have a corresponding `engagements_metadata` object with non-null values in the `body`, `startTime`, `endTime`, and `title` columns. 
+* A `note` engagement will have a corresponding `engagements_metadata` object with non-null values in the `body` column. 
+* A `task` engagement will have a corresponding `engagements_metadata` object with non-null values in the `body`, `status`, and `forObjectType` columns. 
+
 
 **Note**: HubSpot API currently only supports `quotes` endpoint using API Key, using Oauth it is impossible to access this stream (as reported by [community.hubspot.com](https://community.hubspot.com/t5/APIs-Integrations/Help-with-using-Feedback-CRM-API-and-Quotes-CRM-API/m-p/449104/highlight/true#M44411)).
 
@@ -98,7 +110,12 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.24 | 2021-11-09 | [7683](https://github.com/airbytehq/airbyte/pull/7683) | bugfix 'Hubspot' -> 'HubSpot' |
+| 0.1.29 | 2021-12-17 | [8699](https://github.com/airbytehq/airbyte/pull/8699) | Add incremental sync support for `companies`, `contact_lists`, `contacts`, `deals`, `line_items`, `products`, `quotes`, `tickets` streams |
+| 0.1.28 | 2021-12-15 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Update fields and descriptions |
+| 0.1.27 | 2021-12-09 | [8658](https://github.com/airbytehq/airbyte/pull/8658) | Fixed config backward compatibility issue by allowing additional properties in the spec |
+| 0.1.26 | 2021-11-30 | [8329](https://github.com/airbytehq/airbyte/pull/8329) | Removed 'skip_dynamic_fields' config param |
+| 0.1.25 | 2021-11-23 | [8216](https://github.com/airbytehq/airbyte/pull/8216) | Add skip dynamic fields for testing only |
+| 0.1.24 | 2021-11-09 | [7683](https://github.com/airbytehq/airbyte/pull/7683) | Fix name issue 'Hubspot' -> 'HubSpot' |
 | 0.1.23 | 2021-11-08 | [7730](https://github.com/airbytehq/airbyte/pull/7730) | Fix oAuth flow schema|
 | 0.1.22 | 2021-11-03 | [7562](https://github.com/airbytehq/airbyte/pull/7562) | Migrate Hubspot source to CDK structure |
 | 0.1.21 | 2021-10-27 | [7405](https://github.com/airbytehq/airbyte/pull/7405) | Change of package `import` from `urllib` to `urllib.parse` |

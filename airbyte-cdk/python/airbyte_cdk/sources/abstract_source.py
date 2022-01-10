@@ -28,6 +28,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
 from airbyte_cdk.sources.utils.transform import TypeTransformer
+from airbyte_cdk.utils.event_timing import create_timer
 
 
 class AbstractSource(Source, ABC):
@@ -90,24 +91,28 @@ class AbstractSource(Source, ABC):
         # get the streams once in case the connector needs to make any queries to generate them
         stream_instances = {s.name: s for s in self.streams(config)}
         self._stream_to_instance_map = stream_instances
-        for configured_stream in catalog.streams:
-            stream_instance = stream_instances.get(configured_stream.stream.name)
-            if not stream_instance:
-                raise KeyError(
-                    f"The requested stream {configured_stream.stream.name} was not found in the source. Available streams: {stream_instances.keys()}"
-                )
+        with create_timer(self.name) as timer:
+            for configured_stream in catalog.streams:
+                stream_instance = stream_instances.get(configured_stream.stream.name)
+                if not stream_instance:
+                    raise KeyError(
+                        f"The requested stream {configured_stream.stream.name} was not found in the source. Available streams: {stream_instances.keys()}"
+                    )
 
-            try:
-                yield from self._read_stream(
-                    logger=logger,
-                    stream_instance=stream_instance,
-                    configured_stream=configured_stream,
-                    connector_state=connector_state,
-                    internal_config=internal_config,
-                )
-            except Exception as e:
-                logger.exception(f"Encountered an exception while reading stream {self.name}")
-                raise e
+                try:
+                    yield from self._read_stream(
+                        logger=logger,
+                        stream_instance=stream_instance,
+                        configured_stream=configured_stream,
+                        connector_state=connector_state,
+                        internal_config=internal_config,
+                    )
+                except Exception as e:
+                    logger.exception(f"Encountered an exception while reading stream {self.name}")
+                    raise e
+                finally:
+                    logger.info(f"Finished syncing {self.name}")
+                    logger.info(timer.report())
 
         logger.info(f"Finished syncing {self.name}")
 
@@ -166,7 +171,6 @@ class AbstractSource(Source, ABC):
         if stream_state:
             logger.info(f"Setting state of {stream_name} stream to {stream_state}")
 
-        checkpoint_interval = stream_instance.state_checkpoint_interval
         slices = stream_instance.stream_slices(
             cursor_field=configured_stream.cursor_field, sync_mode=SyncMode.incremental, stream_state=stream_state
         )
@@ -181,6 +185,7 @@ class AbstractSource(Source, ABC):
             for record_counter, record_data in enumerate(records, start=1):
                 yield self._as_airbyte_record(stream_name, record_data)
                 stream_state = stream_instance.get_updated_state(stream_state, record_data)
+                checkpoint_interval = stream_instance.state_checkpoint_interval
                 if checkpoint_interval and record_counter % checkpoint_interval == 0:
                     yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
 
@@ -229,7 +234,7 @@ class AbstractSource(Source, ABC):
         return stream_instance.transformer, stream_instance.get_json_schema()
 
     def _as_airbyte_record(self, stream_name: str, data: Mapping[str, Any]):
-        now_millis = int(datetime.now().timestamp()) * 1000
+        now_millis = int(datetime.now().timestamp() * 1000)
         transformer, schema = self._get_stream_transformer_and_schema(stream_name)
         # Transform object fields according to config. Most likely you will
         # need it to normalize values against json schema. By default no action

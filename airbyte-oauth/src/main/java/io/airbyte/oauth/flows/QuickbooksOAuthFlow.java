@@ -4,6 +4,8 @@
 
 package io.airbyte.oauth.flows;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuth2Flow;
@@ -13,6 +15,7 @@ import java.net.http.HttpClient;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Supplier;
 import org.apache.http.client.utils.URIBuilder;
 
 public class QuickbooksOAuthFlow extends BaseOAuth2Flow {
@@ -20,8 +23,13 @@ public class QuickbooksOAuthFlow extends BaseOAuth2Flow {
   final String CONSENT_URL = "https://appcenter.intuit.com/app/connect/oauth2";
   final String TOKEN_URL = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer";
 
-  public QuickbooksOAuthFlow(ConfigRepository configRepository, HttpClient httpClient) {
+  public QuickbooksOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
+  }
+
+  @VisibleForTesting
+  public QuickbooksOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
+    super(configRepository, httpClient, stateSupplier);
   }
 
   public String getScopes() {
@@ -29,7 +37,11 @@ public class QuickbooksOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId,
+                                    final String clientId,
+                                    final String redirectUrl,
+                                    final JsonNode inputOAuthConfiguration)
+      throws IOException {
     try {
 
       return (new URIBuilder(CONSENT_URL)
@@ -45,7 +57,11 @@ public class QuickbooksOAuthFlow extends BaseOAuth2Flow {
     }
   }
 
-  protected Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl) {
+  @Override
+  protected Map<String, String> getAccessTokenQueryParameters(final String clientId,
+                                                              final String clientSecret,
+                                                              final String authCode,
+                                                              final String redirectUrl) {
     return ImmutableMap.<String, String>builder()
         // required
         .put("redirect_uri", redirectUrl)
@@ -60,7 +76,7 @@ public class QuickbooksOAuthFlow extends BaseOAuth2Flow {
    * Returns the URL where to retrieve the access token from.
    */
   @Override
-  protected String getAccessTokenUrl() {
+  protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
     return TOKEN_URL;
   }
 
@@ -69,7 +85,7 @@ public class QuickbooksOAuthFlow extends BaseOAuth2Flow {
    * values.
    */
   @Override
-  protected List<String> getDefaultOAuthOutputPath() {
+  public List<String> getDefaultOAuthOutputPath() {
     return List.of("credentials");
   }
 

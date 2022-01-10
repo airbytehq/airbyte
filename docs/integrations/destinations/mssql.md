@@ -117,21 +117,25 @@ Using this feature requires additional configuration, when creating the source. 
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.11 | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count | 
-| 0.1.10| 2021-10-11 | [\#6877](https://github.com/airbytehq/airbyte/pull/6877) | Add `normalization` capability, add `append+deduplication` sync mode |
-| 0.1.9 | 2021-09-29 | [\#5970](https://github.com/airbytehq/airbyte/pull/5970) | Add support & test cases for MSSQL Destination via SSH tunnels |
-| 0.1.8 | 2021-08-07 | [\#5272](https://github.com/airbytehq/airbyte/pull/5272) | Add batch method to insert records |
-| 0.1.7 | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
-| 0.1.6 | 2021-06-21 | [\#3555](https://github.com/airbytehq/airbyte/pull/3555) | Partial Success in BufferedStreamConsumer |
-| 0.1.5 | 2021-07-20 | [\#4874](https://github.com/airbytehq/airbyte/pull/4874) | declare object types correctly in spec |
-| 0.1.4 | 2021-06-17 | [\#3744](https://github.com/airbytehq/airbyte/pull/3744) | Fix doc/params in specification file |
-| 0.1.3 | 2021-05-28 | [\#3728](https://github.com/airbytehq/airbyte/pull/3973) | Change dockerfile entrypoint |
-| 0.1.2 | 2021-05-13 | [\#3367](https://github.com/airbytehq/airbyte/pull/3671) | Fix handle symbols unicode |
-| 0.1.1 | 2021-05-11 | [\#3566](https://github.com/airbytehq/airbyte/pull/3195) | MS SQL Server Destination Release! |
+| Version | Date | Pull Request                                             | Subject |
+|:--------| :--- |:---------------------------------------------------------| :--- |
+| 0.1.13  | 2021-12-28 | [\#9158](https://github.com/airbytehq/airbyte/pull/9158) | Update connector fields title/description |
+| 0.1.12  | 2021-12-01 | [\#8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key  |
+| 0.1.11  | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719)  | Improve handling of wide rows by buffering records based on their byte size rather than their count | 
+| 0.1.10  | 2021-10-11 | [\#6877](https://github.com/airbytehq/airbyte/pull/6877) | Add `normalization` capability, add `append+deduplication` sync mode |
+| 0.1.9   | 2021-09-29 | [\#5970](https://github.com/airbytehq/airbyte/pull/5970) | Add support & test cases for MSSQL Destination via SSH tunnels |
+| 0.1.8   | 2021-08-07 | [\#5272](https://github.com/airbytehq/airbyte/pull/5272) | Add batch method to insert records |
+| 0.1.7   | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
+| 0.1.6   | 2021-06-21 | [\#3555](https://github.com/airbytehq/airbyte/pull/3555) | Partial Success in BufferedStreamConsumer |
+| 0.1.5   | 2021-07-20 | [\#4874](https://github.com/airbytehq/airbyte/pull/4874) | declare object types correctly in spec |
+| 0.1.4   | 2021-06-17 | [\#3744](https://github.com/airbytehq/airbyte/pull/3744) | Fix doc/params in specification file |
+| 0.1.3   | 2021-05-28 | [\#3728](https://github.com/airbytehq/airbyte/pull/3973) | Change dockerfile entrypoint |
+| 0.1.2   | 2021-05-13 | [\#3367](https://github.com/airbytehq/airbyte/pull/3671) | Fix handle symbols unicode |
+| 0.1.1   | 2021-05-11 | [\#3566](https://github.com/airbytehq/airbyte/pull/3195) | MS SQL Server Destination Release! |
 
 ### Changelog (Strict Encrypt)
 | Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.1 | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count | 
+|:--------| :--- | :--- | :--- |
+| 0.1.3   | 2021-12-28 | [\#9158](https://github.com/airbytehq/airbyte/pull/9158) | Update connector fields title/description |
+| 0.1.2   | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key  |
+| 0.1.1   | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count | 

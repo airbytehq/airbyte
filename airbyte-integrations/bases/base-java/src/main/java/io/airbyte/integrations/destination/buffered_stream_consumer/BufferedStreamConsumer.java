@@ -146,8 +146,9 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       // TODO use a more efficient way to compute bytes that doesn't require double serialization (records
       // are serialized again when writing to
       // the destination
-      long messageSizeInBytes = ByteUtils.getSizeInBytes(Jsons.serialize(recordMessage.getData()));
-      if (bufferSizeInBytes + messageSizeInBytes >= maxQueueSizeInBytes) {
+      long messageSizeInBytes = ByteUtils.getSizeInBytesForUTF8CharSet(Jsons.serialize(recordMessage.getData()));
+      if (bufferSizeInBytes + messageSizeInBytes > maxQueueSizeInBytes) {
+        LOGGER.info("Flushing buffer...");
         flushQueueToDestination();
         bufferSizeInBytes = 0;
       }
@@ -202,7 +203,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     }
 
     try {
-      // if no state was was emitted (i.e. full refresh), if there were still no failures, then we can
+      // if no state was emitted (i.e. full refresh), if there were still no failures, then we can
       // still succeed.
       if (lastFlushedState == null) {
         onClose.accept(hasFailed);
@@ -211,7 +212,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         onClose.accept(false);
       }
 
-      // if one close succeeds without exception then we can emit the state record because it means its
+      // if onClose succeeds without exception then we can emit the state record because it means its
       // records were not only flushed, but committed.
       if (lastFlushedState != null) {
         outputRecordCollector.accept(lastFlushedState);

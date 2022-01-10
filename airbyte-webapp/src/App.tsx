@@ -2,7 +2,8 @@ import React, { Suspense } from "react";
 import { ThemeProvider } from "styled-components";
 import { IntlProvider } from "react-intl";
 import { CacheProvider } from "rest-hooks";
-import { QueryClientProvider, QueryClient } from "react-query";
+import { QueryClient, QueryClientProvider } from "react-query";
+import { BrowserRouter as Router } from "react-router-dom";
 
 import en from "./locales/en.json";
 import GlobalStyle from "./global-styles";
@@ -12,40 +13,19 @@ import { Routing } from "./pages/routes";
 import LoadingPage from "./components/LoadingPage";
 import ApiErrorBoundary from "./components/ApiErrorBoundary";
 import NotificationService from "hooks/services/Notification";
-import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
-import {
-  useCurrentWorkspace,
-  usePickFirstWorkspace,
-} from "hooks/services/useWorkspace";
-import { Feature, FeatureItem, FeatureService } from "hooks/services/Feature";
-import { OnboardingServiceProvider } from "hooks/services/Onboarding";
+import { AnalyticsProvider } from "views/common/AnalyticsProvider";
+import { FeatureService } from "hooks/services/Feature";
 import { ServicesProvider } from "core/servicesProvider";
-import { useApiServices } from "core/defaultServices";
-import { envConfigProvider, windowConfigProvider } from "./config";
+import { ApiServices } from "core/ApiServices";
 import {
   Config,
   ConfigServiceProvider,
   defaultConfig,
+  envConfigProvider,
   ValueProvider,
+  windowConfigProvider,
 } from "./config";
-
-function useCustomerIdProvider() {
-  const workspace = useCurrentWorkspace();
-
-  return workspace.customerId;
-}
-
-const Features: Feature[] = [
-  {
-    id: FeatureItem.AllowUploadCustomImage,
-  },
-  {
-    id: FeatureItem.AllowCustomDBT,
-  },
-  {
-    id: FeatureItem.AllowUpdateConnectors,
-  },
-];
+import { WorkspaceServiceProvider } from "./services/workspaces/WorkspacesService";
 
 const StyleProvider: React.FC = ({ children }) => (
   <ThemeProvider theme={theme}>
@@ -60,7 +40,13 @@ const I18NProvider: React.FC = ({ children }) => (
   </IntlProvider>
 );
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      suspense: true,
+    },
+  },
+});
 
 const StoreProvider: React.FC = ({ children }) => (
   <CacheProvider>
@@ -73,21 +59,19 @@ const configProviders: ValueProvider<Config> = [
   windowConfigProvider,
 ];
 
-const services = {
-  currentWorkspaceProvider: usePickFirstWorkspace,
-  useCustomerIdProvider: useCustomerIdProvider,
-};
-
-const AppServices: React.FC = ({ children }) => (
-  <ServicesProvider inject={services}>
-    <ServiceOverrides>{children}</ServiceOverrides>
-  </ServicesProvider>
+const Services: React.FC = ({ children }) => (
+  <AnalyticsProvider>
+    <ApiErrorBoundary>
+      <WorkspaceServiceProvider>
+        <FeatureService>
+          <NotificationService>
+            <ApiServices>{children}</ApiServices>
+          </NotificationService>
+        </FeatureService>
+      </WorkspaceServiceProvider>
+    </ApiErrorBoundary>
+  </AnalyticsProvider>
 );
-
-const ServiceOverrides: React.FC = React.memo(({ children }) => {
-  useApiServices();
-  return <>{children}</>;
-});
 
 const App: React.FC = () => {
   return (
@@ -95,26 +79,20 @@ const App: React.FC = () => {
       <StyleProvider>
         <I18NProvider>
           <StoreProvider>
-            <Suspense fallback={<LoadingPage />}>
-              <ConfigServiceProvider
-                defaultConfig={defaultConfig}
-                providers={configProviders}
-              >
-                <ApiErrorBoundary>
-                  <FeatureService features={Features}>
-                    <NotificationService>
-                      <AppServices>
-                        <AnalyticsInitializer>
-                          <OnboardingServiceProvider>
-                            <Routing />
-                          </OnboardingServiceProvider>
-                        </AnalyticsInitializer>
-                      </AppServices>
-                    </NotificationService>
-                  </FeatureService>
-                </ApiErrorBoundary>
-              </ConfigServiceProvider>
-            </Suspense>
+            <ServicesProvider>
+              <Suspense fallback={<LoadingPage />}>
+                <ConfigServiceProvider
+                  defaultConfig={defaultConfig}
+                  providers={configProviders}
+                >
+                  <Router>
+                    <Services>
+                      <Routing />
+                    </Services>
+                  </Router>
+                </ConfigServiceProvider>
+              </Suspense>
+            </ServicesProvider>
           </StoreProvider>
         </I18NProvider>
       </StyleProvider>

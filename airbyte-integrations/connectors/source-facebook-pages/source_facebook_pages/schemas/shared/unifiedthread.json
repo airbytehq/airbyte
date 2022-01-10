@@ -1,0 +1,51 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "can_reply": {
+      "type": ["boolean", "null"]
+    },
+    "former_participants": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "is_subscribed": {
+      "type": ["boolean", "null"]
+    },
+    "link": {
+      "type": ["string", "null"]
+    },
+    "message_count": {
+      "type": ["integer", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "participants": {
+      "type": ["string", "null"]
+    },
+    "scoped_thread_key": {
+      "type": ["string", "null"]
+    },
+    "senders": {
+      "type": ["string", "null"]
+    },
+    "snippet": {
+      "type": ["string", "null"]
+    },
+    "subject": {
+      "type": ["string", "null"]
+    },
+    "unread_count": {
+      "type": ["integer", "null"]
+    },
+    "updated_time": {
+      "type": ["string", "null"],
+      "format": "datetime"
+    },
+    "wallpaper": {
+      "type": ["string", "null"]
+    }
+  }
+}

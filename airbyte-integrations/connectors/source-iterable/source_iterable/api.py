@@ -3,13 +3,14 @@
 #
 
 import csv
+import json
 import urllib.parse as urlparse
 from io import StringIO
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.models import SyncMode
-from source_iterable.iterable_streams import IterableExportStream, IterableExportStreamRanged, IterableStream
+from source_iterable.iterable_streams import IterableExportStreamAdjustableRange, IterableExportStreamRanged, IterableStream
 
 EVENT_ROWS_LIMIT = 200
 CAMPAIGNS_PER_REQUEST = 20
@@ -141,61 +142,61 @@ class Channels(IterableStream):
         return "channels"
 
 
-class EmailBounce(IterableExportStream):
+class EmailBounce(IterableExportStreamAdjustableRange):
     name = "email_bounce"
     data_field = "emailBounce"
 
 
-class EmailClick(IterableExportStreamRanged):
+class EmailClick(IterableExportStreamAdjustableRange):
     name = "email_click"
     data_field = "emailClick"
 
 
-class EmailComplaint(IterableExportStream):
+class EmailComplaint(IterableExportStreamAdjustableRange):
     name = "email_complaint"
     data_field = "emailComplaint"
 
 
-class EmailOpen(IterableExportStreamRanged):
+class EmailOpen(IterableExportStreamAdjustableRange):
     name = "email_open"
     data_field = "emailOpen"
 
 
-class EmailSend(IterableExportStreamRanged):
+class EmailSend(IterableExportStreamAdjustableRange):
     name = "email_send"
     data_field = "emailSend"
 
 
-class EmailSendSkip(IterableExportStreamRanged):
+class EmailSendSkip(IterableExportStreamAdjustableRange):
     name = "email_send_skip"
     data_field = "emailSendSkip"
 
 
-class EmailSubscribe(IterableExportStream):
+class EmailSubscribe(IterableExportStreamAdjustableRange):
     name = "email_subscribe"
     data_field = "emailSubscribe"
 
 
-class EmailUnsubscribe(IterableExportStream):
+class EmailUnsubscribe(IterableExportStreamAdjustableRange):
     name = "email_unsubscribe"
     data_field = "emailUnsubscribe"
 
 
 class Events(IterableStream):
     """
-    https://api.iterable.com/api/docs#events_User_events
+    https://api.iterable.com/api/docs#export_exportUserEvents
     """
 
     primary_key = None
     data_field = "events"
-    page_size = EVENT_ROWS_LIMIT
+    common_fields = ("itblInternal", "_type", "createdAt", "email")
 
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        return f"events/{stream_slice['email']}"
+    def path(self, **kwargs) -> str:
+        return "export/userEvents"
 
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, stream_slice: Optional[Mapping[str, Any]], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
-        params["limit"] = self.page_size
+        params.update({"email": stream_slice["email"], "includeCustomEvents": "true"})
 
         return params
 
@@ -208,8 +209,20 @@ class Events(IterableStream):
                 yield {"email": list_record["email"]}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        for record in super().parse_response(response, **kwargs):
-            yield {"data": record}
+        """
+        Parse jsonl response body.
+        Put common event fields at the top level.
+        Put the rest of the fields in the `data` subobject.
+        """
+
+        jsonl_records = StringIO(response.text)
+        for record in jsonl_records:
+            record_dict = json.loads(record)
+            record_dict_common_fields = {}
+            for field in self.common_fields:
+                record_dict_common_fields[field] = record_dict.pop(field, None)
+
+            yield {**record_dict_common_fields, "data": record_dict}
 
 
 class MessageTypes(IterableStream):
@@ -228,7 +241,7 @@ class Metadata(IterableStream):
         return "metadata"
 
 
-class Templates(IterableExportStream):
+class Templates(IterableExportStreamRanged):
     data_field = "templates"
     template_types = ["Base", "Blast", "Triggered", "Workflow"]
     message_types = ["Email", "Push", "InApp", "SMS"]
@@ -251,6 +264,6 @@ class Templates(IterableExportStream):
             yield record
 
 
-class Users(IterableExportStream):
+class Users(IterableExportStreamRanged):
     data_field = "user"
     cursor_field = "profileUpdatedAt"

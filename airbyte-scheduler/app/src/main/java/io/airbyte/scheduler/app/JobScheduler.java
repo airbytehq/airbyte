@@ -56,7 +56,7 @@ public class JobScheduler implements Runnable {
         new DefaultSyncJobFactory(
             new DefaultJobCreator(jobPersistence, configRepository),
             configRepository,
-            new OAuthConfigSupplier(configRepository, false, trackingClient)));
+            new OAuthConfigSupplier(configRepository, trackingClient)));
   }
 
   @Override

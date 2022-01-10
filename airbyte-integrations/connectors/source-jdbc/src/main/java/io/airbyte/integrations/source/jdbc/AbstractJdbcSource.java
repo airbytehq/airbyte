@@ -4,6 +4,20 @@
 
 package io.airbyte.integrations.source.jdbc;
 
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_SIZE;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_COLUMN_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_DATABASE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_DATA_TYPE;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SCHEMA_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SIZE;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -12,18 +26,18 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.Databases;
+import io.airbyte.db.JdbcCompatibleSourceOperations;
 import io.airbyte.db.SqlDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
-import java.sql.JDBCType;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
@@ -33,6 +47,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -44,34 +59,19 @@ import org.slf4j.LoggerFactory;
  * relational DB source which can be accessed via JDBC driver. If you are implementing a connector
  * for a relational DB which has a JDBC driver, make an effort to use this class.
  */
-public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBCType, JdbcDatabase> implements Source {
+public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbSource<Datatype, JdbcDatabase> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
 
-  private static final String JDBC_COLUMN_DATABASE_NAME = "TABLE_CAT";
-  private static final String JDBC_COLUMN_SCHEMA_NAME = "TABLE_SCHEM";
-  private static final String JDBC_COLUMN_TABLE_NAME = "TABLE_NAME";
-  private static final String JDBC_COLUMN_COLUMN_NAME = "COLUMN_NAME";
-  private static final String JDBC_COLUMN_DATA_TYPE = "DATA_TYPE";
+  protected final String driverClass;
+  protected final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
+  protected final JdbcCompatibleSourceOperations<Datatype> sourceOperations;
 
-  private static final String INTERNAL_SCHEMA_NAME = "schemaName";
-  private static final String INTERNAL_TABLE_NAME = "tableName";
-  private static final String INTERNAL_COLUMN_NAME = "columnName";
-  private static final String INTERNAL_COLUMN_TYPE = "columnType";
-
-  private final String driverClass;
-  private final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
-  protected final JdbcSourceOperations sourceOperations;
-
-  private String quoteString;
-
-  public AbstractJdbcSource(final String driverClass, final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration) {
-    this(driverClass, jdbcStreamingQueryConfiguration, JdbcUtils.getDefaultSourceOperations());
-  }
+  protected String quoteString;
 
   public AbstractJdbcSource(final String driverClass,
                             final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration,
-                            final JdbcSourceOperations sourceOperations) {
+                            final JdbcCompatibleSourceOperations<Datatype> sourceOperations) {
     this.driverClass = driverClass;
     this.jdbcStreamingQueryConfiguration = jdbcStreamingQueryConfiguration;
     this.sourceOperations = sourceOperations;
@@ -110,64 +110,97 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
   }
 
   @Override
-  protected List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database, final String schema) throws Exception {
+  protected List<TableInfo<CommonField<Datatype>>> discoverInternal(final JdbcDatabase database, final String schema) throws Exception {
     final Set<String> internalSchemas = new HashSet<>(getExcludedInternalNameSpaces());
+    final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege = getPrivilegesTableForCurrentUser(database, schema);
     return database.bufferedResultSetQuery(
+        // retrieve column metadata from the database
         conn -> conn.getMetaData().getColumns(getCatalog(database), schema, null, null),
-        resultSet -> Jsons.jsonNode(ImmutableMap.<String, Object>builder()
-            // we always want a namespace, if we cannot get a schema, use db name.
-            .put(INTERNAL_SCHEMA_NAME,
-                resultSet.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? resultSet.getString(JDBC_COLUMN_SCHEMA_NAME)
-                    : resultSet.getObject(JDBC_COLUMN_DATABASE_NAME))
-            .put(INTERNAL_TABLE_NAME, resultSet.getString(JDBC_COLUMN_TABLE_NAME))
-            .put(INTERNAL_COLUMN_NAME, resultSet.getString(JDBC_COLUMN_COLUMN_NAME))
-            .put(INTERNAL_COLUMN_TYPE, resultSet.getString(JDBC_COLUMN_DATA_TYPE))
-            .build()))
+        // store essential column metadata to a Json object from the result set about each column
+        this::getColumnMetadata)
         .stream()
-        .filter(t -> !internalSchemas.contains(t.get(INTERNAL_SCHEMA_NAME).asText()))
+        .filter(excludeNotAccessibleTables(internalSchemas, tablesWithSelectGrantPrivilege))
         // group by schema and table name to handle the case where a table with the same name exists in
         // multiple schemas.
         .collect(Collectors.groupingBy(t -> ImmutablePair.of(t.get(INTERNAL_SCHEMA_NAME).asText(), t.get(INTERNAL_TABLE_NAME).asText())))
         .values()
         .stream()
-        .map(fields -> TableInfo.<CommonField<JDBCType>>builder()
+        .map(fields -> TableInfo.<CommonField<Datatype>>builder()
             .nameSpace(fields.get(0).get(INTERNAL_SCHEMA_NAME).asText())
             .name(fields.get(0).get(INTERNAL_TABLE_NAME).asText())
             .fields(fields.stream()
+                // read the column metadata Json object, and determine its type
                 .map(f -> {
-                  JDBCType jdbcType;
-                  try {
-                    jdbcType = JDBCType.valueOf(f.get(INTERNAL_COLUMN_TYPE).asInt());
-                  } catch (final IllegalArgumentException ex) {
-                    LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
-                        f.get(INTERNAL_COLUMN_NAME),
-                        f.get(INTERNAL_SCHEMA_NAME),
-                        f.get(INTERNAL_TABLE_NAME),
-                        f.get(INTERNAL_COLUMN_TYPE)));
-                    jdbcType = JDBCType.VARCHAR;
-                  }
-                  return new CommonField<JDBCType>(f.get(INTERNAL_COLUMN_NAME).asText(), jdbcType) {};
+                  final Datatype datatype = getFieldType(f);
+                  final JsonSchemaPrimitive jsonType = getType(datatype);
+                  LOGGER.info("Table {} column {} (type {}[{}]) -> Json type {}",
+                      fields.get(0).get(INTERNAL_TABLE_NAME).asText(),
+                      f.get(INTERNAL_COLUMN_NAME).asText(),
+                      f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
+                      f.get(INTERNAL_COLUMN_SIZE).asInt(),
+                      jsonType);
+                  return new CommonField<Datatype>(f.get(INTERNAL_COLUMN_NAME).asText(), datatype) {};
                 })
                 .collect(Collectors.toList()))
             .build())
         .collect(Collectors.toList());
   }
 
+  private Predicate<JsonNode> excludeNotAccessibleTables(final Set<String> internalSchemas,
+                                                         final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege) {
+    return jsonNode -> {
+      if (tablesWithSelectGrantPrivilege.isEmpty()) {
+        return !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText());
+      }
+      return tablesWithSelectGrantPrivilege.stream()
+          .anyMatch(e -> e.getSchemaName().equals(jsonNode.get(INTERNAL_SCHEMA_NAME).asText()))
+          && tablesWithSelectGrantPrivilege.stream()
+              .anyMatch(e -> e.getTableName().equals(jsonNode.get(INTERNAL_TABLE_NAME).asText()))
+          && !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText());
+    };
+  }
+
+  /**
+   * @param resultSet Description of a column available in the table catalog.
+   * @return Essential information about a column to determine which table it belongs to and its type.
+   */
+  private JsonNode getColumnMetadata(final ResultSet resultSet) throws SQLException {
+    return Jsons.jsonNode(ImmutableMap.<String, Object>builder()
+        // we always want a namespace, if we cannot get a schema, use db name.
+        .put(INTERNAL_SCHEMA_NAME,
+            resultSet.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? resultSet.getString(JDBC_COLUMN_SCHEMA_NAME)
+                : resultSet.getObject(JDBC_COLUMN_DATABASE_NAME))
+        .put(INTERNAL_TABLE_NAME, resultSet.getString(JDBC_COLUMN_TABLE_NAME))
+        .put(INTERNAL_COLUMN_NAME, resultSet.getString(JDBC_COLUMN_COLUMN_NAME))
+        .put(INTERNAL_COLUMN_TYPE, resultSet.getString(JDBC_COLUMN_DATA_TYPE))
+        .put(INTERNAL_COLUMN_TYPE_NAME, resultSet.getString(JDBC_COLUMN_TYPE_NAME))
+        .put(INTERNAL_COLUMN_SIZE, resultSet.getInt(JDBC_COLUMN_SIZE))
+        .build());
+  }
+
+  /**
+   * @param field Essential column information returned from
+   *        {@link AbstractJdbcSource#getColumnMetadata}.
+   */
+  public Datatype getFieldType(final JsonNode field) {
+    return sourceOperations.getFieldType(field);
+  }
+
   @Override
-  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database)
+  public List<TableInfo<CommonField<Datatype>>> discoverInternal(final JdbcDatabase database)
       throws Exception {
     return discoverInternal(database, null);
   }
 
   @Override
-  protected JsonSchemaPrimitive getType(final JDBCType columnType) {
-    return sourceOperations.getType(columnType);
+  public JsonSchemaPrimitive getType(final Datatype columnType) {
+    return sourceOperations.getJsonType(columnType);
   }
 
   @Override
   protected Map<String, List<String>> discoverPrimaryKeys(final JdbcDatabase database,
-                                                          final List<TableInfo<CommonField<JDBCType>>> tableInfos) {
-    LOGGER.info("Discover primary keys for tables: " + tableInfos.stream().map(tab -> tab.getName()).collect(
+                                                          final List<TableInfo<CommonField<Datatype>>> tableInfos) {
+    LOGGER.info("Discover primary keys for tables: " + tableInfos.stream().map(TableInfo::getName).collect(
         Collectors.toSet()));
     try {
       // Get all primary keys without specifying a table name
@@ -217,7 +250,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
                                                                final String schemaName,
                                                                final String tableName,
                                                                final String cursorField,
-                                                               final JDBCType cursorFieldType,
+                                                               final Datatype cursorFieldType,
                                                                final String cursor) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
@@ -255,15 +288,11 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
         driverClass,
         jdbcStreamingQueryConfiguration,
         jdbcConfig.has("connection_properties") ? jdbcConfig.get("connection_properties").asText() : null,
-        getSourceOperations());
+        sourceOperations);
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
 
     return database;
-  }
-
-  protected JdbcSourceOperations getSourceOperations() {
-    return sourceOperations;
   }
 
 }

@@ -5,6 +5,7 @@
 import json
 from typing import Any, List, Mapping, Tuple
 
+import pendulum
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -70,7 +71,7 @@ class SourceGoogleSearchConsole(AbstractSource):
         stream_kwargs = {
             "site_urls": config.get("site_urls"),
             "start_date": config.get("start_date"),
-            "end_date": config.get("end_date"),
+            "end_date": config.get("end_date") or pendulum.now().to_date_string(),
         }
 
         auth_type = authorization.get("auth_type")

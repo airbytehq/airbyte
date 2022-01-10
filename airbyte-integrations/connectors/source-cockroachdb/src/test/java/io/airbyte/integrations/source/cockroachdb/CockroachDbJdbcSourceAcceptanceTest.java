@@ -12,10 +12,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.db.Databases;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
@@ -35,7 +35,7 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
-import io.airbyte.test.utils.CockroachDBContainerHelper;
+import java.sql.JDBCType;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -46,7 +46,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.CockroachContainer;
-import org.testcontainers.utility.MountableFile;
 
 class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
@@ -63,7 +62,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @BeforeAll
   static void init() {
-    PSQL_DB = new CockroachContainer("cockroachdb/cockroach");
+    PSQL_DB = new CockroachContainer("cockroachdb/cockroach:v20.2.18");
     PSQL_DB.start();
   }
 
@@ -80,11 +79,15 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .put("ssl", false)
         .build());
 
-    final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs
-        .writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
-    CockroachDBContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
+    final JsonNode jdbcConfig = getToDatabaseConfigFunction().apply(config);
+    database = Databases.createJdbcDatabase(
+        jdbcConfig.get("username").asText(),
+        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        jdbcConfig.get("jdbc_url").asText(),
+        getDriverClass(),
+        jdbcConfig.has("connection_properties") ? jdbcConfig.get("connection_properties").asText() : null);
 
+    database.execute(connection -> connection.createStatement().execute("CREATE DATABASE " + config.get("database") + ";"));
     super.setup();
   }
 
@@ -94,7 +97,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  public AbstractJdbcSource getJdbcSource() {
+  public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new CockroachDbSource();
   }
 
@@ -121,7 +124,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             defaultNamespace,
             Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
             Field.of(COL_NAME, JsonSchemaPrimitive.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING_DATE))
+            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
         CatalogHelpers.createAirbyteStream(
@@ -129,7 +132,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             defaultNamespace,
             Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
             Field.of(COL_NAME, JsonSchemaPrimitive.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING_DATE),
+            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING),
             Field.of(COL_ROW_ID, JsonSchemaPrimitive.NUMBER))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ROW_ID))),
@@ -138,7 +141,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             defaultNamespace,
             Field.of(COL_FIRST_NAME, JsonSchemaPrimitive.STRING),
             Field.of(COL_LAST_NAME, JsonSchemaPrimitive.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING_DATE))
+            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));

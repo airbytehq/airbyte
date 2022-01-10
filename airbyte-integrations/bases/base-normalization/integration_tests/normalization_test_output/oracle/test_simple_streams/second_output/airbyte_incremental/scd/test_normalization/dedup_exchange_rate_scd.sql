@@ -4,11 +4,12 @@
   
   as
     
+-- depends_on: ref('dedup_exchange_rate_stg')
 with
 
 input_data as (
     select *
-    from test_normalization.dedup_exchange_rate_ab3
+    from test_normalization.dedup_exchange_rate_stg
     -- dedup_exchange_rate from test_normalization.airbyte_raw_dedup_exchange_rate
 ),
 
@@ -26,27 +27,25 @@ scd_data as (
                 nzd
             
     ) as "_AIRBYTE_UNIQUE_KEY",
-        id,
-        currency,
-        "DATE",
-        timestamp_col,
-        hkd_special___characters,
-        hkd_special___characters_1,
-        nzd,
-        usd,
+      id,
+      currency,
+      "DATE",
+      timestamp_col,
+      hkd_special___characters,
+      hkd_special___characters_1,
+      nzd,
+      usd,
       "DATE" as "_AIRBYTE_START_AT",
       lag("DATE") over (
         partition by id, currency, cast(nzd as varchar2(4000))
         order by
-            "DATE" asc nulls last,
-            "DATE" desc,
+            "DATE" desc nulls last,
             "_AIRBYTE_EMITTED_AT" desc
       ) as "_AIRBYTE_END_AT",
       case when row_number() over (
         partition by id, currency, cast(nzd as varchar2(4000))
         order by
-            "DATE" asc nulls last,
-            "DATE" desc,
+            "DATE" desc nulls last,
             "_AIRBYTE_EMITTED_AT" desc
       ) = 1 then 1 else 0 end as "_AIRBYTE_ACTIVE_ROW",
       "_AIRBYTE_AB_ID",
@@ -59,8 +58,11 @@ dedup_data as (
         -- we need to ensure de-duplicated rows for merge/update queries
         -- additionally, we generate a unique key for the scd table
         row_number() over (
-            partition by "_AIRBYTE_UNIQUE_KEY", "_AIRBYTE_START_AT", "_AIRBYTE_EMITTED_AT"
-            order by "_AIRBYTE_AB_ID"
+            partition by
+                "_AIRBYTE_UNIQUE_KEY",
+                "_AIRBYTE_START_AT",
+                "_AIRBYTE_EMITTED_AT"
+            order by "_AIRBYTE_ACTIVE_ROW" desc, "_AIRBYTE_AB_ID"
         ) as "_AIRBYTE_ROW_NUM",
         ora_hash(
             
@@ -79,14 +81,14 @@ dedup_data as (
 select
     "_AIRBYTE_UNIQUE_KEY",
     "_AIRBYTE_UNIQUE_KEY_SCD",
-        id,
-        currency,
-        "DATE",
-        timestamp_col,
-        hkd_special___characters,
-        hkd_special___characters_1,
-        nzd,
-        usd,
+    id,
+    currency,
+    "DATE",
+    timestamp_col,
+    hkd_special___characters,
+    hkd_special___characters_1,
+    nzd,
+    usd,
     "_AIRBYTE_START_AT",
     "_AIRBYTE_END_AT",
     "_AIRBYTE_ACTIVE_ROW",

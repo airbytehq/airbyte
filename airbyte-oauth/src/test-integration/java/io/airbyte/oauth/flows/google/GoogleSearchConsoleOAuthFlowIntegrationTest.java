@@ -83,7 +83,7 @@ public class GoogleSearchConsoleOAuthFlowIntegrationTest {
             .put("client_id", credentialsJson.get("authorization").get("client_id").asText())
             .put("client_secret", credentialsJson.get("authorization").get("client_secret").asText())
             .build())))));
-    final String url = googleSearchConsoleOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String url = googleSearchConsoleOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null);
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
     // access...

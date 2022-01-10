@@ -8,9 +8,7 @@ import com.google.common.collect.ImmutableMap;
 
 public enum JsonSchemaPrimitive {
 
-  STRING_DATE(ImmutableMap.of("type", "string", "format", "date")),
-  STRING_TIME(ImmutableMap.of("type", "string", "format", "time")),
-  STRING_DATETIME(ImmutableMap.of("type", "string", "format", "date-time")),
+  STRING_BINARY(ImmutableMap.of("type", "string", "contentEncoding", "base64")),
   STRING(ImmutableMap.of("type", "string")),
   NUMBER(ImmutableMap.of("type", "number")),
   OBJECT(ImmutableMap.of("type", "object")),

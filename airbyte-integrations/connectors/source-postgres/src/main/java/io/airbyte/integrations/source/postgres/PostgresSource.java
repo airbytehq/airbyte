@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.postgres;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -16,14 +17,13 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcSourceOperations;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.StateManager;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -35,6 +35,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,22 +44,19 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PostgresSource extends AbstractJdbcSource implements Source {
+public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
   public static final String CDC_LSN = "_ab_cdc_lsn";
 
   static final String DRIVER_CLASS = "org.postgresql.Driver";
 
-  private final JdbcSourceOperations sourceOperations;
-
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new PostgresSource(), List.of("host"), List.of("port"));
   }
 
   PostgresSource() {
-    super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration());
-    this.sourceOperations = JdbcUtils.getDefaultSourceOperations();
+    super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration(), new PostgresSourceOperations());
   }
 
   @Override
@@ -119,8 +117,10 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
-    final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(super.getCheckOperations(config));
+  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config)
+      throws Exception {
+    final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(
+        super.getCheckOperations(config));
 
     if (isCdc(config)) {
       checkOperations.add(database -> {
@@ -131,21 +131,24 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
           ps.setString(2, PostgresUtils.getPluginValue(config.get("replication_method")));
           ps.setString(3, config.get("database").asText());
 
-          LOGGER.info("Attempting to find the named replication slot using the query: " + ps.toString());
+          LOGGER.info(
+              "Attempting to find the named replication slot using the query: " + ps.toString());
 
           return ps;
         }, sourceOperations::rowToJson).collect(toList());
 
         if (matchingSlots.size() != 1) {
-          throw new RuntimeException("Expected exactly one replication slot but found " + matchingSlots.size()
-              + ". Please read the docs and add a replication slot to your database.");
+          throw new RuntimeException(
+              "Expected exactly one replication slot but found " + matchingSlots.size()
+                  + ". Please read the docs and add a replication slot to your database.");
         }
 
       });
 
       checkOperations.add(database -> {
         final List<JsonNode> matchingPublications = database.query(connection -> {
-          final PreparedStatement ps = connection.prepareStatement("SELECT * FROM pg_publication WHERE pubname = ?");
+          final PreparedStatement ps = connection
+              .prepareStatement("SELECT * FROM pg_publication WHERE pubname = ?");
           ps.setString(1, config.get("replication_method").get("publication").asText());
 
           LOGGER.info("Attempting to find the publication using the query: " + ps.toString());
@@ -154,8 +157,9 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
         }, sourceOperations::rowToJson).collect(toList());
 
         if (matchingPublications.size() != 1) {
-          throw new RuntimeException("Expected exactly one publication but found " + matchingPublications.size()
-              + ". Please read the docs and add a publication to your database.");
+          throw new RuntimeException(
+              "Expected exactly one publication but found " + matchingPublications.size()
+                  + ". Please read the docs and add a publication to your database.");
         }
 
       });
@@ -165,7 +169,9 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
+  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
+                                                    final ConfiguredAirbyteCatalog catalog,
+                                                    final JsonNode state)
       throws Exception {
     // this check is used to ensure that have the pgoutput slot available so Debezium won't attempt to
     // create it.
@@ -179,7 +185,8 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
+                                                                             final JdbcDatabase database,
                                                                              final ConfiguredAirbyteCatalog catalog,
                                                                              final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                              final StateManager stateManager,
@@ -194,10 +201,13 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
      */
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig)) {
-      final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig, PostgresCdcTargetPosition.targetPosition(database),
+      final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
+          PostgresCdcTargetPosition.targetPosition(database),
           PostgresCdcProperties.getDebeziumProperties(sourceConfig), catalog, false);
-      return handler.getIncrementalIterators(new PostgresCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
-          new PostgresCdcStateHandler(stateManager), new PostgresCdcConnectorMetadataInjector(), emittedAt);
+      return handler.getIncrementalIterators(
+          new PostgresCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
+          new PostgresCdcStateHandler(stateManager), new PostgresCdcConnectorMetadataInjector(),
+          emittedAt);
 
     } else {
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
@@ -227,6 +237,59 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     }
 
     return stream;
+  }
+
+  @Override
+  public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database,
+                                                                final String schema)
+      throws SQLException {
+    return database.query(connection -> {
+      final PreparedStatement ps = connection.prepareStatement(
+          """
+                 SELECT DISTINCT table_catalog,
+                                 table_schema,
+                                 table_name,
+                                 privilege_type
+                 FROM            information_schema.table_privileges
+                 WHERE           grantee = ?
+                 AND             privilege_type = 'SELECT'
+                 UNION ALL
+                 SELECT r.rolname           AS table_catalog,
+                        n.nspname           AS table_schema,
+                        c.relname           AS table_name,
+                        -- the initial query is supposed to get a SELECT type. Since we use a UNION query
+                        -- to get Views that we can read (i.e. select) - then lets fill this columns with SELECT
+                        -- value to keep the backward-compatibility
+                        COALESCE ('SELECT') AS privilege_type
+                 FROM   pg_class c
+                 JOIN   pg_namespace n
+                 ON     n.oid = relnamespace
+                 JOIN   pg_roles r
+                 ON     r.oid = relowner,
+                 Unnest(COALESCE(relacl::text[], Format('{%s=arwdDxt/%s}', rolname, rolname)::text[])) acl,
+                        Regexp_split_to_array(acl, '=|/') s
+                 WHERE  r.rolname = ?
+                 AND    nspname = 'public'
+                        -- 'm' means Materialized View
+                 AND    c.relkind = 'm'
+                 AND    (
+                               -- all grants
+                               c.relacl IS NULL
+                               -- read grant
+                        OR     s[2] = 'r');
+          """);
+      final String username = database.getDatabaseConfig().get("username").asText();
+      ps.setString(1, username);
+      ps.setString(2, username);
+      return ps;
+    }, sourceOperations::rowToJson)
+        .collect(toSet())
+        .stream()
+        .map(e -> JdbcPrivilegeDto.builder()
+            .schemaName(e.get("table_schema").asText())
+            .tableName(e.get("table_name").asText())
+            .build())
+        .collect(toSet());
   }
 
   /*
