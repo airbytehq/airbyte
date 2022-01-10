@@ -161,8 +161,7 @@ public class TemporalClient {
     connectionIds.forEach((connectionId) -> {
       final StopWatch singleSyncMigrationWatch = new StopWatch();
       singleSyncMigrationWatch.start();
-      if (!workflowNames.contains(
-          getConnectionManagerName(connectionId))) {
+      if (!isInRunningWorkflowCache(getConnectionManagerName(connectionId))) {
         log.info("Migrating: " + connectionId);
         try {
           submitConnectionUpdaterAsync(connectionId);
@@ -182,7 +181,12 @@ public class TemporalClient {
 
   private final Set<String> workflowNames = new HashSet<>();
 
-  private void refreshRunningWorkflow() {
+  boolean isInRunningWorkflowCache(final String workflowName) {
+    return workflowNames.contains(workflowName);
+  }
+
+  @VisibleForTesting
+  void refreshRunningWorkflow() {
     workflowNames.clear();
     ByteString token;
     ListOpenWorkflowExecutionsRequest openWorkflowExecutionsRequest =
