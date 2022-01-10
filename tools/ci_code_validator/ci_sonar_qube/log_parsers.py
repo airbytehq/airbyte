@@ -56,11 +56,14 @@ class Rule:
 
 
 def generate_mypy_rules() -> Mapping[str, Rule]:
-    addl_code = ErrorCode(
-        code="unknown",
-        description="Unknown error",
-        category="General",
-    )
+    try:
+        addl_code = ErrorCode(
+            code="unknown",
+            description="Unknown error",
+            category="General",
+        )
+    except NameError:
+        return []
     return {f"[{err.code}]": Rule(
         rule_type=Rule.Type.code_smell,
         key=err.code,
@@ -73,10 +76,7 @@ def generate_mypy_rules() -> Mapping[str, Rule]:
 
 
 class LogParser(SonarQubeApi):
-    @property
-    def _mypy_rules(self) -> Mapping[str, Rule]:
-        return generate_mypy_rules()
-
+    _mypy_rules: Mapping[str, Rule] = generate_mypy_rules()
     _black_rule = Rule(
         rule_type=Rule.Type.code_smell,
         key="need_format",
