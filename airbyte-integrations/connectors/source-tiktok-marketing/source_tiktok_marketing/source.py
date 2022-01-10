@@ -5,7 +5,7 @@
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import ConnectorSpecification, SyncMode, AdvancedAuth, OAuthConfigSpecification, AuthFlowType
+from airbyte_cdk.models import AdvancedAuth, AuthFlowType, ConnectorSpecification, OAuthConfigSpecification, SyncMode
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -47,48 +47,25 @@ class SourceTiktokMarketing(AbstractSource):
         complete_oauth_output_specification = {
             "type": "object",
             "additionalProperties": False,
-            "properties": {
-                "access_token": {
-                    "type": "string",
-                    "path_in_connector_config": ["credentials", "access_token"]
-                }
-            }
+            "properties": {"access_token": {"type": "string", "path_in_connector_config": ["credentials", "access_token"]}},
         }
         complete_oauth_server_input_specification = {
             "type": "object",
             "additionalProperties": True,
-            "properties": {
-                "app_id": {
-                    "type": "string"
-                },
-                "secret": {
-                    "type": "string"
-                }
-            }
+            "properties": {"app_id": {"type": "string"}, "secret": {"type": "string"}},
         }
         complete_oauth_server_output_specification = {
             "type": "object",
             "additionalProperties": False,
             "properties": {
-                "app_id": {
-                    "type": "string",
-                    "path_in_connector_config": ["credentials", "app_id"]
-                },
-                "secret": {
-                    "type": "string",
-                    "path_in_connector_config": ["credentials", "secret"]
-                }
-            }
+                "app_id": {"type": "string", "path_in_connector_config": ["credentials", "app_id"]},
+                "secret": {"type": "string", "path_in_connector_config": ["credentials", "secret"]},
+            },
         }
         oauth_user_input_from_connector_config_specification = {
             "type": "object",
             "additionalProperties": False,
-            "properties": {
-                "rid": {
-                    "type": "string",
-                    "path_in_connector_config": ["credentials", "rid"]
-                }
-            }
+            "properties": {"rid": {"type": "string", "path_in_connector_config": ["credentials", "rid"]}},
         }
 
         return ConnectorSpecification(
@@ -108,7 +85,7 @@ class SourceTiktokMarketing(AbstractSource):
                     complete_oauth_server_output_specification=complete_oauth_server_output_specification,
                     oauth_user_input_from_connector_config_specification=oauth_user_input_from_connector_config_specification,
                 ),
-            )
+            ),
         )
 
     @staticmethod
