@@ -167,7 +167,7 @@ runs:
         echo "::set-output name=sq-report::$body"
 
     - name: Add Comment
-      if: ${{ inputs.module-lang == 'py' && github.event_name == 'pull_request' }}
+      if: ${{ github.event_name == 'pull_request' }}
       uses: peter-evans/commit-comment@v1
       with:
         body: ${{ steps.generate-sq-report.outputs.sq-report }}

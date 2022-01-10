@@ -128,7 +128,7 @@ class SonarQubeApi:
         return exists_projects[0]
 
     def prepare_project_settings(self, project_name: str) -> Mapping[str, str]:
-        title = re.sub('[:_-]', ' ', project_name).title()
+        title = re.sub('[:_-]', ' ', project_name).replace("connectors_", "").title()
         if self._pr_id:
             title += f"(#{self._pr_id})"
 
