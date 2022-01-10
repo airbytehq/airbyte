@@ -77,4 +77,9 @@ public class SnowflakeStagingSqlOperations extends JdbcSqlOperations implements 
         schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
+  @Override
+  public boolean isSchemaExists(JdbcDatabase database, String outputSchema) throws Exception {
+    return database.query(SHOW_SCHEMAS).map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equalsIgnoreCase);
+  }
+
 }
