@@ -31,9 +31,11 @@ public class OrchestratorConstants {
       EnvConfigs.JOB_MAIN_CONTAINER_MEMORY_LIMIT,
       EnvConfigs.JOB_DEFAULT_ENV_MAP,
       EnvConfigs.LOCAL_ROOT,
+      "LOG_LEVEL", // todo: put in constant
       LogClientSingleton.GCS_LOG_BUCKET,
       LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS,
       LogClientSingleton.S3_MINIO_ENDPOINT,
+      "S3_PATH_STYLE_ACCESS", // todo: put in constant
       LogClientSingleton.S3_LOG_BUCKET,
       LogClientSingleton.AWS_ACCESS_KEY_ID,
       LogClientSingleton.AWS_SECRET_ACCESS_KEY,

@@ -45,7 +45,7 @@ public class NormalizationJobOrchestrator implements JobOrchestrator<Normalizati
 
   @Override
   public Optional<String> runJob() throws Exception {
-    final JobRunConfig jobRunConfig = readJobRunConfig();
+    final JobRunConfig jobRunConfig = JobOrchestrator.readJobRunConfig();
     final NormalizationInput normalizationInput = readInput();
 
     final IntegrationLauncherConfig destinationLauncherConfig = JobOrchestrator.readAndDeserializeFile(

@@ -45,7 +45,7 @@ public class DbtJobOrchestrator implements JobOrchestrator<OperatorDbtInput> {
 
   @Override
   public Optional<String> runJob() throws Exception {
-    final JobRunConfig jobRunConfig = readJobRunConfig();
+    final JobRunConfig jobRunConfig = JobOrchestrator.readJobRunConfig();
     final OperatorDbtInput dbtInput = readInput();
 
     final IntegrationLauncherConfig destinationLauncherConfig = JobOrchestrator.readAndDeserializeFile(

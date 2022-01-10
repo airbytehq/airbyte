@@ -12,6 +12,7 @@ import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.AsyncKubePodStatus;
 import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
 import io.airbyte.workers.process.DockerProcessFactory;
@@ -36,6 +37,7 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.log4j.MDC;
 
 /**
  * Entrypoint for the application responsible for launching containers and handling all message
@@ -85,15 +87,18 @@ public class ContainerOrchestratorApp {
 
       for (String envVar : OrchestratorConstants.ENV_VARS_TO_TRANSFER) {
         if (envMap.containsKey(envVar)) {
-          System.setProperty(envVar, envMap.get(envVar));
+          MDC.put(envVar, envMap.get(envVar)); // todo: limit to logging-related env vars
         }
       }
 
       final var logClient = LogClientSingleton.getInstance();
-      logClient.setWorkspaceMdc(
-          configs.getWorkerEnvironment(),
-          configs.getLogConfigs(),
-          logClient.getSchedulerLogsRoot(configs.getWorkspaceRoot()));
+      final var jobRunConfig = JobOrchestrator.readJobRunConfig();
+      final var jobRoot = WorkerUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
+
+      logClient.setJobMdc(
+              configs.getWorkerEnvironment(),
+              configs.getLogConfigs(),
+              jobRoot);
 
       try (final var mdcScope = LOG_MDC_BUILDER.build()) {
         documentStoreClient = StateClients.create(configs.getStateStorageCloudConfigs(), WorkerApp.STATE_STORAGE_PREFIX); // todo: log on writing

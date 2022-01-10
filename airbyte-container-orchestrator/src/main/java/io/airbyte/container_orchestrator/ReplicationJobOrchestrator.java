@@ -55,7 +55,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
 
   @Override
   public Optional<String> runJob() throws Exception {
-    final JobRunConfig jobRunConfig = readJobRunConfig();
+    final JobRunConfig jobRunConfig = JobOrchestrator.readJobRunConfig();
     final StandardSyncInput syncInput = readInput();
 
     final IntegrationLauncherConfig sourceLauncherConfig = JobOrchestrator.readAndDeserializeFile(

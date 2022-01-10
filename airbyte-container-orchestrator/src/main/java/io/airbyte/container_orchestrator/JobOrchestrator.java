@@ -33,7 +33,7 @@ public interface JobOrchestrator<INPUT> {
   }
 
   // reads the job run config from a file that was copied to the container launcher
-  default JobRunConfig readJobRunConfig() throws IOException {
+  static JobRunConfig readJobRunConfig() throws IOException {
     return readAndDeserializeFile(Path.of(KubePodProcess.CONFIG_DIR, OrchestratorConstants.INIT_FILE_JOB_RUN_CONFIG), JobRunConfig.class);
   }
 
