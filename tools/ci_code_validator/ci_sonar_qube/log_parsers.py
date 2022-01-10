@@ -73,7 +73,10 @@ def generate_mypy_rules() -> Mapping[str, Rule]:
 
 
 class LogParser(SonarQubeApi):
-    _mypy_rules: Mapping[str, Rule] = generate_mypy_rules()
+    @property
+    def _mypy_rules(self) -> Mapping[str, Rule]:
+        return generate_mypy_rules()
+
     _black_rule = Rule(
         rule_type=Rule.Type.code_smell,
         key="need_format",
