@@ -7,8 +7,11 @@ package io.airbyte.workers.process;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
@@ -16,8 +19,6 @@ import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerException;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.kubernetes.client.openapi.ApiClient;
-import io.kubernetes.client.util.Config;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.ServerSocket;
@@ -33,7 +34,7 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,14 +48,18 @@ import org.junit.jupiter.api.Timeout;
          unit = TimeUnit.MINUTES)
 public class KubePodProcessIntegrationTest {
 
+  private static final int RANDOM_FILE_LINE_LENGTH = 100;
+
   private static final boolean IS_MINIKUBE = Boolean.parseBoolean(Optional.ofNullable(System.getenv("IS_MINIKUBE")).orElse("false"));
   private static List<Integer> openPorts;
   private static int heartbeatPort;
   private static String heartbeatUrl;
-  private static ApiClient officialClient;
   private static KubernetesClient fabricClient;
   private static KubeProcessFactory processFactory;
   private static final ResourceRequirements DEFAULT_RESOURCE_REQUIREMENTS = new WorkerConfigs(new EnvConfigs()).getResourceRequirements();
+  private static final String ENV_KEY = "ENV_VAR_1";
+  private static final String ENV_VALUE = "ENV_VALUE_1";
+  private static final Map<String, String> ENV_MAP = ImmutableMap.of(ENV_KEY, ENV_VALUE);
 
   private WorkerHeartbeatServer server;
 
@@ -66,12 +71,21 @@ public class KubePodProcessIntegrationTest {
     heartbeatPort = openPorts.get(0);
     heartbeatUrl = getHost() + ":" + heartbeatPort;
 
-    officialClient = Config.defaultClient();
     fabricClient = new DefaultKubernetesClient();
 
     KubePortManagerSingleton.init(new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
+
+    final WorkerConfigs workerConfigs = spy(new WorkerConfigs(new EnvConfigs()));
+    when(workerConfigs.getEnvMap()).thenReturn(Map.of("ENV_VAR_1", "ENV_VALUE_1"));
+
     processFactory =
-        new KubeProcessFactory(new WorkerConfigs(new EnvConfigs()), "default", officialClient, fabricClient, heartbeatUrl, getHost(), false,
+        new KubeProcessFactory(
+            workerConfigs,
+            "default",
+            fabricClient,
+            heartbeatUrl,
+            getHost(),
+            false,
             Duration.ofSeconds(1));
   }
 
@@ -109,7 +123,7 @@ public class KubePodProcessIntegrationTest {
           assertFalse(process.isAlive());
           assertEquals(0, process.exitValue());
           successCount.incrementAndGet();
-        } catch (Exception e) {
+        } catch (final Exception e) {
           e.printStackTrace();
           failCount.incrementAndGet();
         }
@@ -155,7 +169,7 @@ public class KubePodProcessIntegrationTest {
         while (true) {
           portsTaken.add(KubePortManagerSingleton.getInstance().take());
         }
-      } catch (InterruptedException e) {
+      } catch (final InterruptedException e) {
         e.printStackTrace();
         throw new RuntimeException(e);
       }
@@ -191,6 +205,19 @@ public class KubePodProcessIntegrationTest {
     // the pod should be dead and in a good state
     assertFalse(process.isAlive());
     assertEquals(availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
+    assertEquals(0, process.exitValue());
+  }
+
+  @Test
+  public void testEnvMapSet() throws Exception {
+    // start a finite process
+    final Process process = getProcess("echo ENV_VAR_1=$ENV_VAR_1");
+    final var output = new String(process.getInputStream().readAllBytes());
+    assertEquals("ENV_VAR_1=ENV_VALUE_1\n", output);
+    process.waitFor();
+
+    // the pod should be dead and in a good state
+    assertFalse(process.isAlive());
     assertEquals(0, process.exitValue());
   }
 
@@ -267,10 +294,31 @@ public class KubePodProcessIntegrationTest {
     assertEquals(13, process.exitValue());
   }
 
+  @Test
+  public void testCopyLargeFiles() throws Exception {
+    final int numFiles = 1;
+    final int numLinesPerFile = 200000;
+
+    final Map<String, String> files = Maps.newHashMapWithExpectedSize(numFiles);
+    for (int i = 0; i < numFiles; i++) {
+      files.put("file" + i, getRandomFile(numLinesPerFile));
+    }
+
+    final long minimumConfigDirSize = (long) numFiles * numLinesPerFile * RANDOM_FILE_LINE_LENGTH;
+
+    final Process process = getProcess(
+        String.format("CONFIG_DIR_SIZE=$(du -sb /config | awk '{print $1;}'); if [ $CONFIG_DIR_SIZE -ge %s ]; then exit 10; else exit 1; fi;",
+            minimumConfigDirSize),
+        files);
+
+    process.waitFor();
+    assertEquals(10, process.exitValue());
+  }
+
   private static String getRandomFile(final int lines) {
     final var sb = new StringBuilder();
     for (int i = 0; i < lines; i++) {
-      sb.append(RandomStringUtils.randomAlphabetic(100));
+      sb.append(RandomStringUtils.randomAlphabetic(RANDOM_FILE_LINE_LENGTH));
       sb.append("\n");
     }
     return sb.toString();
@@ -284,6 +332,10 @@ public class KubePodProcessIntegrationTest {
         "file2", getRandomFile(100),
         "file3", getRandomFile(1000));
 
+    return getProcess(entrypoint, files);
+  }
+
+  private Process getProcess(final String entrypoint, final Map<String, String> files) throws WorkerException {
     return processFactory.create(
         "some-id",
         0,

@@ -409,6 +409,14 @@ class ConfigRepositoryTest {
   }
 
   @Test
+  void testDeleteStandardSync() throws IOException, ConfigNotFoundException {
+    final UUID connectionId = UUID.randomUUID();
+    configRepository.deleteStandardSyncDefinition(connectionId);
+
+    verify(configPersistence).deleteConfig(ConfigSchema.STANDARD_SYNC, connectionId.toString());
+  }
+
+  @Test
   public void testUpdateFeedback() throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardWorkspace workspace = new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withTombstone(false);
     doReturn(workspace)

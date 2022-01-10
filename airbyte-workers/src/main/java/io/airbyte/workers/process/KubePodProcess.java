@@ -5,6 +5,7 @@
 package io.airbyte.workers.process;
 
 import com.google.common.collect.MoreCollectors;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
@@ -15,6 +16,7 @@ import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
 import io.fabric8.kubernetes.api.model.ContainerStatus;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
+import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.LocalObjectReference;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
@@ -29,16 +31,12 @@ import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
-import io.kubernetes.client.Copy;
-import io.kubernetes.client.openapi.ApiClient;
-import io.kubernetes.client.openapi.ApiException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ProcessHandle.Info;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.AbstractMap;
@@ -98,9 +96,10 @@ public class KubePodProcess extends Process {
 
   private static final String INIT_CONTAINER_NAME = "init";
   public static final Duration DEFAULT_STATUS_CHECK_INTERVAL = Duration.ofSeconds(30);
-  private static final String DEFAULT_MEMORY_LIMIT = "25Mi";
+  private static final String DEFAULT_MEMORY_REQUEST = "25Mi";
+  private static final String DEFAULT_MEMORY_LIMIT = "50Mi";
   private static final ResourceRequirements DEFAULT_SIDECAR_RESOURCES = new ResourceRequirements()
-      .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_LIMIT);
+      .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_REQUEST);
 
   private static final String PIPES_DIR = "/pipes";
   private static final String STDIN_PIPE_FILE = PIPES_DIR + "/stdin";
@@ -136,7 +135,6 @@ public class KubePodProcess extends Process {
   private final Duration statusCheckInterval;
   private final int stdoutLocalPort;
   private final ServerSocket stderrServerSocket;
-  private final Map<Integer, Integer> internalToExternalPorts;
   private final int stderrLocalPort;
   private final ExecutorService executorService;
 
@@ -175,6 +173,7 @@ public class KubePodProcess extends Process {
                                    final List<VolumeMount> mainVolumeMounts,
                                    final ResourceRequirements resourceRequirements,
                                    final Map<Integer, Integer> internalToExternalPorts,
+                                   final Map<String, String> envMap,
                                    final String[] args)
       throws IOException {
     final var argsStr = String.join(" ", args);
@@ -198,12 +197,17 @@ public class KubePodProcess extends Process {
             .build())
         .collect(Collectors.toList());
 
+    final List<EnvVar> envVars = envMap.entrySet().stream()
+        .map(entry -> new EnvVar(entry.getKey(), entry.getValue(), null))
+        .collect(Collectors.toList());
+
     final ContainerBuilder containerBuilder = new ContainerBuilder()
         .withName("main")
         .withPorts(containerPorts)
         .withImage(image)
         .withImagePullPolicy(imagePullPolicy)
         .withCommand("sh", "-c", mainCommand)
+        .withEnv(envVars)
         .withWorkingDir(CONFIG_DIR)
         .withVolumeMounts(mainVolumeMounts);
 
@@ -214,27 +218,55 @@ public class KubePodProcess extends Process {
     return containerBuilder.build();
   }
 
-  private static void copyFilesToKubeConfigVolume(final ApiClient officialClient,
-                                                  final String podName,
-                                                  final String namespace,
+  private static void copyFilesToKubeConfigVolume(final KubernetesClient client,
+                                                  final Pod podDefinition,
                                                   final Map<String, String> files) {
     final List<Map.Entry<String, String>> fileEntries = new ArrayList<>(files.entrySet());
 
     // copy this file last to indicate that the copy has completed
     fileEntries.add(new AbstractMap.SimpleEntry<>(SUCCESS_FILE_NAME, ""));
 
+    Path tmpFile = null;
+    Process proc = null;
     for (final Map.Entry<String, String> file : fileEntries) {
       try {
+        tmpFile = Path.of(IOs.writeFileToRandomTmpDir(file.getKey(), file.getValue()));
+
         LOGGER.info("Uploading file: " + file.getKey());
-        final var contents = file.getValue().getBytes(StandardCharsets.UTF_8);
         final var containerPath = Path.of(CONFIG_DIR + "/" + file.getKey());
 
-        // fabric8 kube client upload doesn't work on gke:
-        // https://github.com/fabric8io/kubernetes-client/issues/2217
-        final Copy copy = new Copy(officialClient);
-        copy.copyFileToPod(namespace, podName, INIT_CONTAINER_NAME, contents, containerPath);
-      } catch (final IOException | ApiException e) {
+        // using kubectl cp directly here, because both fabric and the official kube client APIs have
+        // several issues with copying files. See https://github.com/airbytehq/airbyte/issues/8643 for
+        // details.
+        final String command = String.format("kubectl cp %s %s/%s:%s -c %s", tmpFile, podDefinition.getMetadata().getNamespace(),
+            podDefinition.getMetadata().getName(), containerPath, INIT_CONTAINER_NAME);
+        LOGGER.info(command);
+
+        proc = Runtime.getRuntime().exec(command);
+        LOGGER.info("Waiting for kubectl cp to complete");
+        final int exitCode = proc.waitFor();
+
+        if (exitCode != 0) {
+          // Copying the success indicator file to the init container causes the container to immediately
+          // exit, causing the `kubectl cp` command to exit with code 137. This check ensures that an error is
+          // not thrown in this case if the init container exits successfully.
+          if (file.getKey().equals(SUCCESS_FILE_NAME) && waitForInitPodToTerminate(client, podDefinition, 5, TimeUnit.MINUTES) == 0) {
+            LOGGER.info("Init was successful; ignoring non-zero kubectl cp exit code for success indicator file.");
+          } else {
+            throw new IOException("kubectl cp failed with exit code " + exitCode);
+          }
+        }
+
+        LOGGER.info("kubectl cp complete, closing process");
+      } catch (final IOException | InterruptedException e) {
         throw new RuntimeException(e);
+      } finally {
+        if (tmpFile != null) {
+          tmpFile.toFile().delete();
+        }
+        if (proc != null) {
+          proc.destroy();
+        }
       }
     }
   }
@@ -255,6 +287,23 @@ public class KubePodProcess extends Process {
     LOGGER.info("Init container ready..");
   }
 
+  /**
+   * Waits for the init container to terminate, and returns its exit code.
+   */
+  private static int waitForInitPodToTerminate(final KubernetesClient client,
+                                               final Pod podDefinition,
+                                               final long timeUnitsToWait,
+                                               final TimeUnit timeUnit)
+      throws InterruptedException {
+    LOGGER.info("Waiting for init container to terminate before checking exit value...");
+    client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
+        .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().get(0).getState().getTerminated() != null, timeUnitsToWait, timeUnit);
+    final int exitValue = client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName()).get()
+        .getStatus().getInitContainerStatuses().get(0).getState().getTerminated().getExitCode();
+    LOGGER.info("Init container terminated with exit value {}.", exitValue);
+    return exitValue;
+  }
+
   private Toleration[] buildPodTolerations(final List<TolerationPOJO> tolerations) {
     if (tolerations == null || tolerations.isEmpty()) {
       return null;
@@ -270,7 +319,6 @@ public class KubePodProcess extends Process {
 
   public KubePodProcess(final boolean isOrchestrator,
                         final String processRunnerHost,
-                        final ApiClient officialClient,
                         final KubernetesClient fabricClient,
                         final Duration statusCheckInterval,
                         final String podName,
@@ -291,6 +339,7 @@ public class KubePodProcess extends Process {
                         final String socatImage,
                         final String busyboxImage,
                         final String curlImage,
+                        final Map<String, String> envMap,
                         final Map<Integer, Integer> internalToExternalPorts,
                         final String... args)
       throws IOException, InterruptedException {
@@ -298,10 +347,8 @@ public class KubePodProcess extends Process {
     this.statusCheckInterval = statusCheckInterval;
     this.stdoutLocalPort = stdoutLocalPort;
     this.stderrLocalPort = stderrLocalPort;
-
     this.stdoutServerSocket = new ServerSocket(stdoutLocalPort);
     this.stderrServerSocket = new ServerSocket(stderrLocalPort);
-    this.internalToExternalPorts = internalToExternalPorts;
     this.executorService = Executors.newFixedThreadPool(2);
     setupStdOutAndStdErrListeners();
 
@@ -352,6 +399,7 @@ public class KubePodProcess extends Process {
         List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount),
         resourceRequirements,
         internalToExternalPorts,
+        envMap,
         args);
 
     final io.fabric8.kubernetes.api.model.ResourceRequirements sidecarResources = getResourceRequirementsBuilder(DEFAULT_SIDECAR_RESOURCES).build();
@@ -426,7 +474,7 @@ public class KubePodProcess extends Process {
     waitForInitPodToRun(fabricClient, podDefinition);
 
     LOGGER.info("Copying files...");
-    copyFilesToKubeConfigVolume(officialClient, podName, namespace, files);
+    copyFilesToKubeConfigVolume(fabricClient, podDefinition, files);
 
     LOGGER.info("Waiting until pod is ready...");
     // If a pod gets into a non-terminal error state it should be automatically killed by our

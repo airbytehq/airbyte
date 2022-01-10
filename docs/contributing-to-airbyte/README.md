@@ -87,15 +87,15 @@ To request new features, please create an issue on this project.
 
 If you would like to suggest a new feature, we ask that you please use our issue template. It contains a few essential questions that help us understand the problem you are looking to solve and how you think your recommendation will address it. We also tag incoming issues from this template with the "**community\_new**" label. This lets our teams quickly see what has been raised and better address the community recommendations.
 
-To see what has already been proposed by the community, you can look [here](https://github.com/airbytehq/airbyte/labels/community_new).
+To see what has already been proposed by the community, you can look [here](https://github.com/airbytehq/airbyte/labels/community).
 
 Watch out for duplicates! If you are creating a new issue, please check [existing open](https://github.com/airbytehq/airbyte/issues), or [recently closed](https://github.com/airbytehq/airbyte/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aclosed%20). Having a single voted for issue is far easier for us to prioritize
 
 ### **Requesting new connectors**
 
-This is very similar to requesting new features. The template will change a bit and all connector requests will be tagged with the “**community\_new**” and “**area/integration**” labels.
+This is very similar to requesting new features. The template will change a bit and all connector requests will be tagged with the “**community**” and “**area/connectors**” labels.
 
-To see what has already been proposed by the community, you can look [here](https://github.com/airbytehq/airbyte/labels/area%2Fintegration). Again, watch out for duplicates!
+To see what has already been proposed by the community, you can look [here](https://github.com/airbytehq/airbyte/labels/area%2Fconnectors). Again, watch out for duplicates!
 
 ### **Reporting bugs**
 

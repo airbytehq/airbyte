@@ -46,7 +46,7 @@
               },
               "delimiter": {
                 "title": "Delimiter",
-                "description": "The character delimiting individual cells in the CSV data. This may only be a 1-character string.",
+                "description": "The character delimiting individual cells in the CSV data. This may only be a 1-character string. For tab-delimited data enter '\\t'.",
                 "default": ",",
                 "minLength": 1,
                 "type": "string"
@@ -110,6 +110,7 @@
               }
             }
           },
+
           {
             "title": "parquet",
             "description": "This connector utilises <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html\" target=\"_blank\">PyArrow (Apache Arrow)</a> for Parquet parsing.",

@@ -176,7 +176,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-bigquery:0.5.1"
+- dockerImage: "airbyte/destination-bigquery:0.6.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -307,6 +307,16 @@
                 type: "string"
                 examples:
                 - "data_sync/test"
+              part_size_mb:
+                title: "Block Size (MB) for GCS multipart upload"
+                description: "This is the size of a \"Part\" being buffered in memory.\
+                  \ It limits the memory usage when writing. Larger values will allow\
+                  \ to upload a bigger files and improve the speed, but consumes9\
+                  \ more memory. Allowed values: min=5MB, max=525MB Default: 5MB."
+                type: "integer"
+                default: 5
+                examples:
+                - 5
               keep_files_in_gcs-bucket:
                 type: "string"
                 description: "This upload method is supposed to temporary store records\
@@ -354,7 +364,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:0.1.11"
+- dockerImage: "airbyte/destination-bigquery-denormalized:0.2.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -366,6 +376,19 @@
       - "dataset_id"
       additionalProperties: true
       properties:
+        big_query_client_buffer_size_mb:
+          title: "Google BigQuery client chunk size"
+          description: "Google BigQuery client's chunk (buffer) size (MIN = 1, MAX\
+            \ = 15) for each table. It defaults to 15MiB. Smaller chunk size means\
+            \ less memory consumption, and is recommended for big data sets. For more\
+            \ details refer to the documentation <a href=\"https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html\"\
+            >here</a>"
+          type: "integer"
+          minimum: 1
+          maximum: 15
+          default: 15
+          examples:
+          - "15"
         project_id:
           type: "string"
           description: "The GCP project ID for the project containing the target BigQuery\
@@ -422,6 +445,97 @@
             \ be used if this field is left empty."
           title: "Credentials JSON"
           airbyte_secret: true
+        loading_method:
+          type: "object"
+          title: "Loading Method"
+          description: "Select the way that data will be uploaded to BigQuery."
+          oneOf:
+          - title: "Standard Inserts"
+            additionalProperties: false
+            description: "Direct uploading using streams."
+            required:
+            - "method"
+            properties:
+              method:
+                type: "string"
+                const: "Standard"
+          - title: "GCS Staging"
+            additionalProperties: false
+            description: "Writes large batches of records to a file, uploads the file\
+              \ to GCS, then uses <pre>COPY INTO table</pre> to upload the file. Recommended\
+              \ for large production workloads for better speed and scalability."
+            required:
+            - "method"
+            - "gcs_bucket_name"
+            - "gcs_bucket_path"
+            - "credential"
+            properties:
+              method:
+                type: "string"
+                const: "GCS Staging"
+              gcs_bucket_name:
+                title: "GCS Bucket Name"
+                type: "string"
+                description: "The name of the GCS bucket."
+                examples:
+                - "airbyte_sync"
+              gcs_bucket_path:
+                description: "Directory under the GCS bucket where data will be written."
+                type: "string"
+                examples:
+                - "data_sync/test"
+              part_size_mb:
+                title: "Block Size (MB) for GCS multipart upload"
+                description: "This is the size of a \"Part\" being buffered in memory.\
+                  \ It limits the memory usage when writing. Larger values will allow\
+                  \ to upload a bigger files and improve the speed, but consumes9\
+                  \ more memory. Allowed values: min=5MB, max=525MB Default: 5MB."
+                type: "integer"
+                default: 5
+                minimum: 5
+                maximum: 525
+                examples:
+                - 5
+              keep_files_in_gcs-bucket:
+                type: "string"
+                description: "This upload method is supposed to temporary store records\
+                  \ in GCS bucket. What do you want to do with data in GCS bucket\
+                  \ when migration has finished?"
+                title: "GCS tmp files afterward processing"
+                default: "Delete all tmp files from GCS"
+                enum:
+                - "Delete all tmp files from GCS"
+                - "Keep all tmp files in GCS"
+              credential:
+                title: "Credential"
+                type: "object"
+                oneOf:
+                - title: "HMAC key"
+                  required:
+                  - "credential_type"
+                  - "hmac_key_access_id"
+                  - "hmac_key_secret"
+                  properties:
+                    credential_type:
+                      type: "string"
+                      const: "HMAC_KEY"
+                    hmac_key_access_id:
+                      type: "string"
+                      description: "HMAC key access ID. When linked to a service account,\
+                        \ this ID is 61 characters long; when linked to a user account,\
+                        \ it is 24 characters long."
+                      title: "HMAC Key Access ID"
+                      airbyte_secret: true
+                      examples:
+                      - "1234567890abcdefghij1234"
+                    hmac_key_secret:
+                      type: "string"
+                      description: "The corresponding secret for the access ID. It\
+                        \ is a 40-character base-64 encoded string."
+                      title: "HMAC Key Secret"
+                      airbyte_secret: true
+                      examples:
+                      - "1234567890abcdefghij1234567890ABCDEFGHIJ"
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: true
@@ -493,7 +607,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-keen:0.2.0"
+- dockerImage: "airbyte/destination-keen:0.2.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/keen"
     connectionSpecification:
@@ -506,13 +620,16 @@
       additionalProperties: false
       properties:
         project_id:
-          description: "Keen Project ID"
+          description: "To get Keen Project ID, navigate to the Access tab from the\
+            \ left-hand, side panel and check the Project Details section."
+          title: "Project ID"
           type: "string"
           examples:
           - "58b4acc22ba938934e888322e"
         api_key:
           title: "API Key"
-          description: "Keen Master API key"
+          description: "To get Keen Master API Key, navigate to the Access tab from\
+            \ the left-hand, side panel and check the Project Details section."
           type: "string"
           examples:
           - "ABCDEFGHIJKLMNOPRSTUWXYZ"
@@ -520,7 +637,7 @@
         infer_timestamp:
           title: "Infer Timestamp"
           description: "Allow connector to guess keen.timestamp value based on the\
-            \ streamed data"
+            \ streamed data."
           type: "boolean"
           default: true
     supportsIncremental: true
@@ -529,7 +646,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-clickhouse:0.1.0"
+- dockerImage: "airbyte/destination-clickhouse:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/clickhouse"
     connectionSpecification:
@@ -558,28 +675,38 @@
           examples:
           - "8123"
           order: 1
+        tcp-port:
+          title: "Native Port"
+          description: "Native port (not the JDBC) of the database."
+          type: "integer"
+          minimum: 0
+          maximum: 65536
+          default: 9000
+          examples:
+          - "9000"
+          order: 2
         database:
           title: "DB Name"
           description: "Name of the database."
           type: "string"
-          order: 2
+          order: 3
         username:
           title: "User"
           description: "Username to use to access the database."
           type: "string"
-          order: 3
+          order: 4
         password:
           title: "Password"
           description: "Password associated with the username."
           type: "string"
           airbyte_secret: true
-          order: 4
+          order: 5
         ssl:
           title: "SSL Connection"
           description: "Encrypt data using SSL."
           type: "boolean"
           default: false
-          order: 5
+          order: 6
         tunnel_method:
           type: "object"
           title: "SSH Tunnel Method"
@@ -1014,7 +1141,7 @@
     - "overwrite"
     - "append"
     supportsNamespaces: true
-- dockerImage: "airbyte/destination-gcs:0.1.16"
+- dockerImage: "airbyte/destination-gcs:0.1.18"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/gcs"
     connectionSpecification:
@@ -1032,11 +1159,13 @@
         gcs_bucket_name:
           title: "GCS Bucket Name"
           type: "string"
-          description: "The name of the GCS bucket."
+          description: "You can find the bucket name in the  App Engine Admin console\
+            \ Application Settings page, under the label  Google Cloud Storage Bucket."
           examples:
           - "airbyte_sync"
         gcs_bucket_path:
-          description: "Directory under the GCS bucket where data will be written."
+          description: "GCS Bucket Path string Subdirectory under the above bucket\
+            \ to sync the data into."
           type: "string"
           examples:
           - "data_sync/test"
@@ -1044,7 +1173,7 @@
           title: "GCS Bucket Region"
           type: "string"
           default: ""
-          description: "The region of the GCS bucket."
+          description: "Select a Region of the GCS Bucket."
           enum:
           - ""
           - "-- North America --"
@@ -1093,7 +1222,7 @@
           title: "Credential"
           type: "object"
           oneOf:
-          - title: "HMAC key"
+          - title: "HMAC Key"
             required:
             - "credential_type"
             - "hmac_key_access_id"
@@ -1142,7 +1271,7 @@
                   \ to no compression."
                 type: "object"
                 oneOf:
-                - title: "no compression"
+                - title: "No Compression"
                   required:
                   - "codec"
                   properties:
@@ -1189,7 +1318,7 @@
                       - "xz"
                       default: "xz"
                     compression_level:
-                      title: "Compression level"
+                      title: "Compression Level"
                       description: "See <a href=\"https://commons.apache.org/proper/commons-compress/apidocs/org/apache/commons/compress/compressors/xz/XZCompressorOutputStream.html#XZCompressorOutputStream-java.io.OutputStream-int-\"\
                         >here</a> for details."
                       type: "integer"
@@ -1207,7 +1336,7 @@
                       - "zstandard"
                       default: "zstandard"
                     compression_level:
-                      title: "Compression level"
+                      title: "Compression Level"
                       description: "Negative levels are 'fast' modes akin to lz4 or\
                         \ snappy, levels above 9 are generally for archival purposes,\
                         \ and levels above 18 use a lot of memory."
@@ -1216,7 +1345,7 @@
                       minimum: -5
                       maximum: 22
                     include_checksum:
-                      title: "Include checksum"
+                      title: "Include Checksum"
                       description: "If true, include a checksum with each data block."
                       type: "boolean"
                       default: false
@@ -1391,7 +1520,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-kafka:0.1.2"
+- dockerImage: "airbyte/destination-kafka:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/kafka"
     connectionSpecification:
@@ -1422,7 +1551,7 @@
       additionalProperties: true
       properties:
         bootstrap_servers:
-          title: "Bootstrap servers"
+          title: "Bootstrap Servers"
           description: "A list of host/port pairs to use for establishing the initial\
             \ connection to the Kafka cluster. The client will make use of all servers\
             \ irrespective of which servers are specified here for bootstrapping&mdash;this\
@@ -1436,7 +1565,7 @@
           examples:
           - "kafka-broker1:9092,kafka-broker2:9092"
         topic_pattern:
-          title: "Topic pattern"
+          title: "Topic Pattern"
           description: "Topic pattern in which the records will be sent. You can use\
             \ patterns like '{namespace}' and/or '{stream}' to send the message to\
             \ a specific topic based on these values. Notice that the topic name will\
@@ -1446,13 +1575,13 @@
           - "sample.topic"
           - "{namespace}.{stream}.sample"
         test_topic:
-          title: "Test topic"
+          title: "Test Topic"
           description: "Topic to test if Airbyte can produce messages."
           type: "string"
           examples:
           - "test.topic"
         sync_producer:
-          title: "Sync producer"
+          title: "Sync Producer"
           description: "Wait synchronously until the record has been sent to Kafka."
           type: "boolean"
           default: false
@@ -1482,7 +1611,7 @@
                 - "SASL_PLAINTEXT"
                 default: "SASL_PLAINTEXT"
               sasl_mechanism:
-                title: "SASL mechanism"
+                title: "SASL Mechanism"
                 description: "SASL mechanism used for client connections. This may\
                   \ be any mechanism for which a security provider is available."
                 type: "string"
@@ -1490,7 +1619,7 @@
                 enum:
                 - "PLAIN"
               sasl_jaas_config:
-                title: "SASL JAAS config"
+                title: "SASL JAAS Config"
                 description: "JAAS login context parameters for SASL connections in\
                   \ the format used by JAAS configuration files."
                 type: "string"
@@ -1508,7 +1637,7 @@
                 - "SASL_SSL"
                 default: "SASL_SSL"
               sasl_mechanism:
-                title: "SASL mechanism"
+                title: "SASL Mechanism"
                 description: "SASL mechanism used for client connections. This may\
                   \ be any mechanism for which a security provider is available."
                 type: "string"
@@ -1518,7 +1647,7 @@
                 - "OAUTHBEARER"
                 - "SCRAM-SHA-256"
               sasl_jaas_config:
-                title: "SASL JAAS config"
+                title: "SASL JAAS Config"
                 description: "JAAS login context parameters for SASL connections in\
                   \ the format used by JAAS configuration files."
                 type: "string"
@@ -1526,7 +1655,7 @@
                 airbyte_secret: true
         client_id:
           title: "Client ID"
-          description: "An id string to pass to the server when making requests. The\
+          description: "An ID string to pass to the server when making requests. The\
             \ purpose of this is to be able to track the source of requests beyond\
             \ just ip/port by allowing a logical application name to be included in\
             \ server-side request logging."
@@ -1545,7 +1674,7 @@
           - "1"
           - "all"
         enable_idempotence:
-          title: "Enable idempotence"
+          title: "Enable Idempotence"
           description: "When set to 'true', the producer will ensure that exactly\
             \ one copy of each message is written in the stream. If 'false', producer\
             \ retries due to broker failures, etc., may write duplicates of the retried\
@@ -1553,7 +1682,7 @@
           type: "boolean"
           default: false
         compression_type:
-          title: "Compression type"
+          title: "Compression Type"
           description: "The compression type for all data generated by the producer."
           type: "string"
           default: "none"
@@ -1564,7 +1693,7 @@
           - "lz4"
           - "zstd"
         batch_size:
-          title: "Batch size"
+          title: "Batch Size"
           description: "The producer will attempt to batch records together into fewer\
             \ requests whenever multiple records are being sent to the same partition."
           type: "integer"
@@ -1578,14 +1707,15 @@
           examples:
           - 0
         max_in_flight_requests_per_connection:
-          title: "Max in flight requests per connection"
+          title: "Max in Flight Requests per Connection"
           description: "The maximum number of unacknowledged requests the client will\
-            \ send on a single connection before blocking."
+            \ send on a single connection before blocking. Can be greater than 1,\
+            \ and the maximum value supported with idempotency is 5."
           type: "integer"
           examples:
           - 5
         client_dns_lookup:
-          title: "Client DNS lookup"
+          title: "Client DNS Lookup"
           description: "Controls how the client uses DNS lookups. If set to use_all_dns_ips,\
             \ connect to each returned IP address in sequence until a successful connection\
             \ is established. After a disconnection, the next IP is used. Once all\
@@ -1603,13 +1733,13 @@
           - "resolve_canonical_bootstrap_servers_only"
           - "use_all_dns_ips"
         buffer_memory:
-          title: "Buffer memory"
+          title: "Buffer Memory"
           description: "The total bytes of memory the producer can use to buffer records\
             \ waiting to be sent to the server."
           type: "string"
           examples: 33554432
         max_request_size:
-          title: "Max request size"
+          title: "Max Request Size"
           description: "The maximum size of a request in bytes."
           type: "integer"
           examples:
@@ -1622,14 +1752,14 @@
           examples:
           - 2147483647
         socket_connection_setup_timeout_ms:
-          title: "Socket connection setup timeout"
+          title: "Socket Connection Setup Timeout"
           description: "The amount of time the client will wait for the socket connection\
             \ to be established."
           type: "string"
           examples:
           - 10000
         socket_connection_setup_timeout_max_ms:
-          title: "Socket connection setup max timeout"
+          title: "Socket Connection Setup Max Timeout"
           description: "The maximum amount of time the client will wait for the socket\
             \ connection to be established. The connection setup timeout will increase\
             \ exponentially for each consecutive connection failure up to this maximum."
@@ -1637,7 +1767,7 @@
           examples:
           - 30000
         max_block_ms:
-          title: "Max block ms"
+          title: "Max Block ms"
           description: "The configuration controls how long the KafkaProducer's send(),\
             \ partitionsFor(), initTransactions(), sendOffsetsToTransaction(), commitTransaction()\
             \ and abortTransaction() methods will block."
@@ -1645,7 +1775,7 @@
           examples:
           - 60000
         request_timeout_ms:
-          title: "Request timeout"
+          title: "Request Timeout"
           description: "The configuration controls the maximum amount of time the\
             \ client will wait for the response of a request. If the response is not\
             \ received before the timeout elapses the client will resend the request\
@@ -1654,21 +1784,21 @@
           examples:
           - 30000
         delivery_timeout_ms:
-          title: "Delivery timeout"
+          title: "Delivery Timeout"
           description: "An upper bound on the time to report success or failure after\
             \ a call to 'send()' returns."
           type: "integer"
           examples:
           - 120000
         send_buffer_bytes:
-          title: "Send buffer bytes"
+          title: "Send Buffer bytes"
           description: "The size of the TCP send buffer (SO_SNDBUF) to use when sending\
             \ data. If the value is -1, the OS default will be used."
           type: "integer"
           examples:
           - 131072
         receive_buffer_bytes:
-          title: "Receive buffer bytes"
+          title: "Receive Buffer bytes"
           description: "The size of the TCP receive buffer (SO_RCVBUF) to use when\
             \ reading data. If the value is -1, the OS default will be used."
           type: "integer"
@@ -1679,7 +1809,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-kinesis:0.1.0"
+- dockerImage: "airbyte/destination-kinesis:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/kinesis"
     connectionSpecification:
@@ -1695,34 +1825,36 @@
       properties:
         endpoint:
           title: "Endpoint"
-          description: "Aws Kinesis endpoint."
+          description: "AWS Kinesis endpoint."
           type: "string"
           order: 0
         region:
           title: "Region"
-          description: "Aws region."
+          description: "AWS region. Your account determines the Regions that are available\
+            \ to you."
           type: "string"
           order: 1
         shardCount:
-          title: "shardCount"
+          title: "Shard Count"
           description: "Number of shards to which the data should be streamed."
           type: "integer"
           default: 5
           order: 2
         accessKey:
-          title: "accessKey"
-          description: "Aws access key."
+          title: "Access Key"
+          description: "Generate the AWS Access Key for current user."
           airbyte_secret: true
           type: "string"
           order: 3
         privateKey:
-          title: "privateKey"
-          description: "Aws private key."
+          title: "Private Key"
+          description: "The AWS Private Key - a string of numbers and letters that\
+            \ are unique for each account, also known as a \"recovery phrase\"."
           airbyte_secret: true
           type: "string"
           order: 4
         bufferSize:
-          title: "bufferSize"
+          title: "Buffer Size"
           description: "Buffer size for storing kinesis records before being batch\
             \ streamed."
           type: "integer"
@@ -1761,7 +1893,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-local-json:0.2.8"
+- dockerImage: "airbyte/destination-local-json:0.2.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/local-json"
     connectionSpecification:
@@ -1777,6 +1909,7 @@
             \ files will be placed inside that local mount. For more information check\
             \ out our <a href=\"https://docs.airbyte.io/integrations/destinations/local-json\"\
             >docs</a>"
+          title: "Destination Path"
           type: "string"
           examples:
           - "/json_data"
@@ -1892,7 +2025,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-mssql:0.1.12"
+- dockerImage: "airbyte/destination-mssql:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -1909,12 +2042,12 @@
       properties:
         host:
           title: "Host"
-          description: "Hostname of the database."
+          description: "The host name of the MSSQL database."
           type: "string"
           order: 0
         port:
           title: "Port"
-          description: "Port of the database."
+          description: "The port of the MSSQL database."
           type: "integer"
           minimum: 0
           maximum: 65536
@@ -1924,7 +2057,7 @@
           order: 1
         database:
           title: "DB Name"
-          description: "Name of the database."
+          description: "The name of the MSSQL database."
           type: "string"
           order: 2
         schema:
@@ -1939,24 +2072,25 @@
           order: 3
         username:
           title: "User"
-          description: "Username to use to access the database."
+          description: "The username which is used to access the database."
           type: "string"
           order: 4
         password:
           title: "Password"
-          description: "Password associated with the username."
+          description: "The password associated with this username."
           type: "string"
           airbyte_secret: true
           order: 5
         ssl_method:
           title: "SSL Method"
           type: "object"
-          description: "Encryption method to use when communicating with the database"
+          description: "The encryption method which is used to communicate with the\
+            \ database."
           order: 6
           oneOf:
           - title: "Unencrypted"
             additionalProperties: false
-            description: "Data transfer will not be encrypted."
+            description: "The data transfer will not be encrypted."
             required:
             - "ssl_method"
             type: "object"
@@ -1968,8 +2102,8 @@
                 default: "unencrypted"
           - title: "Encrypted (trust server certificate)"
             additionalProperties: false
-            description: "Use the cert provided by the server without verification.\
-              \  (For testing purposes only!)"
+            description: "Use the certificate provided by the server without verification.\
+              \ (For testing purposes only!)"
             required:
             - "ssl_method"
             type: "object"
@@ -1981,7 +2115,7 @@
                 default: "encrypted_trust_server_certificate"
           - title: "Encrypted (verify certificate)"
             additionalProperties: false
-            description: "Verify and use the cert provided by the server."
+            description: "Verify and use the certificate provided by the server."
             required:
             - "ssl_method"
             - "trustStoreName"
@@ -2107,7 +2241,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-meilisearch:0.2.10"
+- dockerImage: "airbyte/destination-meilisearch:0.2.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/meilisearch"
     connectionSpecification:
@@ -2120,13 +2254,14 @@
       properties:
         host:
           title: "Host"
-          description: "Hostname of the MeiliSearch instance"
+          description: "Hostname of the MeiliSearch instance."
           type: "string"
           order: 0
         api_key:
           title: "API Key"
           airbyte_secret: true
-          description: "MeiliSearch instance API Key"
+          description: "MeiliSearch API Key. See the <a href=\"https://docs.airbyte.io/integrations/destinations/meilisearch\"\
+            >docs</a> for more information on how to obtain this key."
           type: "string"
           order: 1
     supportsIncremental: true
@@ -2135,7 +2270,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-mongodb:0.1.2"
+- dockerImage: "airbyte/destination-mongodb:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mongodb"
     connectionSpecification:
@@ -2150,7 +2285,7 @@
         instance_type:
           description: "MongoDb instance to connect to. For MongoDB Atlas and Replica\
             \ Set TLS connection is used by default."
-          title: "MongoDb instance type"
+          title: "MongoDb Instance Type"
           type: "object"
           order: 0
           oneOf:
@@ -2168,12 +2303,12 @@
               host:
                 title: "Host"
                 type: "string"
-                description: "Host of a Mongo database to be replicated."
+                description: "The Host of a Mongo database to be replicated."
                 order: 0
               port:
                 title: "Port"
                 type: "integer"
-                description: "Port of a Mongo database to be replicated."
+                description: "The Port of a Mongo database to be replicated."
                 minimum: 0
                 maximum: 65536
                 default: 27017
@@ -2181,7 +2316,7 @@
                 - "27017"
                 order: 1
               tls:
-                title: "TLS connection"
+                title: "TLS Connection"
                 type: "boolean"
                 description: "Indicates whether TLS encryption protocol will be used\
                   \ to connect to MongoDB. It is recommended to use TLS connection\
@@ -3259,7 +3394,7 @@
     supported_destination_sync_modes:
     - "append"
     - "overwrite"
-- dockerImage: "airbyte/destination-s3:0.2.1"
+- dockerImage: "airbyte/destination-s3:0.2.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/s3"
     connectionSpecification:
@@ -3457,6 +3592,8 @@
                   \ more memory. Allowed values: min=5MB, max=525MB Default: 5MB."
                 type: "integer"
                 default: 5
+                minimum: 5
+                maximum: 525
                 examples:
                 - 5
           - title: "CSV: Comma-Separated Values"
@@ -3630,7 +3767,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.3.21"
+- dockerImage: "airbyte/destination-snowflake:0.4.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:
@@ -3678,7 +3815,9 @@
           order: 3
         schema:
           description: "The default Snowflake schema tables are written to if the\
-            \ source does not specify a namespace."
+            \ source does not specify a namespace. Schema name would be transformed\
+            \ to allowed by Snowflake if it not follow Snowflake Naming Conventions\
+            \ https://docs.airbyte.io/integrations/destinations/snowflake#notes-about-snowflake-naming-conventions "
           examples:
           - "AIRBYTE_SCHEMA"
           type: "string"
@@ -3801,6 +3940,21 @@
                 title: "S3 Access Key"
                 airbyte_secret: true
                 order: 4
+              part_size:
+                type: "integer"
+                default: 5
+                examples:
+                - 5
+                description: "Optional. Increase this if syncing tables larger than\
+                  \ 100GB. Only relevant for COPY. Files are streamed to S3 in parts.\
+                  \ This determines the size of each part, in MBs. As S3 has a limit\
+                  \ of 10,000 parts per file, part size affects the table size. This\
+                  \ is 10MB by default, resulting in a default limit of 100GB tables.\
+                  \ Note, a larger part size will result in larger memory requirements.\
+                  \ A rule of thumb is to multiply the part size by 10 to get the\
+                  \ memory requirement. Modify this with care."
+                title: "Stream Part Size"
+                order: 5
           - title: "GCS Staging"
             additionalProperties: false
             description: "Writes large batches of records to a file, uploads the file\
@@ -3853,7 +4007,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-mariadb-columnstore:0.1.1"
+- dockerImage: "airbyte/destination-mariadb-columnstore:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mariadb-columnstore"
     connectionSpecification:
@@ -3869,12 +4023,12 @@
       properties:
         host:
           title: "Host"
-          description: "Hostname of the database."
+          description: "The Hostname of the database."
           type: "string"
           order: 0
         port:
           title: "Port"
-          description: "Port of the database."
+          description: "The Port of the database."
           type: "integer"
           minimum: 0
           maximum: 65536
@@ -3889,12 +4043,12 @@
           order: 2
         username:
           title: "Username"
-          description: "Username to use to access the database."
+          description: "The Username which is used to access the database."
           type: "string"
           order: 3
         password:
           title: "Password"
-          description: "Password associated with the username."
+          description: "The Password associated with the username."
           type: "string"
           airbyte_secret: true
           order: 4

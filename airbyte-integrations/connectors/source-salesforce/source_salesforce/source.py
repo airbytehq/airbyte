@@ -52,7 +52,7 @@ class SourceSalesforce(AbstractSource):
 
     def streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None) -> List[Stream]:
         sf = self._get_sf_object(config)
-        stream_names = sf.get_validated_streams(catalog=catalog)
+        stream_names = sf.get_validated_streams(config=config, catalog=catalog)
         return self.generate_streams(config, stream_names, sf)
 
     def read(

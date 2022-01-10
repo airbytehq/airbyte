@@ -2,13 +2,16 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: airbyte-env
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-1"
 data:
   AIRBYTE_VERSION: {{ .Values.version | default .Chart.AppVersion }}
   API_URL: {{ .Values.webapp.api.url }}
   AWS_ACCESS_KEY_ID: {{ .Values.logs.accessKey.password }}
   AWS_SECRET_ACCESS_KEY: {{ .Values.logs.secretKey.password }}
   CONFIG_ROOT: /configs
-  CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: "0.30.22.001"
+  CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: "0.35.1.001"
   DATA_DOCKER_MOUNT: airbyte_data
   DATABASE_DB: {{ include "airbyte.database.name" . }}
   DATABASE_HOST: {{ include "airbyte.database.host" . }}
@@ -22,10 +25,10 @@ data:
   GOOGLE_APPLICATION_CREDENTIALS: {{ .Values.logs.gcs.credentials | quote }}
   INTERNAL_API_HOST: {{ include "common.names.fullname" . }}-server:{{ .Values.server.service.port }}
   IS_DEMO: {{ ternary "true" "false" .Values.webapp.isDemo | quote }}
-  JOB_POD_MAIN_CONTAINER_CPU_LIMIT: ""
-  JOB_POD_MAIN_CONTAINER_CPU_REQUEST: ""
-  JOB_POD_MAIN_CONTAINER_MEMORY_LIMIT: ""
-  JOB_POD_MAIN_CONTAINER_MEMORY_REQUEST: ""
+  JOB_MAIN_CONTAINER_CPU_LIMIT: ""
+  JOB_MAIN_CONTAINER_CPU_REQUEST: ""
+  JOB_MAIN_CONTAINER_MEMORY_LIMIT: ""
+  JOB_MAIN_CONTAINER_MEMORY_REQUEST: ""
   JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: "0.29.15.001"
   LOCAL_ROOT: /tmp/airbyte_local
   RUN_DATABASE_MIGRATION_ON_STARTUP: "true"

@@ -10,7 +10,6 @@ import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerException;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.kubernetes.client.openapi.ApiClient;
 import java.net.InetAddress;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -48,7 +47,6 @@ public class KubeProcessFactory implements ProcessFactory {
 
   private final WorkerConfigs workerConfigs;
   private final String namespace;
-  private final ApiClient officialClient;
   private final KubernetesClient fabricClient;
   private final String kubeHeartbeatUrl;
   private final String processRunnerHost;
@@ -60,17 +58,15 @@ public class KubeProcessFactory implements ProcessFactory {
    */
   public KubeProcessFactory(final WorkerConfigs workerConfigs,
                             final String namespace,
-                            final ApiClient officialClient,
                             final KubernetesClient fabricClient,
                             final String kubeHeartbeatUrl,
                             final boolean isOrchestrator) {
-    this(workerConfigs, namespace, officialClient, fabricClient, kubeHeartbeatUrl,
+    this(workerConfigs, namespace, fabricClient, kubeHeartbeatUrl,
         Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()), isOrchestrator, KubePodProcess.DEFAULT_STATUS_CHECK_INTERVAL);
   }
 
   /**
    * @param namespace kubernetes namespace where spawned pods will live
-   * @param officialClient official kubernetes client
    * @param fabricClient fabric8 kubernetes client
    * @param kubeHeartbeatUrl a url where if the response is not 200 the spawned process will fail
    *        itself
@@ -83,7 +79,6 @@ public class KubeProcessFactory implements ProcessFactory {
   @VisibleForTesting
   public KubeProcessFactory(final WorkerConfigs workerConfigs,
                             final String namespace,
-                            final ApiClient officialClient,
                             final KubernetesClient fabricClient,
                             final String kubeHeartbeatUrl,
                             final String processRunnerHost,
@@ -91,7 +86,6 @@ public class KubeProcessFactory implements ProcessFactory {
                             final Duration statusCheckInterval) {
     this.workerConfigs = workerConfigs;
     this.namespace = namespace;
-    this.officialClient = officialClient;
     this.fabricClient = fabricClient;
     this.kubeHeartbeatUrl = kubeHeartbeatUrl;
     this.processRunnerHost = processRunnerHost;
@@ -133,7 +127,6 @@ public class KubeProcessFactory implements ProcessFactory {
       return new KubePodProcess(
           isOrchestrator,
           processRunnerHost,
-          officialClient,
           fabricClient,
           statusCheckInterval,
           podName,
@@ -148,12 +141,13 @@ public class KubeProcessFactory implements ProcessFactory {
           entrypoint,
           resourceRequirements,
           workerConfigs.getJobImagePullSecret(),
-          workerConfigs.getWorkerPodTolerations(),
-          workerConfigs.getWorkerPodNodeSelectors(),
+          workerConfigs.getWorkerKubeTolerations(),
+          workerConfigs.getworkerKubeNodeSelectors(),
           allLabels,
           workerConfigs.getJobSocatImage(),
           workerConfigs.getJobBusyboxImage(),
           workerConfigs.getJobCurlImage(),
+          workerConfigs.getEnvMap(),
           internalToExternalPorts,
           args);
     } catch (final Exception e) {
