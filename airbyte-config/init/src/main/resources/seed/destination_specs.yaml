@@ -176,7 +176,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-bigquery:0.6.1"
+- dockerImage: "airbyte/destination-bigquery:0.6.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -261,7 +261,7 @@
           type: "string"
           description: "When running custom transformations or Basic normalization,\
             \ running queries on interactive mode can hit BQ limits, choosing batch\
-            \ will solve those limitss."
+            \ will solve those limits."
           title: "Transformation Query Run Type"
           default: "interactive"
           enum:
@@ -311,10 +311,12 @@
                 title: "Block Size (MB) for GCS multipart upload"
                 description: "This is the size of a \"Part\" being buffered in memory.\
                   \ It limits the memory usage when writing. Larger values will allow\
-                  \ to upload a bigger files and improve the speed, but consumes9\
-                  \ more memory. Allowed values: min=5MB, max=525MB Default: 5MB."
+                  \ to upload a bigger files and improve the speed, but consumes more\
+                  \ memory. Allowed values: min=5MB, max=525MB Default: 5MB."
                 type: "integer"
                 default: 5
+                minimum: 5
+                maximum: 525
                 examples:
                 - 5
               keep_files_in_gcs-bucket:
@@ -1141,7 +1143,7 @@
     - "overwrite"
     - "append"
     supportsNamespaces: true
-- dockerImage: "airbyte/destination-gcs:0.1.18"
+- dockerImage: "airbyte/destination-gcs:0.1.19"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/gcs"
     connectionSpecification:
