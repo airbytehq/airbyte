@@ -96,10 +96,11 @@ public class ContainerOrchestratorApp {
           logClient.getSchedulerLogsRoot(configs.getWorkspaceRoot()));
 
       try (final var mdcScope = LOG_MDC_BUILDER.build()) {
-        documentStoreClient = StateClients.create(configs.getStateStorageCloudConfigs(), Path.of("/")); // todo: use different prefix
+        documentStoreClient = StateClients.create(configs.getStateStorageCloudConfigs(), WorkerApp.STATE_STORAGE_PREFIX); // todo: log on writing
+                                                                                                                          // statuses
 
         // todo: use a helper to get the path
-        documentStoreClient.write("/" + kubePodInfo.name() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.INITIALIZING, "");
+        documentStoreClient.write(kubePodInfo.namespace() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.INITIALIZING.name(), "");
 
         heartbeatServer = new WorkerHeartbeatServer(WorkerApp.KUBE_HEARTBEAT_PORT);
         heartbeatServer.startBackground();
@@ -109,13 +110,13 @@ public class ContainerOrchestratorApp {
         final JobOrchestrator<?> jobOrchestrator = getJobOrchestrator(configs, workerConfigs, processFactory, application);
 
         log.info("Starting {} orchestrator...", jobOrchestrator.getOrchestratorName());
-        documentStoreClient.write("/" + kubePodInfo.name() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.RUNNING, "");
+        documentStoreClient.write(kubePodInfo.namespace() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.RUNNING.name(), "");
         final Optional<String> output = jobOrchestrator.runJob();
-        documentStoreClient.write("/" + kubePodInfo.name() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.SUCCEEDED, output.orElse(""));
+        documentStoreClient.write(kubePodInfo.namespace() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.SUCCEEDED.name(), output.orElse(""));
         log.info("{} orchestrator complete!", jobOrchestrator.getOrchestratorName());
       } catch (Throwable t) {
         if (documentStoreClient != null && kubePodInfo != null) {
-          documentStoreClient.write("/" + kubePodInfo.name() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.FAILED, "");
+          documentStoreClient.write(kubePodInfo.namespace() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.FAILED.name(), "");
         }
 
         log.error("Orchestrator failed", t);
@@ -133,7 +134,7 @@ public class ContainerOrchestratorApp {
     } catch (Throwable t) {
       // not catchable by cloud logging
       if (documentStoreClient != null && kubePodInfo != null) {
-        documentStoreClient.write("/" + kubePodInfo.name() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.FAILED, "");
+        documentStoreClient.write("/" + kubePodInfo.namespace() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.FAILED, "");
       }
 
       log.error("Orchestrator failed", t);

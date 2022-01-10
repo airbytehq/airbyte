@@ -188,15 +188,20 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     return getDocument(status.name()).isPresent();
   }
 
+  /**
+   * Checks terminal states first, then running, then initialized. Defaults to not started.
+   *
+   * The order matters here!
+   */
   public AsyncKubePodStatus getDocStoreStatus() {
-    if (checkStatus(AsyncKubePodStatus.INITIALIZING)) {
-      return AsyncKubePodStatus.INITIALIZING;
-    } else if (checkStatus(AsyncKubePodStatus.RUNNING)) {
-      return AsyncKubePodStatus.RUNNING;
-    } else if (checkStatus(AsyncKubePodStatus.FAILED)) {
+    if (checkStatus(AsyncKubePodStatus.FAILED)) {
       return AsyncKubePodStatus.FAILED;
     } else if (checkStatus(AsyncKubePodStatus.SUCCEEDED)) {
       return AsyncKubePodStatus.SUCCEEDED;
+    } else if (checkStatus(AsyncKubePodStatus.RUNNING)) {
+      return AsyncKubePodStatus.RUNNING;
+    } else if (checkStatus(AsyncKubePodStatus.INITIALIZING)) {
+      return AsyncKubePodStatus.INITIALIZING;
     } else {
       return AsyncKubePodStatus.NOT_STARTED;
     }
