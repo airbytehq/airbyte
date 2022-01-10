@@ -79,7 +79,6 @@ def minio_setup():
     yield
 
     if os.path.exists(TMP_FOLDER):
-        os.remove(str(config_file))
         shutil.rmtree(TMP_FOLDER)
         logger.info("minio was stopped")
     container.stop()
