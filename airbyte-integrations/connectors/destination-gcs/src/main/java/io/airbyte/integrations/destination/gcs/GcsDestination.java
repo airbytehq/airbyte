@@ -4,10 +4,6 @@
 
 package io.airbyte.integrations.destination.gcs;
 
-import static io.airbyte.integrations.destination.gcs.util.Consts.CHECK_ACTIONS_TMP_FILE_NAME;
-import static io.airbyte.integrations.destination.gcs.util.Consts.DUMMY_MIDDLE_SIZE_TEXT;
-import static io.airbyte.integrations.destination.gcs.util.Consts.EXPECTED_ROLES;
-
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
@@ -27,12 +23,18 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.function.Consumer;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class GcsDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GcsDestination.class);
+  public static final String EXPECTED_ROLES = "storage.multipartUploads.abort, storage.multipartUploads.create, "
+      + "storage.objects.create, storage.objects.delete, storage.objects.get, storage.objects.list";
+
+  public static final String CHECK_ACTIONS_TMP_FILE_NAME = "test";
+  public static final String DUMMY_TEXT = "This is just a dummy text to write to test file";
 
   public static void main(final String[] args) throws Exception {
     new IntegrationRunner(new GcsDestination()).run(args);
@@ -65,7 +67,7 @@ public class GcsDestination extends BaseConnector implements Destination {
 
   private void testSingleUpload(final AmazonS3 s3Client, final GcsDestinationConfig destinationConfig) {
     LOGGER.info("Started testing if all required credentials assigned to user for single file uploading");
-    s3Client.putObject(destinationConfig.getBucketName(), CHECK_ACTIONS_TMP_FILE_NAME, DUMMY_MIDDLE_SIZE_TEXT);
+    s3Client.putObject(destinationConfig.getBucketName(), CHECK_ACTIONS_TMP_FILE_NAME, DUMMY_TEXT);
     s3Client.deleteObject(destinationConfig.getBucketName(), CHECK_ACTIONS_TMP_FILE_NAME);
     LOGGER.info("Finished checking for normal upload mode");
   }
@@ -79,7 +81,7 @@ public class GcsDestination extends BaseConnector implements Destination {
         // Sets the size threshold, in bytes, for when to use multipart uploads. Uploads over this size will
         // automatically use a multipart upload strategy, while uploads smaller than this threshold will use
         // a single connection to upload the whole object. So we need to set it as small for testing
-        // connection
+        // connection. See javadoc for more details.
         .withMultipartUploadThreshold(1024L) // set 1KB as part size
         .build();
 
@@ -98,7 +100,12 @@ public class GcsDestination extends BaseConnector implements Destination {
   private File getTmpFileToUpload() throws IOException {
     final File tmpFile = File.createTempFile(CHECK_ACTIONS_TMP_FILE_NAME, ".tmp");
     try (final FileWriter writer = new FileWriter(tmpFile)) {
-      writer.write(DUMMY_MIDDLE_SIZE_TEXT);
+      // Text should be bigger than Threshold's size to make client use a multipart upload strategy,
+      // smaller than threshold will use a single connection to upload the whole object even if multipart
+      // upload option is ON. See {@link TransferManagerBuilder#withMultipartUploadThreshold}
+      // javadoc for more information.
+
+      writer.write(StringUtils.repeat(DUMMY_TEXT, 1000));
     }
     return tmpFile;
   }
