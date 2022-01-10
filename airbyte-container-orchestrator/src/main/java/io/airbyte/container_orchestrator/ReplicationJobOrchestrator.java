@@ -27,6 +27,7 @@ import io.airbyte.workers.protocols.airbyte.EmptyAirbyteSource;
 import io.airbyte.workers.protocols.airbyte.NamespacingMapper;
 import io.airbyte.workers.temporal.sync.ReplicationLauncherWorker;
 import java.nio.file.Path;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -53,7 +54,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
   }
 
   @Override
-  public void runJob() throws Exception {
+  public Optional<String> runJob() throws Exception {
     final JobRunConfig jobRunConfig = readJobRunConfig();
     final StandardSyncInput syncInput = readInput();
 
@@ -101,12 +102,8 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
     final Path jobRoot = WorkerUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
     final ReplicationOutput replicationOutput = replicationWorker.run(syncInput, jobRoot);
 
-    log.info("Sending output...");
-    // this uses stdout directly because it shouldn't have the logging related prefix
-    // the replication output is read from the container that launched the runner
-    System.out.println(Jsons.serialize(replicationOutput));
-
-    // todo: write to output 
+    log.info("Returning output...");
+    return Optional.of(Jsons.serialize(replicationOutput));
   }
 
 }

@@ -11,6 +11,7 @@ import io.airbyte.workers.temporal.sync.OrchestratorConstants;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 
 /**
  * The job orchestrator helps abstract over container launcher application differences across
@@ -36,8 +37,12 @@ public interface JobOrchestrator<INPUT> {
     return readAndDeserializeFile(Path.of(KubePodProcess.CONFIG_DIR, OrchestratorConstants.INIT_FILE_JOB_RUN_CONFIG), JobRunConfig.class);
   }
 
-  // the unique logic that belongs to each type of job belongs here
-  void runJob() throws Exception;
+  /**
+   * Contains the unique logic that belongs to each type of job.
+   *
+   * @return an optional output value to place within the output document store item.
+   */
+  Optional<String> runJob() throws Exception;
 
   static <T> T readAndDeserializeFile(String path, Class<T> type) throws IOException {
     return readAndDeserializeFile(Path.of(path), type);

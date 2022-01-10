@@ -17,6 +17,7 @@ import io.airbyte.workers.process.KubePodProcess;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.sync.ReplicationLauncherWorker;
 import java.nio.file.Path;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -43,7 +44,7 @@ public class DbtJobOrchestrator implements JobOrchestrator<OperatorDbtInput> {
   }
 
   @Override
-  public void runJob() throws Exception {
+  public Optional<String> runJob() throws Exception {
     final JobRunConfig jobRunConfig = readJobRunConfig();
     final OperatorDbtInput dbtInput = readInput();
 
@@ -67,6 +68,8 @@ public class DbtJobOrchestrator implements JobOrchestrator<OperatorDbtInput> {
     log.info("Running dbt worker...");
     final Path jobRoot = WorkerUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
     worker.run(dbtInput, jobRoot);
+
+    return Optional.empty();
   }
 
 }

@@ -34,6 +34,7 @@ import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -109,8 +110,8 @@ public class ContainerOrchestratorApp {
 
         log.info("Starting {} orchestrator...", jobOrchestrator.getOrchestratorName());
         documentStoreClient.write("/" + kubePodInfo.name() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.RUNNING, "");
-        jobOrchestrator.runJob();
-        documentStoreClient.write("/" + kubePodInfo.name() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.SUCCEEDED, "");
+        final Optional<String> output = jobOrchestrator.runJob();
+        documentStoreClient.write("/" + kubePodInfo.name() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.SUCCEEDED, output.orElse(""));
         log.info("{} orchestrator complete!", jobOrchestrator.getOrchestratorName());
       } catch (Throwable t) {
         if (documentStoreClient != null && kubePodInfo != null) {
