@@ -66,6 +66,10 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: ${{github.event.pull_request.head.repo.full_name}} # always use the branch's repository
+      - name: Install Unzip for Databricks
+        if: github.event.inputs.connector == 'connectors/destination-databricks'
+        run: |
+          apt-get update && apt-get install -y unzip
       - name: Install Java
         uses: actions/setup-java@v1
         with:

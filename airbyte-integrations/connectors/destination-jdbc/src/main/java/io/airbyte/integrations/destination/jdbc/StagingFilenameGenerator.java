@@ -23,7 +23,8 @@ public class StagingFilenameGenerator {
   private int currentFileSuffixPartCount = 0;
 
   // This variable is responsible to set the size of chunks size (In MB). After chunks created in
-  // S3 or GCS they will be uploaded to Snowflake or Redshift. These service have some limitations for the uploading file.
+  // S3 or GCS they will be uploaded to Snowflake or Redshift. These service have some limitations for
+  // the uploading file.
   // So we make the calculation to determine how many parts we can put to the single chunk file.
   private final long iterations;
 

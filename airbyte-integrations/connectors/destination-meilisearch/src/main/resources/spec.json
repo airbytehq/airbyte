@@ -13,14 +13,14 @@
     "properties": {
       "host": {
         "title": "Host",
-        "description": "Hostname of the MeiliSearch instance",
+        "description": "Hostname of the MeiliSearch instance.",
         "type": "string",
         "order": 0
       },
       "api_key": {
         "title": "API Key",
         "airbyte_secret": true,
-        "description": "MeiliSearch instance API Key",
+        "description": "MeiliSearch API Key. See the <a href=\"https://docs.airbyte.io/integrations/destinations/meilisearch\">docs</a> for more information on how to obtain this key.",
         "type": "string",
         "order": 1
       }

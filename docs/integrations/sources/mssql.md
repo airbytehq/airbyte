@@ -294,6 +294,8 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date | Pull Request | Subject |  |
 |:--------| :--- | :--- | :--- | :-- |
+| 0.3.13  | 2022-01-07 | [9094](https://github.com/airbytehq/airbyte/pull/9094) | Added support for missed data types |
+| 0.3.12  | 2021-12-30 | [9206](https://github.com/airbytehq/airbyte/pull/9206) | Update connector fields title/description |
 | 0.3.11  | 2021-12-24 | [8958](https://github.com/airbytehq/airbyte/pull/8958) | Add support for JdbcType.ARRAY |
 | 0.3.10  | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key               |  |
 | 0.3.9   | 2021-11-09 | [7386](https://github.com/airbytehq/airbyte/pull/7386) | Improve support for binary and varbinary data types  |  |
