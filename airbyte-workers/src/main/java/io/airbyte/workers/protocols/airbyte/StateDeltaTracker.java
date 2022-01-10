@@ -69,16 +69,16 @@ public class StateDeltaTracker {
    * This method leverages a synchronized block to provide thread safety between the source thread
    * calling addState while the destination thread calls commitStateHash.
    *
-   * @throws CapacityExceededException thrown when the memory footprint of stateDeltas exceeds
+   * @throws StateDeltaTrackerException thrown when the memory footprint of stateDeltas exceeds
    *         available capacity.
    */
-  public void addState(final int stateHash, final Map<Short, Long> streamIndexToRecordCount) throws CapacityExceededException {
+  public void addState(final int stateHash, final Map<Short, Long> streamIndexToRecordCount) throws StateDeltaTrackerException {
     synchronized (this) {
       final int size = STATE_HASH_BYTES + (streamIndexToRecordCount.size() * BYTES_PER_STREAM);
 
       if (capacityExceeded || remainingCapacity < size) {
         capacityExceeded = true;
-        throw new CapacityExceededException("Memory capacity is exceeded for StateDeltaTracker.");
+        throw new StateDeltaTrackerException("Memory capacity is exceeded for StateDeltaTracker.");
       }
 
       final ByteBuffer delta = ByteBuffer.allocate(size);
@@ -101,25 +101,22 @@ public class StateDeltaTracker {
    * This method leverages a synchronized block to provide thread safety between the source thread
    * calling addState while the destination thread calls commitStateHash.
    *
-   * @throws StateHashConflictException thrown when the given {@code stateHash} is already committed
-   * @throws CapacityExceededException thrown when committed counts can no longer be reliably computed
-   *         due earlier exceeded capacity from addState.
+   * @throws StateDeltaTrackerException thrown when committed counts can no longer be reliably computed.
    */
-  public void commitStateHash(final int stateHash) throws StateHashConflictException, CapacityExceededException {
+  public void commitStateHash(final int stateHash) throws StateDeltaTrackerException {
     synchronized (this) {
       if (capacityExceeded) {
-        throw new CapacityExceededException("Memory capacity exceeded for StateDeltaTracker, so states cannot be reliably committed");
+        throw new StateDeltaTrackerException("Memory capacity exceeded for StateDeltaTracker, so states cannot be reliably committed");
       }
       if (committedStateHashes.contains(stateHash)) {
-        throw new StateHashConflictException(String.format("State hash %d was already committed, likely indicating a state hash collision", stateHash));
+        throw new StateDeltaTrackerException(String.format("State hash %d was already committed, likely indicating a state hash collision", stateHash));
       }
 
       committedStateHashes.add(stateHash);
       int currStateHash;
       do {
         if (stateDeltas.isEmpty()) {
-          // Should never happen as long as addState always called before commitStateHash
-          throw new IllegalStateException(String.format("Delta was not stored for state hash %d", stateHash));
+          throw new StateDeltaTrackerException(String.format("Delta was not stored for state hash %d", stateHash));
         }
         // as deltas are removed and aggregated into committed count map, reclaim capacity
         final ByteBuffer currDelta = ByteBuffer.wrap(stateDeltas.remove(0));
@@ -145,27 +142,13 @@ public class StateDeltaTracker {
   }
 
   /**
-   * Thrown when the StateDeltaTracker capacity has been exceeded, and per-stream record counts cannot
-   * be reliably returned.
+   * Thrown when the StateDeltaTracker encounters an issue that prevents it from reliably computing committed record deltas.
    */
-  public static class CapacityExceededException extends Exception {
+  public static class StateDeltaTrackerException extends Exception {
 
-    public CapacityExceededException(final String message) {
+    public StateDeltaTrackerException(final String message) {
       super(message);
     }
 
   }
-
-  /**
-   * Thrown when the StateDeltaTracker encounters a state hash that has already been committed, likely
-   * indicating a hash conflict.
-   */
-  public static class StateHashConflictException extends Exception {
-
-    public StateHashConflictException(final String message) {
-      super(message);
-    }
-
-  }
-
 }

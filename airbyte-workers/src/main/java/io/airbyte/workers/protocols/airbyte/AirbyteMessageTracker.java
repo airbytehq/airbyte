@@ -15,8 +15,7 @@ import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.workers.protocols.airbyte.StateDeltaTracker.CapacityExceededException;
-import io.airbyte.workers.protocols.airbyte.StateDeltaTracker.StateHashConflictException;
+import io.airbyte.workers.protocols.airbyte.StateDeltaTracker.StateDeltaTrackerException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -117,7 +116,7 @@ public class AirbyteMessageTracker implements MessageTracker {
       if (!unreliableCommittedCounts) {
         stateDeltaTracker.addState(stateHash, streamToRunningCount);
       }
-    } catch (final CapacityExceededException e) {
+    } catch (final StateDeltaTrackerException e) {
       log.error("Exceeded stateDeltaTracker capacity, no longer able to compute committed record counts", e);
       unreliableCommittedCounts = true;
     }
@@ -134,11 +133,8 @@ public class AirbyteMessageTracker implements MessageTracker {
       if (!unreliableCommittedCounts) {
         stateDeltaTracker.commitStateHash(getStateHashCode(stateMessage));
       }
-    } catch (final StateHashConflictException e) {
-      log.error("State hash conflict detected, no longer able to compute committed record counts", e);
-      unreliableCommittedCounts = true;
-    } catch (final CapacityExceededException e) {
-      log.error("Exceeded stateDeltaTracker capacity, no longer able to compute committed record counts", e);
+    } catch (final StateDeltaTrackerException e) {
+      log.error(e.getMessage(), e);
       unreliableCommittedCounts = true;
     }
   }

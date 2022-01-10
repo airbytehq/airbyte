@@ -13,8 +13,7 @@ import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.workers.protocols.airbyte.StateDeltaTracker.CapacityExceededException;
-import io.airbyte.workers.protocols.airbyte.StateDeltaTracker.StateHashConflictException;
+import io.airbyte.workers.protocols.airbyte.StateDeltaTracker.StateDeltaTrackerException;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -176,8 +175,8 @@ class AirbyteMessageTrackerTest {
   }
 
   @Test
-  public void testGetCommittedRecordsByStream_emptyWhenMemoryCapacityExceeded() throws Exception {
-    Mockito.doThrow(new CapacityExceededException("induced exception")).when(mStateDeltaTracker).addState(Mockito.anyInt(), Mockito.anyMap());
+  public void testGetCommittedRecordsByStream_emptyWhenAddStateThrowsException() throws Exception {
+    Mockito.doThrow(new StateDeltaTrackerException("induced exception")).when(mStateDeltaTracker).addState(Mockito.anyInt(), Mockito.anyMap());
 
     final AirbyteMessage r1 = createRecordMessage(STREAM_1, 1);
     final AirbyteMessage s1 = createStateMessage(1);
@@ -190,8 +189,8 @@ class AirbyteMessageTrackerTest {
   }
 
   @Test
-  public void testGetCommittedRecordsByStream_emptyWhenStateHashConflict() throws Exception {
-    Mockito.doThrow(new StateHashConflictException("induced exception")).when(mStateDeltaTracker).commitStateHash(Mockito.anyInt());
+  public void testGetCommittedRecordsByStream_emptyWhenCommitStateHashThrowsException() throws Exception {
+    Mockito.doThrow(new StateDeltaTrackerException("induced exception")).when(mStateDeltaTracker).commitStateHash(Mockito.anyInt());
 
     final AirbyteMessage r1 = createRecordMessage(STREAM_1, 1);
     final AirbyteMessage s1 = createStateMessage(1);
@@ -240,8 +239,8 @@ class AirbyteMessageTrackerTest {
   }
 
   @Test
-  public void testGetTotalRecordsCommitted_emptyWhenMemoryCapacityExceeded() throws Exception {
-    Mockito.doThrow(new CapacityExceededException("induced exception")).when(mStateDeltaTracker).addState(Mockito.anyInt(), Mockito.anyMap());
+  public void testGetTotalRecordsCommitted_emptyWhenAddStateThrowsException() throws Exception {
+    Mockito.doThrow(new StateDeltaTrackerException("induced exception")).when(mStateDeltaTracker).addState(Mockito.anyInt(), Mockito.anyMap());
 
     final AirbyteMessage r1 = createRecordMessage(STREAM_1, 1);
     final AirbyteMessage s1 = createStateMessage(1);
@@ -254,8 +253,8 @@ class AirbyteMessageTrackerTest {
   }
 
   @Test
-  public void testGetTotalRecordsCommitted_emptyWhenStateHashConflict() throws Exception {
-    Mockito.doThrow(new StateHashConflictException("induced exception")).when(mStateDeltaTracker).commitStateHash(Mockito.anyInt());
+  public void testGetTotalRecordsCommitted_emptyWhenCommitStateHashThrowsException() throws Exception {
+    Mockito.doThrow(new StateDeltaTrackerException("induced exception")).when(mStateDeltaTracker).commitStateHash(Mockito.anyInt());
 
     final AirbyteMessage r1 = createRecordMessage(STREAM_1, 1);
     final AirbyteMessage s1 = createStateMessage(1);

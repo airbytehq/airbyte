@@ -4,8 +4,7 @@
 
 package io.airbyte.workers.protocols.airbyte;
 
-import io.airbyte.workers.protocols.airbyte.StateDeltaTracker.CapacityExceededException;
-import io.airbyte.workers.protocols.airbyte.StateDeltaTracker.StateHashConflictException;
+import io.airbyte.workers.protocols.airbyte.StateDeltaTracker.StateDeltaTrackerException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +17,7 @@ public class StateDeltaTrackerTest {
   private static final int STATE_1_HASH = 1;
   private static final int STATE_2_HASH = 2;
   private static final int STATE_3_HASH = Integer.MAX_VALUE;
+  private static final int NEVER_ADDED_STATE_HASH = 20;
 
   private static final short STREAM_INDEX_1 = (short) 111;
   private static final short STREAM_INDEX_2 = (short) 222;
@@ -60,23 +60,28 @@ public class StateDeltaTrackerTest {
   }
 
   @Test
-  public void testAddState_throwsCapacityExceededException() {
-    Assertions.assertThrows(CapacityExceededException.class, () -> stateDeltaTracker.addState(4, Collections.singletonMap((short) 444, 44L)));
+  public void testAddState_throwsExceptionWhenCapacityExceeded() {
+    Assertions.assertThrows(StateDeltaTrackerException.class, () -> stateDeltaTracker.addState(4, Collections.singletonMap((short) 444, 44L)));
     Assertions.assertTrue(stateDeltaTracker.capacityExceeded);
   }
 
   @Test
-  public void testCommitStateHash_throwsStateHashConflictException() throws Exception {
+  public void testCommitStateHash_throwsExceptionWhenStateHashConflict() throws Exception {
     stateDeltaTracker.commitStateHash(STATE_1_HASH);
     stateDeltaTracker.commitStateHash(STATE_2_HASH);
 
-    Assertions.assertThrows(StateHashConflictException.class, () -> stateDeltaTracker.commitStateHash(STATE_1_HASH));
+    Assertions.assertThrows(StateDeltaTrackerException.class, () -> stateDeltaTracker.commitStateHash(STATE_1_HASH));
   }
 
   @Test
-  public void testCommitStateHash_throwsCapacityExceededException() {
+  public void testCommitStateHash_throwsExceptionIfCapacityExceededEarlier() {
     stateDeltaTracker.capacityExceeded = true;
-    Assertions.assertThrows(CapacityExceededException.class, () -> stateDeltaTracker.commitStateHash(STATE_1_HASH));
+    Assertions.assertThrows(StateDeltaTrackerException.class, () -> stateDeltaTracker.commitStateHash(STATE_1_HASH));
+  }
+
+  @Test
+  public void testCommitStateHash_throwsExceptionIfCommitStateHashCalledBeforeAddingState() {
+    Assertions.assertThrows(StateDeltaTrackerException.class, () -> stateDeltaTracker.commitStateHash(NEVER_ADDED_STATE_HASH));
   }
 
   @Test
