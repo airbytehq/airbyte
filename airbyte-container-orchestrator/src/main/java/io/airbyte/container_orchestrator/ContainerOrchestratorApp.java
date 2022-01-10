@@ -9,6 +9,7 @@ import io.airbyte.commons.logging.LoggingHelper;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.process.AsyncKubePodStatus;
@@ -81,39 +82,71 @@ public class ContainerOrchestratorApp {
 
       final Configs configs = new EnvConfigs(envMap);
 
-      documentStoreClient = StateClients.create(configs.getStateStorageCloudConfigs(), Path.of("/")); // todo: use different prefix
+      for (String envVar : OrchestratorConstants.ENV_VARS_TO_TRANSFER) {
+        if (envMap.containsKey(envVar)) {
+          System.setProperty(envVar, envMap.get(envVar));
+        }
+      }
 
-      // todo: use a helper to get the path
-      documentStoreClient.write("/" + kubePodInfo.name() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.INITIALIZING, "");
+      final var logClient = LogClientSingleton.getInstance();
+      logClient.setWorkspaceMdc(
+          configs.getWorkerEnvironment(),
+          configs.getLogConfigs(),
+          logClient.getSchedulerLogsRoot(configs.getWorkspaceRoot()));
 
-      heartbeatServer = new WorkerHeartbeatServer(WorkerApp.KUBE_HEARTBEAT_PORT);
-      heartbeatServer.startBackground();
+      try (final var mdcScope = LOG_MDC_BUILDER.build()) {
+        documentStoreClient = StateClients.create(configs.getStateStorageCloudConfigs(), Path.of("/")); // todo: use different prefix
 
-      final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
-      final ProcessFactory processFactory = getProcessBuilderFactory(configs, workerConfigs);
-      final JobOrchestrator<?> jobOrchestrator = getJobOrchestrator(configs, workerConfigs, processFactory, application);
+        // todo: use a helper to get the path
+        documentStoreClient.write("/" + kubePodInfo.name() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.INITIALIZING, "");
 
-      log.info("Starting {} orchestrator...", jobOrchestrator.getOrchestratorName());
-      documentStoreClient.write("/" + kubePodInfo.name() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.RUNNING, "");
-      jobOrchestrator.runJob();
-      documentStoreClient.write("/" + kubePodInfo.name() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.SUCCEEDED, "");
-      log.info("{} orchestrator complete!", jobOrchestrator.getOrchestratorName());
+        heartbeatServer = new WorkerHeartbeatServer(WorkerApp.KUBE_HEARTBEAT_PORT);
+        heartbeatServer.startBackground();
+
+        final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
+        final ProcessFactory processFactory = getProcessBuilderFactory(configs, workerConfigs);
+        final JobOrchestrator<?> jobOrchestrator = getJobOrchestrator(configs, workerConfigs, processFactory, application);
+
+        log.info("Starting {} orchestrator...", jobOrchestrator.getOrchestratorName());
+        documentStoreClient.write("/" + kubePodInfo.name() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.RUNNING, "");
+        jobOrchestrator.runJob();
+        documentStoreClient.write("/" + kubePodInfo.name() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.SUCCEEDED, "");
+        log.info("{} orchestrator complete!", jobOrchestrator.getOrchestratorName());
+      } catch (Throwable t) {
+        if (documentStoreClient != null && kubePodInfo != null) {
+          documentStoreClient.write("/" + kubePodInfo.name() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.FAILED, "");
+        }
+
+        log.error("Orchestrator failed", t);
+      } finally {
+        if (heartbeatServer != null) {
+          log.info("Shutting down heartbeat server...");
+          heartbeatServer.stop();
+        }
+
+        // required to kill kube client
+        log.info("Runner closing...");
+        System.exit(0);
+      }
+      // todo: catch throwing pre-log configuration in a better way
     } catch (Throwable t) {
+      // not catchable by cloud logging
       if (documentStoreClient != null && kubePodInfo != null) {
         documentStoreClient.write("/" + kubePodInfo.name() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.FAILED, "");
       }
 
-      throw t;
+      log.error("Orchestrator failed", t);
     } finally {
+      // not catchable by cloud logging
       if (heartbeatServer != null) {
         log.info("Shutting down heartbeat server...");
         heartbeatServer.stop();
       }
-    }
 
-    // required to kill kube client
-    log.info("Runner closing...");
-    System.exit(0);
+      // required to kill kube client
+      log.info("Runner closing...");
+      System.exit(0);
+    }
   }
 
   private static JobOrchestrator<?> getJobOrchestrator(final Configs configs,

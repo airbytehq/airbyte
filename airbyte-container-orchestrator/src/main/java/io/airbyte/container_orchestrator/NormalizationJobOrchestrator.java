@@ -13,6 +13,7 @@ import io.airbyte.workers.NormalizationWorker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
+import io.airbyte.workers.process.KubePodProcess;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.sync.ReplicationLauncherWorker;
 import java.nio.file.Path;
@@ -47,7 +48,8 @@ public class NormalizationJobOrchestrator implements JobOrchestrator<Normalizati
     final NormalizationInput normalizationInput = readInput();
 
     final IntegrationLauncherConfig destinationLauncherConfig = JobOrchestrator.readAndDeserializeFile(
-        ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG, IntegrationLauncherConfig.class);
+        Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG),
+        IntegrationLauncherConfig.class);
 
     log.info("Setting up normalization worker...");
     final NormalizationWorker normalizationWorker = new DefaultNormalizationWorker(

@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal.sync;
 
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.helpers.LogClientSingleton;
 import java.util.Set;
 
 public class OrchestratorConstants {
@@ -29,7 +30,24 @@ public class OrchestratorConstants {
       EnvConfigs.JOB_MAIN_CONTAINER_MEMORY_REQUEST,
       EnvConfigs.JOB_MAIN_CONTAINER_MEMORY_LIMIT,
       EnvConfigs.JOB_DEFAULT_ENV_MAP,
-      EnvConfigs.LOCAL_ROOT);
+      EnvConfigs.LOCAL_ROOT,
+      LogClientSingleton.GCS_LOG_BUCKET,
+      LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS,
+      LogClientSingleton.S3_MINIO_ENDPOINT,
+      LogClientSingleton.S3_LOG_BUCKET,
+      LogClientSingleton.AWS_ACCESS_KEY_ID,
+      LogClientSingleton.AWS_SECRET_ACCESS_KEY,
+      LogClientSingleton.S3_LOG_BUCKET_REGION,
+      EnvConfigs.STATE_STORAGE_GCS_BUCKET_NAME,
+      EnvConfigs.STATE_STORAGE_GCS_APPLICATION_CREDENTIALS,
+      EnvConfigs.STATE_STORAGE_MINIO_ENDPOINT,
+      EnvConfigs.STATE_STORAGE_MINIO_BUCKET_NAME,
+      EnvConfigs.STATE_STORAGE_MINIO_ACCESS_KEY,
+      EnvConfigs.STATE_STORAGE_MINIO_SECRET_ACCESS_KEY,
+      EnvConfigs.STATE_STORAGE_S3_BUCKET_NAME,
+      EnvConfigs.STATE_STORAGE_S3_ACCESS_KEY,
+      EnvConfigs.STATE_STORAGE_S3_SECRET_ACCESS_KEY,
+      EnvConfigs.STATE_STORAGE_S3_REGION);
 
   public static final String INIT_FILE_ENV_MAP = "envMap.json";
   public static final String INIT_FILE_INPUT = "input.json";

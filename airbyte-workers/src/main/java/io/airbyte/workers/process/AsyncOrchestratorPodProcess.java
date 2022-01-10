@@ -239,6 +239,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .withLabels(allLabels)
         .endMetadata()
         .withNewSpec()
+        .withServiceAccount("airbyte-admin").withAutomountServiceAccountToken(true)
         .withRestartPolicy("Never")
         .withContainers(mainContainer)
         .withVolumes(configVolume)

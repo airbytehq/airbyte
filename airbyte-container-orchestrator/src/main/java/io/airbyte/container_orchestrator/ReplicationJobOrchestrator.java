@@ -17,6 +17,7 @@ import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
+import io.airbyte.workers.process.KubePodProcess;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
 import io.airbyte.workers.protocols.airbyte.AirbyteSource;
@@ -57,10 +58,12 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
     final StandardSyncInput syncInput = readInput();
 
     final IntegrationLauncherConfig sourceLauncherConfig = JobOrchestrator.readAndDeserializeFile(
-        ReplicationLauncherWorker.INIT_FILE_SOURCE_LAUNCHER_CONFIG, IntegrationLauncherConfig.class);
+        Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_SOURCE_LAUNCHER_CONFIG),
+        IntegrationLauncherConfig.class);
 
     final IntegrationLauncherConfig destinationLauncherConfig = JobOrchestrator.readAndDeserializeFile(
-        ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG, IntegrationLauncherConfig.class);
+        Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG),
+        IntegrationLauncherConfig.class);
 
     log.info("Setting up source launcher...");
     final IntegrationLauncher sourceLauncher = new AirbyteIntegrationLauncher(
@@ -102,6 +105,8 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
     // this uses stdout directly because it shouldn't have the logging related prefix
     // the replication output is read from the container that launched the runner
     System.out.println(Jsons.serialize(replicationOutput));
+
+    // todo: write to output 
   }
 
 }

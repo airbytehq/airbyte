@@ -26,7 +26,6 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -123,13 +122,12 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
         OrchestratorConstants.PORT4, OrchestratorConstants.PORT4);
 
     final Map<String, String> envMap = System.getenv().entrySet().stream()
-            .filter(entry -> OrchestratorConstants.ENV_VARS_TO_TRANSFER.contains(entry.getKey()))
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        .filter(entry -> OrchestratorConstants.ENV_VARS_TO_TRANSFER.contains(entry.getKey()))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
     asyncProcess.create("dev", Map.of(), new WorkerConfigs(new EnvConfigs()).getResourceRequirements(), Map.of(
         OrchestratorConstants.INIT_FILE_APPLICATION, AsyncOrchestratorPodProcess.NO_OP,
-            OrchestratorConstants.INIT_FILE_ENV_MAP, Jsons.serialize(envMap)
-    ), portMap);
+        OrchestratorConstants.INIT_FILE_ENV_MAP, Jsons.serialize(envMap)), portMap);
 
     // a final activity waits until there is output from the kube pod process
     asyncProcess.waitFor(10, TimeUnit.SECONDS);
