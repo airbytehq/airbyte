@@ -5412,7 +5412,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-plaid:0.2.1"
+- dockerImage: "airbyte/source-plaid:0.3.0"
   spec:
     documentationUrl: "https://plaid.com/docs/api/"
     connectionSpecification:
@@ -5422,6 +5422,7 @@
       - "access_token"
       - "api_key"
       - "client_id"
+      - "plaid_env"
       additionalProperties: false
       properties:
         access_token:
