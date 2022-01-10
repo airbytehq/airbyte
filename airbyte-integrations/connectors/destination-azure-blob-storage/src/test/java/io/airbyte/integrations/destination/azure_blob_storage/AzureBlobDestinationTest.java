@@ -81,7 +81,7 @@ public class AzureBlobDestinationTest {
   }
 
   @Test
-  public void testConfigObjectCustomBufferSize() {
+  public void testConfigObjectCustomOutputBufferSize() {
     final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
         .put("azure_blob_storage_account_name", "accName")
         .put("azure_blob_storage_account_key", "accKey")
