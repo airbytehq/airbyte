@@ -7,8 +7,12 @@ from enum import Enum
 from pathlib import Path
 from typing import Callable, TextIO, List, Optional, Mapping, Any
 
-from mypy.errorcodes import error_codes as mypy_error_codes, ErrorCode
-from unidiff import PatchSet
+try:
+    # these packages are not always needed
+    from mypy.errorcodes import error_codes as mypy_error_codes, ErrorCode
+    from unidiff import PatchSet
+except ModuleNotFoundError:
+    pass
 
 from .sonar_qube_api import SonarQubeApi
 
