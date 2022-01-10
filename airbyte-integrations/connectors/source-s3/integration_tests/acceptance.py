@@ -7,7 +7,6 @@ import shutil
 import tempfile
 import time
 from pathlib import Path
-from typing import Tuple
 from zipfile import ZipFile
 
 import docker
