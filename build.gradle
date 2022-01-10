@@ -101,7 +101,6 @@ def createSpotlessTarget = { pattern ->
 
 spotless {
     java {
-        println "SpotlessTarget"
         target createSpotlessTarget('**/*.java')
 
         importOrder()
