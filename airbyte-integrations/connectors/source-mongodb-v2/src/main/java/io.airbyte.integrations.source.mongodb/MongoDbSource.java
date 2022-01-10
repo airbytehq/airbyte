@@ -23,7 +23,6 @@ import io.airbyte.integrations.source.relationaldb.AbstractDbSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -91,7 +90,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
       throws Exception {
     final List<CheckedConsumer<MongoDatabase, Exception>> checkList = new ArrayList<>();
     checkList.add(database -> {
-        if (getAuthorizedCollections(database).isEmpty()) {
+      if (getAuthorizedCollections(database).isEmpty()) {
         throw new Exception("Unable to execute any operation on the source!");
       } else {
         LOGGER.info("The source passed the basic operation test!");
@@ -111,8 +110,9 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  protected List<TableInfo<CommonField<BsonType>>> discoverInternal(final MongoDatabase database) {
-      final List<TableInfo<CommonField<BsonType>>> tableInfos = new ArrayList<>();
+  protected List<TableInfo<CommonField<BsonType>>> discoverInternal(final MongoDatabase database)
+      throws Exception {
+    final List<TableInfo<CommonField<BsonType>>> tableInfos = new ArrayList<>();
 
       for (final String collectionName : getAuthorizedCollections(database)) {
       final MongoCollection<Document> collection = database.getCollection(collectionName);
