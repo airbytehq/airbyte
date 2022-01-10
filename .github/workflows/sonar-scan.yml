@@ -36,8 +36,8 @@ jobs:
     needs: detect-changes
     name:  Tests for ${{ matrix.module }}
     runs-on: ubuntu-latest
-    environment: more-secrets
-    # this option must be uncommented for github env
+    # environment: more-secrets
+
     strategy:
       matrix: ${{fromJson(needs.detect-changes.outputs.changed-modules)}}
     env:
@@ -45,12 +45,7 @@ jobs:
       MODULE_LANG: ${{ matrix.lang }}
       MODULE_FOLDER: ${{ matrix.folder }}
       ENV_NAME: "github"
-#    # these for local dev
-#    env:
-#      MODULE_NAME: connectors/source-s3
-#      MODULE_LANG: py
-#      MODULE_FOLDER: "path2"
-#      ENV_NAME: "local"
+
 
     steps:
     - name: Print Settings
