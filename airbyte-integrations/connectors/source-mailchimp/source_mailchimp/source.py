@@ -20,8 +20,9 @@ class MailChimpAuthenticator:
     @staticmethod
     def get_server_prefix(access_token: str) -> str:
         try:
-            response = requests.get("https://login.mailchimp.com/oauth2/metadata",
-                                    headers={'Authorization': "OAuth {}".format(access_token)})
+            response = requests.get(
+                "https://login.mailchimp.com/oauth2/metadata", headers={"Authorization": "OAuth {}".format(access_token)}
+            )
             return response.json()["dc"]
         except Exception as e:
             raise Exception(f"Cannot retrieve server_prefix for you account. \n {repr(e)}")
@@ -55,16 +56,11 @@ class SourceMailchimp(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authenticator = MailChimpAuthenticator().get_auth(config)
-            requests.get(f"https://{authenticator.data_center}.api.mailchimp.com/3.0/ping",
-                         headers=authenticator.get_auth_header())
+            requests.get(f"https://{authenticator.data_center}.api.mailchimp.com/3.0/ping", headers=authenticator.get_auth_header())
             return True, None
         except Exception as e:
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = MailChimpAuthenticator().get_auth(config)
-        return [
-            Lists(authenticator=authenticator),
-            Campaigns(authenticator=authenticator),
-            EmailActivity(authenticator=authenticator)
-        ]
+        return [Lists(authenticator=authenticator), Campaigns(authenticator=authenticator), EmailActivity(authenticator=authenticator)]
