@@ -11,7 +11,19 @@
     "external_id": {
       "type": ["null", "string"]
     },
+    "external_ids": {
+      "type": ["null", "array"]
+    },
+    "data_source_uuid": {
+      "type": ["null", "string"]
+    },
+    "data_source_uuids": {
+      "type": ["null", "array"]
+    },
     "name": {
+      "type": ["null", "string"]
+    },
+    "company": {
       "type": ["null", "string"]
     },
     "email": {
@@ -20,26 +32,32 @@
     "status": {
       "type": ["null", "string"]
     },
+    "lead_created_at": {
+      "type": ["null", "string"]
+    },
+    "free_trial_started_at": {
+      "type": ["null", "string"]
+    },
     "customer_since": {
+      "type": ["null", "string"]
+    },
+    "city": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "country": {
+      "type": ["null", "string"]
+    },
+    "zip": {
       "type": ["null", "string"]
     },
     "attributes": {
       "type": ["null", "object"],
       "properties": {
-        "custom": {
-          "type": ["null", "object"],
-          "properties": {
-            "initial_sale_mrr": {
-              "type": ["null", "integer"]
-            },
-            "initial_sale_mrr_currency": {
-              "type": ["null", "string"]
-            }
-          }
-        },
-        "clearbit": {
-          "type": ["null", "object"],
-          "properties": {}
+        "tags": {
+          "type": ["null", "array"]
         },
         "stripe": {
           "type": ["null", "object"],
@@ -58,40 +76,15 @@
             }
           }
         },
-        "tags": {
-          "type": ["null", "array"]
+        "clearbit": {
+          "type": ["null", "object"],
+          "properties": {}
+        },
+        "custom": {
+          "type": ["null", "object"],
+          "properties": {}
         }
       }
-    },
-    "data_source_uuid": {
-      "type": ["null", "string"]
-    },
-    "data_source_uuids": {
-      "type": ["null", "array"]
-    },
-    "external_ids": {
-      "type": ["null", "array"]
-    },
-    "company": {
-      "type": ["null", "string"]
-    },
-    "country": {
-      "type": ["null", "string"]
-    },
-    "state": {
-      "type": ["null", "string"]
-    },
-    "city": {
-      "type": ["null", "string"]
-    },
-    "zip": {
-      "type": ["null", "string"]
-    },
-    "lead_created_at": {
-      "type": ["null", "string"]
-    },
-    "free_trial_started_at": {
-      "type": ["null", "string"]
     },
     "address": {
       "type": ["null", "object"],
