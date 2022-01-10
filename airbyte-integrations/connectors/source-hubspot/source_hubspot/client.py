@@ -66,11 +66,11 @@ class Client(BaseClient):
         """List of available streams, patch streams to append properties dynamically"""
         for airbyte_stream in super().streams:
             stream = self._apis[airbyte_stream.name]
+            airbyte_stream.default_cursor_field = [stream.updated_at_field]
             if stream.add_properties:
                 properties = stream.properties
                 if properties:
                     airbyte_stream.json_schema["properties"]["properties"] = {"type": "object", "properties": properties}
-                    airbyte_stream.default_cursor_field = [stream.updated_at_field]
             yield airbyte_stream
 
     def stream_has_state(self, name: str) -> bool:
