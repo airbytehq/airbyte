@@ -9,9 +9,7 @@
     "properties": {
       "auth_type": {
         "type": "string",
-        "const": "Client",
-        "enum": ["Client"],
-        "default": "Client"
+        "const": "Client"
       },
       "client_id": {
         "title": "Client ID",
