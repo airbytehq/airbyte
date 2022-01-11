@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 public class RedshiftDestination extends SwitchingDestination<RedshiftDestination.DestinationType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftDestination.class);
+  private static final String USE_SUPER_REDSHIFT_TYPE_PARAMETER = "use_super_redshift_type";
 
   enum DestinationType {
     INSERT_WITH_VARCHAR,
@@ -81,7 +82,8 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
   }
 
   private static RedshiftDataTmpTableMode determineTmpTableDatatype(JsonNode config) {
-    if (config.get("use_super_redshift_type") != null && !config.get("use_super_redshift_type").isNull() && config.get("use_super_redshift_type").asBoolean()) {
+    if (config.get(USE_SUPER_REDSHIFT_TYPE_PARAMETER) != null && !config.get(USE_SUPER_REDSHIFT_TYPE_PARAMETER).isNull() && config.get(
+        USE_SUPER_REDSHIFT_TYPE_PARAMETER).asBoolean()) {
       return RedshiftDataTmpTableMode.SUPER;
     }
     return RedshiftDataTmpTableMode.VARCHAR;
