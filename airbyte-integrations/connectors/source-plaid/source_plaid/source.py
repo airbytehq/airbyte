@@ -3,6 +3,7 @@
 #
 
 import datetime
+import time
 import json
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
@@ -14,6 +15,7 @@ from airbyte_cdk.sources.streams import Stream
 from plaid.api import plaid_api
 from plaid.model.accounts_balance_get_request import AccountsBalanceGetRequest
 from plaid.model.transactions_get_request import TransactionsGetRequest
+from plaid.model.transactions_get_request_options import TransactionsGetRequestOptions
 
 SPEC_ENV_TO_PLAID_ENV = {
     "production": plaid.Environment.Production,
@@ -95,7 +97,25 @@ class IncrementalTransactionStream(PlaidStream):
             TransactionsGetRequest(access_token=self.access_token, start_date=date, end_date=datetime.datetime.utcnow().date())
         )
 
-        yield from map(lambda x: x.to_dict(), sorted(transaction_response["transactions"], key=lambda t: t["date"]))
+        transactions = transaction_response['transactions']
+
+        while len(transactions) < transaction_response['total_transactions']:
+            # rate limit is 30 requests per minute per item, so sleep for 2 seconds between requests
+            time.sleep(2)
+            transaction_response = self.api_requester.transactions_get(
+                TransactionsGetRequest(
+                    access_token=self.access_token, 
+                    start_date=date, 
+                    end_date=datetime.datetime.utcnow().date(),
+                    options=TransactionsGetRequestOptions(
+                        offset=len(transactions)
+                        )
+                    )
+                )
+            
+            transactions.extend(transaction_response['transactions'])
+
+        yield from map(lambda x: x.to_dict(), sorted(transactions, key=lambda t: t["date"]))
 
 
 class SourcePlaid(AbstractSource):
