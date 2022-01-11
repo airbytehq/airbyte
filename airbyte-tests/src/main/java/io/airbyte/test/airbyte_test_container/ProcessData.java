@@ -24,11 +24,11 @@ import org.joda.time.format.ISODateTimeFormat;
 public class ProcessData {
 
   public static void main(final String[] args) throws IOException {
-    System.out.println("running!");
+    log.info("running!");
 
     final var jackson = new ObjectMapper();
 
-    final var dataFile = Path.of("./bin/data.yaml");
+    final var dataFile = Path.of("./bin/data.txt");
     final var lines = Files.lines(dataFile).collect(Collectors.toList());
 
     final List<Long> timesToSchedule = new ArrayList<>();
