@@ -14,15 +14,37 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import org.apache.http.client.utils.URIBuilder;
 
 public class SquareOAuthFlow extends BaseOAuth2Flow {
 
-  private static final String SCOPE_VALUE =
-      "ITEMS_READ+CUSTOMERS_WRITE+MERCHANT_PROFILE_READ+EMPLOYEES_READ+PAYMENTS_READ+CUSTOMERS_READ+TIMECARDS_READ+ORDERS_READ";
+  private static final List<String> SCOPES = Arrays.asList(
+    "CUSTOMERS_READ",
+    "EMPLOYEES_READ",
+    "ITEMS_READ",
+    "MERCHANT_PROFILE_READ",
+    "ORDERS_READ",
+    "PAYMENTS_READ",
+    "TIMECARDS_READ"
+    // OAuth Permissions:
+    // https://developer.squareup.com/docs/oauth-api/square-permissions
+    // https://developer.squareup.com/reference/square/enums/OAuthPermission
+    // "DISPUTES_READ",
+    // "GIFTCARDS_READ",
+    // "INVENTORY_READ",
+    // "INVOICES_READ",
+    // "TIMECARDS_SETTINGS_READ",
+    // "LOYALTY_READ",
+    // "ONLINE_STORE_SITE_READ",
+    // "ONLINE_STORE_SNIPPETS_READ",
+    // "SUBSCRIPTIONS_READ",
+  );
   private static final String AUTHORIZE_URL = "https://connect.squareup.com/oauth2/authorize";
   private static final String ACCESS_TOKEN_URL = "https://connect.squareup.com/oauth2/token";
 
@@ -47,7 +69,7 @@ public class SquareOAuthFlow extends BaseOAuth2Flow {
       // Need to have decoded format, otherwise square fails saying that scope is incorrect
       return URLDecoder.decode(new URIBuilder(AUTHORIZE_URL)
           .addParameter("client_id", clientId)
-          .addParameter("scope", SCOPE_VALUE)
+          .addParameter("scope", String.join("+", SCOPES))
           .addParameter("session", "False")
           .addParameter("state", getState())
           .build().toString(), StandardCharsets.UTF_8);
@@ -66,21 +88,18 @@ public class SquareOAuthFlow extends BaseOAuth2Flow {
                                                               String clientSecret,
                                                               String authCode,
                                                               String redirectUrl) {
+    String scopes = SCOPES.stream()
+            .map(name -> ('"' + name + '"'))
+            .collect(Collectors.joining(","));
+    scopes = '[' + scopes + ']';
+
     return ImmutableMap.<String, String>builder()
         // required
         .put("client_id", clientId)
         .put("client_secret", clientSecret)
         .put("code", authCode)
         .put("grant_type", "authorization_code")
-        .put("scopes", "[\n"
-            + "      \"ITEMS_READ\",\n"
-            + "      \"MERCHANT_PROFILE_READ\",\n"
-            + "      \"EMPLOYEES_READ\",\n"
-            + "      \"PAYMENTS_READ\",\n"
-            + "      \"CUSTOMERS_READ\",\n"
-            + "      \"TIMECARDS_READ\",\n"
-            + "      \"ORDERS_READ\"\n"
-            + "      ]")
+        .put("scopes", scopes)
         .build();
   }
 
