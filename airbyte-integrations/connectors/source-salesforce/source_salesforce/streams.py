@@ -103,8 +103,7 @@ class SalesforceStream(HttpStream, ABC):
                 error_code = error_data.get("errorCode", "")
                 if error_code != "REQUEST_LIMIT_EXCEEDED" or error_code == "INVALID_TYPE_FOR_OPERATION":
                     self.logger.error(f"Cannot receive data for stream '{self.name}', error message: '{error_data.get('message')}'")
-                else:
-                    raise error
+                    return
             else:
                 raise error
 
