@@ -106,7 +106,7 @@ class IncrementalTransactionStream(PlaidStream):
         while len(transactions) < transaction_response['total_transactions']:
             # rate limit is 30 requests per minute per item, so sleep for 2 seconds between requests
             time.sleep(2)
-            transaction_response = self.api_requester.transactions_get(
+            transaction_response = self.client.transactions_get(
                 TransactionsGetRequest(
                     access_token=self.access_token, 
                     start_date=date, 
