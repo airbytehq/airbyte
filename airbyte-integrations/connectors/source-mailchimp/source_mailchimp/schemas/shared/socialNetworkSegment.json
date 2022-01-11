@@ -1,0 +1,46 @@
+{
+  "type": "object",
+  "title": "Social Profiles Social Network Segment",
+  "description": "Segment by social network in Social Profiles data.",
+  "required": ["field", "op", "value"],
+  "properties": {
+    "condition_type": {
+      "type": "string",
+      "x-value": "SocialNetworkMember",
+      "enum": ["SocialNetworkMember"]
+    },
+    "field": {
+      "type": "string",
+      "enum": ["social_network"],
+      "title": "Segment Field",
+      "description": "Segment by social network in Social Profiles data.",
+      "example": "social_network"
+    },
+    "op": {
+      "type": "string",
+      "enum": ["member", "notmember"],
+      "title": "Segment Operator",
+      "description": "Members who are/not on a given social network.",
+      "example": "member"
+    },
+    "value": {
+      "type": "string",
+      "enum": [
+        "twitter",
+        "facebook",
+        "linkedin",
+        "flickr",
+        "foursquare",
+        "lastfm",
+        "myspace",
+        "quora",
+        "vimeo",
+        "yelp",
+        "youtube"
+      ],
+      "title": "Segment Operator",
+      "description": "The social network to segment against.",
+      "example": "twitter"
+    }
+  }
+}

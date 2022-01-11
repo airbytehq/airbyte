@@ -6,7 +6,6 @@ import logging
 import logging.config
 import sys
 import traceback
-from functools import partial
 from typing import List
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage
@@ -38,15 +37,14 @@ def init_unhandled_exception_output_filtering(logger: logging.Logger) -> None:
     secrets removed.
     """
 
-    def hook_fn(_logger, exception_type, exception_value, traceback_):
+    def hook_fn(exception_type, exception_value, traceback_):
         # For developer ergonomics, we want to see the stack trace in the logs when we do a ctrl-c
         if issubclass(exception_type, KeyboardInterrupt):
             sys.__excepthook__(exception_type, exception_value, traceback_)
-            return
+        else:
+            logger.critical(exception_value, exc_info=exception_value)
 
-        logger.critical(str(exception_value))
-
-    sys.excepthook = partial(hook_fn, logger)
+    sys.excepthook = hook_fn
 
 
 def init_logger(name: str = None):

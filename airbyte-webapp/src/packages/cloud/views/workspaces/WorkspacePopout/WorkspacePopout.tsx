@@ -7,10 +7,10 @@ import { MenuListComponentProps } from "react-select/src/components/Menu";
 import { Popout } from "components";
 import { IDataItem } from "components/base/DropDown/components/Option";
 import {
-  useGetWorkspace,
-  useListWorkspaces,
+  useListCloudWorkspaces,
   useWorkspaceService,
 } from "packages/cloud/services/workspaces/WorkspacesService";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
 import ExitIcon from "./components/ExitIcon";
 
@@ -79,7 +79,7 @@ const WorkspacesList: React.FC<MenuWithRequestButtonProps> = ({
   selectedWorkspace,
   ...props
 }) => {
-  const { selectWorkspace } = useWorkspaceService();
+  const { exitWorkspace } = useWorkspaceService();
 
   return (
     <List>
@@ -88,9 +88,9 @@ const WorkspacesList: React.FC<MenuWithRequestButtonProps> = ({
       </TopElement>
       <components.MenuList {...props}>{children}</components.MenuList>
       <BottomElement>
-        <Block onClick={() => selectWorkspace("")}>
+        <Block onClick={exitWorkspace}>
           <ExitIcon />
-          <TextBlock>
+          <TextBlock data-testid="workspaces.viewAllWorkspaces">
             <FormattedMessage id="workspaces.viewAllWorkspaces" />
           </TextBlock>
         </Block>
@@ -102,23 +102,25 @@ const WorkspacesList: React.FC<MenuWithRequestButtonProps> = ({
 const WorkspacePopout: React.FC<{
   children: (props: { onOpen: () => void; value: any }) => React.ReactNode;
 }> = ({ children }) => {
-  const { data: workspaces } = useListWorkspaces();
-  const { selectWorkspace, currentWorkspaceId } = useWorkspaceService();
-  const { data: workspace } = useGetWorkspace(currentWorkspaceId || "");
+  const workspaceList = useListCloudWorkspaces();
+  const { selectWorkspace } = useWorkspaceService();
+  const workspace = useCurrentWorkspace();
 
-  const options = useMemo(() => {
-    return workspaces
-      ?.filter((w) => w.workspaceId !== workspace.workspaceId)
-      .map((workspace) => ({
-        value: workspace.workspaceId,
-        label: workspace.name,
-      }));
-  }, [workspaces, workspace]);
+  const options = useMemo(
+    () =>
+      workspaceList
+        .filter((w) => w.workspaceId !== workspace.workspaceId)
+        .map((workspace) => ({
+          value: workspace.workspaceId,
+          label: workspace.name,
+        })),
+    [workspaceList, workspace]
+  );
 
   return (
     <Popout
       targetComponent={(targetProps) =>
-        children({ onOpen: targetProps.onOpen, value: workspace?.name })
+        children({ onOpen: targetProps.onOpen, value: workspace.name })
       }
       components={{
         MenuList: (props) => (
@@ -127,7 +129,7 @@ const WorkspacePopout: React.FC<{
       }}
       isSearchable={false}
       options={options}
-      value={workspace?.workspaceId}
+      value={workspace.slug}
       onChange={({ value }) => selectWorkspace(value)}
     />
   );

@@ -30,6 +30,7 @@ import java.util.function.Supplier;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 /*
  * This class represents a single run of a worker. It handles making sure the correct inputs and
@@ -112,6 +113,12 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   public OUTPUT get() {
     try {
       mdcSetter.accept(jobRoot);
+
+      if (MDC.get(LogClientSingleton.JOB_LOG_PATH_MDC_KEY) != null) {
+        LOGGER.info("Docker volume job log path: " + MDC.get(LogClientSingleton.JOB_LOG_PATH_MDC_KEY));
+      } else if (MDC.get(LogClientSingleton.CLOUD_JOB_LOG_PATH_MDC_KEY) != null) {
+        LOGGER.info("Cloud storage job log path: " + MDC.get(LogClientSingleton.CLOUD_JOB_LOG_PATH_MDC_KEY));
+      }
 
       LOGGER.info("Executing worker wrapper. Airbyte version: {}", airbyteVersion);
       // TODO(Davin): This will eventually run into scaling problems, since it opens a DB connection per

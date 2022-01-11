@@ -127,7 +127,7 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
   }
 
   private void startAndInitJdbcContainer() throws Exception {
-    DockerImageName mcsImage = DockerImageName.parse("mariadb/columnstore").asCompatibleSubstituteFor("mariadb");
+    DockerImageName mcsImage = DockerImageName.parse("fengdi/columnstore:1.5.2").asCompatibleSubstituteFor("mariadb");
     db = new MariaDBContainer<>(mcsImage)
         .withNetwork(bastion.getNetWork());
     db.start();

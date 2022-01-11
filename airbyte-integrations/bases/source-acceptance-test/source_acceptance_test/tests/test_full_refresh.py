@@ -37,10 +37,11 @@ class TestFullRefresh(BaseTest):
         for record in records_2:
             records_by_stream_2[record.stream].append(record.data)
 
-        for stream in records_by_stream_1.keys():
+        for stream in records_by_stream_1:
             serializer = partial(make_hashable, exclude_fields=ignored_fields.get(stream))
             stream_records_1 = records_by_stream_1.get(stream)
             stream_records_2 = records_by_stream_2.get(stream)
+            # Using
             output_diff = set(map(serializer, stream_records_1)).symmetric_difference(set(map(serializer, stream_records_2)))
             if output_diff:
                 msg = f"{stream}: the two sequential reads should produce either equal set of records or one of them is a strict subset of the other"

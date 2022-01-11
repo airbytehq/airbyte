@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
+import io.airbyte.scheduler.models.AttemptWithJobInfo;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import java.io.IOException;
@@ -84,8 +85,8 @@ public interface JobPersistence {
   int createAttempt(long jobId, Path logPath) throws IOException;
 
   /**
-   * Sets an attempt to FAILED. Also attempts the parent job to FAILED. The job's status will not be
-   * changed if it is already in a terminal state.
+   * Sets an attempt to FAILED. Also attempts to set the parent job to INCOMPLETE. The job's status
+   * will not be changed if it is already in a terminal state.
    *
    * @param jobId job id
    * @param attemptNumber attempt id
@@ -94,8 +95,8 @@ public interface JobPersistence {
   void failAttempt(long jobId, int attemptNumber) throws IOException;
 
   /**
-   * Sets an attempt to SUCCEEDED. Also attempts the parent job to SUCCEEDED. The job's status is
-   * changed regardless of what state it is in.
+   * Sets an attempt to SUCCEEDED. Also attempts to set the parent job to SUCCEEDED. The job's status
+   * is changed regardless of what state it is in.
    *
    * @param jobId job id
    * @param attemptNumber attempt id
@@ -152,6 +153,15 @@ public interface JobPersistence {
   Optional<Job> getLastReplicationJob(UUID connectionId) throws IOException;
 
   Optional<Job> getNextJob() throws IOException;
+
+  /**
+   * @param configType The type of job
+   * @param attemptEndedAtTimestamp The timestamp after which you want the attempts
+   * @return List of attempts (with job attached) that ended after the provided timestamp, sorted by
+   *         attempts' endedAt in ascending order
+   * @throws IOException
+   */
+  List<AttemptWithJobInfo> listAttemptsWithJobInfo(ConfigType configType, Instant attemptEndedAtTimestamp) throws IOException;
 
   /// ARCHIVE
 

@@ -12,9 +12,10 @@ from collections.abc import Mapping
 from pathlib import Path
 
 import jsonref
+import pytest
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader, check_config_against_spec_or_exit
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader, check_config_against_spec_or_exit, get_secret_values
 from pytest import fixture
 from pytest import raises as pytest_raises
 
@@ -80,7 +81,10 @@ class TestResourceSchemaLoader:
             "properties": {
                 "str": {"type": "string"},
                 "int": {"type": "integer"},
-                "obj": {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}},
+                "obj": {
+                    "type": ["null", "object"],
+                    "properties": {"k1": {"type": "string"}},
+                },
             },
         }
 
@@ -96,16 +100,26 @@ class TestResourceSchemaLoader:
             "properties": {
                 "str": {"type": "string"},
                 "int": {"type": "integer"},
-                "obj": {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}},
+                "obj": {
+                    "type": ["null", "object"],
+                    "properties": {"k1": {"type": "string"}},
+                },
             },
         }
 
         partial_schema = {
             "type": ["null", "object"],
-            "properties": {"str": {"type": "string"}, "int": {"type": "integer"}, "obj": {"$ref": "shared_schema.json"}},
+            "properties": {
+                "str": {"type": "string"},
+                "int": {"type": "integer"},
+                "obj": {"$ref": "shared_schema.json"},
+            },
         }
 
-        referenced_schema = {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}}
+        referenced_schema = {
+            "type": ["null", "object"],
+            "properties": {"k1": {"type": "string"}},
+        }
 
         create_schema("complex_schema", partial_schema)
         create_schema("shared/shared_schema", referenced_schema)
@@ -122,8 +136,19 @@ class TestResourceSchemaLoader:
             "properties": {
                 "str": {"type": "string"},
                 "int": {"type": "integer"},
-                "one_of": {"oneOf": [{"type": "string"}, {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}}]},
-                "obj": {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}},
+                "one_of": {
+                    "oneOf": [
+                        {"type": "string"},
+                        {
+                            "type": ["null", "object"],
+                            "properties": {"k1": {"type": "string"}},
+                        },
+                    ]
+                },
+                "obj": {
+                    "type": ["null", "object"],
+                    "properties": {"k1": {"type": "string"}},
+                },
             },
         }
         partial_schema = {
@@ -131,7 +156,12 @@ class TestResourceSchemaLoader:
             "properties": {
                 "str": {"type": "string"},
                 "int": {"type": "integer"},
-                "one_of": {"oneOf": [{"type": "string"}, {"$ref": "shared_schema.json#/definitions/type_one"}]},
+                "one_of": {
+                    "oneOf": [
+                        {"type": "string"},
+                        {"$ref": "shared_schema.json#/definitions/type_one"},
+                    ]
+                },
                 "obj": {"$ref": "shared_schema.json#/definitions/type_one"},
             },
         }
@@ -139,7 +169,10 @@ class TestResourceSchemaLoader:
         referenced_schema = {
             "definitions": {
                 "type_one": {"$ref": "shared_schema.json#/definitions/type_nested"},
-                "type_nested": {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}},
+                "type_nested": {
+                    "type": ["null", "object"],
+                    "properties": {"k1": {"type": "string"}},
+                },
             }
         }
 
@@ -153,3 +186,69 @@ class TestResourceSchemaLoader:
         # Make sure generated schema is JSON serializable
         assert json.dumps(actual_schema)
         assert jsonref.JsonRef.replace_refs(actual_schema)
+
+
+@pytest.mark.parametrize(
+    "schema,config,expected",
+    [
+        (
+            {
+                "type": "object",
+                "properties": {
+                    "credentials": {
+                        "type": "object",
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "option_title": {
+                                        "type": "string",
+                                        "const": "OAuth Credentials",
+                                    }
+                                },
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "option_title": {"type": "string"},
+                                    "personal_access_token": {
+                                        "type": "string",
+                                        "airbyte_secret": True,
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                    "repository": {"type": "string"},
+                    "start_date": {"type": "string"},
+                },
+            },
+            {"credentials": {"personal_access_token": "secret"}},
+            ["secret"],
+        ),
+        (
+            {
+                "type": "object",
+                "properties": {
+                    "access_token": {"type": "string", "airbyte_secret": True},
+                    "whatever": {"type": "string", "airbyte_secret": False},
+                },
+            },
+            {"access_token": "secret"},
+            ["secret"],
+        ),
+        (
+            {
+                "type": "object",
+                "properties": {
+                    "access_token": {"type": "string", "airbyte_secret": False},
+                    "whatever": {"type": "string", "airbyte_secret": False},
+                },
+            },
+            {"access_token": "secret"},
+            [],
+        ),
+    ],
+)
+def test_get_secret_values(schema, config, expected):
+    assert get_secret_values(schema, config) == expected

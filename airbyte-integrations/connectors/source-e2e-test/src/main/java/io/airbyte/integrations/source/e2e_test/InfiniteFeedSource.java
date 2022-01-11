@@ -25,6 +25,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 import org.slf4j.Logger;
@@ -53,7 +54,7 @@ public class InfiniteFeedSource extends BaseConnector implements Source {
     final Predicate<Long> anotherRecordPredicate =
         config.has("max_records") ? recordNumber -> recordNumber < config.get("max_records").asLong() : recordNumber -> true;
 
-    final long sleepTime = config.has("message_interval") ? config.get("message_interval").asLong() : 3000L;
+    final Optional<Long> sleepTime = Optional.ofNullable(config.get("message_interval")).map(JsonNode::asLong);
 
     final AtomicLong i = new AtomicLong();
 
@@ -63,11 +64,13 @@ public class InfiniteFeedSource extends BaseConnector implements Source {
       protected AirbyteMessage computeNext() {
         if (anotherRecordPredicate.test(i.get())) {
           if (i.get() != 0) {
-            try {
-              LOGGER.info("sleeping for {} ms", sleepTime);
-              sleep(sleepTime);
-            } catch (final InterruptedException e) {
-              throw new RuntimeException();
+            if (sleepTime.isPresent()) {
+              try {
+                LOGGER.info("sleeping for {} ms", sleepTime.get());
+                sleep(sleepTime.get());
+              } catch (final InterruptedException e) {
+                throw new RuntimeException(e);
+              }
             }
           }
           i.incrementAndGet();

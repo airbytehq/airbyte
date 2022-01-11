@@ -65,6 +65,7 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.4 | 2021-12-08 | [8425](https://github.com/airbytehq/airbyte/pull/8425) | Update title, description fields in spec |
 | 0.1.3 | 2021-12-07 | [8466](https://github.com/airbytehq/airbyte/pull/8466) | Change Check Connection Function Logic |
 | 0.1.2 | 2021-10-11 | [6571](https://github.com/airbytehq/airbyte/pull/6571) | Support pulling data from a select set of forms |
 | 0.1.1 | 2021-09-06 | [5799](https://github.com/airbytehq/airbyte/pull/5799) | Add missed choices field to responses schema |

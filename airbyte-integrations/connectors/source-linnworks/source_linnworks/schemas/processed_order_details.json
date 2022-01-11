@@ -182,7 +182,7 @@
       "additionalProperties": false,
       "properties": {
         "Vendor": {
-          "type": "string",
+          "type": ["null", "string"],
           "description": "Courier name (e.g. Royal Mail)"
         },
         "PostalServiceId": {
@@ -206,7 +206,7 @@
           "description": "Package category ID"
         },
         "PackageCategory": {
-          "type": "string",
+          "type": ["null", "string"],
           "description": "Package category name"
         },
         "PackageTypeId": {
@@ -470,7 +470,7 @@
             "description": "Item number as on channel"
           },
           "SKU": {
-            "type": "string",
+            "type": ["null", "string"],
             "description": "Product SKU"
           },
           "ItemSource": {
@@ -690,7 +690,7 @@
             "description": "If serial number scan required"
           },
           "BinRack": {
-            "type": "string",
+            "type": ["null", "string"],
             "description": "Binrack location"
           },
           "BinRacks": {
