@@ -6865,7 +6865,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.2"
+- dockerImage: "airbyte/source-snowflake:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/snowflake"
     connectionSpecification:
@@ -6883,12 +6883,12 @@
       additionalProperties: false
       properties:
         host:
-          description: "Host domain of the snowflake instance (must include the account,\
-            \ region, cloud environment, and end with snowflakecomputing.com)."
+          description: "The host domain of the snowflake instance (must include the\
+            \ account, region, cloud environment, and end with snowflakecomputing.com)."
           examples:
           - "accountname.us-east-2.aws.snowflakecomputing.com"
           type: "string"
-          title: "Account name"
+          title: "Account Name"
           order: 0
         role:
           description: "The role you created for Airbyte to access Snowflake."
@@ -6898,14 +6898,14 @@
           title: "Role"
           order: 1
         warehouse:
-          description: "The warehouse you created for Airbyte to access data into."
+          description: "The warehouse you created for Airbyte to access data."
           examples:
           - "AIRBYTE_WAREHOUSE"
           type: "string"
           title: "Warehouse"
           order: 2
         database:
-          description: "The database you created for Airbyte to access data into."
+          description: "The database you created for Airbyte to access data."
           examples:
           - "AIRBYTE_DATABASE"
           type: "string"
@@ -6926,7 +6926,7 @@
           title: "Username"
           order: 5
         password:
-          description: "Password associated with the username."
+          description: "The password associated with the username."
           type: "string"
           airbyte_secret: true
           title: "Password"
