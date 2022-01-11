@@ -18,7 +18,7 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "sample_files/full_refresh_catalog.json"
-      empty_streams: ["workflows", "form_submissions"]
+      empty_streams: ["workflows", "contacts_list_memberships"]
     - config_path: "secrets/config_oauth.json"
       configured_catalog_path: "sample_files/configured_catalog_for_oauth_config.json"
       # The `campaigns` stream is empty in this case, because we use a catalog with
