@@ -109,16 +109,24 @@ There are 2 available options to upload data to BigQuery `Standard` and `GCS Sta
 This is the recommended configuration for uploading data to BigQuery. It works by first uploading all the data to a [GCS](https://cloud.google.com/storage) bucket, then ingesting the data to BigQuery. To configure GCS Staging, you'll need the following parameters:
 * **GCS Bucket Name**
 * **GCS Bucket Path**
+* **Block Size (MB) for GCS multipart upload**
 * **GCS Bucket Keep files after migration**
-  * See [this](https://cloud.google.com/storage/docs/creating-buckets) for instructions on how to create a GCS bucket.
+  * See [this](https://cloud.google.com/storage/docs/creating-buckets) for instructions on how to create a GCS bucket. The bucket cannot have a retention policy. Set Protection Tools to none or Object versioning.
 * **HMAC Key Access ID**
-  * See [this](https://cloud.google.com/storage/docs/authentication/hmackeys) on how to generate an access key.
-  * We recommend creating an Airbyte-specific user or service account. This user or account will require read and write permissions to objects in the bucket.
+  * See [this](https://cloud.google.com/storage/docs/authentication/managing-hmackeys) on how to generate an access key. For more information on hmac keys please reference the [GCP docs](https://cloud.google.com/storage/docs/authentication/hmackeys)
+  * We recommend creating an Airbyte-specific user or service account. This user or account will require the following permissions for the bucket:
+    ```
+    storage.multipartUploads.abort
+    storage.multipartUploads.create
+    storage.objects.create
+    storage.objects.delete
+    storage.objects.get
+    storage.objects.list
+    ```
+    You can set those by going to the permissions tab in the GCS bucket and adding the appropriate the email address of the service account or user and adding the aforementioned permissions.
 * **Secret Access Key**
   * Corresponding key to the above access ID.
-  * Make sure your GCS bucket is accessible from the machine running Airbyte.
-* This depends on your networking setup.
-* The easiest way to verify if Airbyte is able to connect to your GCS bucket is via the check connection tool in the UI.
+* Make sure your GCS bucket is accessible from the machine running Airbyte. This depends on your networking setup. The easiest way to verify if Airbyte is able to connect to your GCS bucket is via the check connection tool in the UI.
 
 ### `Standard` uploads 
 This uploads data directly from your source to BigQuery. While this is faster to setup initially, **we strongly recommend that you do not use this option for anything other than a quick demo**. It is more than 10x slower than the GCS uploading option and will fail for many datasets. Please be aware you may see some failures for big datasets and slow sources, e.g. if reading from source takes more than 10-12 hours. This is caused by the Google BigQuery SDK client limitations. For more details please check [https://github.com/airbytehq/airbyte/issues/3549](https://github.com/airbytehq/airbyte/issues/3549)
@@ -145,6 +153,8 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
+| 0.6.2   | 2022-01-10 | [\#9121](https://github.com/airbytehq/airbyte/pull/9121)   | Fixed check method for GCS mode to verify if all roles assigned to user |
+| 0.6.1   | 2021-12-22 | [\#9039](https://github.com/airbytehq/airbyte/pull/9039)   | Added part_size configuration to UI for GCS staging |
 | 0.6.0   | 2021-12-17 | [\#8788](https://github.com/airbytehq/airbyte/issues/8788) | BigQuery/BiqQuery denorm Destinations : Add possibility to use different types of GCS files |
 | 0.5.1   | 2021-12-16 | [\#8816](https://github.com/airbytehq/airbyte/issues/8816) | Update dataset locations |
 | 0.5.0   | 2021-10-26 | [\#7240](https://github.com/airbytehq/airbyte/issues/7240) | Output partitioned/clustered tables |
@@ -161,7 +171,8 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
-| 0.2.1 | 2021-12-21 | [\#8574](https://github.com/airbytehq/airbyte/pull/8574) | Added namespace to Avro and Parquet record types |
+| 0.2.2   | 2021-12-22 | [\#9039](https://github.com/airbytehq/airbyte/pull/9039) | Added part_size configuration to UI for GCS staging |
+| 0.2.1   | 2021-12-21 | [\#8574](https://github.com/airbytehq/airbyte/pull/8574) | Added namespace to Avro and Parquet record types |
 | 0.2.0   | 2021-12-17 | [\#8788](https://github.com/airbytehq/airbyte/pull/8788) |  BigQuery/BiqQuery denorm Destinations : Add possibility to use different types of GCS files |
 | 0.1.11  | 2021-12-16 | [\#8816](https://github.com/airbytehq/airbyte/issues/8816) | Update dataset locations |
 | 0.1.10  | 2021-11-09 | [\#7804](https://github.com/airbytehq/airbyte/pull/7804) |  handle null values in fields described by a $ref definition |

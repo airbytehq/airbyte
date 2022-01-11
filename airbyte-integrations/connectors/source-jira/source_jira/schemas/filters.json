@@ -2,6 +2,9 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
+    "expand": {
+      "type": "string"
+    },
     "self": {
       "type": "string",
       "description": "The URL of the filter.",
@@ -2590,6 +2593,9 @@
         }
       }
     },
+    "isWritable": {
+      "type": "boolean"
+    },
     "subscriptions": {
       "type": "array",
       "description": "The users that are subscribed to the filter.",
@@ -2856,6 +2862,6 @@
       }
     }
   },
-  "additionalProperties": true,
+  "additionalProperties": false,
   "description": "Details of a filter."
 }

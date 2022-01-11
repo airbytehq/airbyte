@@ -16,6 +16,7 @@ import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
 import io.fabric8.kubernetes.api.model.ContainerStatus;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
+import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.LocalObjectReference;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
@@ -95,9 +96,10 @@ public class KubePodProcess extends Process {
 
   private static final String INIT_CONTAINER_NAME = "init";
   public static final Duration DEFAULT_STATUS_CHECK_INTERVAL = Duration.ofSeconds(30);
-  private static final String DEFAULT_MEMORY_LIMIT = "25Mi";
+  private static final String DEFAULT_MEMORY_REQUEST = "25Mi";
+  private static final String DEFAULT_MEMORY_LIMIT = "50Mi";
   private static final ResourceRequirements DEFAULT_SIDECAR_RESOURCES = new ResourceRequirements()
-      .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_LIMIT);
+      .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_REQUEST);
 
   private static final String PIPES_DIR = "/pipes";
   private static final String STDIN_PIPE_FILE = PIPES_DIR + "/stdin";
@@ -133,7 +135,6 @@ public class KubePodProcess extends Process {
   private final Duration statusCheckInterval;
   private final int stdoutLocalPort;
   private final ServerSocket stderrServerSocket;
-  private final Map<Integer, Integer> internalToExternalPorts;
   private final int stderrLocalPort;
   private final ExecutorService executorService;
 
@@ -172,6 +173,7 @@ public class KubePodProcess extends Process {
                                    final List<VolumeMount> mainVolumeMounts,
                                    final ResourceRequirements resourceRequirements,
                                    final Map<Integer, Integer> internalToExternalPorts,
+                                   final Map<String, String> envMap,
                                    final String[] args)
       throws IOException {
     final var argsStr = String.join(" ", args);
@@ -195,12 +197,17 @@ public class KubePodProcess extends Process {
             .build())
         .collect(Collectors.toList());
 
+    final List<EnvVar> envVars = envMap.entrySet().stream()
+        .map(entry -> new EnvVar(entry.getKey(), entry.getValue(), null))
+        .collect(Collectors.toList());
+
     final ContainerBuilder containerBuilder = new ContainerBuilder()
         .withName("main")
         .withPorts(containerPorts)
         .withImage(image)
         .withImagePullPolicy(imagePullPolicy)
         .withCommand("sh", "-c", mainCommand)
+        .withEnv(envVars)
         .withWorkingDir(CONFIG_DIR)
         .withVolumeMounts(mainVolumeMounts);
 
@@ -243,7 +250,7 @@ public class KubePodProcess extends Process {
           // Copying the success indicator file to the init container causes the container to immediately
           // exit, causing the `kubectl cp` command to exit with code 137. This check ensures that an error is
           // not thrown in this case if the init container exits successfully.
-          if (file.getKey().equals(SUCCESS_FILE_NAME) && waitForInitPodToTerminate(client, podDefinition, 10, TimeUnit.SECONDS) == 0) {
+          if (file.getKey().equals(SUCCESS_FILE_NAME) && waitForInitPodToTerminate(client, podDefinition, 5, TimeUnit.MINUTES) == 0) {
             LOGGER.info("Init was successful; ignoring non-zero kubectl cp exit code for success indicator file.");
           } else {
             throw new IOException("kubectl cp failed with exit code " + exitCode);
@@ -332,6 +339,7 @@ public class KubePodProcess extends Process {
                         final String socatImage,
                         final String busyboxImage,
                         final String curlImage,
+                        final Map<String, String> envMap,
                         final Map<Integer, Integer> internalToExternalPorts,
                         final String... args)
       throws IOException, InterruptedException {
@@ -339,10 +347,8 @@ public class KubePodProcess extends Process {
     this.statusCheckInterval = statusCheckInterval;
     this.stdoutLocalPort = stdoutLocalPort;
     this.stderrLocalPort = stderrLocalPort;
-
     this.stdoutServerSocket = new ServerSocket(stdoutLocalPort);
     this.stderrServerSocket = new ServerSocket(stderrLocalPort);
-    this.internalToExternalPorts = internalToExternalPorts;
     this.executorService = Executors.newFixedThreadPool(2);
     setupStdOutAndStdErrListeners();
 
@@ -393,6 +399,7 @@ public class KubePodProcess extends Process {
         List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount),
         resourceRequirements,
         internalToExternalPorts,
+        envMap,
         args);
 
     final io.fabric8.kubernetes.api.model.ResourceRequirements sidecarResources = getResourceRequirementsBuilder(DEFAULT_SIDECAR_RESOURCES).build();

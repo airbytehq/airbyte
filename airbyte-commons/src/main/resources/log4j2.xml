@@ -14,6 +14,8 @@
 
             This is useful if you want to override the environment variables at runtime (or if you don't have
             access to the necessary information at the point where you are setting environment variables).
+
+            Please update configuring-airbyte.md if the names of any of the below variables change.
         -->
 
         <!-- Always log INFO by default. -->
