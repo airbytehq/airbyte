@@ -66,4 +66,5 @@ This guide will walk through how to create the credentials you need to run this 
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.3.1 | 2022-01-11 | [9402](https://github.com/airbytehq/airbyte/pull/9402) | Add transaction results paging + more balance data |
 | 0.3.0 | 2022-01-05 | [7977](https://github.com/airbytehq/airbyte/pull/7977) | Migrate to Python CDK + add transaction stream |
