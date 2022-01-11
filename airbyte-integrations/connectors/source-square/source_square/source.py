@@ -38,7 +38,14 @@ def parse_square_error_response(error: requests.exceptions.HTTPError) -> SquareE
 
 
 class SquareStream(HttpStream, ABC):
-    def __init__(self, is_sandbox: bool, api_version: str, start_date: str, include_deleted_objects: bool, authenticator: Union[AuthBase, HttpAuthenticator]):
+    def __init__(
+        self,
+        is_sandbox: bool,
+        api_version: str,
+        start_date: str,
+        include_deleted_objects: bool,
+        authenticator: Union[AuthBase, HttpAuthenticator],
+    ):
         super().__init__(authenticator)
         self._authenticator = authenticator
         self.is_sandbox = is_sandbox
