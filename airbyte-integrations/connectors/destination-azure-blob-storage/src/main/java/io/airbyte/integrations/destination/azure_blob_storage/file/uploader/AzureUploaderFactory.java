@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.Arrays;
 
 public class AzureUploaderFactory {
 
@@ -49,7 +50,8 @@ public class AzureUploaderFactory {
             uploaderConfig.getConfigStream(),
             uploaderConfig.getAppendBlobClient(),
             recordFormatter,
-            uploaderConfig.isKeepFilesInStorage());
+            uploaderConfig.isKeepFilesInStorage(),
+            uploaderConfig.isNewlyCreatedBlob());
   }
 
   private static AbstractGcsAzureUploader<?> getGcsUploader(DestinationSyncMode syncMode,
@@ -58,21 +60,24 @@ public class AzureUploaderFactory {
                                                             ConfiguredAirbyteStream configStream,
                                                             AppendBlobClient appendBlobClient,
                                                             AzureRecordFormatter formatter,
-                                                            boolean keepFilesInStorage)
+                                                            boolean keepFilesInStorage,
+                                                            boolean newlyCreatedBlob)
           throws IOException {
 
     final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig.getGcsDestinationConfig(stagingConfig);
     AbstractGcsAzureUploader result;
+    int headerByteSize = 0;
     if (UploaderType.CSV.equals(uploaderType)) {
       GcsCsvWriter gcsWriter = initGcsCsvWriter(gcsDestinationConfig, configStream);
       gcsWriter.initialize();
+      headerByteSize = calculateHeaderByteSize(newlyCreatedBlob, gcsWriter);
       result = new GcsCsvAzureUploader(syncMode, gcsWriter, gcsDestinationConfig,
-              appendBlobClient, keepFilesInStorage, formatter);
+              appendBlobClient, keepFilesInStorage, headerByteSize, formatter);
     } else {
       GcsJsonlWriter jsonWriter = initGcsJsonWriter(gcsDestinationConfig, configStream);
       jsonWriter.initialize();
       result = new GcsJsonlAzureUploader(syncMode, jsonWriter, gcsDestinationConfig,
-              appendBlobClient, keepFilesInStorage, formatter);
+              appendBlobClient, keepFilesInStorage, headerByteSize, formatter);
     }
     return result;
 
@@ -93,6 +98,19 @@ public class AzureUploaderFactory {
 
     final AmazonS3 s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
     return new GcsJsonlWriter(gcsDestinationConfig, s3Client, configuredStream, uploadTimestamp);
+  }
+
+  private static int calculateHeaderByteSize(boolean newlyCreatedBlob,
+                                      GcsCsvWriter gcsWriter) {
+    int headerByteSize = 0;
+    if (!newlyCreatedBlob) {
+      var headersNames = Arrays.asList(gcsWriter.getHeader());
+      for (String header : headersNames) {
+        headerByteSize = headerByteSize + header.length();
+      }
+      headerByteSize = headerByteSize + headersNames.size()*2 + headersNames.size() + 1;
+    }
+    return headerByteSize;
   }
 
 }

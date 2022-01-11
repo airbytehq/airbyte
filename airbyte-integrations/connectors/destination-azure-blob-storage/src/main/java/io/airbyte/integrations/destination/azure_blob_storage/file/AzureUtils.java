@@ -40,6 +40,7 @@ public class AzureUtils {
 
   public static JsonNode getGcsCsvJsonNodeConfig(final JsonNode config) {
     final JsonNode loadingMethod = config.get(AzureConsts.LOADING_METHOD);
+    final String flattening = config.get(AzureConsts.FORMAT).get(AzureConsts.FORMAT_FLATTENING).asText();
     final JsonNode gcsJsonNode = Jsons.jsonNode(ImmutableMap.builder()
             .put(AzureConsts.GCS_BUCKET_NAME, loadingMethod.get(AzureConsts.GCS_BUCKET_NAME))
             .put(AzureConsts.GCS_BUCKET_PATH, loadingMethod.get(AzureConsts.GCS_BUCKET_PATH))
@@ -47,7 +48,7 @@ public class AzureUtils {
             .put(AzureConsts.CREDENTIAL, loadingMethod.get(AzureConsts.CREDENTIAL))
             .put(AzureConsts.FORMAT, Jsons.deserialize("{\n"
                     + "  \"format_type\": \"CSV\",\n"
-                    + "  \"flattening\": \"No flattening\"\n"
+                    + "  \"flattening\": \"" + flattening + "\"\n"
                     + "}"))
             .build());
 

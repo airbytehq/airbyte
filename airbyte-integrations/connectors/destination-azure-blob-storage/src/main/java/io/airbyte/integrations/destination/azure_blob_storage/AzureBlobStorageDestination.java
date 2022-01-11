@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.azure_blob_storage;
 
+import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.specialized.AppendBlobClient;
 import com.azure.storage.blob.specialized.SpecializedBlobClientBuilder;
 import com.azure.storage.common.StorageSharedKeyCredential;
@@ -38,6 +39,8 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.SyncMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,12 +124,14 @@ public class AzureBlobStorageDestination extends BaseConnector implements Destin
       final AppendBlobClient appendBlobClient = specializedBlobClientBuilder
               .blobName(streamName)
               .buildAppendBlobClient();
+      boolean newlyCreatedBlob = createContainers(appendBlobClient, configStream);
 
       UploaderConfig uploaderConfig = UploaderConfig
               .builder()
               .configStream(configStream)
               .uploaderType(uploaderType)
               .uploadingMethod(uploadingMethod)
+              .newlyCreatedBlob(newlyCreatedBlob)
               .appendBlobClient(appendBlobClient)
               .keepFilesInStorage(AzureUtils.isKeepFilesInStorage(config))
               .formatterMap(getFormatterMap(stream.getJsonSchema()))
@@ -144,6 +149,41 @@ public class AzureBlobStorageDestination extends BaseConnector implements Destin
     return Map.of(UploaderType.STANDARD, new DefaultAzureRecordFormatter(jsonSchema, new StandardNameTransformer()),
             UploaderType.CSV, new GcsCsvAzureRecordFormatter(jsonSchema, new StandardNameTransformer()),
             UploaderType.JSONL, new GcsJsonAzureRecordFormatter(jsonSchema, new StandardNameTransformer()));
+  }
+
+  private boolean createContainers(final AppendBlobClient appendBlobClient,
+                                   final ConfiguredAirbyteStream configuredStream) {
+    // create container if absent (aka SQl Schema)
+    final BlobContainerClient containerClient = appendBlobClient.getContainerClient();
+    if (!containerClient.exists()) {
+      containerClient.create();
+    }
+    // create a storage container if absent (aka Table is SQL BD)
+    if (DestinationSyncMode.OVERWRITE.equals(configuredStream.getDestinationSyncMode())) {
+      // full refresh sync. Create blob and override if any
+      LOGGER.info("Sync mode is selected to OVERRIDE mode. New container will be automatically"
+              + " created or all data would be overridden (if any) for stream:" + configuredStream
+              .getStream().getName());
+      appendBlobClient.create(true);
+      return true;
+    } else {
+      // incremental sync. Create new container only if still absent
+      if (!appendBlobClient.exists()) {
+        LOGGER.info("Sync mode is selected to APPEND mode. New container will be automatically"
+                + " created for stream:" + configuredStream.getStream().getName());
+        appendBlobClient.create(false);
+        LOGGER.info(appendBlobClient.getBlobName() + " blob has been created");
+        return true;
+      } else {
+        LOGGER.info(String.format(
+                "Sync mode is selected to APPEND mode. Container %s already exists. Append mode is "
+                        + "only available for \"Append blobs\". For more details please visit"
+                        + " https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction#blobs",
+                configuredStream.getStream().getName()));
+        LOGGER.info(appendBlobClient.getBlobName() + " already exists");
+        return false;
+      }
+    }
   }
 
 }

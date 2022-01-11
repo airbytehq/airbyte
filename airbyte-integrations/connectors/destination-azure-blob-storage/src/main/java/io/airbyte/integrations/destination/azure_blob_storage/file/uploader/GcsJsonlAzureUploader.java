@@ -17,7 +17,8 @@ public class GcsJsonlAzureUploader extends AbstractGcsAzureUploader<GcsJsonlWrit
                                GcsDestinationConfig gcsDestinationConfig,
                                AppendBlobClient appendBlobClient,
                                boolean keepFilesInGcs,
+                               int headerByteSize,
                                AzureRecordFormatter recordFormatter) {
-    super(syncMode, writer, gcsDestinationConfig, appendBlobClient, keepFilesInGcs, recordFormatter);
+    super(syncMode, writer, gcsDestinationConfig, appendBlobClient, keepFilesInGcs, headerByteSize, recordFormatter);
   }
 }

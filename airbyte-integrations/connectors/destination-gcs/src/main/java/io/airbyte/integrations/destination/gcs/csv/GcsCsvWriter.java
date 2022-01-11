@@ -110,4 +110,8 @@ public class GcsCsvWriter extends BaseGcsWriter implements S3Writer, GscWriter, 
     return objectKey;
   }
 
+  public String[] getHeader() {
+    return csvSheetGenerator.getHeaderRow().toArray(new String[0]);
+  }
+
 }

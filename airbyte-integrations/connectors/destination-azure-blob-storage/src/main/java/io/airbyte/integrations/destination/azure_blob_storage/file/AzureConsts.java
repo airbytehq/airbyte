@@ -18,8 +18,8 @@ public class AzureConsts {
 
   public static final String FORMAT = "format";
   public static final String FORMAT_TYPE = "format_type";
+  public static final String FORMAT_FLATTENING = "flattening";
   public static final String FORMAT_CSV = "CSV";
-  public static final String FORMAT_JSONL = "JSONL";
 
   public static final String KEEP_GCS_FILES = "keep_files_in_gcs-bucket";
   public static final String KEEP_GCS_FILES_VAL = "Keep all tmp files in GCS";

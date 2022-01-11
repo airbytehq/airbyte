@@ -17,6 +17,7 @@ public class UploaderConfig {
 
     private JsonNode stagingConfig;
     private UploaderType uploaderType;
+    private boolean newlyCreatedBlob;
     private boolean keepFilesInStorage;
     private UploadingMethod uploadingMethod;
     private AppendBlobClient appendBlobClient;
