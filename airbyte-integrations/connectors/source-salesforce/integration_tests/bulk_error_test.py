@@ -16,7 +16,7 @@ HERE = Path(__file__).parent
 
 @pytest.fixture(name="input_config")
 def parse_input_config():
-    with open(HERE.parent / "secrets/config_bulk.json", "r") as file:
+    with open(HERE.parent / "secrets/config.json", "r") as file:
         return json.loads(file.read())
 
 
