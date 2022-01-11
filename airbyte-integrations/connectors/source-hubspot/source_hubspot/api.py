@@ -305,7 +305,7 @@ class Stream(ABC):
     def _filter_old_records(self, records: Iterable) -> Iterable:
         """Skip records that was updated before our start_date"""
         for record in records:
-            updated_at = record.get(self.updated_at_field)
+            updated_at = record[self.updated_at_field]
             if updated_at:
                 updated_at = self._field_to_datetime(updated_at)
                 if updated_at < self._start_date:
@@ -709,12 +709,13 @@ class PropertyHistoryStream(IncrementalStream):
     Docs: https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts
     """
     more_key = "has-more"
-    url = "/contacts/v1/lists/all/contacts/all"
+    url = "/contacts/v1/lists/recently_updated/contacts/recent"
     updated_at_field = "timestamp"
     created_at_field = "timestamp"
     data_field = "contacts"
     page_field = "vid-offset"
     page_filter = "vidOffset"
+    limit = 100
 
     def list(self, fields) -> Iterable:
         properties = self._api.get(f"/properties/v2/contact/properties")
@@ -723,7 +724,6 @@ class PropertyHistoryStream(IncrementalStream):
         yield from self.read(partial(self._api.get, url=self.url), params)
 
     def _transform(self, records: Iterable) -> Iterable:
-        record: Dict[str, Dict]
         for record in records:
             properties = record.get("properties")
             vid = record.get("vid")
@@ -731,6 +731,11 @@ class PropertyHistoryStream(IncrementalStream):
             for key, value_dict in properties.items():
                 versions = value_dict.get("versions")
                 if key == "lastmodifieddate":
+                    # Skipping the lastmodifieddate since it only returns the value
+                    # when one field of a contact was changed no matter which
+                    # field was changed. It therefore creates overhead, since for
+                    # every changed property there will be the date it was changed in itself
+                    # and a change in the lastmodifieddate field.
                     continue
                 if versions:
                     for version in versions:
@@ -740,7 +745,7 @@ class PropertyHistoryStream(IncrementalStream):
                         yield version
 
 
-class FormSubmssionStream(Stream):
+class FormSubmissionStream(Stream):
     """Submissions for forms, v1
     Get the Submissions for a form and the field values.
     Docs: https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form
@@ -753,12 +758,9 @@ class FormSubmssionStream(Stream):
     page_filter = "after"
     
     def list(self, fields) -> Iterable:
-        params = {
-            "limit": 50,
-        }
-        forms = self.read(partial(self._api.get, url="/marketing/v3/forms"), params)
-        for row in forms:
-            record = self.read(partial(self._api.get, url=f"{self.url}/{row['id']}"), params)
+        forms_stream = FormStream(api=self._api, start_date=str(self._start_date))
+        for row in forms_stream.list(fields={}):
+            record = self.read(partial(self._api.get, url=f"{self.url}/{row['id']}"))
             for entry in record:
                 entry["form_guid"] = row["id"]
                 yield entry
@@ -766,9 +768,8 @@ class FormSubmssionStream(Stream):
 
     def _transform(self, records: Iterable) -> Iterable:
         for record in records:
-            values: dict = record.get("values") or None
-            if values:
-                record["submittedAt"] = self._field_to_datetime(record["submittedAt"]).to_datetime_string()
+            if record.get("values"):
+                record[self.updated_at_field] = self._field_to_datetime(record[self.updated_at_field]).to_datetime_string()
             yield record
 
 
