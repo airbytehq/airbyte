@@ -117,9 +117,9 @@ public class DockerProcessFactory implements ProcessFactory {
             "--init",
             "-i",
             "-v",
-            String.format("%s:%s", workspaceMountSource, workspaceRoot), // real workspace root, not a rebased version
+            workspaceMountSource.isBlank() ? String.valueOf(workspaceRoot) : String.format("%s:%s", workspaceMountSource, workspaceRoot), // real workspace root, not a rebased version
             "-v",
-            String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION),
+            localMountSource.isBlank() ? String.valueOf(LOCAL_MOUNT_DESTINATION) : String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION),
             "-v",
             "/var/run/docker.sock:/var/run/docker.sock", // needs to be able to run docker in docker
             "-w",
@@ -136,9 +136,9 @@ public class DockerProcessFactory implements ProcessFactory {
             "--init",
             "-i",
             "-v",
-            String.format("%s:%s", workspaceMountSource, DATA_MOUNT_DESTINATION), // uses job data mount
+            workspaceMountSource.isBlank() ? String.valueOf(DATA_MOUNT_DESTINATION) : String.format("%s:%s", workspaceMountSource, DATA_MOUNT_DESTINATION), // uses job data mount
             "-v",
-            String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION),
+            localMountSource.isBlank() ? String.valueOf(LOCAL_MOUNT_DESTINATION) : String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION),
             "-w",
             rebasePath(jobRoot).toString(), // rebases the job root on the job data mount
             "--network",
