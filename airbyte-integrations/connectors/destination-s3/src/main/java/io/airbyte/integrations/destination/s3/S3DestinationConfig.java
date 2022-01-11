@@ -129,7 +129,12 @@ public class S3DestinationConfig {
   public AmazonS3 getS3Client() {
     final AWSCredentials awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
 
-    if (accessKeyId == null && secretAccessKey == null || accessKeyId.isEmpty() && secretAccessKey.isEmpty()) {
+    if (accessKeyId.isEmpty() && !secretAccessKey.isEmpty() 
+    || !accessKeyId.isEmpty() && secretAccessKey.isEmpty()) {
+      throw new Exception();
+    }
+
+    if (accessKeyId.isEmpty() && secretAccessKey.isEmpty()) {
       return AmazonS3ClientBuilder.standard()
       .withCredentials(new InstanceProfileCredentialsProvider(false))
       .build();
