@@ -339,6 +339,7 @@ subprojects {
             source = fileTree(dir: projectDir)
                     .include("**/*.py")
                     .exclude(".venv/**/*.py")
+                    .exclude("airbyte_api_client/**/*.py")
                     .exclude("**/__init__.py")
             strictCheck = true
         }
