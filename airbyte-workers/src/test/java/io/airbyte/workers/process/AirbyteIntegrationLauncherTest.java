@@ -57,7 +57,9 @@ class AirbyteIntegrationLauncherTest {
     launcher.check(JOB_ROOT, "config", "{}");
 
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_FILES, null,
-        workerConfigs.getResourceRequirements(), Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.CHECK_JOB), Map.of(),
+        workerConfigs.getResourceRequirements(),
+        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.CHECK_JOB),
+        Map.of(),
         "check",
         "--config", "config");
   }
@@ -67,7 +69,9 @@ class AirbyteIntegrationLauncherTest {
     launcher.discover(JOB_ROOT, "config", "{}");
 
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_FILES, null,
-        workerConfigs.getResourceRequirements(), Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.DISCOVER_JOB), Map.of(),
+        workerConfigs.getResourceRequirements(),
+        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.DISCOVER_JOB),
+        Map.of(),
         "discover",
         "--config", "config");
   }

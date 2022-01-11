@@ -6,7 +6,6 @@ package io.airbyte.server.handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
-import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
@@ -184,8 +183,7 @@ public class SourceHandler {
         continue;
       }
 
-      final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
-      connectionsHandler.deleteConnection(connectionIdRequestBody);
+      connectionsHandler.deleteConnection(connectionRead.getConnectionId());
     }
 
     final ConnectorSpecification spec = getSpecFromSourceId(source.getSourceId());

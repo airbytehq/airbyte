@@ -71,7 +71,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    return SnowflakeInternalStagingConsumerFactory.create(outputRecordCollector, getDatabase(config),
+    return new SnowflakeInternalStagingConsumerFactory().create(outputRecordCollector, getDatabase(config),
         new SnowflakeStagingSqlOperations(), new SnowflakeSQLNameTransformer(), config, catalog);
   }
 
