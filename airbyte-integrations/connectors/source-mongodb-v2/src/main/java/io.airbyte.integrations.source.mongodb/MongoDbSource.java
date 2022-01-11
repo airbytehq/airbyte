@@ -79,7 +79,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  protected MongoDatabase createDatabase(final JsonNode config) {
+  protected MongoDatabase createDatabase(final JsonNode config) throws Exception {
     final var dbConfig = toDatabaseConfig(config);
     return Databases.createMongoDatabase(dbConfig.get("connectionString").asText(),
         dbConfig.get("database").asText());
@@ -114,7 +114,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
       throws Exception {
     final List<TableInfo<CommonField<BsonType>>> tableInfos = new ArrayList<>();
 
-      for (final String collectionName : getAuthorizedCollections(database)) {
+    for (final String collectionName : getAuthorizedCollections(database)) {
       final MongoCollection<Document> collection = database.getCollection(collectionName);
       final Map<String, BsonType> uniqueFields = MongoUtils.getUniqueFields(collection);
 
