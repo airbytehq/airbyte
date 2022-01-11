@@ -13,7 +13,7 @@
 - name: BigQuery
   destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   dockerRepository: airbyte/destination-bigquery
-  dockerImageTag: 0.6.1
+  dockerImageTag: 0.6.2
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
   icon: bigquery.svg
 - name: BigQuery (denormalized typed struct)
@@ -37,7 +37,7 @@
 - name: Clickhouse
   destinationDefinitionId: ce0d828e-1dc4-496c-b122-2da42e637e48
   dockerRepository: airbyte/destination-clickhouse
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/destinations/clickhouse
 - name: DynamoDB
   destinationDefinitionId: 8ccd8909-4e99-4141-b48d-4984b70b2d89
@@ -60,7 +60,7 @@
 - name: Google Cloud Storage (GCS)
   destinationDefinitionId: ca8f6566-e555-4b40-943a-545bf123117a
   dockerRepository: airbyte/destination-gcs
-  dockerImageTag: 0.1.18
+  dockerImageTag: 0.1.19
   documentationUrl: https://docs.airbyte.io/integrations/destinations/gcs
   icon: googlecloudstorage.svg
 - name: Google PubSub
@@ -102,7 +102,7 @@
 - name: MS SQL Server
   destinationDefinitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
   dockerRepository: airbyte/destination-mssql
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mssql
   icon: mssql.svg
 - name: MeiliSearch
@@ -179,7 +179,7 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.3.24
+  dockerImageTag: 0.4.2
   documentationUrl: https://docs.airbyte.io/integrations/destinations/snowflake
   icon: snowflake.svg
 - name: MariaDB ColumnStore
