@@ -131,7 +131,7 @@ public class S3DestinationConfig {
 
     if (accessKeyId.isEmpty() && !secretAccessKey.isEmpty() 
     || !accessKeyId.isEmpty() && secretAccessKey.isEmpty()) {
-      throw new RuntimeException("Either both accessKeyId and secretAccessKey are provided, or none");
+      throw new RuntimeException("Either both accessKeyId and secretAccessKey should be provided, or neither");
     }
 
     if (accessKeyId.isEmpty() && secretAccessKey.isEmpty()) {
