@@ -170,7 +170,7 @@ public class JsonToAvroSchemaConverter {
           // Omit the namespace for root level fields, because it is directly assigned in the builder above.
           // This may not be the correct choice.
           ? null
-          : (fieldNamespace == null ? fieldName : (fieldNamespace + "." + fieldName));
+          : (fieldNamespace == null ? stdName : (fieldNamespace + "." + stdName));
       fieldBuilder.type(parseJsonField(subfieldName, subfieldNamespace, subfieldDefinition, appendExtraProps, addStringToLogicalTypes))
           .withDefault(null);
     }
