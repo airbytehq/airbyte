@@ -10,7 +10,7 @@ public final class AzureBlobStorageDestinationConstants {
   public static final String DEFAULT_STORAGE_ENDPOINT_HTTP_PROTOCOL = "https";
   public static final String DEFAULT_STORAGE_ENDPOINT_DOMAIN_NAME = "blob.core.windows.net";
   public static final String DEFAULT_STORAGE_ENDPOINT_FORMAT = "%s://%s.%s";
-  public static final int DEFAULT_STORAGE_OUTPUT_BUFFER_SIZE = 1024 * 1024 * 100; // 100MB
+  public static final int DEFAULT_STORAGE_OUTPUT_BUFFER_SIZE = 5;
 
   private AzureBlobStorageDestinationConstants() {}
 
