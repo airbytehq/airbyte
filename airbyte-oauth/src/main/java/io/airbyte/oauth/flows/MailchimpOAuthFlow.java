@@ -24,7 +24,6 @@ import org.apache.http.client.utils.URIBuilder;
 public class MailchimpOAuthFlow extends BaseOAuth2Flow {
 
   private static final String ACCESS_TOKEN_URL = "https://login.mailchimp.com/oauth2/token";
-  private static final String AUTHORIZE_URL = "https://login.mailchimp.com/oauth2/authorize";
 
   public MailchimpOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
@@ -42,15 +41,16 @@ public class MailchimpOAuthFlow extends BaseOAuth2Flow {
                                     final JsonNode inputOAuthConfiguration)
       throws IOException {
 
-    try {
-      return new URIBuilder(AUTHORIZE_URL)
-          .addParameter("client_id", clientId)
-          .addParameter("response_type", "code")
-          .addParameter("redirect_uri", redirectUrl)
-          .build().toString();
-    } catch (final URISyntaxException e) {
-      throw new IOException("Failed to format Consent URL for OAuth flow", e);
-    }
+    final URIBuilder builder = new URIBuilder()
+        .setScheme("https")
+        .setHost("login.mailchimp.com")
+        .setPath("oauth2/authorize")
+        // required
+        .addParameter("client_id", clientId)
+        .addParameter("response_type", "code")
+        .addParameter("redirect_uri", redirectUrl);
+
+    return builder.build().toString();
   }
 
   @Override
