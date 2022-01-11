@@ -60,6 +60,7 @@ public abstract class S3StreamCopier implements StreamCopier {
    *        be up to 256 MiB (see CopyConsumerFactory#MAX_BATCH_SIZE_BYTES). For example, Redshift
    *        recommends at most 1 GiB per file, so you would want maxPartsPerFile = 4 (because 4 *
    *        256MiB = 1 GiB).
+   *        {@link io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants#DEFAULT_MAX_BATCH_SIZE_BYTES}
    */
   public S3StreamCopier(final String stagingFolder,
                         final String schema,

@@ -17,7 +17,7 @@ Hey Airbyte Community! Let's go over all the changes from v.32.5 and prior!
 * ✨ Source MongoDB v2: improve read performance.
 * ✨ Source Pipedrive: specify schema for "persons" stream.
 * ✨ Source PostgreSQL: exclude tables on which user doesn't have select privileges.
-* ✨ Source Survey Monkey: improve connection check.
+* ✨ Source SurveyMonkey: improve connection check.
 
 * 🐛 Source Salesforce:  improve resiliency of async bulk jobs.
 * 🐛 Source Zendesk Support: fix missing ticket_id in ticket_comments stream.

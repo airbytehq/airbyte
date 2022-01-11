@@ -183,7 +183,7 @@ public class SourceHandler {
         continue;
       }
 
-      connectionsHandler.deleteConnection(connectionRead);
+      connectionsHandler.deleteConnection(connectionRead.getConnectionId());
     }
 
     final ConnectorSpecification spec = getSpecFromSourceId(source.getSourceId());

@@ -75,6 +75,7 @@ dependencies {
     implementation project(':airbyte-notification')
     implementation project(':airbyte-oauth')
     implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-scheduler:app')
     implementation project(':airbyte-scheduler:client')
     implementation project(':airbyte-scheduler:models')
     implementation project(':airbyte-scheduler:persistence')

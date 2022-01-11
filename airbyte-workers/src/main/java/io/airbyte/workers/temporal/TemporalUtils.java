@@ -42,11 +42,6 @@ public class TemporalUtils {
     return temporalService;
   }
 
-  public static WorkflowClient createTemporalClient(final String temporalHost) {
-    final WorkflowServiceStubs temporalService = createTemporalService(temporalHost);
-    return WorkflowClient.newInstance(temporalService);
-  }
-
   public static final RetryOptions NO_RETRY = RetryOptions.newBuilder().setMaximumAttempts(1).build();
 
   public static final String DEFAULT_NAMESPACE = "default";
@@ -56,6 +51,15 @@ public class TemporalUtils {
 
     UUID create(WorkflowClient workflowClient, long jobId, int attempt, T config);
 
+  }
+
+  public static WorkflowOptions getWorkflowOptionsWithWorkflowId(final TemporalJobType jobType, final String workflowId) {
+
+    return WorkflowOptions.newBuilder()
+        .setWorkflowId(workflowId)
+        .setRetryOptions(NO_RETRY)
+        .setTaskQueue(jobType.name())
+        .build();
   }
 
   public static WorkflowOptions getWorkflowOptions(final TemporalJobType jobType) {
