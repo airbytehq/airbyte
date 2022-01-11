@@ -21,7 +21,14 @@ import org.slf4j.LoggerFactory;
 public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSqlOperations.class);
+  private static final String SQL_TMP_TABLE_QUERY = """
+      CREATE TABLE IF NOT EXISTS %s.%s (
+      %s VARCHAR PRIMARY KEY,
+      %s %s,
+      %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)
+      """;
   protected static final int REDSHIFT_VARCHAR_MAX_BYTE_SIZE = 65535;
+
   private final RedshiftDataTmpTableMode redshiftDataTmpTableMode;
 
   public RedshiftSqlOperations(RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
@@ -30,7 +37,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
 
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
-    return redshiftDataTmpTableMode.getTmpTableSqlStatement(schemaName, tableName);
+    return redshiftDataTmpTableMode.getTmpTableSqlStatement(SQL_TMP_TABLE_QUERY,schemaName, tableName);
   }
 
   @Override
