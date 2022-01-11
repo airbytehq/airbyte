@@ -18,12 +18,13 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper.Color;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
-import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.normalization.DefaultNormalizationRunner.DestinationType;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
@@ -53,6 +54,7 @@ class DefaultNormalizationRunnerTest {
     }
   }
 
+  private WorkerConfigs workerConfigs;
   private Path jobRoot;
   private ProcessFactory processFactory;
   private Process process;
@@ -61,6 +63,7 @@ class DefaultNormalizationRunnerTest {
 
   @BeforeEach
   void setup() throws IOException, WorkerException {
+    workerConfigs = new WorkerConfigs(new EnvConfigs());
     jobRoot = Files.createDirectories(Files.createTempDirectory("test"));
     processFactory = mock(ProcessFactory.class);
     process = mock(Process.class);
@@ -73,8 +76,9 @@ class DefaultNormalizationRunnerTest {
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
     when(processFactory.create(JOB_ID, JOB_ATTEMPT, jobRoot, NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME, false, files, null,
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+        workerConfigs.getResourceRequirements(),
         Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.NORMALISE_STEP),
+        Map.of(),
         "run",
         "--integration-type", "bigquery",
         "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
@@ -97,22 +101,24 @@ class DefaultNormalizationRunnerTest {
   @Test
   void test() throws Exception {
     final NormalizationRunner runner =
-        new DefaultNormalizationRunner(DestinationType.BIGQUERY, processFactory, NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME);
+        new DefaultNormalizationRunner(workerConfigs, DestinationType.BIGQUERY, processFactory,
+            NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME);
 
     when(process.exitValue()).thenReturn(0);
 
-    assertTrue(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS));
+    assertTrue(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, workerConfigs.getResourceRequirements()));
   }
 
   @Test
   void testLog() throws Exception {
 
     final NormalizationRunner runner =
-        new DefaultNormalizationRunner(DestinationType.BIGQUERY, processFactory, NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME);
+        new DefaultNormalizationRunner(workerConfigs, DestinationType.BIGQUERY, processFactory,
+            NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME);
 
     when(process.exitValue()).thenReturn(0);
 
-    assertTrue(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS));
+    assertTrue(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, workerConfigs.getResourceRequirements()));
 
     final Path logPath = logJobRoot.resolve(LogClientSingleton.LOG_FILENAME);
     final Stream<String> logs = IOs.readFile(logPath).lines();
@@ -121,7 +127,7 @@ class DefaultNormalizationRunnerTest {
         .filter(line -> !line.contains("EnvConfigs(getEnvOrDefault)"))
         .forEach(line -> {
           org.assertj.core.api.Assertions.assertThat(line)
-              .startsWith(Color.GREEN.getCode() + "normalization" + RESET);
+              .startsWith(Color.GREEN_BACKGROUND.getCode() + "normalization" + RESET);
         });
   }
 
@@ -130,8 +136,9 @@ class DefaultNormalizationRunnerTest {
     when(process.isAlive()).thenReturn(true).thenReturn(false);
 
     final NormalizationRunner runner =
-        new DefaultNormalizationRunner(DestinationType.BIGQUERY, processFactory, NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME);
-    runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+        new DefaultNormalizationRunner(workerConfigs, DestinationType.BIGQUERY, processFactory,
+            NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME);
+    runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, workerConfigs.getResourceRequirements());
     runner.close();
 
     verify(process).waitFor();
@@ -142,9 +149,10 @@ class DefaultNormalizationRunnerTest {
     doThrow(new RuntimeException()).when(process).exitValue();
 
     final NormalizationRunner runner =
-        new DefaultNormalizationRunner(DestinationType.BIGQUERY, processFactory, NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME);
+        new DefaultNormalizationRunner(workerConfigs, DestinationType.BIGQUERY, processFactory,
+            NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME);
     assertThrows(RuntimeException.class,
-        () -> runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS));
+        () -> runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, workerConfigs.getResourceRequirements()));
 
     verify(process).destroy();
   }

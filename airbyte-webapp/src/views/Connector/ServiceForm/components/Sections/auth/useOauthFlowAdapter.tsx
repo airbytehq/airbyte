@@ -1,6 +1,8 @@
 import { setIn, useFormikContext } from "formik";
-import merge from "lodash.merge";
-import pick from "lodash.pick";
+import merge from "lodash/merge";
+import pick from "lodash/pick";
+import get from "lodash/get";
+import isEmpty from "lodash/isEmpty";
 
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { useRunOauthFlow } from "hooks/services/useConnectorAuth";
@@ -9,6 +11,7 @@ import {
   serverProvidedOauthPaths,
 } from "../../../utils";
 import { ServiceFormValues } from "../../../types";
+import { useServiceForm } from "../../../serviceFormContext";
 
 function useFormikOauthAdapter(
   connector: ConnectorDefinitionSpecification
@@ -23,6 +26,8 @@ function useFormikOauthAdapter(
     errors,
     setFieldTouched,
   } = useFormikContext<ServiceFormValues>();
+
+  const { getValues } = useServiceForm();
 
   const onDone = (completeOauthResponse: Record<string, unknown>) => {
     let newValues: ServiceFormValues;
@@ -54,25 +59,39 @@ function useFormikOauthAdapter(
     loading,
     done,
     run: async () => {
-      const oauthInputFields =
-        Object.values(
-          connector?.advancedAuth?.oauthConfigSpecification
-            ?.oauthUserInputFromConnectorConfigSpecification?.properties ?? {}
-        )?.map((property) =>
-          makeConnectionConfigurationPath(property.path_in_connector_config)
-        ) ?? [];
+      const oauthInputProperties =
+        connector?.advancedAuth?.oauthConfigSpecification
+          ?.oauthUserInputFromConnectorConfigSpecification?.properties ?? {};
 
-      if (oauthInputFields.length) {
+      if (!isEmpty(oauthInputProperties)) {
+        const oauthInputFields =
+          Object.values(oauthInputProperties)?.map((property) =>
+            makeConnectionConfigurationPath(property.path_in_connector_config)
+          ) ?? [];
+
         oauthInputFields.forEach((path) => setFieldTouched(path, true, true));
 
         const oAuthErrors = pick(errors, oauthInputFields);
 
-        if (Object.keys(oAuthErrors).length) {
+        if (!isEmpty(oAuthErrors)) {
           return;
         }
       }
 
-      const oauthInputParams = pick(values, oauthInputFields);
+      const preparedValues = getValues(values);
+
+      const oauthInputParams = Object.entries(oauthInputProperties).reduce(
+        (acc, property) => {
+          acc[property[0]] = get(
+            preparedValues,
+            makeConnectionConfigurationPath(
+              property[1].path_in_connector_config
+            )
+          );
+          return acc;
+        },
+        {} as Record<string, unknown>
+      );
 
       await run(oauthInputParams);
     },

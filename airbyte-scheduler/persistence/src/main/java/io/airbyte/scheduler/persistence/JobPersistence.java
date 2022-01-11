@@ -85,8 +85,8 @@ public interface JobPersistence {
   int createAttempt(long jobId, Path logPath) throws IOException;
 
   /**
-   * Sets an attempt to FAILED. Also attempts the parent job to FAILED. The job's status will not be
-   * changed if it is already in a terminal state.
+   * Sets an attempt to FAILED. Also attempts to set the parent job to INCOMPLETE. The job's status
+   * will not be changed if it is already in a terminal state.
    *
    * @param jobId job id
    * @param attemptNumber attempt id
@@ -95,8 +95,8 @@ public interface JobPersistence {
   void failAttempt(long jobId, int attemptNumber) throws IOException;
 
   /**
-   * Sets an attempt to SUCCEEDED. Also attempts the parent job to SUCCEEDED. The job's status is
-   * changed regardless of what state it is in.
+   * Sets an attempt to SUCCEEDED. Also attempts to set the parent job to SUCCEEDED. The job's status
+   * is changed regardless of what state it is in.
    *
    * @param jobId job id
    * @param attemptNumber attempt id

@@ -1,7 +1,7 @@
-import { Router } from "react-router-dom";
+import { MemoryRouter } from "react-router-dom";
 import * as React from "react";
 import { IntlProvider } from "react-intl";
-import { createMemoryHistory } from "history";
+// import { createMemoryHistory } from "history";
 import { ThemeProvider } from "styled-components";
 
 // TODO: theme was not working correctly so imported directly
@@ -27,21 +27,21 @@ class WithProviders extends React.Component<Props> {
 
     return (
       <ServicesProvider>
-        <Router history={createMemoryHistory()}>
-          <FeatureService features={[{ id: "ALLOW_OAUTH_CONNECTOR" }]}>
-            <IntlProvider messages={messages} locale={"en"}>
-              <ThemeProvider theme={theme}>
-                <ConfigServiceProvider
-                  defaultConfig={defaultConfig}
-                  providers={[]}
-                >
+        <MemoryRouter>
+          <IntlProvider messages={messages} locale={"en"}>
+            <ThemeProvider theme={theme}>
+              <ConfigServiceProvider
+                defaultConfig={defaultConfig}
+                providers={[]}
+              >
+                <FeatureService>
                   <GlobalStyle />
                   {children}
-                </ConfigServiceProvider>
-              </ThemeProvider>
-            </IntlProvider>
-          </FeatureService>
-        </Router>
+                </FeatureService>
+              </ConfigServiceProvider>
+            </ThemeProvider>
+          </IntlProvider>
+        </MemoryRouter>
       </ServicesProvider>
     );
   }

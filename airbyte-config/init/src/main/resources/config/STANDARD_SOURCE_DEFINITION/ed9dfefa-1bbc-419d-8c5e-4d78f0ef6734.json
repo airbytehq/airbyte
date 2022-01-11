@@ -2,7 +2,7 @@
   "sourceDefinitionId": "ed9dfefa-1bbc-419d-8c5e-4d78f0ef6734",
   "name": "Google Workspace Admin Reports",
   "dockerRepository": "airbyte/source-google-workspace-admin-reports",
-  "dockerImageTag": "0.1.6",
+  "dockerImageTag": "0.1.7",
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/google-workspace-admin-reports",
   "icon": "googleworkpace.svg"
 }
