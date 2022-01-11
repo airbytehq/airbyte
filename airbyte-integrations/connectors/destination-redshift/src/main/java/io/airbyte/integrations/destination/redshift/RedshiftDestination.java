@@ -44,15 +44,6 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
   public static DestinationType getTypeFromConfig(final JsonNode config) {
     return determineUploadMode(config);
   }
-
-  @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog,
-      Consumer<AirbyteMessage> outputRecordCollector) throws Exception {
-    final DestinationType destinationType = super.configToType.apply(config);
-    LOGGER.info("Using destination type: " + destinationType.name());
-    return typeToDestination.get(destinationType).getConsumer(config, catalog, outputRecordCollector);
-  }
-
   public static Map<DestinationType, Destination> getTypeToDestination() {
     final RedshiftInsertDestination insertDestinationWithVarcharTmp = new RedshiftInsertDestination(RedshiftDataTmpTableMode.VARCHAR);
     final RedshiftInsertDestination insertDestinationWithSuperTmp = new RedshiftInsertDestination(RedshiftDataTmpTableMode.SUPER);
