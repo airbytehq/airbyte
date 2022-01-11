@@ -66,14 +66,12 @@ class Client(BaseClient):
     @property
     def streams(self) -> Iterator[AirbyteStream]:
         """List of available streams, patch streams to append properties dynamically"""
-        for airbyte_stream in super().streams:
-            stream = self._apis[airbyte_stream.name]
-            airbyte_stream.default_cursor_field = [stream.updated_at_field]
-            if stream.add_properties:
-                properties = stream.properties
-                if properties:
-                    airbyte_stream.json_schema["properties"]["properties"] = {"type": "object", "properties": properties}
-            yield airbyte_stream
+        for stream in super().streams:
+            properties = self._apis[stream.name].properties
+            if properties:
+                stream.json_schema["properties"]["properties"] = {"type": "object", "properties": properties}
+                stream.default_cursor_field = [self._apis[stream.name].updated_at_field]
+            yield stream
 
     def stream_has_state(self, name: str) -> bool:
         """Tell if stream supports incremental sync"""
