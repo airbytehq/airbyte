@@ -3,12 +3,12 @@ kind: Pod
 metadata:
   generateName: test-create-
 spec:
-#  initContainers:
-#    - name: init
-#      image: alpine:3.14
-#      args:
-#        - sleep
-#        - "0"
+  #  initContainers:
+  #    - name: init
+  #      image: alpine:3.14
+  #      args:
+  #        - sleep
+  #        - "0"
   containers:
     - name: main
       image: alpine:3.14
