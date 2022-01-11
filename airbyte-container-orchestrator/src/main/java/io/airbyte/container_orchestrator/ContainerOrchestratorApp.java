@@ -58,6 +58,7 @@ public class ContainerOrchestratorApp {
   private static final MdcScope.Builder LOG_MDC_BUILDER = new MdcScope.Builder()
       .setLogPrefix("container-orchestrator")
       .setPrefixColor(LoggingHelper.Color.CYAN_BACKGROUND);
+  // todo: why doesn't highlighting work with non-simple logging?
 
   public static void main(final String[] args) throws Exception {
     WorkerHeartbeatServer heartbeatServer = null;
