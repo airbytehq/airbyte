@@ -41,7 +41,7 @@ Summary of achievements:
 | 2021-12-22 | Bootstrapping the project's code base |
 
 # Developing locally
-1. Install Python 3.10.0. We suggest doing it through `pyenv`
+1. Install Python 3.8.12. We suggest doing it through `pyenv`
 2. Create a virtualenv: `python -m venv .venv`
 3. Activate the virtualenv: `source .venv/bin/activate`
 4. Install dev dependencies: `pip install -e .\[dev\]`
