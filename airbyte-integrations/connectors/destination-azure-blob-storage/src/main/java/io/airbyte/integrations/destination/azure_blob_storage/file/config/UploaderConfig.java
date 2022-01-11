@@ -4,7 +4,6 @@ import com.azure.storage.blob.specialized.AppendBlobClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.azure_blob_storage.file.UploaderType;
 import io.airbyte.integrations.destination.azure_blob_storage.file.UploadingMethod;
-import io.airbyte.integrations.destination.azure_blob_storage.file.formatter.AzureRecordFormatter;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,5 +21,4 @@ public class UploaderConfig {
     private UploadingMethod uploadingMethod;
     private AppendBlobClient appendBlobClient;
     private ConfiguredAirbyteStream configStream;
-    private Map<UploaderType, AzureRecordFormatter> formatterMap;
 }

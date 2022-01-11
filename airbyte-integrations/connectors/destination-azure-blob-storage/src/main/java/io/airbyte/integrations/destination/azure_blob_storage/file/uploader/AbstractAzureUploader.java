@@ -1,6 +1,5 @@
 package io.airbyte.integrations.destination.azure_blob_storage.file.uploader;
 
-import io.airbyte.integrations.destination.azure_blob_storage.file.formatter.AzureRecordFormatter;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import org.slf4j.Logger;
@@ -17,12 +16,9 @@ public abstract class AbstractAzureUploader<T extends S3Writer> {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAzureUploader.class);
 
     protected final T writer;
-    protected final AzureRecordFormatter recordFormatter;
 
-    public AbstractAzureUploader(T writer,
-                                 AzureRecordFormatter recordFormatter) {
+    public AbstractAzureUploader(T writer) {
         this.writer = writer;
-        this.recordFormatter = recordFormatter;
     }
 
     protected void postProcessAction(boolean hasFailed) throws Exception {
@@ -45,9 +41,6 @@ public abstract class AbstractAzureUploader<T extends S3Writer> {
 
     public void close(boolean hasFailed, Consumer<AirbyteMessage> outputRecordCollector, AirbyteMessage lastStateMessage) {
         try {
-            LOGGER.info("Field fails during format : ");
-            recordFormatter.printAndCleanFieldFails();
-
             LOGGER.info("Closing connector:" + this);
             this.writer.close(hasFailed);
 

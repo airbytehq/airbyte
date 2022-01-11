@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.azure_blob_storage.file.UploaderType;
 import io.airbyte.integrations.destination.azure_blob_storage.file.UploadingMethod;
 import io.airbyte.integrations.destination.azure_blob_storage.file.config.UploaderConfig;
-import io.airbyte.integrations.destination.azure_blob_storage.file.formatter.AzureRecordFormatter;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsS3Helper;
 import io.airbyte.integrations.destination.gcs.csv.GcsCsvWriter;
@@ -32,15 +31,7 @@ public class AzureUploaderFactory {
       throws IOException {
 
     final boolean isGcsUploadingMode = UploadingMethod.GCS.equals(uploaderConfig.getUploadingMethod());
-    final boolean isCsvUploadingType = UploaderType.CSV.equals(uploaderConfig.getUploaderType());
-    var recordFormatter = uploaderConfig.getFormatterMap().get(UploaderType.STANDARD);
-    if (isGcsUploadingMode) {
-      if (isCsvUploadingType) {
-        recordFormatter = uploaderConfig.getFormatterMap().get(UploaderType.CSV);
-      } else {
-        recordFormatter = uploaderConfig.getFormatterMap().get(UploaderType.JSONL);
-      }
-    }
+
     DestinationSyncMode syncMode = uploaderConfig.getConfigStream().getDestinationSyncMode();
 
     return getGcsUploader(
@@ -49,7 +40,6 @@ public class AzureUploaderFactory {
             uploaderConfig.getStagingConfig(),
             uploaderConfig.getConfigStream(),
             uploaderConfig.getAppendBlobClient(),
-            recordFormatter,
             uploaderConfig.isKeepFilesInStorage(),
             uploaderConfig.isNewlyCreatedBlob());
   }
@@ -59,7 +49,6 @@ public class AzureUploaderFactory {
                                                             JsonNode stagingConfig,
                                                             ConfiguredAirbyteStream configStream,
                                                             AppendBlobClient appendBlobClient,
-                                                            AzureRecordFormatter formatter,
                                                             boolean keepFilesInStorage,
                                                             boolean newlyCreatedBlob)
           throws IOException {
@@ -72,12 +61,12 @@ public class AzureUploaderFactory {
       gcsWriter.initialize();
       headerByteSize = calculateHeaderByteSize(newlyCreatedBlob, gcsWriter);
       result = new GcsCsvAzureUploader(syncMode, gcsWriter, gcsDestinationConfig,
-              appendBlobClient, keepFilesInStorage, headerByteSize, formatter);
+              appendBlobClient, keepFilesInStorage, headerByteSize);
     } else {
       GcsJsonlWriter jsonWriter = initGcsJsonWriter(gcsDestinationConfig, configStream);
       jsonWriter.initialize();
       result = new GcsJsonlAzureUploader(syncMode, jsonWriter, gcsDestinationConfig,
-              appendBlobClient, keepFilesInStorage, headerByteSize, formatter);
+              appendBlobClient, keepFilesInStorage, headerByteSize);
     }
     return result;
 

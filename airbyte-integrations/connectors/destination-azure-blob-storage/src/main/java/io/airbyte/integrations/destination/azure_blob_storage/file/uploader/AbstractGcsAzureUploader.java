@@ -9,7 +9,6 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.azure.storage.blob.models.BlobRange;
 import com.azure.storage.blob.specialized.AppendBlobClient;
-import io.airbyte.integrations.destination.azure_blob_storage.file.formatter.AzureRecordFormatter;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsS3Helper;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
@@ -40,9 +39,8 @@ public abstract class AbstractGcsAzureUploader<T extends S3Writer> extends Abstr
             GcsDestinationConfig gcsDestinationConfig,
             AppendBlobClient appendBlobClient,
             boolean keepFilesInGcs,
-            int headerByteSize,
-            AzureRecordFormatter recordFormatter) {
-        super(writer, recordFormatter);
+            int headerByteSize) {
+        super(writer);
         this.syncMode = syncMode;
         this.keepFilesInGcs = keepFilesInGcs;
         this.headerByteSize = headerByteSize;

@@ -14,15 +14,10 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.azure_blob_storage.file.AzureUtils;
 import io.airbyte.integrations.destination.azure_blob_storage.file.UploaderType;
 import io.airbyte.integrations.destination.azure_blob_storage.file.UploadingMethod;
 import io.airbyte.integrations.destination.azure_blob_storage.file.config.UploaderConfig;
-import io.airbyte.integrations.destination.azure_blob_storage.file.formatter.AzureRecordFormatter;
-import io.airbyte.integrations.destination.azure_blob_storage.file.formatter.DefaultAzureRecordFormatter;
-import io.airbyte.integrations.destination.azure_blob_storage.file.formatter.GcsCsvAzureRecordFormatter;
-import io.airbyte.integrations.destination.azure_blob_storage.file.formatter.GcsJsonAzureRecordFormatter;
 import io.airbyte.integrations.destination.azure_blob_storage.file.uploader.AbstractAzureUploader;
 import io.airbyte.integrations.destination.azure_blob_storage.file.uploader.AzureUploaderFactory;
 import io.airbyte.integrations.destination.azure_blob_storage.writer.ProductionWriterFactory;
@@ -40,7 +35,6 @@ import java.util.function.Consumer;
 
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
-import io.airbyte.protocol.models.SyncMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -134,7 +128,6 @@ public class AzureBlobStorageDestination extends BaseConnector implements Destin
               .newlyCreatedBlob(newlyCreatedBlob)
               .appendBlobClient(appendBlobClient)
               .keepFilesInStorage(AzureUtils.isKeepFilesInStorage(config))
-              .formatterMap(getFormatterMap(stream.getJsonSchema()))
               .stagingConfig(AzureUtils.getStagingJsonConfig(uploadingMethod, uploaderType, config))
               .build();
 
@@ -143,12 +136,6 @@ public class AzureBlobStorageDestination extends BaseConnector implements Destin
               AzureUploaderFactory.getUploader(uploaderConfig));
     }
     return uploaderMap;
-  }
-
-  protected Map<UploaderType, AzureRecordFormatter> getFormatterMap(JsonNode jsonSchema) {
-    return Map.of(UploaderType.STANDARD, new DefaultAzureRecordFormatter(jsonSchema, new StandardNameTransformer()),
-            UploaderType.CSV, new GcsCsvAzureRecordFormatter(jsonSchema, new StandardNameTransformer()),
-            UploaderType.JSONL, new GcsJsonAzureRecordFormatter(jsonSchema, new StandardNameTransformer()));
   }
 
   private boolean createContainers(final AppendBlobClient appendBlobClient,
