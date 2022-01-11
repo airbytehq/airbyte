@@ -2583,7 +2583,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-sheets:0.2.7"
+- dockerImage: "airbyte/source-google-sheets:0.2.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-sheets"
     connectionSpecification:
@@ -2639,6 +2639,7 @@
               service_account_info:
                 type: "string"
                 description: "The JSON key of the service account to use for authorization"
+                airbyte_secret: true
                 examples:
                 - "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID,\
                   \ \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
@@ -2650,7 +2651,7 @@
       oauth2Specification:
         rootObject:
         - "credentials"
-        - 0
+        - "0"
         oauthFlowInitParameters:
         - - "client_id"
         - - "client_secret"
@@ -2845,7 +2846,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-hubspot:0.1.29"
+- dockerImage: "airbyte/source-hubspot:0.1.30"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -4721,9 +4722,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-notion:0.1.1"
+- dockerImage: "airbyte/source-notion:0.1.2"
   spec:
-    documentationUrl: "https://docsurl.com"
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/notion"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Notion Source Spec"
@@ -5411,7 +5412,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-plaid:0.2.1"
+- dockerImage: "airbyte/source-plaid:0.3.0"
   spec:
     documentationUrl: "https://plaid.com/docs/api/"
     connectionSpecification:
@@ -5421,6 +5422,7 @@
       - "access_token"
       - "api_key"
       - "client_id"
+      - "plaid_env"
       additionalProperties: false
       properties:
         access_token:
@@ -5883,7 +5885,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-recurly:0.3.0"
+- dockerImage: "airbyte/source-recurly:0.3.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/recurly"
     connectionSpecification:
@@ -6308,7 +6310,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:0.1.12"
+- dockerImage: "airbyte/source-salesforce:0.1.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/salesforce"
     connectionSpecification:
@@ -6322,6 +6324,9 @@
       - "api_type"
       additionalProperties: false
       properties:
+        auth_type:
+          type: "string"
+          const: "Client"
         client_id:
           title: "Client ID"
           description: "The Consumer Key that can be found when viewing your app in\
@@ -6407,15 +6412,48 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-    authSpecification:
-      auth_type: "oauth2.0"
-      oauth2Specification:
-        rootObject: []
-        oauthFlowInitParameters:
-        - - "client_id"
-        - - "client_secret"
-        oauthFlowOutputParameters:
-        - - "refresh_token"
+    advanced_auth:
+      auth_flow_type: "oauth2.0"
+      predicate_key:
+      - "auth_type"
+      predicate_value: "Client"
+      oauth_config_specification:
+        oauth_user_input_from_connector_config_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            is_sandbox:
+              type: "boolean"
+              path_in_connector_config:
+              - "is_sandbox"
+        complete_oauth_output_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            refresh_token:
+              type: "string"
+              path_in_connector_config:
+              - "refresh_token"
+        complete_oauth_server_input_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            client_id:
+              type: "string"
+            client_secret:
+              type: "string"
+        complete_oauth_server_output_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            client_id:
+              type: "string"
+              path_in_connector_config:
+              - "client_id"
+            client_secret:
+              type: "string"
+              path_in_connector_config:
+              - "client_secret"
 - dockerImage: "airbyte/source-search-metrics:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/seacrh-metrics"
