@@ -80,7 +80,7 @@ public class SalesforceOAuthFlow extends BaseOAuth2Flow {
   private String getEnvironment(JsonNode inputOAuthConfiguration) {
     var isSandbox = inputOAuthConfiguration.get("is_sandbox");
     if (isSandbox == null) {
-        return "login";
+      return "login";
     }
     return (isSandbox.asBoolean() == true) ? "test" : "login";
   }
