@@ -12,7 +12,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import split_config
 
-from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce, UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS
+from .api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, IncrementalSalesforceStream, SalesforceStream
 
 
@@ -28,7 +28,9 @@ class SourceSalesforce(AbstractSource):
         return True, None
 
     @classmethod
-    def generate_streams(cls, config: Mapping[str, Any], stream_names: List[str], sf_object: Salesforce, state: Mapping[str, Any] = None) -> List[Stream]:
+    def generate_streams(
+        cls, config: Mapping[str, Any], stream_names: List[str], sf_object: Salesforce, state: Mapping[str, Any] = None
+    ) -> List[Stream]:
         """ "Generates a list of stream by their names. It can be used for different tests too"""
         authenticator = TokenAuthenticator(sf_object.access_token)
         streams = []
@@ -39,9 +41,7 @@ class SourceSalesforce(AbstractSource):
             selected_properties = sf_object.generate_schema(stream_name).get("properties", {})
             # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
             properties_not_supported_by_bulk = {
-                key: value
-                for key, value in selected_properties.items()
-                if value.get("format") == "base64" or "object" in value["type"]
+                key: value for key, value in selected_properties.items() if value.get("format") == "base64" or "object" in value["type"]
             }
 
             if stream_state or stream_name in UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS or properties_not_supported_by_bulk:
