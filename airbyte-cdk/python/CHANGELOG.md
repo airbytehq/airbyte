@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.45
+Integrate Sentry for performance and errors tracking.
+
 ## 0.1.44
 Log http response status code and its content.
 

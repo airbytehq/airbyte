@@ -22,7 +22,6 @@ import io.airbyte.api.client.invoker.ApiException;
 import io.airbyte.api.client.model.ConnectionRead;
 import io.airbyte.api.client.model.ConnectionStatus;
 import io.airbyte.api.client.model.DestinationDefinitionRead;
-import io.airbyte.api.client.model.HealthCheckRead;
 import io.airbyte.api.client.model.ImportRead;
 import io.airbyte.api.client.model.ImportRead.StatusEnum;
 import io.airbyte.api.client.model.SourceDefinitionRead;
@@ -45,6 +44,7 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.utility.ComparableVersion;
 
 /**
  * This class contains an e2e test simulating what a user encounter when trying to upgrade Airybte.
@@ -208,9 +208,12 @@ public class MigrationAcceptanceTest {
       } else if (sourceDefinitionRead.getSourceDefinitionId().toString().equals("decd338e-5647-4c0b-adf4-da0e75f5a750")) {
         final String[] tagBrokenAsArray = sourceDefinitionRead.getDockerImageTag().replace(".", ",").split(",");
         assertEquals(3, tagBrokenAsArray.length);
-        assertTrue(Integer.parseInt(tagBrokenAsArray[0]) >= 0);
-        assertTrue(Integer.parseInt(tagBrokenAsArray[1]) >= 3);
-        assertTrue(Integer.parseInt(tagBrokenAsArray[2]) >= 4);
+        // todo (cgardens) - this is very brittle. depending on when this connector gets updated in
+        // source_definitions.yaml this test can start to break. for now just doing quick fix, but we should
+        // be able to do an actual version comparison like we do with AirbyteVersion.
+        assertTrue(Integer.parseInt(tagBrokenAsArray[0]) >= 0, "actual tag: " + sourceDefinitionRead.getDockerImageTag());
+        assertTrue(Integer.parseInt(tagBrokenAsArray[1]) >= 3, "actual tag: " + sourceDefinitionRead.getDockerImageTag());
+        assertTrue(Integer.parseInt(tagBrokenAsArray[2]) >= 0, "actual tag: " + sourceDefinitionRead.getDockerImageTag());
         assertTrue(sourceDefinitionRead.getName().contains("Postgres"));
         foundPostgresSourceDefinition = true;
       }
@@ -240,11 +243,9 @@ public class MigrationAcceptanceTest {
           foundLocalCSVDestinationDefinition = true;
         }
         case "424892c4-daac-4491-b35d-c6688ba547ba" -> {
-          final String[] tagBrokenAsArray = destinationDefinitionRead.getDockerImageTag().replace(".", ",").split(",");
-          assertEquals(3, tagBrokenAsArray.length);
-          assertTrue(Integer.parseInt(tagBrokenAsArray[0]) >= 0);
-          assertTrue(Integer.parseInt(tagBrokenAsArray[1]) >= 3);
-          assertTrue(Integer.parseInt(tagBrokenAsArray[2]) >= 9);
+          final String tag = destinationDefinitionRead.getDockerImageTag();
+          final ComparableVersion version = new ComparableVersion(tag);
+          assertTrue(version.compareTo(new ComparableVersion("0.3.9")) >= 0);
           assertTrue(destinationDefinitionRead.getName().contains("Snowflake"));
           foundSnowflakeDestinationDefinition = true;
         }
@@ -315,8 +316,7 @@ public class MigrationAcceptanceTest {
   private static void healthCheck(final ApiClient apiClient) {
     final HealthApi healthApi = new HealthApi(apiClient);
     try {
-      final HealthCheckRead healthCheck = healthApi.getHealthCheck();
-      assertTrue(healthCheck.getDb());
+      healthApi.getHealthCheck();
     } catch (final ApiException e) {
       throw new RuntimeException("Health check failed, usually due to auto migration failure. Please check the logs for details.");
     }

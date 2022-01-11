@@ -83,9 +83,9 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("array")
             .fullSourceDataType("STRING[]")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaPrimitive.ARRAY)
             .addInsertValues("ARRAY['sky', 'road', 'car']", "null")
-            .addExpectedValues("{sky,road,car}", null)
+            .addExpectedValues("[\"sky\",\"road\",\"car\"]", null)
             .build());
 
     addDataTypeTestData(
@@ -152,7 +152,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .fullSourceDataType("bytea[]")
             .airbyteType(JsonSchemaPrimitive.OBJECT)
             .addInsertValues("ARRAY['☃'::bytes, 'ї'::bytes]")
-            .addExpectedValues("{\"\\\\xe29883\",\"\\\\xd197\"}")
+            .addExpectedValues("[\"\\\\xe29883\",\"\\\\xd197\"]")
             .build());
 
     addDataTypeTestData(
@@ -352,9 +352,18 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("text")
             .fullSourceDataType("text[]")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaPrimitive.ARRAY)
             .addInsertValues("'{10000, 10000, 10000, 10000}'", "null")
-            .addExpectedValues("{10000,10000,10000,10000}", null)
+            .addExpectedValues("[\"10000\",\"10000\",\"10000\",\"10000\"]", null)
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("int")
+            .fullSourceDataType("int[]")
+            .airbyteType(JsonSchemaPrimitive.ARRAY)
+            .addInsertValues("'{10000, 10000, 10000, 10000}'", "null")
+            .addExpectedValues("[\"10000\",\"10000\",\"10000\",\"10000\"]", null)
             .build());
 
   }

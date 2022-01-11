@@ -7,6 +7,8 @@ package io.airbyte.db.jdbc;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
@@ -115,7 +117,7 @@ public class TestJdbcUtils {
     try (final Connection connection = dataSource.getConnection()) {
       createTableWithAllTypes(connection);
       insertRecordOfEachType(connection);
-      assertExpectedOutputValues(connection);
+      assertExpectedOutputValues(connection, jsonFieldExpectedValues());
       assertExpectedOutputTypes(connection);
     }
   }
@@ -148,7 +150,7 @@ public class TestJdbcUtils {
 
       ps.execute();
 
-      assertExpectedOutputValues(connection);
+      assertExpectedOutputValues(connection, expectedValues());
       assertExpectedOutputTypes(connection);
     }
   }
@@ -172,7 +174,9 @@ public class TestJdbcUtils {
         + "date DATE,"
         + "time TIME,"
         + "timestamp TIMESTAMP,"
-        + "binary1 bytea"
+        + "binary1 bytea,"
+        + "text_array _text,"
+        + "int_array int[]"
         + ");");
 
   }
@@ -194,7 +198,9 @@ public class TestJdbcUtils {
         + "date,"
         + "time,"
         + "timestamp,"
-        + "binary1"
+        + "binary1,"
+        + "text_array,"
+        + "int_array"
         + ") VALUES("
         + "1::bit(1),"
         + "true,"
@@ -211,35 +217,17 @@ public class TestJdbcUtils {
         + "'2020-11-01',"
         + "'05:00',"
         + "'2001-09-29 03:00',"
-        + "decode('61616161', 'hex')"
+        + "decode('61616161', 'hex'),"
+        + "'{one,two,three}',"
+        + "'{1,2,3}'"
         + ");");
   }
 
-  private static void assertExpectedOutputValues(final Connection connection) throws SQLException {
+  private static void assertExpectedOutputValues(final Connection connection, final ObjectNode expected) throws SQLException {
     final ResultSet resultSet = connection.createStatement().executeQuery("SELECT * FROM data;");
 
     resultSet.next();
     final JsonNode actual = sourceOperations.rowToJson(resultSet);
-
-    final ObjectNode expected = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-    expected.put("bit", true);
-    expected.put("boolean", true);
-    expected.put("smallint", (short) 1);
-    expected.put("int", 1);
-    expected.put("bigint", (long) 1);
-    expected.put("float", (double) 1.0);
-    expected.put("double", (double) 1.0);
-    expected.put("real", (float) 1.0);
-    expected.put("numeric", new BigDecimal(1));
-    expected.put("decimal", new BigDecimal(1));
-    expected.put("char", "a");
-    expected.put("varchar", "a");
-    // todo (cgardens) we should parse this to a date string
-    expected.put("date", "2020-11-01T00:00:00Z");
-    // todo (cgardens) we should parse this to a time string
-    expected.put("time", "1970-01-01T05:00:00Z");
-    expected.put("timestamp", "2001-09-29T03:00:00Z");
-    expected.put("binary1", "aaaa".getBytes(Charsets.UTF_8));
 
     // field-wise comparison to make debugging easier.
     MoreStreams.toStream(expected.fields()).forEach(e -> assertEquals(e.getValue(), actual.get(e.getKey()), "key: " + e.getKey()));
@@ -273,9 +261,51 @@ public class TestJdbcUtils {
         .put("time", JsonSchemaPrimitive.STRING)
         .put("timestamp", JsonSchemaPrimitive.STRING)
         .put("binary1", JsonSchemaPrimitive.STRING_BINARY)
+        .put("text_array", JsonSchemaPrimitive.ARRAY)
+        .put("int_array", JsonSchemaPrimitive.ARRAY)
         .build();
 
     assertEquals(actual, expected);
+  }
+
+  private ObjectNode jsonFieldExpectedValues() {
+    final ObjectNode expected = expectedValues();
+    ArrayNode arrayNode = new ObjectMapper().createArrayNode();
+    arrayNode.add("one");
+    arrayNode.add("two");
+    arrayNode.add("three");
+    expected.set("text_array", arrayNode);
+
+    ArrayNode arrayNode2 = new ObjectMapper().createArrayNode();
+    arrayNode2.add("1");
+    arrayNode2.add("2");
+    arrayNode2.add("3");
+    expected.set("int_array", arrayNode2);
+
+    return expected;
+  }
+
+  private ObjectNode expectedValues() {
+    final ObjectNode expected = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
+    expected.put("bit", true);
+    expected.put("boolean", true);
+    expected.put("smallint", (short) 1);
+    expected.put("int", 1);
+    expected.put("bigint", (long) 1);
+    expected.put("float", (double) 1.0);
+    expected.put("double", (double) 1.0);
+    expected.put("real", (float) 1.0);
+    expected.put("numeric", new BigDecimal(1));
+    expected.put("decimal", new BigDecimal(1));
+    expected.put("char", "a");
+    expected.put("varchar", "a");
+    // todo (cgardens) we should parse this to a date string
+    expected.put("date", "2020-11-01T00:00:00Z");
+    // todo (cgardens) we should parse this to a time string
+    expected.put("time", "1970-01-01T05:00:00Z");
+    expected.put("timestamp", "2001-09-29T03:00:00Z");
+    expected.put("binary1", "aaaa".getBytes(Charsets.UTF_8));
+    return expected;
   }
 
 }

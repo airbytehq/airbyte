@@ -1,0 +1,2 @@
+invoke~=1.6.0
+virtualenv~=20.10.0

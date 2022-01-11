@@ -6,13 +6,19 @@ package io.airbyte.config.persistence.split_secrets;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.validation.json.JsonSchemaValidator;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
+import java.util.Set;
+import lombok.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +28,9 @@ public class JsonSecretsProcessor {
 
   public static String AIRBYTE_SECRET_FIELD = "airbyte_secret";
   public static final String PROPERTIES_FIELD = "properties";
+  public static String TYPE_FIELD = "type";
+  public static String ARRAY_TYPE_FIELD = "array";
+  public static String ITEMS_FIELD = "items";
 
   private static final JsonSchemaValidator VALIDATOR = new JsonSchemaValidator();
 
@@ -46,36 +55,80 @@ public class JsonSecretsProcessor {
       return obj;
     }
     Preconditions.checkArgument(schema.isObject());
-    // get the properties field
-    final ObjectNode properties = (ObjectNode) schema.get(PROPERTIES_FIELD);
-    final JsonNode copy = obj.deepCopy();
-    // for the property keys
-    for (final String key : Jsons.keys(properties)) {
-      final JsonNode fieldSchema = properties.get(key);
-      // if the json schema field is an obj and has the airbyte secret field
-      if (isSecret(fieldSchema) && copy.has(key)) {
-        // mask and set it
-        if (copy.has(key)) {
-          ((ObjectNode) copy).put(key, SECRETS_MASK);
-        }
-      } else if (canBeProcessed(fieldSchema) && copy.has(key)) {
-        ((ObjectNode) copy).set(key, maskSecrets(copy.get(key), fieldSchema));
-      }
 
-      final var combinationKey = findJsonCombinationNode(fieldSchema);
+    final SecretKeys secretKeys = getAllSecretKeys(schema);
+    return maskAllSecrets(obj, secretKeys);
+  }
 
-      if (combinationKey.isPresent() && copy.has(key)) {
-        var combinationCopy = copy.get(key);
-        final var arrayNode = (ArrayNode) fieldSchema.get(combinationKey.get());
-        for (int i = 0; i < arrayNode.size(); i++) {
-          // Mask field values if any of the combination option is declaring it as secrets
-          combinationCopy = maskSecrets(combinationCopy, arrayNode.get(i));
+  private JsonNode maskAllSecrets(final JsonNode obj, final SecretKeys secretKeys) {
+    final JsonNode copiedObj = obj.deepCopy();
+    final Queue<JsonNode> toProcess = new LinkedList<>();
+    toProcess.add(copiedObj);
+
+    while (!toProcess.isEmpty()) {
+      final JsonNode currentNode = toProcess.remove();
+      for (final String key : Jsons.keys(currentNode)) {
+        if (secretKeys.fieldSecretKey.contains(key)) {
+          ((ObjectNode) currentNode).put(key, SECRETS_MASK);
+        } else if (currentNode.get(key).isObject()) {
+          toProcess.add(currentNode.get(key));
+        } else if (currentNode.get(key).isArray()) {
+          if (secretKeys.arraySecretKey.contains(key)) {
+            final ArrayNode sanitizedArrayNode = new ArrayNode(JsonNodeFactory.instance);
+            currentNode.get(key).forEach((secret) -> sanitizedArrayNode.add(SECRETS_MASK));
+            ((ObjectNode) currentNode).put(key, sanitizedArrayNode);
+          } else {
+            final ArrayNode arrayNode = (ArrayNode) currentNode.get(key);
+            arrayNode.forEach((node) -> {
+              toProcess.add(node);
+            });
+          }
         }
-        ((ObjectNode) copy).set(key, combinationCopy);
       }
     }
 
-    return copy;
+    return copiedObj;
+  }
+
+  @Value
+  private class SecretKeys {
+
+    private final Set<String> fieldSecretKey;
+    private final Set<String> arraySecretKey;
+
+  }
+
+  private SecretKeys getAllSecretKeys(final JsonNode schema) {
+    final Set<String> fieldSecretKeys = new HashSet<>();
+    final Set<String> arraySecretKeys = new HashSet<>();
+
+    final Queue<JsonNode> toProcess = new LinkedList<>();
+    toProcess.add(schema);
+
+    while (!toProcess.isEmpty()) {
+      final JsonNode currentNode = toProcess.remove();
+      for (final String key : Jsons.keys(currentNode)) {
+        if (isArrayDefinition(currentNode.get(key))) {
+          final JsonNode arrayItems = currentNode.get(key).get(ITEMS_FIELD);
+          if (arrayItems.has(AIRBYTE_SECRET_FIELD) && arrayItems.get(AIRBYTE_SECRET_FIELD).asBoolean()) {
+            arraySecretKeys.add(key);
+          } else {
+            toProcess.add(arrayItems);
+          }
+        } else if (isSecret(currentNode.get(key))) {
+          fieldSecretKeys.add(key);
+        } else if (currentNode.get(key).isObject()) {
+          toProcess.add(currentNode.get(key));
+        } else if (currentNode.get(key).isArray()) {
+          final ArrayNode arrayNode = (ArrayNode) currentNode.get(key);
+          arrayNode.forEach((node) -> {
+            toProcess.add(node);
+          });
+        }
+      }
+    }
+
+    return new SecretKeys(fieldSecretKeys, arraySecretKeys);
   }
 
   public static Optional<String> findJsonCombinationNode(final JsonNode node) {
@@ -150,6 +203,13 @@ public class JsonSecretsProcessor {
 
   public static boolean canBeProcessed(final JsonNode schema) {
     return schema.isObject() && schema.has(PROPERTIES_FIELD) && schema.get(PROPERTIES_FIELD).isObject();
+  }
+
+  public static boolean isArrayDefinition(final JsonNode obj) {
+    return obj.isObject()
+        && obj.has(TYPE_FIELD)
+        && obj.get(TYPE_FIELD).asText().equals(ARRAY_TYPE_FIELD)
+        && obj.has(ITEMS_FIELD);
   }
 
 }

@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "in GETs: the contact; in POSTs or PUTs: identifies existing contact or properties of new contact ",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ContactId": {
+      "type": ["null", "integer"]
+    },
+    "CompanyName": {
+      "type": "string"
+    },
+    "Name": {
+      "type": "string"
+    },
+    "Title": {
+      "type": "string"
+    },
+    "Address1": {
+      "type": "string"
+    },
+    "Address2": {
+      "type": "string"
+    },
+    "City": {
+      "type": "string"
+    },
+    "State": {
+      "type": "string"
+    },
+    "Zip": {
+      "type": "string"
+    },
+    "Country": {
+      "type": "string"
+    },
+    "PhoneNumber": {
+      "type": "string"
+    },
+    "Fax": {
+      "type": "string"
+    },
+    "EmailAddress": {
+      "type": "string"
+    },
+    "Dept": {
+      "type": "string"
+    },
+    "Code": {
+      "description": "for identifying: if known specify only this; if other fields also specified it is not used to identify",
+      "type": "string"
+    },
+    "AddressStatus": {
+      "$ref": "../../common/enum/address_status_type.json"
+    }
+  }
+}
