@@ -26,6 +26,7 @@ import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.TemporalResponse;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Set;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
@@ -60,6 +61,10 @@ public class TemporalWorkerRunFactory {
 
   public void deleteConnection(final UUID connectionId) {
     temporalClient.deleteConnection(connectionId);
+  }
+
+  public void migrateSyncIfNeeded(final Set<UUID> connectionIds) {
+    temporalClient.migrateSyncIfNeeded(connectionIds);
   }
 
   public CheckedSupplier<OutputAndStatus<JobOutput>, Exception> createSupplier(final Job job, final int attemptId) {
