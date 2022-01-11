@@ -54,6 +54,10 @@ class BalanceStream(PlaidStream):
         for balance in balance_response["accounts"]:
             message_dict = balance["balances"].to_dict()
             message_dict["account_id"] = balance["account_id"]
+            message_dict["name"] = balance["name"]
+            message_dict["official_name"] = balance["official_name"]
+            message_dict["plaid_item_id"] = balance_response["item"]["item_id"]
+            message_dict["plaid_institution_id"] = balance_response["item"]["institution_id"]
             yield message_dict
 
 

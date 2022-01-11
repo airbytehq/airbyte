@@ -8,6 +8,10 @@
     "current": { "type": "number" },
     "iso_currency_code": { "type": ["string", "null"] },
     "limit": { "type": ["number", "null"] },
-    "unofficial_currency_code": { "type": ["string", "null"] }
+    "unofficial_currency_code": { "type": ["string", "null"] },
+    "name": { "type": ["string"] },
+    "official_name": { "type": ["string","null"] },
+    "plaid_item_id": { "type": ["string"] },
+    "plaid_institution_id": { "type": ["string","null"] }
   }
 }
