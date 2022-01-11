@@ -126,6 +126,8 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
     Assertions.assertEquals(standardWorkspace(), workspaceFromNewTable);
     Assertions.assertEquals(now(), workspace.get(createdAt).toInstant());
     Assertions.assertEquals(now(), workspace.get(updatedAt).toInstant());
+    Assertions.assertFalse(V0_32_8_001__AirbyteConfigDatabaseDenormalization.workspaceDoesNotExist(standardWorkspace().getWorkspaceId(), context));
+    Assertions.assertTrue(V0_32_8_001__AirbyteConfigDatabaseDenormalization.workspaceDoesNotExist(UUID.randomUUID(), context));
   }
 
   private void assertDataForSourceDefinition(final DSLContext context) {
@@ -147,7 +149,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
         .fetch();
     final List<StandardSourceDefinition> expectedDefinitions = standardSourceDefinitions();
     Assertions.assertEquals(expectedDefinitions.size(), sourceDefinitions.size());
-
+    Assertions.assertTrue(V0_32_8_001__AirbyteConfigDatabaseDenormalization.actorDefinitionDoesNotExist(UUID.randomUUID(), context));
     for (final Record sourceDefinition : sourceDefinitions) {
       final StandardSourceDefinition standardSourceDefinition = new StandardSourceDefinition()
           .withSourceDefinitionId(sourceDefinition.get(id))
@@ -161,6 +163,8 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
       Assertions.assertTrue(expectedDefinitions.contains(standardSourceDefinition));
       Assertions.assertEquals(now(), sourceDefinition.get(createdAt).toInstant());
       Assertions.assertEquals(now(), sourceDefinition.get(updatedAt).toInstant());
+      Assertions.assertFalse(
+          V0_32_8_001__AirbyteConfigDatabaseDenormalization.actorDefinitionDoesNotExist(standardSourceDefinition.getSourceDefinitionId(), context));
     }
   }
 
@@ -183,7 +187,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
         .fetch();
     final List<StandardDestinationDefinition> expectedDefinitions = standardDestinationDefinitions();
     Assertions.assertEquals(expectedDefinitions.size(), destinationDefinitions.size());
-
+    Assertions.assertTrue(V0_32_8_001__AirbyteConfigDatabaseDenormalization.actorDefinitionDoesNotExist(UUID.randomUUID(), context));
     for (final Record record : destinationDefinitions) {
       final StandardDestinationDefinition standardDestinationDefinition = new StandardDestinationDefinition()
           .withDestinationDefinitionId(record.get(id))
@@ -197,6 +201,8 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
       Assertions.assertNull(record.get(sourceType));
       Assertions.assertEquals(now(), record.get(createdAt).toInstant());
       Assertions.assertEquals(now(), record.get(updatedAt).toInstant());
+      Assertions.assertFalse(V0_32_8_001__AirbyteConfigDatabaseDenormalization
+          .actorDefinitionDoesNotExist(standardDestinationDefinition.getDestinationDefinitionId(), context));
     }
   }
 
@@ -217,7 +223,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
         .fetch();
     final List<SourceConnection> expectedDefinitions = sourceConnections();
     Assertions.assertEquals(expectedDefinitions.size(), sourceConnections.size());
-
+    Assertions.assertTrue(V0_32_8_001__AirbyteConfigDatabaseDenormalization.actorDoesNotExist(UUID.randomUUID(), context));
     for (final Record record : sourceConnections) {
       final SourceConnection sourceConnection = new SourceConnection()
           .withSourceId(record.get(id))
@@ -230,6 +236,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
       Assertions.assertTrue(expectedDefinitions.contains(sourceConnection));
       Assertions.assertEquals(now(), record.get(createdAt).toInstant());
       Assertions.assertEquals(now(), record.get(updatedAt).toInstant());
+      Assertions.assertFalse(V0_32_8_001__AirbyteConfigDatabaseDenormalization.actorDoesNotExist(sourceConnection.getSourceId(), context));
     }
   }
 
@@ -250,7 +257,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
         .fetch();
     final List<DestinationConnection> expectedDefinitions = destinationConnections();
     Assertions.assertEquals(expectedDefinitions.size(), destinationConnections.size());
-
+    Assertions.assertTrue(V0_32_8_001__AirbyteConfigDatabaseDenormalization.actorDoesNotExist(UUID.randomUUID(), context));
     for (final Record record : destinationConnections) {
       final DestinationConnection destinationConnection = new DestinationConnection()
           .withDestinationId(record.get(id))
@@ -263,6 +270,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
       Assertions.assertTrue(expectedDefinitions.contains(destinationConnection));
       Assertions.assertEquals(now(), record.get(createdAt).toInstant());
       Assertions.assertEquals(now(), record.get(updatedAt).toInstant());
+      Assertions.assertFalse(V0_32_8_001__AirbyteConfigDatabaseDenormalization.actorDoesNotExist(destinationConnection.getDestinationId(), context));
     }
   }
 
@@ -279,7 +287,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
         .from(table("actor_oauth_parameter"))
         .where(actorType.eq(ActorType.source))
         .fetch();
-    final List<SourceOAuthParameter> expectedDefinitions = sourceOauthParameters();
+    final List<SourceOAuthParameter> expectedDefinitions = sourceOauthParameters().stream().filter(c -> c.getWorkspaceId() != null).toList();
     Assertions.assertEquals(expectedDefinitions.size(), sourceOauthParams.size());
 
     for (final Record record : sourceOauthParams) {
@@ -307,7 +315,8 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
         .from(table("actor_oauth_parameter"))
         .where(actorType.eq(ActorType.destination))
         .fetch();
-    final List<DestinationOAuthParameter> expectedDefinitions = destinationOauthParameters();
+    final List<DestinationOAuthParameter> expectedDefinitions =
+        destinationOauthParameters().stream().filter(c -> c.getWorkspaceId() != null).toList();
     Assertions.assertEquals(expectedDefinitions.size(), destinationOauthParams.size());
 
     for (final Record record : destinationOauthParams) {
@@ -338,7 +347,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
         .fetch();
     final List<StandardSyncOperation> expectedDefinitions = standardSyncOperations();
     Assertions.assertEquals(expectedDefinitions.size(), standardSyncOperations.size());
-
+    Assertions.assertTrue(V0_32_8_001__AirbyteConfigDatabaseDenormalization.operationDoesNotExist(UUID.randomUUID(), context));
     for (final Record record : standardSyncOperations) {
       final StandardSyncOperation standardSyncOperation = new StandardSyncOperation()
           .withOperationId(record.get(id))
@@ -352,6 +361,8 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
       Assertions.assertTrue(expectedDefinitions.contains(standardSyncOperation));
       Assertions.assertEquals(now(), record.get(createdAt).toInstant());
       Assertions.assertEquals(now(), record.get(updatedAt).toInstant());
+      Assertions
+          .assertFalse(V0_32_8_001__AirbyteConfigDatabaseDenormalization.operationDoesNotExist(standardSyncOperation.getOperationId(), context));
     }
   }
 
@@ -377,7 +388,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
         .fetch();
     final List<StandardSync> expectedStandardSyncs = standardSyncs();
     Assertions.assertEquals(expectedStandardSyncs.size(), standardSyncs.size());
-
+    Assertions.assertTrue(V0_32_8_001__AirbyteConfigDatabaseDenormalization.connectionDoesNotExist(UUID.randomUUID(), context));
     for (final Record record : standardSyncs) {
       final StandardSync standardSync = new StandardSync()
           .withConnectionId(record.get(id))
@@ -399,6 +410,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
       Assertions.assertTrue(expectedStandardSyncs.contains(standardSync));
       Assertions.assertEquals(now(), record.get(createdAt).toInstant());
       Assertions.assertEquals(now(), record.get(updatedAt).toInstant());
+      Assertions.assertFalse(V0_32_8_001__AirbyteConfigDatabaseDenormalization.connectionDoesNotExist(standardSync.getConnectionId(), context));
     }
   }
 

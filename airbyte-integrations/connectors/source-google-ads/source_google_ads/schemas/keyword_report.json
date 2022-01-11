@@ -9,7 +9,7 @@
       "type": ["null", "integer"]
     },
     "ad_group_criterion.type": {
-      "type": ["null", "integer"],
+      "type": ["null", "string"],
       "enum": [
         "AD_SCHEDULE",
         "AGE_RANGE",

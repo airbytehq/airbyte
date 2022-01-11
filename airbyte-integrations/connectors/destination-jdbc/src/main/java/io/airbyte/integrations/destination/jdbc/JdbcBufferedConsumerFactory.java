@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.jdbc;
 
+import static io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
@@ -43,8 +45,6 @@ public class JdbcBufferedConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcBufferedConsumerFactory.class);
 
-  private static final int MAX_BATCH_SIZE_BYTES = 1024 * 1024 * 1024 / 4; // 256mib
-
   public static AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
                                               final JdbcDatabase database,
                                               final SqlOperations sqlOperations,
@@ -60,7 +60,7 @@ public class JdbcBufferedConsumerFactory {
         onCloseFunction(database, sqlOperations, writeConfigs),
         catalog,
         sqlOperations::isValidData,
-        MAX_BATCH_SIZE_BYTES);
+        DEFAULT_MAX_BATCH_SIZE_BYTES);
   }
 
   private static List<WriteConfig> createWriteConfigs(final NamingConventionTransformer namingResolver,
