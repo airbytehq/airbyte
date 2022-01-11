@@ -5,6 +5,8 @@
 package io.airbyte.test.airbyte_test_container;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.airbyte.workers.process.KubePodProcess;
+import io.airbyte.workers.process.KubePortManagerSingleton;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,7 +14,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -28,7 +32,7 @@ public class ProcessData {
 
     final var jackson = new ObjectMapper();
 
-    final var dataFile = Path.of("./bin/data.txt");
+    final var dataFile = Path.of("./bin/data-local-100-completed.txt");
     final var lines = Files.lines(dataFile).collect(Collectors.toList());
 
     final List<Long> timesToSchedule = new ArrayList<>();
@@ -37,11 +41,20 @@ public class ProcessData {
     final List<Long> timesToReady = new ArrayList<>();
 
     int processed = 0;
+    int ignored = 0;
+
+    final Set<String> seenEntries = new HashSet<>();
 
     for (final String line : lines) {
       try {
         final var json = jackson.readTree(line);
         if (json.has("creationTimestamp") && json.has("conditions")) {
+          final var name = json.get("name").asText();
+          if (seenEntries.contains(name)) {
+            ignored++;
+            continue;
+          }
+
           final var createTs = DateTime.parse(json.get("creationTimestamp").asText());
 
           final var conditions = json.get("conditions");
@@ -61,15 +74,32 @@ public class ProcessData {
           timesToReady.add((long) timeToReady.getSeconds());
 
           processed++;
+          seenEntries.add(name);
         }
       } catch (final Exception e) {}
     }
 
-    log.info("scheduling time - average: {}, 95 percentile: {}", average(timesToSchedule), percentile(timesToSchedule, 95));
-    log.info("init time - average: {}, 95 percentile: {}", average(timesToInit), percentile(timesToInit, 95));
-    log.info("container ready time - average: {}, 95 percentile: {}", average(timesToContainerReady), percentile(timesToContainerReady, 95));
-    log.info("ready time - average: {}, 95 percentile: {}", average(timesToReady), percentile(timesToReady, 95));
-    log.info("Processed lines: {}", processed);
+    log.info("Processed lines: {}, Ignored lines: {}", processed, ignored);
+    final var scheduleAvg = average(timesToSchedule);
+    final var schedule95Percentile = percentile(timesToSchedule, 95);
+    log.info("scheduling time - average: {}, 95 percentile: {}", scheduleAvg, schedule95Percentile);
+
+    final var initAvg = average(timesToInit);
+    final var init95Percentile = percentile(timesToInit, 95);
+    log.info("init time - average: {}, 95 percentile: {}", initAvg, init95Percentile);
+
+    final var containerReadyAvg = average(timesToContainerReady);
+    final var containerReady95Percentile = percentile(timesToContainerReady, 95);
+    log.info("container ready time - average: {}, 95 percentile: {}", containerReadyAvg, containerReady95Percentile);
+
+    final var readyAvg = average(timesToReady);
+    final var ready95Percentile = percentile(timesToReady, 95);
+    log.info("ready time - average: {}, 95 percentile: {}", readyAvg, ready95Percentile);
+
+    log.info("");
+    final var totalAvg = scheduleAvg + initAvg + containerReadyAvg + readyAvg;
+    final var total95Percentile = schedule95Percentile + init95Percentile + containerReady95Percentile + ready95Percentile;
+    log.info("overall average: {}, overall 95 percentile: {}", totalAvg, total95Percentile);
   }
 
   public static long percentile(final List<Long> latencies, final double percentile) {
@@ -84,5 +114,9 @@ public class ProcessData {
       total += a;
     }
     return total/latencies.size();
+  }
+
+  public static void kubePodProcessCreate() {
+
   }
 }
