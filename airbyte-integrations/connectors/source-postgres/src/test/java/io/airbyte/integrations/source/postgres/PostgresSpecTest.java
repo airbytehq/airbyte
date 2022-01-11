@@ -30,6 +30,7 @@ public class PostgresSpecTest {
       + "\"password\" : \"pwd\",  "
       + "\"username\" : \"postgres\",  "
       + "\"database\" : \"postgres_db\",  "
+      + "\"schemas\" : [\"public\"],  "
       + "\"port\" : 5432,  "
       + "\"host\" : \"localhost\",  "
       + "\"ssl\" : true, "
