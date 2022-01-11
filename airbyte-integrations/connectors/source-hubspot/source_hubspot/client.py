@@ -13,7 +13,6 @@ from source_hubspot.api import (
     CampaignStream,
     ContactListStream,
     ContactsListMembershipsStream,
-    CRMSearchStream,
     CRMObjectIncrementalStream,
     CRMSearchStream,
     DealPipelineStream,
