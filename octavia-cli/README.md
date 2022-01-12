@@ -14,7 +14,7 @@ The project is under development: readers can refer to our [tech spec deck](http
 We encourage users to use the CLI with docker to avoid the hassle of setting up a Python installation. 
 The project is under development: we have not yet published any docker image to our Docker registry.
 
-1. Build the image locally (from the root of the repo):
+1. Build the project locally (from the root of the repo):
 ```bash
 SUB_BUILD=OCTAVIA_CLI ./gradlew build #from the root of the repo
 ```
@@ -34,7 +34,7 @@ Octavia is currently under development.
 You can find a detailed and updated execution plan [here](https://docs.google.com/spreadsheets/d/1weB9nf0Zx3IR_QvpkxtjBAzyfGb7B0PWpsVt6iMB5Us/edit#gid=0).
 We welcome community contributions!
 
-Summary of achievements:
+**Summary of achievements**:
 
 | Date       | Milestone                           |
 |------------|-------------------------------------|
