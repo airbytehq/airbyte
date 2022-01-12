@@ -32,7 +32,7 @@ public class ProcessData {
 
     final var jackson = new ObjectMapper();
 
-    final var dataFile = Path.of("./bin/data-local-100-completed.txt");
+    final var dataFile = Path.of("./bin/data-dev-1-300-completed.txt");
     final var lines = Files.lines(dataFile).collect(Collectors.toList());
 
     final List<Long> timesToSchedule = new ArrayList<>();
@@ -114,9 +114,5 @@ public class ProcessData {
       total += a;
     }
     return total/latencies.size();
-  }
-
-  public static void kubePodProcessCreate() {
-
   }
 }

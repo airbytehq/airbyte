@@ -28,7 +28,7 @@ then
   # watch api and pipe to file
   echo "Watching for events.."
   curl -sN http://127.0.0.1:8001/api/v1/namespaces/default/pods\?watch\=1 | \
-    jq -c 'select(.object.status.phase == "Running") | { "name": .object.metadata.name, "namespace": .object.metadata.namespace, "creationTimestamp": .object.metadata.creationTimestamp, "phase": .object.status.phase, "conditions": [ .object.status.conditions | .[] | select(.status == "True") | {(.type): .lastTransitionTime} ] | add } | select(.conditions.Ready)' >> ./data-local-100-completed.txt &
+    jq -c 'select(.object.status.phase == "Running") | { "name": .object.metadata.name, "namespace": .object.metadata.namespace, "creationTimestamp": .object.metadata.creationTimestamp, "phase": .object.status.phase, "conditions": [ .object.status.conditions | .[] | select(.status == "True") | {(.type): .lastTransitionTime} ] | add } | select(.conditions.Ready)' >> ./data-dev-1-no-init-300-completed.txt &
 fi
 
 echo "Creating $total_num_pods test pods.."
@@ -41,7 +41,7 @@ do
   if [ $create_only -eq 0 ]
   then
       # wait till pod is in complete; this works well if there is only one pod
-      while [[ "$(kubectl get pod | grep -c "Running")" -eq 1 ]] || [[ "$(kubectl get pod | grep -c "Pending")" -eq 1 ]] || [[ "$(kubectl get pod | grep -c "ContainerCreating")" -eq 1 ]]
+      while [[ "$(kubectl get pod | grep -c "Running")" -eq 1 ]] || [[ "$(kubectl get pod | grep -c "Pending")" -eq 1 ]] || [[ "$(kubectl get pod | grep -c "ContainerCreating")" -eq 1 ]] || [[ "$(kubectl get pod | grep -c "Init")" -eq 1 ]]
       do
         echo 'wait for pod to finish..'
         sleep 2

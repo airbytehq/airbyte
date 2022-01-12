@@ -37,9 +37,12 @@ configurations {
 dependencies {
     implementation project(':airbyte-api')
     implementation project(':airbyte-workers')
+    implementation project(':airbyte-config:models')
 
     implementation 'joda-time:joda-time:2.10.13'
     implementation 'org.testcontainers:testcontainers:1.15.3'
+    implementation 'io.fabric8:kubernetes-client:5.9.0'
+
 
     acceptanceTestsImplementation project(':airbyte-api')
     acceptanceTestsImplementation project(':airbyte-commons')
