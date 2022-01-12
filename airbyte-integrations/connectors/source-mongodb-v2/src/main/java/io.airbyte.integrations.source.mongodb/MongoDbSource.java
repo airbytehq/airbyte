@@ -141,14 +141,14 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
        For example, if a user has find action on specific collections, the command returns only those collections;
        or, if a user has find or any other action, on the database resource, the command lists all collections in the database.
       */
-        Document document = database.getDatabase().runCommand(new Document("listCollections", 1)
-                .append("authorizedCollections", true).append("nameOnly", true));
-
+      Document document = database.getDatabase().runCommand(new Document("listCollections", 1)
+                      .append("authorizedCollections", true)
+                      .append("nameOnly", true))
+                      .append("filter", "{ 'type': 'collection' }");
         return document.toBsonDocument()
                 .get("cursor").asDocument()
                 .getArray("firstBatch")
-                        .stream()
-                .filter(bsonValue -> bsonValue.asDocument().getString("type").getValue().equals("collection"))
+                .stream()
                 .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
                 .collect(Collectors.toSet());
 
