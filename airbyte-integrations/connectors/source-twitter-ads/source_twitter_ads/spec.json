@@ -4,12 +4,28 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Twitter Ads Spec",
     "type": "object",
-    "required": ["TODO"],
+    "required": ["api-key","api-key-secret","access-token","access-token-secret"],
     "additionalProperties": false,
     "properties": {
-      "TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.": {
+      "api-key": {
         "type": "string",
-        "description": "describe me"
+        "description": "API Key"
+      },
+      "api-key-secret": {
+        "type": "string",
+        "description": "API Key Secret."
+      },
+      "access-token": {
+        "type": "string",
+        "description": "API Access Token.."
+      },
+      "access-token-secret": {
+        "type": "string",
+        "description": "API Access Token secret."
+      },
+      "account_id": {
+        "type": "string",
+        "description": "Twitter account id."
       }
     }
   }
