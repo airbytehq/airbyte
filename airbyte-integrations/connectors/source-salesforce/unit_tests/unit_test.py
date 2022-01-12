@@ -51,18 +51,32 @@ def stream_config_without_start_date():
     }
 
 
-def _stream_api(stream_config):
+def _stream_api(stream_config, describe_response_data=None):
     sf_object = Salesforce(**stream_config)
     sf_object.login = Mock()
     sf_object.access_token = Mock()
     sf_object.instance_url = "https://fase-account.salesforce.com"
-    sf_object.describe = Mock(return_value={"fields": [{"name": "LastModifiedDate", "type": "string"}]})
+
+    response_data = {"fields": [{"name": "LastModifiedDate", "type": "string"}]}
+    if describe_response_data:
+        response_data = describe_response_data
+    sf_object.describe = Mock(return_value=response_data)
     return sf_object
 
 
 @pytest.fixture(scope="module")
 def stream_api(stream_config):
     return _stream_api(stream_config)
+
+
+@pytest.fixture(scope="module")
+def stream_api_v2(stream_config):
+    describe_response_data = {
+        "fields": [
+            {"name": "LastModifiedDate", "type": "string"},
+            {"name": "BillingAddress", "type": "address"}
+        ]}
+    return _stream_api(stream_config, describe_response_data=describe_response_data)
 
 
 def _generate_stream(stream_name, stream_config, stream_api, state=None):
@@ -87,13 +101,13 @@ def test_stream_unsupported_by_bulk(stream_config, stream_api, caplog):
     assert not isinstance(stream, BulkSalesforceStream)
 
 
-def test_stream_contains_unsupported_properties_by_bulk(stream_config, stream_api):  # TODO
+def test_stream_contains_unsupported_properties_by_bulk(stream_config, stream_api_v2):
     """
-    Stream `Account` contains compound field such as address, which is not supported by BULK API (csv),
+    Stream `Account` contains compound field such as BillingAddress, which is not supported by BULK API (csv),
     in that case REST API stream will be used for it.
     """
     stream_name = "Account"
-    stream = _generate_stream(stream_name, stream_config, stream_api)
+    stream = _generate_stream(stream_name, stream_config, stream_api_v2)
     assert not isinstance(stream, BulkSalesforceStream)
 
 
