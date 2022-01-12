@@ -135,26 +135,28 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     return tableInfos;
   }
 
-    private Set<String> getAuthorizedCollections(MongoDatabase database) {
-      /* db.runCommand ({listCollections: 1.0, authorizedCollections: true, nameOnly: true })
-       the command returns only those collections for which the user has privileges.
-       For example, if a user has find action on specific collections, the command returns only those collections;
-       or, if a user has find or any other action, on the database resource, the command lists all collections in the database.
-      */
-      Document document = database.getDatabase().runCommand(new Document("listCollections", 1)
-                      .append("authorizedCollections", true)
-                      .append("nameOnly", true))
-                      .append("filter", "{ 'type': 'collection' }");
-        return document.toBsonDocument()
-                .get("cursor").asDocument()
-                .getArray("firstBatch")
-                .stream()
-                .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
-                .collect(Collectors.toSet());
+  private Set<String> getAuthorizedCollections(MongoDatabase database) {
+    /*
+     * db.runCommand ({listCollections: 1.0, authorizedCollections: true, nameOnly: true }) the command
+     * returns only those collections for which the user has privileges. For example, if a user has find
+     * action on specific collections, the command returns only those collections; or, if a user has
+     * find or any other action, on the database resource, the command lists all collections in the
+     * database.
+     */
+    Document document = database.getDatabase().runCommand(new Document("listCollections", 1)
+        .append("authorizedCollections", true)
+        .append("nameOnly", true))
+        .append("filter", "{ 'type': 'collection' }");
+    return document.toBsonDocument()
+        .get("cursor").asDocument()
+        .getArray("firstBatch")
+        .stream()
+        .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
+        .collect(Collectors.toSet());
 
-    }
+  }
 
-    @Override
+  @Override
   protected List<TableInfo<CommonField<BsonType>>> discoverInternal(final MongoDatabase database, final String schema) throws Exception {
     // MondoDb doesn't support schemas
     return discoverInternal(database);

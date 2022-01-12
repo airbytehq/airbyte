@@ -426,7 +426,7 @@
 - name: MongoDb
   sourceDefinitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
   dockerRepository: airbyte/source-mongodb-v2
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.11
   documentationUrl: https://docs.airbyte.io/integrations/sources/mongodb-v2
   icon: mongodb.svg
   sourceType: database
