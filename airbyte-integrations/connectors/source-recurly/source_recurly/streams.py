@@ -169,7 +169,7 @@ class AccountCouponRedemptions(BaseStream):
             params.update({BEGIN_TIME_PARAM: self.begin_time})
 
         # Call the Recurly client methods
-        accounts = self._client.list_accounts().items()
+        accounts = self._client.list_accounts(params=params).items()
         for account in accounts:
             coupons = self._client.list_account_coupon_redemptions(account_id=account.id, params=params).items()
             for coupon in coupons:
