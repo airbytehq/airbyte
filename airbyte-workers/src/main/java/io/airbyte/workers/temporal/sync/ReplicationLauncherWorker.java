@@ -34,7 +34,7 @@ public class ReplicationLauncherWorker implements Worker<StandardSyncInput, Repl
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ReplicationLauncherWorker.class);
 
-  public static final String REPLICATION = "replication";
+  public static final String REPLICATION = "replication-orchestrator";
   public static final String INIT_FILE_SOURCE_LAUNCHER_CONFIG = "sourceLauncherConfig.json";
   public static final String INIT_FILE_DESTINATION_LAUNCHER_CONFIG = "destinationLauncherConfig.json";
 

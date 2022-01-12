@@ -4,12 +4,12 @@
 
 package io.airbyte.container_orchestrator;
 
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerUtils;
@@ -22,7 +22,6 @@ import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.process.WorkerHeartbeatServer;
-import io.airbyte.workers.storage.DocumentStoreClient;
 import io.airbyte.workers.storage.StateClients;
 import io.airbyte.workers.temporal.sync.DbtLauncherWorker;
 import io.airbyte.workers.temporal.sync.NormalizationLauncherWorker;
@@ -32,7 +31,6 @@ import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
@@ -50,18 +48,91 @@ import lombok.extern.slf4j.Slf4j;
  * future this will need to independently interact with cloud storage.
  */
 @Slf4j
-public class ContainerOrchestratorApp {
+public class ContainerOrchestratorApp implements Runnable {
 
-  private static final MdcScope.Builder LOG_MDC_BUILDER = new MdcScope.Builder()
-      .setLogPrefix("container-orchestrator")
-      .setPrefixColor(LoggingHelper.Color.CYAN_BACKGROUND);
+  private final String application;
+  private final Map<String, String> envMap;
+  private final JobRunConfig jobRunConfig;
+  private final KubePodInfo kubePodInfo;
+  private final Configs configs;
 
-  public static void main(final String[] args) throws Exception {
-    WorkerHeartbeatServer heartbeatServer = null;
-    DocumentStoreClient documentStoreClient = null;
-    KubePodInfo kubePodInfo = null;
-    AsyncStateManager asyncStateManager = null;
+  public ContainerOrchestratorApp(
+                                  final String application,
+                                  final Map<String, String> envMap,
+                                  final JobRunConfig jobRunConfig,
+                                  final KubePodInfo kubePodInfo) {
+    this.application = application;
+    this.envMap = envMap;
+    this.jobRunConfig = jobRunConfig;
+    this.kubePodInfo = kubePodInfo;
+    this.configs = new EnvConfigs(envMap);
+  }
 
+  private void configureLogging() {
+    for (String envVar : OrchestratorConstants.ENV_VARS_TO_TRANSFER) {
+      if (envMap.containsKey(envVar)) {
+        System.setProperty(envVar, envMap.get(envVar));
+      }
+    }
+
+    final var logClient = LogClientSingleton.getInstance();
+    logClient.setJobMdc(
+        configs.getWorkerEnvironment(),
+        configs.getLogConfigs(),
+        WorkerUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId()));
+  }
+
+  /**
+   * Handles state updates (including writing failures) and running the job orchestrator. As much of
+   * the initialization as possible should go in here so it's logged properly and the state storage is
+   * updated appropriately.
+   */
+  private void runInternal(final DefaultAsyncStateManager asyncStateManager) {
+    try {
+      asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.INITIALIZING);
+
+      final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
+      final ProcessFactory processFactory = getProcessBuilderFactory(configs, workerConfigs);
+      final JobOrchestrator<?> jobOrchestrator = getJobOrchestrator(configs, workerConfigs, processFactory, application);
+
+      final var heartbeatServer = new WorkerHeartbeatServer(WorkerApp.KUBE_HEARTBEAT_PORT);
+      heartbeatServer.startBackground();
+
+      asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.RUNNING);
+
+      final Optional<String> output = jobOrchestrator.runJob();
+
+      asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.SUCCEEDED, output.orElse(""));
+
+      // required to kill clients with thread pools
+      System.exit(0);
+    } catch (Throwable t) {
+      asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.FAILED);
+      System.exit(1);
+    }
+  }
+
+  /**
+   * Configures logging/mdc scope, and creates all objects necessary to handle state updates.
+   * Everything else is delegated to {@link ContainerOrchestratorApp#runInternal}.
+   */
+  @Override
+  public void run() {
+    configureLogging();
+
+    // set mdc scope for the remaining execution
+    new MdcScope.Builder()
+        .setLogPrefix(application)
+        .setPrefixColor(LoggingHelper.Color.CYAN_BACKGROUND)
+        .build();
+
+    final var documentStoreClient = StateClients.create(configs.getStateStorageCloudConfigs(), WorkerApp.STATE_STORAGE_PREFIX);
+    final var asyncStateManager = new DefaultAsyncStateManager(documentStoreClient);
+
+    runInternal(asyncStateManager);
+  }
+
+  public static void main(final String[] args) {
     try {
       // wait for config files to be copied
       final var successFile = Path.of(KubePodProcess.CONFIG_DIR, KubePodProcess.SUCCESS_FILE_NAME);
@@ -71,84 +142,16 @@ public class ContainerOrchestratorApp {
         Thread.sleep(1000);
       }
 
-      // read files that contain all necessary configuration
-      final String application = Files.readString(Path.of(KubePodProcess.CONFIG_DIR, OrchestratorConstants.INIT_FILE_APPLICATION));
-      final Map<String, String> envMap =
-          (Map<String, String>) Jsons.deserialize(Files.readString(Path.of(KubePodProcess.CONFIG_DIR, OrchestratorConstants.INIT_FILE_ENV_MAP)),
-              Map.class);
-
-      kubePodInfo =
-          Jsons.deserialize(Files.readString(Path.of(KubePodProcess.CONFIG_DIR, AsyncOrchestratorPodProcess.KUBE_POD_INFO)), KubePodInfo.class);
-
-      final Configs configs = new EnvConfigs(envMap);
-
-      for (String envVar : OrchestratorConstants.ENV_VARS_TO_TRANSFER) {
-        if (envMap.containsKey(envVar)) {
-          System.setProperty(envVar, envMap.get(envVar));
-        }
-      }
-
-      final var logClient = LogClientSingleton.getInstance();
+      final var applicationName = JobOrchestrator.readApplicationName();
+      final var envMap = JobOrchestrator.readEnvMap();
       final var jobRunConfig = JobOrchestrator.readJobRunConfig();
-      final var jobRoot = WorkerUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
+      final var kubePodInfo = JobOrchestrator.readKubePodInfo();
 
-      logClient.setJobMdc(
-          configs.getWorkerEnvironment(),
-          configs.getLogConfigs(),
-          jobRoot);
-
-      try (final var mdcScope = LOG_MDC_BUILDER.build()) {
-        documentStoreClient = StateClients.create(configs.getStateStorageCloudConfigs(), WorkerApp.STATE_STORAGE_PREFIX);
-        asyncStateManager = new DefaultAsyncStateManager(documentStoreClient);
-
-        asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.INITIALIZING);
-
-        heartbeatServer = new WorkerHeartbeatServer(WorkerApp.KUBE_HEARTBEAT_PORT);
-        heartbeatServer.startBackground();
-
-        final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
-        final ProcessFactory processFactory = getProcessBuilderFactory(configs, workerConfigs);
-        final JobOrchestrator<?> jobOrchestrator = getJobOrchestrator(configs, workerConfigs, processFactory, application);
-
-        log.info("Starting {} orchestrator...", jobOrchestrator.getOrchestratorName());
-        asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.RUNNING);
-        final Optional<String> output = jobOrchestrator.runJob();
-        asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.SUCCEEDED, output.orElse(""));
-        log.info("{} orchestrator complete!", jobOrchestrator.getOrchestratorName());
-      } catch (Throwable t) {
-        if (asyncStateManager != null && kubePodInfo != null) {
-          asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.FAILED);
-        }
-
-        log.error("Orchestrator failed", t);
-      } finally {
-        if (heartbeatServer != null) {
-          log.info("Shutting down heartbeat server...");
-          heartbeatServer.stop();
-        }
-
-        // required to kill kube client
-        log.info("Runner closing...");
-        System.exit(0);
-      }
-      // todo: catch throwing pre-log configuration in a better way
+      final var app = new ContainerOrchestratorApp(applicationName, envMap, jobRunConfig, kubePodInfo);
+      app.run();
     } catch (Throwable t) {
-      // not catchable by cloud logging
-      if (asyncStateManager != null && kubePodInfo != null) {
-        asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.FAILED);
-      }
-
-      log.error("Orchestrator failed", t);
-    } finally {
-      // not catchable by cloud logging
-      if (heartbeatServer != null) {
-        log.info("Shutting down heartbeat server...");
-        heartbeatServer.stop();
-      }
-
-      // required to kill kube client
-      log.info("Runner closing...");
-      System.exit(0);
+      log.info("Orchestrator failed...", t);
+      System.exit(1);
     }
   }
 

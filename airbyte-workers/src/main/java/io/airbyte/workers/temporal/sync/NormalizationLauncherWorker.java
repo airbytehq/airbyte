@@ -5,8 +5,6 @@
 package io.airbyte.workers.temporal.sync;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.logging.LoggingHelper;
-import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
@@ -30,11 +28,7 @@ public class NormalizationLauncherWorker implements Worker<NormalizationInput, V
 
   private static final Logger LOGGER = LoggerFactory.getLogger(NormalizationLauncherWorker.class);
 
-  private static final MdcScope.Builder LOG_MDC_BUILDER = new MdcScope.Builder()
-      .setLogPrefix("normalization-orchestrator")
-      .setPrefixColor(LoggingHelper.Color.CYAN_BACKGROUND);
-
-  public static final String NORMALIZATION = "normalization";
+  public static final String NORMALIZATION = "normalization-orchestrator";
   public static final String INIT_FILE_DESTINATION_LAUNCHER_CONFIG = "destinationLauncherConfig.json";
 
   private final WorkerConfigs workerConfigs;

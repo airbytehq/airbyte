@@ -5,8 +5,6 @@
 package io.airbyte.workers.temporal.sync;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.logging.LoggingHelper;
-import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
@@ -31,11 +29,7 @@ public class DbtLauncherWorker implements Worker<OperatorDbtInput, Void> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DbtLauncherWorker.class);
 
-  private static final MdcScope.Builder LOG_MDC_BUILDER = new MdcScope.Builder()
-      .setLogPrefix("dbt-orchestrator")
-      .setPrefixColor(LoggingHelper.Color.CYAN_BACKGROUND);
-
-  public static final String DBT = "dbt";
+  public static final String DBT = "dbt-orchestrator";
   public static final String INIT_FILE_DESTINATION_LAUNCHER_CONFIG = "destinationLauncherConfig.json";
 
   private final WorkerConfigs workerConfigs;
