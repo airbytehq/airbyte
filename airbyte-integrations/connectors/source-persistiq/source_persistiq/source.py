@@ -55,8 +55,7 @@ class PersistiqStream(HttpStream, ABC):
     See the reference docs for the full list of configurable options.
     """
 
-    # TODO: Fill in the url base. Required.
-    url_base = "https://example-api.com/v1/"
+    url_base = "https://api.persistiq.com/v1/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -89,25 +88,18 @@ class PersistiqStream(HttpStream, ABC):
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
+        print('parsing')
+        print(response)
         yield {}
 
 
-class Customers(PersistiqStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "customer_id"
+class Users(PersistiqStream):
+    primary_key = "id"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
-        return "customers"
+        return "users"
 
 
 # Basic incremental stream
@@ -177,23 +169,23 @@ class Employees(IncrementalPersistiqStream):
         till now. The request_params function would then grab the date from the stream_slice and make it part of the request by injecting it into
         the date query param.
         """
-        raise NotImplementedError("Implement stream slices or delete this method!")
+        raise NotImplementedError(
+            "Implement stream slices or delete this method!")
 
 
 # Source
 class SourcePersistiq(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
-
-        See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
-        for an example.
-
-        :param config:  the user-input config object conforming to the connector's spec.json
-        :param logger:  logger object
-        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
-        """
-        return True, None
+        headers = {
+            "x-api-key": config['api_key']
+        }
+        url = "https://api.persistiq.com/v1/users"
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            return True, None
+        except requests.exceptions.RequestException as e:
+            return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
