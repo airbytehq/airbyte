@@ -198,6 +198,7 @@ Finally, you need to add read/write permissions to your bucket with that email.
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :-----       | :------ |
+| 0.4.2   | 2022-01-10 | [#9141](https://github.com/airbytehq/airbyte/pull/9141) | Fixed duplicate rows on retries |
 | 0.4.1   | 2021-01-06 | [#9311](https://github.com/airbytehq/airbyte/pull/9311) | Update сreating schema during check |
 | 0.4.0   | 2021-12-27 | [#9063](https://github.com/airbytehq/airbyte/pull/9063) | Updated normalization to produce permanent tables |
 | 0.3.24  | 2021-12-23 | [#8869](https://github.com/airbytehq/airbyte/pull/8869) | Changed staging approach to Byte-Buffered |
