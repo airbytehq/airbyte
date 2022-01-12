@@ -26,7 +26,7 @@
       "dynamodb_table_name_prefix": {
         "title": "DynamoDB table name prefix",
         "type": "string",
-        "description": "Prefix use to name DynamoDB tables.",
+        "description": "The prefix to use when naming DynamoDB tables.",
         "examples": ["airbyte_sync"]
       },
       "dynamodb_region": {
