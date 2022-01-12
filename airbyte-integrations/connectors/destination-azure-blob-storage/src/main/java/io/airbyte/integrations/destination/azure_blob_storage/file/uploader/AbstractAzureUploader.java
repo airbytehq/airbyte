@@ -21,7 +21,7 @@ public abstract class AbstractAzureUploader<T extends S3Writer> {
         this.writer = writer;
     }
 
-    protected void postProcessAction(boolean hasFailed) throws Exception {
+    protected void postProcessAction(boolean hasFailed) {
         // Do nothing by default
     }
 

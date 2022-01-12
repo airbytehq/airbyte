@@ -13,7 +13,7 @@
       "azure_blob_storage_account_key",
       "format"
     ],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "azure_blob_storage_endpoint_domain_name": {
         "title": "Endpoint Domain Name",

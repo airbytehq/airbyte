@@ -31,13 +31,9 @@ public class AzureUploaderFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AzureUploaderFactory.class);
 
-  public static AbstractAzureUploader<?> getUploader(UploaderConfig uploaderConfig)
-      throws IOException {
-
+  public static AbstractAzureUploader<?> getUploader(UploaderConfig uploaderConfig) throws IOException {
     final boolean isGcsUploadingMode = UploadingMethod.GCS.equals(uploaderConfig.getUploadingMethod());
-
     DestinationSyncMode syncMode = uploaderConfig.getConfigStream().getDestinationSyncMode();
-
     return isGcsUploadingMode ?
             getGcsUploader(
                     syncMode,
@@ -63,9 +59,7 @@ public class AzureUploaderFactory {
                                                             ConfiguredAirbyteStream configStream,
                                                             AppendBlobClient appendBlobClient,
                                                             boolean keepFilesInStorage,
-                                                            boolean newlyCreatedBlob)
-          throws IOException {
-
+                                                            boolean newlyCreatedBlob) throws IOException {
     final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig.getGcsDestinationConfig(stagingConfig);
     AbstractGcsAzureUploader result;
     int headerByteSize = 0;
@@ -93,9 +87,7 @@ public class AzureUploaderFactory {
                                                           ConfiguredAirbyteStream configStream,
                                                           AppendBlobClient appendBlobClient,
                                                           boolean keepFilesInStorage,
-                                                          boolean newlyCreatedBlob)
-          throws IOException {
-
+                                                          boolean newlyCreatedBlob) throws IOException {
     final S3DestinationConfig s3DestinationConfig = S3DestinationConfig.getS3DestinationConfig(stagingConfig);
     AbstractS3AzureUploader result;
     int headerByteSize = 0;

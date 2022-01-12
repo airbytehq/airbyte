@@ -49,7 +49,7 @@ public abstract class AbstractGcsAzureUploader<T extends S3Writer> extends Abstr
     }
 
     @Override
-    public void postProcessAction(boolean hasFailed) throws Exception {
+    public void postProcessAction(boolean hasFailed) {
         if (!keepFilesInGcs) {
             deleteGcsFiles();
         }

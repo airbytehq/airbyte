@@ -48,7 +48,7 @@ public abstract class AbstractS3AzureUploader<T extends S3Writer> extends Abstra
     }
 
     @Override
-    public void postProcessAction(boolean hasFailed) throws Exception {
+    public void postProcessAction(boolean hasFailed) {
         if (!keepFilesInS3) {
             deleteGcsFiles();
         }
@@ -60,7 +60,7 @@ public abstract class AbstractS3AzureUploader<T extends S3Writer> extends Abstra
         super.uploadData(outputRecordCollector, lastStateMessage);
     }
 
-    protected void uploadDataFromBlobToStagingFile() throws Exception {
+    protected void uploadDataFromBlobToStagingFile() {
         final AmazonS3 s3Client = s3DestinationConfig.getS3Client();
 
         final String gcsBucketName = s3DestinationConfig.getBucketName();
