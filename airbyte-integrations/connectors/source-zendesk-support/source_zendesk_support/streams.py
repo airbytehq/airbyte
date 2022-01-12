@@ -7,7 +7,10 @@ import calendar
 import time
 from abc import ABC, abstractmethod
 from collections import defaultdict
+from concurrent.futures import Future, ProcessPoolExecutor, as_completed
 from datetime import datetime
+from functools import partial
+from pickle import PickleError, dumps
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl, urlparse
 
@@ -17,6 +20,8 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from requests.auth import AuthBase
+from requests_futures.sessions import PICKLE_ERROR, FuturesSession
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 LAST_END_TIME_KEY = "_last_end_time"
@@ -24,6 +29,24 @@ LAST_END_TIME_KEY = "_last_end_time"
 
 class SourceZendeskException(Exception):
     """default exception of custom SourceZendesk logic"""
+
+
+class SourceZendeskSupportFuturesSession(FuturesSession):
+    def send(self, request: requests.PreparedRequest, **kwargs) -> Future:
+        if self.session:
+            func = self.session.send
+        else:
+            # avoid calling super to not break pickled method
+            func = partial(requests.Session.send, self)
+
+        if isinstance(self.executor, ProcessPoolExecutor):
+            # verify function can be pickled
+            try:
+                dumps(func)
+            except (TypeError, PickleError):
+                raise RuntimeError(PICKLE_ERROR)
+
+        return self.executor.submit(func, request, **kwargs)
 
 
 class SourceZendeskSupportStream(HttpStream, ABC):
@@ -37,11 +60,65 @@ class SourceZendeskSupportStream(HttpStream, ABC):
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
-    def __init__(self, subdomain: str, **kwargs):
+    def __init__(self, subdomain: str, authenticator: Union[AuthBase, HttpAuthenticator] = None, **kwargs):
         super().__init__(**kwargs)
+        self._session = SourceZendeskSupportFuturesSession()
+        self._session.auth = authenticator
 
         # add the custom value for generation of a zendesk domain
         self._subdomain = subdomain
+
+    def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+        response: requests.Response = self._session.send(request, **request_kwargs)
+        return response
+
+    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+        return self._send(request, request_kwargs)
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        stream_state = stream_state or {}
+        pagination_complete = False
+
+        next_page_token = None
+        responses = []
+        while not pagination_complete:
+            request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+            request = self._create_prepared_request(
+                path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                headers=dict(request_headers, **self.authenticator.get_auth_header()),
+                params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            )
+            request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+
+            if self.use_cache:
+                # use context manager to handle and store cassette metadata
+                with self.cache_file as cass:
+                    self.cassete = cass
+                    # vcr tries to find records based on the request, if such records exist, return from cache file
+                    # else make a request and save record in cache file
+                    responses.append(self._send_request(request, request_kwargs))
+
+            else:
+                responses.append(self._send_request(request, request_kwargs))
+
+            response = responses[-1].result()
+            next_page_token = self.next_page_token(response)
+            if not next_page_token:
+                pagination_complete = True
+
+        for future in as_completed(responses):
+            resp = future.result()
+            yield from self.parse_response(resp, stream_state=stream_state, stream_slice=stream_slice)
+
+        yield from []
 
     @property
     def url_base(self) -> str:
