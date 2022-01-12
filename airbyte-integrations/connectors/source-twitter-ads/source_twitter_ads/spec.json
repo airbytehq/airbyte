@@ -4,26 +4,26 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Twitter Ads Spec",
     "type": "object",
-    "required": ["api-key","api-key-secret","access-token","access-token-secret", "account_id"],
+    "required": ["CONSUMER_KEY","CONSUMER_SECRET","ACCESS_TOKEN","ACCESS_TOKEN_SECRET", "ACCOUNT_ID"],
     "additionalProperties": false,
     "properties": {
-      "api-key": {
+      "CONSUMER_KEY": {
         "type": "string",
         "description": "API Key"
       },
-      "api-key-secret": {
+      "CONSUMER_SECRET": {
         "type": "string",
         "description": "API Key Secret."
       },
-      "access-token": {
+      "ACCESS_TOKEN": {
         "type": "string",
         "description": "API Access Token.."
       },
-      "access-token-secret": {
+      "ACCESS_TOKEN_SECRET": {
         "type": "string",
         "description": "API Access Token secret."
       },
-      "account_id": {
+      "ACCOUNT_ID": {
         "type": "string",
         "description": "Twitter account id."
       }

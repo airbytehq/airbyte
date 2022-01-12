@@ -12,6 +12,11 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
+from twitter_ads.client import Client
+from twitter_ads.campaign import Campaign
+from twitter_ads.enum import ENTITY_STATUS
+import json
+
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
 
@@ -193,7 +198,16 @@ class SourceTwitterAds(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        return True, None
+        # FIX ME: this is just POC to verify that adding a custom connector to the airbyte works and we can establish  a to the twitter ads api.
+        json_file = open("secrets/config.json")
+        config = json.load(json_file)
+        client = Client(
+        config["CONSUMER_KEY"], config["CONSUMER_SECRET"], config["ACCESS_TOKEN"], config["ACCESS_TOKEN_SECRET"])
+        account = client.accounts(config["ACCOUNT_ID"])
+        if  not account.campaigns():
+            return False, "no_connection"
+        else:
+            return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
