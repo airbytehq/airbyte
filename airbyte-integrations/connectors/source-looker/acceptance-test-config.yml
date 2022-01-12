@@ -27,3 +27,5 @@ tests:
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog_without_dynamic_streams.json"
+      ignored_fields: 
+        "datagroups": ["properties", "trigger_check_at"]

@@ -274,7 +274,7 @@ class WebBackendConnectionsHandlerTest {
     final WebBackendConnectionRequestBody webBackendConnectionRequestBody = new WebBackendConnectionRequestBody();
     webBackendConnectionRequestBody.setConnectionId(connectionRead.getConnectionId());
 
-    when(connectionsHandler.getConnection(connectionIdRequestBody)).thenReturn(connectionRead);
+    when(connectionsHandler.getConnection(connectionRead.getConnectionId())).thenReturn(connectionRead);
     when(operationsHandler.listOperationsForConnection(connectionIdRequestBody)).thenReturn(operationReadList);
 
     final WebBackendConnectionRead WebBackendConnectionRead = wbHandler.webBackendGetConnection(webBackendConnectionRequestBody);
@@ -291,7 +291,7 @@ class WebBackendConnectionsHandlerTest {
     webBackendConnectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
     webBackendConnectionIdRequestBody.setWithRefreshedCatalog(true);
 
-    when(connectionsHandler.getConnection(connectionIdRequestBody)).thenReturn(connectionRead);
+    when(connectionsHandler.getConnection(connectionRead.getConnectionId())).thenReturn(connectionRead);
     when(operationsHandler.listOperationsForConnection(connectionIdRequestBody)).thenReturn(operationReadList);
 
     final WebBackendConnectionRead WebBackendConnectionRead = wbHandler.webBackendGetConnection(webBackendConnectionIdRequestBody);
@@ -431,7 +431,7 @@ class WebBackendConnectionsHandlerTest {
         .status(expected.getStatus())
         .syncCatalog(expected.getSyncCatalog());
 
-    when(connectionsHandler.getConnection(new ConnectionIdRequestBody().connectionId(expected.getConnectionId()))).thenReturn(
+    when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(
         new ConnectionRead().connectionId(expected.getConnectionId()));
     when(connectionsHandler.updateConnection(any())).thenReturn(
         new ConnectionRead()
@@ -472,7 +472,7 @@ class WebBackendConnectionsHandlerTest {
         .syncCatalog(expected.getSyncCatalog())
         .operations(List.of(operationCreateOrUpdate));
 
-    when(connectionsHandler.getConnection(new ConnectionIdRequestBody().connectionId(expected.getConnectionId()))).thenReturn(
+    when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(
         new ConnectionRead()
             .connectionId(expected.getConnectionId())
             .operationIds(connectionRead.getOperationIds()));
@@ -510,7 +510,7 @@ class WebBackendConnectionsHandlerTest {
         .withRefreshedCatalog(true);
 
     when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
-    when(connectionsHandler.getConnection(new ConnectionIdRequestBody().connectionId(expected.getConnectionId()))).thenReturn(
+    when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(
         new ConnectionRead().connectionId(expected.getConnectionId()));
     when(connectionsHandler.updateConnection(any())).thenReturn(
         new ConnectionRead()

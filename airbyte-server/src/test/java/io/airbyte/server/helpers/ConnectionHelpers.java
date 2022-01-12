@@ -27,7 +27,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
-import io.airbyte.server.converters.CatalogConverter;
+import io.airbyte.workers.helper.CatalogConverter;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;

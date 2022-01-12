@@ -203,7 +203,7 @@ class WorkspacesHandlerTest {
 
     workspacesHandler.deleteWorkspace(workspaceIdRequestBody);
 
-    verify(connectionsHandler).deleteConnection(connection);
+    verify(connectionsHandler).deleteConnection(connection.getConnectionId());
     verify(destinationHandler).deleteDestination(destination);
     verify(sourceHandler).deleteSource(source);
   }

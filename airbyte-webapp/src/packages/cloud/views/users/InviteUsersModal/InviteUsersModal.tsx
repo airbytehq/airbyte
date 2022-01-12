@@ -159,6 +159,7 @@ export const InviteUsersModal: React.FC<{
                     <FormattedMessage id="modals.addUser.button.cancel" />
                   </Button>
                   <SendInvitationButton
+                    data-testid="modals.addUser.button.submit"
                     type="submit"
                     disabled={!isValid || !dirty}
                     isLoading={isSubmitting}

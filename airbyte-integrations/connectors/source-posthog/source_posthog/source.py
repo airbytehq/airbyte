@@ -12,19 +12,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .streams import (
-    Annotations,
-    Cohorts,
-    Events,
-    EventsSessions,
-    FeatureFlags,
-    Insights,
-    InsightsPath,
-    InsightsSessions,
-    Persons,
-    PingMe,
-    Trends,
-)
+from .streams import Annotations, Cohorts, Events, FeatureFlags, Persons, PingMe
 
 DEFAULT_BASE_URL = "https://app.posthog.com"
 
@@ -46,12 +34,6 @@ class SourcePosthog(AbstractSource):
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        event/sessions stream is dynamic. Probably, it contains a list of CURRENT sessions.
-        In Next day session may expire and wont be available via this endpoint.
-        So we need a dynamic load data before tests.
-        This stream was requested to be removed due to this reason.
-        """
         authenticator = TokenAuthenticator(token=config["api_key"])
         base_url = config.get("base_url", DEFAULT_BASE_URL)
 
@@ -59,11 +41,6 @@ class SourcePosthog(AbstractSource):
             Annotations(authenticator=authenticator, start_date=config["start_date"], base_url=base_url),
             Cohorts(authenticator=authenticator, base_url=base_url),
             Events(authenticator=authenticator, start_date=config["start_date"], base_url=base_url),
-            EventsSessions(authenticator=authenticator, base_url=base_url),
             FeatureFlags(authenticator=authenticator, base_url=base_url),
-            Insights(authenticator=authenticator, base_url=base_url),
-            InsightsPath(authenticator=authenticator, base_url=base_url),
-            InsightsSessions(authenticator=authenticator, base_url=base_url),
             Persons(authenticator=authenticator, base_url=base_url),
-            Trends(authenticator=authenticator, base_url=base_url),
         ]
