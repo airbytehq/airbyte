@@ -13,6 +13,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -235,14 +236,15 @@ public class ServerApp implements ServerRunnable {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     LOGGER.info("Start migration to the new scheduler...");
     final Set<UUID> connectionIds =
-        configRepository.listStandardSyncs().stream().map(standardSync -> standardSync.getConnectionId()).collect(Collectors.toSet());
+        configRepository.listStandardSyncs().stream()
+            .filter(standardSync -> standardSync.getStatus() == Status.ACTIVE || standardSync.getStatus() == Status.INACTIVE)
+            .map(standardSync -> standardSync.getConnectionId()).collect(Collectors.toSet());
     temporalWorkerRunFactory.migrateSyncIfNeeded(connectionIds);
     LOGGER.info("Done migrating to the new scheduler...");
   }
 
   /**
-   * Copy paste from {@link io.airbyte.scheduler.app.SchedulerApp} which will be removed in a near
-   * future
+   * Copy paste from {@link io.airbyte.scheduler.app.SchedulerApp} which will be removed in a near future
    *
    * @param jobPersistence
    * @param jobNotifier
