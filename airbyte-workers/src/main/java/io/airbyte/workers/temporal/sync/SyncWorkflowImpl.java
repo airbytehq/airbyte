@@ -4,7 +4,6 @@
 
 package io.airbyte.workers.temporal.sync;
 
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.StandardSyncInput;
@@ -13,12 +12,10 @@ import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.temporal.TemporalUtils;
-import io.temporal.activity.ActivityCancellationType;
+import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.common.RetryOptions;
 import io.temporal.workflow.Workflow;
-import java.time.Duration;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,23 +26,16 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private static final String VERSION_LABEL = "sync-workflow";
   private static final int CURRENT_VERSION = 1;
 
-  private static final int SYNC_JOB_MAX_TIMEOUT_DAYS = new EnvConfigs().getSyncJobMaxTimeoutDays();
-
-  private static final ActivityOptions options = ActivityOptions.newBuilder()
-      .setScheduleToCloseTimeout(Duration.ofDays(SYNC_JOB_MAX_TIMEOUT_DAYS))
-      .setCancellationType(ActivityCancellationType.WAIT_CANCELLATION_COMPLETED)
-      .setRetryOptions(TemporalUtils.NO_RETRY)
-      .build();
-
-  private static final ActivityOptions persistOptions = options.toBuilder()
+  private static final ActivityOptions persistOptions = ActivityConfiguration.OPTIONS.toBuilder()
       .setRetryOptions(RetryOptions.newBuilder()
           .setMaximumAttempts(10)
           .build())
       .build();
 
-  private final ReplicationActivity replicationActivity = Workflow.newActivityStub(ReplicationActivity.class, options);
-  private final NormalizationActivity normalizationActivity = Workflow.newActivityStub(NormalizationActivity.class, options);
-  private final DbtTransformationActivity dbtTransformationActivity = Workflow.newActivityStub(DbtTransformationActivity.class, options);
+  private final ReplicationActivity replicationActivity = Workflow.newActivityStub(ReplicationActivity.class, ActivityConfiguration.OPTIONS);
+  private final NormalizationActivity normalizationActivity = Workflow.newActivityStub(NormalizationActivity.class, ActivityConfiguration.OPTIONS);
+  private final DbtTransformationActivity dbtTransformationActivity =
+      Workflow.newActivityStub(DbtTransformationActivity.class, ActivityConfiguration.OPTIONS);
   private final PersistStateActivity persistActivity = Workflow.newActivityStub(PersistStateActivity.class, persistOptions);
 
   @Override

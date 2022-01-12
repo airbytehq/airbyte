@@ -243,6 +243,14 @@ public class ConfigRepository {
     }
   }
 
+  public void deleteStandardSyncDefinition(final UUID syncDefId) throws IOException {
+    try {
+      persistence.deleteConfig(ConfigSchema.STANDARD_SYNC, syncDefId.toString());
+    } catch (final ConfigNotFoundException e) {
+      LOGGER.info("Attempted to delete destination definition with id: {}, but it does not exist", syncDefId);
+    }
+  }
+
   public void deleteDestinationDefinitionAndAssociations(final UUID destinationDefinitionId)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     deleteConnectorDefinitionAndAssociations(

@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.s3.avro;
 
-import static io.airbyte.integrations.destination.s3.util.AvroRecordHelper.obtainPaths;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Preconditions;
@@ -14,6 +12,8 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -23,7 +23,6 @@ import javax.annotation.Nullable;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
-import org.apache.avro.SchemaBuilder.RecordBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.allegro.schema.json2avro.converter.AdditionalPropertyField;
@@ -31,9 +30,7 @@ import tech.allegro.schema.json2avro.converter.AdditionalPropertyField;
 /**
  * The main function of this class is to convert a JsonSchema to Avro schema. It can also
  * standardize schema names, and keep track of a mapping from the original names to the standardized
- * ones, which is needed for unit tests.
- * <p>
- * </p>
+ * ones, which is needed for unit tests. <br/>
  * For limitations of this converter, see the README of this connector:
  * https://docs.airbyte.io/integrations/destinations/s3#avro
  */
@@ -48,13 +45,15 @@ public class JsonToAvroSchemaConverter {
       .addToSchema(Schema.create(Schema.Type.LONG));
 
   private final Map<String, String> standardizedNames = new HashMap<>();
-  private final Map<JsonNode, String> jsonNodePathMap = new HashMap<>();
 
   static List<JsonSchemaType> getNonNullTypes(final String fieldName, final JsonNode fieldDefinition) {
     return getTypes(fieldName, fieldDefinition).stream()
         .filter(type -> type != JsonSchemaType.NULL).collect(Collectors.toList());
   }
 
+  /**
+   * When no type is specified, it will default to string.
+   */
   static List<JsonSchemaType> getTypes(final String fieldName, final JsonNode fieldDefinition) {
     final Optional<JsonNode> combinedRestriction = getCombinedRestriction(fieldDefinition);
     if (combinedRestriction.isPresent()) {
@@ -63,7 +62,8 @@ public class JsonToAvroSchemaConverter {
 
     final JsonNode typeProperty = fieldDefinition.get("type");
     if (typeProperty == null || typeProperty.isNull()) {
-      throw new IllegalStateException(String.format("Field %s has no type", fieldName));
+      LOGGER.warn("Field \"{}\" has no type specification. It will default to string", fieldName);
+      return Collections.singletonList(JsonSchemaType.STRING);
     }
 
     if (typeProperty.isArray()) {
@@ -76,7 +76,8 @@ public class JsonToAvroSchemaConverter {
       return Collections.singletonList(JsonSchemaType.fromJsonSchemaType(typeProperty.asText()));
     }
 
-    throw new IllegalStateException("Unexpected type: " + typeProperty);
+    LOGGER.warn("Field \"{}\" has unexpected type {}. It will default to string.", fieldName, typeProperty);
+    return Collections.singletonList(JsonSchemaType.STRING);
   }
 
   static Optional<JsonNode> getCombinedRestriction(final JsonNode fieldDefinition) {
@@ -96,95 +97,111 @@ public class JsonToAvroSchemaConverter {
     return standardizedNames;
   }
 
+  /**
+   * @return Avro schema based on the input {@code jsonSchema}.
+   */
   public Schema getAvroSchema(final JsonNode jsonSchema,
-                              final String name,
-                              @Nullable final String namespace,
-                              final boolean appendAirbyteFields,
-                              final boolean isRootNode) {
-    return getAvroSchema(jsonSchema, name, namespace, appendAirbyteFields, true, true, isRootNode);
+                              final String streamName,
+                              @Nullable final String namespace) {
+    return getAvroSchema(jsonSchema, streamName, namespace, true, true, true, true);
   }
 
   /**
-   * @return - Avro schema based on the input {@code jsonSchema}.
+   * @param appendAirbyteFields Add default airbyte fields (e.g. _airbyte_id) to the output Avro
+   *        schema.
+   * @param appendExtraProps Add default additional property field to the output Avro schema.
+   * @param addStringToLogicalTypes Default logical type field to string.
+   * @param isRootNode Whether it is the root field in the input Json schema.
+   * @return Avro schema based on the input {@code jsonSchema}.
    */
   public Schema getAvroSchema(final JsonNode jsonSchema,
-                              final String name,
-                              @Nullable final String namespace,
+                              final String fieldName,
+                              @Nullable final String fieldNamespace,
                               final boolean appendAirbyteFields,
                               final boolean appendExtraProps,
                               final boolean addStringToLogicalTypes,
                               final boolean isRootNode) {
-    final String stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(name);
-    RecordBuilder<Schema> builder = SchemaBuilder.record(stdName);
-    if (isRootNode) {
-      obtainPaths("", jsonSchema, jsonNodePathMap);
-    }
-    if (!stdName.equals(name)) {
-      standardizedNames.put(name, stdName);
-      LOGGER.warn("Schema name contains illegal character(s) and is standardized: {} -> {}", name,
+    final String stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(fieldName);
+    final SchemaBuilder.RecordBuilder<Schema> builder = SchemaBuilder.record(stdName);
+    if (!stdName.equals(fieldName)) {
+      standardizedNames.put(fieldName, stdName);
+      LOGGER.warn("Schema name \"{}\" contains illegal character(s) and is standardized to \"{}\"", fieldName,
           stdName);
-      builder = builder.doc(
+      builder.doc(
           String.format("%s%s%s",
               AvroConstants.DOC_KEY_ORIGINAL_NAME,
               AvroConstants.DOC_KEY_VALUE_DELIMITER,
-              name));
+              fieldName));
     }
-    if (namespace != null) {
-      builder = builder.namespace(namespace);
+    if (fieldNamespace != null) {
+      builder.namespace(fieldNamespace);
     }
 
     final JsonNode properties = jsonSchema.get("properties");
     // object field with no "properties" will be handled by the default additional properties
     // field during object conversion; so it is fine if there is no "properties"
-    final List<String> fieldNames = properties == null
+    final List<String> subfieldNames = properties == null
         ? Collections.emptyList()
         : new ArrayList<>(MoreIterators.toList(properties.fieldNames()));
 
-    SchemaBuilder.FieldAssembler<Schema> assembler = builder.fields();
+    final SchemaBuilder.FieldAssembler<Schema> assembler = builder.fields();
 
     if (appendAirbyteFields) {
-      assembler = assembler.name(JavaBaseConstants.COLUMN_NAME_AB_ID).type(UUID_SCHEMA).noDefault();
-      assembler = assembler.name(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
+      assembler.name(JavaBaseConstants.COLUMN_NAME_AB_ID).type(UUID_SCHEMA).noDefault();
+      assembler.name(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
           .type(TIMESTAMP_MILLIS_SCHEMA).noDefault();
     }
 
-    for (final String fieldName : fieldNames) {
+    for (final String subfieldName : subfieldNames) {
       // ignore additional properties fields, which will be consolidated
       // into one field at the end
-      if (AvroConstants.JSON_EXTRA_PROPS_FIELDS.contains(fieldName)) {
+      if (AvroConstants.JSON_EXTRA_PROPS_FIELDS.contains(subfieldName)) {
         continue;
       }
 
-      final String stdFieldName = AvroConstants.NAME_TRANSFORMER.getIdentifier(fieldName);
-      final JsonNode fieldDefinition = properties.get(fieldName);
-      SchemaBuilder.FieldBuilder<Schema> fieldBuilder = assembler.name(stdFieldName);
-      if (!stdFieldName.equals(fieldName)) {
-        standardizedNames.put(fieldName, stdFieldName);
-        LOGGER.warn("Field name contains illegal character(s) and is standardized: {} -> {}",
-            fieldName, stdFieldName);
-        fieldBuilder = fieldBuilder.doc(String.format("%s%s%s",
+      final String stdFieldName = AvroConstants.NAME_TRANSFORMER.getIdentifier(subfieldName);
+      final JsonNode subfieldDefinition = properties.get(subfieldName);
+      final SchemaBuilder.FieldBuilder<Schema> fieldBuilder = assembler.name(stdFieldName);
+      if (!stdFieldName.equals(subfieldName)) {
+        standardizedNames.put(subfieldName, stdFieldName);
+        LOGGER.warn("Field name \"{}\" contains illegal character(s) and is standardized to \"{}\"",
+            subfieldName, stdFieldName);
+        fieldBuilder.doc(String.format("%s%s%s",
             AvroConstants.DOC_KEY_ORIGINAL_NAME,
             AvroConstants.DOC_KEY_VALUE_DELIMITER,
-            fieldName));
+            subfieldName));
       }
-      assembler = fieldBuilder.type(getNullableFieldTypes(fieldName, fieldDefinition, appendExtraProps, addStringToLogicalTypes))
+      final String subfieldNamespace = isRootNode
+          // Omit the namespace for root level fields, because it is directly assigned in the builder above.
+          // This may not be the correct choice.
+          ? null
+          : (fieldNamespace == null ? fieldName : (fieldNamespace + "." + fieldName));
+      fieldBuilder.type(parseJsonField(subfieldName, subfieldNamespace, subfieldDefinition, appendExtraProps, addStringToLogicalTypes))
           .withDefault(null);
     }
 
     if (appendExtraProps) {
       // support additional properties in one field
-      assembler = assembler.name(AvroConstants.AVRO_EXTRA_PROPS_FIELD)
+      assembler.name(AvroConstants.AVRO_EXTRA_PROPS_FIELD)
           .type(AdditionalPropertyField.FIELD_SCHEMA).withDefault(null);
     }
 
     return assembler.endRecord();
   }
 
-  Schema getSingleFieldType(final String fieldName,
-                            final JsonSchemaType fieldType,
-                            final JsonNode fieldDefinition,
-                            final boolean appendExtraProps,
-                            final boolean addStringToLogicalTypes) {
+  /**
+   * Generate Avro schema for a single Json field type. For example:
+   *
+   * <pre>
+   * "number" -> ["double"]
+   * </pre>
+   */
+  Schema parseSingleType(final String fieldName,
+                         @Nullable final String fieldNamespace,
+                         final JsonSchemaType fieldType,
+                         final JsonNode fieldDefinition,
+                         final boolean appendExtraProps,
+                         final boolean addStringToLogicalTypes) {
     Preconditions
         .checkState(fieldType != JsonSchemaType.NULL, "Null types should have been filtered out");
 
@@ -201,7 +218,6 @@ public class JsonToAvroSchemaConverter {
         if (fieldDefinition.has("format")) {
           final String format = fieldDefinition.get("format").asText();
           fieldSchema = switch (format) {
-            case "timestamp-micros" -> LogicalTypes.timestampMicros().addToSchema(Schema.create(Schema.Type.LONG));
             case "date-time" -> LogicalTypes.timestampMicros().addToSchema(Schema.create(Schema.Type.LONG));
             case "date" -> LogicalTypes.date().addToSchema(Schema.create(Schema.Type.INT));
             case "time" -> LogicalTypes.timeMicros().addToSchema(Schema.create(Schema.Type.LONG));
@@ -214,42 +230,63 @@ public class JsonToAvroSchemaConverter {
       case COMBINED -> {
         final Optional<JsonNode> combinedRestriction = getCombinedRestriction(fieldDefinition);
         final List<Schema> unionTypes =
-            getSchemasFromTypes(fieldName, (ArrayNode) combinedRestriction.get(), appendExtraProps, addStringToLogicalTypes);
+            parseJsonTypeUnion(fieldName, fieldNamespace, (ArrayNode) combinedRestriction.get(), appendExtraProps, addStringToLogicalTypes);
         fieldSchema = Schema.createUnion(unionTypes);
       }
       case ARRAY -> {
         final JsonNode items = fieldDefinition.get("items");
         if (items == null) {
-          LOGGER.warn("Source connector provided schema for ARRAY with missed \"items\", will assume that it's a String type");
+          LOGGER.warn("Array field \"{}\" does not specify the items type. It will default to an array of strings", fieldName);
           fieldSchema = Schema.createArray(Schema.createUnion(NULL_SCHEMA, STRING_SCHEMA));
         } else if (items.isObject()) {
-          fieldSchema =
-              Schema.createArray(getNullableFieldTypes(String.format("%s.items", fieldName), items, appendExtraProps, addStringToLogicalTypes));
+          if (!items.has("type") || items.get("type").isNull()) {
+            LOGGER.warn("Array field \"{}\" does not specify the items type. it will default to an array of strings", fieldName);
+            fieldSchema = Schema.createArray(Schema.createUnion(NULL_SCHEMA, STRING_SCHEMA));
+          } else {
+            // Objects inside Json array has no names. We name it with the ".items" suffix.
+            final String elementFieldName = fieldName + ".items";
+            fieldSchema = Schema.createArray(parseJsonField(elementFieldName, fieldNamespace, items, appendExtraProps, addStringToLogicalTypes));
+          }
         } else if (items.isArray()) {
-          final List<Schema> arrayElementTypes = getSchemasFromTypes(fieldName, (ArrayNode) items, appendExtraProps, addStringToLogicalTypes);
+          final List<Schema> arrayElementTypes =
+              parseJsonTypeUnion(fieldName, fieldNamespace, (ArrayNode) items, appendExtraProps, addStringToLogicalTypes);
           arrayElementTypes.add(0, NULL_SCHEMA);
           fieldSchema = Schema.createArray(Schema.createUnion(arrayElementTypes));
         } else {
-          throw new IllegalStateException(
-              String.format("Array field %s has invalid items property: %s", fieldName, items));
+          LOGGER.warn("Array field \"{}\" has invalid items specification: {}. It will default to an array of strings.", fieldName, items);
+          fieldSchema = Schema.createArray(Schema.createUnion(NULL_SCHEMA, STRING_SCHEMA));
         }
       }
       case OBJECT -> fieldSchema =
-          getAvroSchema(fieldDefinition, fieldName, jsonNodePathMap.get(fieldDefinition), false, appendExtraProps, addStringToLogicalTypes, false);
-      default -> throw new IllegalStateException(
-          String.format("Unexpected type for field %s: %s", fieldName, fieldType));
+          getAvroSchema(fieldDefinition, fieldName, fieldNamespace, false, appendExtraProps, addStringToLogicalTypes, false);
+      default -> {
+        LOGGER.warn("Field \"{}\" has invalid type definition: {}. It will default to string.", fieldName, fieldDefinition);
+        fieldSchema = Schema.createUnion(NULL_SCHEMA, STRING_SCHEMA);
+      }
     }
     return fieldSchema;
   }
 
-  List<Schema> getSchemasFromTypes(final String fieldName,
-                                   final ArrayNode types,
-                                   final boolean appendExtraProps,
-                                   final boolean addStringToLogicalTypes) {
-    return MoreIterators.toList(types.elements())
+  /**
+   * Take in a union of Json field definitions, and generate Avro field schema unions. For example:
+   *
+   * <pre>
+   * ["number", { ... }] -> ["double", { ... }]
+   * </pre>
+   */
+  List<Schema> parseJsonTypeUnion(final String fieldName,
+                                  @Nullable final String fieldNamespace,
+                                  final ArrayNode types,
+                                  final boolean appendExtraProps,
+                                  final boolean addStringToLogicalTypes) {
+    final List<Schema> schemas = MoreIterators.toList(types.elements())
         .stream()
         .flatMap(definition -> getNonNullTypes(fieldName, definition).stream().flatMap(type -> {
-          final Schema singleFieldSchema = getSingleFieldType(fieldName, type, definition, appendExtraProps, addStringToLogicalTypes);
+          final String namespace = fieldNamespace == null
+              ? fieldName
+              : fieldNamespace + "." + fieldName;
+          final Schema singleFieldSchema = parseSingleType(fieldName, namespace, type, definition, appendExtraProps, addStringToLogicalTypes);
+
           if (singleFieldSchema.isUnion()) {
             return singleFieldSchema.getTypes().stream();
           } else {
@@ -258,20 +295,133 @@ public class JsonToAvroSchemaConverter {
         }))
         .distinct()
         .collect(Collectors.toList());
+
+    return mergeRecordSchemas(fieldName, fieldNamespace, schemas, appendExtraProps);
   }
 
   /**
-   * @param fieldDefinition - Json schema field definition. E.g. { type: "number" }.
+   * If there are multiple object fields, those fields are combined into one Avro record. This is
+   * because Avro does not allow specifying a tuple of types (i.e. the first element is type x, the
+   * second element is type y, and so on). For example, the following Json field types:
+   *
+   * <pre>
+   * [
+   *   {
+   *     "type": "object",
+   *     "properties": {
+   *       "id": { "type": "integer" }
+   *     }
+   *   },
+   *   {
+   *     "type": "object",
+   *     "properties": {
+   *       "id": { "type": "string" }
+   *       "message": { "type": "string" }
+   *     }
+   *   }
+   * ]
+   * </pre>
+   *
+   * is converted to this Avro schema:
+   *
+   * <pre>
+   * {
+   *   "type": "record",
+   *   "fields": [
+   *     { "name": "id", "type": ["int", "string"] },
+   *     { "name": "message", "type": "string" }
+   *   ]
+   * }
+   * </pre>
    */
-  Schema getNullableFieldTypes(final String fieldName,
-                               final JsonNode fieldDefinition,
-                               final boolean appendExtraProps,
-                               final boolean addStringToLogicalTypes) {
+  List<Schema> mergeRecordSchemas(final String fieldName,
+                                  @Nullable final String fieldNamespace,
+                                  final List<Schema> schemas,
+                                  final boolean appendExtraProps) {
+    final LinkedHashMap<String, List<Schema>> recordFieldSchemas = new LinkedHashMap<>();
+    final Map<String, List<String>> recordFieldDocs = new HashMap<>();
+
+    final List<Schema> mergedSchemas = schemas.stream()
+        // gather record schemas to construct a single record schema later on
+        .peek(schema -> {
+          if (schema.getType() == Schema.Type.RECORD) {
+            for (final Schema.Field field : schema.getFields()) {
+              recordFieldSchemas.putIfAbsent(field.name(), new LinkedList<>());
+              recordFieldSchemas.get(field.name()).add(field.schema());
+              if (field.doc() != null) {
+                recordFieldDocs.putIfAbsent(field.name(), new LinkedList<>());
+                recordFieldDocs.get(field.name()).add(field.doc());
+              }
+            }
+          }
+        })
+        // remove record schemas because they will be merged into one
+        .filter(schema -> schema.getType() != Schema.Type.RECORD)
+        .collect(Collectors.toList());
+
+    // create one record schema from all the record fields
+    if (!recordFieldSchemas.isEmpty()) {
+      final SchemaBuilder.RecordBuilder<Schema> builder = SchemaBuilder.record(fieldName);
+      if (fieldNamespace != null) {
+        builder.namespace(fieldNamespace);
+      }
+
+      final SchemaBuilder.FieldAssembler<Schema> assembler = builder.fields();
+
+      for (final Map.Entry<String, List<Schema>> entry : recordFieldSchemas.entrySet()) {
+        final String subfieldName = entry.getKey();
+        // ignore additional properties fields, which will be consolidated
+        // into one field at the end
+        if (AvroConstants.JSON_EXTRA_PROPS_FIELDS.contains(subfieldName)) {
+          continue;
+        }
+
+        final SchemaBuilder.FieldBuilder<Schema> subfieldBuilder = assembler.name(subfieldName);
+        final List<String> subfieldDocs = recordFieldDocs.getOrDefault(subfieldName, Collections.emptyList());
+        if (!subfieldDocs.isEmpty()) {
+          subfieldBuilder.doc(String.join("; ", subfieldDocs));
+        }
+        final List<Schema> subfieldSchemas = entry.getValue().stream()
+            .flatMap(schema -> schema.getTypes().stream()
+                // filter out null and add it later on as the first element
+                .filter(s -> !s.equals(NULL_SCHEMA)))
+            .distinct()
+            .collect(Collectors.toList());
+        // recursively merge schemas of a subfield because they may include multiple record schemas as well
+        final List<Schema> mergedSubfieldSchemas = mergeRecordSchemas(subfieldName, fieldNamespace, subfieldSchemas, appendExtraProps);
+        mergedSubfieldSchemas.add(0, NULL_SCHEMA);
+        subfieldBuilder.type(Schema.createUnion(mergedSubfieldSchemas)).withDefault(null);
+      }
+
+      if (appendExtraProps) {
+        // add back additional properties
+        assembler.name(AvroConstants.AVRO_EXTRA_PROPS_FIELD)
+            .type(AdditionalPropertyField.FIELD_SCHEMA).withDefault(null);
+      }
+      mergedSchemas.add(assembler.endRecord());
+    }
+
+    return mergedSchemas;
+  }
+
+  /**
+   * Take in a Json field definition, and generate a nullable Avro field schema. For example:
+   *
+   * <pre>
+   * {"type": ["number", { ... }]} -> ["null", "double", { ... }]
+   * </pre>
+   */
+  Schema parseJsonField(final String fieldName,
+                        @Nullable final String fieldNamespace,
+                        final JsonNode fieldDefinition,
+                        final boolean appendExtraProps,
+                        final boolean addStringToLogicalTypes) {
     // Filter out null types, which will be added back in the end.
     final List<Schema> nonNullFieldTypes = getNonNullTypes(fieldName, fieldDefinition)
         .stream()
         .flatMap(fieldType -> {
-          final Schema singleFieldSchema = getSingleFieldType(fieldName, fieldType, fieldDefinition, appendExtraProps, addStringToLogicalTypes);
+          final Schema singleFieldSchema =
+              parseSingleType(fieldName, fieldNamespace, fieldType, fieldDefinition, appendExtraProps, addStringToLogicalTypes);
           if (singleFieldSchema.isUnion()) {
             return singleFieldSchema.getTypes().stream();
           } else {

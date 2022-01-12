@@ -431,6 +431,7 @@
   "demo.message.title": "This Airbyte demo is read-only",
   "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so.",
 
+  "docs.notFoundError": "We were not able to receive docs. Please click the link above to open docs on our website",
   "errorView.startOver": "Continue using the app",
   "errorView.notFound": "Resource not found"
 }
