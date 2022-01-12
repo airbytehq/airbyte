@@ -216,6 +216,120 @@
                 ]
               }
             }
+          },
+          {
+            "title": "S3 Staging",
+            "additionalProperties": false,
+            "description": "Writes large batches of records to a file, uploads the file to S3, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
+            "required": [
+              "method",
+              "s3_bucket_name",
+              "s3_bucket_path",
+              "s3_bucket_region",
+              "credential"
+            ],
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "S3 Staging"
+              },
+              "s3_endpoint": {
+                "title": "Endpoint",
+                "type": "string",
+                "default": "",
+                "description": "This is your S3 endpoint url.(if you are working with AWS S3, just leave empty).",
+                "examples": ["http://localhost:9000"]
+              },
+              "s3_bucket_name": {
+                "title": "S3 Bucket Name",
+                "type": "string",
+                "description": "The name of the S3 bucket.",
+                "examples": ["airbyte_sync"]
+              },
+              "s3_bucket_path": {
+                "description": "Directory under the S3 bucket where data will be written.",
+                "type": "string",
+                "examples": ["data_sync/test"]
+              },
+              "s3_bucket_region": {
+                "title": "S3 Bucket Region",
+                "type": "string",
+                "default": "",
+                "description": "The region of the S3 bucket.",
+                "enum": [
+                  "",
+                  "us-east-1",
+                  "us-east-2",
+                  "us-west-1",
+                  "us-west-2",
+                  "af-south-1",
+                  "ap-east-1",
+                  "ap-south-1",
+                  "ap-northeast-1",
+                  "ap-northeast-2",
+                  "ap-northeast-3",
+                  "ap-southeast-1",
+                  "ap-southeast-2",
+                  "ca-central-1",
+                  "cn-north-1",
+                  "cn-northwest-1",
+                  "eu-central-1",
+                  "eu-north-1",
+                  "eu-south-1",
+                  "eu-west-1",
+                  "eu-west-2",
+                  "eu-west-3",
+                  "sa-east-1",
+                  "me-south-1",
+                  "us-gov-east-1",
+                  "us-gov-west-1"
+                ]
+              },
+              "keep_files_in_s3-bucket": {
+                "type": "string",
+                "description": "This upload method is supposed to temporary store records in S3 bucket. What do you want to do with data in S3 bucket when migration has finished?",
+                "title": "S3 tmp files afterward processing",
+                "default": "Delete all tmp files from S3",
+                "enum": [
+                  "Delete all tmp files from S3",
+                  "Keep all tmp files in S3"
+                ]
+              },
+              "credential": {
+                "title": "Credential",
+                "type": "object",
+                "oneOf": [
+                  {
+                    "title": "S3 key",
+                    "required": [
+                      "credential_type",
+                      "access_key_id",
+                      "secret_access_key"
+                    ],
+                    "properties": {
+                      "credential_type": {
+                        "type": "string",
+                        "const": "S3_KEY"
+                      },
+                      "access_key_id": {
+                        "type": "string",
+                        "description": "The access key id to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket.",
+                        "title": "S3 Key Id",
+                        "airbyte_secret": true,
+                        "examples": ["A012345678910EXAMPLE"]
+                      },
+                      "secret_access_key": {
+                        "type": "string",
+                        "description": "The corresponding secret to the access key id.",
+                        "title": "S3 Access Key",
+                        "airbyte_secret": true,
+                        "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"]
+                      }
+                    }
+                  }
+                ]
+              }
+            }
           }
         ]
       }

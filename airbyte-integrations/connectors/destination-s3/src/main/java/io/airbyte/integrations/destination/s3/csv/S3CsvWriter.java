@@ -156,4 +156,8 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
     return objectKey;
   }
 
+  public String[] getHeader() {
+    return csvSheetGenerator.getHeaderRow().toArray(new String[0]);
+  }
+
 }

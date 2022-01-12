@@ -8,15 +8,22 @@
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "AzureBlobStorage Destination Spec"
       type: "object"
+      supportsIncremental: true
+      supportsNormalization: false
+      supportsDBT: false
+      supported_destination_sync_modes:
+        - "overwrite"
+        - "append"
       required:
-      - "azure_blob_storage_account_name"
-      - "azure_blob_storage_account_key"
-      - "format"
+        - "azure_blob_storage_account_name"
+        - "azure_blob_storage_account_key"
+        - "format"
       additionalProperties: false
       properties:
         azure_blob_storage_endpoint_domain_name:
           title: "Endpoint Domain Name"
           type: "string"
+          order: 0
           default: "blob.core.windows.net"
           description: "This is Azure Blob Storage endpoint domain name. Leave default\
             \ value (or leave it empty if run container from command line) to use\
@@ -26,6 +33,7 @@
         azure_blob_storage_container_name:
           title: "Azure blob storage container (Bucket) Name"
           type: "string"
+          order: 1
           description: "The name of the Azure blob storage container. If not exists\
             \ - will be created automatically. May be empty, then will be created\
             \ automatically airbytecontainer+timestamp"
@@ -34,6 +42,7 @@
         azure_blob_storage_account_name:
           title: "Azure Blob Storage account name"
           type: "string"
+          order: 2
           description: "The account's name of the Azure Blob Storage."
           examples:
           - "airbyte5storage"
@@ -41,11 +50,13 @@
           description: "The Azure blob storage account key."
           airbyte_secret: true
           type: "string"
+          order: 3
           examples:
           - "Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+JhLKdj789YNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd=="
         format:
           title: "Output Format"
           type: "object"
+          order: 4
           description: "Output data format"
           oneOf:
           - title: "CSV: Comma-Separated Values"
@@ -72,12 +83,241 @@
               format_type:
                 type: "string"
                 const: "JSONL"
-    supportsIncremental: true
-    supportsNormalization: false
-    supportsDBT: false
-    supported_destination_sync_modes:
-    - "overwrite"
-    - "append"
+        loading_method:
+          type: "object"
+          title: "Loading Method"
+          description: "Loading method used to send data to Azure."
+          order: 5
+          oneOf:
+          - title: "Standard Inserts"
+            additionalProperties: false
+            description: "Uses <pre>INSERT</pre> statements to send batches of records\
+              \ to Azure."
+            required:
+            - "method"
+            properties:
+              method:
+                type: "string"
+                enum:
+                - "Standard"
+                default: "Standard"
+          - title: "GCS Staging"
+            additionalProperties: false
+            description: "Writes large batches of records to a file, uploads the file to GCS, then
+              uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production
+              workloads for better speed and scalability."
+            required:
+              - "method"
+              - "gcs_bucket_name"
+              - "gcs_bucket_path"
+              - "gcs_bucket_region"
+              - "credential"
+            properties:
+              method:
+                type: "string"
+                const: "GCS Staging"
+              gcs_bucket_name:
+                title: "GCS Bucket Name"
+                type: "string"
+                description: "The name of the GCS bucket."
+                examples:
+                  - "airbyte_sync"
+              gcs_bucket_path:
+                description: "Directory under the GCS bucket where data will be written."
+                type: "string"
+                examples:
+                  - "data_sync/test"
+              gcs_bucket_region:
+                title: "GCS Bucket Region"
+                type: "string"
+                default: ''
+                description: "The region of the GCS bucket."
+                enum:
+                  - ''
+                  - "-- North America --"
+                  - "northamerica-northeast1"
+                  - "northamerica-northeast2"
+                  - "us-central1"
+                  - "us-east1"
+                  - "us-east4"
+                  - "us-west1"
+                  - "us-west2"
+                  - "us-west3"
+                  - "us-west4"
+                  - "-- South America --"
+                  - "southamerica-east1"
+                  - "southamerica-west1"
+                  - "-- Europe --"
+                  - "europe-central2"
+                  - "europe-north1"
+                  - "europe-west1"
+                  - "europe-west2"
+                  - "europe-west3"
+                  - "europe-west4"
+                  - "europe-west6"
+                  - "-- Asia --"
+                  - "asia-east1"
+                  - "asia-east2"
+                  - "asia-northeast1"
+                  - "asia-northeast2"
+                  - "asia-northeast3"
+                  - "asia-south1"
+                  - "asia-south2"
+                  - "asia-southeast1"
+                  - "asia-southeast2"
+                  - "-- Australia --"
+                  - "australia-southeast1"
+                  - "australia-southeast2"
+                  - "-- Multi-regions --"
+                  - "asia"
+                  - "eu"
+                  - "us"
+                  - "-- Dual-regions --"
+                  - "asia1"
+                  - "eur4"
+                  - "nam4"
+              keep_files_in_gcs-bucket:
+                type: "string"
+                description: "This upload method is supposed to temporary store records in GCS
+                  bucket. What do you want to do with data in GCS bucket when migration has finished?"
+                title: "GCS tmp files afterward processing"
+                default: "Delete all tmp files from GCS"
+                enum:
+                  - "Delete all tmp files from GCS"
+                  - "Keep all tmp files in GCS"
+              credential:
+                title: "Credential"
+                type: "object"
+                oneOf:
+                  - title: "HMAC key"
+                    required:
+                      - "credential_type"
+                      - "hmac_key_access_id"
+                      - "hmac_key_secret"
+                    properties:
+                      credential_type:
+                        type: "string"
+                        const: "HMAC_KEY"
+                      hmac_key_access_id:
+                        type: "string"
+                        description: "HMAC key access ID. When linked to a service account, this
+                          ID is 61 characters long; when linked to a user account, it is 24 characters
+                          long."
+                        title: "HMAC Key Access ID"
+                        airbyte_secret: true
+                        examples:
+                          - "1234567890abcdefghij1234"
+                      hmac_key_secret:
+                        type: "string"
+                        description: "The corresponding secret for the access ID. It is a 40-character
+                          base-64 encoded string."
+                        title: "HMAC Key Secret"
+                        airbyte_secret: true
+                        examples:
+                          - "1234567890abcdefghij1234567890ABCDEFGHIJ"
+          - title: "S3 Staging"
+            additionalProperties: false
+            description: "Writes large batches of records to a file, uploads the file to S3, then
+              uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production
+              workloads for better speed and scalability."
+            required:
+              - "method"
+              - "s3_bucket_name"
+              - "s3_bucket_path"
+              - "s3_bucket_region"
+              - "credential"
+            properties:
+              method:
+                type: "string"
+                const: "S3 Staging"
+              s3_endpoint:
+                title: "Endpoint"
+                type: "string"
+                default: ''
+                description: "This is your S3 endpoint url.(if you are working with AWS S3, just
+                  leave empty)."
+                examples:
+                  - "http://localhost:9000"
+              s3_bucket_name:
+                title: "S3 Bucket Name"
+                type: "string"
+                description: "The name of the S3 bucket."
+                examples:
+                  - "airbyte_sync"
+              s3_bucket_path:
+                description: "Directory under the S3 bucket where data will be written."
+                type: "string"
+                examples:
+                  - "data_sync/test"
+              s3_bucket_region:
+                title: "S3 Bucket Region"
+                type: "string"
+                default: ''
+                description: "The region of the S3 bucket."
+                enum:
+                  - ''
+                  - "us-east-1"
+                  - "us-east-2"
+                  - "us-west-1"
+                  - "us-west-2"
+                  - "af-south-1"
+                  - "ap-east-1"
+                  - "ap-south-1"
+                  - "ap-northeast-1"
+                  - "ap-northeast-2"
+                  - "ap-northeast-3"
+                  - "ap-southeast-1"
+                  - "ap-southeast-2"
+                  - "ca-central-1"
+                  - "cn-north-1"
+                  - "cn-northwest-1"
+                  - "eu-central-1"
+                  - "eu-north-1"
+                  - "eu-south-1"
+                  - "eu-west-1"
+                  - "eu-west-2"
+                  - "eu-west-3"
+                  - "sa-east-1"
+                  - "me-south-1"
+                  - "us-gov-east-1"
+                  - "us-gov-west-1"
+              keep_files_in_s3-bucket:
+                type: "string"
+                description: "This upload method is supposed to temporary store records in S3 bucket.
+                  What do you want to do with data in S3 bucket when migration has finished?"
+                title: "S3 tmp files afterward processing"
+                default: "Delete all tmp files from S3"
+                enum:
+                  - "Delete all tmp files from S3"
+                  - "Keep all tmp files in S3"
+              credential:
+                title: "Credential"
+                type: "object"
+                oneOf:
+                  - title: "S3 key"
+                    required:
+                      - "credential_type"
+                      - "access_key_id"
+                      - "secret_access_key"
+                    properties:
+                      credential_type:
+                        type: "string"
+                        const: "S3_KEY"
+                      access_key_id:
+                        type: "string"
+                        description: "The access key id to access the S3 bucket. Airbyte requires
+                          Read and Write permissions to the given bucket."
+                        title: "S3 Key Id"
+                        airbyte_secret: true
+                        examples:
+                          - "A012345678910EXAMPLE"
+                      secret_access_key:
+                        type: "string"
+                        description: "The corresponding secret to the access key id."
+                        title: "S3 Access Key"
+                        airbyte_secret: true
+                        examples:
+                          - "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"
 - dockerImage: "airbyte/destination-amazon-sqs:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/amazon-sqs"

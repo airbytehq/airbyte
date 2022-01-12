@@ -9,8 +9,7 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.azure.storage.blob.models.BlobRange;
 import com.azure.storage.blob.specialized.AppendBlobClient;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.integrations.destination.gcs.GcsS3Helper;
+import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -23,34 +22,34 @@ import java.util.Date;
 import java.util.List;
 import java.util.function.Consumer;
 
-public abstract class AbstractGcsAzureUploader<T extends S3Writer> extends AbstractAzureUploader<S3Writer> {
+public abstract class AbstractS3AzureUploader<T extends S3Writer> extends AbstractAzureUploader<S3Writer> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGcsAzureUploader.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractS3AzureUploader.class);
 
-    private final boolean keepFilesInGcs;
+    private final boolean keepFilesInS3;
     private final int headerByteSize;
     private final DestinationSyncMode syncMode;
     protected final AppendBlobClient appendBlobClient;
-    protected final GcsDestinationConfig gcsDestinationConfig;
+    protected final S3DestinationConfig s3DestinationConfig;
 
-    AbstractGcsAzureUploader(
+    AbstractS3AzureUploader(
             DestinationSyncMode syncMode,
             T writer,
-            GcsDestinationConfig gcsDestinationConfig,
+            S3DestinationConfig s3DestinationConfig,
             AppendBlobClient appendBlobClient,
-            boolean keepFilesInGcs,
+            boolean keepFilesInS3,
             int headerByteSize) {
         super(writer);
         this.syncMode = syncMode;
-        this.keepFilesInGcs = keepFilesInGcs;
+        this.keepFilesInS3 = keepFilesInS3;
         this.headerByteSize = headerByteSize;
         this.appendBlobClient = appendBlobClient;
-        this.gcsDestinationConfig = gcsDestinationConfig;
+        this.s3DestinationConfig = s3DestinationConfig;
     }
 
     @Override
     public void postProcessAction(boolean hasFailed) throws Exception {
-        if (!keepFilesInGcs) {
+        if (!keepFilesInS3) {
             deleteGcsFiles();
         }
     }
@@ -61,11 +60,10 @@ public abstract class AbstractGcsAzureUploader<T extends S3Writer> extends Abstr
         super.uploadData(outputRecordCollector, lastStateMessage);
     }
 
-    protected void uploadDataFromBlobToStagingFile() {
-        final GcsDestinationConfig gcsDestinationConfig = this.gcsDestinationConfig;
-        final AmazonS3 s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
+    protected void uploadDataFromBlobToStagingFile() throws Exception {
+        final AmazonS3 s3Client = s3DestinationConfig.getS3Client();
 
-        final String gcsBucketName = gcsDestinationConfig.getBucketName();
+        final String gcsBucketName = s3DestinationConfig.getBucketName();
         long contentLength = s3Client.getObjectMetadata(gcsBucketName, this.writer.getOutputPath()).getContentLength();
         if (contentLength > 0) {
             LocalDateTime date = LocalDateTime.now().plusHours(25);
@@ -76,11 +74,10 @@ public abstract class AbstractGcsAzureUploader<T extends S3Writer> extends Abstr
     }
 
     private void deleteGcsFiles() {
-        final GcsDestinationConfig gcsDestinationConfig = this.gcsDestinationConfig;
-        final AmazonS3 s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
+        final AmazonS3 s3Client = s3DestinationConfig.getS3Client();
 
-        final String gcsBucketName = gcsDestinationConfig.getBucketName();
-        final String gcs_bucket_path = gcsDestinationConfig.getBucketPath();
+        final String gcsBucketName = s3DestinationConfig.getBucketName();
+        final String gcs_bucket_path = s3DestinationConfig.getBucketPath();
 
         final List<S3ObjectSummary> objects = s3Client
                 .listObjects(gcsBucketName, gcs_bucket_path)

@@ -6,5 +6,6 @@ package io.airbyte.integrations.destination.azure_blob_storage.file;
 
 public enum UploadingMethod {
   STANDARD,
-  GCS
+  GCS,
+  S3
 }

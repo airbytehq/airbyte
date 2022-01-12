@@ -22,6 +22,7 @@ import io.airbyte.integrations.destination.azure_blob_storage.file.uploader.Abst
 import io.airbyte.integrations.destination.azure_blob_storage.file.uploader.AzureUploaderFactory;
 import io.airbyte.integrations.destination.azure_blob_storage.writer.ProductionWriterFactory;
 import io.airbyte.integrations.destination.gcs.GcsDestination;
+import io.airbyte.integrations.destination.s3.S3Destination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -59,6 +60,15 @@ public class AzureBlobStorageDestination extends BaseConnector implements Destin
         final GcsDestination gcsDestination = new GcsDestination();
         final JsonNode gcsJsonNodeConfig = AzureUtils.getStagingJsonConfig(uploadingMethod, uploaderType, config);
         final AirbyteConnectionStatus airbyteConnectionStatus = gcsDestination.check(gcsJsonNodeConfig);
+        if (Status.FAILED == airbyteConnectionStatus.getStatus()) {
+          return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(airbyteConnectionStatus.getMessage());
+        }
+      }
+      // S3 upload time re-uses destination-S3 for check and other uploading (CSV format writer)
+      if (UploadingMethod.GCS.equals(uploadingMethod)) {
+        final S3Destination s3Destination = new S3Destination();
+        final JsonNode s3JsonNodeConfig = AzureUtils.getStagingJsonConfig(uploadingMethod, uploaderType, config);
+        final AirbyteConnectionStatus airbyteConnectionStatus = s3Destination.check(s3JsonNodeConfig);
         if (Status.FAILED == airbyteConnectionStatus.getStatus()) {
           return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(airbyteConnectionStatus.getMessage());
         }
