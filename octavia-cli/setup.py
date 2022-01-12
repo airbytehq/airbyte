@@ -41,7 +41,7 @@ setup(
         "Tracker": "https://github.com/airbytehq/airbyte/issues",
     },
     packages=find_packages(exclude=("unit_tests", "docs")),
-    install_requires=["click~=8.0.3", f"airbyte_api_client @ file://{os.getcwd()}/airbyte_api_client"],
+    install_requires=["click~=8.0.3", f"airbyte_api_client @ file://{os.getcwd()}/build/airbyte_api_client"],
     python_requires=">=3.8.12",
     extras_require={
         "dev": ["MyPy~=0.812", "pytest~=6.2.5", "pytest-cov", "pytest-mock", "requests-mock", "pre-commit"],

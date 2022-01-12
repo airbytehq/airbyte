@@ -10,20 +10,13 @@ airbytePython {
     moduleDirectory 'octavia_cli'
 }
 
+
 task generateApiClient(type: GenerateTask) {
-
-    def specFile = "$rootDir.absolutePath/airbyte-api/src/main/openapi/config.yaml"
-    def clientOutputDir = "$rootDir.absolutePath/octavia-cli/airbyte_api_client"
-
-    inputs.file specFile
-    outputs.dir clientOutputDir
+    inputSpec =  "$rootDir.absolutePath/airbyte-api/src/main/openapi/config.yaml"
+    outputDir = "$buildDir/airbyte_api_client"
 
     generatorName = "python"
-    inputSpec = specFile
-    outputDir = clientOutputDir
-
     packageName = "airbyte_api_client"
-
 }
 
 blackFormat.dependsOn generateApiClient
