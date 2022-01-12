@@ -76,6 +76,7 @@
     * [Google Workspace Admin Reports](integrations/sources/google-workspace-admin-reports.md)
     * [Greenhouse](integrations/sources/greenhouse.md)
     * [Harvest](integrations/sources/harvest.md)
+    * [HTTP Request (Graveyarded)](integrations/sources/http-request.md) 
     * [HubSpot](integrations/sources/hubspot.md)
     * [Instagram](integrations/sources/instagram.md)
     * [Intercom](integrations/sources/intercom.md)
