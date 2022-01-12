@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Postgres Source Spec",
     "type": "object",
-    "required": ["host", "port", "database", "schemas", "username"],
+    "required": ["host", "port", "database", "username"],
     "additionalProperties": false,
     "properties": {
       "host": {
@@ -36,8 +36,9 @@
         "items": {
           "type": "string"
         },
-        "minItems": 1,
+        "minItems": 0,
         "uniqueItems": true,
+        "default": ["public"],
         "order": 3
       },
       "username": {

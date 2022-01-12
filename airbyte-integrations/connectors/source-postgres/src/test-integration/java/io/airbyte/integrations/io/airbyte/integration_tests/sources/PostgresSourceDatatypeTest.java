@@ -14,7 +14,6 @@ import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Set;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -36,7 +35,6 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
         .put("database", container.getDatabaseName())
-        .put("schemas", List.of(SCHEMA_NAME))
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("ssl", false)

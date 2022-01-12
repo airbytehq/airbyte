@@ -55,6 +55,13 @@ public class PostgresSpecTest {
   }
 
   @Test
+  void testSchemaMissing() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config).remove("schemas");
+    assertTrue(validator.test(schema, config));
+  }
+
+  @Test
   void testWithoutReplicationMethod() {
     final JsonNode config = Jsons.deserialize(CONFIGURATION);
     ((ObjectNode) config).remove("replication_method");

@@ -130,17 +130,21 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   @Override
   public List<TableInfo<CommonField<JDBCType>>> discoverInternal(JdbcDatabase database) throws Exception {
-    List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
-    for (String schema : schemas) {
-      LOGGER.debug("Discovering schema: {}", schema);
-      internals.addAll(super.discoverInternal(database, schema));
+    if (schemas != null && !schemas.isEmpty()) {
+      // process explicitly selected (from UI) schemas
+      final List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
+      for (String schema : schemas) {
+        LOGGER.debug("Discovering schema: {}", schema);
+        internals.addAll(super.discoverInternal(database, schema));
+      }
+      for (TableInfo<CommonField<JDBCType>> info : internals) {
+        LOGGER.debug("Found table: {}", info.getName());
+      }
+      return internals;
+    } else {
+      LOGGER.info("No schemas explicitly set on UI to process, so will process all of existing schemas in DB");
+      return super.discoverInternal(database);
     }
-
-    for (TableInfo<CommonField<JDBCType>> info : internals) {
-      LOGGER.debug("Found table: {}", info.getName());
-    }
-
-    return internals;
   }
 
   @Override
