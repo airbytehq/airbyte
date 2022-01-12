@@ -10,7 +10,7 @@ from airbyte_cdk.models import SyncMode
 from requests.exceptions import HTTPError
 from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
-from source_salesforce.streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, IncrementalSalesforceStream, SalesforceStream
+from source_salesforce.streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, IncrementalSalesforceStream
 
 
 @pytest.fixture(scope="module")
@@ -71,11 +71,7 @@ def stream_api(stream_config):
 
 @pytest.fixture(scope="module")
 def stream_api_v2(stream_config):
-    describe_response_data = {
-        "fields": [
-            {"name": "LastModifiedDate", "type": "string"},
-            {"name": "BillingAddress", "type": "address"}
-        ]}
+    describe_response_data = {"fields": [{"name": "LastModifiedDate", "type": "string"}, {"name": "BillingAddress", "type": "address"}]}
     return _stream_api(stream_config, describe_response_data=describe_response_data)
 
 
@@ -116,11 +112,7 @@ def test_stream_has_state_rest_api_should_be_used(stream_config, stream_api):
     Stream `ActiveFeatureLicenseMetric` has state, in that case REST API stream will be used for it.
     """
     stream_name = "ActiveFeatureLicenseMetric"
-    state = {
-        stream_name: {
-            "SystemModstamp": "2122-08-22T05:08:29.000Z"
-        }
-    }
+    state = {stream_name: {"SystemModstamp": "2122-08-22T05:08:29.000Z"}}
     stream = _generate_stream(stream_name, stream_config, stream_api, state=state)
     assert not isinstance(stream, BulkSalesforceStream)
 
@@ -130,11 +122,7 @@ def test_stream_has_no_state_bulk_api_should_be_used(stream_config, stream_api):
     Stream `ActiveFeatureLicenseMetric` has no state, in that case BULK API stream will be used for it.
     """
     stream_name = "ActiveFeatureLicenseMetric"
-    state = {
-        "other_stream": {
-            "SystemModstamp": "2122-08-22T05:08:29.000Z"
-        }
-    }
+    state = {"other_stream": {"SystemModstamp": "2122-08-22T05:08:29.000Z"}}
     stream = _generate_stream(stream_name, stream_config, stream_api, state=state)
     assert isinstance(stream, BulkSalesforceStream)
 
