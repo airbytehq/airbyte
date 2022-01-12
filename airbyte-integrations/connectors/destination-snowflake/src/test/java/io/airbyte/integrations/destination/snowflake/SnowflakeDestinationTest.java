@@ -4,8 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -93,12 +92,7 @@ public class SnowflakeDestinationTest {
     for (AirbyteMessage m : testMessages) {
         airbyteMessageConsumer.accept(m);
     }
-
-    try {
-      airbyteMessageConsumer.close();
-    }catch (Exception e){
-      //do nothing cause it's expected behavior
-    }
+    assertThrows(RuntimeException.class, airbyteMessageConsumer::close);
 
     verify(sqlOperations, times(1)).cleanUpStage(any(),anyString());
   }
