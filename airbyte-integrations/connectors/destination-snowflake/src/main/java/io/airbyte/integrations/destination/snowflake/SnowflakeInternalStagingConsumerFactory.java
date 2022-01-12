@@ -22,6 +22,8 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
+
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -178,7 +180,7 @@ public class SnowflakeInternalStagingConsumerFactory {
                   path);
           try {
             sqlOperations.copyIntoTmpTableFromStage(database, path, srcTableName, schemaName);
-          } catch (Exception e){
+          } catch (SQLException e){
             sqlOperations.cleanUpStage(database, path);
             LOGGER.info("Cleaning stage path {}", path);
             throw new RuntimeException("Failed to upload data from stage "+ path, e);
