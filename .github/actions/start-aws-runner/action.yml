@@ -8,7 +8,8 @@ inputs:
   github-token:
     required: true
   ec2-image-id:
-    default: "ami-04bd6e81239f4f3fb"
+    # github-self-hosted-runner-ubuntu-20-100g-disk
+    default: "ami-0ccd67e0abd945eec"
     required: true
   ec2-instance-type:
     default: "c5.2xlarge"
