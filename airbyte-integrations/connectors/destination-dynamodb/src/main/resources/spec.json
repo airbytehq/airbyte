@@ -24,7 +24,7 @@
         "examples": ["http://localhost:9000"]
       },
       "dynamodb_table_name_prefix": {
-        "title": "DynamoDB table name prefix",
+        "title": "Table name prefix",
         "type": "string",
         "description": "The prefix to use when naming DynamoDB tables.",
         "examples": ["airbyte_sync"]
