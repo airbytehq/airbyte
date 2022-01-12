@@ -6,7 +6,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-
+import json
 
 # Basic full refresh stream
 class XolaStream(HttpStream, ABC):
@@ -84,6 +84,14 @@ class Orders(XolaStream):
         seller id is returned as a form of parameters
         """
         return {'seller': self.seller_id}
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        TODO: Override this method to define how a response is parsed.
+        :return an iterable containing each record in the response
+        """
+        resp_json = response.json()
+        return resp_json["data"]
 
 
 # Basic incremental stream
