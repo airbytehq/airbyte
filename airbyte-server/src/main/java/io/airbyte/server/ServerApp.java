@@ -244,7 +244,8 @@ public class ServerApp implements ServerRunnable {
   }
 
   /**
-   * Copy paste from {@link io.airbyte.scheduler.app.SchedulerApp} which will be removed in a near future
+   * Copy paste from {@link io.airbyte.scheduler.app.SchedulerApp} which will be removed in a near
+   * future
    *
    * @param jobPersistence
    * @param jobNotifier
