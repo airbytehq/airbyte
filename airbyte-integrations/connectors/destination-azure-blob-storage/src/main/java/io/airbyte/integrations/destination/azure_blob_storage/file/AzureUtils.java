@@ -103,9 +103,9 @@ public class AzureUtils {
     final JsonNode loadingMethod = config.get(AzureConsts.LOADING_METHOD);
     final String flattening = config.get(AzureConsts.FORMAT).get(AzureConsts.FORMAT_FLATTENING).asText();
     final JsonNode gcsJsonNode = Jsons.jsonNode(ImmutableMap.builder()
-            .put(AzureConsts.GCS_BUCKET_NAME, loadingMethod.get(AzureConsts.GCS_BUCKET_NAME))
-            .put(AzureConsts.GCS_BUCKET_PATH, loadingMethod.get(AzureConsts.GCS_BUCKET_PATH))
-            .put(AzureConsts.GCS_BUCKET_REGION, loadingMethod.get(AzureConsts.GCS_BUCKET_REGION))
+            .put(AzureConsts.GCS_BUCKET_NAME, loadingMethod.get(AzureConsts.BUCKET_NAME))
+            .put(AzureConsts.GCS_BUCKET_PATH, loadingMethod.get(AzureConsts.BUCKET_PATH))
+            .put(AzureConsts.GCS_BUCKET_REGION, loadingMethod.get(AzureConsts.BUCKET_REGION))
             .put(AzureConsts.CREDENTIAL, loadingMethod.get(AzureConsts.CREDENTIAL))
             .put(AzureConsts.FORMAT, Jsons.deserialize("{\n"
                     + "  \"format_type\": \"CSV\",\n"
@@ -120,9 +120,9 @@ public class AzureUtils {
   private static JsonNode getGcsJsonJsonNodeConfig(final JsonNode config) {
     final JsonNode loadingMethod = config.get(AzureConsts.LOADING_METHOD);
     final JsonNode gcsJsonNode = Jsons.jsonNode(ImmutableMap.builder()
-            .put(AzureConsts.GCS_BUCKET_NAME, loadingMethod.get(AzureConsts.GCS_BUCKET_NAME))
-            .put(AzureConsts.GCS_BUCKET_PATH, loadingMethod.get(AzureConsts.GCS_BUCKET_PATH))
-            .put(AzureConsts.GCS_BUCKET_REGION, loadingMethod.get(AzureConsts.GCS_BUCKET_REGION))
+            .put(AzureConsts.GCS_BUCKET_NAME, loadingMethod.get(AzureConsts.BUCKET_NAME))
+            .put(AzureConsts.GCS_BUCKET_PATH, loadingMethod.get(AzureConsts.BUCKET_PATH))
+            .put(AzureConsts.GCS_BUCKET_REGION, loadingMethod.get(AzureConsts.BUCKET_REGION))
             .put(AzureConsts.CREDENTIAL, loadingMethod.get(AzureConsts.CREDENTIAL))
             .put(AzureConsts.FORMAT, Jsons.deserialize("{\n"
                     + "  \"format_type\": \"JSONL\",\n"
@@ -140,9 +140,9 @@ public class AzureUtils {
     final JsonNode s3JsonNode = Jsons.jsonNode(ImmutableMap.builder()
             .put(AzureConsts.S3_ENDPOINT,
                     loadingMethod.has(AzureConsts.S3_ENDPOINT) ? loadingMethod.get(AzureConsts.S3_ENDPOINT) : "")
-            .put(AzureConsts.S3_BUCKET_NAME, loadingMethod.get(AzureConsts.S3_BUCKET_NAME))
-            .put(AzureConsts.S3_BUCKET_PATH, loadingMethod.get(AzureConsts.S3_BUCKET_PATH))
-            .put(AzureConsts.S3_BUCKET_REGION, loadingMethod.get(AzureConsts.S3_BUCKET_REGION))
+            .put(AzureConsts.S3_BUCKET_NAME, loadingMethod.get(AzureConsts.BUCKET_NAME))
+            .put(AzureConsts.S3_BUCKET_PATH, loadingMethod.get(AzureConsts.BUCKET_PATH))
+            .put(AzureConsts.S3_BUCKET_REGION, loadingMethod.get(AzureConsts.BUCKET_REGION))
             .put(AzureConsts.S3_ACCESS_KEY_ID, loadingMethod.get(AzureConsts.CREDENTIAL).get(AzureConsts.S3_ACCESS_KEY_ID))
             .put(AzureConsts.S3_SECRET_ACCESS_KEY, loadingMethod.get(AzureConsts.CREDENTIAL).get(AzureConsts.S3_SECRET_ACCESS_KEY))
             .put(AzureConsts.FORMAT, Jsons.deserialize("{\n"
@@ -160,9 +160,9 @@ public class AzureUtils {
     final JsonNode s3JsonNode = Jsons.jsonNode(ImmutableMap.builder()
             .put(AzureConsts.S3_ENDPOINT,
                     loadingMethod.has(AzureConsts.S3_ENDPOINT) ? loadingMethod.get(AzureConsts.S3_ENDPOINT) : "")
-            .put(AzureConsts.S3_BUCKET_NAME, loadingMethod.get(AzureConsts.S3_BUCKET_NAME))
-            .put(AzureConsts.S3_BUCKET_PATH, loadingMethod.get(AzureConsts.S3_BUCKET_PATH))
-            .put(AzureConsts.S3_BUCKET_REGION, loadingMethod.get(AzureConsts.S3_BUCKET_REGION))
+            .put(AzureConsts.S3_BUCKET_NAME, loadingMethod.get(AzureConsts.BUCKET_NAME))
+            .put(AzureConsts.S3_BUCKET_PATH, loadingMethod.get(AzureConsts.BUCKET_PATH))
+            .put(AzureConsts.S3_BUCKET_REGION, loadingMethod.get(AzureConsts.BUCKET_REGION))
             .put(AzureConsts.S3_ACCESS_KEY_ID, loadingMethod.get(AzureConsts.CREDENTIAL).get(AzureConsts.S3_ACCESS_KEY_ID))
             .put(AzureConsts.S3_SECRET_ACCESS_KEY, loadingMethod.get(AzureConsts.CREDENTIAL).get(AzureConsts.S3_SECRET_ACCESS_KEY))
             .put(AzureConsts.FORMAT, Jsons.deserialize("{\n"

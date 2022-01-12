@@ -12,6 +12,10 @@ public class AzureConsts {
   public static final String METHOD = "method";
   public static final String CREDENTIAL = "credential";
 
+  public static final String BUCKET_NAME = "bucket_name";
+  public static final String BUCKET_PATH = "bucket_path";
+  public static final String BUCKET_REGION = "bucket_region";
+
   public static final String GCS_STAGING = "GCS Staging";
   public static final String GCS_BUCKET_NAME = "gcs_bucket_name";
   public static final String GCS_BUCKET_PATH = "gcs_bucket_path";

@@ -65,7 +65,7 @@ public class AzureBlobStorageDestination extends BaseConnector implements Destin
         }
       }
       // S3 upload time re-uses destination-S3 for check and other uploading (CSV format writer)
-      if (UploadingMethod.GCS.equals(uploadingMethod)) {
+      if (UploadingMethod.S3.equals(uploadingMethod)) {
         final S3Destination s3Destination = new S3Destination();
         final JsonNode s3JsonNodeConfig = AzureUtils.getStagingJsonConfig(uploadingMethod, uploaderType, config);
         final AirbyteConnectionStatus airbyteConnectionStatus = s3Destination.check(s3JsonNodeConfig);

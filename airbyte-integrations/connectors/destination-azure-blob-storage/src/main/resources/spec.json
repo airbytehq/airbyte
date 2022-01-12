@@ -109,9 +109,9 @@
             "description": "Writes large batches of records to a file, uploads the file to GCS, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
             "required": [
               "method",
-              "gcs_bucket_name",
-              "gcs_bucket_path",
-              "gcs_bucket_region",
+              "bucket_name",
+              "bucket_path",
+              "bucket_region",
               "credential"
             ],
             "properties": {
@@ -119,18 +119,18 @@
                 "type": "string",
                 "const": "GCS Staging"
               },
-              "gcs_bucket_name": {
+              "bucket_name": {
                 "title": "GCS Bucket Name",
                 "type": "string",
                 "description": "The name of the GCS bucket.",
                 "examples": ["airbyte_sync"]
               },
-              "gcs_bucket_path": {
+              "bucket_path": {
                 "description": "Directory under the GCS bucket where data will be written.",
                 "type": "string",
                 "examples": ["data_sync/test"]
               },
-              "gcs_bucket_region": {
+              "bucket_region": {
                 "title": "GCS Bucket Region",
                 "type": "string",
                 "default": "",
@@ -233,9 +233,9 @@
             "description": "Writes large batches of records to a file, uploads the file to S3, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
             "required": [
               "method",
-              "s3_bucket_name",
-              "s3_bucket_path",
-              "s3_bucket_region",
+              "bucket_name",
+              "bucket_path",
+              "bucket_region",
               "credential"
             ],
             "properties": {
@@ -250,18 +250,18 @@
                 "description": "This is your S3 endpoint url.(if you are working with AWS S3, just leave empty).",
                 "examples": ["http://localhost:9000"]
               },
-              "s3_bucket_name": {
+              "bucket_name": {
                 "title": "S3 Bucket Name",
                 "type": "string",
                 "description": "The name of the S3 bucket.",
                 "examples": ["airbyte_sync"]
               },
-              "s3_bucket_path": {
+              "bucket_path": {
                 "description": "Directory under the S3 bucket where data will be written.",
                 "type": "string",
                 "examples": ["data_sync/test"]
               },
-              "s3_bucket_region": {
+              "bucket_region": {
                 "title": "S3 Bucket Region",
                 "type": "string",
                 "default": "",
