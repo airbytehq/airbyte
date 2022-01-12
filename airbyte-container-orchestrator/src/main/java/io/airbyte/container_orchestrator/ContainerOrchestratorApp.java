@@ -52,18 +52,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ContainerOrchestratorApp {
 
-  // todo: publish logs itself instead of reporting via stdout to the parent
-  // todo: use document store to publish states as part of the job orchestrator
-
   private static final MdcScope.Builder LOG_MDC_BUILDER = new MdcScope.Builder()
       .setLogPrefix("container-orchestrator")
       .setPrefixColor(LoggingHelper.Color.CYAN_BACKGROUND);
-  // todo: why doesn't highlighting work with non-simple logging?
 
   public static void main(final String[] args) throws Exception {
     WorkerHeartbeatServer heartbeatServer = null;
     DocumentStoreClient documentStoreClient = null;
     KubePodInfo kubePodInfo = null;
+    AsyncStateManager asyncStateManager = null;
 
     try {
       // wait for config files to be copied
@@ -101,11 +98,10 @@ public class ContainerOrchestratorApp {
           jobRoot);
 
       try (final var mdcScope = LOG_MDC_BUILDER.build()) {
-        documentStoreClient = StateClients.create(configs.getStateStorageCloudConfigs(), WorkerApp.STATE_STORAGE_PREFIX); // todo: log on writing
-                                                                                                                          // statuses
+        documentStoreClient = StateClients.create(configs.getStateStorageCloudConfigs(), WorkerApp.STATE_STORAGE_PREFIX);
+        asyncStateManager = new DefaultAsyncStateManager(documentStoreClient);
 
-        // todo: use a helper to get the path
-        documentStoreClient.write(kubePodInfo.namespace() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.INITIALIZING.name(), "");
+        asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.INITIALIZING);
 
         heartbeatServer = new WorkerHeartbeatServer(WorkerApp.KUBE_HEARTBEAT_PORT);
         heartbeatServer.startBackground();
@@ -115,13 +111,13 @@ public class ContainerOrchestratorApp {
         final JobOrchestrator<?> jobOrchestrator = getJobOrchestrator(configs, workerConfigs, processFactory, application);
 
         log.info("Starting {} orchestrator...", jobOrchestrator.getOrchestratorName());
-        documentStoreClient.write(kubePodInfo.namespace() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.RUNNING.name(), "");
+        asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.RUNNING);
         final Optional<String> output = jobOrchestrator.runJob();
-        documentStoreClient.write(kubePodInfo.namespace() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.SUCCEEDED.name(), output.orElse(""));
+        asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.SUCCEEDED, output.orElse(""));
         log.info("{} orchestrator complete!", jobOrchestrator.getOrchestratorName());
       } catch (Throwable t) {
-        if (documentStoreClient != null && kubePodInfo != null) {
-          documentStoreClient.write(kubePodInfo.namespace() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.FAILED.name(), "");
+        if (asyncStateManager != null && kubePodInfo != null) {
+          asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.FAILED);
         }
 
         log.error("Orchestrator failed", t);
@@ -138,8 +134,8 @@ public class ContainerOrchestratorApp {
       // todo: catch throwing pre-log configuration in a better way
     } catch (Throwable t) {
       // not catchable by cloud logging
-      if (documentStoreClient != null && kubePodInfo != null) {
-        documentStoreClient.write("/" + kubePodInfo.namespace() + "/" + kubePodInfo.name() + "/" + AsyncKubePodStatus.FAILED, "");
+      if (asyncStateManager != null && kubePodInfo != null) {
+        asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.FAILED);
       }
 
       log.error("Orchestrator failed", t);
@@ -160,19 +156,17 @@ public class ContainerOrchestratorApp {
                                                        final WorkerConfigs workerConfigs,
                                                        final ProcessFactory processFactory,
                                                        final String application) {
-    if (application.equals(ReplicationLauncherWorker.REPLICATION)) {
-      return new ReplicationJobOrchestrator(configs, workerConfigs, processFactory);
-    } else if (application.equals(NormalizationLauncherWorker.NORMALIZATION)) {
-      return new NormalizationJobOrchestrator(configs, workerConfigs, processFactory);
-    } else if (application.equals(DbtLauncherWorker.DBT)) {
-      return new DbtJobOrchestrator(configs, workerConfigs, processFactory);
-    } else if (application.equals(AsyncOrchestratorPodProcess.NO_OP)) {
-      return new NoOpOrchestrator();
-    } else {
-      log.error("Runner failed", new IllegalStateException("Unexpected value: " + application));
-      System.exit(1);
-      throw new IllegalStateException(); // should never be reached, but necessary to compile
-    }
+
+    return switch (application) {
+      case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(configs, workerConfigs, processFactory);
+      case NormalizationLauncherWorker.NORMALIZATION -> new NormalizationJobOrchestrator(configs, workerConfigs, processFactory);
+      case DbtLauncherWorker.DBT -> new DbtJobOrchestrator(configs, workerConfigs, processFactory);
+      case AsyncOrchestratorPodProcess.NO_OP -> new NoOpOrchestrator();
+      default -> {
+        log.error("Runner failed", new IllegalStateException("Unexpected value: " + application));
+        System.exit(1);
+      }
+    };
   }
 
   /**
