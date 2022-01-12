@@ -43,13 +43,15 @@ const flatten = (
 const Section = styled.div<{ error?: boolean }>`
   border: 1px solid
     ${(props) => (props.error ? props.theme.dangerColor : "none")};
+  background: ${({ theme }) => theme.greyColor0};
+  border-radius: 8px;
 `;
 
 const RowsContainer = styled.div<{ depth?: number }>`
-  background: ${({ theme }) => theme.whiteColor5};
-  border-radius: 4px;
+  background: ${({ theme }) => theme.whiteColor};
+  border-radius: 8px;
   margin: 0
-    ${({ depth = 0 }) => `${depth * 38}px ${depth * 5}px ${depth * 38}px`};
+    ${({ depth = 0 }) => `${depth * 10}px ${depth * 5}px ${depth * 10}px`};
 `;
 
 type TreeViewRowProps = {

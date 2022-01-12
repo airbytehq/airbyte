@@ -5,7 +5,7 @@ import { Row } from "components/SimpleTableComponents";
 const RowWrapper = styled.div<{ depth?: number; noBorder?: boolean }>`
   height: 40px;
   border-bottom: ${({ theme, noBorder }) =>
-    noBorder ? "none" : `1px solid ${theme.greyColor20}`};
+    noBorder ? "none" : `1px solid ${theme.greyColor0}`};
 
   &:last-child {
     border: ${({ depth = 0 }) => depth > 0 && "none"};
@@ -15,6 +15,7 @@ const RowWrapper = styled.div<{ depth?: number; noBorder?: boolean }>`
 const RowContent = styled(Row)`
   height: 100%;
   white-space: nowrap;
+  font-size: 12px;
 `;
 
 const TreeRowWrapper: React.FC<{ depth?: number; noBorder?: boolean }> = ({

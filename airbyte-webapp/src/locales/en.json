@@ -92,6 +92,8 @@
   "form.prefix.placeholder": "prefix-",
   "form.nameSearch": "Search stream name",
   "form.namespace": "Namespace",
+  "form.streamName": "Stream name",
+  "form.sourceAndDestination": "Source | Destination",
   "form.noNamespace": "No namespace",
   "form.sourceConnector": "Source connector",
   "form.destinationConnector": "Destination connector",

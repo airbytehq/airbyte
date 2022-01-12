@@ -4,30 +4,33 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 const Name = styled.div<{ depth?: number }>`
-  padding-left: ${({ depth }) => (depth ? depth * 59 : 0)}px;
+  padding-left: ${({ depth }) => (depth ? depth * 30 : 0)}px;
+`;
+
+const HeaderCell = styled(Cell)`
+  font-size: 10px;
+  line-height: 13px;
 `;
 
 const FieldHeaderInner: React.FC<{ depth?: number }> = (props) => (
   <>
-    <Cell lighter flex={1.5}>
+    <HeaderCell lighter flex={1.5}>
       <Name depth={props.depth}>
         <FormattedMessage id="form.field.name" />
       </Name>
-    </Cell>
-    <Cell lighter />
-    <Cell lighter>
+    </HeaderCell>
+    <HeaderCell lighter>
       <FormattedMessage id="form.field.dataType" />
-    </Cell>
-    <Cell lighter>
-      <FormattedMessage id="form.field.destinationName" />
-    </Cell>
-    <Cell lighter flex={1.5} />
-    <Cell lighter>
-      <FormattedMessage id="form.field.primaryKey" />
-    </Cell>
-    <Cell lighter>
+    </HeaderCell>
+    <HeaderCell lighter>
       <FormattedMessage id="form.field.cursorField" />
-    </Cell>
+    </HeaderCell>
+    <HeaderCell lighter>
+      <FormattedMessage id="form.field.primaryKey" />
+    </HeaderCell>
+    <HeaderCell lighter flex={1.5}>
+      <FormattedMessage id="form.field.destinationName" />
+    </HeaderCell>
   </>
 );
 

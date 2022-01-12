@@ -15,27 +15,40 @@ import { SyncCatalogFilters } from "./SyncCatalogFilters";
 
 const TreeViewContainer = styled.div`
   width: 100%;
-  background: ${({ theme }) => theme.greyColor0};
   margin-bottom: 29px;
   border-radius: 4px;
   max-height: 600px;
   overflow-y: auto;
   -webkit-overlay: true;
+  // Find better way (for checkbox)
+  margin-left: -43px;
+  padding-left: 43px;
+  width: calc(100% + 43px);
 `;
 
 const SchemaHeader = styled(Header)`
-  min-height: 28px;
-  margin-bottom: 5px;
+  min-height: 33px;
 `;
 
-const SelectAll = styled.div`
-  margin: 0 9px 0 30px;
+const SubtitleCell = styled(Cell).attrs(() => ({ lighter: true }))`
+  font-size: 10px;
+  line-height: 12px;
+  border-top: 1px solid ${({ theme }) => theme.greyColor0};
+  padding-top: 5px;
 `;
 
-const NamespaceTitleCell = styled(Cell).attrs(() => ({ lighter: true }))`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
+const CheckboxCell = styled(Cell)`
+  max-width: 43px;
+  text-align: center;
+  margin-left: -43px;
+`;
+
+const StreamsContent = styled.div`
+  margin-left: 43px;
+`;
+
+const ClearSubtitleCell = styled(SubtitleCell)`
+  border-top: none;
 `;
 
 const FiltersContent = styled.div`
@@ -167,39 +180,61 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
           label={<FormattedMessage id="form.notSelected" />}
         />
       </FiltersContent>
-      <SchemaHeader>
-        <NamespaceTitleCell flex={1.5}>
-          <SelectAll>
+      <StreamsContent>
+        <SchemaHeader>
+          <CheckboxCell>
             <CheckBox onChange={onCheckAll} checked={hasSelectedItem} />
-          </SelectAll>
-          <FormattedMessage id="form.sourceStreamName" />
-        </NamespaceTitleCell>
-        <Cell lighter>
-          <FormattedMessage id="form.sourceNamespace" />
-        </Cell>
-        <Cell lighter>
-          <FormattedMessage id="form.destinationNamespace" />
-        </Cell>
-        <Cell lighter>
-          <FormattedMessage id="form.destinationStreamName" />
-        </Cell>
-        <Cell lighter flex={1.5}>
-          <FormattedMessage id="form.syncMode" />
-        </Cell>
-        <Cell lighter>
-          <FormattedMessage id="form.primaryKey" />
-        </Cell>
-        <Cell lighter>
-          <FormattedMessage id="form.cursorField" />
-        </Cell>
-      </SchemaHeader>
-      <TreeViewContainer>
-        <CatalogTree
-          streams={filteredStreams}
-          onChangeStream={onChangeStream}
-          destinationSupportedSyncModes={destinationSupportedSyncModes}
-        />
-      </TreeViewContainer>
+          </CheckboxCell>
+          <Cell lighter flex={0.5}>
+            <FormattedMessage id="sources.sync" />
+          </Cell>
+          <Cell lighter>
+            <FormattedMessage id="sources.source" />
+          </Cell>
+          <Cell />
+          <Cell lighter flex={1.5}>
+            <FormattedMessage id="form.syncMode" />
+          </Cell>
+          <Cell lighter>
+            <FormattedMessage id="form.cursorField" />
+          </Cell>
+          <Cell lighter>
+            <FormattedMessage id="form.primaryKey" />
+          </Cell>
+          <Cell lighter>
+            <FormattedMessage id="connector.destination" />
+          </Cell>
+          <Cell />
+        </SchemaHeader>
+        <SchemaHeader>
+          <CheckboxCell />
+          <ClearSubtitleCell flex={0.5} />
+          <SubtitleCell>
+            <FormattedMessage id="form.namespace" />
+          </SubtitleCell>
+          <SubtitleCell>
+            <FormattedMessage id="form.streamName" />
+          </SubtitleCell>
+          <SubtitleCell flex={1.5}>
+            <FormattedMessage id="form.sourceAndDestination" />
+          </SubtitleCell>
+          <ClearSubtitleCell />
+          <ClearSubtitleCell />
+          <SubtitleCell>
+            <FormattedMessage id="form.namespace" />
+          </SubtitleCell>
+          <SubtitleCell>
+            <FormattedMessage id="form.streamName" />
+          </SubtitleCell>
+        </SchemaHeader>
+        <TreeViewContainer>
+          <CatalogTree
+            streams={filteredStreams}
+            onChangeStream={onChangeStream}
+            destinationSupportedSyncModes={destinationSupportedSyncModes}
+          />
+        </TreeViewContainer>
+      </StreamsContent>
     </>
   );
 };

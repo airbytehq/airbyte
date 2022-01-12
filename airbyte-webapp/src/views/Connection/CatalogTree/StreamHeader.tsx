@@ -3,8 +3,8 @@ import { FormattedMessage } from "react-intl";
 
 import styled from "styled-components";
 
-import { DropDownRow } from "components";
-import { MainInfoCell } from "./components/MainInfoCell";
+import { CheckBox, DropDownRow } from "components";
+import { Arrow as ArrowBlock } from "./components/Arrow";
 import { Cell } from "components/SimpleTableComponents";
 import { SyncSettingsCell } from "./components/SyncSettingsCell";
 import {
@@ -28,6 +28,17 @@ const Arrow = styled(FontAwesomeIcon)<{ isOpen?: boolean }>`
 
 const EmptyField = styled.span`
   color: ${({ theme }) => theme.greyColor40};
+`;
+
+const HeaderCell = styled(Cell)`
+  font-size: 10px;
+  line-height: 13px;
+`;
+
+const CheckboxCell = styled(HeaderCell)`
+  max-width: 43px;
+  text-align: center;
+  margin-left: -43px;
 `;
 
 type SyncSchema = {
@@ -96,33 +107,34 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
 
   return (
     <>
-      <MainInfoCell
-        label={stream.stream.name}
-        onCheckBoxClick={onSelectStream}
-        onExpand={onExpand}
-        isItemChecked={stream.config.selected}
-        isItemHasChildren={hasFields}
-        isItemOpen={isRowExpanded}
-      />
-      <Cell ellipsis title={stream.stream.namespace || ""}>
+      <CheckboxCell>
+        <CheckBox checked={stream.config.selected} onChange={onSelectStream} />
+      </CheckboxCell>
+      <HeaderCell flex={0.5}>
+        {hasFields ? (
+          <ArrowBlock
+            onExpand={onExpand}
+            isItemHasChildren={hasFields}
+            isItemOpen={isRowExpanded}
+          />
+        ) : null}
+      </HeaderCell>
+      <HeaderCell ellipsis title={stream.stream.namespace || ""}>
         {stream.stream.namespace || (
           <EmptyField>
             <FormattedMessage id="form.noNamespace" />
           </EmptyField>
         )}
-      </Cell>
-      <Cell ellipsis light title={destNamespace}>
-        {destNamespace}
-      </Cell>
-      <Cell ellipsis title={destName}>
-        {destName}
-      </Cell>
+      </HeaderCell>
+      <HeaderCell ellipsis title={stream.stream.name || ""}>
+        {stream.stream.name}
+      </HeaderCell>
       <SyncSettingsCell
         value={syncSchema}
         options={availableSyncModes}
         onChange={onSelectSyncMode}
       />
-      <Cell ellipsis>
+      <HeaderCell ellipsis>
         {pkType === "required" ? (
           <Popout
             options={dropdownFields}
@@ -148,8 +160,8 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
         ) : pkType === "sourceDefined" ? (
           "<sourceDefined>"
         ) : null}
-      </Cell>
-      <Cell>
+      </HeaderCell>
+      <HeaderCell>
         {cursorType === "required" ? (
           <Popout
             options={dropdownFields}
@@ -169,7 +181,13 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
         ) : cursorType === "sourceDefined" ? (
           "<sourceDefined>"
         ) : null}
-      </Cell>
+      </HeaderCell>
+      <HeaderCell ellipsis title={destNamespace}>
+        {destNamespace}
+      </HeaderCell>
+      <HeaderCell ellipsis title={destName}>
+        {destName}
+      </HeaderCell>
     </>
   );
 };

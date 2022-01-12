@@ -21,19 +21,19 @@ interface FieldRowProps {
 }
 
 const FirstCell = styled(Cell)<{ depth?: number }>`
-  margin-left: ${({ depth }) => (depth ? depth * -38 : 0)}px;
+  margin-left: ${({ depth }) => (depth ? depth * -10 : 0)}px;
 `;
 
 const NameContainer = styled.span<{ depth?: number }>`
-  padding-left: ${({ depth }) => (depth ? depth * 59 : 0)}px;
+  padding-left: ${({ depth }) => (depth ? depth * 30 : 0)}px;
 `;
 
 const LastCell = styled(Cell)<{ depth?: number }>`
-  margin-right: ${({ depth }) => (depth ? depth * -38 : 0)}px;
+  margin-right: ${({ depth }) => (depth ? depth * -10 : 0)}px;
 `;
 
 const RadiobuttonContainer = styled.div<{ depth?: number }>`
-  padding-right: ${({ depth }) => (depth ? depth * 38 : 0)}px;
+  padding-right: ${({ depth }) => (depth ? depth * 10 : 0)}px;
 `;
 
 const FieldRowInner: React.FC<FieldRowProps> = ({
@@ -49,21 +49,8 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
           {props.name}
         </NameContainer>
       </FirstCell>
-      <Cell />
       <DataTypeCell nullable={props.nullable}>{props.type}</DataTypeCell>
-      <Cell ellipsis title={props.destinationName}>
-        {props.destinationName}
-      </Cell>
-      <Cell flex={1.5} />
       <Cell>
-        {props.isPrimaryKeyEnabled && (
-          <CheckBox
-            checked={props.isPrimaryKey}
-            onChange={() => onPrimaryKeyChange(path)}
-          />
-        )}
-      </Cell>
-      <LastCell depth={props.depth}>
         {props.isCursorEnabled && (
           <RadiobuttonContainer depth={props.depth}>
             <RadioButton
@@ -72,6 +59,22 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
             />
           </RadiobuttonContainer>
         )}
+      </Cell>
+      <Cell>
+        {props.isPrimaryKeyEnabled && (
+          <CheckBox
+            checked={props.isPrimaryKey}
+            onChange={() => onPrimaryKeyChange(path)}
+          />
+        )}
+      </Cell>
+      <LastCell
+        depth={props.depth}
+        ellipsis
+        title={props.destinationName}
+        flex={1.5}
+      >
+        {props.destinationName}
       </LastCell>
     </>
   );
