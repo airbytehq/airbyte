@@ -45,16 +45,13 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
   public static DestinationType getTypeFromConfig(final JsonNode config) {
     return determineUploadMode(config);
   }
+
   public static Map<DestinationType, Destination> getTypeToDestination() {
-    final RedshiftInsertDestination insertDestinationWithVarcharTmp = new RedshiftInsertDestination(RedshiftDataTmpTableMode.VARCHAR);
-    final RedshiftInsertDestination insertDestinationWithSuperTmp = new RedshiftInsertDestination(RedshiftDataTmpTableMode.SUPER);
-    final RedshiftCopyS3Destination copyS3DestinationWithVarcharTmp = new RedshiftCopyS3Destination(RedshiftDataTmpTableMode.VARCHAR);
-    final RedshiftCopyS3Destination copyS3DestinationWithSuperTmp = new RedshiftCopyS3Destination(RedshiftDataTmpTableMode.SUPER);
     return Map.of(
-        DestinationType.INSERT_WITH_VARCHAR, insertDestinationWithVarcharTmp,
-        DestinationType.INSERT_WITH_SUPER_TMP_TYPE, insertDestinationWithSuperTmp,
-        DestinationType.COPY_S3_WITH_VARCHAR, copyS3DestinationWithVarcharTmp,
-        DestinationType.COPY_S3_WITH_SUPER_TMP_TYPE, copyS3DestinationWithSuperTmp);
+        DestinationType.INSERT_WITH_VARCHAR, new RedshiftInsertDestination(RedshiftDataTmpTableMode.VARCHAR),
+        DestinationType.INSERT_WITH_SUPER_TMP_TYPE, new RedshiftInsertDestination(RedshiftDataTmpTableMode.SUPER),
+        DestinationType.COPY_S3_WITH_VARCHAR, new RedshiftCopyS3Destination(RedshiftDataTmpTableMode.VARCHAR),
+        DestinationType.COPY_S3_WITH_SUPER_TMP_TYPE, new RedshiftCopyS3Destination(RedshiftDataTmpTableMode.SUPER));
   }
 
   public static DestinationType determineUploadMode(final JsonNode config) {

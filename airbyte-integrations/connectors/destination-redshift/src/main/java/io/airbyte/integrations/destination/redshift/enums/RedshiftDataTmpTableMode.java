@@ -11,26 +11,28 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 public enum RedshiftDataTmpTableMode {
   SUPER {
     @Override
-    public String getTmpTableSqlStatement(String sqlTmpTableQuery, String schemaName, String tableName) {
-      return String.format(
-          sqlTmpTableQuery,
-          schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID,
-          JavaBaseConstants.COLUMN_NAME_DATA,
-          "SUPER",
-          JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+    public String getMode() {
+      return "SUPER";
     }
   },
   VARCHAR {
     @Override
-    public String getTmpTableSqlStatement(String sqlTmpTableQuery, String schemaName, String tableName) {
-      return String.format(
-          sqlTmpTableQuery,
-          schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID,
-          JavaBaseConstants.COLUMN_NAME_DATA,
-          "VARCHAR(MAX)",
-          JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+    public String getMode() {
+      return "VARCHAR(MAX)";
     }
   };
 
-  public abstract String getTmpTableSqlStatement(String sqlTmpTableQuery, String schemaName, String tableName);
+  public abstract String getMode();
+
+  public String getTmpTableSqlStatement(String schemaName, String tableName) {
+    return String.format("""
+            CREATE TABLE IF NOT EXISTS %s.%s (
+            %s VARCHAR PRIMARY KEY,
+            %s %s,
+            %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)
+            """, schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID,
+        JavaBaseConstants.COLUMN_NAME_DATA,
+        getMode(),
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+  }
 }
