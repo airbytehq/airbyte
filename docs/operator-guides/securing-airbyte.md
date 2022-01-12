@@ -11,7 +11,7 @@ To secure access to Airbyte you have three options:
     * GCP: use the [Identidy-Aware proxy](https://cloud.google.com/iap) service
     * AWS: use the [AWS Systems Manager Session Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html) service
 
-Non exhaustive online resources list to set up auth on your reverse proxy:
+**Non exhaustive** online resources list to set up auth on your reverse proxy:
 * [Configure HTTP Basic Auth on NGINX for Airbyte](https://shadabshaukat.medium.com/deploy-and-secure-airbyte-with-nginx-reverse-proxy-basic-authentication-lets-encrypt-ssl-72bee223a4d9)
 * [Kubernetes: Basic auth on a Nginx ingress controller](https://kubernetes.github.io/ingress-nginx/examples/auth/basic/)
 * [How to set up Okta SSO on an NGINX reverse proxy](https://developer.okta.com/blog/2018/08/28/nginx-auth-request)
