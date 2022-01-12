@@ -34,7 +34,7 @@ public class AzureUtils {
                                               final JsonNode config) {
     JsonNode stagingConfig = null;
     if (UploadingMethod.GCS.equals(uploadingMethod)) {
-      if (UploaderType.CSV.equals(uploaderType)){
+      if (UploaderType.CSV.equals(uploaderType)) {
         stagingConfig = getGcsCsvJsonNodeConfig(config);
       }
       if (UploaderType.JSONL.equals(uploaderType)) {
@@ -42,7 +42,7 @@ public class AzureUtils {
       }
     }
     if (UploadingMethod.S3.equals(uploadingMethod)) {
-      if (UploaderType.CSV.equals(uploaderType)){
+      if (UploaderType.CSV.equals(uploaderType)) {
         stagingConfig = getS3CsvJsonNodeConfig(config);
       }
       if (UploaderType.JSONL.equals(uploaderType)) {
@@ -77,7 +77,7 @@ public class AzureUtils {
 
   private static boolean isKeepFilesInGcsStorage(final JsonNode loadingMethod) {
     if (loadingMethod != null && loadingMethod.get(AzureConsts.KEEP_GCS_FILES) != null
-            && AzureConsts.KEEP_GCS_FILES_VAL
+        && AzureConsts.KEEP_GCS_FILES_VAL
             .equals(loadingMethod.get(AzureConsts.KEEP_GCS_FILES).asText())) {
       LOGGER.info("All tmp files GCS will be kept in bucket when replication is finished");
       return true;
@@ -89,7 +89,7 @@ public class AzureUtils {
 
   private static boolean isKeepFilesInS3Storage(final JsonNode loadingMethod) {
     if (loadingMethod != null && loadingMethod.get(AzureConsts.KEEP_S3_FILES) != null
-            && AzureConsts.KEEP_S3_FILES_VAL
+        && AzureConsts.KEEP_S3_FILES_VAL
             .equals(loadingMethod.get(AzureConsts.KEEP_S3_FILES).asText())) {
       LOGGER.info("All tmp files S3 will be kept in bucket when replication is finished");
       return true;
@@ -103,15 +103,15 @@ public class AzureUtils {
     final JsonNode loadingMethod = config.get(AzureConsts.LOADING_METHOD);
     final String flattening = config.get(AzureConsts.FORMAT).get(AzureConsts.FORMAT_FLATTENING).asText();
     final JsonNode gcsJsonNode = Jsons.jsonNode(ImmutableMap.builder()
-            .put(AzureConsts.GCS_BUCKET_NAME, loadingMethod.get(AzureConsts.BUCKET_NAME))
-            .put(AzureConsts.GCS_BUCKET_PATH, loadingMethod.get(AzureConsts.BUCKET_PATH))
-            .put(AzureConsts.GCS_BUCKET_REGION, loadingMethod.get(AzureConsts.BUCKET_REGION))
-            .put(AzureConsts.CREDENTIAL, loadingMethod.get(AzureConsts.CREDENTIAL))
-            .put(AzureConsts.FORMAT, Jsons.deserialize("{\n"
-                    + "  \"format_type\": \"CSV\",\n"
-                    + "  \"flattening\": \"" + flattening + "\"\n"
-                    + "}"))
-            .build());
+        .put(AzureConsts.GCS_BUCKET_NAME, loadingMethod.get(AzureConsts.BUCKET_NAME))
+        .put(AzureConsts.GCS_BUCKET_PATH, loadingMethod.get(AzureConsts.BUCKET_PATH))
+        .put(AzureConsts.GCS_BUCKET_REGION, loadingMethod.get(AzureConsts.BUCKET_REGION))
+        .put(AzureConsts.CREDENTIAL, loadingMethod.get(AzureConsts.CREDENTIAL))
+        .put(AzureConsts.FORMAT, Jsons.deserialize("{\n"
+            + "  \"format_type\": \"CSV\",\n"
+            + "  \"flattening\": \"" + flattening + "\"\n"
+            + "}"))
+        .build());
 
     LOGGER.debug("Composed GCS config is: \n" + gcsJsonNode.toPrettyString());
     return gcsJsonNode;
@@ -120,15 +120,15 @@ public class AzureUtils {
   private static JsonNode getGcsJsonJsonNodeConfig(final JsonNode config) {
     final JsonNode loadingMethod = config.get(AzureConsts.LOADING_METHOD);
     final JsonNode gcsJsonNode = Jsons.jsonNode(ImmutableMap.builder()
-            .put(AzureConsts.GCS_BUCKET_NAME, loadingMethod.get(AzureConsts.BUCKET_NAME))
-            .put(AzureConsts.GCS_BUCKET_PATH, loadingMethod.get(AzureConsts.BUCKET_PATH))
-            .put(AzureConsts.GCS_BUCKET_REGION, loadingMethod.get(AzureConsts.BUCKET_REGION))
-            .put(AzureConsts.CREDENTIAL, loadingMethod.get(AzureConsts.CREDENTIAL))
-            .put(AzureConsts.FORMAT, Jsons.deserialize("{\n"
-                    + "  \"format_type\": \"JSONL\",\n"
-                    + "  \"flattening\": \"No flattening\"\n"
-                    + "}"))
-            .build());
+        .put(AzureConsts.GCS_BUCKET_NAME, loadingMethod.get(AzureConsts.BUCKET_NAME))
+        .put(AzureConsts.GCS_BUCKET_PATH, loadingMethod.get(AzureConsts.BUCKET_PATH))
+        .put(AzureConsts.GCS_BUCKET_REGION, loadingMethod.get(AzureConsts.BUCKET_REGION))
+        .put(AzureConsts.CREDENTIAL, loadingMethod.get(AzureConsts.CREDENTIAL))
+        .put(AzureConsts.FORMAT, Jsons.deserialize("{\n"
+            + "  \"format_type\": \"JSONL\",\n"
+            + "  \"flattening\": \"No flattening\"\n"
+            + "}"))
+        .build());
 
     LOGGER.debug("Composed GCS config is: \n" + gcsJsonNode.toPrettyString());
     return gcsJsonNode;
@@ -138,18 +138,18 @@ public class AzureUtils {
     final JsonNode loadingMethod = config.get(AzureConsts.LOADING_METHOD);
     final String flattening = config.get(AzureConsts.FORMAT).get(AzureConsts.FORMAT_FLATTENING).asText();
     final JsonNode s3JsonNode = Jsons.jsonNode(ImmutableMap.builder()
-            .put(AzureConsts.S3_ENDPOINT,
-                    loadingMethod.has(AzureConsts.S3_ENDPOINT) ? loadingMethod.get(AzureConsts.S3_ENDPOINT) : "")
-            .put(AzureConsts.S3_BUCKET_NAME, loadingMethod.get(AzureConsts.BUCKET_NAME))
-            .put(AzureConsts.S3_BUCKET_PATH, loadingMethod.get(AzureConsts.BUCKET_PATH))
-            .put(AzureConsts.S3_BUCKET_REGION, loadingMethod.get(AzureConsts.BUCKET_REGION))
-            .put(AzureConsts.S3_ACCESS_KEY_ID, loadingMethod.get(AzureConsts.CREDENTIAL).get(AzureConsts.S3_ACCESS_KEY_ID))
-            .put(AzureConsts.S3_SECRET_ACCESS_KEY, loadingMethod.get(AzureConsts.CREDENTIAL).get(AzureConsts.S3_SECRET_ACCESS_KEY))
-            .put(AzureConsts.FORMAT, Jsons.deserialize("{\n"
-                    + "  \"format_type\": \"CSV\",\n"
-                    + "  \"flattening\": \"" + flattening + "\"\n"
-                    + "}"))
-            .build());
+        .put(AzureConsts.S3_ENDPOINT,
+            loadingMethod.has(AzureConsts.S3_ENDPOINT) ? loadingMethod.get(AzureConsts.S3_ENDPOINT) : "")
+        .put(AzureConsts.S3_BUCKET_NAME, loadingMethod.get(AzureConsts.BUCKET_NAME))
+        .put(AzureConsts.S3_BUCKET_PATH, loadingMethod.get(AzureConsts.BUCKET_PATH))
+        .put(AzureConsts.S3_BUCKET_REGION, loadingMethod.get(AzureConsts.BUCKET_REGION))
+        .put(AzureConsts.S3_ACCESS_KEY_ID, loadingMethod.get(AzureConsts.CREDENTIAL).get(AzureConsts.S3_ACCESS_KEY_ID))
+        .put(AzureConsts.S3_SECRET_ACCESS_KEY, loadingMethod.get(AzureConsts.CREDENTIAL).get(AzureConsts.S3_SECRET_ACCESS_KEY))
+        .put(AzureConsts.FORMAT, Jsons.deserialize("{\n"
+            + "  \"format_type\": \"CSV\",\n"
+            + "  \"flattening\": \"" + flattening + "\"\n"
+            + "}"))
+        .build());
 
     LOGGER.debug("Composed S3 config is: \n" + s3JsonNode.toPrettyString());
     return s3JsonNode;
@@ -158,18 +158,18 @@ public class AzureUtils {
   private static JsonNode getS3JsonJsonNodeConfig(final JsonNode config) {
     final JsonNode loadingMethod = config.get(AzureConsts.LOADING_METHOD);
     final JsonNode s3JsonNode = Jsons.jsonNode(ImmutableMap.builder()
-            .put(AzureConsts.S3_ENDPOINT,
-                    loadingMethod.has(AzureConsts.S3_ENDPOINT) ? loadingMethod.get(AzureConsts.S3_ENDPOINT) : "")
-            .put(AzureConsts.S3_BUCKET_NAME, loadingMethod.get(AzureConsts.BUCKET_NAME))
-            .put(AzureConsts.S3_BUCKET_PATH, loadingMethod.get(AzureConsts.BUCKET_PATH))
-            .put(AzureConsts.S3_BUCKET_REGION, loadingMethod.get(AzureConsts.BUCKET_REGION))
-            .put(AzureConsts.S3_ACCESS_KEY_ID, loadingMethod.get(AzureConsts.CREDENTIAL).get(AzureConsts.S3_ACCESS_KEY_ID))
-            .put(AzureConsts.S3_SECRET_ACCESS_KEY, loadingMethod.get(AzureConsts.CREDENTIAL).get(AzureConsts.S3_SECRET_ACCESS_KEY))
-            .put(AzureConsts.FORMAT, Jsons.deserialize("{\n"
-                    + "  \"format_type\": \"JSONL\",\n"
-                    + "  \"flattening\": \"No flattening\"\n"
-                    + "}"))
-            .build());
+        .put(AzureConsts.S3_ENDPOINT,
+            loadingMethod.has(AzureConsts.S3_ENDPOINT) ? loadingMethod.get(AzureConsts.S3_ENDPOINT) : "")
+        .put(AzureConsts.S3_BUCKET_NAME, loadingMethod.get(AzureConsts.BUCKET_NAME))
+        .put(AzureConsts.S3_BUCKET_PATH, loadingMethod.get(AzureConsts.BUCKET_PATH))
+        .put(AzureConsts.S3_BUCKET_REGION, loadingMethod.get(AzureConsts.BUCKET_REGION))
+        .put(AzureConsts.S3_ACCESS_KEY_ID, loadingMethod.get(AzureConsts.CREDENTIAL).get(AzureConsts.S3_ACCESS_KEY_ID))
+        .put(AzureConsts.S3_SECRET_ACCESS_KEY, loadingMethod.get(AzureConsts.CREDENTIAL).get(AzureConsts.S3_SECRET_ACCESS_KEY))
+        .put(AzureConsts.FORMAT, Jsons.deserialize("{\n"
+            + "  \"format_type\": \"JSONL\",\n"
+            + "  \"flattening\": \"No flattening\"\n"
+            + "}"))
+        .build());
 
     LOGGER.debug("Composed S3 config is: \n" + s3JsonNode.toPrettyString());
     return s3JsonNode;

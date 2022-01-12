@@ -19,4 +19,5 @@ public class S3CsvAzureUploader extends AbstractS3AzureUploader<S3CsvWriter> {
                             int headerByteSize) {
     super(syncMode, writer, s3DestinationConfig, appendBlobClient, keepFilesInS3, headerByteSize);
   }
+
 }

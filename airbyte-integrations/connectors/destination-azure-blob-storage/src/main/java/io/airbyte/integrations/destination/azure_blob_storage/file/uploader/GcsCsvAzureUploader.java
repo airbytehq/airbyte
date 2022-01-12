@@ -19,4 +19,5 @@ public class GcsCsvAzureUploader extends AbstractGcsAzureUploader<GcsCsvWriter> 
                              int headerByteSize) {
     super(syncMode, writer, gcsDestinationConfig, appendBlobClient, keepFilesInGcs, headerByteSize);
   }
+
 }

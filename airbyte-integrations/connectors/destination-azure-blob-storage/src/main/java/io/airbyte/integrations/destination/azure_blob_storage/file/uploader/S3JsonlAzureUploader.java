@@ -19,4 +19,5 @@ public class S3JsonlAzureUploader extends AbstractS3AzureUploader<S3JsonlWriter>
                               int headerByteSize) {
     super(syncMode, writer, s3DestinationConfig, appendBlobClient, keepFilesInS3, headerByteSize);
   }
+
 }

@@ -28,14 +28,12 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
-
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.DestinationSyncMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,13 +88,13 @@ public class AzureBlobStorageDestination extends BaseConnector implements Destin
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog configuredCatalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector)
-          throws IOException {
+      throws IOException {
     final UploadingMethod uploadingMethod = AzureUtils.getLoadingMethod(config);
     final AzureBlobStorageDestinationConfig azureConfig = AzureBlobStorageDestinationConfig.getAzureBlobStorageConfig(config);
 
-    return UploadingMethod.STANDARD.equals(uploadingMethod) ?
-            new AzureBlobStorageConsumer(azureConfig, configuredCatalog, new ProductionWriterFactory(), outputRecordCollector) :
-            getRecordConsumer(getUploaderMap(config, configuredCatalog), outputRecordCollector);
+    return UploadingMethod.STANDARD.equals(uploadingMethod)
+        ? new AzureBlobStorageConsumer(azureConfig, configuredCatalog, new ProductionWriterFactory(), outputRecordCollector)
+        : getRecordConsumer(getUploaderMap(config, configuredCatalog), outputRecordCollector);
 
   }
 
@@ -109,7 +107,7 @@ public class AzureBlobStorageDestination extends BaseConnector implements Destin
 
   protected Map<AirbyteStreamNameNamespacePair, AbstractAzureUploader<?>> getUploaderMap(final JsonNode config,
                                                                                          final ConfiguredAirbyteCatalog catalog)
-          throws IOException {
+      throws IOException {
     final AzureBlobStorageDestinationConfig azureConfig = AzureBlobStorageDestinationConfig.getAzureBlobStorageConfig(config);
     final UploadingMethod uploadingMethod = AzureUtils.getLoadingMethod(config);
     final UploaderType uploaderType = AzureUtils.getUploaderType(config);
@@ -120,30 +118,30 @@ public class AzureBlobStorageDestination extends BaseConnector implements Destin
       final String streamName = stream.getName();
 
       final StorageSharedKeyCredential credential = new StorageSharedKeyCredential(
-              azureConfig.getAccountName(), azureConfig.getAccountKey());
+          azureConfig.getAccountName(), azureConfig.getAccountKey());
       final SpecializedBlobClientBuilder specializedBlobClientBuilder = new SpecializedBlobClientBuilder()
-              .endpoint(azureConfig.getEndpointUrl())
-              .credential(credential)
-              .containerName(azureConfig.getContainerName());
+          .endpoint(azureConfig.getEndpointUrl())
+          .credential(credential)
+          .containerName(azureConfig.getContainerName());
       final AppendBlobClient appendBlobClient = specializedBlobClientBuilder
-              .blobName(streamName)
-              .buildAppendBlobClient();
+          .blobName(streamName)
+          .buildAppendBlobClient();
       boolean newlyCreatedBlob = createContainers(appendBlobClient, configStream);
 
       UploaderConfig uploaderConfig = UploaderConfig
-              .builder()
-              .configStream(configStream)
-              .uploaderType(uploaderType)
-              .uploadingMethod(uploadingMethod)
-              .newlyCreatedBlob(newlyCreatedBlob)
-              .appendBlobClient(appendBlobClient)
-              .keepFilesInStorage(AzureUtils.isKeepFilesInStorage(config))
-              .stagingConfig(AzureUtils.getStagingJsonConfig(uploadingMethod, uploaderType, config))
-              .build();
+          .builder()
+          .configStream(configStream)
+          .uploaderType(uploaderType)
+          .uploadingMethod(uploadingMethod)
+          .newlyCreatedBlob(newlyCreatedBlob)
+          .appendBlobClient(appendBlobClient)
+          .keepFilesInStorage(AzureUtils.isKeepFilesInStorage(config))
+          .stagingConfig(AzureUtils.getStagingJsonConfig(uploadingMethod, uploaderType, config))
+          .build();
 
       uploaderMap.put(
-              AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
-              AzureUploaderFactory.getUploader(uploaderConfig));
+          AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
+          AzureUploaderFactory.getUploader(uploaderConfig));
     }
     return uploaderMap;
   }
@@ -159,7 +157,7 @@ public class AzureBlobStorageDestination extends BaseConnector implements Destin
     if (DestinationSyncMode.OVERWRITE.equals(configuredStream.getDestinationSyncMode())) {
       // full refresh sync. Create blob and override if any
       LOGGER.info("Sync mode is selected to OVERRIDE mode. New container will be automatically"
-              + " created or all data would be overridden (if any) for stream:" + configuredStream
+          + " created or all data would be overridden (if any) for stream:" + configuredStream
               .getStream().getName());
       appendBlobClient.create(true);
       return true;
@@ -167,16 +165,16 @@ public class AzureBlobStorageDestination extends BaseConnector implements Destin
       // incremental sync. Create new container only if still absent
       if (!appendBlobClient.exists()) {
         LOGGER.info("Sync mode is selected to APPEND mode. New container will be automatically"
-                + " created for stream:" + configuredStream.getStream().getName());
+            + " created for stream:" + configuredStream.getStream().getName());
         appendBlobClient.create(false);
         LOGGER.info(appendBlobClient.getBlobName() + " blob has been created");
         return true;
       } else {
         LOGGER.info(String.format(
-                "Sync mode is selected to APPEND mode. Container %s already exists. Append mode is "
-                        + "only available for \"Append blobs\". For more details please visit"
-                        + " https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction#blobs",
-                configuredStream.getStream().getName()));
+            "Sync mode is selected to APPEND mode. Container %s already exists. Append mode is "
+                + "only available for \"Append blobs\". For more details please visit"
+                + " https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction#blobs",
+            configuredStream.getStream().getName()));
         LOGGER.info(appendBlobClient.getBlobName() + " already exists");
         return false;
       }

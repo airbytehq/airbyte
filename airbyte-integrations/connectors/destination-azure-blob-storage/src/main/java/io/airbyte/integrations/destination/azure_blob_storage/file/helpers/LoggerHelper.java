@@ -4,11 +4,10 @@
 
 package io.airbyte.integrations.destination.azure_blob_storage.file.helpers;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LoggerHelper {
 

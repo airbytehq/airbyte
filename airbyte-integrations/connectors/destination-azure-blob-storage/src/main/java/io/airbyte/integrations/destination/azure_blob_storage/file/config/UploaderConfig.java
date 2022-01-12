@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.azure_blob_storage.file.config;
 
 import com.azure.storage.blob.specialized.AppendBlobClient;
@@ -8,17 +12,16 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.Map;
-
 @Builder
 @Getter
 public class UploaderConfig {
 
-    private JsonNode stagingConfig;
-    private UploaderType uploaderType;
-    private boolean newlyCreatedBlob;
-    private boolean keepFilesInStorage;
-    private UploadingMethod uploadingMethod;
-    private AppendBlobClient appendBlobClient;
-    private ConfiguredAirbyteStream configStream;
+  private JsonNode stagingConfig;
+  private UploaderType uploaderType;
+  private boolean newlyCreatedBlob;
+  private boolean keepFilesInStorage;
+  private UploadingMethod uploadingMethod;
+  private AppendBlobClient appendBlobClient;
+  private ConfiguredAirbyteStream configStream;
+
 }

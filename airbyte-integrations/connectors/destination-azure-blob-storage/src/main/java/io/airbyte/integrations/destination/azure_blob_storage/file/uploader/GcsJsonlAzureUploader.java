@@ -19,4 +19,5 @@ public class GcsJsonlAzureUploader extends AbstractGcsAzureUploader<GcsJsonlWrit
                                int headerByteSize) {
     super(syncMode, writer, gcsDestinationConfig, appendBlobClient, keepFilesInGcs, headerByteSize);
   }
+
 }
