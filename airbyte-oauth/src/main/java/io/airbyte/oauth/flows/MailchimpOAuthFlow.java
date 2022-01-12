@@ -47,6 +47,7 @@ public class MailchimpOAuthFlow extends BaseOAuth2Flow {
             .addParameter("client_id", clientId)
             .addParameter("response_type", "code")
             .addParameter("redirect_uri", redirectUrl)
+            .addParameter("state", getState())
             .build().toString();
       } catch (URISyntaxException e) {
          throw new IOException("Failed to format Consent URL for OAuth flow", e);
