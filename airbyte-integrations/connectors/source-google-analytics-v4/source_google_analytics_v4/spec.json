@@ -20,6 +20,12 @@
         "description": "A date in the format YYYY-MM-DD.",
         "examples": ["2020-06-01"]
       },
+      "window_in_days": {
+        "type": "integer",
+        "description": "The amount of days for each data-chunk begining from start_date. Bigger the value - faster the fetch. (Min=1, as for a Day; Max=364, as for a Year).",
+        "examples": [30, 60, 90, 120, 200, 364],
+        "default": 90
+      },
       "custom_reports": {
         "order": 3,
         "type": "string",
