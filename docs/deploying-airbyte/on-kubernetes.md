@@ -4,6 +4,10 @@
 
 Airbyte allows scaling sync workloads horizontally using Kubernetes. The core components \(api server, scheduler, etc\) run as deployments while the scheduler launches connector-related pods on different nodes.
 
+## Quickstart
+
+If you don't want to configure your own K8s cluster and Airbyte instance, you can use the free, open-source project [Plural](https://www.plural.sh/) to bring up a K8s cluster and Airbyte for you. Use [this guide](on-plural.md) to get started.
+
 ## Getting Started
 
 ### Cluster Setup

@@ -16,7 +16,6 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshHelpers;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.mysql.MySqlSource;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -100,7 +99,7 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
   }
 
   @Override
-  public AbstractJdbcSource getJdbcSource() {
+  public MySqlSource getJdbcSource() {
     return new MySqlSource();
   }
 

@@ -11,6 +11,7 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.Map;
@@ -58,7 +59,11 @@ public class TestingDestinations extends BaseConnector implements Destination {
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
-    return selectDestination(config).check(config);
+    try {
+      return selectDestination(config).check(config);
+    } catch (final Exception e) {
+      return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage());
+    }
   }
 
   public static void main(final String[] args) throws Exception {

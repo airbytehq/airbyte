@@ -8,11 +8,11 @@
       "description": "Order ID"
     },
     "cShippingAddress": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Customer's shipping address"
     },
     "dReceivedDate": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time",
       "description": "Date when order was received on a channel"
     },
@@ -90,11 +90,11 @@
       "description": "Postal service code"
     },
     "Vendor": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Courier name (e.g. DPD)"
     },
     "BillingEmailAddress": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "ReferenceNum": {
       "type": "string",
@@ -171,11 +171,11 @@
       "description": "When order was cancelled"
     },
     "PackageCategory": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Package category"
     },
     "PackageTitle": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Package name"
     },
     "ItemWeight": {
@@ -187,51 +187,51 @@
       "description": "Total order weight"
     },
     "FolderCollection": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Folder name of an order"
     },
     "cBillingAddress": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Customer billing address"
     },
     "BillingName": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Customer billing name"
     },
     "BillingCompany": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Customer billing company"
     },
     "BillingAddress1": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Billing address line one"
     },
     "BillingAddress2": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Billing address line two"
     },
     "BillingAddress3": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Billing address line three"
     },
     "BillingTown": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Billing town"
     },
     "BillingRegion": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Billing region, area, county"
     },
     "BillingPostCode": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Billing postcode"
     },
     "BillingCountryName": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Billing country"
     },
     "BillingPhoneNumber": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Billing phone number"
     },
     "HoldOrCancel": {

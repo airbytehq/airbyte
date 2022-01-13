@@ -18,7 +18,7 @@ import java.util.Collections;
 public class CockroachJdbcSourceOperations extends JdbcSourceOperations {
 
   @Override
-  protected void putBoolean(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+  protected void putBoolean(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     if ("bit".equalsIgnoreCase(resultSet.getMetaData().getColumnTypeName(index))) {
       node.put(columnName, resultSet.getByte(index));
     } else {
@@ -32,12 +32,12 @@ public class CockroachJdbcSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  protected void putNumber(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+  protected void putBigDecimal(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     node.put(columnName, resultSet.getBigDecimal(index));
   }
 
   @Override
-  public JsonNode rowToJson(ResultSet queryContext) throws SQLException {
+  public JsonNode rowToJson(final ResultSet queryContext) throws SQLException {
     final int columnCount = queryContext.getMetaData().getColumnCount();
     final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
 
@@ -47,16 +47,16 @@ public class CockroachJdbcSourceOperations extends JdbcSourceOperations {
         if (!queryContext.wasNull()) {
           setJsonField(queryContext, i, jsonNode);
         }
-      } catch (SQLException e) {
+      } catch (final SQLException e) {
         putCockroachSpecialDataType(queryContext, i, jsonNode);
       }
     }
     return jsonNode;
   }
 
-  private void putCockroachSpecialDataType(ResultSet resultSet, int index, ObjectNode node) throws SQLException {
-    String columnType = resultSet.getMetaData().getColumnTypeName(index);
-    String columnName = resultSet.getMetaData().getColumnName(index);
+  private void putCockroachSpecialDataType(final ResultSet resultSet, final int index, final ObjectNode node) throws SQLException {
+    final String columnType = resultSet.getMetaData().getColumnTypeName(index);
+    final String columnName = resultSet.getMetaData().getColumnName(index);
     try {
       if ("numeric".equalsIgnoreCase(columnType)) {
         final double value = resultSet.getDouble(index);

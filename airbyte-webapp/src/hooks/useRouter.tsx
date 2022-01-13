@@ -1,31 +1,27 @@
 import { useMemo } from "react";
 import {
-  useHistory,
   useLocation,
+  useNavigate,
   useParams,
-  useRouteMatch,
-} from "react-router";
-import { match } from "react-router-dom";
+  Location,
+  To,
+  NavigateOptions,
+} from "react-router-dom";
 
 import queryString from "query-string";
-import { Location, LocationDescriptor, Path, History } from "history";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function useRouter<T = any, L = any>(): {
+function useRouter<T = any, P = any>(): {
   query: T;
+  params: P;
   pathname: string;
-  location: Location<L>;
-  push(path: Path, state?: History.UnknownFacade | null | undefined): void;
-  push(location: LocationDescriptor): void;
-  replace(path: Path, state?: History.UnknownFacade | null | undefined): void;
-  replace(location: LocationDescriptor): void;
-  history: History;
-  match: match<History.UnknownFacade>;
+  location: Location;
+  push(path: To, state?: NavigateOptions): void;
+  replace(path: To, state?: NavigateOptions): void;
 } {
-  const params = useParams();
-  const location = useLocation<L>();
-  const history = useHistory();
-  const match = useRouteMatch();
+  const params: any = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
   const query = useMemo<T>(
     () =>
       ({
@@ -37,15 +33,14 @@ function useRouter<T = any, L = any>(): {
 
   return useMemo(() => {
     return {
-      push: history.push,
-      replace: history.replace,
+      params,
+      push: navigate,
+      replace: (path, state) => navigate(path, { ...state, replace: true }),
       pathname: location.pathname,
       query,
-      match,
       location,
-      history,
     };
-  }, [match, location, history, query]);
+  }, [navigate, location, query, params]);
 }
 
 export default useRouter;
