@@ -1944,10 +1944,8 @@ components:
             $ref: "#/components/schemas/Notification"
         firstCompletedSync:
           type: boolean
-          nullable: true
         feedbackDone:
           type: boolean
-          nullable: true
     WorkspaceUpdate:
       type: object
       required:
