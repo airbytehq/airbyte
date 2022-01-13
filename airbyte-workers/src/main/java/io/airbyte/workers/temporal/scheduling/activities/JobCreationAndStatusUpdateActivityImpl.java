@@ -4,12 +4,18 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
+import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.JobOutput;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.scheduler.models.Job;
+import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
+import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
+import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
+import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.workers.worker_run.WorkerRun;
@@ -27,6 +33,8 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   private final TemporalWorkerRunFactory temporalWorkerRunFactory;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
+  private final JobNotifier jobNotifier;
+  private final JobTracker jobTracker;
 
   @Override
   public JobCreationOutput createNewJob(final JobCreationInput input) {
@@ -57,7 +65,16 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   @Override
   public void jobSuccess(final JobSuccessInput input) {
     try {
+      if (input.getStandardSyncOutput() != null) {
+        final JobOutput jobOutput = new JobOutput().withSync(input.getStandardSyncOutput());
+        jobPersistence.writeOutput(input.getJobId(), input.getAttemptId(), jobOutput);
+      } else {
+        log.warn("The job {} doesn't have an input for the attempt {}", input.getJobId(), input.getAttemptId());
+      }
       jobPersistence.succeedAttempt(input.getJobId(), input.getAttemptId());
+      final Job job = jobPersistence.getJob(input.getJobId());
+      jobNotifier.successJob(job);
+      trackCompletion(job, JobStatus.SUCCEEDED);
     } catch (final IOException e) {
       throw new RetryableException(e);
     }
@@ -67,6 +84,9 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   public void jobFailure(final JobFailureInput input) {
     try {
       jobPersistence.failJob(input.getJobId());
+      final Job job = jobPersistence.getJob(input.getJobId());
+      jobNotifier.failJob(input.getReason(), job);
+      trackCompletion(job, JobStatus.FAILED);
     } catch (final IOException e) {
       throw new RetryableException(e);
     }
@@ -76,6 +96,8 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   public void attemptFailure(final AttemptFailureInput input) {
     try {
       jobPersistence.failAttempt(input.getJobId(), input.getAttemptId());
+      final Job job = jobPersistence.getJob(input.getJobId());
+      jobNotifier.failJob("Job was cancelled", job);
     } catch (final IOException e) {
       throw new RetryableException(e);
     }
@@ -85,9 +107,25 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   public void jobCancelled(final JobCancelledInput input) {
     try {
       jobPersistence.cancelJob(input.getJobId());
+      final Job job = jobPersistence.getJob(input.getJobId());
+      trackCompletion(job, JobStatus.FAILED);
     } catch (final IOException e) {
       throw new RetryableException(e);
     }
+  }
+
+  @Override
+  public void reportJobStart(final ReportJobStartInput input) {
+    try {
+      final Job job = jobPersistence.getJob(input.getJobId());
+      jobTracker.trackSync(job, JobState.STARTED);
+    } catch (final IOException e) {
+      throw new RetryableException(e);
+    }
+  }
+
+  private void trackCompletion(final Job job, final io.airbyte.workers.JobStatus status) {
+    jobTracker.trackSync(job, Enums.convertTo(status, JobState.class));
   }
 
 }
