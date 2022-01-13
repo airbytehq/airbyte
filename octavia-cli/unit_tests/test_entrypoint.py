@@ -16,21 +16,22 @@ def dumb(ctx):
     pass
 
 
-@mock.patch("octavia_cli.entrypoint.workspace_api")
-@mock.patch("octavia_cli.entrypoint.airbyte_api_client")
-def test_octavia(mock_airbyte_api_client: mock.Mock, mock_workspace_api: mock.Mock):
+def test_octavia(mocker):
+    mocker.patch.object(entrypoint, "workspace_api")
+    mocker.patch.object(entrypoint, "airbyte_api_client")
+
     context_object = {}
-    mock_api_instance = mock_workspace_api.WorkspaceApi.return_value
-    mock_api_instance.list_workspaces.return_value = mock.MagicMock(workspaces=[mock.MagicMock(workspace_id="expected_workspace_id")])
+    mock_api_instance = entrypoint.workspace_api.WorkspaceApi.return_value
+    mock_api_instance.list_workspaces.return_value = mock.MagicMock(workspaces=[{"workspaceId": "expected_workspace_id"}])
 
     entrypoint.octavia.add_command(dumb)
     runner = CliRunner()
     result = runner.invoke(entrypoint.octavia, ["--airbyte-url", "test-airbyte-url", "dumb"], obj=context_object)
-    mock_airbyte_api_client.Configuration.assert_called_with(host="test-airbyte-url/api")
-    mock_airbyte_api_client.ApiClient.assert_called_with(mock_airbyte_api_client.Configuration.return_value)
-    mock_workspace_api.WorkspaceApi.assert_called_with(mock_airbyte_api_client.ApiClient.return_value)
+    entrypoint.airbyte_api_client.Configuration.assert_called_with(host="test-airbyte-url/api")
+    entrypoint.airbyte_api_client.ApiClient.assert_called_with(entrypoint.airbyte_api_client.Configuration.return_value)
+    entrypoint.workspace_api.WorkspaceApi.assert_called_with(entrypoint.airbyte_api_client.ApiClient.return_value)
     mock_api_instance.list_workspaces.assert_called_once()
-    assert context_object["API_CLIENT"] == mock_airbyte_api_client.ApiClient.return_value
+    assert context_object["API_CLIENT"] == entrypoint.airbyte_api_client.ApiClient.return_value
     assert context_object["WORKSPACE_ID"] == "expected_workspace_id"
     assert result.exit_code == 0
 
