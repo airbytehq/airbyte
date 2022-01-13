@@ -1,5 +1,5 @@
 import React from "react";
-import { components } from "react-select";
+import { components, ControlProps } from "react-select";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -7,7 +7,10 @@ import { Cell } from "components/SimpleTableComponents";
 import { DropDown, DropdownProps } from "components";
 import Text from "components/base/DropDown/components/Text";
 import { IProps } from "components/base/DropDown/components/SingleValue";
-import { OptionView } from "components/base/DropDown/components/Option";
+import {
+  IDataItem,
+  OptionView,
+} from "components/base/DropDown/components/Option";
 
 const ValueView = styled(components.SingleValue)`
   display: flex;
@@ -17,6 +20,7 @@ const ValueView = styled(components.SingleValue)`
   word-break: normal;
   white-space: normal !important;
   line-height: 12px;
+  font-size: 11px;
   padding-top: 2px;
 `;
 
@@ -49,6 +53,20 @@ const Title = styled.span`
 
 const OptionContent = styled(OptionView)`
   justify-content: left;
+  font-size: 12px;
+`;
+
+const DropdownControl = styled(components.Control)<
+  ControlProps<IDataItem, false>
+>`
+  &.react-select__control {
+    // background: ${({ theme }) => theme.greyColor20};
+    // TODO: fix theme
+    background: #e8e8ed;
+    border-color: #e8e8ed;
+    min-height: 30px;
+    max-height: 30px;
+  }
 `;
 
 const Mode: React.FC<{
@@ -98,6 +116,7 @@ const SyncSettingsDropdown: React.FC<DropdownProps> = (props) => (
     components={{
       SingleValue: SingleValue,
       Option: Option,
+      Control: DropdownControl,
     }}
     $withBorder
   />

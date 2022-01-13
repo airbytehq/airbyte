@@ -12,6 +12,8 @@ import CatalogTree from "views/Connection/CatalogTree";
 import Search from "./Search";
 import { naturalComparatorBy } from "utils/objects";
 import { SyncCatalogFilters } from "./SyncCatalogFilters";
+import InformationToolTip from "./InformationToolTip";
+import { useConfig } from "config";
 
 const TreeViewContainer = styled.div`
   margin-bottom: 29px;
@@ -70,6 +72,22 @@ const HeaderBlock = styled.div`
   line-height: 17px;
 `;
 
+const NextLineText = styled.div`
+  margin-top: 10px;
+`;
+
+const LearnMoreLink = styled.a`
+  opacity: 0.5;
+  display: block;
+  margin-top: 10px;
+  color: ${({ theme }) => theme.whiteColor};
+  text-decoration: none;
+
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
 type SchemaViewProps = {
   additionalControl?: React.ReactNode;
   destinationSupportedSyncModes: DestinationSyncMode[];
@@ -81,6 +99,8 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
   field,
   form,
 }) => {
+  const config = useConfig();
+
   const { value: streams, name: fieldName } = field;
 
   const [searchString, setSearchString] = useState("");
@@ -189,19 +209,55 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
           </Cell>
           <Cell lighter>
             <FormattedMessage id="sources.source" />
+            <InformationToolTip>
+              <FormattedMessage
+                id="connectionForm.source.info"
+                values={{
+                  b: (...b: React.ReactNode[]) => <strong>{b}</strong>,
+                }}
+              />
+            </InformationToolTip>
           </Cell>
           <Cell />
           <Cell lighter flex={1.5}>
             <FormattedMessage id="form.syncMode" />
+            <InformationToolTip>
+              <FormattedMessage id="connectionForm.syncType.info" />
+              <LearnMoreLink target="_blank" href={config.ui.syncModeLink}>
+                <FormattedMessage id="form.entrypoint.docs" />
+              </LearnMoreLink>
+            </InformationToolTip>
           </Cell>
           <Cell lighter>
             <FormattedMessage id="form.cursorField" />
+            <InformationToolTip>
+              <FormattedMessage id="connectionForm.cursor.info" />
+            </InformationToolTip>
           </Cell>
           <Cell lighter>
             <FormattedMessage id="form.primaryKey" />
+            <InformationToolTip>
+              <FormattedMessage id="connectionForm.primaryKey.info" />
+            </InformationToolTip>
           </Cell>
           <Cell lighter>
             <FormattedMessage id="connector.destination" />
+            <InformationToolTip>
+              <FormattedMessage
+                id="connectionForm.destinationName.info"
+                values={{
+                  b: (...b: React.ReactNode[]) => <strong>{b}</strong>,
+                }}
+              />
+              <NextLineText>
+                <FormattedMessage
+                  id="connectionForm.destinationStream.info"
+                  values={{
+                    b: (...b: React.ReactNode[]) => <strong>{b}</strong>,
+                  }}
+                />
+              </NextLineText>
+            </InformationToolTip>
           </Cell>
           <Cell />
         </SchemaHeader>
