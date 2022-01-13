@@ -6,13 +6,12 @@ import itertools
 import logging
 import time
 from collections import deque
-from typing import Tuple, List
+from typing import Tuple, Iterator, Optional
 
 from facebook_business.api import FacebookAdsApiBatch
 from source_facebook_marketing.api import API
 
-from .async_job import InsightAsyncJob
-
+from .async_job import InsightAsyncJob, AsyncJob
 
 logger = logging.getLogger("airbyte")
 
@@ -38,10 +37,10 @@ class InsightAsyncJobManager:
     JOB_STATUS_UPDATE_SLEEP_SECONDS = 30
     # Maximum of concurrent jobs that could be scheduled. Since throttling
     # limit is not reliable indicator of async workload capability we still
-    # have to use this parameter.
+    # have to use this parameter. It is equal to maximum number of request in batch (FB API limit)
     MAX_JOBS_IN_QUEUE = 50
 
-    def __init__(self, api:API, jobs: List[InsightAsyncJob]):
+    def __init__(self, api: API, jobs: Iterator[AsyncJob]):
         """
         get list of jobs
         run window
@@ -50,18 +49,21 @@ class InsightAsyncJobManager:
         :param jobs:
         """
         self._api = api
-        self._jobs = deque(jobs)
+        self._jobs = jobs
         self._jobs_queue = deque()
+        self._empty = False
 
-    def wait_for_completion(self):
-        while self._jobs or self._jobs_queue:
-            self.get_next_completed_job()
+    # def wait_for_completion(self):
+    #     while self._jobs or self._jobs_queue:
+    #         self.get_next_completed_job()
+
+    @property
+    def done(self):
+        return self._empty
 
     def start_jobs(self):
-        """
-        Enqueue new jobs and shift time range by DAYS_PER_JOB value until
-        either throttle limit hit or date range reached "to_date" parameter.
-        """
+        """Enqueue new jobs."""
+
         self._update_api_throttle_limit()
         self._wait_throttle_limit_down()
         prev_jobs_count = len(self._jobs_queue)
@@ -69,9 +71,11 @@ class InsightAsyncJobManager:
         while (
             self._get_current_throttle_value() < self.THROTTLE_LIMIT
             and len(self._jobs_queue) - completed_jobs_count < self.MAX_JOBS_IN_QUEUE
-            and self._jobs
         ):
-            job = self._jobs.popleft()
+            job = next(self._jobs, None)
+            if not job:
+                self._empty = True
+                break
             job.start()
             self._jobs_queue.append(job)
 
@@ -83,15 +87,26 @@ class InsightAsyncJobManager:
             f"{len(self._jobs_queue)} job(s) are running"
         )
 
-    def get_next_completed_job(self) -> InsightAsyncJob:
+    def completed_jobs(self) -> Iterator[AsyncJob]:
+        """Iterate over finished jobs, will wait until jobs completed."""
+        while True:
+            job = self.get_next_completed_job()
+            if not job:
+                break
+            yield job
+
+    def get_next_completed_job(self) -> Optional[InsightAsyncJob]:
         """
-        Wait until job for next date range is ready and return it. If job
+        Wait until job is ready and return it. If job
         failed try to restart it for FAILED_JOBS_RESTART_COUNT times. After job
         is completed new jobs added according to current throttling limit.
-        Jobs returned by this method are ordered by time_range parameter.
+        Jobs returned by this method are ordered in the same way.
         """
         if not self._jobs_queue:
             self.start_jobs()
+
+        if not self._jobs_queue:
+            return None
 
         job = self._jobs_queue[0]
         for _ in range(self.FAILED_JOBS_RESTART_COUNT):
@@ -118,7 +133,10 @@ class InsightAsyncJobManager:
         """
 
         api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
-        for job in itertools.islice(self._jobs_queue, 0, self.MAX_JOBS_IN_QUEUE):
+        for job in self._jobs_queue:
+            if len(api_batch) >= self.MAX_JOBS_IN_QUEUE:
+                logger.info("Reached batch queue limit")
+                break
             job.update_job(batch=api_batch)
 
         while api_batch:

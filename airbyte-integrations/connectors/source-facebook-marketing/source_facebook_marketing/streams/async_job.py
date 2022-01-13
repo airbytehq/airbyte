@@ -62,18 +62,21 @@ class AsyncJob(ABC):
 
 
 class ParentAsyncJob(AsyncJob):
+    """ Group of async jobs
+    """
     def __init__(self, jobs: List[AsyncJob]):
         self._jobs = jobs
 
     def start(self):
-        """Start remote job"""
+        """Start each job in the group"""
         for job in self._jobs:
             job.start()
 
     def restart(self):
-        """Restart failed job"""
+        """Restart failed jobs"""
         for job in self._jobs:
-            job.restart()
+            if job.failed:
+                job.restart()
 
     @property
     def completed(self) -> bool:
@@ -143,7 +146,7 @@ class InsightAsyncJob(AsyncJob):
         logger.info(f"{self}: restarted")
 
     @property
-    def elapsed_time(self):
+    def elapsed_time(self) -> Optional[pendulum.duration]:
         """Elapsed time since the job start"""
         if not self._start_time:
             return None
