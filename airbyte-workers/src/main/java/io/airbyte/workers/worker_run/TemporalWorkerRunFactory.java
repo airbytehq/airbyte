@@ -72,12 +72,6 @@ public class TemporalWorkerRunFactory {
     final UUID connectionId = UUID.fromString(job.getScope());
     return switch (job.getConfigType()) {
       case SYNC -> () -> {
-
-        if (featureFlags.usesNewScheduler()) {
-          temporalClient.submitConnectionUpdaterAsync(connectionId);
-
-          return toOutputAndStatusConnector();
-        }
         final TemporalResponse<StandardSyncOutput> output = temporalClient.submitSync(job.getId(),
             attemptId, job.getConfig().getSync(), connectionId);
         return toOutputAndStatus(output);

@@ -220,8 +220,6 @@ public class TemporalClient {
     signalRequest.add(connectionManagerWorkflow::run, input);
 
     WorkflowClient.start(connectionManagerWorkflow::run, input);
-
-    log.info("Scheduler temporal wf started");
   }
 
   public void deleteConnection(final UUID connectionId) {

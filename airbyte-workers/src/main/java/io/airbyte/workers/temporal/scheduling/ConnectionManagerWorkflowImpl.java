@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal.scheduling;
 
+import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
@@ -23,6 +24,7 @@ import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpd
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCreationOutput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobFailureInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobSuccessInput;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.ReportJobStartInput;
 import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.airbyte.workers.temporal.scheduling.state.listener.NoopStateListener;
@@ -48,6 +50,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   Optional<Long> maybeJobId = Optional.empty();
   Optional<Integer> maybeAttemptId = Optional.empty();
+
+  Optional<StandardSyncOutput> standardSyncOutput = Optional.empty();
 
   private final GenerateInputActivity getSyncInputActivity = Workflow.newActivityStub(GenerateInputActivity.class, ActivityConfiguration.OPTIONS);
   private final JobCreationAndStatusUpdateActivity jobCreationAndStatusUpdateActivity =
@@ -93,6 +97,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
                 maybeAttemptId.get(),
                 maybeJobId.get());
 
+            jobCreationAndStatusUpdateActivity.reportJobStart(new ReportJobStartInput(
+                maybeJobId.get()));
+
             final SyncOutput syncWorkflowInputs = getSyncInputActivity.getSyncWorkflowInput(getSyncInputActivitySyncInput);
 
             workflowState.setRunning(true);
@@ -108,12 +115,12 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
             final UUID connectionId = connectionUpdaterInput.getConnectionId();
 
             try {
-              childSync.run(
+              standardSyncOutput = Optional.ofNullable(childSync.run(
                   syncWorkflowInputs.getJobRunConfig(),
                   syncWorkflowInputs.getSourceLauncherConfig(),
                   syncWorkflowInputs.getDestinationLauncherConfig(),
                   syncWorkflowInputs.getSyncInput(),
-                  connectionId);
+                  connectionId));
             } catch (final ChildWorkflowFailure childWorkflowFailure) {
               if (!(childWorkflowFailure.getCause() instanceof CanceledFailure)) {
                 throw childWorkflowFailure;
@@ -155,7 +162,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private void reportSuccess(final ConnectionUpdaterInput connectionUpdaterInput) {
     jobCreationAndStatusUpdateActivity.jobSuccess(new JobSuccessInput(
         maybeJobId.get(),
-        maybeAttemptId.get()));
+        maybeAttemptId.get(),
+        standardSyncOutput.orElse(null)));
 
     connectionUpdaterInput.setJobId(null);
     connectionUpdaterInput.setAttemptNumber(1);
@@ -176,7 +184,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       connectionUpdaterInput.setFromFailure(true);
     } else {
       jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(
-          connectionUpdaterInput.getJobId()));
+          connectionUpdaterInput.getJobId(),
+          "Job failed after too many retries"));
 
       Workflow.await(Duration.ofMinutes(1), () -> skipScheduling());
 
