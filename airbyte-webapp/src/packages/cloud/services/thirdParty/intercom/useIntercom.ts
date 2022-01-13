@@ -5,15 +5,13 @@ import {
 } from "react-use-intercom";
 
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { useAnalytics } from "hooks/services/Analytics";
 
 export const useIntercom = (): IntercomContextValues => {
   const intercomContextValues = useIntercomProvider();
 
-  // It may be better to get these values from analytics context
-  // in case it will be possible to init intercom for non authorized users
   const user = useCurrentUser();
-  const workspace = useCurrentWorkspace();
+  const { analyticsContext } = useAnalytics();
 
   useEffect(() => {
     intercomContextValues.boot({
@@ -23,7 +21,7 @@ export const useIntercom = (): IntercomContextValues => {
       userHash: user.intercomHash,
 
       customAttributes: {
-        workspaceId: workspace?.workspaceId,
+        workspace_id: analyticsContext.workspaceId,
       },
     });
 
@@ -33,10 +31,10 @@ export const useIntercom = (): IntercomContextValues => {
   useEffect(() => {
     intercomContextValues.update({
       customAttributes: {
-        workspaceId: workspace?.workspaceId,
+        workspace_id: analyticsContext.workspace_id,
       },
     });
-  }, [workspace.workspaceId]);
+  }, [analyticsContext.workspace_id]);
 
   return intercomContextValues;
 };
