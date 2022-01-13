@@ -52,10 +52,60 @@ class PersistiqStream(HttpStream, ABC):
 class Users(PersistiqStream):
     primary_key = "id"
 
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        json_response = response.json()
+        if not json_response.get("has_more", False):
+            return None
+
+        return {
+            "page": json_response.get("next_page")[-1]
+        }
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {
+            "page": 1 if not next_page_token else next_page_token["page"]
+        }
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "users"
+
+    def request_headers(
+            self,
+            **kwargs
+    ) -> MutableMapping[str, Any]:
+        return {'x-api-key': self.api_key}
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield response.json()
+
+
+class Leads(PersistiqStream):
+    primary_key = "id"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        json_response = response.json()
+        if not json_response.get("has_more", False):
+            return None
+
+        return {
+            "page": json_response.get("next_page")[-1]
+        }
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {
+            "page": 1 if not next_page_token else next_page_token["page"]
+        }
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "leads"
 
     def request_headers(
             self,
@@ -161,4 +211,4 @@ class SourcePersistiq(AbstractSource):
 
         # auth = {"x-api-key": config['api_key']}
         auth = NoAuth()
-        return [Users(authenticator=auth, api_key=config['api_key'])]
+        return [Users(authenticator=auth, api_key=config['api_key']), Leads(authenticator=auth, api_key=config['api_key'])]
