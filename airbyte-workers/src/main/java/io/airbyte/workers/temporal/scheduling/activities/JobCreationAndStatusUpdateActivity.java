@@ -22,6 +22,7 @@ public interface JobCreationAndStatusUpdateActivity {
   class JobCreationInput {
 
     private UUID connectionId;
+    private boolean reset;
 
   }
 

@@ -85,7 +85,7 @@ public class JobCreationAndStatusUpdateActivityTest {
       Mockito.when(mJobFactory.create(CONNECTION_ID))
           .thenReturn(JOB_ID);
 
-      final JobCreationOutput output = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(CONNECTION_ID));
+      final JobCreationOutput output = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(CONNECTION_ID, false));
 
       Assertions.assertThat(output.getJobId()).isEqualTo(JOB_ID);
     }

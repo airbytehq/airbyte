@@ -82,7 +82,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
             // Job and attempt creation
             maybeJobId = Optional.ofNullable(connectionUpdaterInput.getJobId()).or(() -> {
               final JobCreationOutput jobCreationOutput = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(
-                  connectionUpdaterInput.getConnectionId()));
+                  connectionUpdaterInput.getConnectionId(), workflowState.isResetConnection()));
+              connectionUpdaterInput.setJobId(jobCreationOutput.getJobId());
               return Optional.ofNullable(jobCreationOutput.getJobId());
             });
 
@@ -95,7 +96,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
             // Sync workflow
             final SyncInput getSyncInputActivitySyncInput = new SyncInput(
                 maybeAttemptId.get(),
-                maybeJobId.get());
+                maybeJobId.get(),
+                workflowState.isResetConnection());
 
             jobCreationAndStatusUpdateActivity.reportJobStart(new ReportJobStartInput(
                 maybeJobId.get()));
@@ -133,6 +135,16 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         // When a scope is cancelled temporal will thow a CanceledFailure as you can see here:
         // https://github.com/temporalio/sdk-java/blob/master/temporal-sdk/src/main/java/io/temporal/workflow/CancellationScope.java#L72
         // The naming is very misleading, it is not a failure but the expected behavior...
+      }
+
+      if (workflowState.isResetConnection()) {
+        connectionUpdaterInput.setResetConnection(true);
+        connectionUpdaterInput.setJobId(null);
+        connectionUpdaterInput.setAttemptNumber(1);
+        connectionUpdaterInput.setFromFailure(false);
+        connectionUpdaterInput.setAttemptId(null);
+      } else {
+        connectionUpdaterInput.setResetConnection(false);
       }
 
       if (workflowState.isUpdated()) {
@@ -227,6 +239,14 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   @Override
+  public void resetConnection() {
+    if (!workflowState.isRunning()) {
+      cancelJob();
+    }
+    workflowState.setResetConnection(true);
+  }
+
+  @Override
   public WorkflowState getState() {
     return workflowState;
   }
@@ -239,14 +259,15 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   private Boolean skipScheduling() {
-    return workflowState.isSkipScheduling() || workflowState.isDeleted() || workflowState.isUpdated();
+    return workflowState.isSkipScheduling() || workflowState.isDeleted() || workflowState.isUpdated() || workflowState.isResetConnection();
   }
 
   private void continueAsNew(final ConnectionUpdaterInput connectionUpdaterInput) {
     // Continue the workflow as new
     connectionUpdaterInput.setAttemptId(null);
+    boolean isDeleted = workflowState.isDeleted();
     workflowState.reset();
-    if (!workflowState.isDeleted()) {
+    if (!isDeleted) {
       Workflow.continueAsNew(connectionUpdaterInput);
     }
   }

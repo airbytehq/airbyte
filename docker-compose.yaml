@@ -81,8 +81,7 @@ services:
       - WORKER_ENVIRONMENT=${WORKER_ENVIRONMENT}
       - WORKSPACE_DOCKER_MOUNT=${WORKSPACE_DOCKER_MOUNT}
       - WORKSPACE_ROOT=${WORKSPACE_ROOT}
-      # TODO: Remove before merge
-      #  - NEW_SCHEDULER=valuedoesntmatter
+      - NEW_SCHEDULER=${NEW_SCHEDULER}
     volumes:
       - data:${CONFIG_ROOT}
       - workspace:${WORKSPACE_ROOT}
@@ -152,7 +151,7 @@ services:
       - WEBAPP_URL=${WEBAPP_URL}
       - WORKER_ENVIRONMENT=${WORKER_ENVIRONMENT}
       - WORKSPACE_ROOT=${WORKSPACE_ROOT}
-      # - NEW_SCHEDULER=valuedoesntmatter
+      - NEW_SCHEDULER=${NEW_SCHEDULER}
     ports:
       - 8001:8001
     volumes:
