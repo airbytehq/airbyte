@@ -16,9 +16,12 @@ def octavia(ctx: click.Context, airbyte_url: str) -> None:
     api_client = airbyte_api_client.ApiClient(client_configuration)
     # TODO alafanechere workspace check might deserve its own function
     api_instance = workspace_api.WorkspaceApi(api_client)
-    api_response = api_instance.list_workspaces()
+    # open-api-generator consider non-required field as not nullable
+    # This will break validation of WorkspaceRead object for firstCompletedSync and feedbackDone fields
+    # This is why we bypass _check_return_type
+    api_response = api_instance.list_workspaces(_check_return_type=False)
     # TODO alafanechere prompt user to chose a workspace if multiple workspaces exist
-    workspace_id = api_response.workspaces[0].workspace_id
+    workspace_id = api_response.workspaces[0]["workspaceId"]
     click.echo(f"🐙 - Octavia is targetting your Airbyte instance running at {airbyte_url} on workspace {workspace_id}")
     ctx.obj["API_CLIENT"] = api_client
     ctx.obj["WORKSPACE_ID"] = workspace_id
