@@ -85,4 +85,5 @@ public class SnowflakeStagingSqlOperations extends JdbcSqlOperations implements 
   public boolean isSchemaExists(JdbcDatabase database, String outputSchema) throws Exception {
     return database.query(SHOW_SCHEMAS).map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equalsIgnoreCase);
   }
+
 }
