@@ -5503,7 +5503,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:0.4.1"
+- dockerImage: "airbyte/source-postgres:0.4.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/postgres"
     connectionSpecification:
@@ -5537,28 +5537,39 @@
           description: "Name of the database."
           type: "string"
           order: 2
+        schemas:
+          title: "Schemas"
+          description: "The list of schemas to sync from. Defaults to user. Case sensitive."
+          type: "array"
+          items:
+            type: "string"
+          minItems: 0
+          uniqueItems: true
+          default:
+          - "public"
+          order: 3
         username:
           title: "User"
           description: "Username to use to access the database."
           type: "string"
-          order: 3
+          order: 4
         password:
           title: "Password"
           description: "Password associated with the username."
           type: "string"
           airbyte_secret: true
-          order: 4
+          order: 5
         ssl:
           title: "Connect using SSL"
           description: "Encrypt client/server communications for increased security."
           type: "boolean"
           default: false
-          order: 5
+          order: 6
         replication_method:
           type: "object"
           title: "Replication Method"
           description: "Replication method to use for extracting data from the database."
-          order: 6
+          order: 7
           oneOf:
           - title: "Standard"
             additionalProperties: false
