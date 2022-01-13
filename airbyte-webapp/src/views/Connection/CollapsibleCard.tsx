@@ -1,7 +1,10 @@
 import React from "react";
 import { useToggle } from "react-use";
-import { Button, ContentCard } from "../../components";
 import styled from "styled-components";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
+
+import { ContentCard } from "components";
 
 const Card = styled(ContentCard)`
   margin-bottom: 10px;
@@ -10,6 +13,15 @@ const Card = styled(ContentCard)`
 const CardHeader = styled.div`
   display: flex;
   justify-content: space-between;
+`;
+
+const ArrowView = styled(FontAwesomeIcon)<{ $isOpen?: boolean }>`
+  font-size: 16px;
+  line-height: 16px;
+  color: ${({ theme }) => theme.primaryColor};
+  transform: ${({ $isOpen }) => $isOpen && "rotate(90deg)"};
+  transition: 0.3s;
+  cursor: pointer;
 `;
 
 export type CollapsibleCardProps = {
@@ -33,7 +45,11 @@ export const CollapsibleCard: React.FC<CollapsibleCardProps> = ({
         <CardHeader>
           {title}
           {collapsible && (
-            <Button onClick={toggle}>replace me with arrow </Button>
+            <ArrowView
+              onClick={toggle}
+              $isOpen={!isCollapsed}
+              icon={faChevronRight}
+            />
           )}
         </CardHeader>
       }

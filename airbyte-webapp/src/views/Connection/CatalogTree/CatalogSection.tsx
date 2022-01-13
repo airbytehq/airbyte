@@ -21,11 +21,10 @@ import {
   SUPPORTED_MODES,
 } from "views/Connection/ConnectionForm/formConfig";
 import { StreamHeader } from "./StreamHeader";
-import { FieldHeader } from "./FieldHeader";
-import { FieldRow } from "./FieldRow";
 
 import { equal, naturalComparatorBy } from "utils/objects";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
+import { StreamFieldTable } from "./StreamFieldTable";
 
 const flatten = (
   fArr: SyncSchemaField[],
@@ -45,13 +44,6 @@ const Section = styled.div<{ error?: boolean }>`
     ${(props) => (props.error ? props.theme.dangerColor : "none")};
   background: ${({ theme }) => theme.greyColor0};
   border-radius: 8px;
-`;
-
-const RowsContainer = styled.div<{ depth?: number }>`
-  background: ${({ theme }) => theme.whiteColor};
-  border-radius: 8px;
-  margin: 0
-    ${({ depth = 0 }) => `${depth * 10}px ${depth * 5}px ${depth * 10}px`};
 `;
 
 type TreeViewRowProps = {
@@ -78,7 +70,6 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
 }) => {
   const [isRowExpanded, onExpand] = useToggle(false);
   const { stream, config } = streamNode;
-  const streamId = stream.name;
 
   const updateStreamWithConfig = useCallback(
     (config: Partial<AirbyteStreamConfiguration>) =>
@@ -150,6 +141,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
     sourceNamespace: stream.namespace,
   });
 
+  const streamId = stream.name;
   const fields = useMemo(() => {
     const traversedFields = traverseSchemaToField(stream.jsonSchema, streamId);
 
@@ -168,15 +160,6 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   const configErrors = getIn(errors, `schema.streams[${streamNode.id}].config`);
   const hasError = configErrors && Object.keys(configErrors).length > 0;
   const hasChildren = fields && fields.length > 0;
-
-  const isCursor = (field: SyncSchemaField): boolean =>
-    equal(config.cursorField, field.path);
-
-  const isPrimaryKey = (field: SyncSchemaField): boolean => {
-    const existIndex = config.primaryKey.findIndex((p) => equal(p, field.path));
-
-    return existIndex !== -1;
-  };
 
   return (
     <Section error={hasError}>
@@ -207,35 +190,14 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
         />
       </TreeRowWrapper>
       {isRowExpanded && hasChildren && (
-        <>
-          <TreeRowWrapper noBorder>
-            <FieldHeader depth={1} />
-          </TreeRowWrapper>
-          <RowsContainer depth={1}>
-            {flattenedFields.map((field) => (
-              <TreeRowWrapper depth={1} key={field.key}>
-                <FieldRow
-                  depth={1}
-                  path={field.path}
-                  name={field.path.join(".")}
-                  type={field.type}
-                  destinationName={field.cleanedName}
-                  isCursor={isCursor(field)}
-                  isPrimaryKey={isPrimaryKey(field)}
-                  isPrimaryKeyEnabled={
-                    shouldDefinePk && SyncSchemaFieldObject.isPrimitive(field)
-                  }
-                  isCursorEnabled={
-                    shouldDefineCursor &&
-                    SyncSchemaFieldObject.isPrimitive(field)
-                  }
-                  onPrimaryKeyChange={onPkSelect}
-                  onCursorChange={onCursorSelect}
-                />
-              </TreeRowWrapper>
-            ))}
-          </RowsContainer>
-        </>
+        <StreamFieldTable
+          config={config}
+          syncSchemaFields={flattenedFields}
+          onCursorSelect={onCursorSelect}
+          onPkSelect={onPkSelect}
+          shouldDefinePk={shouldDefinePk}
+          shouldDefineCursor={shouldDefineCursor}
+        />
       )}
     </Section>
   );

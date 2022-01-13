@@ -14,12 +14,11 @@ import { naturalComparatorBy } from "utils/objects";
 import { SyncCatalogFilters } from "./SyncCatalogFilters";
 
 const TreeViewContainer = styled.div`
-  width: 100%;
   margin-bottom: 29px;
   border-radius: 4px;
   max-height: 600px;
   overflow-y: auto;
-  -webkit-overlay: true;
+  --webkit-overlay: true;
   // Find better way (for checkbox)
   margin-left: -43px;
   padding-left: 43px;

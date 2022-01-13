@@ -8,10 +8,20 @@ import { TransformationField } from "views/Connection/ConnectionForm/components/
 import {
   getInitialNormalization,
   getInitialTransformations,
+  mapFormPropsToOperation,
   useDefaultTransformation,
 } from "views/Connection/ConnectionForm/formConfig";
 import { FormCard } from "views/Connection/FormCard";
-import { Connection, Operation } from "core/domain/connection";
+import {
+  Connection,
+  NormalizationType,
+  Operation,
+  OperatorType,
+  Transformation,
+} from "core/domain/connection";
+import useConnection from "hooks/services/useConnectionHook";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { useDestinationDefinitionSpecificationLoadAsync } from "hooks/services/useDestinationHook";
 
 type TransformationViewProps = {
   connection: Connection;
@@ -23,9 +33,10 @@ const Content = styled.div`
   padding-bottom: 10px;
 `;
 
-const CustomTransformationsCard: React.FC<{ operations: Operation[] }> = ({
-  operations,
-}) => {
+const CustomTransformationsCard: React.FC<{
+  operations: Operation[];
+  onSubmit: (newValue: { transformations?: Transformation[] }) => void;
+}> = ({ operations, onSubmit }) => {
   const defaultTransformation = useDefaultTransformation();
 
   const initialValues = useMemo(
@@ -42,7 +53,8 @@ const CustomTransformationsCard: React.FC<{ operations: Operation[] }> = ({
       bottomSeparator
       form={{
         initialValues,
-        onSubmit: async (value) => console.log(value),
+        enableReinitialize: true,
+        onSubmit,
       }}
     >
       <FieldArray name="transformations">
@@ -57,12 +69,13 @@ const CustomTransformationsCard: React.FC<{ operations: Operation[] }> = ({
   );
 };
 
-const NormalizationCard: React.FC<{ operations: Operation[] }> = ({
-  operations,
-}) => {
+const NormalizationCard: React.FC<{
+  operations: Operation[];
+  onSubmit: (newValue: { normalization?: NormalizationType }) => void;
+}> = ({ operations, onSubmit }) => {
   const initialValues = useMemo(
     () => ({
-      normalization: getInitialNormalization(operations),
+      normalization: getInitialNormalization(operations, true),
     }),
     [operations]
   );
@@ -70,7 +83,7 @@ const NormalizationCard: React.FC<{ operations: Operation[] }> = ({
     <FormCard
       form={{
         initialValues,
-        onSubmit: async (value) => console.log(value),
+        onSubmit,
       }}
       title={<FormattedMessage id="connection.normalization" />}
       collapsible
@@ -83,10 +96,62 @@ const NormalizationCard: React.FC<{ operations: Operation[] }> = ({
 const TransformationView: React.FC<TransformationViewProps> = ({
   connection,
 }) => {
+  const definition = useDestinationDefinitionSpecificationLoadAsync(
+    connection.destination.destinationDefinitionId
+  );
+  const { updateConnection } = useConnection();
+  const workspace = useCurrentWorkspace();
+
+  const onSubmit = async (values: {
+    transformations?: Transformation[];
+    normalization?: NormalizationType;
+  }) => {
+    const newOp = mapFormPropsToOperation(
+      values,
+      connection.operations,
+      workspace.workspaceId
+    );
+
+    const operations = values.transformations
+      ? connection.operations
+          .filter(
+            (op) =>
+              op.operatorConfiguration.operatorType ===
+              OperatorType.Normalization
+          )
+          .concat(newOp)
+      : newOp.concat(
+          connection.operations.filter(
+            (op) => op.operatorConfiguration.operatorType === OperatorType.Dbt
+          )
+        );
+
+    return updateConnection({
+      namespaceDefinition: connection.namespaceDefinition,
+      namespaceFormat: connection.namespaceFormat,
+      prefix: connection.prefix,
+      schedule: connection.schedule,
+      syncCatalog: connection.syncCatalog,
+      connectionId: connection.connectionId,
+      status: connection.status,
+      operations: operations,
+    });
+  };
+
   return (
     <Content>
-      <NormalizationCard operations={connection.operations} />
-      <CustomTransformationsCard operations={connection.operations} />
+      {definition.supportsNormalization && (
+        <NormalizationCard
+          operations={connection.operations}
+          onSubmit={onSubmit}
+        />
+      )}
+      {definition.supportsDbt && (
+        <CustomTransformationsCard
+          operations={connection.operations}
+          onSubmit={onSubmit}
+        />
+      )}
     </Content>
   );
 };

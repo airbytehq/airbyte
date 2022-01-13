@@ -1,7 +1,8 @@
 import React, { memo } from "react";
-import { Cell } from "components/SimpleTableComponents";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
+
+import { Cell } from "components/SimpleTableComponents";
 
 const Name = styled.div<{ depth?: number }>`
   padding-left: ${({ depth }) => (depth ? depth * 30 : 0)}px;

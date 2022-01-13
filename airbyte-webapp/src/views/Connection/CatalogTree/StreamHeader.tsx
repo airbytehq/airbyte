@@ -2,20 +2,19 @@ import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
 import styled from "styled-components";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSortDown } from "@fortawesome/free-solid-svg-icons";
 
-import { CheckBox, DropDownRow } from "components";
-import { Arrow as ArrowBlock } from "./components/Arrow";
-import { Cell } from "components/SimpleTableComponents";
-import { SyncSettingsCell } from "./components/SyncSettingsCell";
 import {
   DestinationSyncMode,
   SyncMode,
   SyncSchemaField,
   SyncSchemaStream,
 } from "core/domain/catalog";
-import { Popout } from "components/base/Popout";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSortDown } from "@fortawesome/free-solid-svg-icons";
+
+import { CheckBox, DropDownRow, Popout, Cell } from "components";
+import { Arrow as ArrowBlock } from "./components/Arrow";
+import { SyncSettingsCell } from "./components/SyncSettingsCell";
 import Tooltip from "./components/Tooltip";
 
 const Arrow = styled(FontAwesomeIcon)<{ isOpen?: boolean }>`
@@ -134,6 +133,27 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
         options={availableSyncModes}
         onChange={onSelectSyncMode}
       />
+      <HeaderCell>
+        {cursorType === "required" ? (
+          <Popout
+            options={dropdownFields}
+            value={cursorField}
+            placeholder={
+              <FormattedMessage id="connectionForm.cursor.searchPlaceholder" />
+            }
+            onChange={(op) => onCursorChange(op.value)}
+            targetComponent={({ onOpen }) => (
+              <div onClick={onOpen}>
+                {stream.config.cursorField.join(".")}
+                <Arrow icon={faSortDown} />
+                <Tooltip items={stream.config.cursorField} />
+              </div>
+            )}
+          />
+        ) : cursorType === "sourceDefined" ? (
+          "<sourceDefined>"
+        ) : null}
+      </HeaderCell>
       <HeaderCell ellipsis>
         {pkType === "required" ? (
           <Popout
@@ -158,27 +178,6 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
             )}
           />
         ) : pkType === "sourceDefined" ? (
-          "<sourceDefined>"
-        ) : null}
-      </HeaderCell>
-      <HeaderCell>
-        {cursorType === "required" ? (
-          <Popout
-            options={dropdownFields}
-            value={cursorField}
-            placeholder={
-              <FormattedMessage id="connectionForm.cursor.searchPlaceholder" />
-            }
-            onChange={(op) => onCursorChange(op.value)}
-            targetComponent={({ onOpen }) => (
-              <div onClick={onOpen}>
-                {stream.config.cursorField.join(".")}
-                <Arrow icon={faSortDown} />
-                <Tooltip items={stream.config.cursorField} />
-              </div>
-            )}
-          />
-        ) : cursorType === "sourceDefined" ? (
           "<sourceDefined>"
         ) : null}
       </HeaderCell>

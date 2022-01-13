@@ -88,11 +88,7 @@ const connectionValidationSchema = yup
           id: yup
             .string()
             // This is required to get rid of id fields we are using to detect stream for edition
-            .when(
-              "$isRequest",
-              (isRequest: boolean, schema: yup.StringSchema) =>
-                isRequest ? schema.strip(true) : schema
-            ),
+            .strip(true),
           stream: yup.object(),
           // @ts-ignore
           config: yup.object().test({
@@ -261,7 +257,7 @@ const getInitialNormalization = (
     (op) => op.operatorConfiguration.operatorType === OperatorType.Normalization
   ) as Normalization)?.operatorConfiguration?.normalization?.option;
 
-  // If no normalization was selected for already present normalization -> Raw is select
+  // If no normalization was selected for already present normalization -> select Raw one
   if (!initialNormalization && isEditMode) {
     initialNormalization = NormalizationType.RAW;
   }
@@ -289,7 +285,7 @@ const useInitialValues = (
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,
     };
 
-    const { operations = [] } = connection;
+    const operations = connection.operations || [];
 
     if (destDefinition.supportsDbt) {
       initialValues.transformations = getInitialTransformations(operations);

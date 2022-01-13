@@ -92,19 +92,21 @@ const Option: React.FC<any> = (props) => {
   );
 };
 
-const SyncSettingsCell: React.FC<DropdownProps> = (props) => {
-  return (
-    <Cell flex={1.5}>
-      <DropDown
-        {...props}
-        components={{
-          SingleValue: SingleValue,
-          Option: Option,
-        }}
-        $withBorder
-      />
-    </Cell>
-  );
-};
+const SyncSettingsDropdown: React.FC<DropdownProps> = (props) => (
+  <DropDown
+    {...props}
+    components={{
+      SingleValue: SingleValue,
+      Option: Option,
+    }}
+    $withBorder
+  />
+);
 
-export { SyncSettingsCell };
+const SyncSettingsCell: React.FC<DropdownProps> = (props) => (
+  <Cell flex={1.5}>
+    <SyncSettingsDropdown {...props} />
+  </Cell>
+);
+
+export { SyncSettingsCell, SyncSettingsDropdown };

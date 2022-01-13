@@ -13,23 +13,26 @@ import useWorkspace from "hooks/services/useWorkspace";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { TransformationField } from "./components/TransformationField";
 import { NormalizationField } from "./components/NormalizationField";
-import { NamespaceField } from "./components/NamespaceField";
+import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
+import SectionTitle from "./components/SectionTitle";
+import CreateControls from "./components/CreateControls";
+import SchemaField from "./components/SyncCatalogField";
+import EditControls from "./components/EditControls";
 import {
   ConnectionFormValues,
   connectionValidationSchema,
   FormikConnectionFormValues,
   mapFormPropsToOperation,
+  SUPPORTED_MODES,
   useDefaultTransformation,
   useFrequencyDropdownData,
   useInitialValues,
 } from "./formConfig";
-import SectionTitle from "./components/SectionTitle";
-import CreateControls from "./components/CreateControls";
-import SchemaField from "./components/SyncCatalogField";
-import EditControls from "./components/EditControls";
 import { Connection, ScheduleProperties } from "core/resources/Connection";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { DestinationDefinitionSpecification } from "core/domain/connector";
+import { ConnectionNamespaceDefinition } from "core/domain/connection";
+import { SyncSettingsDropdown } from "../CatalogTree/components/SyncSettingsCell";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 15px 24px;
@@ -37,10 +40,6 @@ const FormContainer = styled(Form)`
 
 const EditLaterMessage = styled(Label)`
   margin: -20px 0 29px;
-`;
-
-const ControlLabelsWithMargin = styled(ControlLabels)`
-  margin-bottom: 29px;
 `;
 
 const ConnectorLabel = styled(ControlLabels)`
@@ -112,6 +111,20 @@ const OperationsSection: React.FC<{
   );
 };
 
+const NamespaceFormatLabel = styled(ControlLabels)`
+  flex: 5 0 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+`;
+
+export const FlexRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+`;
+
 const ConnectionForm: React.FC<ConnectionFormProps> = ({
   onSubmit,
   onReset,
@@ -134,8 +147,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
   const formatMessage = useIntl().formatMessage;
 
-  const { operations } = connection;
-
   const initialValues = useInitialValues(
     connection,
     destDefinition,
@@ -147,21 +158,14 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   const onFormSubmit = useCallback(
     async (values: FormikConnectionFormValues) => {
       const formValues: ConnectionFormValues = connectionValidationSchema.cast(
-        values,
-        {
-          context: { isRequest: true },
-        }
+        values
       ) as any;
 
-      const newOperations = mapFormPropsToOperation(
+      formValues.operations = mapFormPropsToOperation(
         values,
-        operations,
+        connection.operations,
         workspace.workspaceId
       );
-
-      if (newOperations.length > 0) {
-        formValues.operations = newOperations;
-      }
 
       setSubmitError(null);
       try {
@@ -183,7 +187,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       initialValues.syncCatalog,
       isEditMode,
       onSubmit,
-      operations,
+      connection.operations,
       workspace.workspaceId,
     ]
   );
@@ -198,16 +202,21 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       enableReinitialize={true}
       onSubmit={onFormSubmit}
     >
-      {({ isSubmitting, setFieldValue, isValid, dirty, resetForm }) => (
+      {({ isSubmitting, setFieldValue, isValid, dirty, resetForm, values }) => (
         <FormContainer className={className}>
+          {/* in create mode schedule is part of form */}
           {!isEditMode && (
-            <ControlLabelsWithMargin>
-              <Field name="schedule">
-                {({ field, meta }: FieldProps<ScheduleProperties>) => (
+            <Field name="schedule">
+              {({ field, meta }: FieldProps<ScheduleProperties>) => (
+                <ControlLabels>
                   <ConnectorLabel
+                    nextLine
                     error={!!meta.error && meta.touched}
                     label={formatMessage({
                       id: "form.frequency",
+                    })}
+                    message={formatMessage({
+                      id: "form.frequency.message",
                     })}
                   >
                     <DropDown
@@ -222,31 +231,79 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                       }}
                     />
                   </ConnectorLabel>
-                )}
-              </Field>
-            </ControlLabelsWithMargin>
+                </ControlLabels>
+              )}
+            </Field>
           )}
-          <NamespaceField />
-          <Field name="prefix">
-            {({ field }: FieldProps<string>) => (
-              <ControlLabelsWithMargin
-                label={formatMessage({
-                  id: "form.prefix",
-                })}
-                message={formatMessage({
-                  id: "form.prefix.message",
-                })}
-              >
-                <Input
-                  {...field}
-                  type="text"
-                  placeholder={formatMessage({
-                    id: `form.prefix.placeholder`,
+          <ControlLabels
+            nextLine
+            label={formatMessage({
+              id: "connectionForm.defaultSyncMode",
+            })}
+            message={formatMessage({
+              id: "connectionForm.defaultSyncMode.message",
+            })}
+          >
+            <SyncSettingsDropdown
+              options={SUPPORTED_MODES.map(
+                ([syncMode, destinationSyncMode]) => ({
+                  value: { syncMode, destinationSyncMode },
+                })
+              )}
+            />
+          </ControlLabels>
+          <FlexRow>
+            <Field
+              name="namespaceDefinition"
+              component={NamespaceDefinitionField}
+            />
+            <Field name="prefix">
+              {({ field }: FieldProps<string>) => (
+                <ControlLabels
+                  nextLine
+                  label={formatMessage({
+                    id: "form.prefix",
                   })}
-                />
-              </ControlLabelsWithMargin>
-            )}
-          </Field>
+                  message={formatMessage({
+                    id: "form.prefix.message",
+                  })}
+                >
+                  <Input
+                    {...field}
+                    type="text"
+                    placeholder={formatMessage({
+                      id: `form.prefix.placeholder`,
+                    })}
+                  />
+                </ControlLabels>
+              )}
+            </Field>
+          </FlexRow>
+          {values.namespaceDefinition ===
+            ConnectionNamespaceDefinition.CustomFormat && (
+            <Field name="namespaceFormat">
+              {({ field, meta }: FieldProps<string>) => (
+                <NamespaceFormatLabel
+                  nextLine
+                  error={!!meta.error}
+                  label={
+                    <FormattedMessage id="connectionForm.namespaceFormat.title" />
+                  }
+                  message={
+                    <FormattedMessage id="connectionForm.namespaceFormat.subtitle" />
+                  }
+                >
+                  <Input
+                    {...field}
+                    error={!!meta.error}
+                    placeholder={formatMessage({
+                      id: "connectionForm.namespaceFormat.placeholder",
+                    })}
+                  />
+                </NamespaceFormatLabel>
+              )}
+            </Field>
+          )}
           <Field
             name="syncCatalog.streams"
             destinationSupportedSyncModes={
