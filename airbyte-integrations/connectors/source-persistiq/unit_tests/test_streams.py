@@ -9,6 +9,17 @@ import pytest
 from source_persistiq.source import PersistiqStream
 
 
+def mocked_requests_get(*args, **kwargs):
+    class MockResponse:
+        def __init__(self, json_data, status_code):
+            self.json_data = json_data
+            self.status_code = status_code
+
+        def json(self):
+            return self.json_data
+    return MockResponse(json_data=kwargs["json_data"], status_code=kwargs["status_code"])
+
+
 @pytest.fixture
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
@@ -18,66 +29,43 @@ def patch_base_class(mocker):
 
 
 def test_request_params(patch_base_class):
-    stream = PersistiqStream()
-    # TODO: replace this with your input parameters
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request parameters
-    expected_params = {}
+    stream = PersistiqStream(api_key="mybeautifulkey")
+    inputs = {"next_page_token": {"page": 1}}
+    expected_params = {"page": 1}
     assert stream.request_params(**inputs) == expected_params
 
 
 def test_next_page_token(patch_base_class):
-    stream = PersistiqStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected next page token
+    stream = PersistiqStream(api_key="mybeautifulkey")
+    # With next page
+    response = mocked_requests_get(json_data={
+        "has_more": True, "next_page": "https://api.persistiq.com/v1/users?page=2"}, status_code=200)
+    expected_token = "2"
+    assert stream.next_page_token(response=response) == {
+        "page": expected_token}
+    # Without next page
+    response = mocked_requests_get(json_data={}, status_code=200)
     expected_token = None
-    assert stream.next_page_token(**inputs) == expected_token
+    assert stream.next_page_token(response=response) == expected_token
 
 
 def test_parse_response(patch_base_class):
-    stream = PersistiqStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected parced object
-    expected_parsed_object = {}
-    assert next(stream.parse_response(**inputs)) == expected_parsed_object
+    stream = PersistiqStream(api_key="mybeautifulkey")
+    response = mocked_requests_get(json_data={
+        "users": [{"id": 1, "name": "John Doe"}]}, status_code=200)
+    expected_parsed_object = {
+        "users": [{"id": 1, "name": "John Doe"}]}
+    assert next(stream.parse_response(response=response)
+                ) == expected_parsed_object
 
 
 def test_request_headers(patch_base_class):
-    stream = PersistiqStream()
-    # TODO: replace this with your input parameters
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request headers
-    expected_headers = {}
-    assert stream.request_headers(**inputs) == expected_headers
+    stream = PersistiqStream(api_key="mybeautifulkey")
+    expected_headers = {"x-api-key": "mybeautifulkey"}
+    assert stream.request_headers() == expected_headers
 
 
 def test_http_method(patch_base_class):
-    stream = PersistiqStream()
-    # TODO: replace this with your expected http request method
+    stream = PersistiqStream(api_key="mybeautifulkey")
     expected_method = "GET"
     assert stream.http_method == expected_method
-
-
-@pytest.mark.parametrize(
-    ("http_status", "should_retry"),
-    [
-        (HTTPStatus.OK, False),
-        (HTTPStatus.BAD_REQUEST, False),
-        (HTTPStatus.TOO_MANY_REQUESTS, True),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, True),
-    ],
-)
-def test_should_retry(patch_base_class, http_status, should_retry):
-    response_mock = MagicMock()
-    response_mock.status_code = http_status
-    stream = PersistiqStream()
-    assert stream.should_retry(response_mock) == should_retry
-
-
-def test_backoff_time(patch_base_class):
-    response_mock = MagicMock()
-    stream = PersistiqStream()
-    expected_backoff_time = None
-    assert stream.backoff_time(response_mock) == expected_backoff_time
