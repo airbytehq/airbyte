@@ -75,7 +75,7 @@ class SourceFacebookMarketing(AbstractSource):
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        config = ConnectorConfig(**config)
+        config: ConnectorConfig = ConnectorConfig(**config)
         api = API(config)
 
         insights_args = dict(

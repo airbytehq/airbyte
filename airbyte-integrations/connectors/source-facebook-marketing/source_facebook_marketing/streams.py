@@ -98,6 +98,10 @@ class FBMarketingStream(Stream, ABC):
 
         return records
 
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        for account in self._api.accounts:
+            yield {"account": account}
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -188,10 +192,6 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
 
         return result
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        for account in self._api.accounts:
-            yield {"account": account}
-
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: dict, **kwargs) -> MutableMapping[str, Any]:
         """Include state filter"""
         params = super().request_params(**kwargs)
@@ -201,11 +201,11 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
     def _state_filter(self, stream_slice: dict, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Additional filters associated with state if any set"""
         account_id = stream_slice.get("account", {}).get("account_id")
-        _stream_state = stream_state.get(account_id, {})
-        state_value = _stream_state.get(self.cursor_field)
+        account_stream_state = stream_state.get(account_id, {})
+        state_value = account_stream_state.get(self.cursor_field)
         filter_value = self._start_date if not state_value else pendulum.parse(state_value)
 
-        potentially_new_records_in_the_past = self._include_deleted and not _stream_state.get("include_deleted", False)
+        potentially_new_records_in_the_past = self._include_deleted and not account_stream_state.get("include_deleted", False)
         if potentially_new_records_in_the_past:
             self.logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
             filter_value = self._start_date
@@ -241,15 +241,15 @@ class AdCreatives(FBMarketingStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Read records using batch API"""
-        for records in self._read_records(params=self.request_params(stream_state=stream_state)):
-            # "thumbnail_data_url" is a field in our stream's schema because we
-            # output it (see fix_thumbnail_urls below), but it's not a field that
-            # we can request from Facebook
-            request_fields = [f for f in self.fields if f != "thumbnail_data_url"]
-            requests = [record.api_get(fields=request_fields, pending=True) for record in records]
-            for requests_batch in batch(requests, size=self.batch_size):
-                for record in self.execute_in_batch(requests_batch):
-                    yield self.fix_thumbnail_urls(record)
+        records = self._read_records(stream_slice=stream_slice, params=self.request_params(stream_slice=stream_slice, stream_state=stream_state))
+        # "thumbnail_data_url" is a field in our stream's schema because we
+        # output it (see fix_thumbnail_urls below), but it's not a field that
+        # we can request from Facebook
+        request_fields = [f for f in self.fields if f != "thumbnail_data_url"]
+        requests = [record.api_get(fields=request_fields, pending=True) for record in records]
+        for requests_batch in batch(requests, size=self.batch_size):
+            for record in self.execute_in_batch(requests_batch):
+                yield self.fix_thumbnail_urls(record)
 
     def fix_thumbnail_urls(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """Cleans and, if enabled, fetches thumbnail URLs for each creative."""
@@ -262,9 +262,8 @@ class AdCreatives(FBMarketingStream):
         return record
 
     @backoff_policy
-    def _read_records(self, params: Mapping[str, Any]) -> Iterator:
-        for account in self._api.accounts:
-            yield account.get_ad_creatives(params=params)
+    def _read_records(self, stream_slice: Mapping[str, Any], params: Mapping[str, Any]) -> Iterator:
+        return stream_slice.get("account").get_ad_creatives(params=params)
 
 
 class Ads(FBMarketingIncrementalStream):
@@ -275,7 +274,7 @@ class Ads(FBMarketingIncrementalStream):
 
     @backoff_policy
     def _read_records(self, stream_slice: Mapping[str, Any], params: Mapping[str, Any]):
-        yield from stream_slice.get("account").get_ads(params=params, fields=[self.cursor_field])
+        return stream_slice.get("account").get_ads(params=params, fields=[self.cursor_field])
 
 
 class AdSets(FBMarketingIncrementalStream):
@@ -286,7 +285,7 @@ class AdSets(FBMarketingIncrementalStream):
 
     @backoff_policy
     def _read_records(self, stream_slice: Mapping[str, Any], params: Mapping[str, Any]):
-        yield from stream_slice.get("account").get_ad_sets(params=params)
+        return stream_slice.get("account").get_ad_sets(params=params)
 
 
 class Campaigns(FBMarketingIncrementalStream):
@@ -297,7 +296,7 @@ class Campaigns(FBMarketingIncrementalStream):
 
     @backoff_policy
     def _read_records(self, stream_slice: Mapping[str, Any], params: Mapping[str, Any]):
-        yield from stream_slice.get("account").get_campaigns(params=params)
+        return stream_slice.get("account").get_campaigns(params=params)
 
 
 class Videos(FBMarketingIncrementalStream):
@@ -308,7 +307,7 @@ class Videos(FBMarketingIncrementalStream):
 
     @backoff_policy
     def _read_records(self, stream_slice: Mapping[str, Any], params: Mapping[str, Any]):
-        yield from stream_slice.get("account").get_ad_videos(params=params)
+        return stream_slice.get("account").get_ad_videos(params=params)
 
 
 class AdsInsights(FBMarketingIncrementalStream):
