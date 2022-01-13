@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.azure_blob_storage.file;
 
 public class AzureConsts {
 
-  public static final int MiB = 1024 * 1024;
+  public static final long BUTCH_SIZE = 4 * 1024 * 1024;
 
   public static final String LOADING_METHOD = "loading_method";
   public static final String METHOD = "method";

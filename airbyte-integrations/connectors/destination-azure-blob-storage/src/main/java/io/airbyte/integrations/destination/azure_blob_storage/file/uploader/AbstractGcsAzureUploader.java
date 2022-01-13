@@ -14,6 +14,8 @@ import io.airbyte.integrations.destination.gcs.GcsS3Helper;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.DestinationSyncMode;
+
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -21,6 +23,8 @@ import java.util.List;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static io.airbyte.integrations.destination.azure_blob_storage.file.AzureConsts.BUTCH_SIZE;
 
 public abstract class AbstractGcsAzureUploader<T extends S3Writer> extends AbstractAzureUploader<S3Writer> {
 
@@ -70,7 +74,27 @@ public abstract class AbstractGcsAzureUploader<T extends S3Writer> extends Abstr
       LocalDateTime date = LocalDateTime.now().plusHours(25);
       Date out = Date.from(date.atZone(ZoneId.systemDefault()).toInstant());
       var url = s3Client.generatePresignedUrl(gcsBucketName, this.writer.getOutputPath(), out);
-      appendBlobClient.appendBlockFromUrl(url.toString(), new BlobRange(headerByteSize));
+      long fileSize = s3Client.getObjectMetadata(gcsBucketName, this.writer.getOutputPath()).getContentLength();
+      uploadToAzureByButch(url, fileSize);
+    }
+  }
+
+  private void uploadToAzureByButch(URL url, long fileByteSize) {
+    long startTempBytes = headerByteSize;
+    var chunk = BUTCH_SIZE;
+    if ((startTempBytes + chunk) >= fileByteSize) {
+      appendBlobClient.appendBlockFromUrl(url.toString(), new BlobRange(startTempBytes, fileByteSize));
+    } else {
+      var tempFileByteSize = startTempBytes + chunk;
+      while (fileByteSize > tempFileByteSize) {
+        appendBlobClient.appendBlockFromUrl(url.toString(), new BlobRange(startTempBytes, chunk));
+        startTempBytes = startTempBytes + chunk + 1;
+        if (fileByteSize - (tempFileByteSize + 1) < chunk) {
+          chunk = fileByteSize - tempFileByteSize;
+        }
+        tempFileByteSize = tempFileByteSize + chunk + 1;
+      }
+      appendBlobClient.appendBlockFromUrl(url.toString(), new BlobRange(startTempBytes, chunk - 1));
     }
   }
 
