@@ -138,7 +138,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
         internals.addAll(super.discoverInternal(database, schema));
       }
       for (TableInfo<CommonField<JDBCType>> info : internals) {
-        LOGGER.debug("Found table: {}", info.getName());
+        LOGGER.debug("Found table (schema: {}): {}", info.getNameSpace(), info.getName());
       }
       return internals;
     } else {
