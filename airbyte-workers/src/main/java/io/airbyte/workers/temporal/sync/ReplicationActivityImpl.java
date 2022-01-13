@@ -119,7 +119,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
       return fullSyncInput;
     };
 
-    CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> workerFactory;
+    final CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> workerFactory;
 
     if (containerOrchestratorConfig.isPresent()) {
       workerFactory = getContainerLauncherWorkerFactory(containerOrchestratorConfig.get(), sourceLauncherConfig, destinationLauncherConfig,
@@ -159,6 +159,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     syncSummary.setStartTime(output.getReplicationAttemptSummary().getStartTime());
     syncSummary.setEndTime(output.getReplicationAttemptSummary().getEndTime());
     syncSummary.setStatus(output.getReplicationAttemptSummary().getStatus());
+    syncSummary.setTotalStats(output.getReplicationAttemptSummary().getTotalStats());
+    syncSummary.setStreamStats(output.getReplicationAttemptSummary().getStreamStats());
 
     final StandardSyncOutput standardSyncOutput = new StandardSyncOutput();
     standardSyncOutput.setState(output.getState());
@@ -198,7 +200,6 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           airbyteSource,
           new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
           new DefaultAirbyteDestination(workerConfigs, destinationLauncher),
-          new AirbyteMessageTracker(),
           new AirbyteMessageTracker());
     };
   }
