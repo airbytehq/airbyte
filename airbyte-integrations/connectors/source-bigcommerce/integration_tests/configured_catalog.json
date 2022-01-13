@@ -2110,6 +2110,6 @@
       "sync_mode": "incremental",
       "cursor_field": ["date_modified"],
       "destination_sync_mode": "append"
-    },
+    }
   ]
 }
