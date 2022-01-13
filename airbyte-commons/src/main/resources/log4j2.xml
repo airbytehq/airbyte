@@ -9,7 +9,7 @@
 
         <!--
             Note the $${sys:S3_LOG_BUCKET:-${env:S3_LOG_BUCKET}} pattern below.
-            This means that it uses the context value if it exists.
+            This means that it uses the system property if it exists.
             Otherwise it falls back to the environment variable.
 
             This is useful if you want to override the environment variables at runtime (or if you don't have
