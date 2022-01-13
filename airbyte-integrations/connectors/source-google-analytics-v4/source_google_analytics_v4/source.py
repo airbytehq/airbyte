@@ -91,7 +91,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
     def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
         self.start_date = config["start_date"]
-        self.window_in_days = config.get("window_in_days", 90)
+        self.window_in_days = config.get("window_in_days", 1)
         self.view_id = config["view_id"]
         self.metrics = config["metrics"]
         self.dimensions = config["dimensions"]
@@ -274,9 +274,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             attr_type = None
             self.logger.error(f"Unsuported GA {field_type}: {attribute}")
 
-        data_type = self.map_type.get(attr_type, "string")
-
-        return data_type
+        return self.map_type.get(attr_type, "string")
 
     @staticmethod
     def lookup_data_format(attribute: str) -> Union[str, None]:
@@ -374,6 +372,8 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             column_header = report.get("columnHeader", {})
             dimension_headers = column_header.get("dimensions", [])
             metric_headers = column_header.get("metricHeader", {}).get("metricHeaderEntries", [])
+            
+            self.check_for_sampled_result(report.get("data", {}))
 
             for row in self.get_data(report):
                 record = {}
@@ -398,6 +398,13 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
 
                 yield record
 
+    def check_for_sampled_result(self, data):
+        if not data.get("isDataGolden", False):
+            self.logger.warning("Google Analytics data is not golden. Future requests may return different data.")
+        if data.get("sampleReadCounts", False):
+            self.logger.warning("Google Analytics data is sampled. Consider using a smaller window_in_days parameter. "
+                                "For more info check https://developers.google.com/analytics/devguides/reporting/core/v4/basics#sampling")
+
 
 class GoogleAnalyticsV4IncrementalObjectsBase(GoogleAnalyticsV4Stream):
     cursor_field = "ga_date"
@@ -418,7 +425,7 @@ class GoogleAnalyticsServiceOauth2Authenticator(Oauth2Authenticator):
     def __init__(self, config):
         self.credentials_json = json.loads(config["credentials_json"])
         self.client_email = self.credentials_json["client_email"]
-        self.scope = "https://www.googleapis.com/auth/analytics.readonly"
+        self.scope = "https://www.googleapis .com/auth/analytics.readonly"
 
         super().__init__(
             token_refresh_endpoint="https://oauth2.googleapis.com/token",

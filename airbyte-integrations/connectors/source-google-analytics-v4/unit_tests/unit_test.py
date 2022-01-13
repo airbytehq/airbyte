@@ -3,12 +3,14 @@
 #
 
 import json
+import logging
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 from urllib.parse import unquote
 
 import pendulum
 import pytest
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from freezegun import freeze_time
 from source_google_analytics_v4.source import (
@@ -69,6 +71,14 @@ def mock_api_returns_valid_records(requests_mock):
         "https://analyticsreporting.googleapis.com/v4/reports:batchGet", json=json.loads(read_file("response_with_records.json"))
     )
 
+@pytest.fixture
+def mock_api_returns_sampled_results(requests_mock):
+    """API returns valid data for given date based slice"""
+    yield requests_mock.post(
+        "https://analyticsreporting.googleapis.com/v4/reports:batchGet", json=json.loads(read_file("response_with_sampling.json"))
+    )
+
+
 
 @pytest.fixture()
 def test_config():
@@ -76,6 +86,9 @@ def test_config():
     test_config["authenticator"] = NoAuth()
     test_config["metrics"] = []
     test_config["dimensions"] = []
+    test_config["credentials"] = {
+        "type": "Service",
+    }
     return test_config
 
 
@@ -104,6 +117,19 @@ def test_lookup_metrics_dimensions_data_type(test_config, metrics_dimensions_map
     test = g.lookup_data_type(field_type, attribute)
 
     assert test == expected
+
+
+
+def test_sampled_result_is_logged_as_warning(mock_api_returns_sampled_results, test_config, mock_metrics_dimensions_type_list_link, capsys):
+    g = GoogleAnalyticsV4Stream(config=test_config)
+
+    source = SourceGoogleAnalyticsV4()
+    del test_config["custom_reports"]
+    catalog = ConfiguredAirbyteCatalog.parse_obj(json.loads(read_file("../integration_tests/configured_catalog.json")))
+    list(source.read(logging.getLogger(), test_config, catalog))
+    output = capsys.readouterr()
+
+    assert "Sampled results" in str(output)
 
 
 @patch("source_google_analytics_v4.source.jwt")
