@@ -11,17 +11,21 @@ const CheckBoxInput = styled.input`
   position: absolute;
 `;
 
-const CheckBoxContainer = styled.label`
-  height: 20px;
-  min-width: 20px;
-  background: ${({ theme }) => theme.greyColor20};
-  color: ${({ theme }) => theme.primaryColor};
+const CheckBoxContainer = styled.label<{ checked?: boolean }>`
+  height: 18px;
+  min-width: 18px;
+  border: 1px solid
+    ${({ theme, checked }) =>
+      checked ? theme.primaryColor : theme.greyColor20};
+  background: ${({ theme, checked }) =>
+    checked ? theme.primaryColor : theme.whiteColor};
+  color: ${({ theme }) => theme.whiteColor};
   text-align: center;
   border-radius: 4px;
-  font-size: 14px;
-  line-height: 14px;
+  font-size: 13px;
+  line-height: 13px;
   display: inline-block;
-  padding: 2px 0;
+  padding: 1px 0;
   cursor: pointer;
   vertical-align: top;
   position: relative;
@@ -33,6 +37,7 @@ const CheckBox: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
   <CheckBoxContainer
     onClick={(event: React.SyntheticEvent) => event.stopPropagation()}
     className={props.className}
+    checked={props.checked}
   >
     <CheckBoxInput {...props} type="checkbox" />
     {props.checked && <FontAwesomeIcon icon={faCheck} />}
