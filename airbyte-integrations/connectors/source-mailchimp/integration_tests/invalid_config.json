@@ -1,6 +1,4 @@
 {
-  "credentials": {
-    "auth_type": "apikey",
-    "apikey": "api-key-awesome"
-  }
+  "apikey": "api-key-awesome",
+  "username": "fakemaster@silly.com"
 }

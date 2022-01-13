@@ -19,6 +19,9 @@ tests:
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
       timeout_seconds: 180
+    - config_path: "integration_tests/invalid_config_apikey.json"
+      status: "failed"
+      timeout_seconds: 180
     - config_path: "integration_tests/invalid_config_oauth.json"
       status: "failed"
       timeout_seconds: 180
