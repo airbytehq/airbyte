@@ -765,9 +765,6 @@ class ReactionStream(GithubStream, ABC):
             for parent_record in self._parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
                 yield {self.parent_key: parent_record[self.parent_key], "repository": stream_slice["repository"]}
 
-    def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        return {"Accept": "application/vnd.github.squirrel-girl-preview+json"}
-
 
 class CommitCommentReactions(ReactionStream):
     """
