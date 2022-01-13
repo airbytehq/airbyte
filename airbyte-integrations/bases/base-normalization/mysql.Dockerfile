@@ -20,8 +20,8 @@ RUN pip install .
 
 WORKDIR /airbyte/normalization_code
 RUN pip install .
-# Based of https://github.com/dbeatty10/dbt-mysql/tree/dev/0.19.0
-RUN pip install dbt-mysql==0.19.0
+
+RUN pip install git+https://github.com/dbeatty10/dbt-mysql.git@dev/0.19.0
 
 WORKDIR /airbyte/normalization_code/dbt-template/
 # Download external dbt dependencies
