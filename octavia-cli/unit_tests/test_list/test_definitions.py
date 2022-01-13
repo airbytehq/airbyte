@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 import pytest
 from airbyte_api_client.api import destination_definition_api, source_definition_api
 from octavia_cli.list.definitions import (
@@ -47,7 +48,7 @@ class TestDefinitions:
 
     def test_fields_to_display(self, patch_base_class, mock_definition_type, mock_api_client):
         definitions = Definitions(mock_definition_type, mock_api_client)
-        expected_field_to_display = ["name", "docker_repository", "docker_image_tag", "my_definition_type_definition_id"]
+        expected_field_to_display = ["name", "dockerRepository", "dockerImageTag", "my_definition_typeDefinitionId"]
         assert definitions.fields_to_display == expected_field_to_display
 
     def test_response_definition_list_field(self, patch_base_class, mock_definition_type, mock_api_client):
@@ -69,14 +70,16 @@ class TestDefinitions:
             assert "discarded_value" not in parsed_definitions[i]
 
     def test_repr(self, patch_base_class, mocker, mock_definition_type, mock_api_client):
-        headers = ["field_a", "field_b", "field_c"]
+        headers = ["fieldA", "fieldB", "fieldC"]
         latest_definitions = [["a", "b", "c"]]
         mocker.patch.object(Definitions, "fields_to_display", headers)
         mocker.patch.object(Definitions, "latest_definitions", latest_definitions)
-        mocker.patch.object(Definitions, "_display_as_table", mocker.Mock())
+        mocker.patch.object(Definitions, "_display_as_table")
+        mocker.patch.object(Definitions, "_format_column_names")
+
         definitions = Definitions(mock_definition_type, mock_api_client)
         representation = definitions.__repr__()
-        definitions._display_as_table.assert_called_with([[f.upper() for f in headers]] + latest_definitions)
+        definitions._display_as_table.assert_called_with([definitions._format_column_names.return_value] + latest_definitions)
         assert representation == definitions._display_as_table.return_value
 
     @pytest.mark.parametrize(
@@ -134,11 +137,13 @@ class TestSubDefinitions:
         ],
     )
     def test_latest_definitions(self, mocker, mock_api_client, SubDefinitionClass, list_latest_fn):
-        mocker.patch.object(SubDefinitionClass, "api", mocker.Mock())
-        mocker.patch.object(SubDefinitionClass, "_parse_response", mocker.Mock())
+        mocker.patch.object(SubDefinitionClass, "api")
+        mocker.patch.object(SubDefinitionClass, "_parse_response")
 
         definitions = SubDefinitionClass(mock_api_client)
         definitions.api_instance = mocker.Mock()
 
         assert definitions.latest_definitions == definitions._parse_response.return_value
-        definitions.api.__getattr__(list_latest_fn).assert_called_with(definitions.api_instance)
+        definitions.api.__getattr__(list_latest_fn).assert_called_with(
+            definitions.api_instance, **SubDefinitionClass.LIST_LATEST_DEFINITIONS_KWARGS
+        )

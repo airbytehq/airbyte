@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 import abc
 from enum import Enum
 from typing import List, Union
@@ -15,6 +16,8 @@ class DefinitionType(Enum):
 
 
 class Definitions(abc.ABC):
+    LIST_LATEST_DEFINITIONS_KWARGS = {"_check_return_type": False}
+
     @property
     @abc.abstractmethod
     def api(
@@ -28,7 +31,7 @@ class Definitions(abc.ABC):
 
     @property
     def fields_to_display(self) -> List[str]:
-        return ["name", "docker_repository", "docker_image_tag", f"{self.definition_type.value}_definition_id"]
+        return ["name", "dockerRepository", "dockerImageTag", f"{self.definition_type.value}DefinitionId"]
 
     @property
     def response_definition_list_field(self) -> str:
@@ -61,6 +64,19 @@ class Definitions(abc.ABC):
 
     # TODO alafanechere: declare in a specific formatting module because it will probably be reused
     @staticmethod
+    def camelcased_to_uppercased_spaced(camelcased: str):
+        """Util function to transform a camelCase string to a UPPERCASED SPACED string
+        e.g: dockerImageName -> DOCKER IMAGE NAME
+        Args:
+            camelcased (str): The camel cased string to convert.
+
+        Returns:
+            (str): The converted UPPERCASED SPACED string
+        """
+        return "".join(map(lambda x: x if x.islower() else " " + x, camelcased)).upper()
+
+    # TODO alafanechere: declare in a specific formatting module because it will probably be reused
+    @staticmethod
     def _display_as_table(data: List[List[str]]) -> str:
         """Formats tabular input data into a displayable table with columns.
         Args:
@@ -72,8 +88,21 @@ class Definitions(abc.ABC):
         table = "\n".join(["".join(col.ljust(col_width) for col in row) for row in data])
         return table
 
+    # TODO alafanechere: declare in a specific formatting module because it will probably be reused
+    @staticmethod
+    def _format_column_names(camelcased_column_names: List[str]) -> List[str]:
+        """Form camel cased column names to uppercased spaced column names
+
+        Args:
+            camelcased_column_names (List[str]): Column names in camel case.
+
+        Returns:
+            (List[str]): Column names in uppercase with spaces.
+        """
+        return [Definitions.camelcased_to_uppercased_spaced(column_name) for column_name in camelcased_column_names]
+
     def __repr__(self):
-        definitions = [[f.upper() for f in self.fields_to_display]] + self.latest_definitions
+        definitions = [self._format_column_names(self.fields_to_display)] + self.latest_definitions
         return self._display_as_table(definitions)
 
 
@@ -85,7 +114,7 @@ class SourceDefinitions(Definitions):
 
     @property
     def latest_definitions(self) -> List[List[str]]:
-        api_response = self.api.list_latest_source_definitions(self.api_instance)
+        api_response = self.api.list_latest_source_definitions(self.api_instance, **self.LIST_LATEST_DEFINITIONS_KWARGS)
         return self._parse_response(api_response)
 
 
@@ -97,5 +126,5 @@ class DestinationDefinitions(Definitions):
 
     @property
     def latest_definitions(self) -> List[List[str]]:
-        api_response = self.api.list_latest_destination_definitions(self.api_instance)
+        api_response = self.api.list_latest_destination_definitions(self.api_instance, **self.LIST_LATEST_DEFINITIONS_KWARGS)
         return self._parse_response(api_response)
