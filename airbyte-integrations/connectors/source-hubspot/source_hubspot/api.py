@@ -265,10 +265,7 @@ class Stream(ABC):
 
     def _cast_record_fields_if_needed(self, record: Mapping, properties: Mapping[str, Any] = None) -> Mapping:
 
-        if self.entity not in {"contact", "engagement", "product", "quote", "ticket", "company", "deal", "line_item"}:
-            return record
-
-        if not record.get("properties"):
+        if not self.entity or not record.get("properties"):
             return record
 
         properties = properties or self.properties
@@ -363,7 +360,7 @@ class Stream(ABC):
                     'message': 'This hapikey (....) does not have proper permissions! (requires any of [automation-access])',
                     'correlationId': '111111-2222-3333-4444-55555555555'}
                 """
-                logger.warning(f"Stream `{self.entity}` cannot be procced. {response.get('message')}")
+                logger.warning(f"Stream `{self.name}` cannot be procced. {response.get('message')}")
                 return
 
             if response.get(self.data_field) is None:
@@ -713,7 +710,6 @@ class EngagementStream(Stream):
     Docs: https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements
     """
 
-    entity = "engagement"
     url = "/engagements/v1/engagements/paged"
     more_key = "hasMore"
     limit = 250
