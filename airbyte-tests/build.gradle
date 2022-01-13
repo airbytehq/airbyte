@@ -1,5 +1,12 @@
 plugins {
     id 'java'
+    id 'application'
+}
+
+application {
+    applicationName = "airbyte-tests"
+    mainClass = 'io.airbyte.test.airbyte_test_container.CreateKubePodProcess'
+    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
 }
 
 // The java plugin automatically compiles/runs tests in the test source set (./src/test directory). Since we want acceptance tests to run
@@ -104,3 +111,17 @@ task automaticMigrationAcceptanceTest(type: Test) {
 tasks.withType(Copy) {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
+
+task copyGeneratedTar(type: Copy) {
+    dependsOn copyDocker
+    dependsOn distTar
+
+    from('build/distributions') {
+        include 'airbyte-tests-*.tar'
+    }
+    into 'build/docker/bin'
+}
+
+Task dockerBuildTask = getDockerBuildTask("tests",  "$project.projectDir")
+dockerBuildTask.dependsOn(copyGeneratedTar)
+assemble.dependsOn(dockerBuildTask)

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  generateName: kube-create-process
+  labels:
+    app: test
+spec:
+  serviceAccountName: airbyte-admin
+  automountServiceAccountToken: true
+  containers:
+    - name: main
+      image: airbyte/tests:dev-0
+  restartPolicy: Never
