@@ -63,7 +63,6 @@ class ConnectorConfig(BaseConfig):
     class Config:
         title = "Source Facebook Marketing"
 
-    # accounts: str = Field(description="The Facebook Ad account ID to use when pulling data from the Facebook Marketing API.")
     accounts: Union[AccountSelectionStrategyAll, AccountSelectionStrategySubset] = Field(
         description="The Facebook Ad account ID to use when pulling data from the Facebook Marketing API."
     )
@@ -84,6 +83,10 @@ class ConnectorConfig(BaseConfig):
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         examples=["2017-01-26T00:00:00Z"],
         default_factory=pendulum.now,
+    )
+
+    fetch_thumbnail_images: bool = Field(
+        default=False, description="In each Ad Creative, fetch the thumbnail_url and store the result in thumbnail_data_url"
     )
 
     include_deleted: bool = Field(default=False, description="Include data from deleted campaigns, ads, and adsets.")

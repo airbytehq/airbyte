@@ -106,10 +106,12 @@ class FBMarketingStream(Stream, ABC):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Main read method used by CDK"""
-        for record in self._read_records(params=self.request_params(stream_state=stream_state)):
+        for record in self._read_records(
+            stream_slice=stream_slice, params=self.request_params(stream_slice=stream_slice, stream_state=stream_state)
+        ):
             yield self._extend_record(record, fields=self.fields)
 
-    def _read_records(self, params: Mapping[str, Any]) -> Iterable:
+    def _read_records(self, stream_slice: Mapping[str, Any], params: Mapping[str, Any]) -> Iterable:
         """Wrapper around query to backoff errors.
         We have default implementation because we still can override read_records so this method is not mandatory.
         """
@@ -157,7 +159,7 @@ class FBMarketingStream(Stream, ABC):
 
 class FBMarketingIncrementalStream(FBMarketingStream, ABC):
     cursor_field = "updated_time"
-    partition_field = None
+    partition_field = "account_id"
 
     def __init__(self, start_date: datetime, end_date: datetime, **kwargs):
         super().__init__(**kwargs)
@@ -168,7 +170,7 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         """Update stream state from latest record"""
         potentially_new_records_in_the_past = self._include_deleted and not current_stream_state.get("include_deleted", False)
         record_value = latest_record[self.cursor_field]
-        partition_value = latest_record[self.partition_field] if self.partition_field else None
+        partition_value = latest_record[self.partition_field] if self.partition_field in latest_record else None
 
         _current_stream_state = current_stream_state.get(partition_value, current_stream_state)
 
@@ -186,41 +188,36 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
 
         return result
 
-    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        for account in self._api.accounts:
+            yield {"account": account}
+
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: dict, **kwargs) -> MutableMapping[str, Any]:
         """Include state filter"""
         params = super().request_params(**kwargs)
-        params = deep_merge(params, self._state_filter(stream_state=stream_state or {}))
+        params = deep_merge(params, self._state_filter(stream_slice=stream_slice or {}, stream_state=stream_state or {}))
         return params
 
-    def _single_account_state_filter(self, single_stream_state: Mapping[str, Any], potentially_new_records_in_the_past: bool):
-        """Extracts a valid state_filter for a single account"""
-        state_value = single_stream_state.get(self.cursor_field)
+    def _state_filter(self, stream_slice: dict, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Additional filters associated with state if any set"""
+        account_id = stream_slice.get("account", {}).get("account_id")
+        _stream_state = stream_state.get(account_id, {})
+        state_value = _stream_state.get(self.cursor_field)
         filter_value = self._start_date if not state_value else pendulum.parse(state_value)
 
+        potentially_new_records_in_the_past = self._include_deleted and not _stream_state.get("include_deleted", False)
         if potentially_new_records_in_the_past:
+            self.logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
             filter_value = self._start_date
 
         return {
-            "field": f"{self.entity_prefix}.{self.cursor_field}",
-            "operator": "GREATER_THAN",
-            "value": filter_value.int_timestamp,
-        }
-
-    def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
-        """Additional filters associated with state if any set"""
-
-        potentially_new_records_in_the_past = self._include_deleted and not stream_state.get("include_deleted", False)
-        if potentially_new_records_in_the_past:
-            self.logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
-
-        result_filtering_custom = {}
-        for account_id in stream_state.keys():
-            result_filtering_custom[account_id] = self._single_account_state_filter(
-                stream_state[account_id], potentially_new_records_in_the_past
-            )
-
-        return {
-            f"filtering_by_{self.partition_field}": result_filtering_custom,
+            "filtering": [
+                {
+                    "field": f"{self.entity_prefix}.{self.cursor_field}",
+                    "operator": "GREATER_THAN",
+                    "value": filter_value.int_timestamp,
+                },
+            ],
         }
 
 
@@ -275,16 +272,10 @@ class Ads(FBMarketingIncrementalStream):
 
     entity_prefix = "ad"
     enable_deleted = True
-    partition_field = "account_id"
 
     @backoff_policy
-    def _read_records(self, params: Mapping[str, Any]):
-        _params = deep_merge({}, params)
-        filtering_by_partition = _params.pop(f"filtering_by_{self.partition_field}", None)
-
-        for account in self._api.accounts:
-            params_by_partition = deep_merge(_params, filtering_by_partition.get(account.get(self.partition_field), {}))
-            yield from account.get_ads(params=params_by_partition, fields=[self.cursor_field])
+    def _read_records(self, stream_slice: Mapping[str, Any], params: Mapping[str, Any]):
+        yield from stream_slice.get("account").get_ads(params=params, fields=[self.cursor_field])
 
 
 class AdSets(FBMarketingIncrementalStream):
@@ -292,16 +283,10 @@ class AdSets(FBMarketingIncrementalStream):
 
     entity_prefix = "adset"
     enable_deleted = True
-    partition_field = "account_id"
 
     @backoff_policy
-    def _read_records(self, params: Mapping[str, Any]):
-        _params = deep_merge({}, params)
-        filtering_by_partition = _params.pop(f"filtering_by_{self.partition_field}", None)
-
-        for account in self._api.accounts:
-            params_by_partition = deep_merge(_params, filtering_by_partition.get(account.get(self.partition_field), {}))
-            yield from account.get_ad_sets(params=params_by_partition)
+    def _read_records(self, stream_slice: Mapping[str, Any], params: Mapping[str, Any]):
+        yield from stream_slice.get("account").get_ad_sets(params=params)
 
 
 class Campaigns(FBMarketingIncrementalStream):
@@ -309,16 +294,10 @@ class Campaigns(FBMarketingIncrementalStream):
 
     entity_prefix = "campaign"
     enable_deleted = True
-    partition_field = "account_id"
 
     @backoff_policy
-    def _read_records(self, params: Mapping[str, Any]):
-        _params = deep_merge({}, params)
-        filtering_by_partition = _params.pop(f"filtering_by_{self.partition_field}", None)
-
-        for account in self._api.accounts:
-            params_by_partition = deep_merge(_params, filtering_by_partition.get(account.get(self.partition_field), {}))
-            yield from account.get_campaigns(params=params_by_partition)
+    def _read_records(self, stream_slice: Mapping[str, Any], params: Mapping[str, Any]):
+        yield from stream_slice.get("account").get_campaigns(params=params)
 
 
 class Videos(FBMarketingIncrementalStream):
@@ -328,8 +307,8 @@ class Videos(FBMarketingIncrementalStream):
     enable_deleted = True
 
     @backoff_policy
-    def _read_records(self, params: Mapping[str, Any]) -> Iterator:
-        return self._api.account.get_ad_videos(params=params)
+    def _read_records(self, stream_slice: Mapping[str, Any], params: Mapping[str, Any]):
+        yield from stream_slice.get("account").get_ad_videos(params=params)
 
 
 class AdsInsights(FBMarketingIncrementalStream):
@@ -337,7 +316,6 @@ class AdsInsights(FBMarketingIncrementalStream):
 
     cursor_field = "date_start"
     primary_key = None
-    partition_field = "account_id"
 
     ALL_ACTION_ATTRIBUTION_WINDOWS = [
         "1d_click",
@@ -430,7 +408,9 @@ class AdsInsights(FBMarketingIncrementalStream):
                     yield {"job": running_jobs.popleft()}
 
         while running_jobs:
-            yield {"job": running_jobs.popleft()}
+            yield {
+                "job": running_jobs.popleft()
+            }
 
     @retry_pattern(backoff.expo, JobException, max_tries=10, factor=5)
     def wait_for_job(self, job: AsyncJob) -> AsyncJob:
@@ -448,7 +428,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         return job
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, **kwargs)
+        params = super().request_params(stream_state=stream_state, stream_slice=None, **kwargs)
         params = deep_merge(
             params,
             {
@@ -463,7 +443,7 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         return params
 
-    def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _state_filter(self, stream_slice: dict, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Works differently for insights, so remove it"""
         return {}
 
