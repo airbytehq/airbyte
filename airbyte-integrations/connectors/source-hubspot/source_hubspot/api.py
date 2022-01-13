@@ -265,10 +265,7 @@ class Stream(ABC):
 
     def _cast_record_fields_if_needed(self, record: Mapping, properties: Mapping[str, Any] = None) -> Mapping:
 
-        if self.entity not in {"contact", "engagement", "product", "quote", "ticket", "company", "deal", "line_item"}:
-            return record
-
-        if not record.get("properties"):
+        if not self.entity or not record.get("properties"):
             return record
 
         properties = properties or self.properties
@@ -363,7 +360,7 @@ class Stream(ABC):
                     'message': 'This hapikey (....) does not have proper permissions! (requires any of [automation-access])',
                     'correlationId': '111111-2222-3333-4444-55555555555'}
                 """
-                logger.warning(f"Stream `{self.entity}` cannot be procced. {response.get('message')}")
+                logger.warning(f"Stream `{self.name}` cannot be procced. {response.get('message')}")
                 return
 
             if response.get(self.data_field) is None:
@@ -598,6 +595,40 @@ class ContactListStream(IncrementalStream):
     need_chunk = False
 
 
+class ContactsListMembershipsStream(Stream):
+    """Contacts list Memberships, API v1
+    The Stream was created due to issue #8477, where supporting List Memberships in Contacts stream was requested.
+    According to the issue this feature is supported in API v1 by setting parameter showListMemberships=true
+    in get all contacts endpoint. API will return list memberships for each contact record.
+    But for syncing Contacts API v3 is used, where list memberships for contacts isn't supported.
+    Therefore, new stream was created based on get all contacts endpoint of API V1.
+    Docs: https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts
+    """
+
+    url = "/contacts/v1/lists/all/contacts/all"
+    updated_at_field = "timestamp"
+    more_key = "has-more"
+    data_field = "contacts"
+    page_filter = "vidOffset"
+    page_field = "vid-offset"
+
+    def _transform(self, records: Iterable) -> Iterable:
+        """Extracting list membership records from contacts
+        According to documentation Contacts may have multiple vids,
+        but the canonical-vid will be the primary ID for a record.
+        Docs: https://legacydocs.hubspot.com/docs/methods/contacts/contacts-overview
+        """
+        for record in super()._transform(records):
+            canonical_vid = record.get("canonical-vid")
+            for item in record.get("list-memberships", []):
+                yield {"canonical-vid": canonical_vid, **item}
+
+    def list(self, fields) -> Iterable:
+        """Receiving all contacts with list memberships"""
+        params = {"showListMemberships": True}
+        yield from self.read(partial(self._api.get, url=self.url), params)
+
+
 class DealStageHistoryStream(Stream):
     """Deal stage history, API v1
     Deal stage history is exposed by the v1 API, but not the v3 API.
@@ -679,7 +710,6 @@ class EngagementStream(Stream):
     Docs: https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements
     """
 
-    entity = "engagement"
     url = "/engagements/v1/engagements/paged"
     more_key = "hasMore"
     limit = 250

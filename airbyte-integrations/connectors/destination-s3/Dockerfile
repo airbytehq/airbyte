@@ -16,5 +16,5 @@ ENV APPLICATION destination-s3
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.2.2
+LABEL io.airbyte.version=0.2.4
 LABEL io.airbyte.name=airbyte/destination-s3
