@@ -10,12 +10,12 @@ import { RoutePaths } from "pages/routes";
 import StepsMenu from "components/StepsMenu";
 import useRouter from "hooks/useRouter";
 
-import { ConnectionSettingsRoutes } from "../ConnectionItemPage";
+import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
 
 type IProps = {
   source: Source;
   destination: Destination;
-  currentStep: keyof typeof ConnectionSettingsRoutes;
+  currentStep: ConnectionSettingsRoutes;
 };
 
 const Title = styled.div`
@@ -49,25 +49,25 @@ const ConnectionPageTitle: React.FC<IProps> = ({
 
   const steps = [
     {
-      id: "status",
+      id: ConnectionSettingsRoutes.STATUS,
       name: <FormattedMessage id="sources.status" />,
     },
     {
-      id: "replication",
+      id: ConnectionSettingsRoutes.REPLICATION,
       name: <FormattedMessage id="connection.replication" />,
     },
     {
-      id: "transformation",
+      id: ConnectionSettingsRoutes.TRANSFORMATION,
       name: <FormattedMessage id={"connectionForm.transformation.title"} />,
     },
     {
-      id: "settings",
+      id: ConnectionSettingsRoutes.SETTINGS,
       name: <FormattedMessage id="sources.settings" />,
     },
   ];
 
   const onSelectStep = (id: string) => {
-    if (id === "status") {
+    if (id === ConnectionSettingsRoutes.STATUS) {
       push("");
     } else {
       push(id);

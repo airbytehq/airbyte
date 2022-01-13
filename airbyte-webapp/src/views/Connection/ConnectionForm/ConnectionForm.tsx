@@ -17,9 +17,9 @@ import { NamespaceField } from "./components/NamespaceField";
 import {
   ConnectionFormValues,
   connectionValidationSchema,
-  useDefaultTransformation,
   FormikConnectionFormValues,
   mapFormPropsToOperation,
+  useDefaultTransformation,
   useFrequencyDropdownData,
   useInitialValues,
 } from "./formConfig";
@@ -29,6 +29,7 @@ import SchemaField from "./components/SyncCatalogField";
 import EditControls from "./components/EditControls";
 import { Connection, ScheduleProperties } from "core/resources/Connection";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { DestinationDefinitionSpecification } from "core/domain/connector";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 15px 24px;
@@ -68,6 +69,49 @@ type ConnectionFormProps = {
         Pick<Connection, "syncCatalog" | "source" | "destination">);
 };
 
+const OperationsSection: React.FC<{
+  destDefinition: DestinationDefinitionSpecification;
+}> = ({ destDefinition }) => {
+  const formatMessage = useIntl().formatMessage;
+  const { hasFeature } = useFeatureService();
+
+  const supportsNormalization = destDefinition.supportsNormalization;
+  const supportsTransformations =
+    destDefinition.supportsDbt && hasFeature(FeatureItem.AllowCustomDBT);
+
+  const defaultTransformation = useDefaultTransformation();
+
+  return (
+    <>
+      {supportsNormalization || supportsTransformations ? (
+        <SectionTitle>
+          {[
+            supportsNormalization &&
+              formatMessage({ id: "connectionForm.normalization.title" }),
+            supportsTransformations &&
+              formatMessage({ id: "connectionForm.transformation.title" }),
+          ]
+            .filter(Boolean)
+            .join(" & ")}
+        </SectionTitle>
+      ) : null}
+      {supportsNormalization && (
+        <Field name="normalization" component={NormalizationField} />
+      )}
+      {supportsTransformations && (
+        <FieldArray name="transformations">
+          {(formProps) => (
+            <TransformationField
+              defaultTransformation={defaultTransformation}
+              {...formProps}
+            />
+          )}
+        </FieldArray>
+      )}
+    </>
+  );
+};
+
 const ConnectionForm: React.FC<ConnectionFormProps> = ({
   onSubmit,
   onReset,
@@ -89,12 +133,8 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   const [submitError, setSubmitError] = useState<Error | null>(null);
 
   const formatMessage = useIntl().formatMessage;
-  const { hasFeature } = useFeatureService();
 
   const { operations } = connection;
-  const supportsNormalization = destDefinition.supportsNormalization;
-  const supportsTransformations =
-    destDefinition.supportsDbt && hasFeature(FeatureItem.AllowCustomDBT);
 
   const initialValues = useInitialValues(
     connection,
@@ -150,7 +190,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
   const errorMessage = submitError ? createFormErrorMessage(submitError) : null;
   const frequencies = useFrequencyDropdownData();
-  const defaultTransformation = useDefaultTransformation();
 
   return (
     <Formik
@@ -216,36 +255,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
             additionalControl={additionalSchemaControl}
             component={SchemaField}
           />
-          {supportsNormalization || supportsTransformations ? (
-            <SectionTitle>
-              {[
-                supportsNormalization &&
-                  formatMessage({ id: "connectionForm.normalization.title" }),
-                supportsTransformations &&
-                  formatMessage({ id: "connectionForm.transformation.title" }),
-              ]
-                .filter(Boolean)
-                .join(" & ")}
-            </SectionTitle>
-          ) : null}
-          {supportsNormalization && (
-            <Field name="normalization" component={NormalizationField} />
-          )}
-          {supportsTransformations && (
-            <FieldArray name="transformations">
-              {(formProps) => (
-                <TransformationField
-                  defaultTransformation={defaultTransformation}
-                  {...formProps}
-                />
-              )}
-            </FieldArray>
-          )}
-          {!isEditMode && (
-            <EditLaterMessage
-              message={<FormattedMessage id="form.dataSync.message" />}
-            />
-          )}
           {isEditMode ? (
             <EditControls
               isSubmitting={isSubmitting}
@@ -265,16 +274,22 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               editSchemeMode={editSchemeMode}
             />
           ) : (
-            <CreateControls
-              additionBottomControls={additionBottomControls}
-              isSubmitting={isSubmitting}
-              isValid={isValid}
-              errorMessage={
-                errorMessage || !isValid
-                  ? formatMessage({ id: "connectionForm.validation.error" })
-                  : null
-              }
-            />
+            <>
+              <OperationsSection destDefinition={destDefinition} />
+              <EditLaterMessage
+                message={<FormattedMessage id="form.dataSync.message" />}
+              />
+              <CreateControls
+                additionBottomControls={additionBottomControls}
+                isSubmitting={isSubmitting}
+                isValid={isValid}
+                errorMessage={
+                  errorMessage || !isValid
+                    ? formatMessage({ id: "connectionForm.validation.error" })
+                    : null
+                }
+              />
+            </>
           )}
           {modalIsOpen && (
             <ResetDataModal

@@ -192,7 +192,7 @@ function getDefaultCursorField(streamNode: SyncSchemaStream): string[] {
 }
 
 // If the value in supportedSyncModes is empty assume the only supported sync mode is FULL_REFRESH.
-// Otherwise it supports whatever sync modes are present.
+// Otherwise, it supports whatever sync modes are present.
 const useInitialSchema = (schema: SyncSchema): SyncSchema =>
   useMemo<SyncSchema>(
     () => ({
@@ -248,6 +248,27 @@ const useInitialSchema = (schema: SyncSchema): SyncSchema =>
     [schema.streams]
   );
 
+const getInitialTransformations = (operations: Operation[]): Transformation[] =>
+  (operations.filter(
+    (op) => op.operatorConfiguration.operatorType === OperatorType.Dbt
+  ) as Transformation[]) ?? [];
+
+const getInitialNormalization = (
+  operations: Operation[],
+  isEditMode?: boolean
+): NormalizationType => {
+  let initialNormalization = (operations.find(
+    (op) => op.operatorConfiguration.operatorType === OperatorType.Normalization
+  ) as Normalization)?.operatorConfiguration?.normalization?.option;
+
+  // If no normalization was selected for already present normalization -> Raw is select
+  if (!initialNormalization && isEditMode) {
+    initialNormalization = NormalizationType.RAW;
+  }
+
+  return initialNormalization ?? NormalizationType.BASIC;
+};
+
 const useInitialValues = (
   connection:
     | Connection
@@ -255,47 +276,36 @@ const useInitialValues = (
         Pick<Connection, "syncCatalog" | "source" | "destination">),
   destDefinition: DestinationDefinitionSpecification,
   isEditMode?: boolean
-) => {
+): FormikConnectionFormValues => {
   const initialSchema = useInitialSchema(connection.syncCatalog);
 
-  return useMemo<FormikConnectionFormValues>(() => {
+  return useMemo(() => {
     const initialValues: FormikConnectionFormValues = {
       syncCatalog: initialSchema,
       schedule: connection.schedule,
       prefix: connection.prefix || "",
       namespaceDefinition:
         connection.namespaceDefinition ?? ConnectionNamespaceDefinition.Source,
-      // eslint-disable-next-line no-template-curly-in-string
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,
     };
 
     const { operations = [] } = connection;
 
     if (destDefinition.supportsDbt) {
-      initialValues.transformations =
-        (operations.filter(
-          (op) => op.operatorConfiguration.operatorType === OperatorType.Dbt
-        ) as Transformation[]) ?? [];
+      initialValues.transformations = getInitialTransformations(operations);
     }
 
     if (destDefinition.supportsNormalization) {
-      let initialNormalization = (operations.find(
-        (op) =>
-          op.operatorConfiguration.operatorType === OperatorType.Normalization
-      ) as Normalization)?.operatorConfiguration?.normalization?.option;
-
-      // If no normalization was selected for already present normalization -> Raw is select
-      if (!initialNormalization && isEditMode) {
-        initialNormalization = NormalizationType.RAW;
-      }
-
-      initialValues.normalization =
-        initialNormalization ?? NormalizationType.BASIC;
+      initialValues.normalization = getInitialNormalization(
+        operations,
+        isEditMode
+      );
     }
 
     return initialValues;
   }, [initialSchema, connection, isEditMode, destDefinition]);
 };
+
 const useFrequencyDropdownData = (): DropDownRow.IDataItem[] => {
   const formatMessage = useIntl().formatMessage;
 
@@ -327,4 +337,6 @@ export {
   mapFormPropsToOperation,
   SUPPORTED_MODES,
   useDefaultTransformation,
+  getInitialNormalization,
+  getInitialTransformations,
 };

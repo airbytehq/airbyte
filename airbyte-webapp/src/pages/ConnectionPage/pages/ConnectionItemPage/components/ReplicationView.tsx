@@ -162,7 +162,7 @@ const ReplicationView: React.FC<IProps> = ({
     <Content>
       <TransferFormCard connection={connection} />
       <CollapsibleCard
-        collapsible={true}
+        collapsible
         title={
           <Title>
             <TitleContainer hasButton={!activeUpdatingSchemaMode}>

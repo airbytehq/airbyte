@@ -1,14 +1,21 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { Field, FieldArray } from "formik";
+
 import { NormalizationField } from "views/Connection/ConnectionForm/components/NormalizationField";
 import { TransformationField } from "views/Connection/ConnectionForm/components/TransformationField";
-import { useDefaultTransformation } from "views/Connection/ConnectionForm/formConfig";
+import {
+  getInitialNormalization,
+  getInitialTransformations,
+  useDefaultTransformation,
+} from "views/Connection/ConnectionForm/formConfig";
+import { FormCard } from "views/Connection/FormCard";
+import { Connection, Operation } from "core/domain/connection";
 
-import { FormCard } from "./FormCard";
-
-type TransformationViewProps = {};
+type TransformationViewProps = {
+  connection: Connection;
+};
 
 const Content = styled.div`
   max-width: 1073px;
@@ -16,8 +23,17 @@ const Content = styled.div`
   padding-bottom: 10px;
 `;
 
-const CustomTransformationsCard: React.FC = () => {
+const CustomTransformationsCard: React.FC<{ operations: Operation[] }> = ({
+  operations,
+}) => {
   const defaultTransformation = useDefaultTransformation();
+
+  const initialValues = useMemo(
+    () => ({
+      transformations: getInitialTransformations(operations),
+    }),
+    [operations]
+  );
 
   return (
     <FormCard
@@ -25,7 +41,7 @@ const CustomTransformationsCard: React.FC = () => {
       collapsible
       bottomSeparator
       form={{
-        initialValues: { transformations: [] },
+        initialValues,
         onSubmit: async (value) => console.log(value),
       }}
     >
@@ -41,13 +57,19 @@ const CustomTransformationsCard: React.FC = () => {
   );
 };
 
-const NormalizationCard: React.FC = () => {
+const NormalizationCard: React.FC<{ operations: Operation[] }> = ({
+  operations,
+}) => {
+  const initialValues = useMemo(
+    () => ({
+      normalization: getInitialNormalization(operations),
+    }),
+    [operations]
+  );
   return (
     <FormCard
       form={{
-        initialValues: {
-          normalization: "",
-        },
+        initialValues,
         onSubmit: async (value) => console.log(value),
       }}
       title={<FormattedMessage id="connection.normalization" />}
@@ -58,11 +80,13 @@ const NormalizationCard: React.FC = () => {
   );
 };
 
-const TransformationView: React.FC<TransformationViewProps> = () => {
+const TransformationView: React.FC<TransformationViewProps> = ({
+  connection,
+}) => {
   return (
     <Content>
-      <NormalizationCard />
-      <CustomTransformationsCard />
+      <NormalizationCard operations={connection.operations} />
+      <CustomTransformationsCard operations={connection.operations} />
     </Content>
   );
 };

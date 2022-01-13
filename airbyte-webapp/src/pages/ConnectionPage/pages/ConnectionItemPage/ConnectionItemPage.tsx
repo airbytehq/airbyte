@@ -1,60 +1,36 @@
 import React, { Suspense } from "react";
 import { useResource } from "rest-hooks";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useParams } from "react-router-dom";
 
 import { LoadingPage, MainPageWithScroll } from "components";
 import HeadTitle from "components/HeadTitle";
 
-import useRouter from "hooks/useRouter";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 
 import FrequencyConfig from "config/FrequencyConfig.json";
 
 import ConnectionResource from "core/resources/Connection";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
 import { equal } from "utils/objects";
 import ReplicationView from "./components/ReplicationView";
 
 import StatusView from "./components/StatusView";
-import TransformationView from "views/Connection/TransformationView";
+import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/components/TransformationView";
 import SettingsView from "./components/SettingsView";
 import ConnectionPageTitle from "./components/ConnectionPageTitle";
-
-export const ConnectionSettingsRoutes = {
-  STATUS: "status",
-  TRANSFORMATION: "transformation",
-  REPLICATION: "replication",
-  SETTINGS: "settings",
-} as const;
+import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
 
 const ConnectionItemPage: React.FC = () => {
-  const { params } = useRouter<{ id: string }>();
-  const { id } = params;
-  const currentStep = params["*"] || "status";
+  const params = useParams<{
+    connectionId: string;
+    "*": ConnectionSettingsRoutes;
+  }>();
+  const connectionId = params.connectionId || "";
+  const currentStep = params["*"] || ConnectionSettingsRoutes.STATUS;
   const connection = useResource(ConnectionResource.detailShape(), {
-    connectionId: id,
+    connectionId,
   });
 
   const { source, destination } = connection;
-
-  const sourceDefinition = useResource(
-    SourceDefinitionResource.detailShape(),
-    source
-      ? {
-          sourceDefinitionId: source.sourceDefinitionId,
-        }
-      : null
-  );
-
-  const destinationDefinition = useResource(
-    DestinationDefinitionResource.detailShape(),
-    destination
-      ? {
-          destinationDefinitionId: destination.destinationDefinitionId,
-        }
-      : null
-  );
 
   const analyticsService = useAnalyticsService();
 
@@ -104,28 +80,26 @@ const ConnectionItemPage: React.FC = () => {
             element={
               <StatusView
                 connection={connection}
-                sourceDefinition={sourceDefinition}
-                destinationDefinition={destinationDefinition}
                 frequencyText={frequency?.text}
               />
             }
-          />
-          <Route
-            path={ConnectionSettingsRoutes.TRANSFORMATION}
-            element={<TransformationView />}
           />
           <Route
             path={ConnectionSettingsRoutes.REPLICATION}
             element={
               <ReplicationView
                 onAfterSaveSchema={onAfterSaveSchema}
-                connectionId={connection.connectionId}
+                connectionId={connectionId}
               />
             }
           />
           <Route
+            path={ConnectionSettingsRoutes.TRANSFORMATION}
+            element={<TransformationView connection={connection} />}
+          />
+          <Route
             path={ConnectionSettingsRoutes.SETTINGS}
-            element={<SettingsView connectionId={connection.connectionId} />}
+            element={<SettingsView connectionId={connectionId} />}
           />
           <Route
             index
