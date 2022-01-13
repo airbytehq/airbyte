@@ -801,11 +801,7 @@ class EngagementStream(IncrementalStream):
           https://legacydocs.hubspot.com/docs/methods/engagements/get-recent-engagements
     """
 
-<<<<<<< HEAD
     url = "/engagements/v1/engagements/paged"
-=======
-    entity = "engagement"
->>>>>>> 12cff8cbe (Added support for incremental updates on engagements)
     more_key = "hasMore"
     limit = 250
     updated_at_field = "lastUpdated"
