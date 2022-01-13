@@ -116,6 +116,11 @@ class Customers(IncrementalBigcommerceStream):
     def path(self, **kwargs) -> str:
         return f"{self.data_field}"
 
+class Products(IncrementalBigcommerceStream):
+    data_field = "products"
+
+    def path(self, **kwargs) -> str:
+        return f"catalog/{self.data_field}"
 
 class Orders(IncrementalBigcommerceStream):
     data_field = "orders"
@@ -230,4 +235,5 @@ class SourceBigcommerce(AbstractSource):
             Pages(**args),
             Orders(**args),
             Transactions(**args),
+            Products(**args),
         ]

@@ -1,0 +1,1395 @@
+{
+    "type": "object",
+    "title": "Product Response",
+    "properties": {
+        "name": {
+            "type": "string",
+            "description": "The product name.\n",
+            "x-required": [
+                "post"
+            ],
+            "minLength": 1,
+            "maxLength": 250,
+            "example": "Smith Journal 13"
+        },
+        "type": {
+            "type": "string",
+            "description": "The product type. One of: `physical` - a physical stock unit, `digital` - a digital download.\n",
+            "x-required": [
+                "post"
+            ],
+            "enum": [
+                "physical",
+                "digital"
+            ],
+            "example": "physical"
+        },
+        "sku": {
+            "type": "string",
+            "description": "User defined product code/stock keeping unit (SKU).\n",
+            "minLength": 0,
+            "maxLength": 255,
+            "example": "SM-13"
+        },
+        "description": {
+            "type": "string",
+            "description": "The product description, which can include HTML formatting.\n",
+            "example": "<p><span>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi vel metus ac est egestas porta sed quis erat. Integer id nulla massa. Proin vitae enim nisi. Praesent non dignissim nulla. Nulla mattis id massa ac pharetra. Mauris et nisi in dolor aliquam sodales. Aliquam dui nisl, dictum quis leo sit amet, rutrum volutpat metus. Curabitur libero nunc, interdum ac libero non, tristique porttitor metus. Ut non dignissim lorem, in vestibulum leo. Vivamus sodales quis turpis eget.</span></p>"
+        },
+        "weight": {
+            "type": "number",
+            "description": "Weight of the product, which can be used when calculating shipping costs. This is based on the unit set on the store\n",
+            "format": "float",
+            "minimum": 0,
+            "maximum": 9999999999
+        },
+        "width": {
+            "type": "number",
+            "description": "Width of the product, which can be used when calculating shipping costs.\n",
+            "format": "float",
+            "minimum": 0,
+            "maximum": 9999999999
+        },
+        "depth": {
+            "type": "number",
+            "description": "Depth of the product, which can be used when calculating shipping costs.\n",
+            "format": "float",
+            "minimum": 0,
+            "maximum": 9999999999
+        },
+        "height": {
+            "type": "number",
+            "description": "Height of the product, which can be used when calculating shipping costs.\n",
+            "format": "float",
+            "minimum": 0,
+            "maximum": 9999999999
+        },
+        "price": {
+            "type": "number",
+            "description": "The price of the product. The price should include or exclude tax, based on the store settings.\n",
+            "format": "float",
+            "minimum": 0
+        },
+        "cost_price": {
+            "type": "number",
+            "description": "The cost price of the product. Stored for reference only; it is not used or displayed anywhere on the store.\n",
+            "format": "float",
+            "minimum": 0
+        },
+        "retail_price": {
+            "type": "number",
+            "description": "The retail cost of the product. If entered, the retail cost price will be shown on the product page.\n",
+            "format": "float",
+            "minimum": 0
+        },
+        "sale_price": {
+            "type": "number",
+            "description": "If entered, the sale price will be used instead of value in the price field when calculating the product's cost.\n",
+            "format": "float",
+            "minimum": 0
+        },
+        "map_price": {
+            "type": "number",
+            "description": "Minimum Advertised Price"
+        },
+        "tax_class_id": {
+            "type": "integer",
+            "description": "The ID of the tax class applied to the product. (NOTE: Value ignored if automatic tax is enabled.)\n",
+            "minimum": 0,
+            "maximum": 1000000000
+        },
+        "product_tax_code": {
+            "type": "string",
+            "description": "Accepts AvaTax System Tax Codes, which identify products and services that fall into special sales-tax categories. By using these codes, merchants who subscribe to BigCommerce's Avalara Premium integration can calculate sales taxes more accurately. Stores without Avalara Premium will ignore the code when calculating sales tax. Do not pass more than one code. The codes are case-sensitive. For details, please see Avalara's documentation.\n",
+            "minLength": 0,
+            "maxLength": 255
+        },
+        "categories": {
+            "type": "array",
+            "description": "An array of IDs for the categories to which this product belongs. When updating a product, if an array of categories is supplied, all product categories will be overwritten. Does not accept more than 1,000 ID values.\n",
+            "x-required": [
+                "post"
+            ],
+            "items": {
+                "type": "integer"
+            }
+        },
+        "brand_id": {
+            "type": "integer",
+            "description": "A product can be added to an existing brand during a product /PUT or /POST.\n",
+            "minimum": 0,
+            "maximum": 1000000000
+        },
+        "inventory_level": {
+            "type": "integer",
+            "description": "Current inventory level of the product. Simple inventory tracking must be enabled (See the `inventory_tracking` field) for this to take any effect.\n",
+            "minimum": 0,
+            "maximum": 1000000000
+        },
+        "inventory_warning_level": {
+            "type": "integer",
+            "description": "Inventory warning level for the product. When the product's inventory level drops below the warning level, the store owner will be informed. Simple inventory tracking must be enabled (see the `inventory_tracking` field) for this to take any effect.\n",
+            "minimum": 0,
+            "maximum": 1000000000
+        },
+        "inventory_tracking": {
+            "type": "string",
+            "description": "The type of inventory tracking for the product. Values are: `none` - inventory levels will not be tracked; `product` - inventory levels will be tracked using the `inventory_level` and `inventory_warning_level` fields; `variant` - inventory levels will be tracked based on variants, which maintain their own warning levels and inventory levels.\n",
+            "enum": [
+                "none",
+                "product",
+                "variant"
+            ]
+        },
+        "fixed_cost_shipping_price": {
+            "type": "number",
+            "description": "A fixed shipping cost for the product. If defined, this value will be used during checkout instead of normal shipping-cost calculation.\n",
+            "format": "float",
+            "minimum": 0
+        },
+        "is_free_shipping": {
+            "type": "boolean",
+            "description": "Flag used to indicate whether the product has free shipping. If `true`, the shipping cost for the product will be zero.\n"
+        },
+        "is_visible": {
+            "type": "boolean",
+            "description": "Flag to determine whether the product should be displayed to customers browsing the store. If `true`, the product will be displayed. If `false`, the product will be hidden from view.\n"
+        },
+        "is_featured": {
+            "type": "boolean",
+            "description": "Flag to determine whether the product should be included in the `featured products` panel when viewing the store.\n"
+        },
+        "related_products": {
+            "type": "array",
+            "description": "An array of IDs for the related products.\n",
+            "items": {
+                "type": "integer"
+            }
+        },
+        "warranty": {
+            "type": "string",
+            "description": "Warranty information displayed on the product page. Can include HTML formatting.\n",
+            "minLength": 0,
+            "maxLength": 65535
+        },
+        "bin_picking_number": {
+            "type": "string",
+            "description": "The BIN picking number for the product.\n",
+            "minLength": 0,
+            "maxLength": 255
+        },
+        "layout_file": {
+            "type": "string",
+            "description": "The layout template file used to render this product category. This field is writable only for stores with a Blueprint theme applied.\n",
+            "minLength": 0,
+            "maxLength": 500
+        },
+        "upc": {
+            "type": "string",
+            "description": "The product UPC code, which is used in feeds for shopping comparison sites and external channel integrations.\n",
+            "minLength": 0,
+            "maxLength": 255
+        },
+        "search_keywords": {
+            "type": "string",
+            "description": "A comma-separated list of keywords that can be used to locate the product when searching the store.\n",
+            "minLength": 0,
+            "maxLength": 65535
+        },
+        "availability": {
+            "type": "string",
+            "enum": [
+                "available",
+                "disabled",
+                "preorder"
+            ],
+            "description": "Availability of the product. (Corresponds to the product's [Purchasability](https://support.bigcommerce.com/s/article/Adding-Products-v3?language=en_US#sections) section in the control panel.) Supported values: `available` - the product is available for purchase; `disabled` - the product is listed on the storefront, but cannot be purchased; `preorder` - the product is listed for pre-orders.\n"
+        },
+        "availability_description": {
+            "type": "string",
+            "description": "Availability text displayed on the checkout page, under the product title. Tells the customer how long it will normally take to ship this product, such as: 'Usually ships in 24 hours.'\n",
+            "minLength": 0,
+            "maxLength": 255
+        },
+        "gift_wrapping_options_type": {
+            "type": "string",
+            "enum": [
+                "any",
+                "none",
+                "list"
+            ],
+            "description": "Type of gift-wrapping options. Values: `any` - allow any gift-wrapping options in the store; `none` - disallow gift-wrapping on the product; `list` – provide a list of IDs in the `gift_wrapping_options_list` field.\n"
+        },
+        "gift_wrapping_options_list": {
+            "type": "array",
+            "description": "A list of gift-wrapping option IDs.\n",
+            "items": {
+                "type": "integer"
+            }
+        },
+        "sort_order": {
+            "type": "integer",
+            "description": "Priority to give this product when included in product lists on category pages and in search results. Lower integers will place the product closer to the top of the results.\n",
+            "minimum": -2147483648,
+            "maximum": 2147483647
+        },
+        "condition": {
+            "type": "string",
+            "description": "The product condition. Will be shown on the product page if the `is_condition_shown` field's value is `true`. Possible values: `New`, `Used`, `Refurbished`.\n",
+            "enum": [
+                "New",
+                "Used",
+                "Refurbished"
+            ]
+        },
+        "is_condition_shown": {
+            "type": "boolean",
+            "description": "Flag used to determine whether the product condition is shown to the customer on the product page.\n"
+        },
+        "order_quantity_minimum": {
+            "type": "integer",
+            "description": "The minimum quantity an order must contain, to be eligible to purchase this product.\n",
+            "minimum": 0,
+            "maximum": 1000000000
+        },
+        "order_quantity_maximum": {
+            "type": "integer",
+            "description": "The maximum quantity an order can contain when purchasing the product.\n",
+            "minimum": 0,
+            "maximum": 1000000000
+        },
+        "page_title": {
+            "type": "string",
+            "description": "Custom title for the product page. If not defined, the product name will be used as the meta title.\n",
+            "minLength": 0,
+            "maxLength": 255
+        },
+        "meta_keywords": {
+            "type": "array",
+            "description": "Custom meta keywords for the product page. If not defined, the store's default keywords will be used.\n",
+            "items": {
+                "type": "string"
+            }
+        },
+        "meta_description": {
+            "type": "string",
+            "description": "Custom meta description for the product page. If not defined, the store's default meta description will be used.\n",
+            "minLength": 0,
+            "maxLength": 65535
+        },
+        "view_count": {
+            "type": "integer",
+            "description": "The number of times the product has been viewed.\n",
+            "minimum": 0,
+            "maximum": 1000000000
+        },
+        "preorder_release_date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Pre-order release date. See the `availability` field for details on setting a product's availability to accept pre-orders.\n",
+            "x-nullable": true
+        },
+        "preorder_message": {
+            "type": "string",
+            "description": "Custom expected-date message to display on the product page. If undefined, the message defaults to the storewide setting. Can contain the `%%DATE%%` placeholder, which will be substituted for the release date.\n",
+            "minLength": 0,
+            "maxLength": 255
+        },
+        "is_preorder_only": {
+            "type": "boolean",
+            "description": "If set to true then on the preorder release date the preorder status will automatically be removed.\nIf set to false, then on the release date the preorder status **will not** be removed. It will need to be changed manually either in the\ncontrol panel or using the API. Using the API set `availability` to `available`.\n"
+        },
+        "is_price_hidden": {
+            "type": "boolean",
+            "description": "False by default, indicating that this product's price should be shown on the product page. If set to `true`, the price is hidden. (NOTE: To successfully set `is_price_hidden` to `true`, the `availability` value must be `disabled`.)\n"
+        },
+        "price_hidden_label": {
+            "type": "string",
+            "description": "By default, an empty string. If `is_price_hidden` is `true`, the value of `price_hidden_label` is displayed instead of the price. (NOTE: To successfully set a non-empty string value with `is_price_hidden` set to `true`, the `availability` value must be `disabled`.)\n",
+            "minLength": 0,
+            "maxLength": 200
+        },
+        "custom_url": {
+            "type": "object",
+            "description": "The custom URL for the product on the storefront.",
+            "title": "customUrl_Full",
+            "properties": {
+                "url": {
+                    "type": "string",
+                    "description": "Product URL on the storefront.\n",
+                    "x-required": [
+                        "post",
+                        "put"
+                    ],
+                    "x-url": true,
+                    "minLength": 0,
+                    "maxLength": 255,
+                    "example": "/shoes"
+                },
+                "is_customized": {
+                    "type": "boolean",
+                    "description": "Returns `true` if the URL has been changed from its default state (the auto-assigned URL that BigCommerce provides).\n",
+                    "x-required": [
+                        "post",
+                        "put"
+                    ]
+                }
+            }
+        },
+        "open_graph_type": {
+            "type": "string",
+            "description": "Type of product, defaults to `product`.\n",
+            "enum": [
+                "product",
+                "album",
+                "book",
+                "drink",
+                "food",
+                "game",
+                "movie",
+                "song",
+                "tv_show"
+            ]
+        },
+        "open_graph_title": {
+            "type": "string",
+            "description": "Title of the product, if not specified the product name will be used instead.\n"
+        },
+        "open_graph_description": {
+            "type": "string",
+            "description": "Description to use for the product, if not specified then the meta_description will be used instead.\n"
+        },
+        "open_graph_use_meta_description": {
+            "type": "boolean",
+            "description": "Flag to determine if product description or open graph description is used.\n"
+        },
+        "open_graph_use_product_name": {
+            "type": "boolean",
+            "description": "Flag to determine if product name or open graph name is used.\n"
+        },
+        "open_graph_use_image": {
+            "type": "boolean",
+            "description": "Flag to determine if product image or open graph image is used.\n"
+        },
+        "brand_name or brand_id": {
+            "type": "string",
+            "example": "Common Good",
+            "description": "The brand can be created during a product PUT or POST request. If the brand already exists then the product will be added. If not the brand will be created and the product added. If using `brand_name` it performs a fuzzy match and adds the brand. eg. \"Common Good\" and \"Common good\" are the same. Brand name does not return as part of a product response. Only the `brand_id`."
+        },
+        "gtin": {
+            "type": "string",
+            "description": "Global Trade Item Number"
+        },
+        "mpn": {
+            "type": "string",
+            "description": "Manufacturer Part Number"
+        },
+        "reviews_rating_sum": {
+            "type": "integer",
+            "description": "The total rating for the product.\n",
+            "example": 3.2
+        },
+        "reviews_count": {
+            "type": "integer",
+            "description": "The number of times the product has been rated.\n",
+            "example": 4
+        },
+        "total_sold": {
+            "type": "integer",
+            "description": "The total quantity of this product sold.\n",
+            "example": 80
+        },
+        "custom_fields": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "description": "The model for a PUT to update a custom field on a product.",
+                "title": "productCustomField_Put",
+                "required": [
+                    "name",
+                    "value"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "The unique numeric ID of the custom field; increments sequentially. Required to update existing custom field in /PUT request.\nRead-Only",
+                        "minimum": 1,
+                        "example": 6
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the field, shown on the storefront, orders, etc. Required for /POST\n",
+                        "x-required": [
+                            "post"
+                        ],
+                        "minLength": 1,
+                        "maxLength": 250,
+                        "example": "ISBN"
+                    },
+                    "value": {
+                        "type": "string",
+                        "description": "The name of the field, shown on the storefront, orders, etc. Required for /POST\n",
+                        "x-required": [
+                            "post"
+                        ],
+                        "minLength": 1,
+                        "maxLength": 250,
+                        "example": "1234567890123"
+                    }
+                }
+            }
+        },
+        "bulk_pricing_rules": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "description": "Common Bulk Pricing Rule properties",
+                "title": "bulkPricingRule_Full",
+                "required": [
+                    "quantity_min",
+                    "quantity_max",
+                    "type",
+                    "amount"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Unique ID of the *Bulk Pricing Rule*. Read-Only."
+                    },
+                    "quantity_min": {
+                        "type": "integer",
+                        "description": "The minimum inclusive quantity of a product to satisfy this rule. Must be greater than or equal to zero.\nRequired in /POST.\n",
+                        "x-required": [
+                            "post"
+                        ],
+                        "minimum": 0,
+                        "example": 10
+                    },
+                    "quantity_max": {
+                        "type": "integer",
+                        "description": "The maximum inclusive quantity of a product to satisfy this rule. Must be greater than the `quantity_min` value – unless this field has a value of 0 (zero), in which case there will be no maximum bound for this rule.\nRequired in /POST.",
+                        "x-required": [
+                            "post"
+                        ],
+                        "minimum": 0,
+                        "example": 50
+                    },
+                    "type": {
+                        "type": "string",
+                        "description": "The type of adjustment that is made. Values: `price` - the adjustment amount per product; `percent` - the adjustment as a percentage of the original price; `fixed` - the adjusted absolute price of the product.\nRequired in /POST.",
+                        "x-required": [
+                            "post"
+                        ],
+                        "enum": [
+                            "price",
+                            "percent",
+                            "fixed"
+                        ],
+                        "example": "price"
+                    },
+                    "amount": {
+                        "type": "integer",
+                        "description": "The discount can be a fixed dollar amount or a percentage. For a fixed dollar amount enter it as an integer and the response will return as an integer. For percentage enter the amount as the percentage divided by 100 using string format. For example 10% percent would be “.10”. The response will return as an integer.\nRequired in /POST.",
+                        "example": 10
+                    }
+                }
+            }
+        },
+        "images": {
+            "type": "array",
+            "items": {
+                "title": "productImage_Full",
+                "description": "Common ProductImage properties.",
+                "type": "object",
+                "properties": {
+                    "image_file": {
+                        "description": "The local path to the original image file uploaded to BigCommerce. Limit of 1MB per file.\n",
+                        "type": "string"
+                    },
+                    "is_thumbnail": {
+                        "description": "Flag for identifying whether the image is used as the product's thumbnail.\n",
+                        "type": "boolean"
+                    },
+                    "sort_order": {
+                        "type": "integer",
+                        "description": "The order in which the image will be displayed on the product page. Higher integers give the image a lower priority. When updating, if the image is given a lower priority, all images with a `sort_order` the same as or greater than the image's new `sort_order` value will have their `sort_order`s reordered.\n",
+                        "minimum": -2147483648,
+                        "maximum": 2147483647
+                    },
+                    "description": {
+                        "description": "The description for the image.\n",
+                        "type": "string"
+                    },
+                    "image_url": {
+                        "type": "string",
+                        "description": "Must be a fully qualified URL path, including protocol. Limit of 8MB per file."
+                    },
+                    "id": {
+                        "description": "The unique numeric ID of the image; increments sequentially.\n",
+                        "type": "integer"
+                    },
+                    "product_id": {
+                        "description": "The unique numeric identifier for the product with which the image is associated.\n",
+                        "type": "integer"
+                    },
+                    "url_zoom": {
+                        "description": "The zoom URL for this image. By default, this is used as the zoom image on product pages when zoom images are enabled.\n",
+                        "type": "string"
+                    },
+                    "url_standard": {
+                        "description": "The standard URL for this image. By default, this is used for product-page images.\n",
+                        "type": "string"
+                    },
+                    "url_thumbnail": {
+                        "description": "The thumbnail URL for this image. By default, this is the image size used on the category page and in side panels.\n",
+                        "type": "string"
+                    },
+                    "url_tiny": {
+                        "description": "The tiny URL for this image. By default, this is the image size used for thumbnails beneath the product image on a product page.\n",
+                        "type": "string"
+                    },
+                    "date_modified": {
+                        "format": "date-time",
+                        "description": "The date on which the product image was modified.\n",
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "videos": {
+            "type": "array",
+            "items": {
+                "description": "A product video model.\n",
+                "title": "productVideo_Full",
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "description": "The title for the video. If left blank, this will be filled in according to data on a host site.\n",
+                        "minLength": 0,
+                        "maxLength": 255
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "The description for the video. If left blank, this will be filled in according to data on a host site.\n"
+                    },
+                    "sort_order": {
+                        "type": "integer",
+                        "description": "The order in which the video will be displayed on the product page. Higher integers give the video a lower priority. When updating, if the video is given a lower priority, all videos with a `sort_order` the same as or greater than the video's new `sort_order` value will have their `sort_order`s reordered.\n",
+                        "minimum": -2147483648,
+                        "maximum": 2147483647
+                    },
+                    "type": {
+                        "type": "string",
+                        "description": "The video type (a short name of a host site).\n",
+                        "enum": [
+                            "youtube"
+                        ]
+                    },
+                    "video_id": {
+                        "type": "string",
+                        "description": "The ID of the video on a host site."
+                    },
+                    "id": {
+                        "type": "integer",
+                        "description": "The unique numeric ID of the product video; increments sequentially.\n"
+                    },
+                    "product_id": {
+                        "description": "The unique numeric identifier for the product with which the image is associated.\n",
+                        "type": "integer"
+                    },
+                    "length": {
+                        "description": "Length of the video. This will be filled in according to data on a host site.\n",
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "date_created": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date on which the product was created.\n",
+            "example": "2018-08-15T14:49:05+00:00"
+        },
+        "date_modified": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date on which the product was modified.\n",
+            "example": "2018-08-24T14:41:00+00:00"
+        },
+        "id": {
+            "type": "integer",
+            "description": "ID of the product. Read Only.",
+            "minimum": 1
+        },
+        "base_variant_id": {
+            "type": "integer",
+            "description": "The unique identifier of the base variant associated with a simple product. This value is `null` for complex products."
+        },
+        "calculated_price": {
+            "type": "number",
+            "description": "The price of the product as seen on the storefront. It will be equal to the `sale_price`, if set, and the `price` if there is not a `sale_price`.",
+            "format": "float"
+        },
+        "options": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "description": "Common Option properties.",
+                "title": "productOption_Base",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "The unique numerical ID of the option, increments sequentially.\n",
+                        "x-nullable": true,
+                        "example": 55
+                    },
+                    "product_id": {
+                        "type": "integer",
+                        "description": "The unique numerical ID of the product to which the option belongs.\n",
+                        "x-required": [
+                            "post",
+                            "put"
+                        ],
+                        "example": 4
+                    },
+                    "display_name": {
+                        "type": "string",
+                        "description": "The name of the option shown on the storefront.\n",
+                        "x-required": [
+                            "post",
+                            "put"
+                        ],
+                        "minLength": 1,
+                        "maxLength": 255,
+                        "example": "Add-a-$5-Donation1535042499-187"
+                    },
+                    "type": {
+                        "type": "string",
+                        "description": "The type of option, which determines how it will display on the storefront. Acceptable values: `radio_buttons`, `rectangles`, `dropdown`, `product_list`, `product_list_with_images`, `swatch`. For reference, the former v2 API values are: RB = radio_buttons, RT = rectangles, S = dropdown, P = product_list, PI = product_list_with_images, CS = swatch.\n",
+                        "enum": [
+                            "radio_buttons",
+                            "rectangles",
+                            "dropdown",
+                            "product_list",
+                            "product_list_with_images",
+                            "swatch"
+                        ],
+                        "x-required": [
+                            "post",
+                            "put"
+                        ]
+                    },
+                    "config": {
+                        "type": "object",
+                        "title": "productOptionConfig_Full",
+                        "description": "The values for option config can vary based on the Modifier created.",
+                        "properties": {
+                            "default_value": {
+                                "type": "string",
+                                "description": "(date, text, multi_line_text, numbers_only_text) The default value. Shown on a date option as an ISO-8601–formatted string, or on a text option as a string.\n"
+                            },
+                            "checked_by_default": {
+                                "type": "boolean",
+                                "description": "(checkbox) Flag for setting the checkbox to be checked by default.\n"
+                            },
+                            "checkbox_label": {
+                                "type": "string",
+                                "description": "(checkbox) Label displayed for the checkbox option.\n"
+                            },
+                            "date_limited": {
+                                "type": "boolean",
+                                "description": "(date) Flag to limit the dates allowed to be entered on a date option.\n"
+                            },
+                            "date_limit_mode": {
+                                "type": "string",
+                                "description": "(date) The type of limit that is allowed to be entered on a date option.\n",
+                                "enum": [
+                                    "earliest",
+                                    "range",
+                                    "latest"
+                                ],
+                                "example": "range"
+                            },
+                            "date_earliest_value": {
+                                "type": "string",
+                                "format": "date",
+                                "description": "(date) The earliest date allowed to be entered on the date option, as an ISO-8601 formatted string.\n",
+                                "example": "2018-08-31T05:00:00+00:00"
+                            },
+                            "date_latest_value": {
+                                "type": "string",
+                                "format": "date",
+                                "description": "(date) The latest date allowed to be entered on the date option, as an ISO-8601 formatted string.\n",
+                                "example": "2019-01-01T05:00:00+00:00"
+                            },
+                            "file_types_mode": {
+                                "type": "string",
+                                "description": "(file) The kind of restriction on the file types that can be uploaded with a file upload option. Values: `specific` - restricts uploads to particular file types; `all` - allows all file types.\n",
+                                "enum": [
+                                    "specific",
+                                    "all"
+                                ],
+                                "example": "specific"
+                            },
+                            "file_types_supported": {
+                                "type": "array",
+                                "description": "(file) The type of files allowed to be uploaded if the `file_type_option` is set to `specific`. Values:\n  `images` - Allows upload of image MIME types (`bmp`, `gif`, `jpg`, `jpeg`, `jpe`, `jif`, `jfif`, `jfi`, `png`, `wbmp`, `xbm`, `tiff`). `documents` - Allows upload of document MIME types (`txt`, `pdf`, `rtf`, `doc`, `docx`, `xls`, `xlsx`, `accdb`, `mdb`, `one`, `pps`, `ppsx`, `ppt`, `pptx`, `pub`, `odt`, `ods`, `odp`, `odg`, `odf`).\n  `other` - Allows file types defined in the `file_types_other` array.\n",
+                                "example": "images, documents, other",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "file_types_other": {
+                                "type": "array",
+                                "description": "(file) A list of other file types allowed with the file upload option.\n",
+                                "example": "pdf",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "file_max_size": {
+                                "type": "integer",
+                                "description": "(file) The maximum size for a file that can be used with the file upload option. This will still be limited by the server.\n",
+                                "example": 5
+                            },
+                            "text_characters_limited": {
+                                "type": "boolean",
+                                "description": "(text, multi_line_text) Flag to validate the length of a text or multi-line text input.\n"
+                            },
+                            "text_min_length": {
+                                "type": "integer",
+                                "description": "(text, multi_line_text) The minimum length allowed for a text or multi-line text option.\n",
+                                "example": 1
+                            },
+                            "text_max_length": {
+                                "type": "integer",
+                                "description": "(text, multi_line_text) The maximum length allowed for a text or multi line text option.\n",
+                                "example": 55
+                            },
+                            "text_lines_limited": {
+                                "type": "boolean",
+                                "description": "(multi_line_text) Flag to validate the maximum number of lines allowed on a multi-line text input.\n",
+                                "example": true
+                            },
+                            "text_max_lines": {
+                                "type": "integer",
+                                "description": "(multi_line_text) The maximum number of lines allowed on a multi-line text input.\n",
+                                "example": 4
+                            },
+                            "number_limited": {
+                                "type": "boolean",
+                                "description": "(numbers_only_text) Flag to limit the value of a number option.\n",
+                                "example": true
+                            },
+                            "number_limit_mode": {
+                                "type": "string",
+                                "description": "(numbers_only_text) The type of limit on values entered for a number option.\n",
+                                "enum": [
+                                    "lowest",
+                                    "highest",
+                                    "range"
+                                ],
+                                "example": "lowest"
+                            },
+                            "number_lowest_value": {
+                                "type": "number",
+                                "description": "(numbers_only_text) The lowest allowed value for a number option if `number_limited` is true.\n",
+                                "example": 100
+                            },
+                            "number_highest_value": {
+                                "type": "number",
+                                "description": "(numbers_only_text) The highest allowed value for a number option if `number_limited` is true.\n"
+                            },
+                            "number_integers_only": {
+                                "type": "boolean",
+                                "description": "(numbers_only_text) Flag to limit the input on a number option to whole numbers only.\n",
+                                "example": false
+                            },
+                            "product_list_adjusts_inventory": {
+                                "type": "boolean",
+                                "description": "(product_list, product_list_with_images) Flag for automatically adjusting inventory on a product included in the list.\n"
+                            },
+                            "product_list_adjusts_pricing": {
+                                "type": "boolean",
+                                "description": "(product_list, product_list_with_images) Flag to add the optional product's price to the main product's price.\n"
+                            },
+                            "product_list_shipping_calc": {
+                                "type": "string",
+                                "description": "(product_list, product_list_with_images) How to factor the optional product's weight and package dimensions into the shipping quote. Values: `none` - don't adjust; `weight` - use shipping weight only; `package` - use weight and dimensions.\n",
+                                "enum": [
+                                    "none",
+                                    "weight",
+                                    "package"
+                                ],
+                                "example": "weight"
+                            }
+                        }
+                    },
+                    "sort_order": {
+                        "type": "integer",
+                        "example": 1,
+                        "description": "Order in which the option is displayed on the storefront. "
+                    },
+                    "option_values": {
+                        "title": "productOptionOptionValue_Full",
+                        "description": "Product Option `option_value`.",
+                        "type": "object",
+                        "required": [
+                            "label",
+                            "sort_order"
+                        ],
+                        "properties": {
+                            "is_default": {
+                                "type": "boolean",
+                                "description": "The flag for preselecting a value as the default on the storefront. This field is not supported for swatch options/modifiers.\n",
+                                "example": false
+                            },
+                            "label": {
+                                "type": "string",
+                                "description": "The text display identifying the value on the storefront. Required in a /POST.\n",
+                                "x-required": [
+                                    "post"
+                                ],
+                                "example": "Green"
+                            },
+                            "sort_order": {
+                                "type": "integer",
+                                "description": "The order in which the value will be displayed on the product page. Required in a /POST.\n",
+                                "minimum": -2147483648,
+                                "maximum": 2147483647,
+                                "x-required": [
+                                    "post"
+                                ],
+                                "example": 0
+                            },
+                            "value_data": {
+                                "type": [
+                                    "object",
+                                    "null"
+                                ],
+                                "description": "Extra data describing the value, based on the type of option or modifier with which the value is associated. The `swatch` type option can accept an array of `colors`, with up to three hexidecimal color keys; or an `image_url`, which is a full image URL path including protocol. The `product list` type option requires a `product_id`. The `checkbox` type option requires a boolean flag, called `checked_value`, to determine which value is considered to be the checked state. If no data is available, returns `null`.\n"
+                            },
+                            "id": {
+                                "type": "integer",
+                                "description": "The unique numeric ID of the value; increments sequentially.\n"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "modifiers": {
+            "type": "array",
+            "items": {
+                "title": "productModifier_Full",
+                "description": "Product Modifier",
+                "type": "object",
+                "required": [
+                    "type",
+                    "required"
+                ],
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "description": "BigCommerce API, which determines how it will display on the storefront. Acceptable values: `date`, `checkbox`, `file`, `text`, `multi_line_text`, `numbers_only_text`, `radio_buttons`, `rectangles`, `dropdown`, `product_list`, `product_list_with_images`, `swatch`. Required in a /POST.\n",
+                        "enum": [
+                            "date",
+                            "checkbox",
+                            "file",
+                            "text",
+                            "multi_line_text",
+                            "numbers_only_text",
+                            "radio_buttons",
+                            "rectangles",
+                            "dropdown",
+                            "product_list",
+                            "product_list_with_images",
+                            "swatch"
+                        ],
+                        "x-required": [
+                            "post"
+                        ]
+                    },
+                    "required": {
+                        "type": "boolean",
+                        "description": "Whether or not this modifer is required or not at checkout. Required in a /POST.\n",
+                        "x-required": [
+                            "post"
+                        ]
+                    },
+                    "sort_order": {
+                        "type": "integer",
+                        "description": "The order the modifiers display on the product detail page."
+                    },
+                    "config": {
+                        "type": "object",
+                        "description": "The values for option config can vary based on the Modifier created.",
+                        "title": "config_Full",
+                        "properties": {
+                            "default_value": {
+                                "type": "string",
+                                "description": "(date, text, multi_line_text, numbers_only_text) The default value. Shown on a date option as an ISO-8601–formatted string, or on a text option as a string.\n"
+                            },
+                            "checked_by_default": {
+                                "type": "boolean",
+                                "description": "(checkbox) Flag for setting the checkbox to be checked by default.\n"
+                            },
+                            "checkbox_label": {
+                                "type": "string",
+                                "description": "(checkbox) Label displayed for the checkbox option.\n"
+                            },
+                            "date_limited": {
+                                "type": "boolean",
+                                "description": "(date) Flag to limit the dates allowed to be entered on a date option.\n"
+                            },
+                            "date_limit_mode": {
+                                "type": "string",
+                                "description": "(date) The type of limit that is allowed to be entered on a date option.\n",
+                                "enum": [
+                                    "earliest",
+                                    "range",
+                                    "latest"
+                                ],
+                                "example": "range"
+                            },
+                            "date_earliest_value": {
+                                "type": "string",
+                                "format": "date",
+                                "description": "(date) The earliest date allowed to be entered on the date option, as an ISO-8601 formatted string.\n",
+                                "example": "2018-08-31T05:00:00+00:00"
+                            },
+                            "date_latest_value": {
+                                "type": "string",
+                                "format": "date",
+                                "description": "(date) The latest date allowed to be entered on the date option, as an ISO-8601 formatted string.\n",
+                                "example": "2019-01-01T05:00:00+00:00"
+                            },
+                            "file_types_mode": {
+                                "type": "string",
+                                "description": "(file) The kind of restriction on the file types that can be uploaded with a file upload option. Values: `specific` - restricts uploads to particular file types; `all` - allows all file types.\n",
+                                "enum": [
+                                    "specific",
+                                    "all"
+                                ],
+                                "example": "specific"
+                            },
+                            "file_types_supported": {
+                                "type": "array",
+                                "description": "(file) The type of files allowed to be uploaded if the `file_type_option` is set to `specific`. Values:\n  `images` - Allows upload of image MIME types (`bmp`, `gif`, `jpg`, `jpeg`, `jpe`, `jif`, `jfif`, `jfi`, `png`, `wbmp`, `xbm`, `tiff`). `documents` - Allows upload of document MIME types (`txt`, `pdf`, `rtf`, `doc`, `docx`, `xls`, `xlsx`, `accdb`, `mdb`, `one`, `pps`, `ppsx`, `ppt`, `pptx`, `pub`, `odt`, `ods`, `odp`, `odg`, `odf`).\n  `other` - Allows file types defined in the `file_types_other` array.\n",
+                                "example": "images, documents, other",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "file_types_other": {
+                                "type": "array",
+                                "description": "(file) A list of other file types allowed with the file upload option.\n",
+                                "example": "pdf",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "file_max_size": {
+                                "type": "integer",
+                                "description": "(file) The maximum size for a file that can be used with the file upload option. This will still be limited by the server.\n",
+                                "example": 5
+                            },
+                            "text_characters_limited": {
+                                "type": "boolean",
+                                "description": "(text, multi_line_text) Flag to validate the length of a text or multi-line text input.\n"
+                            },
+                            "text_min_length": {
+                                "type": "integer",
+                                "description": "(text, multi_line_text) The minimum length allowed for a text or multi-line text option.\n",
+                                "example": 1
+                            },
+                            "text_max_length": {
+                                "type": "integer",
+                                "description": "(text, multi_line_text) The maximum length allowed for a text or multi line text option.\n",
+                                "example": 55
+                            },
+                            "text_lines_limited": {
+                                "type": "boolean",
+                                "description": "(multi_line_text) Flag to validate the maximum number of lines allowed on a multi-line text input.\n",
+                                "example": true
+                            },
+                            "text_max_lines": {
+                                "type": "integer",
+                                "description": "(multi_line_text) The maximum number of lines allowed on a multi-line text input.\n",
+                                "example": 4
+                            },
+                            "number_limited": {
+                                "type": "boolean",
+                                "description": "(numbers_only_text) Flag to limit the value of a number option.\n",
+                                "example": true
+                            },
+                            "number_limit_mode": {
+                                "type": "string",
+                                "description": "(numbers_only_text) The type of limit on values entered for a number option.\n",
+                                "enum": [
+                                    "lowest",
+                                    "highest",
+                                    "range"
+                                ],
+                                "example": "lowest"
+                            },
+                            "number_lowest_value": {
+                                "type": "number",
+                                "description": "(numbers_only_text) The lowest allowed value for a number option if `number_limited` is true.\n",
+                                "example": 100
+                            },
+                            "number_highest_value": {
+                                "type": "number",
+                                "description": "(numbers_only_text) The highest allowed value for a number option if `number_limited` is true.\n"
+                            },
+                            "number_integers_only": {
+                                "type": "boolean",
+                                "description": "(numbers_only_text) Flag to limit the input on a number option to whole numbers only.\n",
+                                "example": false
+                            },
+                            "product_list_adjusts_inventory": {
+                                "type": "boolean",
+                                "description": "(product_list, product_list_with_images) Flag for automatically adjusting inventory on a product included in the list.\n"
+                            },
+                            "product_list_adjusts_pricing": {
+                                "type": "boolean",
+                                "description": "(product_list, product_list_with_images) Flag to add the optional product's price to the main product's price.\n"
+                            },
+                            "product_list_shipping_calc": {
+                                "type": "string",
+                                "description": "(product_list, product_list_with_images) How to factor the optional product's weight and package dimensions into the shipping quote. Values: `none` - don't adjust; `weight` - use shipping weight only; `package` - use weight and dimensions.\n",
+                                "enum": [
+                                    "none",
+                                    "weight",
+                                    "package"
+                                ],
+                                "example": "weight"
+                            }
+                        }
+                    },
+                    "display_name": {
+                        "type": "string",
+                        "description": "The name of the option shown on the storefront."
+                    },
+                    "id": {
+                        "type": "integer",
+                        "description": "The unique numeric ID of the modifier; increments sequentially.\n",
+                        "example": 12
+                    },
+                    "product_id": {
+                        "type": "integer",
+                        "description": "The unique numeric ID of the product to which the option belongs.\n",
+                        "example": 77
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "The unique option name. Auto-generated from the display name, a timestamp, and the product ID.\n",
+                        "example": "Add-a-$5-Donation1535039590-191"
+                    },
+                    "option_values": {
+                        "type": "array",
+                        "items": {
+                            "title": "productModifierOptionValue_Full",
+                            "description": "Product Modifer `option_value`.",
+                            "type": "object",
+                            "required": [
+                                "label",
+                                "sort_order"
+                            ],
+                            "properties": {
+                                "is_default": {
+                                    "type": "boolean",
+                                    "description": "The flag for preselecting a value as the default on the storefront. This field is not supported for swatch options/modifiers.\n",
+                                    "example": false
+                                },
+                                "label": {
+                                    "type": "string",
+                                    "description": "The text display identifying the value on the storefront. Required in a /POST.\n",
+                                    "x-required": [
+                                        "post"
+                                    ],
+                                    "example": "Green"
+                                },
+                                "sort_order": {
+                                    "type": "integer",
+                                    "description": "The order in which the value will be displayed on the product page. Required in a /POST.\n",
+                                    "minimum": -2147483648,
+                                    "maximum": 2147483647,
+                                    "x-required": [
+                                        "post"
+                                    ],
+                                    "example": 0
+                                },
+                                "value_data": {
+                                    "type": [
+                                        "object",
+                                        "null"
+                                    ],
+                                    "description": "Extra data describing the value, based on the type of option or modifier with which the value is associated. The `swatch` type option can accept an array of `colors`, with up to three hexidecimal color keys; or an `image_url`, which is a full image URL path including protocol. The `product list` type option requires a `product_id`. The `checkbox` type option requires a boolean flag, called `checked_value`, to determine which value is considered to be the checked state. If no data is available, returns `null`.\n"
+                                },
+                                "adjusters": {
+                                    "type": "object",
+                                    "title": "adjusters_Full",
+                                    "properties": {
+                                        "price": {
+                                            "type": "object",
+                                            "title": "adjuster_Full",
+                                            "description": "Adjuster for Complex Rules.",
+                                            "properties": {
+                                                "adjuster": {
+                                                    "type": "string",
+                                                    "description": "The type of adjuster for either the price or the weight of the variant, when the modifier value is selected on the storefront.\n",
+                                                    "enum": [
+                                                        "relative",
+                                                        "percentage"
+                                                    ],
+                                                    "x-nullable": true
+                                                },
+                                                "adjuster_value": {
+                                                    "type": "number",
+                                                    "description": "The numeric amount by which the adjuster will change either the price or the weight of the variant, when the modifier value is selected on the storefront.\n",
+                                                    "example": 5
+                                                }
+                                            }
+                                        },
+                                        "weight": {
+                                            "type": "object",
+                                            "title": "adjuster_Full",
+                                            "description": "Adjuster for Complex Rules.",
+                                            "properties": {
+                                                "adjuster": {
+                                                    "type": "string",
+                                                    "description": "The type of adjuster for either the price or the weight of the variant, when the modifier value is selected on the storefront.\n",
+                                                    "enum": [
+                                                        "relative",
+                                                        "percentage"
+                                                    ],
+                                                    "x-nullable": true
+                                                },
+                                                "adjuster_value": {
+                                                    "type": "number",
+                                                    "description": "The numeric amount by which the adjuster will change either the price or the weight of the variant, when the modifier value is selected on the storefront.\n",
+                                                    "example": 5
+                                                }
+                                            }
+                                        },
+                                        "image_url": {
+                                            "type": "string",
+                                            "description": "The URL for an image displayed on the storefront when the modifier value is selected.Limit of 8MB per file.\n",
+                                            "example": "https://cdn8.bigcommerce.com/s-{{store_hash}}/products/184/images/445/naturalcanvascart2_1024x1024__92347__29648.1534344533.1280.1280.jpg?c=2"
+                                        },
+                                        "purchasing_disabled": {
+                                            "type": "object",
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "description": "Flag for whether the modifier value disables purchasing when selected on the storefront. This can be used for temporarily disabling a particular modifier value.\n"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "description": "The message displayed on the storefront when the purchasing disabled status is `true`.\n"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "id": {
+                                    "type": "integer",
+                                    "description": "The unique numeric ID of the value; increments sequentially.\n"
+                                },
+                                "option_id": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "option_set_id": {
+            "type": "integer",
+            "description": "Indicates that the product is in an Option Set (legacy V2 concept)."
+        },
+        "option_set_display": {
+            "type": "string",
+            "description": "Legacy template setting which controls if the option set shows up to the side of or below the product image and description."
+        },
+        "variants": {
+            "type": "array",
+            "items": {
+                "title": "productVariant_Full",
+                "type": "object",
+                "description": "Common Variant properties.",
+                "properties": {
+                    "cost_price": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "The cost price of the variant. Not affected by Price List prices.",
+                        "x-nullable": true,
+                        "minimum": 0
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "This variant's base price on the storefront. If a Price List ID is used, the Price List value will be used. If a Price List ID is not used, and this value is `null`, the product's default price (set in the Product resource's `price` field) will be used as the base price.",
+                        "x-nullable": true,
+                        "minimum": 0
+                    },
+                    "sale_price": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "This variant's sale price on the storefront. If a Price List ID is used, the Price List value will be used. If a Price List ID is not used, and this value is null, the product's sale price (set in the Product resource's `price` field) will be used as the sale price.",
+                        "x-nullable": true,
+                        "minimum": 0
+                    },
+                    "retail_price": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "This variant's retail price on the storefront. If a Price List ID is used, the Price List value will be used. If a Price List ID is not used, and this value is null, the product's retail price (set in the Product resource's `price` field) will be used as the retail price.",
+                        "x-nullable": true,
+                        "minimum": 0
+                    },
+                    "weight": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "This variant's base weight on the storefront. If this value is null, the product's default weight (set in the Product resource's weight field) will be used as the base weight.",
+                        "x-nullable": true,
+                        "minimum": 0
+                    },
+                    "width": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "Width of the variant, which can be used when calculating shipping costs. If this value is `null`, the product's default width (set in the Product resource's `width` field) will be used as the base width.\n",
+                        "x-nullable": true,
+                        "minimum": 0
+                    },
+                    "height": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "Height of the variant, which can be used when calculating shipping costs. If this value is `null`, the product's default height (set in the Product resource's `height` field) will be used as the base height.\n",
+                        "x-nullable": true,
+                        "minimum": 0
+                    },
+                    "depth": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "Depth of the variant, which can be used when calculating shipping costs. If this value is `null`, the product's default depth (set in the Product resource's `depth` field) will be used as the base depth.\n",
+                        "x-nullable": true,
+                        "minimum": 0
+                    },
+                    "is_free_shipping": {
+                        "type": "boolean",
+                        "description": "Flag used to indicate whether the variant has free shipping. If `true`, the shipping cost for the variant will be zero.\n"
+                    },
+                    "fixed_cost_shipping_price": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "A fixed shipping cost for the variant. If defined, this value will be used during checkout instead of normal shipping-cost calculation.\n",
+                        "x-nullable": true,
+                        "minimum": 0
+                    },
+                    "purchasing_disabled": {
+                        "type": "boolean",
+                        "description": "If `true`, this variant will not be purchasable on the storefront."
+                    },
+                    "purchasing_disabled_message": {
+                        "type": "string",
+                        "description": "If `purchasing_disabled` is `true`, this message should show on the storefront when the variant is selected.",
+                        "minLength": 0,
+                        "maxLength": 255
+                    },
+                    "upc": {
+                        "type": "string",
+                        "description": "The UPC code used in feeds for shopping comparison sites and external channel integrations.",
+                        "x-nullable": true
+                    },
+                    "inventory_level": {
+                        "type": "integer",
+                        "description": "Inventory level for the variant, which is used when the product's inventory_tracking is set to `variant`.",
+                        "x-nullable": true
+                    },
+                    "inventory_warning_level": {
+                        "type": "integer",
+                        "description": "When the variant hits this inventory level, it is considered low stock.",
+                        "x-nullable": true
+                    },
+                    "bin_picking_number": {
+                        "type": "string",
+                        "description": "Identifies where in a warehouse the variant is located.",
+                        "x-nullable": true,
+                        "minLength": 0,
+                        "maxLength": 255
+                    },
+                    "mpn": {
+                        "type": "string",
+                        "description": "The Manufacturer Part Number (MPN) for the variant."
+                    },
+                    "id": {
+                        "type": "integer"
+                    },
+                    "product_id": {
+                        "type": "integer"
+                    },
+                    "sku": {
+                        "type": "string"
+                    },
+                    "sku_id": {
+                        "type": "integer",
+                        "description": "Read-only reference to v2 API's SKU ID. Null if it is a base variant.",
+                        "x-nullable": true
+                    },
+                    "option_values": {
+                        "type": "array",
+                        "description": "Array of option and option values IDs that make up this variant. Will be empty if the variant is the product's base variant.",
+                        "items": {
+                            "title": "productVariantOptionValue_Full",
+                            "type": "object",
+                            "description": "Common Product Variant Option properties.",
+                            "properties": {
+                                "option_display_name": {
+                                    "type": "string",
+                                    "description": "The name of the option.\n",
+                                    "x-required": [
+                                        "post"
+                                    ],
+                                    "minLength": 1,
+                                    "maxLength": 255,
+                                    "example": "Color"
+                                },
+                                "label": {
+                                    "type": "string",
+                                    "description": "The label of the option value.\n",
+                                    "x-required": [
+                                        "post"
+                                    ],
+                                    "minLength": 1,
+                                    "maxLength": 255,
+                                    "example": "Beige"
+                                },
+                                "id": {
+                                    "type": "integer",
+                                    "description": "`option_value` ID.",
+                                    "example": "146 (Red)"
+                                },
+                                "option_id": {
+                                    "type": "integer",
+                                    "description": "`option` ID.",
+                                    "example": "151 (Color)"
+                                }
+                            }
+                        }
+                    },
+                    "calculated_price": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "The price of the variant as seen on the storefront. This price takes into account `sale_price` and any price adjustment rules that are applicable to this variant.\n"
+                    },
+                    "calculated_weight": {
+                        "type": "number"
+                    }
+                }
+            }
+        }
+    }
+}
