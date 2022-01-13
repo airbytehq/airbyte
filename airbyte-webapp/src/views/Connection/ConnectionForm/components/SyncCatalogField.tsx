@@ -44,6 +44,11 @@ const CheckboxCell = styled(Cell)`
   margin-left: -43px;
 `;
 
+const ArrowCell = styled(Cell)`
+  width: 40px;
+  max-width: 40px;
+`;
+
 const StreamsContent = styled.div`
   margin-left: 43px;
 `;
@@ -204,7 +209,8 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
           <CheckboxCell>
             <CheckBox onChange={onCheckAll} checked={hasSelectedItem} />
           </CheckboxCell>
-          <Cell lighter flex={0.5}>
+          <ArrowCell />
+          <Cell lighter flex={0.4}>
             <FormattedMessage id="sources.sync" />
           </Cell>
           <Cell lighter>
@@ -263,7 +269,8 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
         </SchemaHeader>
         <SchemaHeader>
           <CheckboxCell />
-          <ClearSubtitleCell flex={0.5} />
+          <ArrowCell />
+          <ClearSubtitleCell flex={0.4} />
           <SubtitleCell>
             <FormattedMessage id="form.namespace" />
           </SubtitleCell>

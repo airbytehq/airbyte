@@ -40,6 +40,11 @@ const CheckboxCell = styled(HeaderCell)`
   margin-left: -43px;
 `;
 
+const ArrowCell = styled(HeaderCell)`
+  max-width: 40px;
+  width: 40px;
+`;
+
 type SyncSchema = {
   syncMode: SyncMode;
   destinationSyncMode: DestinationSyncMode;
@@ -109,7 +114,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
       <CheckboxCell>
         <CheckBox checked={stream.config.selected} onChange={onSelectStream} />
       </CheckboxCell>
-      <HeaderCell flex={0.5}>
+      <ArrowCell>
         {hasFields ? (
           <ArrowBlock
             onExpand={onExpand}
@@ -117,7 +122,8 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
             isItemOpen={isRowExpanded}
           />
         ) : null}
-      </HeaderCell>
+      </ArrowCell>
+      <HeaderCell flex={0.4}>{/*TODO: add sync switcher*/}</HeaderCell>
       <HeaderCell ellipsis title={stream.stream.namespace || ""}>
         {stream.stream.namespace || (
           <EmptyField>
