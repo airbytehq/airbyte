@@ -43,7 +43,7 @@ class PersistiqStream(HttpStream, ABC):
         return {"page": json_response.get("next_page")[-1]}
 
     def request_params(
-        self, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {"page": 1 if not next_page_token else next_page_token["page"]}
 
@@ -61,7 +61,7 @@ class Users(PersistiqStream):
     primary_key = "id"
 
     def path(
-        self
+        self, **kwargs
     ) -> str:
         return "users"
 
@@ -70,7 +70,7 @@ class Leads(PersistiqStream):
     primary_key = "id"
 
     def path(
-        self
+        self, **kwargs
     ) -> str:
         return "leads"
 
@@ -79,7 +79,7 @@ class Campaigns(PersistiqStream):
     primary_key = "id"
 
     def path(
-        self
+        self, **kwargs
     ) -> str:
         return "campaigns"
 
