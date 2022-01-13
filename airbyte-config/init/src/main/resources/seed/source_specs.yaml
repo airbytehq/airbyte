@@ -4382,7 +4382,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-mongodb-v2:0.1.10"
+- dockerImage: "airbyte/source-mongodb-v2:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mongodb-v2"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/mongodb-v2"
