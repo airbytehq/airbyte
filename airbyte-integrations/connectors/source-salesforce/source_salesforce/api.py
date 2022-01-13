@@ -214,7 +214,7 @@ class Salesforce:
 
     def get_validated_streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None):
         salesforce_objects = self.describe()["sobjects"]
-        stream_names = [stream_object["name"] for stream_object in salesforce_objects]
+        stream_names = [stream_object["name"] for stream_object in salesforce_objects if stream_object["queryable"]]
         if catalog:
             return [configured_stream.stream.name for configured_stream in catalog.streams]
 

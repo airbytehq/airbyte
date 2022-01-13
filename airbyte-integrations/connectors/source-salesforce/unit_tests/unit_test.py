@@ -349,3 +349,22 @@ def test_discover_with_streams_criteria_param(streams_criteria, predicted_filter
     )
     filtered_streams = sf_object.get_validated_streams(config=updated_config)
     assert sorted(filtered_streams) == sorted(predicted_filtered_streams)
+
+
+def test_discover_only_queryable(stream_rest_config):
+    sf_object = Salesforce(**stream_rest_config)
+    sf_object.login = Mock()
+    sf_object.access_token = Mock()
+    sf_object.instance_url = "https://fase-account.salesforce.com"
+    sf_object.describe = Mock(
+        return_value={
+            "sobjects": [
+                {"name": "Account",
+                 "queryable": True},
+                {"name": "Leads",
+                 "queryable": False},
+            ]
+        }
+    )
+    filtered_streams = sf_object.get_validated_streams(config=stream_rest_config)
+    assert filtered_streams == ["Account"]
