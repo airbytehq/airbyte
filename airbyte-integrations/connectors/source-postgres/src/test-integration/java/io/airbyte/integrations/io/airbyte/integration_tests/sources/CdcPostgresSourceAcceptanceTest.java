@@ -67,6 +67,7 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
         .put("database", container.getDatabaseName())
+        .put("schemas", List.of(NAMESPACE))
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("replication_method", replicationMethod)
