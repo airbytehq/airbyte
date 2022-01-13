@@ -32,7 +32,23 @@ This section should contain a table with the following format:
 
 At the time of writing, the [Google API rate limit](https://developers.google.com/sheets/api/limits) is 100 requests per 100 seconds per user and 500 requests per 100 seconds per project. Airbyte batches requests to the API in order to efficiently pull data and respects these rate limits. It is recommended that you use the same service user \(see the "Creating a service user" section below for more information on how to create one\) for no more than 3 instances of the Google Sheets Source to ensure high transfer speeds.
 
-## Getting started
+## Getting Started (Airbyte Cloud) 
+To configure the connector you'll need to: 
+
+* Authorize your Google account via OAuth
+* The ID of the spreadsheet you'd like to sync
+
+### Setup Guide
+
+#### Authorization
+Click on the "Sign in with Google" button and authorize via your Google account. 
+
+#### Sheet ID
+you'll need the ID of the Spreadsheet you'd like to sync. To get it, navigate to the spreadsheet in your browser, then copy the portion of the URL which comes after "/d" and before "/edit" or "/view". This is the highlighted portion of the screenshot below:
+
+![](../../.gitbook/assets/google_spreadsheet_url.png)
+
+## Getting started (Airbyte OSS)
 
 ### Requirements
 

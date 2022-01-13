@@ -19,6 +19,9 @@ export GCS_LOG_BUCKET=airbyte-kube-integration-logging-test
 echo "Running log client tests.."
 SUB_BUILD=PLATFORM ./gradlew :airbyte-config:models:logClientsIntegrationTest  --scan
 
+echo "Running cloud storage tests.."
+SUB_BUILD=PLATFORM ./gradlew :airbyte-workers:cloudStorageIntegrationTest  --scan
+
 # Reset existing configurations and run this for each possible configuration
 # These configurations mirror the configurations documented in https://docs.airbyte.io/deploying-airbyte/on-kubernetes#configure-logs.
 # Some duplication here for clarity.

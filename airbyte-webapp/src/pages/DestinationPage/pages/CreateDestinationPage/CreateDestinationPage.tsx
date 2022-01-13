@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
-
-import { Routes } from "pages/routes";
 import PageTitle from "components/PageTitle";
 import DestinationForm from "./components/DestinationForm";
 import useRouter from "hooks/useRouter";
@@ -48,7 +46,7 @@ const CreateDestinationPage: React.FC = () => {
       setSuccessRequest(true);
       setTimeout(() => {
         setSuccessRequest(false);
-        push(`${Routes.Destination}/${result.destinationId}`);
+        push(`../${result.destinationId}`);
       }, 2000);
     } catch (e) {
       setErrorStatusRequest(e);
@@ -69,7 +67,6 @@ const CreateDestinationPage: React.FC = () => {
           destinationDefinitions={destinationDefinitions}
           hasSuccess={successRequest}
           error={errorStatusRequest}
-          jobInfo={errorStatusRequest?.response}
         />
       </FormPageContent>
     </>

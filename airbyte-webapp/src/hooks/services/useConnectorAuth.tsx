@@ -181,7 +181,7 @@ export function useRunOauthFlow(
   };
 }
 
-export function useResolveRedirect(): void {
+export function useResolveNavigate(): void {
   const { query } = useRouter();
 
   useEffectOnce(() => {

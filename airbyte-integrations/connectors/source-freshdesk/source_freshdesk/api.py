@@ -10,7 +10,7 @@ from typing import Any, Callable, Iterator, Mapping, MutableMapping, Optional, S
 
 import pendulum
 import requests
-from base_python.entrypoint import logger  # FIXME (Eugene K): use standard logger
+from airbyte_cdk.entrypoint import logger  # FIXME (Eugene K): use standard logger
 from requests import HTTPError
 from source_freshdesk.errors import (
     FreshdeskAccessDenied,
@@ -158,7 +158,7 @@ class IncrementalStreamAPI(StreamAPI, ABC):
     def state(self) -> Optional[Mapping[str, Any]]:
         """Current state, if wasn't set return None"""
         if self._state:
-            return {self.state_pk: str(self._state)}
+            return {self.state_pk: str(self._state).replace("+00:00", "Z")}
         return None
 
     @state.setter

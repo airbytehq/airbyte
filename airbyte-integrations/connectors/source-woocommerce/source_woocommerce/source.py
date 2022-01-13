@@ -5,6 +5,7 @@
 
 from abc import ABC
 from base64 import b64encode
+from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
@@ -57,6 +58,7 @@ class WoocommerceStream(HttpStream, ABC):
             params.update(**next_page_token)
         else:
             params.update({"orderby": self.order_field, "order": "asc"})
+            params = {"before": datetime.now().isoformat()}
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -75,6 +77,8 @@ class IncrementalWoocommerceStream(WoocommerceStream, ABC):
     cursor_field = "date_modified"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        if self.cursor_field == "date_modified" and datetime.now().isoformat() < current_stream_state.get(self.cursor_field, ""):
+            return {self.cursor_field: latest_record.get(self.cursor_field, "")}
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
     def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
@@ -106,6 +110,7 @@ class NonFilteredStream(IncrementalWoocommerceStream):
 
         if not next_page_token and stream_state:
             del params["after"]
+            del params["before"]
         return params
 
     def read_records(

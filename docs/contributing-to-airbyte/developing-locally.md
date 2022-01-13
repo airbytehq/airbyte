@@ -2,7 +2,7 @@
 
 The following technologies are required to build Airbyte locally.
 
-1. [`Java 14`](https://jdk.java.net/archive/)
+1. [`Java 17`](https://jdk.java.net/archive/)
 2. `Node 16`
 3. `Python 3.7`
 4. `Docker`
@@ -36,12 +36,6 @@ SUB_BUILD=PLATFORM ./gradlew build
 {% hint style="info" %}
 If you're using Mac M1 \(Apple Silicon\) machines, it is possible to compile Airbyte by setting
 some additional environment variables:
-
-Build temporal (This is required until official images are available Refer: https://github.com/temporalio/temporal/issues/1305)
-```bash
-cd airbyte-temporal/scripts
-./build-temporal.sh
-```
 
 ```bash
 export DOCKER_BUILD_PLATFORM=linux/arm64
