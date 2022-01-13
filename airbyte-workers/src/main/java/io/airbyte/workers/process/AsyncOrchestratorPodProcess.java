@@ -56,7 +56,13 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   }
 
   public Optional<String> getOutput() {
-    return getDocument(AsyncKubePodStatus.SUCCEEDED.name());
+    final var possibleOutput = getDocument(AsyncKubePodStatus.SUCCEEDED.name());
+
+    if (possibleOutput.isPresent() && possibleOutput.get().isBlank()) {
+      return Optional.empty();
+    } else {
+      return possibleOutput;
+    }
   }
 
   private int computeExitValue() {

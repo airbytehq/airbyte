@@ -121,7 +121,6 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
                                                                                                        final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                        final JobRunConfig jobRunConfig) {
     return () -> new DbtLauncherWorker(
-        workspaceRoot,
         destinationLauncherConfig,
         jobRunConfig,
         workerConfigs,

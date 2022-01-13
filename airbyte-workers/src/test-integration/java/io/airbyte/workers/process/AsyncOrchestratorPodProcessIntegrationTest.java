@@ -95,14 +95,6 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
 
   @Test
   public void test() throws InterruptedException {
-    documentStoreClient.write("akey", "avalue1");
-    final var aread1 = documentStoreClient.read("akey");
-    documentStoreClient.write("akey", "avalue2");
-    final var aread2 = documentStoreClient.read("akey");
-
-    System.out.println("aread1 = " + aread1);
-    System.out.println("aread2 = " + aread2);
-
     final var podName = "test-async-" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
 
     // make kubepodinfo
@@ -140,23 +132,6 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
     assertEquals("expected output", output.get());
   }
 
-  // todo: should the launched async pod start by writing a "started" value to the persistence so it
-  // knows if it started?
-
-  // todo: test all of the different functionality
-
-  // todo: test failure with exit value publishing
-
-  // todo: test failure with cleanup already
-
-  // todo: outline all possible failure states
-  // launched + created pod + worker turned off + pod failed + worker was down long enough for pod to
-  // be swept + what to do? -> start again presumably in this weird case
-  // launched submitted pod but it wasn't actually created (need to identify this somehow -- is there
-  // a waiting period?)
-  // launched + created pod + worker turned off + already succeeded (swept or not)
-  // need to check that we aren't spamming the api
-
   @AfterAll
   public static void teardown() {
     try {
@@ -166,7 +141,7 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
     }
 
     try {
-      // kubernetesClient.pods().delete(); // todo: revert after mostly fixed here
+      kubernetesClient.pods().delete();
     } catch (Exception e) {
       e.printStackTrace();
     }

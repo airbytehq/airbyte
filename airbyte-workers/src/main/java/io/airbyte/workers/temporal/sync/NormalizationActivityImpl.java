@@ -117,7 +117,6 @@ public class NormalizationActivityImpl implements NormalizationActivity {
                                                                                                          final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                          final JobRunConfig jobRunConfig) {
     return () -> new NormalizationLauncherWorker(
-        workspaceRoot,
         destinationLauncherConfig,
         jobRunConfig,
         workerConfigs,
