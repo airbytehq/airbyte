@@ -104,7 +104,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
       }
     }
 
-    // Otherwise, throw an exception because this is still running.
+    // Otherwise, throw an exception because this is still running, which will be caught in hasExited
     switch (docStoreStatus) {
       case NOT_STARTED -> throw new IllegalThreadStateException("Pod hasn't started yet.");
       case INITIALIZING -> throw new IllegalThreadStateException("Pod is initializing.");
