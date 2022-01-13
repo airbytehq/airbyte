@@ -1,4 +1,4 @@
-name: Using Codecov for Native Python Connections
+name: Codecov for Python Connectors
 on: [push]
 
 jobs:
