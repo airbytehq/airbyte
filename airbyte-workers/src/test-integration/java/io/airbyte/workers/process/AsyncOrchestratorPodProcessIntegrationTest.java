@@ -32,7 +32,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
-// todo: this should actually test the launcher worker
 public class AsyncOrchestratorPodProcessIntegrationTest {
 
   private static KubernetesClient kubernetesClient;

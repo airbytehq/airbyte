@@ -95,6 +95,10 @@ public class ContainerOrchestratorApp implements Runnable {
       final ProcessFactory processFactory = getProcessBuilderFactory(configs, workerConfigs);
       final JobOrchestrator<?> jobOrchestrator = getJobOrchestrator(configs, workerConfigs, processFactory, application);
 
+      if (jobOrchestrator == null) {
+        throw new IllegalStateException("Could not find job orchestrator for application: " + application);
+      }
+
       final var heartbeatServer = new WorkerHeartbeatServer(WorkerApp.KUBE_HEARTBEAT_PORT);
       heartbeatServer.startBackground();
 
@@ -165,10 +169,7 @@ public class ContainerOrchestratorApp implements Runnable {
       case NormalizationLauncherWorker.NORMALIZATION -> new NormalizationJobOrchestrator(configs, workerConfigs, processFactory);
       case DbtLauncherWorker.DBT -> new DbtJobOrchestrator(configs, workerConfigs, processFactory);
       case AsyncOrchestratorPodProcess.NO_OP -> new NoOpOrchestrator();
-      default -> {
-        log.error("Runner failed", new IllegalStateException("Unexpected value: " + application));
-        System.exit(1);
-      }
+      default -> null;
     };
   }
 
