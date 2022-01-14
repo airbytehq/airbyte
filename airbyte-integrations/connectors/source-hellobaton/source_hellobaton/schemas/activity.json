@@ -22,16 +22,16 @@
             "type": ["string", "null"]
         },
         "actor": {
-            "type": "string"
+            "type": ["string", "null"]
         },
         "project": {
-            "type": "string"
+            "type": ["string", "null"]
         },
         "parent_type": {
-            "type": "string"
+            "type": ["string", "null"]
         },
         "child_type": {
-            "type": "string"
+            "type": ["string", "null"]
         },
         "meta": {
             "type": ["object", "null"]

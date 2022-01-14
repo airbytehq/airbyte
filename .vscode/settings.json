@@ -1,7 +1,0 @@
-{
-    "python.testing.pytestArgs": [
-        "airbyte-integrations"
-    ],
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
-}
