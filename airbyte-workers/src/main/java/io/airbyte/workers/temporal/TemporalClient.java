@@ -39,13 +39,16 @@ import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.StopWatch;
 
 @Slf4j
 public class TemporalClient {
@@ -148,6 +151,64 @@ public class TemporalClient {
             destinationLauncherConfig,
             input,
             connectionId));
+  }
+
+  public void migrateSyncIfNeeded(final Set<UUID> connectionIds) {
+    final StopWatch globalMigrationWatch = new StopWatch();
+    globalMigrationWatch.start();
+    refreshRunningWorkflow();
+
+    connectionIds.forEach((connectionId) -> {
+      final StopWatch singleSyncMigrationWatch = new StopWatch();
+      singleSyncMigrationWatch.start();
+      if (!isInRunningWorkflowCache(getConnectionManagerName(connectionId))) {
+        log.info("Migrating: " + connectionId);
+        try {
+          submitConnectionUpdaterAsync(connectionId);
+        } catch (final Exception e) {
+          log.error("New workflow submission failed, retrying", e);
+          refreshRunningWorkflow();
+          submitConnectionUpdaterAsync(connectionId);
+        }
+      }
+      singleSyncMigrationWatch.stop();
+      log.info("Sync migration took: " + singleSyncMigrationWatch.formatTime());
+    });
+    globalMigrationWatch.stop();
+
+    log.info("The migration to the new scheduler took: " + globalMigrationWatch.formatTime());
+  }
+
+  private final Set<String> workflowNames = new HashSet<>();
+
+  boolean isInRunningWorkflowCache(final String workflowName) {
+    return workflowNames.contains(workflowName);
+  }
+
+  @VisibleForTesting
+  void refreshRunningWorkflow() {
+    workflowNames.clear();
+    ByteString token;
+    ListOpenWorkflowExecutionsRequest openWorkflowExecutionsRequest =
+        ListOpenWorkflowExecutionsRequest.newBuilder()
+            .setNamespace(client.getOptions().getNamespace())
+            .build();
+    do {
+      final ListOpenWorkflowExecutionsResponse listOpenWorkflowExecutionsRequest =
+          service.blockingStub().listOpenWorkflowExecutions(openWorkflowExecutionsRequest);
+      final Set<String> workflowExecutionInfos = listOpenWorkflowExecutionsRequest.getExecutionsList().stream()
+          .map((workflowExecutionInfo -> workflowExecutionInfo.getExecution().getWorkflowId()))
+          .collect(Collectors.toSet());
+      workflowNames.addAll(workflowExecutionInfos);
+      token = listOpenWorkflowExecutionsRequest.getNextPageToken();
+
+      openWorkflowExecutionsRequest =
+          ListOpenWorkflowExecutionsRequest.newBuilder()
+              .setNamespace(client.getOptions().getNamespace())
+              .setNextPageToken(token)
+              .build();
+
+    } while (token != null && token.size() > 0);
   }
 
   public void submitConnectionUpdaterAsync(final UUID connectionId) {
@@ -343,7 +404,8 @@ public class TemporalClient {
     return false;
   }
 
-  private String getConnectionManagerName(final UUID connectionId) {
+  @VisibleForTesting
+  static String getConnectionManagerName(final UUID connectionId) {
     return "connection_manager_" + connectionId;
   }
 
