@@ -27,6 +27,7 @@ public class WorkflowState {
   private boolean skipScheduling = false;
   private boolean updated = false;
   private boolean cancelled = false;
+  private boolean failed = false;
 
   public void setRunning(final boolean running) {
     final ChangedStateEvent event = new ChangedStateEvent(
@@ -68,12 +69,21 @@ public class WorkflowState {
     this.cancelled = cancelled;
   }
 
+  public void setFailed(final boolean failed) {
+    final ChangedStateEvent event = new ChangedStateEvent(
+        StateField.FAILED,
+        failed);
+    stateChangedListener.addEvent(id, event);
+    this.failed = failed;
+  }
+
   public void reset() {
     this.setRunning(false);
     this.setDeleted(false);
     this.setSkipScheduling(false);
     this.setUpdated(false);
     this.setCancelled(false);
+    this.setFailed(false);
   }
 
 }

@@ -5,6 +5,8 @@
 package io.airbyte.workers.temporal.scheduling;
 
 import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
@@ -83,12 +85,14 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
             maybeJobId = Optional.ofNullable(connectionUpdaterInput.getJobId()).or(() -> {
               final JobCreationOutput jobCreationOutput = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(
                   connectionUpdaterInput.getConnectionId()));
+              connectionUpdaterInput.setJobId(jobCreationOutput.getJobId());
               return Optional.ofNullable(jobCreationOutput.getJobId());
             });
 
             maybeAttemptId = Optional.ofNullable(connectionUpdaterInput.getAttemptId()).or(() -> maybeJobId.map(jobId -> {
               final AttemptCreationOutput attemptCreationOutput = jobCreationAndStatusUpdateActivity.createNewAttempt(new AttemptCreationInput(
                   jobId));
+              connectionUpdaterInput.setAttemptId(attemptCreationOutput.getAttemptId());
               return attemptCreationOutput.getAttemptId();
             }));
 
@@ -121,6 +125,12 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
                   syncWorkflowInputs.getDestinationLauncherConfig(),
                   syncWorkflowInputs.getSyncInput(),
                   connectionId));
+
+              StandardSyncSummary standardSyncSummary = standardSyncOutput.get().getStandardSyncSummary();
+
+              if (standardSyncSummary != null && standardSyncSummary.getStatus() == ReplicationStatus.FAILED) {
+                workflowState.setFailed(true);
+              }
             } catch (final ChildWorkflowFailure childWorkflowFailure) {
               if (!(childWorkflowFailure.getCause() instanceof CanceledFailure)) {
                 throw childWorkflowFailure;
@@ -146,6 +156,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       } else if (workflowState.isCancelled()) {
         jobCreationAndStatusUpdateActivity.jobCancelled(new JobCancelledInput(
             maybeJobId.get()));
+      } else if (workflowState.isFailed()) {
+        reportFailure(connectionUpdaterInput);
       } else {
         // report success
         reportSuccess(connectionUpdaterInput);
