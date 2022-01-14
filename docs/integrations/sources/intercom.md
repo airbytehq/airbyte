@@ -55,7 +55,7 @@ Please read [How to get your Access Token](https://developers.intercom.com/build
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.13 | 2022-01-14 | [0000](https://github.com/airbytehq/airbyte/pull/0000) | Added handling of scroll param when it expired |
+| 0.1.13 | 2022-01-14 | [9513](https://github.com/airbytehq/airbyte/pull/9513) | Added handling of scroll param when it expired |
 | 0.1.12 | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Updated fields and descriptions |
 | 0.1.11 | 2021-12-13 | [8685](https://github.com/airbytehq/airbyte/pull/8685) | Remove time.sleep for rate limit |
 | 0.1.10 | 2021-12-10 | [8637](https://github.com/airbytehq/airbyte/pull/8637) | Fix 'conversations' order and sorting. Correction of the companies stream |
