@@ -5,6 +5,7 @@
 
 import sys
 import time
+from typing import Optional
 
 import backoff
 from airbyte_cdk.logger import AirbyteLogger
@@ -18,7 +19,7 @@ TRANSIENT_EXCEPTIONS = (DefaultBackoffException, exceptions.ConnectTimeout, exce
 logger = AirbyteLogger()
 
 
-def default_backoff_handler(max_tries: int, factor: int, **kwargs):
+def default_backoff_handler(max_tries: Optional[int], factor: float, **kwargs):
     def log_retry_attempt(details):
         _, exc, _ = sys.exc_info()
         if exc.response:
@@ -46,7 +47,7 @@ def default_backoff_handler(max_tries: int, factor: int, **kwargs):
     )
 
 
-def user_defined_backoff_handler(max_tries: int, **kwargs):
+def user_defined_backoff_handler(max_tries: Optional[int], **kwargs):
     def sleep_on_ratelimit(details):
         _, exc, _ = sys.exc_info()
         if isinstance(exc, UserDefinedBackoffException):
