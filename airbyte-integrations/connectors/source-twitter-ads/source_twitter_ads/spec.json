@@ -1,0 +1,32 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Twitter Ads Spec",
+    "type": "object",
+    "required": ["CONSUMER_KEY","CONSUMER_SECRET","ACCESS_TOKEN","ACCESS_TOKEN_SECRET", "ACCOUNT_ID"],
+    "additionalProperties": false,
+    "properties": {
+      "CONSUMER_KEY": {
+        "type": "string",
+        "description": "API Key"
+      },
+      "CONSUMER_SECRET": {
+        "type": "string",
+        "description": "API Key Secret."
+      },
+      "ACCESS_TOKEN": {
+        "type": "string",
+        "description": "API Access Token.."
+      },
+      "ACCESS_TOKEN_SECRET": {
+        "type": "string",
+        "description": "API Access Token secret."
+      },
+      "ACCOUNT_ID": {
+        "type": "string",
+        "description": "Twitter account id."
+      }
+    }
+  }
+}
