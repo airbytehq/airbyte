@@ -228,13 +228,17 @@ class Companies(IncrementalIntercomStream):
         if self.check_exists_scroll(response):
             self._backoff_count += 1
             if not self.can_use_scroll():
-                self.logger.error("Can't create a new scroll request within an minute. " "Let's try to use a standard non-scroll endpoint.")
+                self.logger.error("Can't create a new scroll request within an minute or scroll param was expired. " 
+                                  "Let's try to use a standard non-scroll endpoint.")
                 return False
 
             return True
         return super().should_retry(response)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
+        if response.status_code == 404:
+            self._backoff_count = 3
+            return 0.01
         if self.check_exists_scroll(response):
             self.logger.warning("A previous scroll request is exists. " "It must be deleted within an minute automatically")
             # try to check 3 times
