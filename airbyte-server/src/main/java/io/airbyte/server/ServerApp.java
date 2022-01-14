@@ -28,6 +28,7 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
+import io.airbyte.metrics.MetricSingleton;
 import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
 import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
@@ -117,7 +118,6 @@ public class ServerApp implements ServerRunnable {
     handler.addServlet(configServlet, "/api/*");
 
     server.setHandler(handler);
-
     server.start();
     final String banner = MoreResources.readResource("banner/banner.txt");
     LOGGER.info(banner + String.format("Version: %s\n", airbyteVersion.serialize()));
@@ -182,6 +182,9 @@ public class ServerApp implements ServerRunnable {
 
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
+
+    final Map<String, String> mdc = MDC.getCopyOfContextMap();
+    MetricSingleton.initializeMonitoringServiceDaemon("8082", mdc, configs.getPublishMetrics());
 
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(configs.getTemporalHost());
     final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot(), configs);

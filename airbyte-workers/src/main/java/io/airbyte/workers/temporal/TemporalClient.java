@@ -18,6 +18,7 @@ import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.metrics.MetricSingleton;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
@@ -102,8 +103,12 @@ public class TemporalClient {
         .withDockerImage(config.getDockerImage());
     final StandardCheckConnectionInput input = new StandardCheckConnectionInput().withConnectionConfiguration(config.getConnectionConfiguration());
 
-    return execute(jobRunConfig,
+    final var start = System.currentTimeMillis();
+    final var resp = execute(jobRunConfig,
         () -> getWorkflowStub(CheckConnectionWorkflow.class, TemporalJobType.CHECK_CONNECTION).run(jobRunConfig, launcherConfig, input));
+    final var diff = System.currentTimeMillis() - start;
+    MetricSingleton.getInstance().recordTime("check-connection-submit-duration", diff, "time taken to execute the check connection temporal workflow");
+    return resp;
   }
 
   public TemporalResponse<AirbyteCatalog> submitDiscoverSchema(final UUID jobId, final int attempt, final JobDiscoverCatalogConfig config) {

@@ -43,6 +43,7 @@ configurations {
 
 dependencies {
     implementation project(':airbyte-api')
+    implementation project(':airbyte-metrics')
     implementation project(':airbyte-workers')
     implementation project(':airbyte-config:models')
 

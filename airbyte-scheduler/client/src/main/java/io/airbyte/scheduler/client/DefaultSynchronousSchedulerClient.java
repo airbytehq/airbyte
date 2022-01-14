@@ -13,6 +13,7 @@ import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.metrics.MetricSingleton;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
@@ -43,6 +44,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   @Override
   public SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(final SourceConnection source, final String dockerImage)
       throws IOException {
+    final var start = System.currentTimeMillis();
     final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
         source.getSourceDefinitionId(),
         source.getWorkspaceId(),
@@ -50,18 +52,21 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(sourceConfiguration)
         .withDockerImage(dockerImage);
-
-    return execute(
+    final var resp = execute(
         ConfigType.CHECK_CONNECTION_SOURCE,
         source.getSourceDefinitionId(),
         jobId -> temporalClient.submitCheckConnection(UUID.randomUUID(), 0, jobCheckConnectionConfig),
         source.getWorkspaceId());
+    final var diff = System.currentTimeMillis() - start;
+    MetricSingleton.getInstance().recordTime("source-check-connection-job-duration", diff, "time taken to execute source check connection job");
+    return resp;
   }
 
   @Override
   public SynchronousResponse<StandardCheckConnectionOutput> createDestinationCheckConnectionJob(final DestinationConnection destination,
                                                                                                 final String dockerImage)
       throws IOException {
+    final var start = System.currentTimeMillis();
     final JsonNode destinationConfiguration = oAuthConfigSupplier.injectDestinationOAuthParameters(
         destination.getDestinationDefinitionId(),
         destination.getWorkspaceId(),
@@ -70,11 +75,15 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         .withConnectionConfiguration(destinationConfiguration)
         .withDockerImage(dockerImage);
 
-    return execute(
+    final var resp =  execute(
         ConfigType.CHECK_CONNECTION_DESTINATION,
         destination.getDestinationDefinitionId(),
         jobId -> temporalClient.submitCheckConnection(UUID.randomUUID(), 0, jobCheckConnectionConfig),
         destination.getWorkspaceId());
+
+    final var diff = System.currentTimeMillis() - start;
+    MetricSingleton.getInstance().recordTime("destination-check-connection-job-duration", diff, "time taken to execute destination check connection job");
+    return resp;
   }
 
   @Override
