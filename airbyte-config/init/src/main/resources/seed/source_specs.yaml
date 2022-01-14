@@ -2846,7 +2846,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-hubspot:0.1.32"
+- dockerImage: "airbyte/source-hubspot:0.1.33"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
