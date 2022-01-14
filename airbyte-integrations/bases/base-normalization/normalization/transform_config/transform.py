@@ -293,7 +293,7 @@ class TransformConfig:
         return json.loads(contents)
 
     @staticmethod
-    def read_yaml_config(input_path: str):
+    def read_yaml_config(input_path: str) -> Dict[str, Any]:
         with open(input_path, "r") as fp:
             res = yaml.safe_load(fp)
         if not isinstance(res, dict):

@@ -404,9 +404,9 @@ class TestTransformConfig:
         f.write_text("{}")
         dbt_vars = {"var": "value"}
         TransformConfig.update_dbt_project(tmp_path, dbt_vars)
-        assert yaml.load(f.read_text()) == {'vars': {'var': 'value'}}
+        assert yaml.safe_load(f.read_text()) == {'vars': {'var': 'value'}}
 
         f.write_text("vars:\n  var: value\n  redshift_json_super: false\n")
         dbt_vars = {"redshift_json_super": True, "new_var": 10}
         TransformConfig.update_dbt_project(tmp_path, dbt_vars)
-        assert yaml.load(f.read_text()) == {'vars': {'new_var': 10, 'redshift_json_super': True, 'var': "value"}}
+        assert yaml.safe_load(f.read_text()) == {'vars': {'new_var': 10, 'redshift_json_super': True, 'var': "value"}}
