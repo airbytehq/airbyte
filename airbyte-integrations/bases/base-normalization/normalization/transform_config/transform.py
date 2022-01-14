@@ -297,7 +297,7 @@ class TransformConfig:
         with open(input_path, "r") as fp:
             res = yaml.safe_load(fp)
         if not isinstance(res, dict):
-            raise RuntimeError('{} does not parse to a dictionary'.format(os.path.basename(input_path)))
+            raise RuntimeError("{} does not parse to a dictionary".format(os.path.basename(input_path)))
         return res
 
     @staticmethod
