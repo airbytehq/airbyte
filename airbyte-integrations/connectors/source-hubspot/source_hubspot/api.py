@@ -719,7 +719,7 @@ class ContactsListMembershipsStream(Stream):
             for item in record.get("list-memberships", []):
                 yield {"canonical-vid": canonical_vid, **item}
 
-    def list(self, fields) -> Iterable:
+    def list_records(self, fields) -> Iterable:
         """Receiving all contacts with list memberships"""
         params = {"showListMemberships": True}
         yield from self.read(partial(self._api.get, url=self.url), params)
@@ -890,7 +890,7 @@ class FormSubmissionStream(Stream):
 
             yield record
 
-    def list(self, fields) -> Iterable:
+    def list_records(self, fields) -> Iterable:
         for form in self.read(getter=partial(self._api.get, url="/marketing/v3/forms")):
             for submission in self.read(getter=partial(self._api.get, url=f"{self.url}/{form['id']}")):
                 submission["formId"] = form["id"]
