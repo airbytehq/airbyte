@@ -52,9 +52,8 @@ BigCommerce has some [rate limit restrictions](https://developer.bigcommerce.com
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.4 | 2022-01-13 | [9515](https://github.com/airbytehq/airbyte/pull/9515) | Add Catalog Products Stream |
+| 0.1.4 | 2022-01-13 | [9516](https://github.com/airbytehq/airbyte/pull/9516) | Add Catalog Products Stream |
 | 0.1.3 | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434) | Update fields in source-connectors specifications |
 | 0.1.2 | 2021-12-07 | [8416](https://github.com/airbytehq/airbyte/pull/8416) | Correct Incremental Function |
 | 0.1.1 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
 | 0.1.0 | 2021-08-19 | [5521](https://github.com/airbytehq/airbyte/pull/5521) | Initial Release. Source BigCommerce |
-
