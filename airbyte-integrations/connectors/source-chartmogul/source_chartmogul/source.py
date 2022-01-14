@@ -60,7 +60,7 @@ class Activities(ChartmogulStream):
         params = {}
 
         if next_page_token:
-            params["start-after"] = next_page_token["start-after"]
+            params.update(next_page_token)
         elif self.start_date:
             params["start-date"] = self.start_date
 
