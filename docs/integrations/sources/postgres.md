@@ -15,7 +15,7 @@
 | Custom Types | Yes |  |
 | Arrays | Yes | Byte-arrays are not supported yet. |
 | Generating an RSA Private Key | No | Coming Soon. |
-| Schema Selection | No | Track issue [here.](https://github.com/airbytehq/airbyte/issues/1435) |
+| Schema Selection | Yes | The 'public' schema is set by default. Multiple schemas may be used at one time. No schemas set explicitly - will sync all of existing. |
 
 The Postgres source does not alter the schema present in your database. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
 
@@ -257,7 +257,8 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                           | Subject                                                                                                         |
 |:--------|:-----------|:-------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
-| 0.4.1   | 2022-01-05 | [9116](https://github.com/airbytehq/airbyte/pull/9116) | Added materialized views processing                                                                                      |
+| 0.4.2   | 2022-01-13 | [9360](https://github.com/airbytehq/airbyte/pull/9360) | Added schema selection                                                                                          |
+| 0.4.1   | 2022-01-05 | [9116](https://github.com/airbytehq/airbyte/pull/9116) | Added materialized views processing                                                                             |
 | 0.4.0   | 2021-12-13 | [8726](https://github.com/airbytehq/airbyte/pull/8726) | Support all Postgres types                                                                                      |
 | 0.3.17  | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key                                                                        |
 | 0.3.16  | 2021-11-28 | [7995](https://github.com/airbytehq/airbyte/pull/7995) | Fixed money type with amount > 1000                                                                             |
