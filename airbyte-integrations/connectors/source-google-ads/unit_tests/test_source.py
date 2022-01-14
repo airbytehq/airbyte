@@ -2,12 +2,12 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import pendulum
 import pytest
 from source_google_ads.custom_query_stream import CustomQuery
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.source import SourceGoogleAds
 from source_google_ads.streams import AdGroupAdReport, chunk_date_range
-import pendulum
 
 
 # Test chunck date range without end date
@@ -22,6 +22,7 @@ def test_chunk_date_range_without_end_date():
         expected_response.append({field: start_date.to_date_string()})
         start_date = start_date.add(1)
     assert expected_response == response
+
 
 def test_chunk_date_range():
     start_date = "2021-03-04"
@@ -106,7 +107,8 @@ def get_instance_from_config(config, query):
     )
     return instance
 
-# get he instance with a config 
+
+# get he instance with a config
 def get_instance_from_config_with_end_date(config, query):
     start_date = "2021-03-04"
     end_date = "2021-04-04"
@@ -118,10 +120,11 @@ def get_instance_from_config_with_end_date(config, query):
         conversion_window_days=conversion_window_days,
         start_date=start_date,
         end_date=end_date,
-        time_zone= "local",
+        time_zone="local",
         custom_query_config={"query": query, "table_name": "whatever_table"},
     )
     return instance
+
 
 @pytest.mark.parametrize(
     "query, fields",
@@ -264,6 +267,7 @@ def test_get_json_schema_parse_query(config):
     schema_keys = final_schema["properties"]
     assert set(schema_keys) == set(final_fields)  # test 1
 
+
 # Test get json schema when start and end date are provided in the config file
 def test_get_json_schema_parse_query_with_end_date(config):
     query = """
@@ -286,6 +290,7 @@ def test_get_json_schema_parse_query_with_end_date(config):
     final_schema = instance.get_json_schema()
     schema_keys = final_schema["properties"]
     assert set(schema_keys) == set(final_fields)  # test 1
+
 
 def test_google_type_conversion(config):
     """

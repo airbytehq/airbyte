@@ -66,8 +66,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
     primary_key = None
     time_unit = "days"
 
-
-    def __init__(self, start_date: str, conversion_window_days: int, time_zone: [pendulum.timezone, str], end_date: str=None, **kwargs):
+    def __init__(self, start_date: str, conversion_window_days: int, time_zone: [pendulum.timezone, str], end_date: str = None, **kwargs):
         self.conversion_window_days = conversion_window_days
         self._start_date = start_date
         self.time_zone = time_zone

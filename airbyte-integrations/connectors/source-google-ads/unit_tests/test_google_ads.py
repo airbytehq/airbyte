@@ -182,7 +182,7 @@ SAMPLE_CONFIG_WITH_DATE = {
     },
     "customer_id": "customer_id",
     "start_date": "2021-11-01",
-    "end_date": "2021-11-15"
+    "end_date": "2021-11-15",
 }
 
 
@@ -195,7 +195,7 @@ def test_get_date_params_with_date():
         end_date=mock_end_date,
         conversion_window_days=0,
         time_zone="local",
-        api=MockGoogleAdsClient(SAMPLE_CONFIG_WITH_DATE)
+        api=MockGoogleAdsClient(SAMPLE_CONFIG_WITH_DATE),
     )
     start_date, end_date = IncrementalGoogleAdsStream(**incremental_stream_config).get_date_params(
         stream_slice={"segments.date": "2021-10-31"}, cursor_field="segments.date", end_date=pendulum.parse("2021-11-15")
@@ -211,7 +211,7 @@ SAMPLE_CONFIG_WITHOUT_END_DATE = {
         "refresh_token": "refresh_token",
     },
     "customer_id": "customer_id",
-    "start_date": "2021-11-01"
+    "start_date": "2021-11-01",
 }
 
 
@@ -224,7 +224,7 @@ def test_get_date_params_without_end_date():
         end_date=mock_end_date,
         conversion_window_days=0,
         time_zone="local",
-        api=MockGoogleAdsClient(SAMPLE_CONFIG_WITHOUT_END_DATE)
+        api=MockGoogleAdsClient(SAMPLE_CONFIG_WITHOUT_END_DATE),
     )
     start_date, end_date = IncrementalGoogleAdsStream(**incremental_stream_config).get_date_params(
         stream_slice={"segments.date": "2021-10-31"}, cursor_field="segments.date"
