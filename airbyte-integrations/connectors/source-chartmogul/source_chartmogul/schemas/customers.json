@@ -3,10 +3,10 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "string"]
+      "type": ["integer"]
     },
     "uuid": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "external_id": {
       "type": ["null", "string"]

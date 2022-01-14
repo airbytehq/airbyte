@@ -5,14 +5,14 @@
 from unittest.mock import ANY, MagicMock
 
 from source_chartmogul.source import SourceChartmogul
-from requests import HTTPError
+
 
 def test_check_connection(mocker, requests_mock):
     source = SourceChartmogul()
     logger_mock, config_mock = MagicMock(), MagicMock()
-    
+
     # success
-    requests_mock.get("https://api.chartmogul.com/v1/ping", json={ "data":"pong!" })
+    requests_mock.get("https://api.chartmogul.com/v1/ping", json={"data": "pong!"})
     assert source.check_connection(logger_mock, config_mock) == (True, None)
 
     # failure

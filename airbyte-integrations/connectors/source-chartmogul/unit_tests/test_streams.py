@@ -3,10 +3,9 @@
 #
 
 from http import HTTPStatus
-from unittest.mock import MagicMock, patch
 
 import pytest
-from source_chartmogul.source import Customers, Activities, ChartmogulStream
+from source_chartmogul.source import Activities, Customers
 
 
 @pytest.fixture
@@ -17,6 +16,7 @@ def patch_base_class(mocker):
 
 
 # Customer stream tests
+
 
 def test_request_params():
     stream = Customers()
@@ -30,37 +30,39 @@ def test_request_params():
     assert stream.request_params(**inputs) == expected_params
 
 
-def test_next_page_token():
+def test_next_page_token(mocker):
     stream = Customers()
-    response = MagicMock()
+    response = mocker.MagicMock()
 
     # no more results
-    response.json.return_value =  {"has_more": False} 
+    response.json.return_value = {"has_more": False}
     inputs = {"response": response}
-    assert stream.next_page_token(**inputs) == None
+    assert stream.next_page_token(**inputs) is None
 
     # there is more results
-    response.json.return_value =  {"has_more": True, "current_page": 42} 
+    response.json.return_value = {"has_more": True, "current_page": 42}
     inputs = {"response": response}
     assert stream.next_page_token(**inputs) == {"page": 43}
 
 
-def test_parse_response():
+def test_parse_response(mocker):
     stream = Customers()
-    response = MagicMock()
-    response.json.return_value =  {"entries": [{"one": 1}, {"two": 2}]} 
+    response = mocker.MagicMock()
+    response.json.return_value = {"entries": [{"one": 1}, {"two": 2}]}
     inputs = {"response": response}
     expected_parsed_object = {"one": 1}
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
+
 # Activites stream tests
+
 
 def test_request_params_activities():
     # no start_date set
     stream = Activities(start_date=None)
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
     assert stream.request_params(**inputs) == {}
-    
+
     # start_date is set
     stream.start_date = "2010-01-01"
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
@@ -73,22 +75,23 @@ def test_request_params_activities():
     assert stream.request_params(**inputs) == expected_params
 
 
-def test_next_page_token_activities():
+def test_next_page_token_activities(mocker):
     stream = Activities(start_date=None)
-    response = MagicMock()
+    response = mocker.MagicMock()
 
     # no more results
-    response.json.return_value = {"has_more": False} 
+    response.json.return_value = {"has_more": False}
     inputs = {"response": response}
-    assert stream.next_page_token(**inputs) == None
+    assert stream.next_page_token(**inputs) is None
 
     # there is more results
-    response.json.return_value =  {"has_more": True, "entries": [{"uuid": "unique-uuid"}]} 
+    response.json.return_value = {"has_more": True, "entries": [{"uuid": "unique-uuid"}]}
     inputs = {"response": response}
     assert stream.next_page_token(**inputs) == {"start-after": "unique-uuid"}
 
 
 # Default tests
+
 
 @pytest.mark.parametrize(
     ("http_status", "should_retry"),
@@ -99,17 +102,15 @@ def test_next_page_token_activities():
         (HTTPStatus.INTERNAL_SERVER_ERROR, True),
     ],
 )
-
-def test_should_retry(http_status, should_retry):
-    response_mock = MagicMock()
+def test_should_retry(http_status, should_retry, mocker):
+    response_mock = mocker.MagicMock()
     response_mock.status_code = http_status
     stream = Customers()
     assert stream.should_retry(response_mock) == should_retry
 
 
-def test_backoff_time():
-    response_mock = MagicMock()
+def test_backoff_time(mocker):
+    response_mock = mocker.MagicMock()
     stream = Customers()
     expected_backoff_time = None
     assert stream.backoff_time(response_mock) == expected_backoff_time
-
