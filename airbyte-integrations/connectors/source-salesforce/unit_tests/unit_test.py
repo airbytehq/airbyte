@@ -368,8 +368,8 @@ def test_pagination_rest(stream_rest_config, stream_rest_api):
                 {
                     "ID": 2,
                     "LastModifiedDate": "2021-11-16",
-                }
-            ]
+                },
+            ],
         }
         resp_2 = {
             "done": True,
@@ -382,8 +382,8 @@ def test_pagination_rest(stream_rest_config, stream_rest_api):
                 {
                     "ID": 4,
                     "LastModifiedDate": "2021-11-18",
-                }
-            ]
+                },
+            ],
         }
 
         m.register_uri("GET", stream.path(), json=resp_1)
