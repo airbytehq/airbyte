@@ -214,7 +214,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         jobHistoryHandler,
         schedulerHandler,
         operationsHandler);
-    healthCheckHandler = new HealthCheckHandler(configRepository);
+    healthCheckHandler = new HealthCheckHandler();
     archiveHandler = new ArchiveHandler(
         airbyteVersion,
         configRepository,

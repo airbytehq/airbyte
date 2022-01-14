@@ -140,7 +140,7 @@ public class SchedulerApp {
       // anymore.
       cleanupZombies(jobPersistence, jobNotifier);
 
-      LOGGER.error("Start running the old scheduler");
+      LOGGER.info("Start running the old scheduler");
       scheduleJobsPool.scheduleWithFixedDelay(
           () -> {
             MDC.setContextMap(mdc);
@@ -205,7 +205,7 @@ public class SchedulerApp {
     while (!isHealthy) {
       try {
         final HealthCheckRead healthCheck = apiClient.getHealthApi().getHealthCheck();
-        isHealthy = healthCheck.getDb();
+        isHealthy = healthCheck.getAvailable();
       } catch (final ApiException e) {
         LOGGER.info("Waiting for server to become available...");
         Thread.sleep(2000);

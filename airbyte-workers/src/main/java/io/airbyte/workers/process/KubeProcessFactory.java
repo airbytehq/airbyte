@@ -147,6 +147,7 @@ public class KubeProcessFactory implements ProcessFactory {
           workerConfigs.getJobSocatImage(),
           workerConfigs.getJobBusyboxImage(),
           workerConfigs.getJobCurlImage(),
+          workerConfigs.getEnvMap(),
           internalToExternalPorts,
           args);
     } catch (final Exception e) {

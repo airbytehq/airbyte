@@ -133,6 +133,7 @@ class PostgresSourceSSLTest {
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort())
         .put("database", dbName)
+        .put("schemas", List.of("public"))
         .put("username", psqlDb.getUsername())
         .put("password", psqlDb.getPassword())
         .put("ssl", true)
