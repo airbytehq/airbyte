@@ -11,18 +11,14 @@ import com.azure.storage.blob.specialized.AppendBlobClient;
 import com.azure.storage.blob.specialized.SpecializedBlobClientBuilder;
 import com.azure.storage.common.StorageSharedKeyCredential;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
-import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AzureBlobStorageGcsStagingDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -62,17 +58,17 @@ public abstract class AzureBlobStorageGcsStagingDestinationAcceptanceTest extend
         .put("azure_blob_storage_endpoint_domain_name", "InvalidDomainName")
         .put("format", getFormatConfig())
         .put("loading_method", Jsons.jsonNode(ImmutableMap.builder()
-                .put("method", "GCS Staging")
-                .put("bucket_name", "fail_bucket_name")
-                .put("bucket_path", "fail_bucket_path")
-                .put("bucket_region", "fail_bucket_region")
-                .put("keep_files_in_gcs-bucket", "Delete all tmp files from GCS")
-                .put("credential", Jsons.jsonNode(ImmutableMap.builder()
-                        .put("credential_type", "HMAC_KEY")
-                        .put("hmac_key_access_id", "fail_hmac_key_access_id")
-                        .put("hmac_key_secret", "fail_hmac_key_secret")
-                        .build()))
+            .put("method", "GCS Staging")
+            .put("bucket_name", "fail_bucket_name")
+            .put("bucket_path", "fail_bucket_path")
+            .put("bucket_region", "fail_bucket_region")
+            .put("keep_files_in_gcs-bucket", "Delete all tmp files from GCS")
+            .put("credential", Jsons.jsonNode(ImmutableMap.builder()
+                .put("credential_type", "HMAC_KEY")
+                .put("hmac_key_access_id", "fail_hmac_key_access_id")
+                .put("hmac_key_secret", "fail_hmac_key_secret")
                 .build()))
+            .build()))
         .build());
   }
 
@@ -152,17 +148,17 @@ public abstract class AzureBlobStorageGcsStagingDestinationAcceptanceTest extend
 
   protected JsonNode getGcsLoadingMethod(final JsonNode baseConfigJson) {
     return Jsons.jsonNode(ImmutableMap.builder()
-            .put("method", "GCS Staging")
-            .put("bucket_name", baseConfigJson.get("bucket_name"))
-            .put("bucket_path", baseConfigJson.get("bucket_path"))
-            .put("bucket_region", baseConfigJson.get("bucket_region"))
-            .put("keep_files_in_gcs-bucket", "Delete all tmp files from GCS")
-            .put("credential", Jsons.jsonNode(ImmutableMap.builder()
-                    .put("credential_type", "HMAC_KEY")
-                    .put("hmac_key_access_id", baseConfigJson.get("hmac_key_access_id"))
-                    .put("hmac_key_secret", baseConfigJson.get("hmac_key_secret"))
-                    .build()))
-            .build());
+        .put("method", "GCS Staging")
+        .put("bucket_name", baseConfigJson.get("bucket_name"))
+        .put("bucket_path", baseConfigJson.get("bucket_path"))
+        .put("bucket_region", baseConfigJson.get("bucket_region"))
+        .put("keep_files_in_gcs-bucket", "Delete all tmp files from GCS")
+        .put("credential", Jsons.jsonNode(ImmutableMap.builder()
+            .put("credential_type", "HMAC_KEY")
+            .put("hmac_key_access_id", baseConfigJson.get("hmac_key_access_id"))
+            .put("hmac_key_secret", baseConfigJson.get("hmac_key_secret"))
+            .build()))
+        .build());
   }
 
 }

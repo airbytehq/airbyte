@@ -15,11 +15,10 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AzureBlobStorageS3StagingDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -59,17 +58,17 @@ public abstract class AzureBlobStorageS3StagingDestinationAcceptanceTest extends
         .put("azure_blob_storage_endpoint_domain_name", "InvalidDomainName")
         .put("format", getFormatConfig())
         .put("loading_method", Jsons.jsonNode(ImmutableMap.builder()
-                .put("method", "S3 Staging")
-                .put("bucket_name", "fail_bucket_name")
-                .put("bucket_path", "fail_bucket_path")
-                .put("bucket_region", "fail_bucket_region")
-                .put("keep_files_in_s3-bucket", "Delete all tmp files from S3")
-                .put("credential", Jsons.jsonNode(ImmutableMap.builder()
-                        .put("credential_type", "S3_KEY")
-                        .put("access_key_id", "fail_access_key_id")
-                        .put("secret_access_key", "fail_secret_access_key")
-                        .build()))
+            .put("method", "S3 Staging")
+            .put("bucket_name", "fail_bucket_name")
+            .put("bucket_path", "fail_bucket_path")
+            .put("bucket_region", "fail_bucket_region")
+            .put("keep_files_in_s3-bucket", "Delete all tmp files from S3")
+            .put("credential", Jsons.jsonNode(ImmutableMap.builder()
+                .put("credential_type", "S3_KEY")
+                .put("access_key_id", "fail_access_key_id")
+                .put("secret_access_key", "fail_secret_access_key")
                 .build()))
+            .build()))
         .build());
   }
 
@@ -149,17 +148,17 @@ public abstract class AzureBlobStorageS3StagingDestinationAcceptanceTest extends
 
   protected JsonNode getGcsLoadingMethod(final JsonNode baseConfigJson) {
     return Jsons.jsonNode(ImmutableMap.builder()
-            .put("method", "S3 Staging")
-            .put("bucket_name", baseConfigJson.get("bucket_name"))
-            .put("bucket_path", baseConfigJson.get("bucket_path"))
-            .put("bucket_region", baseConfigJson.get("bucket_region"))
-            .put("keep_files_in_s3-bucket", "Delete all tmp files from S3")
-            .put("credential", Jsons.jsonNode(ImmutableMap.builder()
-                    .put("credential_type", "S3_KEY")
-                    .put("access_key_id", baseConfigJson.get("access_key_id"))
-                    .put("secret_access_key", baseConfigJson.get("secret_access_key"))
-                    .build()))
-            .build());
+        .put("method", "S3 Staging")
+        .put("bucket_name", baseConfigJson.get("bucket_name"))
+        .put("bucket_path", baseConfigJson.get("bucket_path"))
+        .put("bucket_region", baseConfigJson.get("bucket_region"))
+        .put("keep_files_in_s3-bucket", "Delete all tmp files from S3")
+        .put("credential", Jsons.jsonNode(ImmutableMap.builder()
+            .put("credential_type", "S3_KEY")
+            .put("access_key_id", baseConfigJson.get("access_key_id"))
+            .put("secret_access_key", baseConfigJson.get("secret_access_key"))
+            .build()))
+        .build());
   }
 
 }

@@ -53,20 +53,10 @@ public class AzureBlobStorageDestination extends BaseConnector implements Destin
       final UploadingMethod uploadingMethod = AzureUtils.getLoadingMethod(config);
       final UploaderType uploaderType = AzureUtils.getUploaderType(config);
 
-      // GCS upload time re-uses destination-GCS for check and other uploading (CSV format writer)
-      if (UploadingMethod.GCS.equals(uploadingMethod)) {
-        final GcsDestination gcsDestination = new GcsDestination();
-        final JsonNode gcsJsonNodeConfig = AzureUtils.getStagingJsonConfig(uploadingMethod, uploaderType, config);
-        final AirbyteConnectionStatus airbyteConnectionStatus = gcsDestination.check(gcsJsonNodeConfig);
-        if (Status.FAILED == airbyteConnectionStatus.getStatus()) {
-          return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(airbyteConnectionStatus.getMessage());
-        }
-      }
-      // S3 upload time re-uses destination-S3 for check and other uploading (CSV format writer)
-      if (UploadingMethod.S3.equals(uploadingMethod)) {
-        final S3Destination s3Destination = new S3Destination();
-        final JsonNode s3JsonNodeConfig = AzureUtils.getStagingJsonConfig(uploadingMethod, uploaderType, config);
-        final AirbyteConnectionStatus airbyteConnectionStatus = s3Destination.check(s3JsonNodeConfig);
+      // S3 or GCS upload time re-uses destination-GCS or destination-S3 for check and other uploading
+      // (CSV format writer)
+      if (UploadingMethod.S3.equals(uploadingMethod) || UploadingMethod.GCS.equals(uploadingMethod)) {
+        final AirbyteConnectionStatus airbyteConnectionStatus = checkStaging(uploadingMethod, uploaderType, config);
         if (Status.FAILED == airbyteConnectionStatus.getStatus()) {
           return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(airbyteConnectionStatus.getMessage());
         }
@@ -179,6 +169,23 @@ public class AzureBlobStorageDestination extends BaseConnector implements Destin
         return false;
       }
     }
+  }
+
+  private AirbyteConnectionStatus checkStaging(final UploadingMethod uploadingMethod,
+                                               final UploaderType uploaderType,
+                                               final JsonNode config)
+      throws Exception {
+    final var stagingDestination = getStagingDestination(uploadingMethod);
+    final JsonNode jsonNodeConfig = AzureUtils.getStagingJsonConfig(uploadingMethod, uploaderType, config);
+    return stagingDestination.check(jsonNodeConfig);
+  }
+
+  private BaseConnector getStagingDestination(final UploadingMethod uploadingMethod) {
+    return switch (uploadingMethod) {
+      case GCS -> new GcsDestination();
+      case S3 -> new S3Destination();
+      default -> throw new IllegalStateException("Unexpected value: " + uploadingMethod);
+    };
   }
 
 }

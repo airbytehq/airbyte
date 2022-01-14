@@ -7,12 +7,11 @@ package io.airbyte.integrations.destination.azure_blob_storage;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
-
 import java.util.LinkedList;
 import java.util.List;
 
 public class AzureBlobStorageS3StagingJsonlDestinationAcceptanceTest extends
-        AzureBlobStorageS3StagingDestinationAcceptanceTest {
+    AzureBlobStorageS3StagingDestinationAcceptanceTest {
 
   protected AzureBlobStorageS3StagingJsonlDestinationAcceptanceTest() {
     super(AzureBlobStorageFormat.JSONL);

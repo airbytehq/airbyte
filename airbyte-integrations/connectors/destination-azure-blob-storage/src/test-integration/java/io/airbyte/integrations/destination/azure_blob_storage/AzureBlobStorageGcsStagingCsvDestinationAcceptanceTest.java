@@ -10,10 +10,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
-import org.apache.commons.csv.QuoteMode;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -24,9 +20,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.StreamSupport;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.csv.QuoteMode;
 
 public class AzureBlobStorageGcsStagingCsvDestinationAcceptanceTest extends
-        AzureBlobStorageGcsStagingDestinationAcceptanceTest {
+    AzureBlobStorageGcsStagingDestinationAcceptanceTest {
 
   protected static final ObjectMapper MAPPER = MoreMappers.initMapper();
 

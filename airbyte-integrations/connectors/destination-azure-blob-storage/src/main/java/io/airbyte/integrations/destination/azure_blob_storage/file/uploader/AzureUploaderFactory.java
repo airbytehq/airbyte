@@ -18,7 +18,6 @@ import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
 import io.airbyte.integrations.destination.s3.jsonl.S3JsonlWriter;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Arrays;
@@ -32,9 +31,7 @@ public class AzureUploaderFactory {
 
   public static AbstractAzureUploader<?> getUploader(UploaderConfig uploaderConfig) throws IOException {
     final boolean isGcsUploadingMode = UploadingMethod.GCS.equals(uploaderConfig.getUploadingMethod());
-    DestinationSyncMode syncMode = uploaderConfig.getConfigStream().getDestinationSyncMode();
     return isGcsUploadingMode ? getGcsUploader(
-        syncMode,
         uploaderConfig.getUploaderType(),
         uploaderConfig.getStagingConfig(),
         uploaderConfig.getConfigStream(),
@@ -42,7 +39,6 @@ public class AzureUploaderFactory {
         uploaderConfig.isKeepFilesInStorage(),
         uploaderConfig.isNewlyCreatedBlob())
         : getS3Uploader(
-            syncMode,
             uploaderConfig.getUploaderType(),
             uploaderConfig.getStagingConfig(),
             uploaderConfig.getConfigStream(),
@@ -51,8 +47,7 @@ public class AzureUploaderFactory {
             uploaderConfig.isNewlyCreatedBlob());
   }
 
-  private static AbstractGcsAzureUploader<?> getGcsUploader(DestinationSyncMode syncMode,
-                                                            UploaderType uploaderType,
+  private static AbstractGcsAzureUploader<?> getGcsUploader(UploaderType uploaderType,
                                                             JsonNode stagingConfig,
                                                             ConfiguredAirbyteStream configStream,
                                                             AppendBlobClient appendBlobClient,
@@ -68,20 +63,17 @@ public class AzureUploaderFactory {
       gcsWriter.initialize();
       var headersNames = Arrays.asList(gcsWriter.getHeader());
       headerByteSize = calculateHeaderByteSize(newlyCreatedBlob, headersNames);
-      result = new GcsCsvAzureUploader(syncMode, gcsWriter, gcsDestinationConfig,
-          appendBlobClient, keepFilesInStorage, headerByteSize);
+      result = new GcsCsvAzureUploader(gcsWriter, gcsDestinationConfig, appendBlobClient, keepFilesInStorage, headerByteSize);
     } else {
       GcsJsonlWriter jsonWriter = initGcsJsonWriter(gcsDestinationConfig, configStream, uploadTimestamp);
       jsonWriter.initialize();
-      result = new GcsJsonlAzureUploader(syncMode, jsonWriter, gcsDestinationConfig,
-          appendBlobClient, keepFilesInStorage, headerByteSize);
+      result = new GcsJsonlAzureUploader(jsonWriter, gcsDestinationConfig, appendBlobClient, keepFilesInStorage, headerByteSize);
     }
     return result;
 
   }
 
-  private static AbstractS3AzureUploader<?> getS3Uploader(DestinationSyncMode syncMode,
-                                                          UploaderType uploaderType,
+  private static AbstractS3AzureUploader<?> getS3Uploader(UploaderType uploaderType,
                                                           JsonNode stagingConfig,
                                                           ConfiguredAirbyteStream configStream,
                                                           AppendBlobClient appendBlobClient,
@@ -97,13 +89,11 @@ public class AzureUploaderFactory {
       csvWriter.initialize();
       var headersNames = Arrays.asList(csvWriter.getHeader());
       headerByteSize = calculateHeaderByteSize(newlyCreatedBlob, headersNames);
-      result = new S3CsvAzureUploader(syncMode, csvWriter, s3DestinationConfig,
-          appendBlobClient, keepFilesInStorage, headerByteSize);
+      result = new S3CsvAzureUploader(csvWriter, s3DestinationConfig, appendBlobClient, keepFilesInStorage, headerByteSize);
     } else {
       S3JsonlWriter jsonWriter = initS3JsonWriter(s3DestinationConfig, configStream, uploadTimestamp);
       jsonWriter.initialize();
-      result = new S3JsonlAzureUploader(syncMode, jsonWriter, s3DestinationConfig,
-          appendBlobClient, keepFilesInStorage, headerByteSize);
+      result = new S3JsonlAzureUploader(jsonWriter, s3DestinationConfig, appendBlobClient, keepFilesInStorage, headerByteSize);
     }
     return result;
 
