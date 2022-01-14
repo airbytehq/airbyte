@@ -1,0 +1,85 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+      "data": {
+        "type": "object",
+        "properties": {
+          "repository": {
+            "type": "object",
+            "properties": {
+              "vulnerabilityAlerts": {
+                "type": "object",
+                "properties": {
+                  "nodes": {
+                    "type": "array",
+                    "items": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "dismissedAt": {
+                            "type": "null"
+                          },
+                          "securityVulnerability": {
+                            "type": "object",
+                            "properties": {
+                              "package": {
+                                "type": "object",
+                                "properties": {
+                                  "name": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "name"
+                                ]
+                              },
+                              "advisory": {
+                                "type": "object",
+                                "properties": {
+                                  "description": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "description"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "package",
+                              "advisory"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "createdAt",
+                          "dismissedAt",
+                          "securityVulnerability"
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "nodes"
+                ]
+              }
+            },
+            "required": [
+              "vulnerabilityAlerts"
+            ]
+          }
+        },
+        "required": [
+          "repository"
+        ]
+      }
+    },
+    "required": [
+      "data"
+    ]
+  }

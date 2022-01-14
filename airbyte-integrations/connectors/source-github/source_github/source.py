@@ -35,12 +35,15 @@ from .streams import (
     Releases,
     Repositories,
     RepositoryStats,
+    RepositoryVulnerabilityAlert,
     ReviewComments,
     Reviews,
     Stargazers,
     Tags,
     Teams,
     Users,
+    WorkflowRuns,
+    Workflows,
 )
 
 TOKEN_SEPARATOR = ","
@@ -189,4 +192,7 @@ class SourceGithub(AbstractSource):
             Tags(**repository_args),
             Teams(**organization_args),
             Users(**organization_args),
+            Workflows(**repository_args),
+            WorkflowRuns(**repository_args),
+            RepositoryVulnerabilityAlert(**repository_args),
         ]

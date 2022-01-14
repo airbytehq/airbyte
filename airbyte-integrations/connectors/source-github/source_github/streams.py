@@ -800,3 +800,75 @@ class PullRequestCommentReactions(ReactionStream):
     """
 
     parent_entity = ReviewComments
+
+
+# Action streams
+
+
+class Workflows(GithubStream):
+    """
+    Get all workflows of a GitHub repository
+    API documentation: https://docs.github.com/en/rest/reference/actions#workflows
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/actions/workflows"
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        response = response.json()
+        response["repository"] = stream_slice["repository"]
+        yield response
+
+
+class WorkflowRuns(GithubStream):
+
+    """
+    Get all workflows of a GitHub repository
+    API documentation: https://docs.github.com/en/rest/reference/actions#list-workflow-runs-for-a-repository
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/actions/runs"
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        response = response.json()
+        response["repository"] = stream_slice["repository"]
+        yield response
+
+
+# Security streams
+
+
+class RepositoryVulnerabilityAlert(GithubStream):
+    """
+    Get the dependabot alerts of a GitHub repository
+    API documentation: https://docs.github.com/en/graphql/reference/objects#repositoryvulnerabilityalert
+    """
+
+    @property
+    def http_method(self) -> str:
+        return "POST"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return "graphql"
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        body = (
+            '{ repository(name: "'
+            + stream_slice["repository"].split("/")[1]
+            + '", owner: "'
+            + stream_slice["repository"].split("/")[0]
+            + '") { vulnerabilityAlerts(first: 100) { nodes { createdAt dismissedAt securityVulnerability {package { name } advisory { description }}}}}}'
+        )
+        payload = {"query": body}
+        return payload
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        response = response.json()
+        response["repository"] = stream_slice["repository"]
+        yield response
