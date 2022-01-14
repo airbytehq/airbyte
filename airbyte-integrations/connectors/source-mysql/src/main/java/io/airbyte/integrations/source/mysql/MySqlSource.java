@@ -23,6 +23,7 @@ import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.StateManager;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
+import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -30,12 +31,17 @@ import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
+
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +54,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   public static final String MYSQL_DB_HISTORY = "mysql_db_history";
   public static final String CDC_LOG_FILE = "_ab_cdc_log_file";
   public static final String CDC_LOG_POS = "_ab_cdc_log_pos";
+  public static final String CDC_OFFSET = "mysql_cdc_offset";
   public static final List<String> SSL_PARAMETERS = List.of(
       "useSSL=true",
       "requireSSL=true",
@@ -180,8 +187,12 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
           new AirbyteDebeziumHandler(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), MySqlCdcProperties.getDebeziumProperties(),
               catalog, true);
 
-      return handler.getIncrementalIterators(new MySqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
-          new MySqlCdcStateHandler(stateManager), new MySqlCdcConnectorMetadataInjector(), emittedAt);
+      CdcState cdcState = stateManager.getCdcStateManager().getCdcState();
+      MySqlCdcSavedInfoFetcher fetcher = new MySqlCdcSavedInfoFetcher(cdcState);
+      if (cdcState != null) {
+        checkBinlog(cdcState.getState(), database);
+      }
+      return handler.getIncrementalIterators(fetcher, new MySqlCdcStateHandler(stateManager), new MySqlCdcConnectorMetadataInjector(), emittedAt);
     } else {
       LOGGER.info("using CDC: {}", false);
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager,
@@ -229,4 +240,41 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     };
   }
 
+  private void checkBinlog(JsonNode offset, JdbcDatabase database) {
+    String binlog = getBinlog(offset);
+    if (binlog != null && !binlog.isEmpty()){
+      if(isBinlogAvailable(binlog,  database)){
+          LOGGER.info(String.format("Binlog %s is available", binlog));
+        } else {
+          String error = String.format("Binlog %s is not available. This is a critical error, it means that requested binlog is not present on mysql server. " +
+                  "To fix data synchronization you need to reset your data. " +
+                  "Please check binlog retention policy configurations." , binlog);
+          LOGGER.error(error);
+          throw new RuntimeException(String.format("Binlog %s is not available.", binlog));
+        }
+    }
+  }
+
+  private boolean isBinlogAvailable(String binlog, JdbcDatabase database) {
+    try {
+      List<String> binlogs = database.resultSetQuery(connection ->
+                     connection.createStatement().executeQuery("SHOW BINARY LOGS"),
+             resultSet -> resultSet.getString("Log_name")).collect(Collectors.toList());
+
+      return !binlog.isEmpty() && binlogs.stream().anyMatch(e -> e.equals(binlog));
+    } catch (SQLException e) {
+      LOGGER.error("Can not get binlog list. Error: ", e);
+      throw new RuntimeException(e);
+    }
+  }
+
+  private String getBinlog(JsonNode offset){
+    JsonNode node = offset.get(CDC_OFFSET);
+    Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
+    while (fields.hasNext()){
+      Map.Entry<String, JsonNode> jsonField = fields.next();
+      return Jsons.deserialize(jsonField.getValue().asText()).path("file").asText();
+    }
+    return null;
+  }
 }

@@ -282,14 +282,14 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
     checkEntrypointEnvVariable();
   }
 
-  private List<AirbyteRecordMessage> filterRecords(final Collection<AirbyteMessage> messages) {
+  protected List<AirbyteRecordMessage> filterRecords(final Collection<AirbyteMessage> messages) {
     return messages.stream()
         .filter(m -> m.getType() == Type.RECORD)
         .map(AirbyteMessage::getRecord)
         .collect(Collectors.toList());
   }
 
-  private ConfiguredAirbyteCatalog withSourceDefinedCursors(final ConfiguredAirbyteCatalog catalog) {
+  protected ConfiguredAirbyteCatalog withSourceDefinedCursors(final ConfiguredAirbyteCatalog catalog) {
     final ConfiguredAirbyteCatalog clone = Jsons.clone(catalog);
     for (final ConfiguredAirbyteStream configuredStream : clone.getStreams()) {
       if (configuredStream.getSyncMode() == INCREMENTAL
