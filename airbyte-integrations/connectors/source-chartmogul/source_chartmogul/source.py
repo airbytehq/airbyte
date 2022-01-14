@@ -26,10 +26,10 @@ class Customers(ChartmogulStream):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         json_response = response.json()
-        if not json_response.get("has_more", False):
-            return None
+        if json_response.get("has_more", False):
+            return {"page": json_response.get("current_page") + 1}
 
-        return {"page": json_response.get("current_page") + 1}
+        return None
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
