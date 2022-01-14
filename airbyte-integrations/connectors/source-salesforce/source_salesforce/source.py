@@ -84,6 +84,7 @@ class SourceSalesforce(AbstractSource):
                     connector_state=connector_state,
                     internal_config=internal_config,
                 )
+                # TODO if got 403 rate limit, finish the sync with success
             except Exception as e:
                 logger.exception(f"Encountered an exception while reading stream {self.name}")
                 raise e
