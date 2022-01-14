@@ -118,6 +118,8 @@ class Customers(IncrementalBigcommerceStream):
 
 class Products(IncrementalBigcommerceStream):
     data_field = "products"
+    # Override `order_field` bacause Products API do not acept `asc` value
+    order_field = "date_modified"
 
     def path(self, **kwargs) -> str:
         return f"catalog/{self.data_field}"
