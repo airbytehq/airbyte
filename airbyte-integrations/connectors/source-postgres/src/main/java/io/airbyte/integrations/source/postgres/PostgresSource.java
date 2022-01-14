@@ -50,6 +50,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   public static final String CDC_LSN = "_ab_cdc_lsn";
 
   static final String DRIVER_CLASS = "org.postgresql.Driver";
+  private List<String> schemas;
 
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new PostgresSource(), List.of("host"), List.of("port"));
@@ -79,6 +80,17 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     if (!config.has("ssl") || config.get("ssl").asBoolean()) {
       additionalParameters.add("ssl=true");
       additionalParameters.add("sslmode=require");
+    }
+
+    if (config.has("schemas") && config.get("schemas").isArray()) {
+      schemas = new ArrayList<>();
+      for (final JsonNode schema : config.get("schemas")) {
+        schemas.add(schema.asText());
+      }
+    }
+
+    if (schemas != null && !schemas.isEmpty()) {
+      additionalParameters.add("currentSchema=" + String.join(",", schemas));
     }
 
     additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
@@ -117,8 +129,29 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   @Override
-  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
-    final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(super.getCheckOperations(config));
+  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(JdbcDatabase database) throws Exception {
+    if (schemas != null && !schemas.isEmpty()) {
+      // process explicitly selected (from UI) schemas
+      final List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
+      for (String schema : schemas) {
+        LOGGER.debug("Discovering schema: {}", schema);
+        internals.addAll(super.discoverInternal(database, schema));
+      }
+      for (TableInfo<CommonField<JDBCType>> info : internals) {
+        LOGGER.debug("Found table (schema: {}): {}", info.getNameSpace(), info.getName());
+      }
+      return internals;
+    } else {
+      LOGGER.info("No schemas explicitly set on UI to process, so will process all of existing schemas in DB");
+      return super.discoverInternal(database);
+    }
+  }
+
+  @Override
+  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config)
+      throws Exception {
+    final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(
+        super.getCheckOperations(config));
 
     if (isCdc(config)) {
       checkOperations.add(database -> {
@@ -129,21 +162,24 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
           ps.setString(2, PostgresUtils.getPluginValue(config.get("replication_method")));
           ps.setString(3, config.get("database").asText());
 
-          LOGGER.info("Attempting to find the named replication slot using the query: " + ps.toString());
+          LOGGER.info(
+              "Attempting to find the named replication slot using the query: " + ps.toString());
 
           return ps;
         }, sourceOperations::rowToJson).collect(toList());
 
         if (matchingSlots.size() != 1) {
-          throw new RuntimeException("Expected exactly one replication slot but found " + matchingSlots.size()
-              + ". Please read the docs and add a replication slot to your database.");
+          throw new RuntimeException(
+              "Expected exactly one replication slot but found " + matchingSlots.size()
+                  + ". Please read the docs and add a replication slot to your database.");
         }
 
       });
 
       checkOperations.add(database -> {
         final List<JsonNode> matchingPublications = database.query(connection -> {
-          final PreparedStatement ps = connection.prepareStatement("SELECT * FROM pg_publication WHERE pubname = ?");
+          final PreparedStatement ps = connection
+              .prepareStatement("SELECT * FROM pg_publication WHERE pubname = ?");
           ps.setString(1, config.get("replication_method").get("publication").asText());
 
           LOGGER.info("Attempting to find the publication using the query: " + ps.toString());
@@ -152,8 +188,9 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
         }, sourceOperations::rowToJson).collect(toList());
 
         if (matchingPublications.size() != 1) {
-          throw new RuntimeException("Expected exactly one publication but found " + matchingPublications.size()
-              + ". Please read the docs and add a publication to your database.");
+          throw new RuntimeException(
+              "Expected exactly one publication but found " + matchingPublications.size()
+                  + ". Please read the docs and add a publication to your database.");
         }
 
       });
@@ -163,7 +200,9 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
+  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
+                                                    final ConfiguredAirbyteCatalog catalog,
+                                                    final JsonNode state)
       throws Exception {
     // this check is used to ensure that have the pgoutput slot available so Debezium won't attempt to
     // create it.
@@ -177,7 +216,8 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   @Override
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
+                                                                             final JdbcDatabase database,
                                                                              final ConfiguredAirbyteCatalog catalog,
                                                                              final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                              final StateManager stateManager,
@@ -192,10 +232,13 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
      */
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig)) {
-      final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig, PostgresCdcTargetPosition.targetPosition(database),
+      final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
+          PostgresCdcTargetPosition.targetPosition(database),
           PostgresCdcProperties.getDebeziumProperties(sourceConfig), catalog, false);
-      return handler.getIncrementalIterators(new PostgresCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
-          new PostgresCdcStateHandler(stateManager), new PostgresCdcConnectorMetadataInjector(), emittedAt);
+      return handler.getIncrementalIterators(
+          new PostgresCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
+          new PostgresCdcStateHandler(stateManager), new PostgresCdcConnectorMetadataInjector(),
+          emittedAt);
 
     } else {
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
@@ -228,13 +271,47 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   @Override
-  public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
+  public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database,
+                                                                final String schema)
+      throws SQLException {
     return database.query(connection -> {
       final PreparedStatement ps = connection.prepareStatement(
-          "SELECT DISTINCT table_catalog, table_schema, table_name, privilege_type\n"
-              + "FROM   information_schema.table_privileges\n"
-              + "WHERE  grantee = ? AND privilege_type = 'SELECT'");
-      ps.setString(1, database.getDatabaseConfig().get("username").asText());
+          """
+                 SELECT DISTINCT table_catalog,
+                                 table_schema,
+                                 table_name,
+                                 privilege_type
+                 FROM            information_schema.table_privileges
+                 WHERE           grantee = ?
+                 AND             privilege_type = 'SELECT'
+                 UNION ALL
+                 SELECT r.rolname           AS table_catalog,
+                        n.nspname           AS table_schema,
+                        c.relname           AS table_name,
+                        -- the initial query is supposed to get a SELECT type. Since we use a UNION query
+                        -- to get Views that we can read (i.e. select) - then lets fill this columns with SELECT
+                        -- value to keep the backward-compatibility
+                        COALESCE ('SELECT') AS privilege_type
+                 FROM   pg_class c
+                 JOIN   pg_namespace n
+                 ON     n.oid = relnamespace
+                 JOIN   pg_roles r
+                 ON     r.oid = relowner,
+                 Unnest(COALESCE(relacl::text[], Format('{%s=arwdDxt/%s}', rolname, rolname)::text[])) acl,
+                        Regexp_split_to_array(acl, '=|/') s
+                 WHERE  r.rolname = ?
+                 AND    nspname = 'public'
+                        -- 'm' means Materialized View
+                 AND    c.relkind = 'm'
+                 AND    (
+                               -- all grants
+                               c.relacl IS NULL
+                               -- read grant
+                        OR     s[2] = 'r');
+          """);
+      final String username = database.getDatabaseConfig().get("username").asText();
+      ps.setString(1, username);
+      ps.setString(2, username);
       return ps;
     }, sourceOperations::rowToJson)
         .collect(toSet())
