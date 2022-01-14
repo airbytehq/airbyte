@@ -26,6 +26,8 @@ class DestinationType(Enum):
 
 
 class TransformConfig:
+    DBT_PROJECT = "dbt_project.yml"
+
     def run(self, args):
         inputs = self.parse(args)
         original_config = self.read_json_config(inputs["config"])
@@ -34,6 +36,9 @@ class TransformConfig:
         self.write_yaml_config(inputs["output_path"], transformed_config, "profiles.yml")
         if self.is_ssh_tunnelling(original_config):
             self.write_ssh_config(inputs["output_path"], original_config, transformed_config)
+        dbt_vars = self.get_dbt_vars(integration_type, original_config)
+        if dbt_vars:
+            self.update_dbt_project(inputs["output_path"], dbt_vars)
 
     @staticmethod
     def parse(args):
@@ -288,11 +293,16 @@ class TransformConfig:
         return json.loads(contents)
 
     @staticmethod
+    def read_yaml_config(input_path: str):
+        with open(input_path, "r") as fp:
+            return yaml.load(fp)
+
+    @staticmethod
     def write_yaml_config(output_path: str, config: Dict[str, Any], filename: str):
         if not os.path.exists(output_path):
             os.makedirs(output_path)
         with open(os.path.join(output_path, filename), "w") as fh:
-            fh.write(yaml.dump(config))
+            fh.write(yaml.dump(config, sort_keys=False))
 
     @staticmethod
     def write_ssh_config(output_path: str, original_config: Dict[str, Any], transformed_config: Dict[str, Any]):
@@ -310,6 +320,21 @@ class TransformConfig:
             os.makedirs(output_path)
         with open(os.path.join(output_path, "ssh.json"), "w") as fh:
             json.dump(ssh_dict, fh)
+
+    @classmethod
+    def get_dbt_vars(cls, integration_type: DestinationType, config: Dict[str, Any]) -> Dict[str, Any]:
+        res = {}
+        if integration_type == DestinationType.redshift:
+            if "use_super_redshift_type" in config:
+                res["redshift_json_super"] = bool(config["use_super_redshift_type"])
+        return res
+
+    @classmethod
+    def update_dbt_project(cls, output_path: str, dbt_vars: Dict[str, Any]):
+        f = os.path.join(output_path, cls.DBT_PROJECT)
+        config = cls.read_yaml_config(f)
+        config["vars"] = {**config.get("vars", {}), **dbt_vars}
+        cls.write_yaml_config(output_path, config, cls.DBT_PROJECT)
 
 
 def main(args=None):
