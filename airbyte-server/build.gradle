@@ -20,6 +20,7 @@ shadowJar {
 publishing {
     publications {
         shadow(MavenPublication) { publication ->
+            version = '0.340.0-localtest-2'
             project.shadow.component(publication)
         }
     }
@@ -27,7 +28,7 @@ publishing {
         publications {
             // This block is present so Gradle knows to publish a Maven jar.
             maven(MavenPublication) {
-                version = '0.340.0-localtest-1'
+                version = '0.340.0-localtest-2'
                 from components.java
                 // Gradle will by default use the subproject path as the group id and the subproject name as the artifact id.
                 // e.g. the subproject :airbyte-scheduler:models is imported at io.airbyte.airbyte-config:persistence:<version-number>.

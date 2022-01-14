@@ -107,7 +107,7 @@ public class TemporalClient {
     final var resp = execute(jobRunConfig,
         () -> getWorkflowStub(CheckConnectionWorkflow.class, TemporalJobType.CHECK_CONNECTION).run(jobRunConfig, launcherConfig, input));
     final var diff = System.currentTimeMillis() - start;
-    MetricSingleton.getInstance().recordTime("check-connection-submit-duration", diff, "time taken to execute the check connection temporal workflow");
+    MetricSingleton.getInstance().recordTime("check_connection_submit_duration", diff, "time taken to execute the check connection temporal workflow");
     return resp;
   }
 

@@ -347,8 +347,8 @@ public class KubePodProcess extends Process {
     this.statusCheckInterval = statusCheckInterval;
     this.stdoutLocalPort = stdoutLocalPort;
     this.stderrLocalPort = stderrLocalPort;
-    this.stdoutServerSocket = null;
-    this.stderrServerSocket = null;
+    this.stdoutServerSocket = new ServerSocket(stdoutLocalPort);;
+    this.stderrServerSocket = new ServerSocket(stderrLocalPort);;
     this.executorService = Executors.newFixedThreadPool(2);
     setupStdOutAndStdErrListeners();
 
@@ -506,28 +506,28 @@ public class KubePodProcess extends Process {
 
   private void setupStdOutAndStdErrListeners() {
     final var context = MDC.getCopyOfContextMap();
-//    executorService.submit(() -> {
-//      MDC.setContextMap(context);
-//      try {
-//        LOGGER.info("Creating stdout socket server...");
-//        final var socket = stdoutServerSocket.accept(); // blocks until connected
-//        LOGGER.info("Setting stdout...");
-//        this.stdout = socket.getInputStream();
-//      } catch (final IOException e) {
-//        e.printStackTrace(); // todo: propagate exception / join at the end of constructor
-//      }
-//    });
-//    executorService.submit(() -> {
-//      MDC.setContextMap(context);
-//      try {
-//        LOGGER.info("Creating stderr socket server...");
-//        final var socket = stderrServerSocket.accept(); // blocks until connected
-//        LOGGER.info("Setting stderr...");
-//        this.stderr = socket.getInputStream();
-//      } catch (final IOException e) {
-//        e.printStackTrace(); // todo: propagate exception / join at the end of constructor
-//      }
-//    });
+    executorService.submit(() -> {
+      MDC.setContextMap(context);
+      try {
+        LOGGER.info("Creating stdout socket server...");
+        final var socket = stdoutServerSocket.accept(); // blocks until connected
+        LOGGER.info("Setting stdout...");
+        this.stdout = socket.getInputStream();
+      } catch (final IOException e) {
+        e.printStackTrace(); // todo: propagate exception / join at the end of constructor
+      }
+    });
+    executorService.submit(() -> {
+      MDC.setContextMap(context);
+      try {
+        LOGGER.info("Creating stderr socket server...");
+        final var socket = stderrServerSocket.accept(); // blocks until connected
+        LOGGER.info("Setting stderr...");
+        this.stderr = socket.getInputStream();
+      } catch (final IOException e) {
+        e.printStackTrace(); // todo: propagate exception / join at the end of constructor
+      }
+    });
   }
 
   @Override

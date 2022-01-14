@@ -58,7 +58,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         jobId -> temporalClient.submitCheckConnection(UUID.randomUUID(), 0, jobCheckConnectionConfig),
         source.getWorkspaceId());
     final var diff = System.currentTimeMillis() - start;
-    MetricSingleton.getInstance().recordTime("source-check-connection-job-duration", diff, "time taken to execute source check connection job");
+    MetricSingleton.getInstance().recordTime("source_check_connection_job_duration", diff, "time taken to execute source check connection job");
     return resp;
   }
 
@@ -82,7 +82,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         destination.getWorkspaceId());
 
     final var diff = System.currentTimeMillis() - start;
-    MetricSingleton.getInstance().recordTime("destination-check-connection-job-duration", diff, "time taken to execute destination check connection job");
+    MetricSingleton.getInstance().recordTime("destination_check_connection_job_duration", diff, "time taken to execute destination check connection job");
     return resp;
   }
 
