@@ -202,11 +202,12 @@ class Companies(IncrementalIntercomStream):
 
     @classmethod
     def check_exists_scroll(cls, response: requests.Response) -> bool:
-        if response.status_code == 400:
+        if response.status_code in [400, 404]:
             # example response:
             # {..., "errors": [{'code': 'scroll_exists', 'message': 'scroll already exists for this workspace'}]}
+            # {..., "errors": [{'code': 'not_found', 'message':'scroll parameter not found'}]}
             err_body = response.json()["errors"][0]
-            if err_body["code"] == "scroll_exists":
+            if err_body["code"] in ["scroll_exists", "not_found"]:
                 return True
 
         return False
