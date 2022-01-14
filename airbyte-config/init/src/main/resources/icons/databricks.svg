@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generator: Adobe Illustrator 18.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="Layer_1"
+   x="0px"
+   y="0px"
+   viewBox="0 0 64 64"
+   enable-background="new 0 0 640 96"
+   xml:space="preserve"
+   sodipodi:docname="databricks-icon.svg"
+   width="64"
+   height="64"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"><metadata
+   id="metadata45"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><defs
+   id="defs43" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="1920"
+   inkscape:window-height="1001"
+   id="namedview41"
+   showgrid="false"
+   inkscape:zoom="2.996365"
+   inkscape:cx="53.009829"
+   inkscape:cy="48"
+   inkscape:window-x="-9"
+   inkscape:window-y="-9"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="Layer_1" />
+
+
+
+<g
+   id="g50"
+   transform="matrix(0.75294118,0,0,0.75294118,1.0541175,18.823529)"><path
+     style="fill:#db1905"
+     inkscape:connector-curvature="0"
+     id="path2"
+     d="M 0,24.8 V 38.5 L 41.1,60 82.2,38.5 v -13.7 0 L 67.7,17.4 82.2,9.8 v -13.6 0 0 -0.1 L 82.1,-3.8 41.1,-25 0.1,-3.9 H 0 V 9.8 L 14.5,17.4 0,24.8" /><polygon
+     transform="translate(0,-36)"
+     style="fill:#ff5224"
+     id="polygon4"
+     points="0,60.8 41.1,82.3 82.2,60.8 67.7,53.4 41.1,67.3 14.5,53.4 " /><polygon
+     transform="translate(0,-36)"
+     style="fill:#ff5224"
+     id="polygon6"
+     points="82.2,32.2 41.1,53.7 0,32.2 41.1,11 " /></g>
+
+</svg>
