@@ -284,6 +284,12 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/harvest
   icon: harvest.svg
   sourceType: api
+- name: Hellobaton
+  sourceDefinitionId: 492b56d1-937c-462e-8076-21ad2031e784
+  dockerRepository: airbyte/source-hellobaton
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/hellobaton
+  sourceType: api
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
