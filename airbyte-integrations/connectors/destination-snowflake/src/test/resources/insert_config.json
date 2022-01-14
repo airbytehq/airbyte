@@ -1,9 +1,9 @@
 {
-  "host": "gz45853.us-east-2.aws.snowflakecomputing.com",
+  "host": "testhost.snowflakecomputing.com",
   "role": "AIRBYTE_ROLE",
   "warehouse": "AIRBYTE_WAREHOUSE",
   "database": "AIRBYTE_DATABASE",
   "schema": "AIRBYTE_SCHEMA",
   "username": "AIRBYTE_INTEGRATION_TEST",
-  "password": "1Yiyu!U01&$%s0"
+  "password": "testPass"
 }

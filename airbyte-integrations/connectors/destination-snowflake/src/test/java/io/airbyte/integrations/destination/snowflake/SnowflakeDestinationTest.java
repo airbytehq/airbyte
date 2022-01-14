@@ -77,7 +77,6 @@ public class SnowflakeDestinationTest {
     SnowflakeStagingSqlOperations sqlOperations = mock(SnowflakeStagingSqlOperations.class);
     final var testMessages = generateTestMessages();
     final JsonNode config = Jsons.deserialize(MoreResources.readResource("insert_config.json"), JsonNode.class);
-
     AirbyteMessageConsumer airbyteMessageConsumer = new SnowflakeInternalStagingConsumerFactory()
             .create(Destination::defaultOutputRecordCollector, mockDb,
             sqlOperations, new SnowflakeSQLNameTransformer(), config, getCatalog());
