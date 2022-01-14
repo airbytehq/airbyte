@@ -295,7 +295,10 @@ class TransformConfig:
     @staticmethod
     def read_yaml_config(input_path: str):
         with open(input_path, "r") as fp:
-            return yaml.load(fp)
+            res = yaml.safe_load(fp)
+        if not isinstance(res, dict):
+            raise RuntimeError('{} does not parse to a dictionary'.format(os.path.basename(input_path)))
+        return res
 
     @staticmethod
     def write_yaml_config(output_path: str, config: Dict[str, Any], filename: str):
