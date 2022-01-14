@@ -87,5 +87,5 @@ The following command will allow you to access the database instance using `psql
 docker exec -ti airbyte-db psql -U docker -d airbyte
 ```
 
-To access the configuration files for sources, destinations, and connections that have been added, simply query the `airbyte-configs` table.
+Following tables are created `workspace`, `actor_definition`, `actor`, `actor_oauth_parameter`, `operation`, `connection`, `connection_operation`, `state`. These tables contain all the sources, destinations and connections information.
 
