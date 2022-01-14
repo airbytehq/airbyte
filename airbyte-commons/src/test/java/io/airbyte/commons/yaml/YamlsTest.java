@@ -48,6 +48,25 @@ class YamlsTest {
   }
 
   @Test
+  void testSerializeWithoutQuotes() {
+    assertEquals(
+        "---\n"
+            + "str: abc\n"
+            + "num: 999\n"
+            + "numLong: 888\n",
+        Yamls.serializeWithoutQuotes(new ToClass("abc", 999, 888L)));
+
+    assertEquals(
+        "---\n"
+            + "test: abc\n"
+            + "test2: def\n",
+        Yamls.serializeWithoutQuotes(
+            ImmutableMap.of(
+                "test", "abc",
+                "test2", "def")));
+  }
+
+  @Test
   void testSerializeJsonNode() {
     assertEquals(
         "---\n"

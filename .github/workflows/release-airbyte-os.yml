@@ -7,8 +7,29 @@ on:
         required: true
         default: "patch"
 jobs:
-  releaseAirbyte:
+  # In case of self-hosted EC2 errors, remove this block.
+  start-release-airbyte-runner:
+    name: "Release Airbyte: Start EC2 Runner"
+    timeout-minutes: 10
     runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Start AWS Runner
+        id: start-ec2-runner
+        uses: ./.github/actions/start-aws-runner
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+
+  releaseAirbyte:
+    # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
+    needs: start-release-airbyte-runner # required to start the main job when the runner is ready
+    runs-on: ${{ needs.start-release-airbyte-runner.outputs.label }} # run the job on the newly created runner
     environment: more-secrets
     steps:
       - name: Checkout
@@ -17,15 +38,20 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-java@v1
         with:
-          java-version: '17'
+          java-version: "17"
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '16.13.0'
+          node-version: "16.13.0"
+
+      # necessary to install pip
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.7"
       - name: Save Old Version
         id: old_version
         run: |
-          echo ::set-output name=OLD_VERSION::$(grep VERSION .env | cut -d"=" -f2)
+          echo ::set-output name=OLD_VERSION::$(grep -w VERSION .env | cut -d"=" -f2)
       - name: Release Airbyte
         id: release_airbyte
         env:
@@ -38,7 +64,7 @@ jobs:
       - name: Save New Version
         id: new_version
         run: |
-          echo ::set-output name=NEW_VERSION::$(grep VERSION .env | cut -d"=" -f2)
+          echo ::set-output name=NEW_VERSION::$(grep -w VERSION .env | cut -d"=" -f2)
       - name: Get PR Body
         id: pr_body
         env:
@@ -63,3 +89,27 @@ jobs:
         run: |
           echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
           echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+
+  # In case of self-hosted EC2 errors, remove this block.
+  stop-release-airbyte-runner:
+    name: "Release Airbyte: Stop EC2 Runner"
+    timeout-minutes: 10
+    needs:
+      - start-release-airbyte-runner # required to get output from the start-runner job
+      - releaseAirbyte # required to wait when the main job is done
+    runs-on: ubuntu-latest
+    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Stop EC2 runner
+        uses: machulav/ec2-github-runner@v2.3.0
+        with:
+          mode: stop
+          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+          label: ${{ needs.start-release-airbyte-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-release-airbyte-runner.outputs.ec2-instance-id }}

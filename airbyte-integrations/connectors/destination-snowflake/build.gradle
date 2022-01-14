@@ -26,9 +26,10 @@ application {
 dependencies {
     implementation 'com.google.cloud:google-cloud-storage:1.113.16'
     implementation 'com.google.auth:google-auth-library-oauth2-http:0.25.5'
-    implementation 'net.snowflake:snowflake-jdbc:3.12.14'
+    implementation 'net.snowflake:snowflake-jdbc:3.13.9'
     implementation 'org.apache.commons:commons-csv:1.4'
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
+    implementation "io.aesy:datasize:1.0.0"
 
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-db:lib')
@@ -36,6 +37,7 @@ dependencies {
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
     implementation project(':airbyte-integrations:connectors:destination-s3')
     implementation project(':airbyte-protocol:models')
+
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-snowflake')

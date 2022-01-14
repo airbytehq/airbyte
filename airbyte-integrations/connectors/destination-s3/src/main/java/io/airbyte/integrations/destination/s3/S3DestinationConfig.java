@@ -12,6 +12,7 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.Objects;
 
 /**
  * An S3 configuration. Typical usage sets at most one of {@code bucketPath} (necessary for more
@@ -38,8 +39,7 @@ public class S3DestinationConfig {
    * The part size should not matter in any use case that depends on this constructor. So the default
    * 10 MB is used.
    */
-  public S3DestinationConfig(
-                             final String endpoint,
+  public S3DestinationConfig(final String endpoint,
                              final String bucketName,
                              final String bucketPath,
                              final String bucketRegion,
@@ -49,8 +49,7 @@ public class S3DestinationConfig {
     this(endpoint, bucketName, bucketPath, bucketRegion, accessKeyId, secretAccessKey, DEFAULT_PART_SIZE_MB, formatConfig);
   }
 
-  public S3DestinationConfig(
-                             final String endpoint,
+  public S3DestinationConfig(final String endpoint,
                              final String bucketName,
                              final String bucketPath,
                              final String bucketRegion,
@@ -146,6 +145,40 @@ public class S3DestinationConfig {
         .withClientConfiguration(clientConfiguration)
         .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
         .build();
+  }
+
+  public S3DestinationConfig cloneWithFormatConfig(final S3FormatConfig formatConfig) {
+    return new S3DestinationConfig(
+        this.endpoint,
+        this.bucketName,
+        this.bucketPath,
+        this.bucketRegion,
+        this.accessKeyId,
+        this.secretAccessKey,
+        this.partSize,
+        formatConfig);
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    final S3DestinationConfig that = (S3DestinationConfig) o;
+    return Objects.equals(endpoint, that.endpoint) && Objects.equals(bucketName, that.bucketName) && Objects.equals(
+        bucketPath, that.bucketPath) && Objects.equals(bucketRegion, that.bucketRegion)
+        && Objects.equals(accessKeyId,
+            that.accessKeyId)
+        && Objects.equals(secretAccessKey, that.secretAccessKey) && Objects.equals(partSize, that.partSize)
+        && Objects.equals(formatConfig, that.formatConfig);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(endpoint, bucketName, bucketPath, bucketRegion, accessKeyId, secretAccessKey, partSize, formatConfig);
   }
 
 }

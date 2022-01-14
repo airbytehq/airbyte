@@ -49,6 +49,10 @@ public class Jsons {
     }
   }
 
+  public static <T> T convertValue(final Object object, final Class<T> klass) {
+    return OBJECT_MAPPER.convertValue(object, klass);
+  }
+
   public static JsonNode deserialize(final String jsonString) {
     try {
       return OBJECT_MAPPER.readTree(jsonString);

@@ -160,9 +160,9 @@ Add environment variables to configure minio
 */}}
 {{- define "airbyte.minio.endpoint" -}}
 {{- if .Values.logs.minio.enabled -}}
-    {{- printf "http://%s:%s" (include "airbyte.minio.fullname" .) "9000" -}}
+    {{- printf "http://%s:%d" (include "airbyte.minio.fullname" .) 9000 -}}
 {{- else if .Values.logs.externalMinio.enabled -}}
-    {{- printf "http://%s:%s" .Values.logs.externalMinio.host .Values.logs.externalMinio.port -}}
+    {{- printf "http://%s:%d" .Values.logs.externalMinio.host .Values.logs.externalMinio.port -}}
 {{- else -}}
     {{- printf "" -}}
 {{- end -}}
@@ -205,6 +205,13 @@ Returns the Airbyte worker Image
 */}}
 {{- define "airbyte.workerImage" -}}
 {{- include "common.images.image" (dict "imageRoot" .Values.worker.image "global" .Values.global) -}}
+{{- end -}}
+
+{{/*
+Returns the Airbyte Bootloader Image
+*/}}
+{{- define "airbyte.bootloaderImage" -}}
+{{- include "common.images.image" (dict "imageRoot" .Values.bootloader.image "global" .Values.global) -}}
 {{- end -}}
 
 {{/*

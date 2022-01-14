@@ -1,4 +1,4 @@
-# Getting Started: Destination Redshift 
+# Getting Started: Destination Redshift
 
 ## Requirements
 
@@ -41,6 +41,10 @@ Provide the required S3 info.
     * Corresponding key to the above key id.
 * **Part Size**
     * Affects the size limit of an individual Redshift table. Optional. Increase this if syncing tables larger than 100GB. Files are streamed to S3 in parts. This determines the size of each part, in MBs. As S3 has a limit of 10,000 parts per file, part size affects the table size. This is 10MB by default, resulting in a default table limit of 100GB. Note, a larger part size will result in larger memory requirements. A rule of thumb is to multiply the part size by 10 to get the memory requirement. Modify this with care.
+
+Optional parameters:
+* **Bucket Path**
+  * The directory within the S3 bucket to place the staging data. For example, if you set this to `yourFavoriteSubdirectory`, staging data will be placed inside `s3://yourBucket/yourFavoriteSubdirectory`. If not provided, defaults to the root directory.
 
 ## Notes about Redshift Naming Conventions
 

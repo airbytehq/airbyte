@@ -7,8 +7,6 @@ set -e
 # runs performance tests for an performance name
 
 connector="$1"
-firstarg=""
-secondarg=""
 if [[ "$2" ]]; then
   if [[ "$2" == *"cpulimit"* ]]; then
     firstarg="-DcpuLimit=$(echo $2 | cut -d / -f 2)"
@@ -46,14 +44,24 @@ else
   elif [[ "$connector" == *"connectors"* ]]; then
     connector_name=$(echo $connector | cut -d / -f 2)
     selected_performance_test=$(echo "$all_performance_tests" | grep "^$connector_name$" || echo "")
-    performanceTestCommand="$(_to_gradle_path "airbyte-integrations/$connector" performanceTest) $firstarg $secondargt"
+    performanceTestCommand="$(_to_gradle_path "airbyte-integrations/$connector" performanceTest)"
   else
     selected_performance_test=$(echo "$all_performance_tests" | grep "^$connector$" || echo "")
-    performanceTestCommand=":airbyte-integrations:connectors:$connector:performanceTest $firstarg $secondarg"
+    performanceTestCommand=":airbyte-integrations:connectors:$connector:performanceTest"
   fi
   if [ -n "$selected_performance_test" ] ; then
-    echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand"
-    ./gradlew --no-daemon --scan "$performanceTestCommand"
+    if [[ "$firstarg" ]]; then
+      if [[ "$secondarg" ]]; then
+        echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand $firstarg $secondarg"
+        ./gradlew --no-daemon --scan "$performanceTestCommand" "$firstarg" "$secondarg"
+      else
+        echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand $firstarg"
+        ./gradlew --no-daemon --scan "$performanceTestCommand" "$firstarg"
+      fi
+    else
+      echo "Running: ./gradlew --no-daemon --scan $performanceTestCommand"
+      ./gradlew --no-daemon --scan "$performanceTestCommand"
+    fi
   else
     echo "Connector '$connector' not found..."
     return 1

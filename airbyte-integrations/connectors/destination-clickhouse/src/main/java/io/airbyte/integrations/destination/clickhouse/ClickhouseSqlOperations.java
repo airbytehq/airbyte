@@ -29,6 +29,11 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
   }
 
   @Override
+  public boolean isSchemaRequired() {
+    return false;
+  }
+
+  @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"

@@ -5,6 +5,8 @@
 package io.airbyte.db.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DataTypeUtils;
@@ -47,6 +49,15 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
     }
 
     return jsonNode;
+  }
+
+  protected void putArray(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    ArrayNode arrayNode = new ObjectMapper().createArrayNode();
+    ResultSet arrayResultSet = resultSet.getArray(index).getResultSet();
+    while (arrayResultSet.next()) {
+      arrayNode.add(arrayResultSet.getString(2));
+    }
+    node.set(columnName, arrayNode);
   }
 
   protected void putBoolean(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {

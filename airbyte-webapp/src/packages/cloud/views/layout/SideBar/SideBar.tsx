@@ -4,11 +4,12 @@ import { FormattedMessage, FormattedNumber } from "react-intl";
 import { NavLink } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar } from "@fortawesome/free-solid-svg-icons";
-import { useIntercom } from "react-use-intercom";
 
-import { Routes } from "packages/cloud/routes";
+import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
 
-import useWorkspace from "hooks/services/useWorkspace";
+import { CloudRoutes } from "packages/cloud/cloudRoutes";
+
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { Link } from "components";
 import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";
 
@@ -19,12 +20,14 @@ import OnboardingIcon from "views/layout/SideBar/components/OnboardingIcon";
 import ChatIcon from "views/layout/SideBar/components/ChatIcon";
 import SettingsIcon from "views/layout/SideBar/components/SettingsIcon";
 import SourceIcon from "views/layout/SideBar/components/SourceIcon";
-import { useGetWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
+import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
 import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
 import ResourcesPopup, {
-  Item,
   Icon,
+  Item,
 } from "views/layout/SideBar/components/ResourcesPopup";
+import { RoutePaths } from "pages/routes";
+import { FeatureItem, WithFeature } from "hooks/services/Feature";
 
 const CreditsIcon = styled(FontAwesomeIcon)`
   font-size: 21px;
@@ -97,8 +100,8 @@ const WorkspaceButton = styled.div`
 `;
 
 const SideBar: React.FC = () => {
-  const { workspace } = useWorkspace();
-  const { data: cloudWorkspace } = useGetWorkspace(workspace.workspaceId);
+  const workspace = useCurrentWorkspace();
+  const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
   const { show } = useIntercom();
   const handleChatUs = () => show();
 
@@ -108,8 +111,8 @@ const SideBar: React.FC = () => {
         <Link
           to={
             workspace.displaySetupWizard
-              ? Routes.Onboarding
-              : Routes.Connections
+              ? RoutePaths.Onboarding
+              : RoutePaths.Connections
           }
         >
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
@@ -122,7 +125,7 @@ const SideBar: React.FC = () => {
         <Menu>
           {workspace.displaySetupWizard ? (
             <li>
-              <MenuItem to={Routes.Onboarding} activeClassName="active">
+              <MenuItem to={RoutePaths.Onboarding}>
                 <OnboardingIcon />
                 <Text>
                   <FormattedMessage id="sidebar.onboarding" />
@@ -131,7 +134,7 @@ const SideBar: React.FC = () => {
             </li>
           ) : null}
           <li>
-            <MenuItem to={Routes.Connections} activeClassName="active">
+            <MenuItem to={RoutePaths.Connections}>
               <ConnectionsIcon />
               <Text>
                 <FormattedMessage id="sidebar.connections" />
@@ -139,7 +142,7 @@ const SideBar: React.FC = () => {
             </MenuItem>
           </li>
           <li>
-            <MenuItem to={Routes.Source} activeClassName="active">
+            <MenuItem to={RoutePaths.Source}>
               <SourceIcon />
               <Text>
                 <FormattedMessage id="sidebar.sources" />
@@ -147,7 +150,7 @@ const SideBar: React.FC = () => {
             </MenuItem>
           </li>
           <li>
-            <MenuItem to={Routes.Destination} activeClassName="active">
+            <MenuItem to={RoutePaths.Destination}>
               <DestinationIcon />
               <Text>
                 <FormattedMessage id="sidebar.destinations" />
@@ -158,7 +161,7 @@ const SideBar: React.FC = () => {
       </div>
       <Menu>
         <li>
-          <MenuItem to={Routes.Credits} activeClassName="active">
+          <MenuItem to={CloudRoutes.Credits}>
             <CreditsIcon icon={faStar} />
             <Text>
               <FormattedNumber value={cloudWorkspace.remainingCredits} />
@@ -196,16 +199,12 @@ const SideBar: React.FC = () => {
           </ResourcesPopup>
         </li>
         <li>
-          <MenuItem
-            to={`${Routes.Settings}${Routes.Account}`}
-            activeClassName="active"
-            isActive={(_, location) =>
-              location.pathname.startsWith(Routes.Settings)
-            }
-          >
-            <React.Suspense fallback={null}>
-              <NotificationIndicator />
-            </React.Suspense>
+          <MenuItem to={RoutePaths.Settings}>
+            <WithFeature featureId={FeatureItem.AllowUpdateConnectors}>
+              <React.Suspense fallback={null}>
+                <NotificationIndicator />
+              </React.Suspense>
+            </WithFeature>
             <SettingsIcon />
             <Text>
               <FormattedMessage id="sidebar.settings" />
