@@ -16,6 +16,7 @@ import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
+import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptCreationInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptCreationOutput;
@@ -151,6 +152,7 @@ public class JobCreationAndStatusUpdateActivityTest {
       Mockito.verify(mJobPersistence).writeOutput(JOB_ID, ATTEMPT_ID, jobOutput);
       Mockito.verify(mJobPersistence).succeedAttempt(JOB_ID, ATTEMPT_ID);
       Mockito.verify(mJobNotifier).successJob(Mockito.any());
+      Mockito.verify(mJobtracker).trackSync(Mockito.any(), Mockito.eq(JobState.SUCCEEDED));
     }
 
     @Test
