@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.47
+Fix typing errors.
+
 ## 0.1.45
 Integrate Sentry for performance and errors tracking.
 
