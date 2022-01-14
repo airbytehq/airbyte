@@ -46,6 +46,9 @@ class SalesforceStream(HttpStream, ABC):
 
     def path(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> str:
         if next_page_token:
+            """
+            If `next_page_token` is set, subsequent requests use `nextRecordsUrl`.
+            """
             return next_page_token
         return f"/services/data/{self.sf_api.version}/queryAll"
 
@@ -60,6 +63,9 @@ class SalesforceStream(HttpStream, ABC):
         Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
         """
         if next_page_token:
+            """
+            If `next_page_token` is set, subsequent requests use `nextRecordsUrl`, and do not include any parameters.
+            """
             return {}
 
         selected_properties = self.get_json_schema().get("properties", {})
@@ -326,6 +332,9 @@ class IncrementalSalesforceStream(SalesforceStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         if next_page_token:
+            """
+            If `next_page_token` is set, subsequent requests use `nextRecordsUrl`, and do not include any parameters.
+            """
             return {}
 
         selected_properties = self.get_json_schema().get("properties", {})
