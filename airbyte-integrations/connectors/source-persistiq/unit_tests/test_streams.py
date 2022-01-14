@@ -32,7 +32,8 @@ def test_request_params(patch_base_class):
     stream = PersistiqStream(api_key="mybeautifulkey")
     inputs = {"next_page_token": {"page": 1}}
     expected_params = {"page": 1}
-    assert stream.request_params(**inputs) == expected_params
+    assert stream.request_params(
+        stream_state=None, **inputs) == expected_params
 
 
 def test_next_page_token(patch_base_class):
