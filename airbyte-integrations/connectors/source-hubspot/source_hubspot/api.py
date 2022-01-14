@@ -93,7 +93,7 @@ def retry_connection_handler(**kwargs):
     )
 
 
-def retry_after_handler(fixed_retry_after = None, **kwargs):
+def retry_after_handler(fixed_retry_after=None, **kwargs):
     """Retry helper when we hit the call limit, sleeps for specific duration"""
 
     def sleep_on_ratelimit(_details):
@@ -308,8 +308,10 @@ class Stream(ABC):
                 if updated_at < self._start_date:
                     continue
             yield record
-    
-    def _read_stream_records(self, getter: Callable, properties_list: List[str], params: MutableMapping[str, Any] = None) -> Tuple[dict, Any]:
+
+    def _read_stream_records(
+        self, getter: Callable, properties_list: List[str], params: MutableMapping[str, Any] = None
+    ) -> Tuple[dict, Any]:
         # TODO: Additional processing was added due to the fact that users receive 414 errors while syncing their streams (issues #3977 and #5835).
         #  We will need to fix this code when the HubSpot developers add the ability to use a special parameter to get all properties for an entity.
         #  According to HubSpot Community (https://community.hubspot.com/t5/APIs-Integrations/Get-all-contact-properties-without-explicitly-listing-them/m-p/447950)
@@ -325,7 +327,7 @@ class Stream(ABC):
                     stream_records[record["id"]] = record
                 elif stream_records[record["id"]].get("properties"):
                     stream_records[record["id"]]["properties"].update(record.get("properties", {}))
-        
+
         return stream_records, response
 
     def _read(self, getter: Callable, params: MutableMapping[str, Any] = None) -> Iterator:
@@ -431,7 +433,7 @@ class Stream(ABC):
             props[row["name"]] = self._get_field_props(row["type"])
 
         return props
-    
+
     def _flat_associations(self, records: Iterable[MutableMapping]) -> Iterable[MutableMapping]:
         """When result has associations we prefer to have it flat, so we transform this:
 
@@ -531,7 +533,7 @@ class CRMSearchStream(IncrementalStream, ABC):
     limit = 100  # This value is used only when state is None.
     state_pk = "updatedAt"
     updated_at_field = "updatedAt"
-    
+
     @property
     def url(self):
         return f"/crm/v3/objects/{self.entity}/search" if self.state else f"/crm/v3/objects/{self.entity}"
@@ -541,7 +543,8 @@ class CRMSearchStream(IncrementalStream, ABC):
         entity: Optional[str] = None,
         last_modified_field: Optional[str] = None,
         associations: Optional[List[str]] = None,
-        include_archived_only: bool = False, **kwargs
+        include_archived_only: bool = False,
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self._state = None
@@ -575,16 +578,19 @@ class CRMSearchStream(IncrementalStream, ABC):
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         """Apply state filter to set of records, update cursor(state) if necessary in the end"""
         latest_cursor = None
-        default_params = {'limit': self.limit}
+        default_params = {"limit": self.limit}
         params = {**default_params, **params} if params else {**default_params}
         properties_list = list(self.properties.keys())
 
-        payload = {"filters": [{
-            "value": int(self._state.timestamp() * 1000),
-            "propertyName": self.last_modified_field,
-            "operator": "GTE"
-        }], "properties": properties_list, "limit": 100
-        } if self.state else {}
+        payload = (
+            {
+                "filters": [{"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"}],
+                "properties": properties_list,
+                "limit": 100,
+            }
+            if self.state
+            else {}
+        )
 
         while True:
             stream_records = {}
@@ -599,9 +605,9 @@ class CRMSearchStream(IncrementalStream, ABC):
                 yield record
                 cursor = self._field_to_datetime(record[self.updated_at_field])
                 latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
-            if 'paging' in response and 'next' in response['paging'] and 'after' in response['paging']['next']:
-                params['after'] = response['paging']['next']['after']
-                payload['after'] = response['paging']['next']['after']
+            if "paging" in response and "next" in response["paging"] and "after" in response["paging"]["next"]:
+                params["after"] = response["paging"]["next"]["after"]
+                payload["after"] = response["paging"]["next"]["after"]
             else:
                 break
 
@@ -813,7 +819,7 @@ class EngagementStream(IncrementalStream):
         if self.state:
             return "/engagements/v1/engagements/recent/modified"
         return "/engagements/v1/engagements/paged"
-    
+
     @property
     def state(self) -> Optional[Mapping[str, Any]]:
         """Current state, if wasn't set return None"""
@@ -827,22 +833,22 @@ class EngagementStream(IncrementalStream):
 
     def _transform(self, records: Iterable) -> Iterable:
         yield from super()._transform({**record.pop("engagement"), **record} for record in records)
-    
+
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         max_last_updated_at = None
         default_params = {self.limit_field: self.limit}
         params = {**default_params, **params} if params else {**default_params}
         if self.state:
-            params['since'] = self._state
+            params["since"] = self._state
         count = 0
         for record in self._filter_old_records(self._read(getter, params)):
             yield record
             count += 1
             cursor = record[self.updated_at_field]
             max_last_updated_at = max(cursor, max_last_updated_at) if max_last_updated_at else cursor
-        
-        logger.info(f'Processed {count} records')
-        
+
+        logger.info(f"Processed {count} records")
+
         if max_last_updated_at:
             new_state = max(max_last_updated_at, self._state) if self._state else max_last_updated_at
             if new_state != self._state:
