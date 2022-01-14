@@ -101,7 +101,11 @@ class SalesforceStream(HttpStream, ABC):
             error_data = error.response.json()[0]
             if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
                 error_code = error_data.get("errorCode", "")
-                if error_code != "REQUEST_LIMIT_EXCEEDED" or error_code == "INVALID_TYPE_FOR_OPERATION":
+                if error_code == "REQUEST_LIMIT_EXCEEDED":
+                    # If rate limit is reached, we should finish the sync with success
+                    self.logger.error(f"API Call limit is exceeded'. Stream: {self.name}', error message: '{error_data.get('message')}'")
+                    return
+                elif error_code == "INVALID_TYPE_FOR_OPERATION":
                     self.logger.error(f"Cannot receive data for stream '{self.name}', error message: '{error_data.get('message')}'")
                     return
             raise error

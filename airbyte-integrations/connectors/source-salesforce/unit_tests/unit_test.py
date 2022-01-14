@@ -3,10 +3,12 @@
 #
 
 from unittest.mock import Mock
+import json
 
 import pytest
 import requests_mock
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import SyncMode, ConfiguredAirbyteCatalog
+from airbyte_cdk.logger import AirbyteLogger
 from requests.exceptions import HTTPError
 from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
@@ -349,3 +351,59 @@ def test_discover_with_streams_criteria_param(streams_criteria, predicted_filter
     )
     filtered_streams = sf_object.get_validated_streams(config=updated_config)
     assert sorted(filtered_streams) == sorted(predicted_filtered_streams)
+
+
+@pytest.mark.timeout(100000)
+def test_rate_limit_rest(stream_rest_config, stream_rest_api):  # TODO
+    stream: IncrementalSalesforceStream = _generate_stream("Account", stream_rest_config, stream_rest_api)
+
+    stream._wait_timeout = 100
+    url = "https://fase-account.salesforce.com/services/data/v52.0/queryAll?q=SELECT+LastModifiedDate+FROM+Account+WHERE+LastModifiedDate+%3E%3D+2122-01-18T21%3A18%3A20.000Z+ORDER+BY+LastModifiedDate+ASC+LIMIT+2000"
+    source = SourceSalesforce()
+    source.streams = Mock()
+    source.streams.return_value = [stream]
+    logger = AirbyteLogger()
+    with open('configured_catalog.json') as f:
+        data = json.loads(f.read())
+    catalog = ConfiguredAirbyteCatalog.parse_obj(data)
+    state = {
+      "Account": {
+        "LastModifiedDate": "2122-01-18T21:18:20.000Z"
+      }
+    }
+    with requests_mock.Mocker() as m:
+        m.register_uri("GET", url, json=[{"errorCode": "REQUEST_LIMIT_EXCEEDED"}], status_code=403)
+        # with pytest.raises(Exception) as err:
+        result = [i for i in source.read(logger=logger, config=stream_rest_config, catalog=catalog, state=state)]
+        # print(result)
+        # next(stream.read_records(sync_mode=SyncMode.full_refresh))
+
+
+@pytest.mark.timeout(100000)
+def test_rate_limit_bulk(stream_bulk_config, stream_bulk_api):  # TODO
+    stream: BulkIncrementalSalesforceStream = _generate_stream("Account", stream_bulk_config, stream_bulk_api)
+
+    stream._wait_timeout = 100
+    url = "https://fase-account.salesforce.com/services/data/v52.0/jobs/query"
+    source = SourceSalesforce()
+    source.streams = Mock()
+    source.streams.return_value = [stream]
+    logger = AirbyteLogger()
+    with open('configured_catalog.json') as f:
+        data = json.loads(f.read())
+    catalog = ConfiguredAirbyteCatalog.parse_obj(data)
+    state = {
+      "Account": {
+        "LastModifiedDate": "2122-01-18T21:18:20.000Z"
+      }
+    }
+    with requests_mock.Mocker() as m:
+        m.register_uri("GET", url, json=[{"errorCode": "REQUEST_LIMIT_EXCEEDED"}], status_code=403)
+        m.register_uri("POST", url, json=[{"errorCode": "REQUEST_LIMIT_EXCEEDED"}], status_code=403)
+        m.register_uri("DELETE", url, json=[{"errorCode": "REQUEST_LIMIT_EXCEEDED"}], status_code=403)
+        m.register_uri("PATCH", url, json=[{"errorCode": "REQUEST_LIMIT_EXCEEDED"}], status_code=403)
+
+        # with pytest.raises(Exception) as err:
+        result = [i for i in source.read(logger=logger, config=stream_bulk_config, catalog=catalog, state=state)]
+        # print(result)
+        # next(stream.read_records(sync_mode=SyncMode.full_refresh))
