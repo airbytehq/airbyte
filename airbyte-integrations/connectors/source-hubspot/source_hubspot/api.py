@@ -732,6 +732,34 @@ class FormStream(Stream):
     created_at_field = "createdAt"
 
 
+class FormSubmissionStream(Stream):
+    """Marketing Forms, API v1
+    This endpoint requires the forms scope.
+    Docs: https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form
+    """
+
+    url = "/form-integrations/v1/submissions/forms"
+    limit = 50
+    updated_at_field = "updatedAt"
+
+    def _transform(self, records: Iterable) -> Iterable:
+        for record in super()._transform(records):
+            keys = record.keys()
+
+            # There's no updatedAt field in the submission however forms fetched by using this field,
+            # so it has to be added to the submissions otherwise it would fail when calling _filter_old_records
+            if "updatedAt" not in keys:
+                record["updatedAt"] = record["submittedAt"]
+
+            yield record
+
+    def list(self, fields) -> Iterable:
+        for form in self.read(getter=partial(self._api.get, url="/marketing/v3/forms")):
+            for submission in self.read(getter=partial(self._api.get, url=f"{self.url}/{form['id']}")):
+                submission["formId"] = form["id"]
+                yield submission
+
+
 class MarketingEmailStream(Stream):
     """Marketing Email, API v1
     Docs: https://legacydocs.hubspot.com/docs/methods/cms_email/get-all-marketing-emails

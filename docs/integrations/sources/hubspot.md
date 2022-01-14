@@ -110,6 +110,7 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 
 | Version | Date       | Pull Request | Subject                                                                                                                                        |
 |:--------|:-----------| :--- |:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.32  | 2022-01-13 | [8011](https://github.com/airbytehq/airbyte/pull/8011) | Add new stream form_submissions                                                                                   |
 | 0.1.31  | 2022-01-11 | [9385](https://github.com/airbytehq/airbyte/pull/9385) | Remove auto-generated `properties` from `Engagements` stream                                                                                   |
 | 0.1.30  | 2021-01-10 | [9129](https://github.com/airbytehq/airbyte/pull/9129) | Created Contacts list memberships streams                                                                                                      |
 | 0.1.29  | 2021-12-17 | [8699](https://github.com/airbytehq/airbyte/pull/8699) | Add incremental sync support for `companies`, `contact_lists`, `contacts`, `deals`, `line_items`, `products`, `quotes`, `tickets` streams      |
