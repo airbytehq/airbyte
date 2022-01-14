@@ -37,6 +37,8 @@ services:
     logging: *default-logging
     container_name: airbyte-db
     restart: unless-stopped
+    ports:
+      - 5432:5432
     environment:
       - CONFIG_DATABASE_PASSWORD=${CONFIG_DATABASE_PASSWORD:-}
       - CONFIG_DATABASE_URL=${CONFIG_DATABASE_URL:-}
