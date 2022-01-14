@@ -80,11 +80,21 @@ class SalesforceStream(HttpStream, ABC):
         try:
             yield from super().read_records(**kwargs)
         except exceptions.HTTPError as error:
+            """
+            There are several types of Salesforce sobjects that require additional processing:
+              1. Sobjects for which the user, after setting up the data using Airbyte, restricted access,
+                 and we will receive 403 HTTP errors.
+              2. There are streams that do not allow you to make a sample using Salesforce `query` or `queryAll`.
+                 And since we use a dynamic method of generating streams for Salesforce connector - at the stage of discover,
+                 we cannot filter out these streams, so we catch them at the stage of reading data.
+            """
             error_data = error.response.json()[0]
-            if error.response.status_code == codes.FORBIDDEN and not error_data.get("errorCode", "") == "REQUEST_LIMIT_EXCEEDED":
-                self.logger.error(f"Cannot receive data for stream '{self.name}', error message: '{error_data.get('message')}'")
-            else:
-                raise error
+            if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
+                error_code = error_data.get("errorCode", "")
+                if error_code != "REQUEST_LIMIT_EXCEEDED" or error_code == "INVALID_TYPE_FOR_OPERATION":
+                    self.logger.error(f"Cannot receive data for stream '{self.name}', error message: '{error_data.get('message')}'")
+                    return
+            raise error
 
 
 class BulkSalesforceStream(SalesforceStream):

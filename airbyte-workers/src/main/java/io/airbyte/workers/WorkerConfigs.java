@@ -21,6 +21,7 @@ public class WorkerConfigs {
   private final String jobSocatImage;
   private final String jobBusyboxImage;
   private final String jobCurlImage;
+  private final Map<String, String> envMap;
 
   public WorkerConfigs(final Configs configs) {
     this.workerEnvironment = configs.getWorkerEnvironment();
@@ -36,6 +37,7 @@ public class WorkerConfigs {
     this.jobSocatImage = configs.getJobKubeSocatImage();
     this.jobBusyboxImage = configs.getJobKubeBusyboxImage();
     this.jobCurlImage = configs.getJobKubeCurlImage();
+    this.envMap = configs.getJobDefaultEnvMap();
   }
 
   public Configs.WorkerEnvironment getWorkerEnvironment() {
@@ -72,6 +74,10 @@ public class WorkerConfigs {
 
   public String getJobCurlImage() {
     return jobCurlImage;
+  }
+
+  public Map<String, String> getEnvMap() {
+    return envMap;
   }
 
 }
