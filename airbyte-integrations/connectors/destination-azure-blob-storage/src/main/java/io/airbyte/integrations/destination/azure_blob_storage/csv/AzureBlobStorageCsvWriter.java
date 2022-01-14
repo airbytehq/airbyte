@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.azure_blob_storage.csv;
 
 import com.azure.storage.blob.specialized.AppendBlobClient;
-import com.azure.storage.blob.specialized.BlobOutputStream;
 import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDestinationConfig;
 import io.airbyte.integrations.destination.azure_blob_storage.writer.AzureBlobStorageWriter;
 import io.airbyte.integrations.destination.azure_blob_storage.writer.BaseAzureBlobStorageWriter;
