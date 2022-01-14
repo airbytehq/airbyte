@@ -1,4 +1,6 @@
 name: Release Open Source Airbyte
+concurrency: release-airbyte
+
 on:
   workflow_dispatch:
     inputs:

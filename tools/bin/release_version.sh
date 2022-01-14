@@ -39,6 +39,6 @@ echo "Bumped version from ${PREV_VERSION} to ${NEW_VERSION}"
 echo "Building and publishing version $NEW_VERSION for git revision $GIT_REVISION..."
 
 VERSION=$NEW_VERSION SUB_BUILD=PLATFORM ./gradlew clean build
-SUB_BUILD=PLATFORM ./gradlew publish
-VERSION=$NEW_VERSION GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose.build.yaml push
+#SUB_BUILD=PLATFORM ./gradlew publish
+#VERSION=$NEW_VERSION GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose.build.yaml push
 echo "Completed building and publishing..."
