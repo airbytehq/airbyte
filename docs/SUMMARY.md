@@ -14,6 +14,7 @@
   * [On Azure(VM)](deploying-airbyte/on-azure-vm-cloud-shell.md)
   * [On GCP (Compute Engine)](deploying-airbyte/on-gcp-compute-engine.md)
   * [On Kubernetes (Beta)](deploying-airbyte/on-kubernetes.md)
+  * [On Plural (Beta)](deploying-airbyte/on-plural.md)  
   * [On Oracle Cloud Infrastructure VM](deploying-airbyte/on-oci-vm.md)
   * [On Digital Ocean Droplet](deploying-airbyte/on-digitalocean-droplet.md)
 * [Operator Guides](operator-guides/README.md)

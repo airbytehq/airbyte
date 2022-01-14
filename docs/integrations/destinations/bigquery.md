@@ -153,6 +153,8 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
+| 0.6.3   | 2022-01-12 | [\#9415](https://github.com/airbytehq/airbyte/pull/9415)   | BigQuery Destination : Fix GCS processing of Facebook data |
+| 0.6.2   | 2022-01-10 | [\#9121](https://github.com/airbytehq/airbyte/pull/9121)   | Fixed check method for GCS mode to verify if all roles assigned to user |
 | 0.6.1   | 2021-12-22 | [\#9039](https://github.com/airbytehq/airbyte/pull/9039)   | Added part_size configuration to UI for GCS staging |
 | 0.6.0   | 2021-12-17 | [\#8788](https://github.com/airbytehq/airbyte/issues/8788) | BigQuery/BiqQuery denorm Destinations : Add possibility to use different types of GCS files |
 | 0.5.1   | 2021-12-16 | [\#8816](https://github.com/airbytehq/airbyte/issues/8816) | Update dataset locations |
@@ -168,21 +170,22 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 
 ### bigquery-denormalized
 
-| Version | Date | Pull Request | Subject |
-|:--------| :--- | :--- | :--- |
-| 0.2.2 | 2021-12-22 | [\#9039](https://github.com/airbytehq/airbyte/pull/9039)   | Added part_size configuration to UI for GCS staging |
-| 0.2.1 | 2021-12-21 | [\#8574](https://github.com/airbytehq/airbyte/pull/8574) | Added namespace to Avro and Parquet record types |
-| 0.2.0   | 2021-12-17 | [\#8788](https://github.com/airbytehq/airbyte/pull/8788) |  BigQuery/BiqQuery denorm Destinations : Add possibility to use different types of GCS files |
+| Version | Date       | Pull Request                                               | Subject |
+|:--------|:-----------|:-----------------------------------------------------------| :--- |
+| 0.2.3   | 2022-01-12 | [\#9415](https://github.com/airbytehq/airbyte/pull/9415)   | BigQuery Destination : Fix GCS processing of Facebook data |
+| 0.2.2   | 2021-12-22 | [\#9039](https://github.com/airbytehq/airbyte/pull/9039)   | Added part_size configuration to UI for GCS staging |
+| 0.2.1   | 2021-12-21 | [\#8574](https://github.com/airbytehq/airbyte/pull/8574)   | Added namespace to Avro and Parquet record types |
+| 0.2.0   | 2021-12-17 | [\#8788](https://github.com/airbytehq/airbyte/pull/8788)   |  BigQuery/BiqQuery denorm Destinations : Add possibility to use different types of GCS files |
 | 0.1.11  | 2021-12-16 | [\#8816](https://github.com/airbytehq/airbyte/issues/8816) | Update dataset locations |
-| 0.1.10  | 2021-11-09 | [\#7804](https://github.com/airbytehq/airbyte/pull/7804) |  handle null values in fields described by a $ref definition |
+| 0.1.10  | 2021-11-09 | [\#7804](https://github.com/airbytehq/airbyte/pull/7804)   |  handle null values in fields described by a $ref definition |
 | 0.1.9   | 2021-11-08 | [\#7736](https://github.com/airbytehq/airbyte/issues/7736) | Fixed the handling of ObjectNodes with $ref definition key |
 | 0.1.8   | 2021-10-27 | [\#7413](https://github.com/airbytehq/airbyte/issues/7413) | Fixed DATETIME conversion for BigQuery |
 | 0.1.7   | 2021-10-26 | [\#7240](https://github.com/airbytehq/airbyte/issues/7240) | Output partitioned/clustered tables |
-| 0.1.6   | 2021-09-16 | [\#6145](https://github.com/airbytehq/airbyte/pull/6145) | BigQuery Denormalized support for date, datetime & timestamp types through the json "format" key |
-| 0.1.5   | 2021-09-07 | [\#5881](https://github.com/airbytehq/airbyte/pull/5881) | BigQuery Denormalized NPE fix |
-| 0.1.4   | 2021-09-04 | [\#5813](https://github.com/airbytehq/airbyte/pull/5813) | fix Stackoverflow error when receive a schema from source where "Array" type doesn't contain a required "items" element |
-| 0.1.3   | 2021-08-07 | [\#5261](https://github.com/airbytehq/airbyte/pull/5261) | 🐛 Destination BigQuery\(Denormalized\): Fix processing arrays of records |
-| 0.1.2   | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
-| 0.1.1   | 2021-06-21 | [\#3555](https://github.com/airbytehq/airbyte/pull/3555) | Partial Success in BufferedStreamConsumer |
-| 0.1.0   | 2021-06-21 | [\#4176](https://github.com/airbytehq/airbyte/pull/4176) | Destination using Typed Struct and Repeated fields |
+| 0.1.6   | 2021-09-16 | [\#6145](https://github.com/airbytehq/airbyte/pull/6145)   | BigQuery Denormalized support for date, datetime & timestamp types through the json "format" key |
+| 0.1.5   | 2021-09-07 | [\#5881](https://github.com/airbytehq/airbyte/pull/5881)   | BigQuery Denormalized NPE fix |
+| 0.1.4   | 2021-09-04 | [\#5813](https://github.com/airbytehq/airbyte/pull/5813)   | fix Stackoverflow error when receive a schema from source where "Array" type doesn't contain a required "items" element |
+| 0.1.3   | 2021-08-07 | [\#5261](https://github.com/airbytehq/airbyte/pull/5261)   | 🐛 Destination BigQuery\(Denormalized\): Fix processing arrays of records |
+| 0.1.2   | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125)   | Enable `additionalPropertities` in spec.json |
+| 0.1.1   | 2021-06-21 | [\#3555](https://github.com/airbytehq/airbyte/pull/3555)   | Partial Success in BufferedStreamConsumer |
+| 0.1.0   | 2021-06-21 | [\#4176](https://github.com/airbytehq/airbyte/pull/4176)   | Destination using Typed Struct and Repeated fields |
 
