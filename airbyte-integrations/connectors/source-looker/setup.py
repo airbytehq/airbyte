@@ -14,6 +14,8 @@ TEST_REQUIREMENTS = [
     "pytest-mock~=3.6.1",
     "source-acceptance-test",
     "responses~=0.13.3",
+    "prance~=0.21.8",
+    "openapi_spec_validator~=0.3.1",
 ]
 
 setup(
