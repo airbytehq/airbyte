@@ -11,9 +11,9 @@ import static org.mockito.Mockito.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
@@ -24,7 +24,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
-import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
@@ -80,8 +79,7 @@ public class SnowflakeDestinationTest {
     JdbcDatabase mockDb = mock(JdbcDatabase.class);
     SnowflakeStagingSqlOperations sqlOperations = mock(SnowflakeStagingSqlOperations.class);
     final var testMessages = generateTestMessages();
-    final JsonNode config = Jsons.deserialize(IOs.readFile(Path.of("secrets/insert_config.json")));
-
+    final JsonNode config = Jsons.deserialize(MoreResources.readResource("insert_config.json"), JsonNode.class);
     AirbyteMessageConsumer airbyteMessageConsumer = new SnowflakeInternalStagingConsumerFactory()
         .create(Destination::defaultOutputRecordCollector, mockDb,
             sqlOperations, new SnowflakeSQLNameTransformer(), config, getCatalog());
