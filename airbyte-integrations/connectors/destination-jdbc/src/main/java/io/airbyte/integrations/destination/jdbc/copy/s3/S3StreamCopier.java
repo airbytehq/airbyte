@@ -53,7 +53,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   private final int maxPartsPerFile;
   // The number of batches inserted into the current file.
   private int partsAddedToCurrentFile;
-  private String currentFile;
+  protected String currentFile;
 
   /**
    * @param maxPartsPerFile The number of "chunks" of requests to add into each file. Each chunk can

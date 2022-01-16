@@ -24,15 +24,14 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 public class SnowflakeDestinationTest {
 
@@ -84,40 +83,40 @@ public class SnowflakeDestinationTest {
     final JsonNode config = Jsons.deserialize(IOs.readFile(Path.of("secrets/insert_config.json")));
 
     AirbyteMessageConsumer airbyteMessageConsumer = new SnowflakeInternalStagingConsumerFactory()
-            .create(Destination::defaultOutputRecordCollector, mockDb,
+        .create(Destination::defaultOutputRecordCollector, mockDb,
             sqlOperations, new SnowflakeSQLNameTransformer(), config, getCatalog());
-    doThrow(SQLException.class).when(sqlOperations).copyIntoTmpTableFromStage(any(),anyString(),anyString(),anyString());
+    doThrow(SQLException.class).when(sqlOperations).copyIntoTmpTableFromStage(any(), anyString(), anyString(), anyString());
 
     airbyteMessageConsumer.start();
     for (AirbyteMessage m : testMessages) {
-        airbyteMessageConsumer.accept(m);
+      airbyteMessageConsumer.accept(m);
     }
     assertThrows(RuntimeException.class, airbyteMessageConsumer::close);
 
-    verify(sqlOperations, times(1)).cleanUpStage(any(),anyString());
+    verify(sqlOperations, times(1)).cleanUpStage(any(), anyString());
   }
 
   private List<AirbyteMessage> generateTestMessages() {
     return IntStream.range(0, 3)
-            .boxed()
-            .map(i -> new AirbyteMessage()
-                    .withType(AirbyteMessage.Type.RECORD)
-                    .withRecord(new AirbyteRecordMessage()
-                            .withStream("test")
-                            .withNamespace("test_staging")
-                            .withEmittedAt(Instant.now().toEpochMilli())
-                            .withData(Jsons.jsonNode(ImmutableMap.of("id", i, "name", "human " + i)))))
-            .collect(Collectors.toList());
+        .boxed()
+        .map(i -> new AirbyteMessage()
+            .withType(AirbyteMessage.Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                .withStream("test")
+                .withNamespace("test_staging")
+                .withEmittedAt(Instant.now().toEpochMilli())
+                .withData(Jsons.jsonNode(ImmutableMap.of("id", i, "name", "human " + i)))))
+        .collect(Collectors.toList());
   }
 
   ConfiguredAirbyteCatalog getCatalog() {
     return new ConfiguredAirbyteCatalog().withStreams(List.of(
-            CatalogHelpers.createConfiguredAirbyteStream(
-                            "test",
-                            "test_staging",
-                            Field.of("id", JsonSchemaPrimitive.NUMBER),
-                            Field.of("name", JsonSchemaPrimitive.STRING))
-                    .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
+        CatalogHelpers.createConfiguredAirbyteStream(
+            "test",
+            "test_staging",
+            Field.of("id", JsonSchemaPrimitive.NUMBER),
+            Field.of("name", JsonSchemaPrimitive.STRING))
+            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
   }
 
 }
