@@ -23,6 +23,18 @@ public interface SqlOperations {
   void createSchemaIfNotExists(JdbcDatabase database, String schemaName) throws Exception;
 
   /**
+   * Denotes whether the schema exists in destination database
+   *
+   * @param database Database that the connector is syncing
+   * @param schemaName Name of schema.
+   *
+   * @return true if the schema exists in destination database, false if it doesn't
+   */
+  default boolean isSchemaExists(final JdbcDatabase database, final String schemaName) throws Exception {
+    return false;
+  }
+
+  /**
    * Create a table with provided name in provided schema if it does not already exist.
    *
    * @param database Database that the connector is syncing

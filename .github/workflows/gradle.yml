@@ -283,6 +283,76 @@ jobs:
           SLACK_USERNAME: Buildbot
           SLACK_TITLE: "Build Success"
           SLACK_FOOTER: ""
+  octavia-cli-build:
+    runs-on: ubuntu-latest
+    name: "Octavia CLI: Build"
+    timeout-minutes: 90
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+
+      # this intentionally does not use restore-keys so we don't mess with gradle caching
+      - name: Gradle Caching
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            **/.venv
+          key: ${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}
+
+      - uses: actions/setup-java@v1
+        with:
+          java-version: "17"
+
+      # octavia-cli install and testing requires Python. 
+      # We use 3.8 in this project because 3.7 is not supported on Apple M1. 
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+
+      - name: Set up CI Gradle Properties
+        run: |
+          mkdir -p ~/.gradle/
+          cat > ~/.gradle/gradle.properties <<EOF
+          org.gradle.jvmargs=-Xmx8g -Xss4m --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
+          org.gradle.workers.max=8
+          org.gradle.vfs.watch=false
+          EOF
+
+      - name: Format
+        run: SUB_BUILD=OCTAVIA_CLI ./gradlew format --scan --info --stacktrace
+
+      - name: Ensure no file change
+        run: git --no-pager diff && test -z "$(git --no-pager diff)"
+
+      - name: Build
+        run: |
+          SUB_BUILD=OCTAVIA_CLI ./gradlew :octavia-cli:build javadoc --scan
+
+      - name: Slack Notification - Failure
+        if: failure() && github.ref == 'refs/heads/master'
+        uses: rtCamp/action-slack-notify@master
+        env:
+          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
+          SLACK_USERNAME: Buildozer
+          SLACK_ICON: https://avatars.slack-edge.com/temp/2020-09-01/1342729352468_209b10acd6ff13a649a1.jpg
+          SLACK_COLOR: DC143C
+          SLACK_TITLE: "Build failure"
+          SLACK_FOOTER: ""
+
+      - name: Slack Notification - Success
+        if: success() && github.ref == 'refs/heads/master'
+        uses: rtCamp/action-slack-notify@master
+        env:
+          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
+          SLACK_USERNAME: Buildbot
+          SLACK_TITLE: "Build Success"
+          SLACK_FOOTER: ""
   # In case of self-hosted EC2 errors, remove this block.
   stop-platform-build-runner:
     name: "Platform: Stop Build EC2 Runner"
@@ -412,6 +482,7 @@ jobs:
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
         with:
+          # github-self-hosted-runner-ubuntu-20-with-120gdisk-docker-20.10.7
           ec2-image-id: ami-0d4083c04fde515c4
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}

@@ -4,19 +4,20 @@
 
 import argparse
 import io
+import logging
 import sys
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.connector import Connector
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit
 from pydantic import ValidationError
 
+logger = logging.getLogger("airbyte")
+
 
 class Destination(Connector, ABC):
-    logger = AirbyteLogger()
     VALID_CMDS = {"spec", "check", "write"}
 
     @abstractmethod
@@ -26,7 +27,7 @@ class Destination(Connector, ABC):
         """Implement to define how the connector writes data to the destination"""
 
     def _run_check(self, config: Mapping[str, Any]) -> AirbyteMessage:
-        check_result = self.check(self.logger, config)
+        check_result = self.check(logger, config)
         return AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=check_result)
 
     def _parse_input_stream(self, input_stream: io.TextIOWrapper) -> Iterable[AirbyteMessage]:
@@ -35,16 +36,16 @@ class Destination(Connector, ABC):
             try:
                 yield AirbyteMessage.parse_raw(line)
             except ValidationError:
-                self.logger.info(f"ignoring input which can't be deserialized as Airbyte Message: {line}")
+                logger.info(f"ignoring input which can't be deserialized as Airbyte Message: {line}")
 
     def _run_write(
         self, config: Mapping[str, Any], configured_catalog_path: str, input_stream: io.TextIOWrapper
     ) -> Iterable[AirbyteMessage]:
         catalog = ConfiguredAirbyteCatalog.parse_file(configured_catalog_path)
         input_messages = self._parse_input_stream(input_stream)
-        self.logger.info("Begin writing to the destination...")
+        logger.info("Begin writing to the destination...")
         yield from self.write(config=config, configured_catalog=catalog, input_messages=input_messages)
-        self.logger.info("Writing complete.")
+        logger.info("Writing complete.")
 
     def parse_args(self, args: List[str]) -> argparse.Namespace:
         """
@@ -86,7 +87,7 @@ class Destination(Connector, ABC):
         if cmd not in self.VALID_CMDS:
             raise Exception(f"Unrecognized command: {cmd}")
 
-        spec = self.spec(self.logger)
+        spec = self.spec(logger)
         if cmd == "spec":
             yield AirbyteMessage(type=Type.SPEC, spec=spec)
             return
