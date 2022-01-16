@@ -6,7 +6,10 @@
       "type": ["null", "string"],
       "format": "date"
     },
-    "AD_ACCOUNT_IDAD_ID": {
+    "AD_ACCOUNT_ID": {
+      "type": ["null", "string"]
+    },
+    "AD_ID": {
       "type": ["null", "string"]
     },
     "AD_GROUP_ENTITY_STATUS": {
@@ -22,7 +25,7 @@
       "type": ["null", "number"]
     },
     "CAMPAIGN_ID": {
-      "type": ["null", "number"]
+      "type": ["null", "string"]
     },
     "CAMPAIGN_LIFETIME_SPEND_CAP": {
       "type": ["null", "number"]
