@@ -316,6 +316,10 @@ class DbtIntegrationTest(object):
         """
         config_generator = TransformConfig()
         profiles_config = config_generator.read_json_config(f"../secrets/{destination_type.value.lower()}.json")
+        dbt_vars = config_generator.get_dbt_vars(destination_type, profiles_config)
+        if dbt_vars:
+            config_generator.update_dbt_project(test_root_dir, dbt_vars)
+
         # Adapt credential file to look like destination config.json
         if destination_type.value == DestinationType.BIGQUERY.value:
             credentials = profiles_config["basic_bigquery_config"]
