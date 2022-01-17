@@ -409,7 +409,7 @@ class PullRequests(SemiIncrementalGithubStream):
         yield from super().read_records(stream_state=stream_state, **kwargs)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/pullsasd"
+        return f"repos/{stream_slice['repository']}/pulls"
 
     def transform(self, record: MutableMapping[str, Any], repository: str = None, **kwargs) -> MutableMapping[str, Any]:
         record = super().transform(record=record, repository=repository)
