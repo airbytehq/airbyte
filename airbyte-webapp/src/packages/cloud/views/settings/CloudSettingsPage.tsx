@@ -72,6 +72,7 @@ export const CloudSettingsPage: React.FC = () => {
               path: CloudSettingsRoutes.AccessManagement,
               name: <FormattedMessage id="settings.accessManagementSettings" />,
               component: UsersSettingsView,
+              id: "workspaceSettings.accessManagementSettings",
             },
             {
               path: CloudSettingsRoutes.Notifications,
