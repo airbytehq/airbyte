@@ -17,7 +17,7 @@ import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
-import io.airbyte.integrations.destination.s3.writer.S3Writer;
+import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.PrintWriter;
@@ -27,7 +27,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class S3JsonlWriter extends BaseS3Writer implements S3Writer {
+public class S3JsonlWriter extends BaseS3Writer implements DestinationFileWriter {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(S3JsonlWriter.class);
 

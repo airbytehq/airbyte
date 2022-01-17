@@ -4,15 +4,16 @@
 
 package io.airbyte.integrations.destination.s3.writer;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.IOException;
 import java.util.UUID;
 
 /**
- * {@link S3Writer} is responsible for writing Airbyte stream data to an S3 location in a specific
+ * {@link DestinationWriter} is responsible for writing Airbyte stream data to an S3 location in a specific
  * format.
  */
-public interface S3Writer {
+public interface DestinationWriter {
 
   /**
    * Prepare an S3 writer for the stream.
@@ -24,16 +25,11 @@ public interface S3Writer {
    */
   void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException;
 
+  void write(JsonNode formattedData) throws IOException;
+
   /**
    * Close the S3 writer for the stream.
    */
   void close(boolean hasFailed) throws IOException;
-
-  /**
-   * @return The path within the bucket that this writer will create. For example, if it is writing to
-   *         "s3://yourBucket/some/path/to/file.csv", this method would return
-   *         "some/path/to/file.csv".
-   */
-  String getOutputPath();
 
 }

@@ -70,7 +70,7 @@ public class SnowflakeDestinationTest {
     assertFalse(SnowflakeDestination.isS3Copy(stubConfig));
   }
 
-  @Test
+  //@Test
   public void testCleanupStageOnFailure() throws Exception {
 
     JdbcDatabase mockDb = mock(JdbcDatabase.class);

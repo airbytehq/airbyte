@@ -13,7 +13,7 @@ import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
 import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
-import io.airbyte.integrations.destination.s3.writer.S3Writer;
+import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -46,7 +46,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   private final ConfiguredAirbyteStream configuredAirbyteStream;
   private final Timestamp uploadTime;
   protected final String stagingFolder;
-  protected final Map<String, S3Writer> stagingWritersByFile = new HashMap<>();
+  protected final Map<String, DestinationFileWriter> stagingWritersByFile = new HashMap<>();
   private final boolean purgeStagingData;
 
   // The number of batches of records that will be inserted into each file.
@@ -128,7 +128,7 @@ public abstract class S3StreamCopier implements StreamCopier {
 
   @Override
   public void closeStagingUploader(final boolean hasFailed) throws Exception {
-    for (final S3Writer writer : stagingWritersByFile.values()) {
+    for (final DestinationFileWriter writer : stagingWritersByFile.values()) {
       writer.close(hasFailed);
     }
   }
@@ -148,7 +148,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   @Override
   public void copyStagingFileToTemporaryTable() throws Exception {
     LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .", tmpTableName, streamName, schemaName);
-    for (final Map.Entry<String, S3Writer> entry : stagingWritersByFile.entrySet()) {
+    for (final Map.Entry<String, DestinationFileWriter> entry : stagingWritersByFile.entrySet()) {
       final String objectKey = entry.getValue().getOutputPath();
       copyS3CsvFileIntoTable(db, getFullS3Path(s3Config.getBucketName(), objectKey), schemaName, tmpTableName, s3Config);
     }
@@ -180,7 +180,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   @Override
   public void removeFileAndDropTmpTable() throws Exception {
     if (purgeStagingData) {
-      for (final Map.Entry<String, S3Writer> entry : stagingWritersByFile.entrySet()) {
+      for (final Map.Entry<String, DestinationFileWriter> entry : stagingWritersByFile.entrySet()) {
         final String suffix = entry.getKey();
         final String objectKey = entry.getValue().getOutputPath();
 

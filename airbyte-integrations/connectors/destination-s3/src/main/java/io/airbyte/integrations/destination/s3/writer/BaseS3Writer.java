@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  * <li>Log and close the write.</li>
  * </ul>
  */
-public abstract class BaseS3Writer implements S3Writer {
+public abstract class BaseS3Writer implements DestinationFileWriter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseS3Writer.class);
   public static final String DEFAULT_SUFFIX = "_0";
