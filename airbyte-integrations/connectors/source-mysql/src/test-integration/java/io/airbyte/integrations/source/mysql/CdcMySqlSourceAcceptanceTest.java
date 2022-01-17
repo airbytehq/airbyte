@@ -4,6 +4,10 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import static io.airbyte.protocol.models.SyncMode.INCREMENTAL;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -28,14 +32,9 @@ import io.airbyte.protocol.models.SyncMode;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
-
-import static io.airbyte.protocol.models.SyncMode.INCREMENTAL;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -164,15 +163,15 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     final ConfiguredAirbyteCatalog configuredCatalog = withSourceDefinedCursors(getConfiguredCatalog());
     // only sync incremental streams
     configuredCatalog.setStreams(
-            configuredCatalog.getStreams().stream().filter(s -> s.getSyncMode() == INCREMENTAL).collect(Collectors.toList()));
+        configuredCatalog.getStreams().stream().filter(s -> s.getSyncMode() == INCREMENTAL).collect(Collectors.toList()));
 
     final List<AirbyteMessage> airbyteMessages = runRead(configuredCatalog, getState());
     final List<AirbyteRecordMessage> recordMessages = filterRecords(airbyteMessages);
     final List<AirbyteStateMessage> stateMessages = airbyteMessages
-            .stream()
-            .filter(m -> m.getType() == AirbyteMessage.Type.STATE)
-            .map(AirbyteMessage::getState)
-            .collect(Collectors.toList());
+        .stream()
+        .filter(m -> m.getType() == AirbyteMessage.Type.STATE)
+        .map(AirbyteMessage::getState)
+        .collect(Collectors.toList());
     assertFalse(recordMessages.isEmpty(), "Expected the first incremental sync to produce records");
     assertFalse(stateMessages.isEmpty(), "Expected incremental sync to produce STATE messages");
 
@@ -184,4 +183,5 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     executeQuery("RESET MASTER;");
     assertThrows(Exception.class, () -> filterRecords(runRead(configuredCatalog, latestState)));
   }
+
 }

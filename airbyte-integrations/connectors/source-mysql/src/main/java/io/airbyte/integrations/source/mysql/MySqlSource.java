@@ -31,7 +31,6 @@ import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
-
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -41,7 +40,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -242,24 +240,24 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   private void checkBinlog(JsonNode offset, JdbcDatabase database) {
     String binlog = getBinlog(offset);
-    if (binlog != null && !binlog.isEmpty()){
-      if(isBinlogAvailable(binlog,  database)){
-          LOGGER.info(String.format("Binlog %s is available", binlog));
-        } else {
-          String error = String.format("Binlog %s is not available. This is a critical error, it means that requested binlog is not present on mysql server. " +
-                  "To fix data synchronization you need to reset your data. " +
-                  "Please check binlog retention policy configurations." , binlog);
-          LOGGER.error(error);
-          throw new RuntimeException(String.format("Binlog %s is not available.", binlog));
-        }
+    if (binlog != null && !binlog.isEmpty()) {
+      if (isBinlogAvailable(binlog, database)) {
+        LOGGER.info(String.format("Binlog %s is available", binlog));
+      } else {
+        String error =
+            String.format("Binlog %s is not available. This is a critical error, it means that requested binlog is not present on mysql server. " +
+                "To fix data synchronization you need to reset your data. " +
+                "Please check binlog retention policy configurations.", binlog);
+        LOGGER.error(error);
+        throw new RuntimeException(String.format("Binlog %s is not available.", binlog));
+      }
     }
   }
 
   private boolean isBinlogAvailable(String binlog, JdbcDatabase database) {
     try {
-      List<String> binlogs = database.resultSetQuery(connection ->
-                     connection.createStatement().executeQuery("SHOW BINARY LOGS"),
-             resultSet -> resultSet.getString("Log_name")).collect(Collectors.toList());
+      List<String> binlogs = database.resultSetQuery(connection -> connection.createStatement().executeQuery("SHOW BINARY LOGS"),
+          resultSet -> resultSet.getString("Log_name")).collect(Collectors.toList());
 
       return !binlog.isEmpty() && binlogs.stream().anyMatch(e -> e.equals(binlog));
     } catch (SQLException e) {
@@ -268,13 +266,14 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     }
   }
 
-  private String getBinlog(JsonNode offset){
+  private String getBinlog(JsonNode offset) {
     JsonNode node = offset.get(CDC_OFFSET);
     Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
-    while (fields.hasNext()){
+    while (fields.hasNext()) {
       Map.Entry<String, JsonNode> jsonField = fields.next();
       return Jsons.deserialize(jsonField.getValue().asText()).path("file").asText();
     }
     return null;
   }
+
 }
