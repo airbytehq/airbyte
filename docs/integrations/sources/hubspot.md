@@ -108,11 +108,9 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 
 ## Changelog
 
-
-
 | Version | Date       | Pull Request | Subject                                                                                                                                        |
-|:--------|:-----------| :--- |:-----------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.1.33  | 2021-12-24 | [9081](https://github.com/airbytehq/airbyte/pull/9081) | Add Feedback Submissions stream and update Ticket Pipelines stream |
+| 0.1.34  | 2021-12-24 | [9081](https://github.com/airbytehq/airbyte/pull/9081) | Add Feedback Submissions stream and update Ticket Pipelines stream |
+| 0.1.33  | 2021-01-14 | [8887](https://github.com/airbytehq/airbyte/pull/8887) | More efficient support for incremental updates on Companies, Contact, Deals and Engagement streams |
 | 0.1.32  | 2022-01-13 | [8011](https://github.com/airbytehq/airbyte/pull/8011) | Add new stream form_submissions                                                                                   |
 | 0.1.31  | 2022-01-11 | [9385](https://github.com/airbytehq/airbyte/pull/9385) | Remove auto-generated `properties` from `Engagements` stream                                                                                   |
 | 0.1.30  | 2021-01-10 | [9129](https://github.com/airbytehq/airbyte/pull/9129) | Created Contacts list memberships streams                                                                                                      |
@@ -139,4 +137,3 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 | 0.1.9   | 2021-08-11 | [5334](https://github.com/airbytehq/airbyte/pull/5334) | Fix empty strings inside float datatype                                                                                                        |
 | 0.1.8   | 2021-08-06 | [5250](https://github.com/airbytehq/airbyte/pull/5250) | Fix issue with printing exceptions                                                                                                             |
 | 0.1.7   | 2021-07-27 | [4913](https://github.com/airbytehq/airbyte/pull/4913) | Update fields schema                                                                                                                           |
->>>>>>> @{-1}
