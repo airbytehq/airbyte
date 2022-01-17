@@ -1,0 +1,167 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Items",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "customerEmail": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "phone": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "source": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "items": {
+      "$id": "#root/data/items/items",
+      "title": "Items",
+      "type": "array",
+      "default": [],
+      "items": {
+        "title": "Items",
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "desc": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "currency": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "seller": {
+            "title": "Seller",
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              }
+            }
+          },
+          "guestType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "event": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              }
+            }
+          },
+          "arrivalDatetime": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "quantity": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "ticketCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "amount": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "status": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
+        }
+      }
+    },
+    "createdAt": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "createdBy": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    },
+    "travelers": {
+      "type": "array",
+      "items": {
+        "type": [
+          "null",
+          "object"
+        ],
+        "properties": {
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -25,18 +25,24 @@
 
 from setuptools import find_packages, setup
 
+MAIN_REQUIREMENTS = [
+    "airbyte-cdk",
+]
+
+TEST_REQUIREMENTS = [
+    "pytest~=6.1",
+    "source-acceptance-test",
+]
+
 setup(
-    name="googleanalytics-singer-source",
-    description="Airbyte Source for Google Analytics (singer-based)",
+    name="source_xola",
+    description="Source implementation for Xola.",
     author="Airbyte",
     author_email="contact@airbyte.io",
-    install_requires=[
-        "pipelinewise-tap-google-analytics @ https://github.com/blotoutio/pipelinewise-tap-google-analytics/tarball/master#egg=pipelinewise-tap-google-analytics-1.1.3",
-        "pydantic==1.6.2",
-        "base-singer",
-        "base-python",
-        "airbyte-protocol",
-    ],
     packages=find_packages(),
-    package_data={"": ["*.json", "*.txt"]},
+    install_requires=MAIN_REQUIREMENTS,
+    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
+    extras_require={
+        "tests": TEST_REQUIREMENTS,
+    },
 )

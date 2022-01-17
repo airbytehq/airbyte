@@ -23,20 +23,14 @@
 #
 
 
-from setuptools import find_packages, setup
+import pytest
 
-setup(
-    name="googleanalytics-singer-source",
-    description="Airbyte Source for Google Analytics (singer-based)",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    install_requires=[
-        "pipelinewise-tap-google-analytics @ https://github.com/blotoutio/pipelinewise-tap-google-analytics/tarball/master#egg=pipelinewise-tap-google-analytics-1.1.3",
-        "pydantic==1.6.2",
-        "base-singer",
-        "base-python",
-        "airbyte-protocol",
-    ],
-    packages=find_packages(),
-    package_data={"": ["*.json", "*.txt"]},
-)
+pytest_plugins = ("source_acceptance_test.plugin",)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def connector_setup():
+    """ This fixture is a placeholder for external resources that acceptance test might require."""
+    # TODO: setup test dependencies if needed. otherwise remove the TODO comments
+    yield
+    # TODO: clean up test dependencies
