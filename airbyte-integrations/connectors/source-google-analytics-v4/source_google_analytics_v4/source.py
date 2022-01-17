@@ -18,6 +18,13 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
+DATA_IS_NOT_GOLDEN_MSG = "Google Analytics data is not golden. Future requests may return different data."
+
+RESULT_IS_SAMPLED_MSG = (
+    "Google Analytics data is sampled. Consider using a smaller window_in_days parameter. "
+    "For more info check https://developers.google.com/analytics/devguides/reporting/core/v4/basics#sampling"
+)
+
 
 class GoogleAnalyticsV4TypesList(HttpStream):
     """
@@ -372,7 +379,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             column_header = report.get("columnHeader", {})
             dimension_headers = column_header.get("dimensions", [])
             metric_headers = column_header.get("metricHeader", {}).get("metricHeaderEntries", [])
-            
+
             self.check_for_sampled_result(report.get("data", {}))
 
             for row in self.get_data(report):
@@ -399,11 +406,10 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                 yield record
 
     def check_for_sampled_result(self, data):
-        if not data.get("isDataGolden", False):
-            self.logger.warning("Google Analytics data is not golden. Future requests may return different data.")
-        if data.get("sampleReadCounts", False):
-            self.logger.warning("Google Analytics data is sampled. Consider using a smaller window_in_days parameter. "
-                                "For more info check https://developers.google.com/analytics/devguides/reporting/core/v4/basics#sampling")
+        if not data.get("isDataGolden", True):
+            self.logger.warning(DATA_IS_NOT_GOLDEN_MSG)
+        if data.get("samplesReadCounts", False):
+            self.logger.warning(RESULT_IS_SAMPLED_MSG)
 
 
 class GoogleAnalyticsV4IncrementalObjectsBase(GoogleAnalyticsV4Stream):
