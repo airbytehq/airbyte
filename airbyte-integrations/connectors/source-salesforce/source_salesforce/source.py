@@ -4,6 +4,7 @@
 
 import copy
 from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple
+from requests import exceptions, codes
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
@@ -24,8 +25,15 @@ class SourceSalesforce(AbstractSource):
         return sf
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-        _ = self._get_sf_object(config)
-        return True, None
+        try:
+            _ = self._get_sf_object(config)  # TODO handle 403 rate limit errror
+            return True, None
+        except exceptions.HTTPError as error:
+            error_data = error.response.json()[0]
+            error_code = error_data.get("errorCode")
+            if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
+                logger.warn(f"API Call limit is exceeded'. Error message: '{error_data.get('message')}'")
+                return False, "API Call limit is exceeded"
 
     @classmethod
     def generate_streams(cls, config: Mapping[str, Any], stream_names: List[str], sf_object: Salesforce) -> List[Stream]:
@@ -41,6 +49,8 @@ class SourceSalesforce(AbstractSource):
         streams = []
         for stream_name in stream_names:
             json_schema = sf_object.generate_schema(stream_name)
+            if not json_schema:
+                break
             pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)
             streams_kwargs.update(dict(sf_api=sf_object, pk=pk, stream_name=stream_name, schema=json_schema, authenticator=authenticator))
             if replication_key and stream_name not in UNSUPPORTED_FILTERING_STREAMS:
@@ -51,9 +61,16 @@ class SourceSalesforce(AbstractSource):
         return streams
 
     def streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None) -> List[Stream]:
-        sf = self._get_sf_object(config)
-        stream_names = sf.get_validated_streams(config=config, catalog=catalog)
-        return self.generate_streams(config, stream_names, sf)
+        try:
+            sf = self._get_sf_object(config)  # TODO handle 403 rate error
+            stream_names = sf.get_validated_streams(config=config, catalog=catalog)
+            return self.generate_streams(config, stream_names, sf)
+        except exceptions.HTTPError as error:
+            error_data = error.response.json()[0]
+            error_code = error_data.get("errorCode")
+            if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
+                # self.logger.warn(f"API Call limit is exceeded'. Error message: '{error_data.get('message')}'")
+                return []
 
     def read(
         self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None

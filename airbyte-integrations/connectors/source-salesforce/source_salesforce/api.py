@@ -8,6 +8,7 @@ import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from requests.exceptions import HTTPError
+from requests import exceptions, codes
 
 from .exceptions import TypeSalesforceException
 from .rate_limiting import default_backoff_handler
@@ -213,7 +214,7 @@ class Salesforce:
         return True
 
     def get_validated_streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None):
-        salesforce_objects = self.describe()["sobjects"]
+        salesforce_objects = self.describe()["sobjects"]  # TODO
         stream_names = [stream_object["name"] for stream_object in salesforce_objects]
         if catalog:
             return [configured_stream.stream.name for configured_stream in catalog.streams]
@@ -270,7 +271,15 @@ class Salesforce:
         return resp.json()
 
     def generate_schema(self, stream_name: str = None) -> Mapping[str, Any]:
-        response = self.describe(stream_name)
+        try:
+            response = self.describe(stream_name)  # TODO
+        except exceptions.HTTPError as error:
+            error_data = error.response.json()[0]
+            error_code = error_data.get("errorCode")
+            if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
+                self.logger.warn(f"API Call limit is exceeded'. Error message: '{error_data.get('message')}'")
+                return {}
+
         schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True, "properties": {}}
         for field in response["fields"]:
             schema["properties"][field["name"]] = self.field_to_property_schema(field)

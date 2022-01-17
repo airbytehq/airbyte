@@ -18,6 +18,7 @@ from requests import codes, exceptions
 
 from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .rate_limiting import default_backoff_handler
+from .utils import rate_limit_handler
 
 
 class SalesforceStream(HttpStream, ABC):
@@ -103,7 +104,7 @@ class SalesforceStream(HttpStream, ABC):
                 error_code = error_data.get("errorCode", "")
                 if error_code == "REQUEST_LIMIT_EXCEEDED":
                     # If rate limit is reached, we should finish the sync with success
-                    self.logger.error(f"API Call limit is exceeded'. Stream: {self.name}', error message: '{error_data.get('message')}'")
+                    self.logger.warn(f"API Call limit is exceeded'. Stream: {self.name}', error message: '{error_data.get('message')}'")
                     return
                 elif error_code == "INVALID_TYPE_FOR_OPERATION":
                     self.logger.error(f"Cannot receive data for stream '{self.name}', error message: '{error_data.get('message')}'")
@@ -276,14 +277,19 @@ class BulkSalesforceStream(SalesforceStream):
         while True:
             params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
             path = self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-            job_full_url = self.execute_job(query=params["q"], url=f"{self.url_base}{path}")
+            with rate_limit_handler(self.logger):
+                job_full_url = self.execute_job(query=params["q"], url=f"{self.url_base}{path}")
+
             if not job_full_url:
                 return
 
             count = 0
-            for count, record in self.download_data(url=job_full_url):
-                yield record
-            self.delete_job(url=job_full_url)
+            with rate_limit_handler(self.logger):
+                for count, record in self.download_data(url=job_full_url):
+                    yield record
+
+            with rate_limit_handler(self.logger):
+                self.delete_job(url=job_full_url)
 
             if count < self.page_size:
                 # this is a last page
