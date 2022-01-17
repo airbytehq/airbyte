@@ -59,7 +59,7 @@ class TwitterAdsStream(HttpStream, ABC):
     """
 
     # TODO: Fill in the url base. Required.
-    url_base = "https://example-api.com/v1/"
+    url_base = "https://ads-api.twitter.com/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -76,6 +76,8 @@ class TwitterAdsStream(HttpStream, ABC):
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
                 If there are no more pages in the result, return None.
         """
+
+        # twitter ads analytics streams don't offer pagination => we return None.
         return None
 
     def request_params(
@@ -95,13 +97,13 @@ class TwitterAdsStream(HttpStream, ABC):
         yield {}
 
 
-class Customers(TwitterAdsStream):
+class Campaigns(TwitterAdsStream):
     """
     TODO: Change class name to match the table/data source this stream corresponds to.
     """
 
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "customer_id"
+    primary_key = "id"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -196,7 +198,7 @@ class SourceTwitterAds(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        
+
         url = 'https://ads-api.twitter.com/10/accounts'
         auth = OAuth1(config["CONSUMER_KEY"], config["CONSUMER_SECRET"], config["ACCESS_TOKEN"], config["ACCESS_TOKEN_SECRET"])
         check_connection_respone = (requests.get(url, auth=auth))
@@ -213,5 +215,5 @@ class SourceTwitterAds(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         # TODO remove the authenticator if not required.
-        auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
-        return [Customers(authenticator=auth), Employees(authenticator=auth)]
+        auth = OAuth1(config["CONSUMER_KEY"], config["CONSUMER_SECRET"], config["ACCESS_TOKEN"], config["ACCESS_TOKEN_SECRET"])  # Oauth2Authenticator is also available if you need oauth support
+        return [Campaigns(authenticator=auth)]
