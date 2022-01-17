@@ -18,7 +18,6 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 # Basic full refresh stream
 class DelightedStream(HttpStream, ABC):
-
     url_base = "https://api.delighted.com/v1/"
 
     # Page size
@@ -52,7 +51,7 @@ class DelightedStream(HttpStream, ABC):
 
 
 class IncrementalDelightedStream(DelightedStream, ABC):
-    # Getting page size as 'limit' from parrent class
+    # Getting page size as 'limit' from parent class
     @property
     def limit(self):
         return super().limit
@@ -72,6 +71,11 @@ class IncrementalDelightedStream(DelightedStream, ABC):
         if stream_state:
             params["since"] = stream_state.get(self.cursor_field)
         return params
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        for record in super().parse_response(response=response, stream_state=stream_state, **kwargs):
+            if self.cursor_field not in stream_state or record[self.cursor_field] > stream_state[self.cursor_field]:
+                yield record
 
 
 class People(IncrementalDelightedStream):
