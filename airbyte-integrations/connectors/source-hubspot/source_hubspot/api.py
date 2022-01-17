@@ -93,14 +93,14 @@ def retry_connection_handler(**kwargs):
     )
 
 
-def retry_after_handler(**kwargs):
+def retry_after_handler(fixed_retry_after=None, **kwargs):
     """Retry helper when we hit the call limit, sleeps for specific duration"""
 
     def sleep_on_ratelimit(_details):
         _, exc, _ = sys.exc_info()
         if isinstance(exc, HubspotRateLimited):
             # HubSpot API does not always return Retry-After value for 429 HTTP error
-            retry_after = int(exc.response.headers.get("Retry-After", 3))
+            retry_after = fixed_retry_after if fixed_retry_after else int(exc.response.headers.get("Retry-After", 3))
             logger.info(f"Rate limit reached. Sleeping for {retry_after} seconds")
             time.sleep(retry_after + 1)  # extra second to cover any fractions of second
 
@@ -216,7 +216,7 @@ class Stream(ABC):
             stream_name = stream_name[: -len("Stream")]
         return stream_name
 
-    def list(self, fields) -> Iterable:
+    def list_records(self, fields) -> Iterable:
         yield from self.read(partial(self._api.get, url=self.url))
 
     @staticmethod
@@ -309,6 +309,27 @@ class Stream(ABC):
                     continue
             yield record
 
+    def _read_stream_records(
+        self, getter: Callable, properties_list: List[str], params: MutableMapping[str, Any] = None
+    ) -> Tuple[dict, Any]:
+        # TODO: Additional processing was added due to the fact that users receive 414 errors while syncing their streams (issues #3977 and #5835).
+        #  We will need to fix this code when the HubSpot developers add the ability to use a special parameter to get all properties for an entity.
+        #  According to HubSpot Community (https://community.hubspot.com/t5/APIs-Integrations/Get-all-contact-properties-without-explicitly-listing-them/m-p/447950)
+        #  and the official documentation, this does not exist at the moment.
+        stream_records = {}
+        response = None
+
+        for properties in split_properties(properties_list):
+            params.update({"properties": ",".join(properties)})
+            response = getter(params=params)
+            for record in self._transform(self.parse_response(response)):
+                if record["id"] not in stream_records:
+                    stream_records[record["id"]] = record
+                elif stream_records[record["id"]].get("properties"):
+                    stream_records[record["id"]]["properties"].update(record.get("properties", {}))
+
+        return stream_records, response
+
     def _read(self, getter: Callable, params: MutableMapping[str, Any] = None) -> Iterator:
         next_page_token = None
         while True:
@@ -317,21 +338,7 @@ class Stream(ABC):
 
             properties_list = list(self.properties.keys())
             if properties_list:
-                # TODO: Additional processing was added due to the fact that users receive 414 errors while syncing their streams (issues #3977 and #5835).
-                #  We will need to fix this code when the HubSpot developers add the ability to use a special parameter to get all properties for an entity.
-                #  According to HubSpot Community (https://community.hubspot.com/t5/APIs-Integrations/Get-all-contact-properties-without-explicitly-listing-them/m-p/447950)
-                #  and the official documentation, this does not exist at the moment.
-                stream_records = {}
-
-                for properties in split_properties(properties_list):
-                    params.update({"properties": ",".join(properties)})
-                    response = getter(params=params)
-                    for record in self._transform(self.parse_response(response)):
-                        if record["id"] not in stream_records:
-                            stream_records[record["id"]] = record
-                        elif stream_records[record["id"]].get("properties"):
-                            stream_records[record["id"]]["properties"].update(record.get("properties", {}))
-
+                stream_records, response = self._read_stream_records(getter=getter, params=params, properties_list=properties_list)
                 yield from [value for key, value in stream_records.items()]
             else:
                 response = getter(params=params)
@@ -427,6 +434,26 @@ class Stream(ABC):
 
         return props
 
+    def _flat_associations(self, records: Iterable[MutableMapping]) -> Iterable[MutableMapping]:
+        """When result has associations we prefer to have it flat, so we transform this:
+
+        "associations": {
+            "contacts": {
+                "results": [{"id": "201", "type": "company_to_contact"}, {"id": "251", "type": "company_to_contact"}]}
+            }
+        }
+
+        to this:
+
+        "contacts": [201, 251]
+        """
+        for record in records:
+            if "associations" in record:
+                associations = record.pop("associations")
+                for name, association in associations.items():
+                    record[name] = [row["id"] for row in association.get("results", [])]
+            yield record
+
 
 class IncrementalStream(Stream, ABC):
     """Stream that supports state and incremental read"""
@@ -472,6 +499,9 @@ class IncrementalStream(Stream, ABC):
             cursor = self._field_to_datetime(record[self.updated_at_field])
             latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
 
+        self._update_state(latest_cursor=latest_cursor)
+
+    def _update_state(self, latest_cursor):
         if latest_cursor:
             new_state = max(latest_cursor, self._state) if self._state else latest_cursor
             if new_state != self._state:
@@ -496,6 +526,92 @@ class IncrementalStream(Stream, ABC):
                 f"Reading chunk from stream {self.name} between {pendulum.from_timestamp(ts / 1000)} and {pendulum.from_timestamp(end_ts / 1000)}"
             )
             yield from super().read(getter, params)
+
+
+class CRMSearchStream(IncrementalStream, ABC):
+
+    limit = 100  # This value is used only when state is None.
+    state_pk = "updatedAt"
+    updated_at_field = "updatedAt"
+
+    @property
+    def url(self):
+        return f"/crm/v3/objects/{self.entity}/search" if self.state else f"/crm/v3/objects/{self.entity}"
+
+    def __init__(
+        self,
+        entity: Optional[str] = None,
+        last_modified_field: Optional[str] = None,
+        associations: Optional[List[str]] = None,
+        include_archived_only: bool = False,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self._state = None
+        self.entity = entity
+        self.last_modified_field = last_modified_field
+        self.associations = associations
+        self._include_archived_only = include_archived_only
+
+    @retry_connection_handler(max_tries=5, factor=5)
+    @retry_after_handler(fixed_retry_after=1, max_tries=3)
+    def search(
+        self, url: str, data: Mapping[str, Any], params: MutableMapping[str, Any] = None
+    ) -> Union[Mapping[str, Any], List[Mapping[str, Any]]]:
+        # We can safely retry this POST call, because it's a search operation.
+        # Given Hubspot does not return any Retry-After header (https://developers.hubspot.com/docs/api/crm/search)
+        # from the search endpoint, it waits one second after trying again.
+        # As per their docs: `These search endpoints are rate limited to four requests per second per authentication token`.
+        return self._api.post(url=url, data=data, params=params)
+
+    def list_records(self, fields) -> Iterable:
+        params = {
+            "archived": str(self._include_archived_only).lower(),
+            "associations": self.associations,
+        }
+        if self.state:
+            generator = self.read(partial(self.search, url=self.url), params)
+        else:
+            generator = self.read(partial(self._api.get, url=self.url), params)
+        yield from self._flat_associations(self._filter_old_records(generator))
+
+    def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
+        """Apply state filter to set of records, update cursor(state) if necessary in the end"""
+        latest_cursor = None
+        default_params = {"limit": self.limit}
+        params = {**default_params, **params} if params else {**default_params}
+        properties_list = list(self.properties.keys())
+
+        payload = (
+            {
+                "filters": [{"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"}],
+                "properties": properties_list,
+                "limit": 100,
+            }
+            if self.state
+            else {}
+        )
+
+        while True:
+            stream_records = {}
+            if self.state:
+                response = getter(data=payload)
+                for record in self._transform(self.parse_response(response)):
+                    stream_records[record["id"]] = record
+            else:
+                stream_records, response = self._read_stream_records(getter=getter, params=params, properties_list=properties_list)
+
+            for _, record in stream_records.items():
+                yield record
+                cursor = self._field_to_datetime(record[self.updated_at_field])
+                latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+            if "paging" in response and "next" in response["paging"] and "after" in response["paging"]["next"]:
+                params["after"] = response["paging"]["next"]["after"]
+                payload["after"] = response["paging"]["next"]["after"]
+            else:
+                break
+
+        self._update_state(latest_cursor=latest_cursor)
 
 
 class CRMObjectStream(Stream):
@@ -528,33 +644,13 @@ class CRMObjectStream(Stream):
         if not self.entity:
             raise ValueError("Entity must be set either on class or instance level")
 
-    def list(self, fields) -> Iterable:
+    def list_records(self, fields) -> Iterable:
         params = {
             "archived": str(self._include_archived_only).lower(),
             "associations": self.associations,
         }
         generator = self.read(partial(self._api.get, url=self.url), params)
         yield from self._flat_associations(generator)
-
-    def _flat_associations(self, records: Iterable[MutableMapping]) -> Iterable[MutableMapping]:
-        """When result has associations we prefer to have it flat, so we transform this:
-
-        "associations": {
-            "contacts": {
-                "results": [{"id": "201", "type": "company_to_contact"}, {"id": "251", "type": "company_to_contact"}]}
-            }
-        }
-
-        to this:
-
-        "contacts": [201, 251]
-        """
-        for record in records:
-            if "associations" in record:
-                associations = record.pop("associations")
-                for name, association in associations.items():
-                    record[name] = [row["id"] for row in association.get("results", [])]
-            yield record
 
 
 class CRMObjectIncrementalStream(CRMObjectStream, IncrementalStream):
@@ -575,7 +671,7 @@ class CampaignStream(Stream):
     limit = 500
     updated_at_field = "lastUpdatedTime"
 
-    def list(self, fields) -> Iterable:
+    def list_records(self, fields) -> Iterable:
         for row in self.read(getter=partial(self._api.get, url=self.url)):
             record = self._api.get(f"/email/public/v1/campaigns/{row['id']}")
             yield {**row, **record}
@@ -623,7 +719,7 @@ class ContactsListMembershipsStream(Stream):
             for item in record.get("list-memberships", []):
                 yield {"canonical-vid": canonical_vid, **item}
 
-    def list(self, fields) -> Iterable:
+    def list_records(self, fields) -> Iterable:
         """Receiving all contacts with list memberships"""
         params = {"showListMemberships": True}
         yield from self.read(partial(self._api.get, url=self.url), params)
@@ -648,24 +744,24 @@ class DealStageHistoryStream(Stream):
             if updated_at:
                 yield {"id": record.get("dealId"), "dealstage": dealstage, self.updated_at_field: updated_at}
 
-    def list(self, fields) -> Iterable:
+    def list_records(self, fields) -> Iterable:
         params = {"propertiesWithHistory": "dealstage"}
         yield from self.read(partial(self._api.get, url=self.url), params)
 
 
-class DealStream(CRMObjectIncrementalStream):
+class DealStream(CRMSearchStream):
     """Deals, API v3"""
 
     def __init__(self, **kwargs):
-        super().__init__(entity="deal", **kwargs)
+        super().__init__(entity="deal", last_modified_field="hs_lastmodifieddate", **kwargs)
         self._stage_history = DealStageHistoryStream(**kwargs)
 
-    def list(self, fields) -> Iterable:
+    def list_records(self, fields) -> Iterable:
         history_by_id = {}
-        for record in self._stage_history.list(fields):
+        for record in self._stage_history.list_records(fields):
             if all(field in record for field in ("id", "dealstage")):
                 history_by_id[record["id"]] = record["dealstage"]
-        for record in super().list(fields):
+        for record in super().list_records(fields):
             if record.get("id") and int(record["id"]) in history_by_id:
                 record["dealstage"] = history_by_id[int(record["id"])]
             yield record
@@ -705,9 +801,10 @@ class EmailEventStream(IncrementalStream):
     created_at_field = "created"
 
 
-class EngagementStream(Stream):
+class EngagementStream(IncrementalStream):
     """Engagements, API v1
     Docs: https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements
+          https://legacydocs.hubspot.com/docs/methods/engagements/get-recent-engagements
     """
 
     url = "/engagements/v1/engagements/paged"
@@ -715,9 +812,49 @@ class EngagementStream(Stream):
     limit = 250
     updated_at_field = "lastUpdated"
     created_at_field = "createdAt"
+    state_pk = "lastUpdated"
+
+    @property
+    def url(self):
+        if self.state:
+            return "/engagements/v1/engagements/recent/modified"
+        return "/engagements/v1/engagements/paged"
+
+    @property
+    def state(self) -> Optional[Mapping[str, Any]]:
+        """Current state, if wasn't set return None"""
+        return {self.state_pk: self._state} if self._state else None
+
+    @state.setter
+    def state(self, value):
+        state = value[self.state_pk]
+        self._state = state
+        self._start_date = max(self._field_to_datetime(self._state), self._start_date)
 
     def _transform(self, records: Iterable) -> Iterable:
         yield from super()._transform({**record.pop("engagement"), **record} for record in records)
+
+    def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
+        max_last_updated_at = None
+        default_params = {self.limit_field: self.limit}
+        params = {**default_params, **params} if params else {**default_params}
+        if self.state:
+            params["since"] = self._state
+        count = 0
+        for record in self._filter_old_records(self._read(getter, params)):
+            yield record
+            count += 1
+            cursor = record[self.updated_at_field]
+            max_last_updated_at = max(cursor, max_last_updated_at) if max_last_updated_at else cursor
+
+        logger.info(f"Processed {count} records")
+
+        if max_last_updated_at:
+            new_state = max(max_last_updated_at, self._state) if self._state else max_last_updated_at
+            if new_state != self._state:
+                logger.info(f"Advancing bookmark for engagement stream from {self._state} to {max_last_updated_at}")
+                self._state = new_state
+                self._start_date = self._state
 
 
 class FormStream(Stream):
@@ -753,7 +890,7 @@ class FormSubmissionStream(Stream):
 
             yield record
 
-    def list(self, fields) -> Iterable:
+    def list_records(self, fields) -> Iterable:
         for form in self.read(getter=partial(self._api.get, url="/marketing/v3/forms")):
             for submission in self.read(getter=partial(self._api.get, url=f"{self.url}/{form['id']}")):
                 submission["formId"] = form["id"]
