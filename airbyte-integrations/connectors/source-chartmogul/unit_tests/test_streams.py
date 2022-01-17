@@ -15,102 +15,77 @@ def patch_base_class(mocker):
     mocker.patch.object(Activities, "__abstractmethods__", set())
 
 
-# Customer stream tests
+class TestCustomers:
+
+    def test_request_params(self):
+        stream = Customers()
+        inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
+        expected_params = {"page": 1}
+        assert stream.request_params(**inputs) == expected_params
+
+        next_page_token = {"page": 3}
+        inputs = {"stream_slice": None, "stream_state": None, "next_page_token": next_page_token}
+        expected_params = {"page": 3}
+        assert stream.request_params(**inputs) == expected_params
 
 
-def test_request_params():
-    stream = Customers()
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_params = {"page": 1}
-    assert stream.request_params(**inputs) == expected_params
+    def test_next_page_token(self, mocker):
+        stream = Customers()
+        response = mocker.MagicMock()
 
-    next_page_token = {"page": 3}
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": next_page_token}
-    expected_params = {"page": 3}
-    assert stream.request_params(**inputs) == expected_params
+        # no more results
+        response.json.return_value = {"has_more": False}
+        inputs = {"response": response}
+        assert stream.next_page_token(**inputs) is None
 
-
-def test_next_page_token(mocker):
-    stream = Customers()
-    response = mocker.MagicMock()
-
-    # no more results
-    response.json.return_value = {"has_more": False}
-    inputs = {"response": response}
-    assert stream.next_page_token(**inputs) is None
-
-    # there is more results
-    response.json.return_value = {"has_more": True, "current_page": 42}
-    inputs = {"response": response}
-    assert stream.next_page_token(**inputs) == {"page": 43}
+        # there is more results
+        response.json.return_value = {"has_more": True, "current_page": 42}
+        inputs = {"response": response}
+        assert stream.next_page_token(**inputs) == {"page": 43}
 
 
-def test_parse_response(mocker):
-    stream = Customers()
-    response = mocker.MagicMock()
-    response.json.return_value = {"entries": [{"one": 1}, {"two": 2}]}
-    inputs = {"response": response}
-    expected_parsed_object = {"one": 1}
-    assert next(stream.parse_response(**inputs)) == expected_parsed_object
+    def test_parse_response(self, mocker):
+        stream = Customers()
+        response = mocker.MagicMock()
+        response.json.return_value = {"entries": [{"one": 1}, {"two": 2}]}
+        inputs = {"response": response}
+        expected_parsed_object = {"one": 1}
+        assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 
 # Activites stream tests
 
+class TestActivities:
 
-def test_request_params_activities():
-    # no start_date set
-    stream = Activities(start_date=None)
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    assert stream.request_params(**inputs) == {}
+    def test_request_params(self):
+        # no start_date set
+        stream = Activities(start_date=None)
+        inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
+        assert stream.request_params(**inputs) == {}
 
-    # start_date is set
-    stream.start_date = "2010-01-01"
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    assert stream.request_params(**inputs) == {"start-date": stream.start_date}
+        # start_date is set
+        stream.start_date = "2010-01-01"
+        inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
+        assert stream.request_params(**inputs) == {"start-date": stream.start_date}
 
-    # start-after is available
-    next_page_token = {"start-after": "a-b-c"}
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": next_page_token}
-    expected_params = next_page_token
-    assert stream.request_params(**inputs) == expected_params
-
-
-def test_next_page_token_activities(mocker):
-    stream = Activities(start_date=None)
-    response = mocker.MagicMock()
-
-    # no more results
-    response.json.return_value = {"has_more": False}
-    inputs = {"response": response}
-    assert stream.next_page_token(**inputs) is None
-
-    # there is more results
-    response.json.return_value = {"has_more": True, "entries": [{"uuid": "unique-uuid"}]}
-    inputs = {"response": response}
-    assert stream.next_page_token(**inputs) == {"start-after": "unique-uuid"}
+        # start-after is available
+        next_page_token = {"start-after": "a-b-c"}
+        inputs = {"stream_slice": None, "stream_state": None, "next_page_token": next_page_token}
+        expected_params = next_page_token
+        assert stream.request_params(**inputs) == expected_params
 
 
-# Default tests
+    def test_next_page_token(self, mocker):
+        stream = Activities(start_date=None)
+        response = mocker.MagicMock()
 
+        # no more results
+        response.json.return_value = {"has_more": False}
+        inputs = {"response": response}
+        assert stream.next_page_token(**inputs) is None
 
-@pytest.mark.parametrize(
-    ("http_status", "should_retry"),
-    [
-        (HTTPStatus.OK, False),
-        (HTTPStatus.BAD_REQUEST, False),
-        (HTTPStatus.TOO_MANY_REQUESTS, True),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, True),
-    ],
-)
-def test_should_retry(http_status, should_retry, mocker):
-    response_mock = mocker.MagicMock()
-    response_mock.status_code = http_status
-    stream = Customers()
-    assert stream.should_retry(response_mock) == should_retry
+        # there is more results
+        response.json.return_value = {"has_more": True, "entries": [{"uuid": "unique-uuid"}]}
+        inputs = {"response": response}
+        assert stream.next_page_token(**inputs) == {"start-after": "unique-uuid"}
 
-
-def test_backoff_time(mocker):
-    response_mock = mocker.MagicMock()
-    stream = Customers()
-    expected_backoff_time = None
-    assert stream.backoff_time(response_mock) == expected_backoff_time

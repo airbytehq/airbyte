@@ -22,7 +22,7 @@ class ChartmogulStream(HttpStream, ABC):
 
 
 class Customers(ChartmogulStream):
-    primary_key = "uuid"
+    primary_key = "id"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         json_response = response.json()
