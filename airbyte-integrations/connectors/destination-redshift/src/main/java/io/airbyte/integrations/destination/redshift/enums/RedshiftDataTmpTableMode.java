@@ -11,18 +11,30 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 public enum RedshiftDataTmpTableMode {
   SUPER {
     @Override
-    public String getMode() {
+    public String getTableCreationMode() {
       return "SUPER";
+    }
+
+    @Override
+    public String getInsertRowMode() {
+      return "(?, JSON_PARSE(?), ?),\n";
     }
   },
   VARCHAR {
     @Override
-    public String getMode() {
+    public String getTableCreationMode() {
       return "VARCHAR(MAX)";
+    }
+
+    @Override
+    public String getInsertRowMode() {
+      return "(?, ?, ?),\n";
     }
   };
 
-  public abstract String getMode();
+  public abstract String getTableCreationMode();
+
+  public abstract String getInsertRowMode();
 
   public String getTmpTableSqlStatement(String schemaName, String tableName) {
     return String.format("""
@@ -32,7 +44,7 @@ public enum RedshiftDataTmpTableMode {
             %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)
             """, schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID,
         JavaBaseConstants.COLUMN_NAME_DATA,
-        getMode(),
+        getTableCreationMode(),
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 }
