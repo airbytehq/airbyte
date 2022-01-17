@@ -20,7 +20,7 @@ SUB_BUILD=OCTAVIA_CLI ./gradlew build #from the root of the repo
 ```
 2. Run the CLI from docker:
 ```bash
-docker run octavia-cli:dev 
+docker run airbyte/octavia-cli:dev 
 ````
 3. Create an `octavia` alias in your `.bashrc` or `.zshrc`: 
 ````bash
