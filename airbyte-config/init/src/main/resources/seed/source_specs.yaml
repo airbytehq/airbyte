@@ -6166,7 +6166,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "blotout/source-googleanalytics-singer:0.2.12"
+- dockerImage: "blotout/source-googleanalytics-singer:0.2.17"
   spec:
     "documentationUrl": "https://docs.airbyte.io/integrations/sources/googleanalytics"
     "connectionSpecification":
@@ -6280,6 +6280,28 @@
         "user_agent":
           "type": "string"
           "description": "tap-activecampaign <api_user_email@your_company.com>"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: [ ]
+- dockerImage: "blotout/source-xola:0.1.2"
+  spec:
+    "documentationUrl": "https://github.com/blotoutio/source-xola/README.md"
+    "connectionSpecification":
+      "$schema": "http://json-schema.org/draft-07/schema#"
+      "title": "Source Xola Spec"
+      "type": "object"
+      "required":
+        - "x-api-key"
+        - "seller-id"
+      "additionalProperties": false
+      "properties":
+        "x-api-key":
+          "type": "string"
+          "description": "This is Authorization Header for Xola API"
+          "airbyte_secret": true
+        "seller-id":
+          "type": "string"
+          "description": "This is the seller id for which api fetches all data from Xola"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: [ ]

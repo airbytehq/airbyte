@@ -651,7 +651,7 @@
 - sourceDefinitionId: 39f092a6-8c87-4f6f-a8d9-5cef45b7dbe1
   name: Google Analytics Singer
   dockerRepository: blotout/source-googleanalytics-singer
-  dockerImageTag: 0.2.12
+  dockerImageTag: 0.2.17
   documentationUrl: https://hub.docker.com/r/airbyte/source-googleanalytics-singer
   icon: google-analytics.svg
 - sourceDefinitionId: 01ea7a82-528b-11ec-bf63-0242ac130002
@@ -662,5 +662,5 @@
 - sourceDefinitionId: 2cfcd96e-72ab-11ec-90d6-0242ac120003
   name: Xola
   dockerRepository: blotout/source-xola
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://github.com/blotoutio/source-xola/README.md
