@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "492b56d1-937c-462e-8076-21ad2031e784",
+  "name": "Hellobaton",
+  "dockerRepository": "airbyte/source-hellobaton",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/hellobaton"
+}
