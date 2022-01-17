@@ -50,6 +50,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   public static final String CDC_LSN = "_ab_cdc_lsn";
 
   static final String DRIVER_CLASS = "org.postgresql.Driver";
+  private List<String> schemas;
 
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new PostgresSource(), List.of("host"), List.of("port"));
@@ -79,6 +80,17 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     if (!config.has("ssl") || config.get("ssl").asBoolean()) {
       additionalParameters.add("ssl=true");
       additionalParameters.add("sslmode=require");
+    }
+
+    if (config.has("schemas") && config.get("schemas").isArray()) {
+      schemas = new ArrayList<>();
+      for (final JsonNode schema : config.get("schemas")) {
+        schemas.add(schema.asText());
+      }
+    }
+
+    if (schemas != null && !schemas.isEmpty()) {
+      additionalParameters.add("currentSchema=" + String.join(",", schemas));
     }
 
     additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
@@ -114,6 +126,25 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     }
 
     return catalog;
+  }
+
+  @Override
+  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(JdbcDatabase database) throws Exception {
+    if (schemas != null && !schemas.isEmpty()) {
+      // process explicitly selected (from UI) schemas
+      final List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
+      for (String schema : schemas) {
+        LOGGER.debug("Discovering schema: {}", schema);
+        internals.addAll(super.discoverInternal(database, schema));
+      }
+      for (TableInfo<CommonField<JDBCType>> info : internals) {
+        LOGGER.debug("Found table (schema: {}): {}", info.getNameSpace(), info.getName());
+      }
+      return internals;
+    } else {
+      LOGGER.info("No schemas explicitly set on UI to process, so will process all of existing schemas in DB");
+      return super.discoverInternal(database);
+    }
   }
 
   @Override
