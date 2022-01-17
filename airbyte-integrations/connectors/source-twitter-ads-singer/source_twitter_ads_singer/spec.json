@@ -5,6 +5,14 @@
       "title":"Source Twitter Ads Singer Spec",
       "type":"object",
       "required":[
+         "consumer_key",
+         "consumer_secret",
+         "access_token",
+         "access_token_secret",
+         "account_ids",
+         "user_agent",
+         "start_date",
+         "attribution_window"
       ],
       "additionalProperties":true,
       "properties":{
@@ -19,19 +27,23 @@
          },
          "consumer_key":{
             "type":"string",
-            "description":"YOUR_TWITTER_ADS_CONSUMER_KEY"
+            "description":"YOUR_TWITTER_ADS_CONSUMER_KEY",
+            "airbyte_secret": true
          },
          "consumer_secret":{
             "type":"string",
-            "description":"YOUR_TWITTER_ADS_CONSUMER_SECRET"
+            "description":"YOUR_TWITTER_ADS_CONSUMER_SECRET",
+            "airbyte_secret": true
          },
          "access_token":{
             "type":"string",
-            "description":"YOUR_TWITTER_ADS_ACCESS_TOKEN"
+            "description":"YOUR_TWITTER_ADS_ACCESS_TOKEN",
+            "airbyte_secret": true
          },
          "access_token_secret":{
             "type":"string",
-            "description":"YOUR_TWITTER_ADS_ACCESS_TOKEN_SECRET"
+            "description":"YOUR_TWITTER_ADS_ACCESS_TOKEN_SECRET",
+            "airbyte_secret": true
          },
          "account_ids":{
             "type":"string",

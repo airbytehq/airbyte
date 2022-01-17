@@ -64,6 +64,6 @@ class SourceTwitterAdsSinger(SingerSource):
         """
         # TODO update the command below if needed. Otherwise you're good to go
         config_option = f"--config {config_path}"
-        properties_option = f"--properties {catalog_path}"
+        properties_option = f"--catalog {catalog_path}"
         state_option = f"--state {state_path}" if state_path else ""
         return f"{self.TAP_CMD} {config_option} {properties_option} {state_option}"
