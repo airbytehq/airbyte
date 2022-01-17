@@ -4,9 +4,13 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Twitter Ads Spec",
     "type": "object",
-    "required": ["CONSUMER_KEY","CONSUMER_SECRET","ACCESS_TOKEN","ACCESS_TOKEN_SECRET", "ACCOUNT_ID"],
+    "required": ["BASE", "CONSUMER_KEY","CONSUMER_SECRET","ACCESS_TOKEN","ACCESS_TOKEN_SECRET", "ACCOUNT_ID", "START_TIME", "END_TIME", "CAMPAIGNS"],
     "additionalProperties": false,
     "properties": {
+      "BASE": {
+        "type": "string",
+        "description": "Twitter Ads API Base URL"
+      },
       "CONSUMER_KEY": {
         "type": "string",
         "description": "API Key"
@@ -26,6 +30,18 @@
       "ACCOUNT_ID": {
         "type": "string",
         "description": "Twitter account id."
+      },
+      "START_TIME": {
+        "type": "string",
+        "description": "Start time of data to be pulled."
+      },
+      "END_TIME": {
+        "type": "string",
+        "description": "End time of data to be pulled."
+      },
+      "CAMPAIGNS": {
+        "type": "array",
+        "description": "List of Campaign IDs. ToDO: we should get the campaign ids programmtically so that we don't have to maintain them manually."
       }
     }
   }
