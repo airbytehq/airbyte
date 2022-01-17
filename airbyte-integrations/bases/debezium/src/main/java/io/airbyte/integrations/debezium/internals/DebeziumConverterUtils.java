@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
+import java.sql.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +43,10 @@ public final class DebeziumConverterUtils {
     } else if (input instanceof Number) {
       return DataTypeUtils.toISO8601String(
           new Timestamp(((Number) input).longValue()).toLocalDateTime());
-    } else if (input instanceof String) {
+    } else if (input instanceof Date) {
+      return DataTypeUtils.toISO8601String(input)
+    }
+     else if (input instanceof String) {
       try {
         return LocalDateTime.parse((String) input).toString();
       } catch (final DateTimeParseException e) {
