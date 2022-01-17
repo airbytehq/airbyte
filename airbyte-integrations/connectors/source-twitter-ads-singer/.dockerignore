@@ -1,0 +1,7 @@
+*
+!Dockerfile
+!Dockerfile.test
+!main.py
+!source_twitter_ads_singer
+!setup.py
+!secrets
