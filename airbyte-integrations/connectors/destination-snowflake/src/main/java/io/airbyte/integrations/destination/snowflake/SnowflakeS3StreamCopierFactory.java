@@ -16,16 +16,17 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 public class SnowflakeS3StreamCopierFactory extends S3StreamCopierFactory {
 
   @Override
-  protected StreamCopier create(String stagingFolder,
-                                String schema,
-                                AmazonS3 s3Client,
-                                JdbcDatabase db,
-                                S3CopyConfig config,
-                                ExtendedNameTransformer nameTransformer,
-                                SqlOperations sqlOperations,
-                                ConfiguredAirbyteStream configuredStream)
+  protected StreamCopier create(final String stagingFolder,
+                                final String schema,
+                                final AmazonS3 s3Client,
+                                final JdbcDatabase db,
+                                final S3CopyConfig config,
+                                final ExtendedNameTransformer nameTransformer,
+                                final SqlOperations sqlOperations,
+                                final ConfiguredAirbyteStream configuredStream)
       throws Exception {
-    return new SnowflakeS3StreamCopier(stagingFolder, schema, s3Client, db, config, nameTransformer, sqlOperations, configuredStream);
+    return new SnowflakeS3StreamCopier(stagingFolder, schema, s3Client, db, config, nameTransformer,
+        sqlOperations, configuredStream);
   }
 
 }
