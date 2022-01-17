@@ -129,6 +129,8 @@
   "connectionForm.syncType.info": "How data will be replicated from source to destination.",
   "connectionForm.destinationName.info": "<b>Namespace</b> is the database schema of your destination tables.",
   "connectionForm.destinationStream.info": "<b>Stream name</b> is the final table name in destination.",
+  "connectionForm.defaultSyncMode": "Set a default sync mode for all streams",
+  "connectionForm.defaultSyncMode.message": "Set how Airbyte reads from the source and writes to the destination, across all streams <b>when the option is available</b>.",
 
   "connectorForm.authenticate": "Authenticate your {connector} account",
   "connectorForm.signInWithGoogle": "Sign in with Google",

@@ -43,7 +43,14 @@ const Section = styled.div<{ error?: boolean }>`
   border: 1px solid
     ${(props) => (props.error ? props.theme.dangerColor : "none")};
   background: ${({ theme }) => theme.greyColor0};
-  border-radius: 8px;
+
+  &:first-child {
+    border-radius: 8px 8px 0 0;
+  }
+
+  &:last-child {
+    border-radius: 0 0 8px 8px;
+  }
 `;
 
 type TreeViewRowProps = {

@@ -17,7 +17,6 @@ import { useConfig } from "config";
 
 const TreeViewContainer = styled.div`
   margin-bottom: 29px;
-  border-radius: 4px;
   max-height: 600px;
   overflow-y: auto;
   --webkit-overlay: true;

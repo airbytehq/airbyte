@@ -116,13 +116,22 @@ const NamespaceFormatLabel = styled(ControlLabels)`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  margin-bottom: 20px;
 `;
 
 export const FlexRow = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
-  align-items: center;
+  align-items: flex-start;
+
+  & > div:not(:last-child) {
+    margin-right: 10px;
+  }
+`;
+
+export const FieldLabel = styled(ControlLabels)`
+  margin-bottom: 20px;
 `;
 
 const ConnectionForm: React.FC<ConnectionFormProps> = ({
@@ -208,7 +217,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
           {!isEditMode && (
             <Field name="schedule">
               {({ field, meta }: FieldProps<ScheduleProperties>) => (
-                <ControlLabels>
+                <FieldLabel>
                   <ConnectorLabel
                     nextLine
                     error={!!meta.error && meta.touched}
@@ -231,18 +240,23 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                       }}
                     />
                   </ConnectorLabel>
-                </ControlLabels>
+                </FieldLabel>
               )}
             </Field>
           )}
-          <ControlLabels
+          <FieldLabel
             nextLine
             label={formatMessage({
               id: "connectionForm.defaultSyncMode",
             })}
-            message={formatMessage({
-              id: "connectionForm.defaultSyncMode.message",
-            })}
+            message={formatMessage(
+              {
+                id: "connectionForm.defaultSyncMode.message",
+              },
+              {
+                b: (...b: React.ReactNode[]) => <strong>{b}</strong>,
+              }
+            )}
           >
             <SyncSettingsDropdown
               options={SUPPORTED_MODES.map(
@@ -251,7 +265,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 })
               )}
             />
-          </ControlLabels>
+          </FieldLabel>
           <FlexRow>
             <Field
               name="namespaceDefinition"
@@ -259,7 +273,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
             />
             <Field name="prefix">
               {({ field }: FieldProps<string>) => (
-                <ControlLabels
+                <FieldLabel
                   nextLine
                   label={formatMessage({
                     id: "form.prefix",
@@ -275,7 +289,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                       id: `form.prefix.placeholder`,
                     })}
                   />
-                </ControlLabels>
+                </FieldLabel>
               )}
             </Field>
           </FlexRow>
