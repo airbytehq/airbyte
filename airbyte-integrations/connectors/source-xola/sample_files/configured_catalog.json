@@ -1,0 +1,1214 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "orders",
+        "json_schema": {
+          "definitions": {},
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$id": "https://example.com/object1641741697.json",
+          "title": "Root",
+          "type": "object",
+          "required": [
+            "data"
+          ],
+          "properties": {
+            "data": {
+              "$id": "#root/data",
+              "title": "Data",
+              "type": "array",
+              "default": [],
+              "items": {
+                "$id": "#root/data/items",
+                "title": "Items",
+                "type": "object",
+                "required": [
+                  "id",
+                  "customerEmail",
+                  "phone",
+                  "source",
+                  "items",
+                  "tags",
+                  "createdAt",
+                  "createdBy",
+                  "travelers"
+                ],
+                "properties": {
+                  "id": {
+                    "$id": "#root/data/items/id",
+                    "title": "Id",
+                    "type": "string",
+                    "default": "",
+                    "pattern": "^.*$"
+                  },
+                  "customerEmail": {
+                    "$id": "#root/data/items/customerEmail",
+                    "title": "Customeremail",
+                    "type": "string",
+                    "default": "",
+                    "pattern": "^.*$"
+                  },
+                  "phone": {
+                    "$id": "#root/data/items/phone",
+                    "title": "Phone",
+                    "type": "string",
+                    "default": "",
+                    "pattern": "^.*$"
+                  },
+                  "source": {
+                    "$id": "#root/data/items/source",
+                    "title": "Source",
+                    "type": "string",
+                    "default": "",
+                    "examples": [
+                      "checkout"
+                    ],
+                    "pattern": "^.*$"
+                  },
+                  "items": {
+                    "$id": "#root/data/items/items",
+                    "title": "Items",
+                    "type": "array",
+                    "default": [],
+                    "items": {
+                      "$id": "#root/data/items/items/items",
+                      "title": "Items",
+                      "type": "object",
+                      "required": [
+                        "object",
+                        "id",
+                        "name",
+                        "desc",
+                        "currency",
+                        "seller",
+                        "excerpt",
+                        "guestType",
+                        "group",
+                        "paymentMethod",
+                        "groupDiscount",
+                        "addOns",
+                        "updated",
+                        "sortDemographics",
+                        "cancellation",
+                        "event",
+                        "experience",
+                        "arrival",
+                        "arrivalDatetime",
+                        "arrivalTime",
+                        "quantity",
+                        "shortCode",
+                        "ticketCode",
+                        "priceScheme",
+                        "baseAmount",
+                        "amount",
+                        "status",
+                        "guestStatus",
+                        "demographics",
+                        "adjustments",
+                        "guestsData",
+                        "guests",
+                        "waivers",
+                        "reminders2",
+                        "pluginFees",
+                        "organizerTimezoneName"
+                      ],
+                      "properties": {
+                        "object": {
+                          "$id": "#root/data/items/items/items/object",
+                          "title": "Object",
+                          "type": "string",
+                          "default": "",
+                          "examples": [
+                            "experience_item"
+                          ],
+                          "pattern": "^.*$"
+                        },
+                        "id": {
+                          "$id": "#root/data/items/items/items/id",
+                          "title": "Id",
+                          "type": "string",
+                          "default": "",
+                          "pattern": "^.*$"
+                        },
+                        "name": {
+                          "$id": "#root/data/items/items/items/name",
+                          "title": "Name",
+                          "type": "string",
+                          "default": "",
+                          "examples": [
+                            "Fair Game"
+                          ],
+                          "pattern": "^.*$"
+                        },
+                        "desc": {
+                          "$id": "#root/data/items/items/items/desc",
+                          "title": "Desc",
+                          "type": "null",
+                          "default": null
+                        },
+                        "currency": {
+                          "$id": "#root/data/items/items/items/currency",
+                          "title": "Currency",
+                          "type": "string",
+                          "default": "",
+                          "examples": [
+                            "USD"
+                          ],
+                          "pattern": "^.*$"
+                        },
+                        "seller": {
+                          "$id": "#root/data/items/items/items/seller",
+                          "title": "Seller",
+                          "type": "object",
+                          "required": [
+                            "id"
+                          ],
+                          "properties": {
+                            "id": {
+                              "$id": "#root/data/items/items/items/seller/id",
+                              "title": "Id",
+                              "type": "string",
+                              "default": "",
+                              "pattern": "^.*$"
+                            }
+                          }
+                        },
+                        "excerpt": {
+                          "$id": "#root/data/items/items/items/excerpt",
+                          "title": "Excerpt",
+                          "type": "null",
+                          "default": null
+                        },
+                        "guestType": {
+                          "$id": "#root/data/items/items/items/guestType",
+                          "title": "Guesttype",
+                          "type": "string",
+                          "default": "",
+                          "examples": [
+                            "normal"
+                          ],
+                          "pattern": "^.*$"
+                        },
+                        "group": {
+                          "$id": "#root/data/items/items/items/group",
+                          "title": "Group",
+                          "type": "object",
+                          "required": [
+                            "orderMin",
+                            "orderMax",
+                            "outingMin",
+                            "outingMinCutoff",
+                            "outingMax"
+                          ],
+                          "properties": {
+                            "orderMin": {
+                              "$id": "#root/data/items/items/items/group/orderMin",
+                              "title": "Ordermin",
+                              "type": "integer",
+                              "examples": [
+                                1
+                              ],
+                              "default": 0
+                            },
+                            "orderMax": {
+                              "$id": "#root/data/items/items/items/group/orderMax",
+                              "title": "Ordermax",
+                              "type": "integer",
+                              "examples": [
+                                7
+                              ],
+                              "default": 0
+                            },
+                            "outingMin": {
+                              "$id": "#root/data/items/items/items/group/outingMin",
+                              "title": "Outingmin",
+                              "type": "integer",
+                              "examples": [
+                                1
+                              ],
+                              "default": 0
+                            },
+                            "outingMinCutoff": {
+                              "$id": "#root/data/items/items/items/group/outingMinCutoff",
+                              "title": "Outingmincutoff",
+                              "type": "integer",
+                              "examples": [
+                                3600
+                              ],
+                              "default": 0
+                            },
+                            "outingMax": {
+                              "$id": "#root/data/items/items/items/group/outingMax",
+                              "title": "Outingmax",
+                              "type": "integer",
+                              "examples": [
+                                7
+                              ],
+                              "default": 0
+                            }
+                          }
+                        },
+                        "paymentMethod": {
+                          "$id": "#root/data/items/items/items/paymentMethod",
+                          "title": "Paymentmethod",
+                          "type": "string",
+                          "default": "",
+                          "examples": [
+                            "cc"
+                          ],
+                          "pattern": "^.*$"
+                        },
+                        "groupDiscount": {
+                          "$id": "#root/data/items/items/items/groupDiscount",
+                          "title": "Groupdiscount",
+                          "type": "object",
+                          "required": [
+                            "enabled"
+                          ],
+                          "properties": {
+                            "enabled": {
+                              "$id": "#root/data/items/items/items/groupDiscount/enabled",
+                              "title": "Enabled",
+                              "type": "boolean",
+                              "examples": [
+                                false
+                              ],
+                              "default": true
+                            }
+                          }
+                        },
+                        "addOns": {
+                          "$id": "#root/data/items/items/items/addOns",
+                          "title": "Addons",
+                          "type": "array",
+                          "default": [],
+                          "items": {
+                            "$id": "#root/data/items/items/items/addOns/items",
+                            "title": "Items",
+                            "type": "object",
+                            "required": [
+                              "id",
+                              "quantity",
+                              "amount",
+                              "hasFees",
+                              "configuration",
+                              "sequence"
+                            ],
+                            "properties": {
+                              "id": {
+                                "$id": "#root/data/items/items/items/addOns/items/id",
+                                "title": "Id",
+                                "type": "string",
+                                "default": "",
+                                "pattern": "^.*$"
+                              },
+                              "quantity": {
+                                "$id": "#root/data/items/items/items/addOns/items/quantity",
+                                "title": "Quantity",
+                                "type": "integer",
+                                "examples": [
+                                  1
+                                ],
+                                "default": 0
+                              },
+                              "amount": {
+                                "$id": "#root/data/items/items/items/addOns/items/amount",
+                                "title": "Amount",
+                                "type": "integer",
+                                "examples": [
+                                  5
+                                ],
+                                "default": 0
+                              },
+                              "hasFees": {
+                                "$id": "#root/data/items/items/items/addOns/items/hasFees",
+                                "title": "Hasfees",
+                                "type": "boolean",
+                                "examples": [
+                                  false
+                                ],
+                                "default": true
+                              },
+                              "configuration": {
+                                "$id": "#root/data/items/items/items/addOns/items/configuration",
+                                "title": "Configuration",
+                                "type": "object",
+                                "required": [
+                                  "name",
+                                  "price",
+                                  "priceType",
+                                  "visibility",
+                                  "object",
+                                  "required",
+                                  "id",
+                                  "sequence",
+                                  "desc"
+                                ],
+                                "properties": {
+                                  "name": {
+                                    "$id": "#root/data/items/items/items/addOns/items/configuration/name",
+                                    "title": "Name",
+                                    "type": "string",
+                                    "default": "",
+                                    "examples": [
+                                      "Cancellation Protection "
+                                    ],
+                                    "pattern": "^.*$"
+                                  },
+                                  "price": {
+                                    "$id": "#root/data/items/items/items/addOns/items/configuration/price",
+                                    "title": "Price",
+                                    "type": "integer",
+                                    "examples": [
+                                      5
+                                    ],
+                                    "default": 0
+                                  },
+                                  "priceType": {
+                                    "$id": "#root/data/items/items/items/addOns/items/configuration/priceType",
+                                    "title": "Pricetype",
+                                    "type": "string",
+                                    "default": "",
+                                    "examples": [
+                                      "absolute"
+                                    ],
+                                    "pattern": "^.*$"
+                                  },
+                                  "visibility": {
+                                    "$id": "#root/data/items/items/items/addOns/items/configuration/visibility",
+                                    "title": "Visibility",
+                                    "type": "string",
+                                    "default": "",
+                                    "examples": [
+                                      "public"
+                                    ],
+                                    "pattern": "^.*$"
+                                  },
+                                  "object": {
+                                    "$id": "#root/data/items/items/items/addOns/items/configuration/object",
+                                    "title": "Object",
+                                    "type": "string",
+                                    "default": "",
+                                    "examples": [
+                                      "boolean"
+                                    ],
+                                    "pattern": "^.*$"
+                                  },
+                                  "required": {
+                                    "$id": "#root/data/items/items/items/addOns/items/configuration/required",
+                                    "title": "Required",
+                                    "type": "boolean",
+                                    "examples": [
+                                      false
+                                    ],
+                                    "default": true
+                                  },
+                                  "id": {
+                                    "$id": "#root/data/items/items/items/addOns/items/configuration/id",
+                                    "title": "Id",
+                                    "type": "string",
+                                    "default": "",
+                                    "examples": [
+                                      ""
+                                    ],
+                                    "pattern": "^.*$"
+                                  },
+                                  "sequence": {
+                                    "$id": "#root/data/items/items/items/addOns/items/configuration/sequence",
+                                    "title": "Sequence",
+                                    "type": "integer",
+                                    "examples": [
+                                      2
+                                    ],
+                                    "default": 0
+                                  },
+                                  "desc": {
+                                    "$id": "#root/data/items/items/items/addOns/items/configuration/desc",
+                                    "title": "Desc",
+                                    "type": "string",
+                                    "default": "",
+                                    "examples": [
+                                      "Our cancellation protection allows you to reschedule or cancel your booking for a full refund up to 24 hours prior to your reservation. If you decline purchasing this protection, you waive the ability to cancel your reservation and receive any refund. Cancellation protection covers everyone in the current booking."
+                                    ],
+                                    "pattern": "^.*$"
+                                  }
+                                }
+                              },
+                              "sequence": {
+                                "$id": "#root/data/items/items/items/addOns/items/sequence",
+                                "title": "Sequence",
+                                "type": "integer",
+                                "examples": [
+                                  2
+                                ],
+                                "default": 0
+                              }
+                            }
+                          }
+                        },
+                        "updated": {
+                          "$id": "#root/data/items/items/items/updated",
+                          "title": "Updated",
+                          "type": "string",
+                          "default": "",
+                          "examples": [
+                            "2022-01-05T08:12:29+00:00"
+                          ],
+                          "pattern": "^.*$"
+                        },
+                        "sortDemographics": {
+                          "$id": "#root/data/items/items/items/sortDemographics",
+                          "title": "Sortdemographics",
+                          "type": "boolean",
+                          "examples": [
+                            false
+                          ],
+                          "default": true
+                        },
+                        "cancellation": {
+                          "$id": "#root/data/items/items/items/cancellation",
+                          "title": "Cancellation",
+                          "type": "object",
+                          "required": [
+                            "policy",
+                            "refundable"
+                          ],
+                          "properties": {
+                            "policy": {
+                              "$id": "#root/data/items/items/items/cancellation/policy",
+                              "title": "Policy",
+                              "type": "string",
+                              "default": "",
+                              "examples": [
+                                "Your purchase is non-refundable. Rescheduling can be done 24 hours in advance. No cancellations accepted."
+                              ],
+                              "pattern": "^.*$"
+                            },
+                            "refundable": {
+                              "$id": "#root/data/items/items/items/cancellation/refundable",
+                              "title": "Refundable",
+                              "type": "boolean",
+                              "examples": [
+                                true
+                              ],
+                              "default": true
+                            }
+                          }
+                        },
+                        "event": {
+                          "$id": "#root/data/items/items/items/event",
+                          "title": "Event",
+                          "type": "object",
+                          "required": [
+                            "id"
+                          ],
+                          "properties": {
+                            "id": {
+                              "$id": "#root/data/items/items/items/event/id",
+                              "title": "Id",
+                              "type": "string",
+                              "default": "",
+                              "pattern": "^.*$"
+                            }
+                          }
+                        },
+                        "experience": {
+                          "$id": "#root/data/items/items/items/experience",
+                          "title": "Experience",
+                          "type": "object",
+                          "required": [
+                            "id"
+                          ],
+                          "properties": {
+                            "id": {
+                              "$id": "#root/data/items/items/items/experience/id",
+                              "title": "Id",
+                              "type": "string",
+                              "default": "",
+                              "pattern": "^.*$"
+                            }
+                          }
+                        },
+                        "arrival": {
+                          "$id": "#root/data/items/items/items/arrival",
+                          "title": "Arrival",
+                          "type": "string",
+                          "default": "",
+                          "examples": [
+                            "2022-01-05"
+                          ],
+                          "pattern": "^.*$"
+                        },
+                        "arrivalDatetime": {
+                          "$id": "#root/data/items/items/items/arrivalDatetime",
+                          "title": "Arrivaldatetime",
+                          "type": "string",
+                          "default": "",
+                          "examples": [
+                            "2022-01-05T19:25:00-08:00"
+                          ],
+                          "pattern": "^.*$"
+                        },
+                        "arrivalTime": {
+                          "$id": "#root/data/items/items/items/arrivalTime",
+                          "title": "Arrivaltime",
+                          "type": "integer",
+                          "examples": [
+                            1925
+                          ],
+                          "default": 0
+                        },
+                        "quantity": {
+                          "$id": "#root/data/items/items/items/quantity",
+                          "title": "Quantity",
+                          "type": "integer",
+                          "examples": [
+                            6
+                          ],
+                          "default": 0
+                        },
+                        "shortCode": {
+                          "$id": "#root/data/items/items/items/shortCode",
+                          "title": "Shortcode",
+                          "type": "string",
+                          "default": "",
+                          "examples": [
+                            "69e1b0"
+                          ],
+                          "pattern": "^.*$"
+                        },
+                        "ticketCode": {
+                          "$id": "#root/data/items/items/items/ticketCode",
+                          "title": "Ticketcode",
+                          "type": "string",
+                          "default": "",
+                          "pattern": "^.*$"
+                        },
+                        "priceScheme": {
+                          "$id": "#root/data/items/items/items/priceScheme",
+                          "title": "Pricescheme",
+                          "type": "object",
+                          "required": [
+                            "constraints",
+                            "price"
+                          ],
+                          "properties": {
+                            "constraints": {
+                              "$id": "#root/data/items/items/items/priceScheme/constraints",
+                              "title": "Constraints",
+                              "type": "array",
+                              "default": [],
+                              "items": {
+                                "$id": "#root/data/items/items/items/priceScheme/constraints/items",
+                                "title": "Items",
+                                "type": "object",
+                                "required": [
+                                  "object",
+                                  "id",
+                                  "priceType"
+                                ],
+                                "properties": {
+                                  "object": {
+                                    "$id": "#root/data/items/items/items/priceScheme/constraints/items/object",
+                                    "title": "Object",
+                                    "type": "string",
+                                    "default": "",
+                                    "examples": [
+                                      "price_type_constraint"
+                                    ],
+                                    "pattern": "^.*$"
+                                  },
+                                  "id": {
+                                    "$id": "#root/data/items/items/items/priceScheme/constraints/items/id",
+                                    "title": "Id",
+                                    "type": "string",
+                                    "default": "",
+                                    "pattern": "^.*$"
+                                  },
+                                  "priceType": {
+                                    "$id": "#root/data/items/items/items/priceScheme/constraints/items/priceType",
+                                    "title": "Pricetype",
+                                    "type": "string",
+                                    "default": "",
+                                    "examples": [
+                                      "person"
+                                    ],
+                                    "pattern": "^.*$"
+                                  }
+                                }
+                              }
+                            },
+                            "price": {
+                              "$id": "#root/data/items/items/items/priceScheme/price",
+                              "title": "Price",
+                              "type": "integer",
+                              "examples": [
+                                36
+                              ],
+                              "default": 0
+                            }
+                          }
+                        },
+                        "baseAmount": {
+                          "$id": "#root/data/items/items/items/baseAmount",
+                          "title": "Baseamount",
+                          "type": "integer",
+                          "examples": [
+                            216
+                          ],
+                          "default": 0
+                        },
+                        "amount": {
+                          "$id": "#root/data/items/items/items/amount",
+                          "title": "Amount",
+                          "type": "integer",
+                          "examples": [
+                            221
+                          ],
+                          "default": 0
+                        },
+                        "status": {
+                          "$id": "#root/data/items/items/items/status",
+                          "title": "Status",
+                          "type": "integer",
+                          "examples": [
+                            200
+                          ],
+                          "default": 0
+                        },
+                        "guestStatus": {
+                          "$id": "#root/data/items/items/items/guestStatus",
+                          "title": "Gueststatus",
+                          "type": "string",
+                          "default": "",
+                          "examples": [
+                            "pending"
+                          ],
+                          "pattern": "^.*$"
+                        },
+                        "demographics": {
+                          "$id": "#root/data/items/items/items/demographics",
+                          "title": "Demographics",
+                          "type": "array",
+                          "default": [],
+                          "items": {
+                            "$id": "#root/data/items/items/items/demographics/items",
+                            "title": "Items",
+                            "type": "object",
+                            "required": [
+                              "id",
+                              "quantity",
+                              "demographic"
+                            ],
+                            "properties": {
+                              "id": {
+                                "$id": "#root/data/items/items/items/demographics/items/id",
+                                "title": "Id",
+                                "type": "string",
+                                "default": "",
+                                "pattern": "^.*$"
+                              },
+                              "quantity": {
+                                "$id": "#root/data/items/items/items/demographics/items/quantity",
+                                "title": "Quantity",
+                                "type": "integer",
+                                "examples": [
+                                  6
+                                ],
+                                "default": 0
+                              },
+                              "demographic": {
+                                "$id": "#root/data/items/items/items/demographics/items/demographic",
+                                "title": "Demographic",
+                                "type": "object",
+                                "required": [
+                                  "id"
+                                ],
+                                "properties": {
+                                  "id": {
+                                    "$id": "#root/data/items/items/items/demographics/items/demographic/id",
+                                    "title": "Id",
+                                    "type": "string",
+                                    "default": "",
+                                    "pattern": "^.*$"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "adjustments": {
+                          "$id": "#root/data/items/items/items/adjustments",
+                          "title": "Adjustments",
+                          "type": "array",
+                          "default": [],
+                          "items": {
+                            "$id": "#root/data/items/items/items/adjustments/items",
+                            "title": "Items",
+                            "type": "object",
+                            "required": [
+                              "id",
+                              "type",
+                              "amount",
+                              "actualAmount",
+                              "code",
+                              "caption",
+                              "meta",
+                              "audit",
+                              "created",
+                              "createdBy",
+                              "updatedAt",
+                              "itemId"
+                            ],
+                            "properties": {
+                              "id": {
+                                "$id": "#root/data/items/items/items/adjustments/items/id",
+                                "title": "Id",
+                                "type": "string",
+                                "default": "",
+                                "pattern": "^.*$"
+                              },
+                              "type": {
+                                "$id": "#root/data/items/items/items/adjustments/items/type",
+                                "title": "Type",
+                                "type": "string",
+                                "default": "",
+                                "examples": [
+                                  "modify"
+                                ],
+                                "pattern": "^.*$"
+                              },
+                              "amount": {
+                                "$id": "#root/data/items/items/items/adjustments/items/amount",
+                                "title": "Amount",
+                                "type": "integer",
+                                "examples": [
+                                  0
+                                ],
+                                "default": 0
+                              },
+                              "actualAmount": {
+                                "$id": "#root/data/items/items/items/adjustments/items/actualAmount",
+                                "title": "Actualamount",
+                                "type": "integer",
+                                "examples": [
+                                  0
+                                ],
+                                "default": 0
+                              },
+                              "code": {
+                                "$id": "#root/data/items/items/items/adjustments/items/code",
+                                "title": "Code",
+                                "type": "null",
+                                "default": null
+                              },
+                              "caption": {
+                                "$id": "#root/data/items/items/items/adjustments/items/caption",
+                                "title": "Caption",
+                                "type": "null",
+                                "default": null
+                              },
+                              "meta": {
+                                "$id": "#root/data/items/items/items/adjustments/items/meta",
+                                "title": "Meta",
+                                "type": "object",
+                                "required": [
+                                  "updates"
+                                ],
+                                "properties": {
+                                  "updates": {
+                                    "$id": "#root/data/items/items/items/adjustments/items/meta/updates",
+                                    "title": "Updates",
+                                    "type": "object",
+                                    "required": [
+                                      "status"
+                                    ],
+                                    "properties": {
+                                      "status": {
+                                        "$id": "#root/data/items/items/items/adjustments/items/meta/updates/status",
+                                        "title": "Status",
+                                        "type": "object",
+                                        "required": [
+                                          "old",
+                                          "new"
+                                        ],
+                                        "properties": {
+                                          "old": {
+                                            "$id": "#root/data/items/items/items/adjustments/items/meta/updates/status/old",
+                                            "title": "Old",
+                                            "type": "integer",
+                                            "examples": [
+                                              103
+                                            ],
+                                            "default": 0
+                                          },
+                                          "new": {
+                                            "$id": "#root/data/items/items/items/adjustments/items/meta/updates/status/new",
+                                            "title": "New",
+                                            "type": "integer",
+                                            "examples": [
+                                              202
+                                            ],
+                                            "default": 0
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "audit": {
+                                "$id": "#root/data/items/items/items/adjustments/items/audit",
+                                "title": "Audit",
+                                "type": "object",
+                                "required": [
+                                  "status"
+                                ],
+                                "properties": {
+                                  "status": {
+                                    "$id": "#root/data/items/items/items/adjustments/items/audit/status",
+                                    "title": "Status",
+                                    "type": "object",
+                                    "required": [
+                                      "old",
+                                      "new"
+                                    ],
+                                    "properties": {
+                                      "old": {
+                                        "$id": "#root/data/items/items/items/adjustments/items/audit/status/old",
+                                        "title": "Old",
+                                        "type": "integer",
+                                        "examples": [
+                                          103
+                                        ],
+                                        "default": 0
+                                      },
+                                      "new": {
+                                        "$id": "#root/data/items/items/items/adjustments/items/audit/status/new",
+                                        "title": "New",
+                                        "type": "integer",
+                                        "examples": [
+                                          202
+                                        ],
+                                        "default": 0
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "created": {
+                                "$id": "#root/data/items/items/items/adjustments/items/created",
+                                "title": "Created",
+                                "type": "string",
+                                "default": "",
+                                "examples": [
+                                  "2022-01-05T08:12:27+00:00"
+                                ],
+                                "pattern": "^.*$"
+                              },
+                              "createdBy": {
+                                "$id": "#root/data/items/items/items/adjustments/items/createdBy",
+                                "title": "Createdby",
+                                "type": "object",
+                                "required": [
+                                  "id"
+                                ],
+                                "properties": {
+                                  "id": {
+                                    "$id": "#root/data/items/items/items/adjustments/items/createdBy/id",
+                                    "title": "Id",
+                                    "type": "string",
+                                    "default": "",
+                                    "pattern": "^.*$"
+                                  }
+                                }
+                              },
+                              "updatedAt": {
+                                "$id": "#root/data/items/items/items/adjustments/items/updatedAt",
+                                "title": "Updatedat",
+                                "type": "string",
+                                "default": "",
+                                "examples": [
+                                  "2022-01-05T08:12:27+00:00"
+                                ],
+                                "pattern": "^.*$"
+                              },
+                              "itemId": {
+                                "$id": "#root/data/items/items/items/adjustments/items/itemId",
+                                "title": "Itemid",
+                                "type": "string",
+                                "default": "",
+                                "pattern": "^.*$"
+                              }
+                            }
+                          }
+                        },
+                        "guestsData": {
+                          "$id": "#root/data/items/items/items/guestsData",
+                          "title": "Guestsdata",
+                          "type": "array",
+                          "default": []
+                        },
+                        "guests": {
+                          "$id": "#root/data/items/items/items/guests",
+                          "title": "Guests",
+                          "type": "array",
+                          "default": [],
+                          "items": {
+                            "$id": "#root/data/items/items/items/guests/items",
+                            "title": "Items",
+                            "type": "object",
+                            "required": [
+                              "id",
+                              "demographic",
+                              "ticketCode",
+                              "guestStatus"
+                            ],
+                            "properties": {
+                              "id": {
+                                "$id": "#root/data/items/items/items/guests/items/id",
+                                "title": "Id",
+                                "type": "string",
+                                "default": "",
+                                "pattern": "^.*$"
+                              },
+                              "demographic": {
+                                "$id": "#root/data/items/items/items/guests/items/demographic",
+                                "title": "Demographic",
+                                "type": "object",
+                                "required": [
+                                  "id",
+                                  "quantity",
+                                  "demographic"
+                                ],
+                                "properties": {
+                                  "id": {
+                                    "$id": "#root/data/items/items/items/guests/items/demographic/id",
+                                    "title": "Id",
+                                    "type": "string",
+                                    "default": "",
+                                    "pattern": "^.*$"
+                                  },
+                                  "quantity": {
+                                    "$id": "#root/data/items/items/items/guests/items/demographic/quantity",
+                                    "title": "Quantity",
+                                    "type": "integer",
+                                    "examples": [
+                                      6
+                                    ],
+                                    "default": 0
+                                  },
+                                  "demographic": {
+                                    "$id": "#root/data/items/items/items/guests/items/demographic/demographic",
+                                    "title": "Demographic",
+                                    "type": "object",
+                                    "required": [
+                                      "id"
+                                    ],
+                                    "properties": {
+                                      "id": {
+                                        "$id": "#root/data/items/items/items/guests/items/demographic/demographic/id",
+                                        "title": "Id",
+                                        "type": "string",
+                                        "default": "",
+                                        "examples": [
+                                          ""
+                                        ],
+                                        "pattern": "^.*$"
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "ticketCode": {
+                                "$id": "#root/data/items/items/items/guests/items/ticketCode",
+                                "title": "Ticketcode",
+                                "type": "string",
+                                "default": "",
+                                "examples": [
+                                  ""
+                                ],
+                                "pattern": "^.*$"
+                              },
+                              "guestStatus": {
+                                "$id": "#root/data/items/items/items/guests/items/guestStatus",
+                                "title": "Gueststatus",
+                                "type": "string",
+                                "default": "",
+                                "examples": [
+                                  "pending"
+                                ],
+                                "pattern": "^.*$"
+                              }
+                            }
+                          }
+                        },
+                        "waivers": {
+                          "$id": "#root/data/items/items/items/waivers",
+                          "title": "Waivers",
+                          "type": "array",
+                          "default": []
+                        },
+                        "reminders2": {
+                          "$id": "#root/data/items/items/items/reminders2",
+                          "title": "Reminders2",
+                          "type": "array",
+                          "default": [],
+                          "items": {
+                            "$id": "#root/data/items/items/items/reminders2/items",
+                            "title": "Items",
+                            "type": "object",
+                            "required": [
+                              "type",
+                              "sendReminderAt",
+                              "status"
+                            ],
+                            "properties": {
+                              "type": {
+                                "$id": "#root/data/items/items/items/reminders2/items/type",
+                                "title": "Type",
+                                "type": "string",
+                                "default": "",
+                                "examples": [
+                                  "trip_reminder_to_traveler"
+                                ],
+                                "pattern": "^.*$"
+                              },
+                              "sendReminderAt": {
+                                "$id": "#root/data/items/items/items/reminders2/items/sendReminderAt",
+                                "title": "Sendreminderat",
+                                "type": "string",
+                                "default": "",
+                                "examples": [
+                                  "2022-01-05T03:25:00+00:00"
+                                ],
+                                "pattern": "^.*$"
+                              },
+                              "status": {
+                                "$id": "#root/data/items/items/items/reminders2/items/status",
+                                "title": "Status",
+                                "type": "string",
+                                "default": "",
+                                "examples": [
+                                  "ignore_booked_in_notification_window"
+                                ],
+                                "pattern": "^.*$"
+                              }
+                            }
+                          }
+                        },
+                        "pluginFees": {
+                          "$id": "#root/data/items/items/items/pluginFees",
+                          "title": "Pluginfees",
+                          "type": "array",
+                          "default": []
+                        },
+                        "organizerTimezoneName": {
+                          "$id": "#root/data/items/items/items/organizerTimezoneName",
+                          "title": "Organizertimezonename",
+                          "type": "string",
+                          "default": "",
+                          "examples": [
+                            "America/Los_Angeles"
+                          ],
+                          "pattern": "^.*$"
+                        }
+                      }
+                    }
+                  },
+                  "tags": {
+                    "$id": "#root/data/items/tags",
+                    "title": "Tags",
+                    "type": "array",
+                    "default": [],
+                    "items": {
+                      "$id": "#root/data/items/tags/items",
+                      "title": "Items",
+                      "type": "object",
+                      "required": [
+                        "id"
+                      ],
+                      "properties": {
+                        "id": {
+                          "$id": "#root/data/items/tags/items/id",
+                          "title": "Id",
+                          "type": "string",
+                          "default": "",
+                          "examples": [
+                            "mobile"
+                          ],
+                          "pattern": "^.*$"
+                        }
+                      }
+                    }
+                  },
+                  "createdAt": {
+                    "$id": "#root/data/items/createdAt",
+                    "title": "Createdat",
+                    "type": "string",
+                    "default": "",
+                    "examples": [
+                      "2022-01-05T08:12:24+00:00"
+                    ],
+                    "pattern": "^.*$"
+                  },
+                  "createdBy": {
+                    "$id": "#root/data/items/createdBy",
+                    "title": "Createdby",
+                    "type": "object",
+                    "required": [
+                      "id"
+                    ],
+                    "properties": {
+                      "id": {
+                        "$id": "#root/data/items/createdBy/id",
+                        "title": "Id",
+                        "type": "string",
+                        "default": "",
+                        "examples": [
+                          "7ajbhs758u4iehjrieur"
+                        ],
+                        "pattern": "^.*$"
+                      }
+                    }
+                  },
+                  "travelers": {
+                    "$id": "#root/data/items/travelers",
+                    "title": "Travelers",
+                    "type": "array",
+                    "default": [],
+                    "items": {
+                      "$id": "#root/data/items/travelers/items",
+                      "title": "Items",
+                      "type": "object",
+                      "required": [
+                        "id"
+                      ],
+                      "properties": {
+                        "id": {
+                          "$id": "#root/data/items/travelers/items/id",
+                          "title": "Id",
+                          "type": "string",
+                          "default": "",
+                          "examples": [
+                            "61dad4gvhbjnaf0d2iwurjs7"
+                          ],
+                          "pattern": "^.*$"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_mode": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

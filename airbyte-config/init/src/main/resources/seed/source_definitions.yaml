@@ -414,3 +414,8 @@
   dockerRepository: blotout/source-active-campaign-singer
   dockerImageTag: 0.1.1
   documentationUrl: https://github.com/blotoutio/tap-activecampaign
+- sourceDefinitionId: 2cfcd96e-72ab-11ec-90d6-0242ac120003
+  name: Xola
+  dockerRepository: blotout/source-xola
+  dockerImageTag: 0.1.0
+  documentationUrl: https://github.com/blotoutio/source-xola/README.md
