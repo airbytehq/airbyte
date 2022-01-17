@@ -171,6 +171,7 @@ class Companies(IncrementalIntercomStream):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._backoff_count = 0
+        self._use_standard = False
         self._endpoint_type = self.EndpointType.scroll
         self._total_count = None  # uses for saving of a total_count value once
 
@@ -193,6 +194,9 @@ class Companies(IncrementalIntercomStream):
             return super().next_page_token(response)
         return None
 
+    def need_use_standard(self):
+        return not self.can_use_scroll() or self._use_standard
+
     def can_use_scroll(self):
         """Check backoff count"""
         return self._backoff_count <= 3
@@ -214,20 +218,20 @@ class Companies(IncrementalIntercomStream):
 
     @property
     def raise_on_http_errors(self) -> bool:
-        if not self.can_use_scroll() and self._endpoint_type == self.EndpointType.scroll:
+        if self.need_use_standard() and self._endpoint_type == self.EndpointType.scroll:
             return False
         return True
 
     def stream_slices(self, sync_mode, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         yield None
-        if not self.can_use_scroll():
+        if self.need_use_standard():
             self._endpoint_type = self.EndpointType.standard
             yield None
 
     def should_retry(self, response: requests.Response) -> bool:
         if self.check_exists_scroll(response):
             self._backoff_count += 1
-            if not self.can_use_scroll():
+            if self.need_use_standard():
                 self.logger.error("Can't create a new scroll request within an minute or scroll param was expired. " 
                                   "Let's try to use a standard non-scroll endpoint.")
                 return False
@@ -237,7 +241,8 @@ class Companies(IncrementalIntercomStream):
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if response.status_code == 404:
-            self._backoff_count = 3
+            self._use_standard = True
+            # Need return value greater than zero to use UserDefinedBackoffException class
             return 0.01
         if self.check_exists_scroll(response):
             self.logger.warning("A previous scroll request is exists. " "It must be deleted within an minute automatically")
