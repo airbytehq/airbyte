@@ -5,24 +5,18 @@
 package io.airbyte.test.airbyte_test_container;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.airbyte.workers.process.KubePodProcess;
-import io.airbyte.workers.process.KubePortManagerSingleton;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
-import org.joda.time.format.ISODateTimeFormat;
 
 @Slf4j
 public class ProcessData {
@@ -105,7 +99,7 @@ public class ProcessData {
   public static long percentile(final List<Long> latencies, final double percentile) {
     Collections.sort(latencies);
     final int index = (int) Math.ceil(percentile / 100.0 * latencies.size());
-    return latencies.get(index-1);
+    return latencies.get(index - 1);
   }
 
   public static double average(final List<Long> latencies) {
@@ -113,6 +107,7 @@ public class ProcessData {
     for (final Long a : latencies) {
       total += a;
     }
-    return total/latencies.size();
+    return total / latencies.size();
   }
+
 }

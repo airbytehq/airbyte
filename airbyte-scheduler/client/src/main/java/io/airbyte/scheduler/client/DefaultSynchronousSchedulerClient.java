@@ -75,14 +75,15 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         .withConnectionConfiguration(destinationConfiguration)
         .withDockerImage(dockerImage);
 
-    final var resp =  execute(
+    final var resp = execute(
         ConfigType.CHECK_CONNECTION_DESTINATION,
         destination.getDestinationDefinitionId(),
         jobId -> temporalClient.submitCheckConnection(UUID.randomUUID(), 0, jobCheckConnectionConfig),
         destination.getWorkspaceId());
 
     final var diff = System.currentTimeMillis() - start;
-    MetricSingleton.getInstance().recordTime("destination_check_connection_job_duration", diff, "time taken to execute destination check connection job");
+    MetricSingleton.getInstance().recordTime("destination_check_connection_job_duration", diff,
+        "time taken to execute destination check connection job");
     return resp;
   }
 

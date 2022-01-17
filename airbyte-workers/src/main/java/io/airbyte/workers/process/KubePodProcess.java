@@ -95,7 +95,7 @@ public class KubePodProcess extends Process {
   private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcess.class);
 
   private static final String INIT_CONTAINER_NAME = "init";
-  public static final Duration DEFAULT_STATUS_CHECK_INTERVAL = Duration.ofSeconds(30);
+  public static final Duration DEFAULT_STATUS_CHECK_INTERVAL = Duration.ofSeconds(1);
   private static final String DEFAULT_MEMORY_REQUEST = "25Mi";
   private static final String DEFAULT_MEMORY_LIMIT = "50Mi";
   private static final ResourceRequirements DEFAULT_SIDECAR_RESOURCES = new ResourceRequirements()
