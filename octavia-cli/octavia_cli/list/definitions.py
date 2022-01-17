@@ -64,7 +64,7 @@ class Definitions(abc.ABC):
 
     # TODO alafanechere: declare in a specific formatting module because it will probably be reused
     @staticmethod
-    def camelcased_to_uppercased_spaced(camelcased: str):
+    def _camelcased_to_uppercased_spaced(camelcased: str):
         """Util function to transform a camelCase string to a UPPERCASED SPACED string
         e.g: dockerImageName -> DOCKER IMAGE NAME
         Args:
@@ -91,7 +91,7 @@ class Definitions(abc.ABC):
     # TODO alafanechere: declare in a specific formatting module because it will probably be reused
     @staticmethod
     def _format_column_names(camelcased_column_names: List[str]) -> List[str]:
-        """Form camel cased column names to uppercased spaced column names
+        """Format camel cased column names to uppercased spaced column names
 
         Args:
             camelcased_column_names (List[str]): Column names in camel case.
@@ -99,7 +99,7 @@ class Definitions(abc.ABC):
         Returns:
             (List[str]): Column names in uppercase with spaces.
         """
-        return [Definitions.camelcased_to_uppercased_spaced(column_name) for column_name in camelcased_column_names]
+        return [Definitions._camelcased_to_uppercased_spaced(column_name) for column_name in camelcased_column_names]
 
     def __repr__(self):
         definitions = [self._format_column_names(self.fields_to_display)] + self.latest_definitions

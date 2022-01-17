@@ -100,6 +100,17 @@ class TestDefinitions:
         mocker.patch.object(Definitions, "_compute_col_width", mocker.Mock(return_value=col_width))
         assert Definitions._display_as_table(test_data) == expected_output
 
+    @pytest.mark.parametrize("input_camelcased,expected_output", [("camelCased", "CAMEL CASED"), ("notcamelcased", "NOTCAMELCASED")])
+    def test_camelcased_to_uppercased_spaced(self, input_camelcased, expected_output):
+        assert Definitions._camelcased_to_uppercased_spaced(input_camelcased) == expected_output
+
+    def test_format_column_names(self, mocker):
+        columns_to_format = ["camelCased"]
+        formatted_columns = Definitions._format_column_names(columns_to_format)
+        assert len(formatted_columns) == 1
+        for i, c in enumerate(formatted_columns):
+            assert c == Definitions._camelcased_to_uppercased_spaced(columns_to_format[i])
+
 
 class TestSubDefinitions:
     @pytest.fixture
