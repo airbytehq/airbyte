@@ -40,10 +40,9 @@ class DelightedStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
+        params = {"per_page": self.limit, "since": self.since}
         if next_page_token:
-            params = {"per_page": self.limit, **next_page_token}
-        else:
-            params = {"per_page": self.limit, "since": self.since}
+            params.update(**next_page_token)
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -79,6 +78,10 @@ class IncrementalDelightedStream(DelightedStream, ABC):
 
 
 class People(IncrementalDelightedStream):
+    """
+    API docs: https://app.delighted.com/docs/api/listing-people
+    """
+
     def path(self, **kwargs) -> str:
         return "people.json"
 
@@ -90,6 +93,10 @@ class People(IncrementalDelightedStream):
 
 
 class Unsubscribes(IncrementalDelightedStream):
+    """
+    API docs: https://app.delighted.com/docs/api/listing-unsubscribed-people
+    """
+
     cursor_field = "unsubscribed_at"
     primary_key = "person_id"
 
@@ -98,6 +105,10 @@ class Unsubscribes(IncrementalDelightedStream):
 
 
 class Bounces(IncrementalDelightedStream):
+    """
+    API docs: https://app.delighted.com/docs/api/listing-bounced-people
+    """
+
     cursor_field = "bounced_at"
     primary_key = "person_id"
 
@@ -106,6 +117,10 @@ class Bounces(IncrementalDelightedStream):
 
 
 class SurveyResponses(IncrementalDelightedStream):
+    """
+    API docs: https://app.delighted.com/docs/api/listing-survey-responses
+    """
+
     cursor_field = "updated_at"
 
     def path(self, **kwargs) -> str:
@@ -114,8 +129,13 @@ class SurveyResponses(IncrementalDelightedStream):
     def request_params(self, stream_state=None, **kwargs):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
+
+        if "since" in params:
+            params["updated_since"] = params.pop("since")
+
         if stream_state:
             params["updated_since"] = stream_state.get(self.cursor_field)
+
         return params
 
 
