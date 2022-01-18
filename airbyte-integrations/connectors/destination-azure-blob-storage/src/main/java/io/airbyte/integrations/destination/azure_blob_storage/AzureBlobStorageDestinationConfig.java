@@ -64,11 +64,11 @@ public class AzureBlobStorageDestinationConfig {
     final JsonNode endpointFromConfig = config
         .get("azure_blob_storage_endpoint_domain_name");
     final JsonNode containerName = config.get("azure_blob_storage_container_name");
-    final int outputStreamBufferSizeFromConfig = 
+    final int outputStreamBufferSizeFromConfig =
         config.get("azure_blob_storage_output_buffer_size") != null
             ? config.get("azure_blob_storage_output_buffer_size").asInt(DEFAULT_STORAGE_OUTPUT_BUFFER_SIZE)
             : DEFAULT_STORAGE_OUTPUT_BUFFER_SIZE;
-    
+
     final JsonNode blobName = config.get("azure_blob_storage_blob_name"); // streamId
 
     final String endpointComputed = String.format(Locale.ROOT, DEFAULT_STORAGE_ENDPOINT_FORMAT,

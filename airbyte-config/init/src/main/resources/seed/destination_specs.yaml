@@ -188,7 +188,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-bigquery:0.6.2"
+- dockerImage: "airbyte/destination-bigquery:0.6.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -378,7 +378,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:0.2.2"
+- dockerImage: "airbyte/destination-bigquery-denormalized:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -3408,7 +3408,7 @@
     supported_destination_sync_modes:
     - "append"
     - "overwrite"
-- dockerImage: "airbyte/destination-s3:0.2.3"
+- dockerImage: "airbyte/destination-s3:0.2.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/s3"
     connectionSpecification:
@@ -3419,8 +3419,6 @@
       - "s3_bucket_name"
       - "s3_bucket_path"
       - "s3_bucket_region"
-      - "access_key_id"
-      - "secret_access_key"
       - "format"
       additionalProperties: false
       properties:
@@ -3478,14 +3476,16 @@
         access_key_id:
           type: "string"
           description: "The access key id to access the S3 bucket. Airbyte requires\
-            \ Read and Write permissions to the given bucket."
+            \ Read and Write permissions to the given bucket, if not set, Airbyte\
+            \ will rely on Instance Profile."
           title: "S3 Key Id"
           airbyte_secret: true
           examples:
           - "A012345678910EXAMPLE"
         secret_access_key:
           type: "string"
-          description: "The corresponding secret to the access key id."
+          description: "The corresponding secret to the access key id, if S3 Key Id\
+            \ is set, then S3 Access Key must also be provided"
           title: "S3 Access Key"
           airbyte_secret: true
           examples:
