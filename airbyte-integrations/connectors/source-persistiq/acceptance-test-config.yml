@@ -15,3 +15,9 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       empty_streams: []
+      expect_records:
+        path: "integration_tests/expected_campaigns_stream.txt"
+  full_refresh:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      

@@ -2,7 +2,6 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -38,9 +37,6 @@ class PersistiqStream(HttpStream, ABC):
         return {"x-api-key": self.api_key}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield {}
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield response.json()
 
 
@@ -52,6 +48,10 @@ class Users(PersistiqStream):
     ) -> str:
         return "users"
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        json = response.json()
+        yield from json["users"]
+
 
 class Leads(PersistiqStream):
     primary_key = "id"
@@ -60,7 +60,9 @@ class Leads(PersistiqStream):
         self, **kwargs
     ) -> str:
         return "leads"
-
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        json = response.json()
+        yield from json["leads"]
 
 class Campaigns(PersistiqStream):
     primary_key = "id"
@@ -69,6 +71,10 @@ class Campaigns(PersistiqStream):
         self, **kwargs
     ) -> str:
         return "campaigns"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        json = response.json()
+        yield from json["campaigns"]
 
 # Source
 
