@@ -88,8 +88,8 @@ public class TikTokMarketingOAuthFlow extends BaseOAuth2Flow {
   protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl) throws IOException {
     final Map<String, Object> result = new HashMap<>();
     // getting out access_token
-    if (data.has("access_token")) {
-      result.put("access_token", data.get("access_token").asText());
+    if ((data.has("data")) && (data.get("data").has("access_token"))) {
+      result.put("access_token", data.get("data").get("access_token").asText());
     } else {
       throw new IOException(String.format("Missing 'access_token' in query params from %s", accessTokenUrl));
     }
