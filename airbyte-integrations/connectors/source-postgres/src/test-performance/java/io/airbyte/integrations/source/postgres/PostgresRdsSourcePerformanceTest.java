@@ -10,6 +10,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourcePerformanceTest;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.provider.Arguments;
@@ -17,6 +18,8 @@ import org.junit.jupiter.params.provider.Arguments;
 public class PostgresRdsSourcePerformanceTest extends AbstractSourcePerformanceTest {
 
   private static final String PERFORMANCE_SECRET_CREDS = "secrets/performance-config.json";
+  private static final List<String> SCHEMAS = List.of("test1000tables240columns200recordsDb",
+      "newregular25tables50000records", "newsmall1000tableswith10000rows");
 
   @Override
   protected String getImageName() {
@@ -35,6 +38,7 @@ public class PostgresRdsSourcePerformanceTest extends AbstractSourcePerformanceT
         .put("host", plainConfig.get("host"))
         .put("port", plainConfig.get("port"))
         .put("database", plainConfig.get("database"))
+        .put("schemas", SCHEMAS)
         .put("username", plainConfig.get("username"))
         .put("password", plainConfig.get("password"))
         .put("ssl", true)
@@ -53,9 +57,9 @@ public class PostgresRdsSourcePerformanceTest extends AbstractSourcePerformanceT
   @BeforeAll
   public static void beforeAll() {
     AbstractSourcePerformanceTest.testArgs = Stream.of(
-        Arguments.of("test1000tables240columns200recordsDb", "test1000tables240columns200recordsDb", 200, 240, 1000),
-        Arguments.of("newregular25tables50000records", "newregular25tables50000records", 50000, 8, 25),
-        Arguments.of("newsmall1000tableswith10000rows", "newsmall1000tableswith10000rows", 10000, 8, 1000));
+        Arguments.of(SCHEMAS.get(0), SCHEMAS.get(0), 200, 240, 1000),
+        Arguments.of(SCHEMAS.get(1), SCHEMAS.get(1), 50000, 8, 25),
+        Arguments.of(SCHEMAS.get(2), SCHEMAS.get(2), 10000, 8, 1000));
   }
 
 }

@@ -146,6 +146,12 @@ public class DockerProcessFactory implements ProcessFactory {
             "--log-driver",
             "none");
       }
+
+      for (final var envEntry : workerConfigs.getEnvMap().entrySet()) {
+        cmd.add("-e");
+        cmd.add(envEntry.getKey() + "=" + envEntry.getValue());
+      }
+
       if (!Strings.isNullOrEmpty(entrypoint)) {
         cmd.add("--entrypoint");
         cmd.add(entrypoint);
