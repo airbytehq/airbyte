@@ -52,6 +52,10 @@ public class DataTypeUtils {
     return DATE_FORMAT.format(date);
   }
 
+  public static String toISOTimeString(final LocalDateTime dateTime) {
+    return DateTimeFormatter.ISO_TIME.format(dateTime.toLocalTime());
+  }
+
   public static String toISO8601String(final LocalDate date) {
     return toISO8601String(date.atStartOfDay());
   }

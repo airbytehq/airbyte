@@ -43,7 +43,7 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     startTestContainers();
-    config = bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db));
+    config = bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, List.of("public")));
     populateDatabaseTestData();
 
   }
