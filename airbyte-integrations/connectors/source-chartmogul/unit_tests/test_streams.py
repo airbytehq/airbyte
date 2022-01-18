@@ -2,8 +2,6 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from http import HTTPStatus
-
 import pytest
 from source_chartmogul.source import Activities, Customers
 
@@ -16,7 +14,6 @@ def patch_base_class(mocker):
 
 
 class TestCustomers:
-
     def test_request_params(self):
         stream = Customers()
         inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
@@ -27,7 +24,6 @@ class TestCustomers:
         inputs = {"stream_slice": None, "stream_state": None, "next_page_token": next_page_token}
         expected_params = {"page": 3}
         assert stream.request_params(**inputs) == expected_params
-
 
     def test_next_page_token(self, mocker):
         stream = Customers()
@@ -43,7 +39,6 @@ class TestCustomers:
         inputs = {"response": response}
         assert stream.next_page_token(**inputs) == {"page": 43}
 
-
     def test_parse_response(self, mocker):
         stream = Customers()
         response = mocker.MagicMock()
@@ -55,8 +50,8 @@ class TestCustomers:
 
 # Activites stream tests
 
-class TestActivities:
 
+class TestActivities:
     def test_request_params(self):
         # no start_date set
         stream = Activities(start_date=None)
@@ -74,7 +69,6 @@ class TestActivities:
         expected_params = next_page_token
         assert stream.request_params(**inputs) == expected_params
 
-
     def test_next_page_token(self, mocker):
         stream = Activities(start_date=None)
         response = mocker.MagicMock()
@@ -88,4 +82,3 @@ class TestActivities:
         response.json.return_value = {"has_more": True, "entries": [{"uuid": "unique-uuid"}]}
         inputs = {"response": response}
         assert stream.next_page_token(**inputs) == {"start-after": "unique-uuid"}
-

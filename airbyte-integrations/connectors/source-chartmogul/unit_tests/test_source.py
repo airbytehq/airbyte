@@ -2,10 +2,11 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import ANY, MagicMock
+from unittest.mock import MagicMock
 
-from source_chartmogul.source import SourceChartmogul
 from requests.exceptions import HTTPError
+from source_chartmogul.source import SourceChartmogul
+
 
 def test_check_connection(mocker, requests_mock):
     source = SourceChartmogul()
@@ -19,6 +20,7 @@ def test_check_connection(mocker, requests_mock):
     requests_mock.get("https://api.chartmogul.com/v1/ping", status_code=500)
     ok, err = source.check_connection(logger_mock, config_mock)
     assert (ok, type(err)) == (False, HTTPError)
+
 
 def test_streams(mocker):
     source = SourceChartmogul()
