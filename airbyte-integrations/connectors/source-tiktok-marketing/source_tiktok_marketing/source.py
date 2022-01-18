@@ -5,14 +5,14 @@
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import SyncMode
-# from airbyte_cdk.models import AdvancedAuth, AuthFlowType, ConnectorSpecification, OAuthConfigSpecification, SyncMode
-# from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
+from airbyte_cdk.models import AdvancedAuth, AuthFlowType, ConnectorSpecification, OAuthConfigSpecification, SyncMode
+from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-# from .spec import SourceTiktokMarketingSpec
+from .spec import SourceTiktokMarketingSpec, CompleteOauthOutputSpecification, CompleteOauthServerInputSpecification, \
+    CompleteOauthServerOutputSpecification
 from .streams import (
     DEFAULT_START_DATE,
     AdGroups,
@@ -42,75 +42,40 @@ class TiktokTokenAuthenticator(TokenAuthenticator):
         return {"Access-Token": self.token}
 
 
+
 class SourceTiktokMarketing(AbstractSource):
-    # def spec(self, *args, **kwargs) -> ConnectorSpecification:
-    #     """Returns the spec for this integration."""
-    #     complete_oauth_output_specification = {
-    #         "type": "object",
-    #         "additionalProperties": False,
-    #         "properties": {"access_token": {"type": "string", "path_in_connector_config": ["credentials", "access_token"]}},
-    #     }
-    #     complete_oauth_server_input_specification = {
-    #         "type": "object",
-    #         "additionalProperties": True,
-    #         "properties": {"app_id": {"type": "string"}, "secret": {"type": "string"}},
-    #     }
-    #     complete_oauth_server_output_specification = {
-    #         "type": "object",
-    #         "additionalProperties": False,
-    #         "properties": {
-    #             "app_id": {"type": "string", "path_in_connector_config": ["credentials", "app_id"]},
-    #             "secret": {"type": "string", "path_in_connector_config": ["credentials", "secret"]},
-    #         },
-    #     }
-    #     oauth_user_input_from_connector_config_specification = {
-    #         "type": "object",
-    #         "additionalProperties": False,
-    #         "properties": {"rid": {"type": "string", "path_in_connector_config": ["credentials", "rid"]}},
-    #     }
-    #
-    #     return ConnectorSpecification(
-    #         documentationUrl=DOCUMENTATION_URL,
-    #         changelogUrl=DOCUMENTATION_URL,
-    #         supportsIncremental=True,
-    #         supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
-    #         connectionSpecification=SourceTiktokMarketingSpec.schema(),
-    #         additionalProperties=True,
-    #         advanced_auth=AdvancedAuth(
-    #             auth_flow_type=AuthFlowType.oauth2_0,
-    #             predicate_key=["credentials", "auth_type"],
-    #             predicate_value="oauth2.0",
-    #             oauth_config_specification=OAuthConfigSpecification(
-    #                 complete_oauth_output_specification=complete_oauth_output_specification,
-    #                 complete_oauth_server_input_specification=complete_oauth_server_input_specification,
-    #                 complete_oauth_server_output_specification=complete_oauth_server_output_specification,
-    #                 oauth_user_input_from_connector_config_specification=oauth_user_input_from_connector_config_specification,
-    #             ),
-    #         ),
-    #     )
+    def spec(self, *args, **kwargs) -> ConnectorSpecification:
+        """Returns the spec for this integration."""
+        return ConnectorSpecification(
+            documentationUrl=DOCUMENTATION_URL,
+            changelogUrl=DOCUMENTATION_URL,
+            supportsIncremental=True,
+            supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
+            connectionSpecification=SourceTiktokMarketingSpec.schema(),
+            additionalProperties=True,
+            advanced_auth=AdvancedAuth(
+                auth_flow_type=AuthFlowType.oauth2_0,
+                predicate_key=["credentials", "auth_type"],
+                predicate_value="oauth2.0",
+                oauth_config_specification=OAuthConfigSpecification(
+                    complete_oauth_output_specification=CompleteOauthOutputSpecification.schema(),
+                    complete_oauth_server_input_specification=CompleteOauthServerInputSpecification.schema(),
+                    complete_oauth_server_output_specification=CompleteOauthServerOutputSpecification.schema(),
+                ),
+            ),
+        )
 
     @staticmethod
     def _prepare_stream_args(config: Mapping[str, Any]) -> Mapping[str, Any]:
         """Converts an input configure to stream arguments"""
         credentials = config.get("credentials")
         if credentials:
-            auth_type = credentials["auth_type"]
-            if auth_type == "oauth2.0":
-                access_token = credentials["access_token"]
-                app_id = int(credentials["app_id"])
-                secret = credentials["secret"]
-                advertiser_id = 0
-            elif auth_type == "access_token":
-                access_token = credentials["access_token"]
-                app_id = int(credentials["environment"].get("app_id", 0))
-                secret = credentials["environment"].get("secret")
-                advertiser_id = int(credentials["environment"].get("advertiser_id", 0))
-            else:
-                raise Exception(f"Invalid auth type in config: {auth_type}")
+            access_token = credentials["access_token"]
+            app_id = int(credentials.get("app_id", 0) or credentials.get("environment", {}).get("app_id", 0))
+            secret = credentials.get("secret") or credentials.get("environment", {}).get("secret")
+            advertiser_id = int(credentials.get("environment", {}).get("advertiser_id", 0))
         else:
-            access_token = config.get("access_token")
-            if not access_token:
-                raise Exception("No access_token in config")
+            access_token = config["access_token"]
             app_id = int(config["environment"].get("app_id", 0))
             secret = config["environment"].get("secret")
             advertiser_id = int(config["environment"].get("advertiser_id", 0))

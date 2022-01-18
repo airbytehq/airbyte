@@ -17,11 +17,9 @@ class OauthCredSpec(BaseModel):
     class Config:
         title = "OAuth2.0"
 
-    auth_type: str = Field(default="oauth2.0", const=True, order=1, enum=["oauth2.0"])
+    auth_type: str = Field(default="oauth2.0", const=True, order=0, enum=["oauth2.0"])
 
     app_id: str = Field(title="App ID", description="The App ID applied by the developer.", airbyte_secret=True)
-
-    rid: str = Field(title="RID", description="The RID applied by the developer.", airbyte_secret=True)
 
     secret: str = Field(
         title="Secret",
@@ -67,9 +65,9 @@ class AccessTokenCredSpec(BaseModel):
     class Config:
         title = "Access Token"
 
-    auth_type: str = Field(default="access_token", const=True, order=2, enum=["access_token"])
+    auth_type: str = Field(default="access_token", const=True, order=0, enum=["access_token"])
 
-    environment: Union[ProductionEnvSpec, SandboxEnvSpec] = Field(default=ProductionEnvSpec.Config.title)
+    environment: Union[ProductionEnvSpec, SandboxEnvSpec] = Field(default=ProductionEnvSpec.Config.title, type='object')
 
     access_token: str = Field(title="Access Token", description="The Long-term Authorized Access Token.", airbyte_secret=True)
 
@@ -84,7 +82,7 @@ class SourceTiktokMarketingSpec(BaseModel):
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         description="The Start Date in format: YYYY-MM-DD. Any data before this date will not be replicated. "
         "If this parameter is not set, all data will be replicated.",
-        order=1,
+        order=0,
     )
 
     report_granularity: str = Field(
@@ -93,10 +91,10 @@ class SourceTiktokMarketingSpec(BaseModel):
         "This option is used for reports' streams only.",
         default=ReportGranularity.default().value,
         enum=[g.value for g in ReportGranularity],
-        order=2,
+        order=1,
     )
 
-    credentials: Union[OauthCredSpec, AccessTokenCredSpec] = Field(title="Authorization Method", order=3)
+    credentials: Union[OauthCredSpec, AccessTokenCredSpec] = Field(title="Authorization Method", order=3, default={}, type='object')
 
     @classmethod
     def change_format_to_oneOf(cls, schema: dict) -> dict:
@@ -127,3 +125,17 @@ class SourceTiktokMarketingSpec(BaseModel):
         schema = super().schema()
         schema = cls.change_format_to_oneOf(schema)
         return cls.resolve_refs(schema)
+
+
+class CompleteOauthOutputSpecification(BaseModel):
+    access_token: str = Field(path_in_connector_config=["credentials", "access_token"])
+
+
+class CompleteOauthServerInputSpecification(BaseModel):
+    app_id: str = Field()
+    secret: str = Field()
+
+
+class CompleteOauthServerOutputSpecification(BaseModel):
+    app_id: str = Field(path_in_connector_config=["credentials", "app_id"])
+    secret: str = Field(path_in_connector_config=["credentials", "secret"])

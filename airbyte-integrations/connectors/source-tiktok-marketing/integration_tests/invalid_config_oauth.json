@@ -1,10 +1,8 @@
 {
   "credentials": {
-    "auth_type": "Oauth",
+    "auth_type": "oauth2.0",
     "app_id": "1",
     "secret": "2",
-    "access_token": "<broken_token>",
-    "start_date": "2021-01-01",
-    "advertiser_id": "11111111"
+    "access_token": "<broken_token>"
   }
 }
