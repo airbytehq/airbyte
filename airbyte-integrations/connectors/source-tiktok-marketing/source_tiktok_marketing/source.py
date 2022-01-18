@@ -42,51 +42,51 @@ class TiktokTokenAuthenticator(TokenAuthenticator):
 
 
 class SourceTiktokMarketing(AbstractSource):
-    def spec(self, *args, **kwargs) -> ConnectorSpecification:
-        """Returns the spec for this integration."""
-        complete_oauth_output_specification = {
-            "type": "object",
-            "additionalProperties": False,
-            "properties": {"access_token": {"type": "string", "path_in_connector_config": ["credentials", "access_token"]}},
-        }
-        complete_oauth_server_input_specification = {
-            "type": "object",
-            "additionalProperties": True,
-            "properties": {"app_id": {"type": "string"}, "secret": {"type": "string"}},
-        }
-        complete_oauth_server_output_specification = {
-            "type": "object",
-            "additionalProperties": False,
-            "properties": {
-                "app_id": {"type": "string", "path_in_connector_config": ["credentials", "app_id"]},
-                "secret": {"type": "string", "path_in_connector_config": ["credentials", "secret"]},
-            },
-        }
-        oauth_user_input_from_connector_config_specification = {
-            "type": "object",
-            "additionalProperties": False,
-            "properties": {"rid": {"type": "string", "path_in_connector_config": ["credentials", "rid"]}},
-        }
-
-        return ConnectorSpecification(
-            documentationUrl=DOCUMENTATION_URL,
-            changelogUrl=DOCUMENTATION_URL,
-            supportsIncremental=True,
-            supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
-            connectionSpecification=SourceTiktokMarketingSpec.schema(),
-            additionalProperties=True,
-            advanced_auth=AdvancedAuth(
-                auth_flow_type=AuthFlowType.oauth2_0,
-                predicate_key=["credentials", "auth_type"],
-                predicate_value="oauth2.0",
-                oauth_config_specification=OAuthConfigSpecification(
-                    complete_oauth_output_specification=complete_oauth_output_specification,
-                    complete_oauth_server_input_specification=complete_oauth_server_input_specification,
-                    complete_oauth_server_output_specification=complete_oauth_server_output_specification,
-                    oauth_user_input_from_connector_config_specification=oauth_user_input_from_connector_config_specification,
-                ),
-            ),
-        )
+    # def spec(self, *args, **kwargs) -> ConnectorSpecification:
+    #     """Returns the spec for this integration."""
+    #     complete_oauth_output_specification = {
+    #         "type": "object",
+    #         "additionalProperties": False,
+    #         "properties": {"access_token": {"type": "string", "path_in_connector_config": ["credentials", "access_token"]}},
+    #     }
+    #     complete_oauth_server_input_specification = {
+    #         "type": "object",
+    #         "additionalProperties": True,
+    #         "properties": {"app_id": {"type": "string"}, "secret": {"type": "string"}},
+    #     }
+    #     complete_oauth_server_output_specification = {
+    #         "type": "object",
+    #         "additionalProperties": False,
+    #         "properties": {
+    #             "app_id": {"type": "string", "path_in_connector_config": ["credentials", "app_id"]},
+    #             "secret": {"type": "string", "path_in_connector_config": ["credentials", "secret"]},
+    #         },
+    #     }
+    #     oauth_user_input_from_connector_config_specification = {
+    #         "type": "object",
+    #         "additionalProperties": False,
+    #         "properties": {"rid": {"type": "string", "path_in_connector_config": ["credentials", "rid"]}},
+    #     }
+    #
+    #     return ConnectorSpecification(
+    #         documentationUrl=DOCUMENTATION_URL,
+    #         changelogUrl=DOCUMENTATION_URL,
+    #         supportsIncremental=True,
+    #         supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
+    #         connectionSpecification=SourceTiktokMarketingSpec.schema(),
+    #         additionalProperties=True,
+    #         advanced_auth=AdvancedAuth(
+    #             auth_flow_type=AuthFlowType.oauth2_0,
+    #             predicate_key=["credentials", "auth_type"],
+    #             predicate_value="oauth2.0",
+    #             oauth_config_specification=OAuthConfigSpecification(
+    #                 complete_oauth_output_specification=complete_oauth_output_specification,
+    #                 complete_oauth_server_input_specification=complete_oauth_server_input_specification,
+    #                 complete_oauth_server_output_specification=complete_oauth_server_output_specification,
+    #                 oauth_user_input_from_connector_config_specification=oauth_user_input_from_connector_config_specification,
+    #             ),
+    #         ),
+    #     )
 
     @staticmethod
     def _prepare_stream_args(config: Mapping[str, Any]) -> Mapping[str, Any]:

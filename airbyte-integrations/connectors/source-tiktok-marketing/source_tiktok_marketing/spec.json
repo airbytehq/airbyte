@@ -1,0 +1,199 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/tiktok-marketing",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "TikTok Marketing Source Spec",
+    "type": "object",
+    "required": [],
+    "additionalProperties": true,
+    "properties": {
+      "start_date": {
+        "title": "Start Date",
+        "type": "string",
+        "description": "The Start Date in format: YYYY-MM-DD. Any data before this date will not be replicated. If this parameter is not set, all data will be replicated.",
+        "examples": ["2016-09-01"],
+        "default": "2016-09-01",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "order": 0
+      },
+      "report_granularity": {
+        "title": "Report Granularity",
+        "type": "string",
+        "description": "Which time granularity should be grouped by; for LIFETIME there will be no grouping. This option is used for reports' streams only.",
+        "default": "DAY",
+        "enum": ["LIFETIME", "DAY", "HOUR"],
+        "order": 1
+      },
+      "credentials": {
+        "title": "Authorization Method",
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "OAuth2.0",
+            "type": "object",
+            "required": ["auth_type", "app_id", "secret", "access_token"],
+            "properties": {
+              "rid": {
+                "title": "RID",
+                "type": "string",
+                "description": "The RID applied by the developer.",
+                "airbyte_secret": true,
+                "order": 0
+              },
+              "auth_type": {
+                "type": "string",
+                "const": "oauth2.0",
+                "enum": ["oauth2.0"],
+                "default": "oauth2.0",
+                "order": 1
+              },
+              "app_id": {
+                "title": "App ID",
+                "type": "string",
+                "description": "The App ID applied by the developer.",
+                "airbyte_secret": true
+              },
+              "secret": {
+                "title": "Secret",
+                "type": "string",
+                "description": "The private key of the developer's application.",
+                "airbyte_secret": true
+              },
+              "access_token": {
+                "title": "Access Token",
+                "type": "string",
+                "description": "The Long-term Authorized Access Token.",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "title": "Access Token",
+            "type": "object",
+            "required": ["auth_type", "environment", "access_token"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "access_token",
+                "enum": ["access_token"],
+                "default": "access_token",
+                "order": 0
+              },
+              "access_token": {
+                "title": "Access Token",
+                "type": "string",
+                "description": "The Access Token to make authenticated requests.",
+                "airbyte_secret": true,
+                "order": 1
+              },
+              "environment": {
+                "title": "Environment",
+                "type": "object",
+                "oneOf": [
+                  {
+                    "title": "Production",
+                    "type": "object",
+                    "required": ["environment", "app_id", "secret"],
+                    "properties": {
+                      "environment": {
+                        "const": "prod",
+                        "type": "string",
+                        "enum": ["prod"],
+                        "default": "prod",
+                        "order": 0
+                      },
+                      "app_id": {
+                        "title": "App ID",
+                        "description": "The App ID applied by the developer.",
+                        "type": "string"
+                      },
+                      "secret": {
+                        "title": "Secret",
+                        "description": "The private key of the developer application.",
+                        "airbyte_secret": true,
+                        "type": "string"
+                      }
+                    }
+                  },
+                  {
+                    "title": "Sandbox",
+                    "type": "object",
+                    "required": ["environment", "advertiser_id"],
+                    "properties": {
+                      "environment": {
+                        "const": "sandbox",
+                        "type": "string",
+                        "enum": ["sandbox"],
+                        "default": "sandbox",
+                        "order": 0
+                      },
+                      "advertiser_id": {
+                        "title": "Advertiser ID",
+                        "description": "The Advertiser ID  which generated for the developer's Sandbox application.",
+                        "type": "string",
+                        "airbyte_secret": true
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": ["credentials", "auth_type"],
+    "predicate_value": "oauth2.0",
+    "oauth_config_specification": {
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "access_token"]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "app_id": {
+            "type": "string"
+          },
+          "secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "app_id": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "app_id"]
+          },
+          "secret": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "secret"]
+          }
+        }
+      },
+      "oauth_user_input_from_connector_config_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "rid": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "rid"]
+          }
+        }
+      }
+    }
+  }
+}
