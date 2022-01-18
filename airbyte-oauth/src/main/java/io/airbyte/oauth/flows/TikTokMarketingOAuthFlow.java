@@ -24,7 +24,7 @@ import org.apache.http.client.utils.URIBuilder;
  */
 public class TikTokMarketingOAuthFlow extends BaseOAuth2Flow {
 
-  private static final String ACCESS_TOKEN_URL = "https://ads.tiktok.com/open_api/v1.2/oauth2/access_token";
+  private static final String ACCESS_TOKEN_URL = "https://business-api.tiktok.com/open_api/v1.2/oauth2/access_token/";
 
   protected String getClientIdUnsafe(final JsonNode oauthConfig) {
     return getConfigValueUnsafe(oauthConfig, "app_id");
@@ -50,9 +50,6 @@ public class TikTokMarketingOAuthFlow extends BaseOAuth2Flow {
                                     final JsonNode inputOAuthConfiguration)
       throws IOException {
 
-    // getting subdomain value from user's config
-    final String rid = getConfigValueUnsafe(inputOAuthConfiguration, "rid");
-
     final URIBuilder builder = new URIBuilder()
         .setScheme("https")
         .setHost("ads.tiktok.com")
@@ -60,7 +57,6 @@ public class TikTokMarketingOAuthFlow extends BaseOAuth2Flow {
         // required
         .addParameter("app_id", appId)
         .addParameter("redirect_uri", redirectUrl)
-        .addParameter("rid", rid)
         .addParameter("state", getState());
 
     try {
