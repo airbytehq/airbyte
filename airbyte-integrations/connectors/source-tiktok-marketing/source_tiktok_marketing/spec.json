@@ -33,13 +33,6 @@
             "type": "object",
             "required": ["auth_type", "app_id", "secret", "access_token"],
             "properties": {
-              "rid": {
-                "title": "RID",
-                "type": "string",
-                "description": "The RID applied by the developer.",
-                "airbyte_secret": true,
-                "order": 0
-              },
               "auth_type": {
                 "type": "string",
                 "const": "oauth2.0",
@@ -181,16 +174,6 @@
           "secret": {
             "type": "string",
             "path_in_connector_config": ["credentials", "secret"]
-          }
-        }
-      },
-      "oauth_user_input_from_connector_config_specification": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "rid": {
-            "type": "string",
-            "path_in_connector_config": ["credentials", "rid"]
           }
         }
       }
