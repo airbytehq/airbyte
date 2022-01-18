@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.s3.csv;
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
@@ -34,6 +35,7 @@ public class S3CsvWriter extends BaseS3Writer implements DestinationFileWriter {
   private final MultiPartOutputStream outputStream;
   private final CSVPrinter csvPrinter;
   private final String objectKey;
+  private final String gcsFileLocation;
 
   private S3CsvWriter(final S3DestinationConfig config,
                       final AmazonS3 s3Client,
@@ -55,6 +57,7 @@ public class S3CsvWriter extends BaseS3Writer implements DestinationFileWriter {
 
     LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(),
         objectKey);
+    gcsFileLocation = String.format("gs://%s/%s", config.getBucketName(), objectKey);
 
     this.uploadManager = S3StreamTransferManagerHelper.getDefault(config.getBucketName(), objectKey, s3Client, config.getFormatConfig().getPartSize())
         .numUploadThreads(uploadThreads)
@@ -156,4 +159,18 @@ public class S3CsvWriter extends BaseS3Writer implements DestinationFileWriter {
     return objectKey;
   }
 
+  @Override
+  public String getFileLocation() {
+    return gcsFileLocation;
+  }
+
+  @Override
+  public S3Format getFileFormat() {
+    return S3Format.CSV;
+  }
+
+  @Override
+  public void write(JsonNode formattedData) throws IOException {
+    csvPrinter.printRecord(csvSheetGenerator.getDataRow(formattedData));
+  }
 }
