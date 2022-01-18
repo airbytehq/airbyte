@@ -1,0 +1,1 @@
+{"stream": "campaigns", "data": {"id": "c_N2G2Mx","name": "Streamer Outreach","creator": {"id": "u_3an2Jp","name": "Gabriel Rossmann","email": "gabriel@punctual.cc"},"stats": {"prospects_contacted": 1,"prospects_reached": 1,"prospects_opened": 1,"prospects_replied": 0,"prospects_bounced": 0,"prospects_optedout": 0,"total_prospects": 1}}, "emitted_at": 1629119628000}
