@@ -25,25 +25,25 @@ import org.apache.http.client.utils.URIBuilder;
 public class SquareOAuthFlow extends BaseOAuth2Flow {
 
   private static final List<String> SCOPES = Arrays.asList(
-    "CUSTOMERS_READ",
-    "EMPLOYEES_READ",
-    "ITEMS_READ",
-    "MERCHANT_PROFILE_READ",
-    "ORDERS_READ",
-    "PAYMENTS_READ",
-    "TIMECARDS_READ"
-    // OAuth Permissions:
-    // https://developer.squareup.com/docs/oauth-api/square-permissions
-    // https://developer.squareup.com/reference/square/enums/OAuthPermission
-    // "DISPUTES_READ",
-    // "GIFTCARDS_READ",
-    // "INVENTORY_READ",
-    // "INVOICES_READ",
-    // "TIMECARDS_SETTINGS_READ",
-    // "LOYALTY_READ",
-    // "ONLINE_STORE_SITE_READ",
-    // "ONLINE_STORE_SNIPPETS_READ",
-    // "SUBSCRIPTIONS_READ",
+      "CUSTOMERS_READ",
+      "EMPLOYEES_READ",
+      "ITEMS_READ",
+      "MERCHANT_PROFILE_READ",
+      "ORDERS_READ",
+      "PAYMENTS_READ",
+      "TIMECARDS_READ"
+  // OAuth Permissions:
+  // https://developer.squareup.com/docs/oauth-api/square-permissions
+  // https://developer.squareup.com/reference/square/enums/OAuthPermission
+  // "DISPUTES_READ",
+  // "GIFTCARDS_READ",
+  // "INVENTORY_READ",
+  // "INVOICES_READ",
+  // "TIMECARDS_SETTINGS_READ",
+  // "LOYALTY_READ",
+  // "ONLINE_STORE_SITE_READ",
+  // "ONLINE_STORE_SNIPPETS_READ",
+  // "SUBSCRIPTIONS_READ",
   );
   private static final String AUTHORIZE_URL = "https://connect.squareup.com/oauth2/authorize";
   private static final String ACCESS_TOKEN_URL = "https://connect.squareup.com/oauth2/token";
@@ -89,8 +89,8 @@ public class SquareOAuthFlow extends BaseOAuth2Flow {
                                                               String authCode,
                                                               String redirectUrl) {
     String scopes = SCOPES.stream()
-            .map(name -> ('"' + name + '"'))
-            .collect(Collectors.joining(","));
+        .map(name -> ('"' + name + '"'))
+        .collect(Collectors.joining(","));
     scopes = '[' + scopes + ']';
 
     return ImmutableMap.<String, String>builder()
