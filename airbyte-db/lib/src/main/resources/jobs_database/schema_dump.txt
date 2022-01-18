@@ -1,3 +1,7 @@
+// The content of the file is just to have a basic idea of the current state of the database and is not fully accurate. 
+// It is also not used by any piece of code to generate anything. 
+// It doesn't contain the enums created in the database and the default values might also be buggy. 
+
 create table "public"."airbyte_jobs_migrations"(
   "installed_rank" int4 not null,
   "version" varchar(50) null,

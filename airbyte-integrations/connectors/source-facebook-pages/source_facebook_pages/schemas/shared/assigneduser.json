@@ -1,0 +1,14 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "id": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "user_type": {
+      "type": ["string", "null"]
+    }
+  }
+}

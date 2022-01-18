@@ -2,10 +2,17 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "permissions": {
-      "type": "object",
-      "description": "List of permissions.",
-      "readOnly": true
+    "key": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
     }
   },
   "additionalProperties": false,

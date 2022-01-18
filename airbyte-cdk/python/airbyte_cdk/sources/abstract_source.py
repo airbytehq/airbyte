@@ -4,19 +4,18 @@
 
 
 import copy
+import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
 from functools import lru_cache
 from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStateMessage,
-    AirbyteStream,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     Status,
@@ -28,6 +27,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
 from airbyte_cdk.sources.utils.transform import TypeTransformer
+from airbyte_cdk.utils.event_timing import create_timer
 
 
 class AbstractSource(Source, ABC):
@@ -37,13 +37,16 @@ class AbstractSource(Source, ABC):
     """
 
     @abstractmethod
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
-        :param config: The user-provided configuration as specified by the source's spec. This usually contains information required to check connection e.g. tokens, secrets and keys etc.
-        :return: A tuple of (boolean, error). If boolean is true, then the connection check is successful and we can connect to the underlying data
-        source using the provided configuration.
-        Otherwise, the input config cannot be used to connect to the underlying data source, and the "error" object should describe what went wrong.
-        The error object will be cast to string to display the problem to the user.
+        :param logger: source logger
+        :param config: The user-provided configuration as specified by the source's spec.
+          This usually contains information required to check connection e.g. tokens, secrets and keys etc.
+        :return: A tuple of (boolean, error). If boolean is true, then the connection check is successful
+          and we can connect to the underlying data source using the provided configuration.
+          Otherwise, the input config cannot be used to connect to the underlying data source,
+          and the "error" object should describe what went wrong.
+          The error object will be cast to string to display the problem to the user.
         """
 
     @abstractmethod
@@ -54,19 +57,19 @@ class AbstractSource(Source, ABC):
         """
 
     # Stream name to instance map for applying output object transformation
-    _stream_to_instance_map: Dict[str, AirbyteStream] = {}
+    _stream_to_instance_map: Dict[str, Stream] = {}
 
     @property
     def name(self) -> str:
         """Source name"""
         return self.__class__.__name__
 
-    def discover(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteCatalog:
+    def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
         """Implements the Discover operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
         streams = [stream.as_airbyte_stream() for stream in self.streams(config=config)]
         return AirbyteCatalog(streams=streams)
 
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """Implements the Check Connection operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
         try:
             check_succeeded, error = self.check_connection(logger, config)
@@ -78,7 +81,7 @@ class AbstractSource(Source, ABC):
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def read(
-        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
+        self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
     ) -> Iterator[AirbyteMessage]:
         """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
         connector_state = copy.deepcopy(state or {})
@@ -88,30 +91,34 @@ class AbstractSource(Source, ABC):
         # get the streams once in case the connector needs to make any queries to generate them
         stream_instances = {s.name: s for s in self.streams(config)}
         self._stream_to_instance_map = stream_instances
-        for configured_stream in catalog.streams:
-            stream_instance = stream_instances.get(configured_stream.stream.name)
-            if not stream_instance:
-                raise KeyError(
-                    f"The requested stream {configured_stream.stream.name} was not found in the source. Available streams: {stream_instances.keys()}"
-                )
+        with create_timer(self.name) as timer:
+            for configured_stream in catalog.streams:
+                stream_instance = stream_instances.get(configured_stream.stream.name)
+                if not stream_instance:
+                    raise KeyError(
+                        f"The requested stream {configured_stream.stream.name} was not found in the source. Available streams: {stream_instances.keys()}"
+                    )
 
-            try:
-                yield from self._read_stream(
-                    logger=logger,
-                    stream_instance=stream_instance,
-                    configured_stream=configured_stream,
-                    connector_state=connector_state,
-                    internal_config=internal_config,
-                )
-            except Exception as e:
-                logger.exception(f"Encountered an exception while reading stream {self.name}")
-                raise e
+                try:
+                    yield from self._read_stream(
+                        logger=logger,
+                        stream_instance=stream_instance,
+                        configured_stream=configured_stream,
+                        connector_state=connector_state,
+                        internal_config=internal_config,
+                    )
+                except Exception as e:
+                    logger.exception(f"Encountered an exception while reading stream {self.name}")
+                    raise e
+                finally:
+                    logger.info(f"Finished syncing {self.name}")
+                    logger.info(timer.report())
 
         logger.info(f"Finished syncing {self.name}")
 
     def _read_stream(
         self,
-        logger: AirbyteLogger,
+        logger: logging.Logger,
         stream_instance: Stream,
         configured_stream: ConfiguredAirbyteStream,
         connector_state: MutableMapping[str, Any],
@@ -153,7 +160,7 @@ class AbstractSource(Source, ABC):
 
     def _read_incremental(
         self,
-        logger: AirbyteLogger,
+        logger: logging.Logger,
         stream_instance: Stream,
         configured_stream: ConfiguredAirbyteStream,
         connector_state: MutableMapping[str, Any],
@@ -164,7 +171,6 @@ class AbstractSource(Source, ABC):
         if stream_state:
             logger.info(f"Setting state of {stream_name} stream to {stream_state}")
 
-        checkpoint_interval = stream_instance.state_checkpoint_interval
         slices = stream_instance.stream_slices(
             cursor_field=configured_stream.cursor_field, sync_mode=SyncMode.incremental, stream_state=stream_state
         )
@@ -179,6 +185,7 @@ class AbstractSource(Source, ABC):
             for record_counter, record_data in enumerate(records, start=1):
                 yield self._as_airbyte_record(stream_name, record_data)
                 stream_state = stream_instance.get_updated_state(stream_state, record_data)
+                checkpoint_interval = stream_instance.state_checkpoint_interval
                 if checkpoint_interval and record_counter % checkpoint_interval == 0:
                     yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
 
@@ -215,7 +222,7 @@ class AbstractSource(Source, ABC):
         return AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data=connector_state))
 
     @lru_cache(maxsize=None)
-    def _get_stream_transformer_and_schema(self, stream_name: str) -> Tuple[TypeTransformer, dict]:
+    def _get_stream_transformer_and_schema(self, stream_name: str) -> Tuple[TypeTransformer, Mapping[str, Any]]:
         """
         Lookup stream's transform object and jsonschema based on stream name.
         This function would be called a lot so using caching to save on costly
@@ -223,16 +230,16 @@ class AbstractSource(Source, ABC):
         :param stream_name name of stream from catalog.
         :return tuple with stream transformer object and discover json schema.
         """
-        stream_instance = self._stream_to_instance_map.get(stream_name)
+        stream_instance = self._stream_to_instance_map[stream_name]
         return stream_instance.transformer, stream_instance.get_json_schema()
 
     def _as_airbyte_record(self, stream_name: str, data: Mapping[str, Any]):
-        now_millis = int(datetime.now().timestamp()) * 1000
+        now_millis = int(datetime.now().timestamp() * 1000)
         transformer, schema = self._get_stream_transformer_and_schema(stream_name)
         # Transform object fields according to config. Most likely you will
         # need it to normalize values against json schema. By default no action
         # taken unless configured. See
         # docs/connector-development/cdk-python/schemas.md for details.
-        transformer.transform(data, schema)
+        transformer.transform(data, schema)  # type: ignore
         message = AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=now_millis)
         return AirbyteMessage(type=MessageType.RECORD, record=message)

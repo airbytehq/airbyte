@@ -2,8 +2,8 @@
 
 The following technologies are required to build Airbyte locally.
 
-1. [`Java 14`](https://jdk.java.net/archive/)
-2. `Node 14`
+1. [`Java 17`](https://jdk.java.net/archive/)
+2. `Node 16`
 3. `Python 3.7`
 4. `Docker`
 5. `Postgresql`
@@ -40,12 +40,11 @@ some additional environment variables:
 ```bash
 export DOCKER_BUILD_PLATFORM=linux/arm64
 export DOCKER_BUILD_ARCH=arm64
+export ALPINE_IMAGE=arm64v8/alpine:3.14
+export POSTGRES_IMAGE=arm64v8/postgres:13-alpine
 export JDK_VERSION=17
-export NODE_VERSION=16.11.1
 SUB_BUILD=PLATFORM ./gradlew build
 ```
-
-Please note that though the `JDK_VERSION` variable is set to `17`, you should still run the command with JDK 14 locally. Otherwise, `testconatiners` will run into a JNA related issue.
 
 There are some known issues (Temporal failing during runs, and some connectors not working). See the [GitHub issue](https://github.com/airbytehq/airbyte/issues/2017) for more information.
 
@@ -89,7 +88,7 @@ In `dev` mode, all data will be persisted in `/tmp/dev_root`.
 To run acceptance \(end-to-end\) tests, you must have the Airbyte running locally.
 
 ```bash
-SUB_BUILD=PLATFORM ./gradlew build
+SUB_BUILD=PLATFORM ./gradlew clean build
 VERSION=dev docker-compose up
 SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests
 ```
@@ -137,7 +136,10 @@ npm start
 
 ### Connector Specification Caching
 
-The Configuration API caches connector specifications. This is done to avoid needing to run docker everytime one is needed in the UI. Without this caching, the UI crawls. If you update the specification of a connector and you need to clear this cache so the API / UI pick up the change. You have two options: 1. Go to the Admin page in the UI and update the version of the connector. Updating to the same version will for the cache to clear for that connector. 1. Restart the server
+The Configuration API caches connector specifications. This is done to avoid needing to run Docker everytime one is needed in the UI. Without this caching, the UI crawls. If you update the specification of a connector and need to clear this cache so the API / UI picks up the change, you have two options: 
+
+1. Go to the Admin page in the UI and update the version of the connector. Updating to any version, including the one you're already on, will trigger clearing the cache. 
+2. Restart the server by running the following commands:
 
 ```bash
 VERSION=dev docker-compose down -v
@@ -164,7 +166,7 @@ Sometimes you'll want to reset the data in your local environment. One common ca
 * Rebuild the project
 
   ```bash
-   SUB_BUILD=PLATFORM ./gradlew build
+   SUB_BUILD=PLATFORM ./gradlew clean build
    VERSION=dev docker-compose up -V
   ```
 

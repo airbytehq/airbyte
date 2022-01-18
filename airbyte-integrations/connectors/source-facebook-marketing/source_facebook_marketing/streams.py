@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import base64
 import time
 import urllib.parse as urlparse
 from abc import ABC
@@ -12,18 +13,19 @@ from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optio
 import airbyte_cdk.sources.utils.casing as casing
 import backoff
 import pendulum
+import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from cached_property import cached_property
-from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.api import API
 
-from .common import FacebookAPIException, JobTimeoutException, batch, deep_merge, retry_pattern
+from .async_job import AsyncJob
+from .common import FacebookAPIException, JobException, batch, deep_merge, retry_pattern
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
@@ -41,6 +43,18 @@ def remove_params_from_url(url: str, params: List[str]) -> str:
     return urlparse.urlunparse(
         [parsed.scheme, parsed.netloc, parsed.path, parsed.params, urlparse.urlencode(filtered, doseq=True), parsed.fragment]
     )
+
+
+def fetch_thumbnail_data_url(url: str) -> str:
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            type = response.headers["content-type"]
+            data = base64.b64encode(response.content)
+            return f"data:{type};base64,{data.decode('ascii')}"
+    except requests.exceptions.RequestException:
+        pass
+    return None
 
 
 class FBMarketingStream(Stream, ABC):
@@ -198,6 +212,10 @@ class AdCreatives(FBMarketingStream):
     entity_prefix = "adcreative"
     batch_size = 50
 
+    def __init__(self, fetch_thumbnail_images: bool = False, **kwargs):
+        super().__init__(**kwargs)
+        self._fetch_thumbnail_images = fetch_thumbnail_images
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -207,17 +225,23 @@ class AdCreatives(FBMarketingStream):
     ) -> Iterable[Mapping[str, Any]]:
         """Read records using batch API"""
         records = self._read_records(params=self.request_params(stream_state=stream_state))
-        requests = [record.api_get(fields=self.fields, pending=True) for record in records]
+        # "thumbnail_data_url" is a field in our stream's schema because we
+        # output it (see fix_thumbnail_urls below), but it's not a field that
+        # we can request from Facebook
+        request_fields = [f for f in self.fields if f != "thumbnail_data_url"]
+        requests = [record.api_get(fields=request_fields, pending=True) for record in records]
         for requests_batch in batch(requests, size=self.batch_size):
             for record in self.execute_in_batch(requests_batch):
-                yield self.clear_urls(record)
+                yield self.fix_thumbnail_urls(record)
 
-    @staticmethod
-    def clear_urls(record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        """Some URLs has random values, these values doesn't affect validity of URLs, but breaks SAT"""
+    def fix_thumbnail_urls(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        """Cleans and, if enabled, fetches thumbnail URLs for each creative."""
+        # The thumbnail_url contains some extra query parameters that don't affect the validity of the URL, but break SAT
         thumbnail_url = record.get("thumbnail_url")
         if thumbnail_url:
             record["thumbnail_url"] = remove_params_from_url(thumbnail_url, ["_nc_hash", "d"])
+            if self._fetch_thumbnail_images:
+                record["thumbnail_data_url"] = fetch_thumbnail_data_url(thumbnail_url)
         return record
 
     @backoff_policy
@@ -258,6 +282,17 @@ class Campaigns(FBMarketingIncrementalStream):
         return self._api.account.get_campaigns(params=params)
 
 
+class Videos(FBMarketingIncrementalStream):
+    """See: https://developers.facebook.com/docs/marketing-api/reference/video"""
+
+    entity_prefix = "video"
+    enable_deleted = True
+
+    @backoff_policy
+    def _read_records(self, params: Mapping[str, Any]) -> Iterator:
+        return self._api.account.get_ad_videos(params=params)
+
+
 class AdsInsights(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/insights"""
 
@@ -279,8 +314,6 @@ class AdsInsights(FBMarketingIncrementalStream):
         "action_destination",
     ]
 
-    MAX_WAIT_TO_START = pendulum.duration(minutes=5)
-    MAX_WAIT_TO_FINISH = pendulum.duration(minutes=30)
     MAX_ASYNC_SLEEP = pendulum.duration(minutes=5)
     MAX_ASYNC_JOBS = 10
     INSIGHTS_RETENTION_PERIOD = pendulum.duration(days=37 * 30)
@@ -327,10 +360,10 @@ class AdsInsights(FBMarketingIncrementalStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
-        result = self.wait_for_job(stream_slice["job"])
+        job = self.wait_for_job(stream_slice["job"])
         # because we query `lookback_window` days before actual cursor we might get records older then cursor
 
-        for obj in result.get_result():
+        for obj in job.get_result():
             yield obj.export_all_data()
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -345,7 +378,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         date_ranges = list(self._date_ranges(stream_state=stream_state))
         for params in date_ranges:
             params = deep_merge(params, self.request_params(stream_state=stream_state))
-            job = self._create_insights_job(params)
+            job = AsyncJob(api=self._api, params=params)
+            job.start()
             running_jobs.append(job)
             if len(running_jobs) >= self.MAX_ASYNC_JOBS:
                 yield {"job": running_jobs.popleft()}
@@ -353,39 +387,20 @@ class AdsInsights(FBMarketingIncrementalStream):
         while running_jobs:
             yield {"job": running_jobs.popleft()}
 
-    @backoff_policy
-    def wait_for_job(self, job) -> AdReportRun:
+    @retry_pattern(backoff.expo, JobException, max_tries=10, factor=5)
+    def wait_for_job(self, job: AsyncJob) -> AsyncJob:
+        if job.failed:
+            job.restart()
+
         factor = 2
-        start_time = pendulum.now()
         sleep_seconds = factor
-        while True:
-            job = job.api_get()
-            job_progress_pct = job["async_percent_completion"]
-            job_id = job["report_run_id"]
-            self.logger.info(f"ReportRunId {job_id} is {job_progress_pct}% complete ({job['async_status']})")
-            runtime = pendulum.now() - start_time
-
-            if job["async_status"] == "Job Completed":
-                return job
-            elif job["async_status"] == "Job Failed":
-                raise JobTimeoutException(f"AdReportRun {job} failed after {runtime.in_seconds()} seconds.")
-            elif job["async_status"] == "Job Skipped":
-                raise JobTimeoutException(f"AdReportRun {job} skipped after {runtime.in_seconds()} seconds.")
-
-            if runtime > self.MAX_WAIT_TO_START and job_progress_pct == 0:
-                raise JobTimeoutException(
-                    f"AdReportRun {job} did not start after {runtime.in_seconds()} seconds."
-                    f" This is an intermittent error which may be fixed by retrying the job. Aborting."
-                )
-            elif runtime > self.MAX_WAIT_TO_FINISH:
-                raise JobTimeoutException(
-                    f"AdReportRun {job} did not finish after {runtime.in_seconds()} seconds."
-                    f" This is an intermittent error which may be fixed by retrying the job. Aborting."
-                )
-            self.logger.info(f"Sleeping {sleep_seconds} seconds while waiting for AdReportRun: {job_id} to complete")
+        while not job.completed:
+            self.logger.info(f"{job}: sleeping {sleep_seconds} seconds while waiting for completion")
             time.sleep(sleep_seconds)
             if sleep_seconds < self.MAX_ASYNC_SLEEP.in_seconds():
                 sleep_seconds *= factor
+
+        return job
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
@@ -411,10 +426,13 @@ class AdsInsights(FBMarketingIncrementalStream):
         """Add fields from breakdowns to the stream schema
         :return: A dict of the JSON schema representing this stream.
         """
-        schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
+        loader = ResourceSchemaLoader(package_name_from_class(self.__class__))
+        schema = loader.get_schema("ads_insights")
         if self._fields:
             schema["properties"] = {k: v for k, v in schema["properties"].items() if k in self._fields}
-        schema["properties"].update(self._schema_for_breakdowns())
+        if self.breakdowns:
+            breakdowns_properties = loader.get_schema("ads_insights_breakdowns")["properties"]
+            schema["properties"].update({prop: breakdowns_properties[prop] for prop in self.breakdowns})
         return schema
 
     @cached_property
@@ -424,25 +442,6 @@ class AdsInsights(FBMarketingIncrementalStream):
             return self._fields
         schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
         return list(schema.get("properties", {}).keys())
-
-    def _schema_for_breakdowns(self) -> Mapping[str, Any]:
-        """Breakdown fields and their type"""
-        schemas = {
-            "age": {"type": ["null", "integer", "string"]},
-            "gender": {"type": ["null", "string"]},
-            "country": {"type": ["null", "string"]},
-            "dma": {"type": ["null", "string"]},
-            "region": {"type": ["null", "string"]},
-            "impression_device": {"type": ["null", "string"]},
-            "placement": {"type": ["null", "string"]},
-            "platform_position": {"type": ["null", "string"]},
-            "publisher_platform": {"type": ["null", "string"]},
-        }
-        breakdowns = self.breakdowns[:]
-        if "platform_position" in breakdowns:
-            breakdowns.append("placement")
-
-        return {breakdown: schemas[breakdown] for breakdown in self.breakdowns}
 
     def _date_ranges(self, stream_state: Mapping[str, Any]) -> Iterator[dict]:
         """Iterate over period between start_date/state and now
@@ -463,14 +462,6 @@ class AdsInsights(FBMarketingIncrementalStream):
             yield {
                 "time_range": {"since": since.to_date_string(), "until": until.to_date_string()},
             }
-
-    @backoff_policy
-    def _create_insights_job(self, params) -> AdReportRun:
-        job = self._api.account.get_insights(params=params, is_async=True)
-        job_id = job["report_run_id"]
-        time_range = params["time_range"]
-        self.logger.info(f"Created AdReportRun: {job_id} to sync insights {time_range} with breakdown {self.breakdowns}")
-        return job
 
 
 class AdsInsightsAgeAndGender(AdsInsights):

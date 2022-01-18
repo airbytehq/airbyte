@@ -5,6 +5,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import { Input, LoadingButton } from "components";
 import { FormContent } from "./PageComponents";
+import { DEV_IMAGE_TAG } from "core/domain/connector/constants";
 
 type IProps = {
   version: string;
@@ -85,6 +86,9 @@ const VersionCell: React.FC<IProps> = ({
     return null;
   };
 
+  const isConnectorUpdateable =
+    currentVersion !== version || currentVersion === DEV_IMAGE_TAG;
+
   return (
     <FormContent>
       <Formik
@@ -111,7 +115,7 @@ const VersionCell: React.FC<IProps> = ({
             <LoadingButton
               isLoading={isSubmitting}
               type="submit"
-              disabled={(isSubmitting || !dirty) && currentVersion === version}
+              disabled={(isSubmitting || !dirty) && !isConnectorUpdateable}
             >
               <FormattedMessage id="form.change" />
             </LoadingButton>

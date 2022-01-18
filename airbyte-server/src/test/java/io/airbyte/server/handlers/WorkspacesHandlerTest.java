@@ -23,6 +23,7 @@ import io.airbyte.api.model.SlugRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
 import io.airbyte.api.model.WorkspaceCreate;
+import io.airbyte.api.model.WorkspaceGiveFeedback;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceReadList;
@@ -202,7 +203,7 @@ class WorkspacesHandlerTest {
 
     workspacesHandler.deleteWorkspace(workspaceIdRequestBody);
 
-    verify(connectionsHandler).deleteConnection(connection);
+    verify(connectionsHandler).deleteConnection(connection.getConnectionId());
     verify(destinationHandler).deleteDestination(destination);
     verify(sourceHandler).deleteSource(source);
   }
@@ -341,6 +342,16 @@ class WorkspacesHandlerTest {
     verify(configRepository).writeStandardWorkspace(expectedWorkspace);
 
     assertEquals(expectedWorkspaceRead, actualWorkspaceRead);
+  }
+
+  @Test
+  public void testSetFeedbackDone() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final WorkspaceGiveFeedback workspaceGiveFeedback = new WorkspaceGiveFeedback()
+        .workspaceId(UUID.randomUUID());
+
+    workspacesHandler.setFeedbackDone(workspaceGiveFeedback);
+
+    verify(configRepository).setFeedback(workspaceGiveFeedback.getWorkspaceId());
   }
 
 }

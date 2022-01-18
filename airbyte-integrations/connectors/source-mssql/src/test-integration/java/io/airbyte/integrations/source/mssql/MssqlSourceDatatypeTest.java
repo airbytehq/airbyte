@@ -82,6 +82,11 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   }
 
   @Override
+  public boolean testCatalog() {
+    return true;
+  }
+
+  @Override
   protected void initTests() {
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -118,11 +123,9 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bit")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaPrimitive.BOOLEAN)
             .addInsertValues("null", "0", "1", "'true'", "'false'")
             .addExpectedValues(null, "false", "true", "true", "false")
-            .addInsertValues("null")
-            .addNullExpectedValue()
             .build());
 
     addDataTypeTestData(
@@ -174,8 +177,6 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("123.0", "1.23456794E9", null)
             .build());
 
-    // TODO JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" so dates would be
-    // always represented as a datetime with 00:00:00 time
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("date")
@@ -210,14 +211,12 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z", null)
             .build());
 
-    // TODO JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" for both Date and Time types.
-    // So Time only (04:05:06) would be represented like "1970-01-01T04:05:06Z" which is incorrect
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("time")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .addInsertValues("null", "'13:00:01'", "'13:00:04Z'")
+            .addExpectedValues(null, "13:00:01.0000000", "13:00:04.0000000")
             .build());
 
     addDataTypeTestData(
@@ -285,30 +284,23 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
                 null, "\\xF0\\x9F\\x9A\\x80")
             .build());
 
-    // TODO BUG Returns binary value instead of actual value
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("binary")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            // .addInsertValues("CAST( 'A' AS VARBINARY)", "null")
-            // .addExpectedValues("A")
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .airbyteType(JsonSchemaPrimitive.STRING_BINARY)
+            .addInsertValues("CAST( 'A' AS BINARY(1))", "null")
+            .addExpectedValues("A", null)
             .build());
 
-    // TODO BUG Returns binary value instead of actual value
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("varbinary")
-            .fullSourceDataType("varbinary(30)")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            // .addInsertValues("CAST( 'ABC' AS VARBINARY)", "null")
-            // .addExpectedValues("A")
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .fullSourceDataType("varbinary(3)")
+            .airbyteType(JsonSchemaPrimitive.STRING_BINARY)
+            .addInsertValues("CAST( 'ABC' AS VARBINARY)", "null")
+            .addExpectedValues("ABC", null)
             .build());
 
-    // TODO BUG: airbyte returns binary representation instead of readable one
     // create table dbo_1_hierarchyid1 (test_column hierarchyid);
     // insert dbo_1_hierarchyid1 values ('/1/1/');
     // select test_column ,test_column.ToString() AS [Node Text],test_column.GetLevel() [Node Level]
@@ -317,10 +309,8 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("hierarchyid")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
-            // .addInsertValues("null","'/1/1/'")
-            // .addExpectedValues(null, "/1/1/")
+            .addInsertValues("'/1/1/'", "null")
+            .addExpectedValues("/1/1/", null)
             .build());
 
     addDataTypeTestData(
@@ -333,17 +323,14 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
                 null, "\\xF0\\x9F\\x9A\\x80")
             .build());
 
-    // TODO BUG: Airbyte returns binary representation instead of text one.
     // Proper select query example: SELECT test_column.STAsText() from dbo_1_geometry;
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("geometry")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
-            // .addInsertValues("geometry::STGeomFromText('LINESTRING (100 100, 20 180, 180 180)', 0)")
-            // .addExpectedValues("LINESTRING (100 100, 20 180, 180 180)",
-            // "POLYGON ((0 0, 150 0, 150 150, 0 150, 0 0)", null)
+            .addInsertValues("geometry::STGeomFromText('LINESTRING (100 100, 20 180, 180 180)', 0)",
+                "null")
+            .addExpectedValues("LINESTRING(100 100, 20 180, 180 180)", null)
             .build());
 
     addDataTypeTestData(
@@ -363,17 +350,22 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("<user><user_id>1</user_id></user>", null, "")
             .build());
 
-    // TODO BUG: Airbyte returns binary representation instead of text one.
     // Proper select query example: SELECT test_column.STAsText() from dbo_1_geography;
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("geography")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
-            // .addInsertValues("geography::STGeomFromText('LINESTRING(-122.360 47.656, -122.343 47.656 )',
-            // 4326)")
-            // .addExpectedValues("LINESTRING(-122.360 47.656, -122.343 47.656 )", null)
+            .addInsertValues(
+                "geography::STGeomFromText('LINESTRING(-122.360 47.656, -122.343 47.656 )', 4326)",
+                "null")
+            .addExpectedValues("LINESTRING(-122.36 47.656, -122.343 47.656)", null)
+            .build());
+
+    // test the case when table is empty, should not crash on pre-flight (get MetaData) sql request
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("hierarchyid")
+            .airbyteType(JsonSchemaPrimitive.STRING)
             .build());
 
   }

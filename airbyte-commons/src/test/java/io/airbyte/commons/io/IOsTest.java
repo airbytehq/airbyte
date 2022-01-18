@@ -55,7 +55,7 @@ class IOsTest {
 
   @Test
   public void testGetTailDoesNotExist() throws IOException {
-    final List<String> tail = IOs.getTail(100, Path.of(RandomStringUtils.random(100)));
+    final List<String> tail = IOs.getTail(100, Path.of(RandomStringUtils.randomAlphanumeric(100)));
     assertEquals(Collections.emptyList(), tail);
   }
 

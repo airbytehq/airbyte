@@ -3,7 +3,7 @@ plugins {
     id "com.github.node-gradle.node" version "3.1.1"
 }
 
-def nodeVersion = System.getenv('NODE_VERSION') ?: '14.11.0'
+def nodeVersion = System.getenv('NODE_VERSION') ?: '16.13.0'
 
 node {
     download = true
@@ -32,11 +32,38 @@ task test(type: NpmTask) {
 assemble.dependsOn npm_run_build
 build.finalizedBy test
 
+task copyBuild(type: Copy) {
+    dependsOn copyDocker
+
+    from "${project.projectDir}/build"
+    into "build/docker/bin/build"
+    exclude ".docker"
+    exclude "docker"
+}
+
 task copyDocs(type: Copy) {
-    from "${System.getProperty("user.dir")}/docs/integrations"
-    into "${buildDir}/docs/integrations"
+    dependsOn copyDocker
+
+    from "${project.rootProject.projectDir}/docs/integrations"
+    into "build/docker/bin/docs/integrations"
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
+task copyNginx(type: Copy) {
+    dependsOn copyDocker
+
+    from "${project.projectDir}/nginx"
+    into "build/docker/bin/nginx"
+}
+
+copyBuild.dependsOn npm_run_build
+copyNginx.dependsOn npm_run_build
 copyDocs.dependsOn npm_run_build
 assemble.dependsOn copyDocs
+copyDocker.dependsOn(npm_run_build)
+
+Task dockerBuildTask = getDockerBuildTask("webapp",  "$project.projectDir")
+dockerBuildTask.dependsOn(copyBuild)
+dockerBuildTask.dependsOn(copyNginx)
+dockerBuildTask.dependsOn(copyDocs)
+assemble.dependsOn(dockerBuildTask)

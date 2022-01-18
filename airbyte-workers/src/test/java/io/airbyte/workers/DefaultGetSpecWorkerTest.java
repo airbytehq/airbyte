@@ -4,8 +4,8 @@
 
 package io.airbyte.workers;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.base.Charsets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -47,7 +48,7 @@ class DefaultGetSpecWorkerTest {
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
     when(integrationLauncher.spec(jobRoot)).thenReturn(process);
 
-    worker = new DefaultGetSpecWorker(integrationLauncher);
+    worker = new DefaultGetSpecWorker(new WorkerConfigs(new EnvConfigs()), integrationLauncher);
   }
 
   @Test
@@ -65,7 +66,7 @@ class DefaultGetSpecWorkerTest {
     final ConnectorSpecification actualOutput = worker.run(config, jobRoot);
     final ConnectorSpecification expectedOutput = Jsons.deserialize(expectedSpecString, ConnectorSpecification.class);
 
-    assertEquals(expectedOutput, actualOutput);
+    assertThat(actualOutput).isEqualTo(expectedOutput);
   }
 
   @Test
@@ -75,15 +76,32 @@ class DefaultGetSpecWorkerTest {
     when(process.waitFor(anyLong(), any())).thenReturn(true);
     when(process.exitValue()).thenReturn(0);
 
-    assertThrows(WorkerException.class, () -> worker.run(config, jobRoot));
+    assertThatThrownBy(() -> worker.run(config, jobRoot))
+        .isInstanceOf(WorkerException.class)
+        .getCause()
+        .isInstanceOf(WorkerException.class)
+        .hasMessageContaining("integration failed to output a spec struct.")
+        .hasNoCause();
   }
 
   @Test
-  public void testFailureOnNonzeroExitCode() throws InterruptedException {
+  public void testFailureOnNonzeroExitCode() throws InterruptedException, IOException {
+    final String expectedSpecString = MoreResources.readResource("valid_spec.json");
+
+    final AirbyteMessage message = new AirbyteMessage()
+        .withType(Type.SPEC)
+        .withSpec(Jsons.deserialize(expectedSpecString, io.airbyte.protocol.models.ConnectorSpecification.class));
+
+    when(process.getInputStream()).thenReturn(new ByteArrayInputStream(Jsons.serialize(message).getBytes(Charsets.UTF_8)));
     when(process.waitFor(anyLong(), any())).thenReturn(true);
     when(process.exitValue()).thenReturn(1);
 
-    assertThrows(WorkerException.class, () -> worker.run(config, jobRoot));
+    assertThatThrownBy(() -> worker.run(config, jobRoot))
+        .isInstanceOf(WorkerException.class)
+        .getCause()
+        .isInstanceOf(WorkerException.class)
+        .hasMessageContaining("Spec job subprocess finished with exit code")
+        .hasNoCause();
   }
 
 }

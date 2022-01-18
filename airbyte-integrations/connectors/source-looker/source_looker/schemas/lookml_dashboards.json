@@ -56,8 +56,7 @@
           "type": ["null", "string"]
         }
       },
-      "type": ["null", "object"],
-      "additionalProperties": false
+      "type": ["null", "object"]
     },
     "hidden": {
       "type": ["null", "boolean"]
@@ -74,8 +73,7 @@
           "type": ["null", "string"]
         }
       },
-      "type": ["null", "object"],
-      "additionalProperties": false
+      "type": ["null", "object"]
     },
     "query_timezone": {
       "type": ["null", "string"]
@@ -134,8 +132,7 @@
           "type": ["null", "string"]
         }
       },
-      "type": ["null", "object"],
-      "additionalProperties": false
+      "type": ["null", "object"]
     },
     "title": {
       "type": ["null", "string"]

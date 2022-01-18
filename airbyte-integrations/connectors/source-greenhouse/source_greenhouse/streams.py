@@ -73,13 +73,13 @@ class Applications(GreenhouseStream):
     """
 
 
-class ApplicationsDemographicsAnswers(GreenhouseStream):
+class ApplicationsDemographicsAnswers(GreenhouseSubStream, GreenhouseStream):
     """
     Docs: https://developers.greenhouse.io/harvest.html#get-list-demographic-answers
     """
 
-    def path(self, **kwargs) -> str:
-        return "demographics/answers"
+    parent_stream = Applications
+    path_template = "applications/{parent_id}/demographics/answers"
 
 
 class ApplicationsInterviews(GreenhouseSubStream, GreenhouseStream):
@@ -115,59 +115,58 @@ class Degrees(GreenhouseStream):
     """
 
 
-# TODO: uncomment when https://github.com/airbytehq/airbyte/issues/6546 is resolved
-# class DemographicsAnswers(GreenhouseStream):
-#     """
-#     Docs: https://developers.greenhouse.io/harvest.html#get-list-demographic-answers
-#     """
-#
-#     def path(self, **kwargs) -> str:
-#         return "demographics/answers"
-#
-#
-# class DemographicsAnswerOptions(GreenhouseStream):
-#     """
-#     Docs: https://developers.greenhouse.io/harvest.html#get-list-demographic-answer-options
-#     """
-#
-#     def path(self, **kwargs) -> str:
-#         return "demographics/answer_options"
-#
-#
-# class DemographicsQuestions(GreenhouseStream):
-#     """
-#     Docs: https://developers.greenhouse.io/harvest.html#get-list-demographic-questions
-#     """
-#
-#     def path(self, **kwargs) -> str:
-#         return "demographics/questions"
-#
-#
-# class DemographicsAnswersAnswerOptions(GreenhouseSubStream, GreenhouseStream):
-#     """
-#     Docs: https://developers.greenhouse.io/harvest.html#get-list-demographic-answer-options-for-demographic-question
-#     """
-#
-#     parent_stream = DemographicsQuestions
-#     path_template = "demographics/questions/{parent_id}/answer_options"
-#
-#
-# class DemographicsQuestionSets(GreenhouseStream):
-#     """
-#     Docs: https://developers.greenhouse.io/harvest.html#get-list-demographic-question-sets
-#     """
-#
-#     def path(self, **kwargs) -> str:
-#         return "demographics/question_sets"
-#
-#
-# class DemographicsQuestionSetsQuestions(GreenhouseSubStream, GreenhouseStream):
-#     """
-#     Docs: https://developers.greenhouse.io/harvest.html#get-list-demographic-questions-for-demographic-question-set
-#     """
-#
-#     parent_stream = DemographicsQuestionSets
-#     path_template = "demographics/question_sets/{parent_id}/questions"
+class DemographicsAnswers(GreenhouseStream):
+    """
+    Docs: https://developers.greenhouse.io/harvest.html#get-list-demographic-answers
+    """
+
+    def path(self, **kwargs) -> str:
+        return "demographics/answers"
+
+
+class DemographicsAnswerOptions(GreenhouseStream):
+    """
+    Docs: https://developers.greenhouse.io/harvest.html#get-list-demographic-answer-options
+    """
+
+    def path(self, **kwargs) -> str:
+        return "demographics/answer_options"
+
+
+class DemographicsQuestions(GreenhouseStream):
+    """
+    Docs: https://developers.greenhouse.io/harvest.html#get-list-demographic-questions
+    """
+
+    def path(self, **kwargs) -> str:
+        return "demographics/questions"
+
+
+class DemographicsAnswersAnswerOptions(GreenhouseSubStream, GreenhouseStream):
+    """
+    Docs: https://developers.greenhouse.io/harvest.html#get-list-demographic-answer-options-for-demographic-question
+    """
+
+    parent_stream = DemographicsQuestions
+    path_template = "demographics/questions/{parent_id}/answer_options"
+
+
+class DemographicsQuestionSets(GreenhouseStream):
+    """
+    Docs: https://developers.greenhouse.io/harvest.html#get-list-demographic-question-sets
+    """
+
+    def path(self, **kwargs) -> str:
+        return "demographics/question_sets"
+
+
+class DemographicsQuestionSetsQuestions(GreenhouseSubStream, GreenhouseStream):
+    """
+    Docs: https://developers.greenhouse.io/harvest.html#get-list-demographic-questions-for-demographic-question-set
+    """
+
+    parent_stream = DemographicsQuestionSets
+    path_template = "demographics/question_sets/{parent_id}/questions"
 
 
 class Departments(GreenhouseStream):

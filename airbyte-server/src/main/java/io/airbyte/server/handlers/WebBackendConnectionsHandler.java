@@ -88,6 +88,16 @@ public class WebBackendConnectionsHandler {
     return new WebBackendConnectionReadList().connections(reads);
   }
 
+  public WebBackendConnectionReadList webBackendListAllConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+
+    final List<WebBackendConnectionRead> reads = Lists.newArrayList();
+    for (final ConnectionRead connection : connectionsHandler.listAllConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
+      reads.add(buildWebBackendConnectionRead(connection));
+    }
+    return new WebBackendConnectionReadList().connections(reads);
+  }
+
   private WebBackendConnectionRead buildWebBackendConnectionRead(final ConnectionRead connectionRead)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceRead source = getSourceRead(connectionRead);
@@ -174,7 +184,7 @@ public class WebBackendConnectionsHandler {
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody()
         .connectionId(webBackendConnectionRequestBody.getConnectionId());
 
-    final ConnectionRead connection = connectionsHandler.getConnection(connectionIdRequestBody);
+    final ConnectionRead connection = connectionsHandler.getConnection(connectionIdRequestBody.getConnectionId());
 
     if (MoreBooleans.isTruthy(webBackendConnectionRequestBody.getWithRefreshedCatalog())) {
       final SourceIdRequestBody sourceId = new SourceIdRequestBody().sourceId(connection.getSourceId());
@@ -208,10 +218,11 @@ public class WebBackendConnectionsHandler {
         final AirbyteStreamConfiguration discoveredStreamConfig = s.getConfig();
         outputStreamConfig = new AirbyteStreamConfiguration();
 
-        if (stream.getSupportedSyncModes().contains(originalStreamConfig.getSyncMode()))
+        if (stream.getSupportedSyncModes().contains(originalStreamConfig.getSyncMode())) {
           outputStreamConfig.setSyncMode(originalStreamConfig.getSyncMode());
-        else
+        } else {
           outputStreamConfig.setSyncMode(discoveredStreamConfig.getSyncMode());
+        }
 
         if (originalStreamConfig.getCursorField().size() > 0) {
           outputStreamConfig.setCursorField(originalStreamConfig.getCursorField());
@@ -276,7 +287,7 @@ public class WebBackendConnectionsHandler {
   private List<UUID> updateOperations(final WebBackendConnectionUpdate webBackendConnectionUpdate)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConnectionRead connectionRead = connectionsHandler
-        .getConnection(new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId()));
+        .getConnection(webBackendConnectionUpdate.getConnectionId());
     final List<UUID> originalOperationIds = new ArrayList<>(connectionRead.getOperationIds());
     final List<UUID> operationIds = new ArrayList<>();
 
@@ -295,7 +306,7 @@ public class WebBackendConnectionsHandler {
   }
 
   private UUID getWorkspaceIdForConnection(final UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException {
-    final UUID sourceId = connectionsHandler.getConnection(new ConnectionIdRequestBody().connectionId(connectionId)).getSourceId();
+    final UUID sourceId = connectionsHandler.getConnection(connectionId).getSourceId();
     return getWorkspaceIdForSource(sourceId);
   }
 

@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -28,7 +29,6 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
-import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
@@ -43,49 +43,42 @@ import org.junit.jupiter.api.Test;
 
 class ConfigDumpImporterTest {
 
-  public static final String TEST_VERSION = "0.0.1-test-version";
+  public static final AirbyteVersion TEST_VERSION = new AirbyteVersion("0.0.1-test-version");
 
   private ConfigRepository configRepository;
-  private JobPersistence jobPersistence;
-  private WorkspaceHelper workspaceHelper;
   private ConfigDumpImporter configDumpImporter;
   private ConfigDumpExporter configDumpExporter;
 
   private UUID workspaceId;
-  private StandardSourceDefinition standardSourceDefinition;
   private SourceConnection sourceConnection;
-  private StandardDestinationDefinition standardDestinationDefinition;
   private DestinationConnection destinationConnection;
   private StandardSyncOperation operation;
   private StandardSync connection;
   private ConnectorSpecification emptyConnectorSpec;
-  private SpecFetcher specFetcher;
 
   @BeforeEach
   public void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
     configRepository = mock(ConfigRepository.class);
-    jobPersistence = mock(JobPersistence.class);
-    workspaceHelper = mock(WorkspaceHelper.class);
+    final JobPersistence jobPersistence = mock(JobPersistence.class);
+    final WorkspaceHelper workspaceHelper = mock(WorkspaceHelper.class);
 
-    specFetcher = mock(SpecFetcher.class);
-    emptyConnectorSpec = mock(ConnectorSpecification.class);
-    when(emptyConnectorSpec.getConnectionSpecification()).thenReturn(Jsons.emptyObject());
-    when(specFetcher.execute(any())).thenReturn(emptyConnectorSpec);
+    emptyConnectorSpec = new ConnectorSpecification().withConnectionSpecification(Jsons.emptyObject());
 
     configDumpImporter =
-        new ConfigDumpImporter(configRepository, jobPersistence, workspaceHelper, mock(JsonSchemaValidator.class), specFetcher, true);
+        new ConfigDumpImporter(configRepository, jobPersistence, workspaceHelper, mock(JsonSchemaValidator.class), true);
     configDumpExporter = new ConfigDumpExporter(configRepository, jobPersistence, workspaceHelper);
 
     workspaceId = UUID.randomUUID();
-    when(jobPersistence.getVersion()).thenReturn(Optional.of(TEST_VERSION));
+    when(jobPersistence.getVersion()).thenReturn(Optional.of(TEST_VERSION.serialize()));
 
-    standardSourceDefinition = new StandardSourceDefinition()
+    final StandardSourceDefinition standardSourceDefinition = new StandardSourceDefinition()
         .withSourceDefinitionId(UUID.randomUUID())
         .withName("test-standard-source")
         .withDockerRepository("test")
         .withDocumentationUrl("http://doc")
         .withIcon("hello")
-        .withDockerImageTag("dev");
+        .withDockerImageTag("dev")
+        .withSpec(emptyConnectorSpec);
     sourceConnection = new SourceConnection()
         .withSourceId(UUID.randomUUID())
         .withSourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
@@ -93,20 +86,21 @@ class ConfigDumpImporterTest {
         .withName("test-source")
         .withTombstone(false)
         .withWorkspaceId(workspaceId);
-    when(configRepository.listStandardSourceDefinitions())
+    when(configRepository.listStandardSourceDefinitions(false))
         .thenReturn(List.of(standardSourceDefinition));
     when(configRepository.getStandardSourceDefinition(standardSourceDefinition.getSourceDefinitionId()))
         .thenReturn(standardSourceDefinition);
     when(configRepository.getSourceConnection(any()))
         .thenReturn(sourceConnection);
 
-    standardDestinationDefinition = new StandardDestinationDefinition()
+    final StandardDestinationDefinition standardDestinationDefinition = new StandardDestinationDefinition()
         .withDestinationDefinitionId(UUID.randomUUID())
         .withName("test-standard-destination")
         .withDockerRepository("test")
         .withDocumentationUrl("http://doc")
         .withIcon("hello")
-        .withDockerImageTag("dev");
+        .withDockerImageTag("dev")
+        .withSpec(emptyConnectorSpec);
     destinationConnection = new DestinationConnection()
         .withDestinationId(UUID.randomUUID())
         .withDestinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
@@ -114,7 +108,7 @@ class ConfigDumpImporterTest {
         .withName("test-source")
         .withTombstone(false)
         .withWorkspaceId(workspaceId);
-    when(configRepository.listStandardDestinationDefinitions())
+    when(configRepository.listStandardDestinationDefinitions(false))
         .thenReturn(List.of(standardDestinationDefinition));
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);

@@ -39,5 +39,18 @@ The Drift connector should not run into Drift API limitations under normal usage
 
 ### Setup guide
 
-Follow Drift's [Setting Things Up ](https://devdocs.drift.com/docs/quick-start)guide for a more detailed description of how to obtain the API token.
+#### Authenticate using `Access Token`
+* Follow Drift's [Setting Things Up ](https://devdocs.drift.com/docs/quick-start)guide for a more detailed description of how to obtain the API token.
 
+#### Authenticate using `OAuth2.0`
+1. Select `OAuth2.0` from `Authorization Method` dropdown
+2. Click on `Authenticate your Drift account`
+3. Proceed the authentication in order to obtain the `access_token`
+
+## CHANGELOG
+
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.2.5 | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Updated titles and descriptions |
+| 0.2.3 | 2021-10-25 | [7337](https://github.com/airbytehq/airbyte/pull/7337) | Added support of `OAuth 2.0` authorisation option |
+| `0.2.3` | 2021-10-27 | [7247](https://github.com/airbytehq/airbyte/pull/7247) | Migrate to the CDK |

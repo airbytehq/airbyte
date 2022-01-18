@@ -11,11 +11,18 @@ from airbyte_cdk.sources.streams import Stream
 from requests.auth import HTTPBasicAuth
 from source_greenhouse.streams import (
     Applications,
+    ApplicationsDemographicsAnswers,
     ApplicationsInterviews,
     Candidates,
     CloseReasons,
     CustomFields,
     Degrees,
+    DemographicsAnswerOptions,
+    DemographicsAnswers,
+    DemographicsAnswersAnswerOptions,
+    DemographicsQuestions,
+    DemographicsQuestionSets,
+    DemographicsQuestionSetsQuestions,
     Departments,
     Interviews,
     JobPosts,
@@ -62,6 +69,13 @@ class SourceGreenhouse(AbstractSource):
             Scorecards(authenticator=auth),
             Sources(authenticator=auth),
             Users(authenticator=auth),
+            ApplicationsDemographicsAnswers(authenticator=auth),
+            DemographicsAnswers(authenticator=auth),
+            DemographicsAnswerOptions(authenticator=auth),
+            DemographicsQuestions(authenticator=auth),
+            DemographicsAnswersAnswerOptions(authenticator=auth),
+            DemographicsQuestionSets(authenticator=auth),
+            DemographicsQuestionSetsQuestions(authenticator=auth),
         ]
 
         return streams

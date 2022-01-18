@@ -3,28 +3,24 @@ import { ThemeProvider } from "styled-components";
 import { IntlProvider } from "react-intl";
 import { CacheProvider } from "rest-hooks";
 import { QueryClient, QueryClientProvider } from "react-query";
-import { IntercomProvider } from "react-use-intercom";
 
 import en from "locales/en.json";
 import cloudLocales from "packages/cloud/locales/en.json";
 import GlobalStyle from "global-styles";
 import { theme } from "packages/cloud/theme";
 
-import { Routing } from "packages/cloud/routes";
+import { Routing } from "packages/cloud/cloudRoutes";
 import LoadingPage from "components/LoadingPage";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 import NotificationServiceProvider from "hooks/services/Notification";
-import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
-import { Feature, FeatureItem, FeatureService } from "hooks/services/Feature";
+import { AnalyticsProvider } from "views/common/AnalyticsProvider";
+import { FeatureService } from "hooks/services/Feature";
 import { AuthenticationProvider } from "packages/cloud/services/auth/AuthService";
 import { AppServicesProvider } from "./services/AppServicesProvider";
+import { IntercomProvider } from "./services/thirdParty/intercom/IntercomProvider";
+import { ConfigProvider } from "./services/ConfigProvider";
 
 const messages = Object.assign({}, en, cloudLocales);
-
-const INTERCOM_APP_ID =
-  process.env.REACT_APP_INTERCOM_APP_ID ||
-  window.REACT_APP_INTERCOM_APP_ID ||
-  "";
 
 const I18NProvider: React.FC = ({ children }) => (
   <IntlProvider locale="en" messages={messages}>
@@ -39,7 +35,13 @@ const StyleProvider: React.FC = ({ children }) => (
   </ThemeProvider>
 );
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      suspense: true,
+    },
+  },
+});
 
 const StoreProvider: React.FC = ({ children }) => (
   <CacheProvider>
@@ -47,11 +49,23 @@ const StoreProvider: React.FC = ({ children }) => (
   </CacheProvider>
 );
 
-const Features: Feature[] = [
-  {
-    id: FeatureItem.AllowOAuthConnector,
-  },
-];
+const Services: React.FC = ({ children }) => (
+  <ConfigProvider>
+    <AnalyticsProvider>
+      <ApiErrorBoundary>
+        <NotificationServiceProvider>
+          <FeatureService>
+            <AppServicesProvider>
+              <AuthenticationProvider>
+                <IntercomProvider>{children}</IntercomProvider>
+              </AuthenticationProvider>
+            </AppServicesProvider>
+          </FeatureService>
+        </NotificationServiceProvider>
+      </ApiErrorBoundary>
+    </AnalyticsProvider>
+  </ConfigProvider>
+);
 
 const App: React.FC = () => {
   return (
@@ -60,21 +74,9 @@ const App: React.FC = () => {
         <I18NProvider>
           <StoreProvider>
             <Suspense fallback={<LoadingPage />}>
-              <ApiErrorBoundary>
-                <NotificationServiceProvider>
-                  <FeatureService features={Features}>
-                    <AppServicesProvider>
-                      <AuthenticationProvider>
-                        <IntercomProvider appId={INTERCOM_APP_ID}>
-                          <AnalyticsInitializer>
-                            <Routing />
-                          </AnalyticsInitializer>
-                        </IntercomProvider>
-                      </AuthenticationProvider>
-                    </AppServicesProvider>
-                  </FeatureService>
-                </NotificationServiceProvider>
-              </ApiErrorBoundary>
+              <Services>
+                <Routing />
+              </Services>
             </Suspense>
           </StoreProvider>
         </I18NProvider>

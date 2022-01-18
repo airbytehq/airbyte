@@ -1,6 +1,8 @@
 .gradle
 .idea
+.vscode
 *.iml
+*.swp
 build
 out
 .DS_Store
@@ -9,6 +11,9 @@ data
 .classpath
 .project
 .settings
+**/gmon.out
+static_checker_reports/
+.vscode
 
 # Logs
 acceptance_tests_logs/

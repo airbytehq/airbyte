@@ -29,6 +29,8 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import org.bson.BsonArray;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 
@@ -77,7 +79,7 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
         .put("auth_source", "admin")
         .build());
 
-    final String connectionString = String.format("mongodb://%s:%s@%s:%s/%s?authSource=admin&ssl=true",
+    final String connectionString = String.format("mongodb://%s:%s@%s:%s/%s?authSource=admin&directConnection=false&ssl=true",
         config.get("user").asText(),
         config.get("password").asText(),
         config.get("instance_type").get("host").asText(),
@@ -87,9 +89,12 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
     database = new MongoDatabase(connectionString, DATABASE_NAME);
 
     final MongoCollection<Document> collection = database.createCollection(COLLECTION_NAME);
-    final var doc1 = new Document("id", "0001").append("name", "Test");
-    final var doc2 = new Document("id", "0002").append("name", "Mongo");
-    final var doc3 = new Document("id", "0003").append("name", "Source");
+    final var doc1 = new Document("id", "0001").append("name", "Test")
+        .append("test", 10).append("test_array", new BsonArray(List.of(new BsonString("test"), new BsonString("mongo"))))
+        .append("double_test", 100.12).append("int_test", 100);
+    final var doc2 = new Document("id", "0002").append("name", "Mongo").append("test", "test_value").append("int_test", 201);
+    final var doc3 = new Document("id", "0003").append("name", "Source").append("test", null)
+        .append("double_test", 212.11).append("int_test", 302);
 
     collection.insertMany(List.of(doc1, doc2, doc3));
   }
@@ -117,7 +122,12 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
                 DATABASE_NAME + "." + COLLECTION_NAME,
                 Field.of("_id", JsonSchemaPrimitive.STRING),
                 Field.of("id", JsonSchemaPrimitive.STRING),
-                Field.of("name", JsonSchemaPrimitive.STRING))
+                Field.of("name", JsonSchemaPrimitive.STRING),
+                Field.of("test", JsonSchemaPrimitive.STRING),
+                Field.of("test_array", JsonSchemaPrimitive.ARRAY),
+                Field.of("empty_test", JsonSchemaPrimitive.STRING),
+                Field.of("double_test", JsonSchemaPrimitive.NUMBER),
+                Field.of("int_test", JsonSchemaPrimitive.NUMBER))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
                 .withDefaultCursorField(List.of("_id")))));
   }

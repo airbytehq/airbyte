@@ -81,7 +81,7 @@ class AbstractFileParser(ABC):
             return pa.large_string()
         else:
             for json_type, pyarrow_types in map.items():
-                if any([str_typ.startswith(pa_type) for pa_type in pyarrow_types]):
+                if any(str_typ.startswith(pa_type) for pa_type in pyarrow_types):
                     return json_type
             logger.debug(f"PyArrow type '{str_typ}' is not mapped, falling back to default conversion to string")
             return "string"  # default type if unspecified in map
@@ -96,9 +96,4 @@ class AbstractFileParser(ABC):
         :param reverse: switch to True for PyArrow schema -> Json schema, defaults to False
         :return: converted schema dict
         """
-        new_schema = {}
-
-        for column, json_type in schema.items():
-            new_schema[column] = AbstractFileParser.json_type_to_pyarrow_type(json_type, reverse=reverse)
-
-        return new_schema
+        return {column: AbstractFileParser.json_type_to_pyarrow_type(json_type, reverse=reverse) for column, json_type in schema.items()}

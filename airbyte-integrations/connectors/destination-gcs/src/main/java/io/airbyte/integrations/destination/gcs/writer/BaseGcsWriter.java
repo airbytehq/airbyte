@@ -28,10 +28,12 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The base implementation takes care of the following:
+ * <ul>
  * <li>Create shared instance variables.</li>
  * <li>Create the bucket and prepare the bucket path.</li>
+ * </ul>
  */
-public abstract class BaseGcsWriter implements S3Writer {
+public abstract class BaseGcsWriter implements S3Writer, CommonWriter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseGcsWriter.class);
 
@@ -52,8 +54,10 @@ public abstract class BaseGcsWriter implements S3Writer {
   }
 
   /**
+   * <ul>
    * <li>1. Create bucket if necessary.</li>
    * <li>2. Under OVERWRITE mode, delete all objects with the output prefix.</li>
+   * </ul>
    */
   @Override
   public void initialize() {
@@ -82,6 +86,7 @@ public abstract class BaseGcsWriter implements S3Writer {
         LOGGER.info("Deleted {} file(s) for stream '{}'.", keysToDelete.size(),
             stream.getName());
       }
+      LOGGER.info("Overwrite is finished");
     }
   }
 

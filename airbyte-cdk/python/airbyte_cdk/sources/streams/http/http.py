@@ -3,15 +3,18 @@
 #
 
 
+import logging
 import os
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from urllib.parse import urljoin
 
 import requests
 import vcr
 import vcr.cassette as Cassette
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.utils.sentry import AirbyteSentry
 from requests.auth import AuthBase
 
 from .auth.core import HttpAuthenticator, NoAuth
@@ -21,6 +24,8 @@ from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
 # list of all possible HTTP methods which can be used for sending of request bodies
 BODY_REQUEST_METHODS = ("POST", "PUT", "PATCH")
 
+logging.getLogger("vcr").setLevel(logging.ERROR)
+
 
 class HttpStream(Stream, ABC):
     """
@@ -28,13 +33,13 @@ class HttpStream(Stream, ABC):
     """
 
     source_defined_cursor = True  # Most HTTP streams use a source defined cursor (i.e: the user can't configure it like on a SQL table)
-    page_size = None  # Use this variable to define page size for API http requests with pagination support
+    page_size: Optional[int] = None  # Use this variable to define page size for API http requests with pagination support
 
     # TODO: remove legacy HttpAuthenticator authenticator references
     def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None):
         self._session = requests.Session()
 
-        self._authenticator = NoAuth()
+        self._authenticator: HttpAuthenticator = NoAuth()
         if isinstance(authenticator, AuthBase):
             self._session.auth = authenticator
         elif authenticator:
@@ -102,7 +107,7 @@ class HttpStream(Stream, ABC):
         return 5
 
     @property
-    def retry_factor(self) -> int:
+    def retry_factor(self) -> float:
         """
         Override if needed. Specifies factor for backoff policy.
         """
@@ -125,6 +130,7 @@ class HttpStream(Stream, ABC):
     @abstractmethod
     def path(
         self,
+        *,
         stream_state: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
@@ -165,7 +171,7 @@ class HttpStream(Stream, ABC):
 
         If returns a ready text that it will be sent as is.
         If returns a dict that it will be converted to a urlencoded form.
-           E.g. {"key1": "value1", "key2": "value2"} => "key1=value1&key2=value2"
+        E.g. {"key1": "value1", "key2": "value2"} => "key1=value1&key2=value2"
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
@@ -201,6 +207,7 @@ class HttpStream(Stream, ABC):
     def parse_response(
         self,
         response: requests.Response,
+        *,
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
@@ -209,6 +216,9 @@ class HttpStream(Stream, ABC):
         Parses the raw response object into a list of records.
         By default, this returns an iterable containing the input. Override to parse differently.
         :param response:
+        :param stream_state:
+        :param stream_slice:
+        :param next_page_token:
         :return: An iterable containing the parsed response
         """
 
@@ -231,6 +241,7 @@ class HttpStream(Stream, ABC):
 
         This method is called only if should_backoff() returns True for the input request.
 
+        :param response:
         :return how long to backoff in seconds. The return value may be a floating point number for subsecond precision. Returning None defers backoff
         to the default backoff behavior (e.g using an exponential algorithm).
         """
@@ -239,7 +250,7 @@ class HttpStream(Stream, ABC):
     def _create_prepared_request(
         self, path: str, headers: Mapping = None, params: Mapping = None, json: Any = None, data: Any = None
     ) -> requests.PreparedRequest:
-        args = {"method": self.http_method, "url": self.url_base + path, "headers": headers, "params": params}
+        args = {"method": self.http_method, "url": urljoin(self.url_base, path), "headers": headers, "params": params}
         if self.http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:
                 raise RequestBodyException(
@@ -271,7 +282,9 @@ class HttpStream(Stream, ABC):
         Unexpected transient exceptions use the default backoff parameters.
         Unexpected persistent exceptions are not handled and will cause the sync to fail.
         """
-        response: requests.Response = self._session.send(request, **request_kwargs)
+        AirbyteSentry.add_breadcrumb(message=f"Issue {request.url}", data=request_kwargs)
+        with AirbyteSentry.start_transaction_span(op="_send", description=request.url):
+            response: requests.Response = self._session.send(request, **request_kwargs)
 
         if self.should_retry(response):
             custom_backoff_time = self.backoff_time(response)
@@ -303,19 +316,21 @@ class HttpStream(Stream, ABC):
             max_tries: The maximum number of attempts to make before giving
                 up ...The default value of None means there is no limit to
                 the number of tries.
-        This implies that if max_tries is excplicitly set to None there is no
+        This implies that if max_tries is explicitly set to None there is no
         limit to retry attempts, otherwise it is limited number of tries. But
         this is not true for current version of backoff packages (1.8.0). Setting
-        max_tries to 0 or negative number would result in endless retry atempts.
-        Add this condition to avoid an endless loop if it hasnt been set
+        max_tries to 0 or negative number would result in endless retry attempts.
+        Add this condition to avoid an endless loop if it hasn't been set
         explicitly (i.e. max_retries is not None).
         """
         if max_tries is not None:
             max_tries = max(0, max_tries) + 1
+        AirbyteSentry.set_context("request", {"url": request.url, "headers": request.headers, "args": request_kwargs})
 
-        user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries)(self._send)
-        backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self.retry_factor)
-        return backoff_handler(user_backoff_handler)(request, request_kwargs)
+        with AirbyteSentry.start_transaction_span(op="_send_request"):
+            user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries)(self._send)
+            backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self.retry_factor)
+            return backoff_handler(user_backoff_handler)(request, request_kwargs)
 
     def read_records(
         self,
@@ -328,36 +343,38 @@ class HttpStream(Stream, ABC):
         pagination_complete = False
 
         next_page_token = None
-        while not pagination_complete:
-            request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-            request = self._create_prepared_request(
-                path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                headers=dict(request_headers, **self.authenticator.get_auth_header()),
-                params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            )
-            request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span("read_records"):
+            while not pagination_complete:
+                request_headers = self.request_headers(
+                    stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+                )
+                request = self._create_prepared_request(
+                    path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                    headers=dict(request_headers, **self.authenticator.get_auth_header()),
+                    params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                    json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                    data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                )
+                request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
-            if self.use_cache:
-                # use context manager to handle and store cassette metadata
-                with self.cache_file as cass:
-                    self.cassete = cass
-                    # vcr tries to find records based on the request, if such records exist, return from cache file
-                    # else make a request and save record in cache file
+                if self.use_cache:
+                    # use context manager to handle and store cassette metadata
+                    with self.cache_file as cass:
+                        self.cassete = cass
+                        # vcr tries to find records based on the request, if such records exist, return from cache file
+                        # else make a request and save record in cache file
+                        response = self._send_request(request, request_kwargs)
+
+                else:
                     response = self._send_request(request, request_kwargs)
+                yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
 
-            else:
-                response = self._send_request(request, request_kwargs)
+                next_page_token = self.next_page_token(response)
+                if not next_page_token:
+                    pagination_complete = True
 
-            yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
-
-            next_page_token = self.next_page_token(response)
-            if not next_page_token:
-                pagination_complete = True
-
-        # Always return an empty generator just in case no records were ever yielded
-        yield from []
+            # Always return an empty generator just in case no records were ever yielded
+            yield from []
 
 
 class HttpSubStream(HttpStream, ABC):

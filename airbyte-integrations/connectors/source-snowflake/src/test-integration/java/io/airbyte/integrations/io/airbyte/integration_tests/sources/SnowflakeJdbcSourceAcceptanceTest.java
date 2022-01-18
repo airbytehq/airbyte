@@ -11,7 +11,9 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.snowflake.SnowflakeSource;
+import java.math.BigDecimal;
 import java.nio.file.Path;
+import java.sql.JDBCType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,11 +44,11 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     COL_FIRST_NAME = "FIRST_NAME";
     COL_LAST_NAME = "LAST_NAME";
     COL_LAST_NAME_WITH_SPACE = "LAST NAME";
-    ID_VALUE_1 = 1L;
-    ID_VALUE_2 = 2L;
-    ID_VALUE_3 = 3L;
-    ID_VALUE_4 = 4L;
-    ID_VALUE_5 = 5L;
+    ID_VALUE_1 = new BigDecimal(1);
+    ID_VALUE_2 = new BigDecimal(2);
+    ID_VALUE_3 = new BigDecimal(3);
+    ID_VALUE_4 = new BigDecimal(4);
+    ID_VALUE_5 = new BigDecimal(5);
 
     super.setup();
   }
@@ -73,7 +75,7 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  public AbstractJdbcSource getJdbcSource() {
+  public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new SnowflakeSource();
   }
 

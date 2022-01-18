@@ -20,6 +20,9 @@ public class DataTypeUtils {
   public static final String DATE_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'";
   public static final DateFormat DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT_PATTERN); // Quoted "Z" to indicate UTC, no timezone offset
 
+  public static final String DATE_FORMAT_WITH_MILLISECONDS_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+  public static final DateFormat DATE_FORMAT_WITH_MILLISECONDS = new SimpleDateFormat(DATE_FORMAT_WITH_MILLISECONDS_PATTERN);
+
   public static <T> T returnNullIfInvalid(final DataTypeSupplier<T> valueProducer) {
     return returnNullIfInvalid(valueProducer, ignored -> true);
   }
@@ -37,12 +40,20 @@ public class DataTypeUtils {
     }
   }
 
+  public static String toISO8601StringWithMilliseconds(final long epochMillis) {
+    return DATE_FORMAT_WITH_MILLISECONDS.format(Date.from(Instant.ofEpochMilli(epochMillis)));
+  }
+
   public static String toISO8601String(final long epochMillis) {
     return DATE_FORMAT.format(Date.from(Instant.ofEpochMilli(epochMillis)));
   }
 
   public static String toISO8601String(final java.util.Date date) {
     return DATE_FORMAT.format(date);
+  }
+
+  public static String toISOTimeString(final LocalDateTime dateTime) {
+    return DateTimeFormatter.ISO_TIME.format(dateTime.toLocalTime());
   }
 
   public static String toISO8601String(final LocalDate date) {

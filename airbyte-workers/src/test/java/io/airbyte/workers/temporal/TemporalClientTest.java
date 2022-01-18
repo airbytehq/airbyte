@@ -8,11 +8,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.Configs;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
@@ -24,7 +30,12 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflow;
+import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflow;
+import io.airbyte.workers.temporal.spec.SpecWorkflow;
+import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.temporal.client.WorkflowClient;
+import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,6 +49,7 @@ import org.junit.jupiter.api.Test;
 
 class TemporalClientTest {
 
+  private static final UUID CONNECTION_ID = UUID.randomUUID();
   private static final UUID JOB_UUID = UUID.randomUUID();
   private static final long JOB_ID = 11L;
   private static final int ATTEMPT_ID = 21;
@@ -58,13 +70,16 @@ class TemporalClientTest {
   private WorkflowClient workflowClient;
   private TemporalClient temporalClient;
   private Path logPath;
+  private WorkflowServiceStubs workflowServiceStubs;
+  private Configs configs;
 
   @BeforeEach
   void setup() throws IOException {
     final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_client_test");
     logPath = workspaceRoot.resolve(String.valueOf(JOB_ID)).resolve(String.valueOf(ATTEMPT_ID)).resolve(LogClientSingleton.LOG_FILENAME);
     workflowClient = mock(WorkflowClient.class);
-    temporalClient = new TemporalClient(workflowClient, workspaceRoot);
+    workflowServiceStubs = mock(WorkflowServiceStubs.class);
+    temporalClient = spy(new TemporalClient(workflowClient, workspaceRoot, workflowServiceStubs, configs));
   }
 
   @Nested
@@ -176,9 +191,37 @@ class TemporalClientTest {
           .withAttemptId((long) ATTEMPT_ID)
           .withDockerImage(IMAGE_NAME2);
 
-      temporalClient.submitSync(JOB_ID, ATTEMPT_ID, syncConfig);
-      discoverCatalogWorkflow.run(JOB_RUN_CONFIG, LAUNCHER_CONFIG, destinationLauncherConfig, input);
+      temporalClient.submitSync(JOB_ID, ATTEMPT_ID, syncConfig, CONNECTION_ID);
+      discoverCatalogWorkflow.run(JOB_RUN_CONFIG, LAUNCHER_CONFIG, destinationLauncherConfig, input, CONNECTION_ID);
       verify(workflowClient).newWorkflowStub(SyncWorkflow.class, TemporalUtils.getWorkflowOptions(TemporalJobType.SYNC));
+    }
+
+  }
+
+  @Nested
+  @DisplayName("Test related to the migration to the new scheduler")
+  class TestMigration {
+
+    @DisplayName("Test that the migration is properly done if needed")
+    @Test
+    public void migrateCalled() {
+      final UUID nonMigratedId = UUID.randomUUID();
+      final UUID migratedId = UUID.randomUUID();
+
+      doReturn(false)
+          .when(temporalClient).isInRunningWorkflowCache(TemporalClient.getConnectionManagerName(nonMigratedId));
+      doReturn(true)
+          .when(temporalClient).isInRunningWorkflowCache(TemporalClient.getConnectionManagerName(migratedId));
+
+      doNothing()
+          .when(temporalClient).refreshRunningWorkflow();
+      doNothing()
+          .when(temporalClient).submitConnectionUpdaterAsync(nonMigratedId);
+
+      temporalClient.migrateSyncIfNeeded(Sets.newHashSet(nonMigratedId, migratedId));
+
+      verify(temporalClient, times(1)).submitConnectionUpdaterAsync(nonMigratedId);
+      verify(temporalClient, times(0)).submitConnectionUpdaterAsync(migratedId);
     }
 
   }

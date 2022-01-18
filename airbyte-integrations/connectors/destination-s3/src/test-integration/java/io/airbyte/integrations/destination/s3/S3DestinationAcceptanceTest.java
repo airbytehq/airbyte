@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.s3;
 
-import static io.airbyte.integrations.destination.s3.S3DestinationConstants.NAME_TRANSFORMER;
-
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
@@ -17,6 +15,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.integrations.destination.s3.util.S3OutputPathHelper;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
@@ -88,7 +87,7 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
         .listObjects(config.getBucketName(), outputPrefix)
         .getObjectSummaries()
         .stream()
-        .filter(o -> o.getKey().contains(NAME_TRANSFORMER.convertStreamName(streamName) + "/"))
+        .filter(o -> o.getKey().contains(AvroConstants.NAME_TRANSFORMER.convertStreamName(streamName) + "/"))
         .sorted(Comparator.comparingLong(o -> o.getLastModified().getTime()))
         .collect(Collectors.toList());
     LOGGER.info(

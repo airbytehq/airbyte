@@ -65,8 +65,8 @@ public class MigrationDevHelper {
 
     final String template = MoreResources.readResource("migration_template.txt");
     final String newMigration = template.replace("<db-name>", dbIdentifier)
-        .replace("<version-id>", versionId)
-        .replace("<description>", description)
+        .replaceAll("<version-id>", versionId)
+        .replaceAll("<description>", description)
         .strip();
 
     final String fileName = String.format("V%s__%s.java", versionId, description);
@@ -216,7 +216,7 @@ public class MigrationDevHelper {
     System.out.println("lastMigrationId: " + lastMigrationId);
     final String nextMigrationId = String.format("%03d", Integer.parseInt(lastMigrationId) + 1);
     System.out.println("nextMigrationId: " + nextMigrationId);
-    return MigrationVersion.fromVersion(String.format("%s_%s", migrationAirbyteVersion.getVersion(), nextMigrationId));
+    return MigrationVersion.fromVersion(String.format("%s_%s", migrationAirbyteVersion.serialize(), nextMigrationId));
   }
 
 }

@@ -28,6 +28,7 @@ import io.airbyte.api.client.model.AirbyteStream;
 import io.airbyte.api.client.model.AirbyteStreamAndConfiguration;
 import io.airbyte.api.client.model.AirbyteStreamConfiguration;
 import io.airbyte.api.client.model.AttemptInfoRead;
+import io.airbyte.api.client.model.AttemptStatus;
 import io.airbyte.api.client.model.CheckConnectionRead;
 import io.airbyte.api.client.model.ConnectionCreate;
 import io.airbyte.api.client.model.ConnectionIdRequestBody;
@@ -69,6 +70,8 @@ import io.airbyte.api.client.model.SourceRead;
 import io.airbyte.api.client.model.SyncMode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
+import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.MoreProperties;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
@@ -84,6 +87,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -100,6 +104,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -128,8 +133,8 @@ public class AcceptanceTests {
   // assume env file is one directory level up from airbyte-tests.
   private final static File ENV_FILE = Path.of(System.getProperty("user.dir")).getParent().resolve(".env").toFile();
 
-  private static final String SOURCE_E2E_TEST_CONNECTOR_VERSION = "0.1.0";
-  private static final String DESTINATION_E2E_TEST_CONNECTOR_VERSION = "0.1.0";
+  private static final String SOURCE_E2E_TEST_CONNECTOR_VERSION = "0.1.1";
+  private static final String DESTINATION_E2E_TEST_CONNECTOR_VERSION = "0.1.1";
 
   private static final Charset UTF8 = StandardCharsets.UTF_8;
   private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
@@ -184,7 +189,7 @@ public class AcceptanceTests {
     if (!USE_EXTERNAL_DEPLOYMENT) {
       LOGGER.info("Using deployment of airbyte managed by test containers.");
       airbyteTestContainer = new AirbyteTestContainer.Builder(new File(Resources.getResource(DOCKER_COMPOSE_FILE_NAME).toURI()))
-          .setEnv(ENV_FILE)
+          .setEnv(MoreProperties.envFileToProperties(ENV_FILE))
           // override env VERSION to use dev to test current build of airbyte.
           .setEnvVariable("VERSION", "dev")
           // override to use test mounts.
@@ -194,7 +199,7 @@ public class AcceptanceTests {
           .setEnvVariable("LOCAL_ROOT", "/tmp/airbyte_local_migration_test")
           .setEnvVariable("LOCAL_DOCKER_MOUNT", "/tmp/airbyte_local_migration_test")
           .build();
-      airbyteTestContainer.start();
+      airbyteTestContainer.startBlocking();
     } else {
       LOGGER.info("Using external deployment of airbyte.");
     }
@@ -243,7 +248,7 @@ public class AcceptanceTests {
     // seed database.
     if (IS_GKE) {
       final Database database = getSourceDatabase();
-      final Path path = Path.of(Resources.getResource("postgres_init.sql").toURI());
+      final Path path = Path.of(MoreResources.readResourceAsFile("postgres_init.sql").toURI());
       final StringBuilder query = new StringBuilder();
       for (final String line : java.nio.file.Files.readAllLines(path, UTF8)) {
         if (line != null && !line.isEmpty()) {
@@ -492,6 +497,7 @@ public class AcceptanceTests {
   @Test
   @Order(9)
   public void testIncrementalSync() throws Exception {
+    LOGGER.info("Starting testIncrementalSync()");
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
@@ -514,6 +520,7 @@ public class AcceptanceTests {
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
+    LOGGER.info("Beginning testIncrementalSync() sync 1");
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
@@ -534,6 +541,7 @@ public class AcceptanceTests {
     source.query(ctx -> ctx.execute("UPDATE id_and_name SET name='yennefer' WHERE id=2"));
     source.close();
 
+    LOGGER.info("Starting testIncrementalSync() sync 2");
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
@@ -542,6 +550,7 @@ public class AcceptanceTests {
     assertRawDestinationContains(expectedRecords, new SchemaTableNamePair("public", STREAM_NAME));
 
     // reset back to no data.
+    LOGGER.info("Starting testIncrementalSync() reset");
     final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), jobInfoRead.getJob());
     LOGGER.info("state after reset: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
@@ -549,6 +558,7 @@ public class AcceptanceTests {
     assertRawDestinationContains(Collections.emptyList(), new SchemaTableNamePair("public", STREAM_NAME));
 
     // sync one more time. verify it is the equivalent of a full refresh.
+    LOGGER.info("Starting testIncrementalSync() sync 3");
     final JobInfoRead connectionSyncRead3 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead3.getJob());
@@ -712,7 +722,7 @@ public class AcceptanceTests {
         "E2E Test Destination -" + UUID.randomUUID(),
         workspaceId,
         destinationDefinition.getDestinationDefinitionId(),
-        Jsons.jsonNode(ImmutableMap.of("type", "LOGGING")));
+        Jsons.jsonNode(ImmutableMap.of("type", "SILENT")));
 
     final String connectionName = "test-connection";
     final UUID sourceId = source.getSourceId();
@@ -853,6 +863,77 @@ public class AcceptanceTests {
     }
   }
 
+  // This test is disabled because it takes a couple minutes to run, as it is testing timeouts.
+  // It should be re-enabled when the @SlowIntegrationTest can be applied to it.
+  // See relevant issue: https://github.com/airbytehq/airbyte/issues/8397
+  @Test
+  @Order(17)
+  @Disabled
+  public void testFailureTimeout() throws Exception {
+    final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
+        .name("E2E Test Source")
+        .dockerRepository("airbyte/source-e2e-test")
+        .dockerImageTag(SOURCE_E2E_TEST_CONNECTOR_VERSION)
+        .documentationUrl(URI.create("https://example.com")));
+
+    final DestinationDefinitionRead destinationDefinition = apiClient.getDestinationDefinitionApi()
+        .createDestinationDefinition(new DestinationDefinitionCreate()
+            .name("E2E Test Destination")
+            .dockerRepository("airbyte/destination-e2e-test")
+            .dockerImageTag(DESTINATION_E2E_TEST_CONNECTOR_VERSION)
+            .documentationUrl(URI.create("https://example.com")));
+
+    final SourceRead source = createSource(
+        "E2E Test Source -" + UUID.randomUUID(),
+        workspaceId,
+        sourceDefinition.getSourceDefinitionId(),
+        Jsons.jsonNode(ImmutableMap.builder()
+            .put("type", "INFINITE_FEED")
+            .put("max_records", 1000)
+            .put("message_interval", 100)
+            .build()));
+
+    // Destination fails after processing 5 messages, so the job should fail after the graceful close
+    // timeout of 1 minute
+    final DestinationRead destination = createDestination(
+        "E2E Test Destination -" + UUID.randomUUID(),
+        workspaceId,
+        destinationDefinition.getDestinationDefinitionId(),
+        Jsons.jsonNode(ImmutableMap.builder()
+            .put("type", "FAILING")
+            .put("num_messages", 5)
+            .build()));
+
+    final String connectionName = "test-connection";
+    final UUID sourceId = source.getSourceId();
+    final UUID destinationId = destination.getDestinationId();
+    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+
+    final UUID connectionId =
+        createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
+            .getConnectionId();
+
+    final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+
+    // wait to get out of pending.
+    final JobRead runningJob = waitForJob(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
+
+    // wait for job for max of 3 minutes, by which time the job attempt should have failed
+    waitForJob(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING), Duration.ofMinutes(3));
+
+    final JobIdRequestBody jobId = new JobIdRequestBody().id(runningJob.getId());
+    final JobInfoRead jobInfo = apiClient.getJobsApi().getJobInfo(jobId);
+    final AttemptInfoRead attemptInfoRead = jobInfo.getAttempts().get(jobInfo.getAttempts().size() - 1);
+
+    // assert that the job attempt failed, and cancel the job regardless of status to prevent retries
+    try {
+      assertEquals(AttemptStatus.FAILED, attemptInfoRead.getAttempt().getStatus());
+    } finally {
+      apiClient.getJobsApi().cancelJob(jobId);
+    }
+  }
+
   private AirbyteCatalog discoverSourceSchema(final UUID sourceId) throws ApiException {
     return apiClient.getSourceApi().discoverSchemaForSource(new SourceIdRequestBody().sourceId(sourceId)).getCatalog();
   }
@@ -915,6 +996,9 @@ public class AcceptanceTests {
               String.format("_airbyte_raw_%s%s", OUTPUT_STREAM_PREFIX, cleanedNameStream)),
           new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + x.schemaName, String.format("%s%s", OUTPUT_STREAM_PREFIX, cleanedNameStream))));
       if (withScdTable) {
+        explodedStreamNames
+            .add(new SchemaTableNamePair("_airbyte_" + OUTPUT_NAMESPACE_PREFIX + x.schemaName,
+                String.format("%s%s_stg", OUTPUT_STREAM_PREFIX, cleanedNameStream)));
         explodedStreamNames
             .add(new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + x.schemaName, String.format("%s%s_scd", OUTPUT_STREAM_PREFIX, cleanedNameStream)));
       }
@@ -1097,6 +1181,7 @@ public class AcceptanceTests {
     dbConfig.put("port", psql.getFirstMappedPort());
     dbConfig.put("database", psql.getDatabaseName());
     dbConfig.put("username", psql.getUsername());
+    dbConfig.put("ssl", false);
 
     if (withSchema) {
       dbConfig.put("schema", "public");
@@ -1144,7 +1229,7 @@ public class AcceptanceTests {
     final Database database = getDestinationDatabase();
     final Set<SchemaTableNamePair> pairs = listAllTables(database);
     for (final SchemaTableNamePair pair : pairs) {
-      database.query(context -> context.execute(String.format("DROP TABLE %s.%s", pair.schemaName, pair.tableName)));
+      database.query(context -> context.execute(String.format("DROP TABLE %s.%s CASCADE", pair.schemaName, pair.tableName)));
     }
   }
 
@@ -1175,17 +1260,36 @@ public class AcceptanceTests {
 
   private static void waitForSuccessfulJob(final JobsApi jobsApi, final JobRead originalJob) throws InterruptedException, ApiException {
     final JobRead job = waitForJob(jobsApi, originalJob, Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING));
+
+    if (!JobStatus.SUCCEEDED.equals(job.getStatus())) {
+      // If a job failed during testing, show us why.
+      final JobIdRequestBody id = new JobIdRequestBody();
+      id.setId(originalJob.getId());
+      for (final AttemptInfoRead attemptInfo : jobsApi.getJobInfo(id).getAttempts()) {
+        LOGGER.warn("Unsuccessful job attempt " + attemptInfo.getAttempt().getId()
+            + " with status " + job.getStatus() + " produced log output as follows: " + attemptInfo.getLogs().getLogLines());
+      }
+    }
     assertEquals(JobStatus.SUCCEEDED, job.getStatus());
   }
 
-  @SuppressWarnings("BusyWait")
   private static JobRead waitForJob(final JobsApi jobsApi, final JobRead originalJob, final Set<JobStatus> jobStatuses)
       throws InterruptedException, ApiException {
+    return waitForJob(jobsApi, originalJob, jobStatuses, Duration.ofMinutes(6));
+  }
+
+  @SuppressWarnings("BusyWait")
+  private static JobRead waitForJob(final JobsApi jobsApi, final JobRead originalJob, final Set<JobStatus> jobStatuses, final Duration maxWaitTime)
+      throws InterruptedException, ApiException {
     JobRead job = originalJob;
-    int count = 0;
-    while (count < 400 && jobStatuses.contains(job.getStatus())) {
+
+    final Instant waitStart = Instant.now();
+    while (jobStatuses.contains(job.getStatus())) {
+      if (Duration.between(waitStart, Instant.now()).compareTo(maxWaitTime) > 0) {
+        LOGGER.info("Max wait time of {} has been reached. Stopping wait.", maxWaitTime);
+        break;
+      }
       sleep(1000);
-      count++;
 
       job = jobsApi.getJobInfo(new JobIdRequestBody().id(job.getId())).getJob();
       LOGGER.info("waiting: job id: {} config type: {} status: {}", job.getId(), job.getConfigType(), job.getStatus());

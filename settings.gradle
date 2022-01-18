@@ -11,35 +11,44 @@ gradleEnterprise {
     }
 }
 
+sourceControl {
+    gitRepository("https://github.com/airbytehq/json-avro-converter.git") {
+        producesModule("tech.allegro.schema.json2avro:converter")
+    }
+}
+
 rootProject.name = 'airbyte'
 
-// SUB_BUILD is an enum of <blank>, PLATFORM, CONNECTORS_BASE. Blank is equivalent to all.
-if(!System.getenv().containsKey("SUB_BUILD")) {
+// SUB_BUILD is an enum of <blank>, PLATFORM, CONNECTORS_BASE, OCTAVIA_CLI. Blank is equivalent to all.
+if (!System.getenv().containsKey("SUB_BUILD")) {
     println("Building all of Airbyte.")
 } else {
     def subBuild = System.getenv().get("SUB_BUILD")
     println("Building Airbyte Sub Build: " + subBuild)
-    if(subBuild != "PLATFORM" && subBuild != "CONNECTORS_BASE") {
-        throw new IllegalArgumentException(String.format("%s is invalid. Must be unset or PLATFORM or CONNECTORS_BASE", subBuild))
+    if (subBuild != "PLATFORM" && subBuild != "CONNECTORS_BASE" && subBuild != "OCTAVIA_CLI") {
+        throw new IllegalArgumentException(String.format("%s is invalid. Must be unset or PLATFORM or CONNECTORS_BASE or OCTAVIA_CLI", subBuild))
     }
 }
 
 // shared
-include ':airbyte-api'
 include ':airbyte-commons'
+
+// shared by CONNECTORS_BASE and PLATFORM sub builds
+include ':airbyte-api'
+include ':airbyte-commons-cli'
 include ':airbyte-commons-docker'
 include ':airbyte-config:models' // reused by acceptance tests in connector base.
 include ':airbyte-db:lib' // reused by acceptance tests in connector base.
 include ':airbyte-json-validation'
-include ':airbyte-protocol:models'
 include ':airbyte-metrics'
+include ':airbyte-oauth'
+include ':airbyte-protocol:models'
 include ':airbyte-queue'
 include ':airbyte-test-utils'
 
 // airbyte-workers has a lot of dependencies.
 include ':airbyte-workers' // reused by acceptance tests in connector base.
 include ':airbyte-analytics' // transitively used by airbyte-workers.
-include ':airbyte-config:init' // transitively used by airbyte-workers.
 include ':airbyte-config:persistence' // transitively used by airbyte-workers.
 include ':airbyte-db:jooq' // transitively used by airbyte-workers.
 include ':airbyte-notification' // transitively used by airbyte-workers.
@@ -47,23 +56,23 @@ include ':airbyte-scheduler:models' // transitively used by airbyte-workers.
 include ':airbyte-scheduler:persistence' // used by airbyte-workers.
 
 // platform
-if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
+if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
+    include ':airbyte-bootloader'
     include ':airbyte-cli'
-    include ':airbyte-e2e-testing'
-    include ':airbyte-migration'
-    include ':airbyte-oauth'
+    include ':airbyte-config:init'
+    include ':airbyte-config:specs'
+    include ':airbyte-container-orchestrator'
+    include ':airbyte-webapp-e2e-tests'
     include ':airbyte-scheduler:app'
     include ':airbyte-scheduler:client'
     include ':airbyte-server'
+    include ':airbyte-temporal'
     include ':airbyte-tests'
     include ':airbyte-webapp'
-    include ':airbyte-secrets-migration'
-
-    include ':tools:code-generator'
 }
 
 // connectors base
-if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "CONNECTORS_BASE") {
+if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "CONNECTORS_BASE") {
     include ':airbyte-cdk:python'
     include ':airbyte-integrations:bases:airbyte-protocol'
     include ':airbyte-integrations:bases:base'
@@ -79,8 +88,6 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     include ':airbyte-integrations:connector-templates:generator'
     include ':airbyte-integrations:bases:debezium'
 
-    include ':airbyte-oauth'
-
     // Needed by normalization integration tests
     include ':airbyte-integrations:connectors:destination-bigquery'
     include ':airbyte-integrations:connectors:destination-jdbc'
@@ -90,6 +97,7 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     include ':airbyte-integrations:connectors:destination-snowflake'
     include ':airbyte-integrations:connectors:destination-oracle'
     include ':airbyte-integrations:connectors:destination-mssql'
+    include ':airbyte-integrations:connectors:destination-clickhouse'
 
     //Needed by destination-bigquery
     include ':airbyte-integrations:connectors:destination-s3'
@@ -98,8 +106,12 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     include ':tools:code-generator'
 }
 
+if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "OCTAVIA_CLI") {
+    include ':octavia-cli'
+}
+
 // connectors
-if(!System.getenv().containsKey("SUB_BUILD")) {
+if (!System.getenv().containsKey("SUB_BUILD")) {
     // include all connector projects
     def integrationsPath = rootDir.toPath().resolve('airbyte-integrations/connectors')
     println integrationsPath

@@ -1,7 +1,20 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath 'com.bmuschko:gradle-docker-plugin:7.1.0'
+    }
+}
+
 plugins {
     id 'base'
     id 'pmd'
-    id 'com.diffplug.spotless' version '5.7.0'
+    id 'com.diffplug.spotless' version '6.0.0'
     id 'com.github.hierynomus.license' version '0.16.1'
 }
 
@@ -58,24 +71,25 @@ def createJavaLicenseWith = { license ->
 // monorepo setup and it doesn't actually exclude directories reliably. This code makes the behavior predictable.
 def createSpotlessTarget = { pattern ->
     def excludes = [
-            '.gradle',
-            'node_modules',
-            '.eggs',
-            '.mypy_cache',
-            '.venv',
-            '*.egg-info',
-            'build',
-            'dbt-project-template',
-            'dbt-project-template-mssql',
-            'dbt-project-template-mysql',
-            'dbt-project-template-oracle',
-            'dbt_data_tests',
-            'dbt_data_tests_tmp',
-            'dbt_schema_tests',
-            'normalization_test_output',
-            'tools',
-            'secrets',
-            'charts' // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
+        '.gradle',
+        'node_modules',
+        '.eggs',
+        '.mypy_cache',
+        '.venv',
+        '*.egg-info',
+        'build',
+        'dbt-project-template',
+        'dbt-project-template-mssql',
+        'dbt-project-template-mysql',
+        'dbt-project-template-oracle',
+        'dbt-project-template-clickhouse',
+        'dbt-project-template-snowflake',
+        'dbt_test_config',
+        'normalization_test_output',
+        'tools',
+        'secrets',
+        'charts', // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
+        'resources/seed/*_specs.yaml', // Do not remove - this is necessary to prevent diffs in our github workflows, as the file diff check runs between the Format step and the Build step, the latter of which generates the file.
     ]
 
     if (System.getenv().containsKey("SUB_BUILD")) {
@@ -91,7 +105,7 @@ spotless {
 
         importOrder()
 
-        eclipse('4.16.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
+        eclipse('4.21.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
 
         licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE_SHORT'))
         removeUnusedImports()
@@ -113,27 +127,40 @@ spotless {
 }
 check.dependsOn 'spotlessApply'
 
+@SuppressWarnings('GroovyAssignabilityCheck')
+def Task getDockerBuildTask(String artifactName, String projectDir) {
+    return task ("buildDockerImage-$artifactName"(type: DockerBuildImage) {
+        def buildTag = System.getenv('VERSION') ?: 'dev'
+        def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
+        def alpineImage = System.getenv('ALPINE_IMAGE') ?: 'alpine:3.4'
+        def postgresImage = System.getenv('POSTGRES_IMAGE') ?: 'postgres:13-alpine'
+        def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
+        def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: 'amd64'
+
+        inputDir = file("$projectDir/build/docker")
+        platform = buildPlatform
+        images.add("airbyte/$artifactName:$buildTag")
+        buildArgs.put('JDK_VERSION', jdkVersion)
+        buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
+        buildArgs.put('ALPINE_IMAGE', alpineImage)
+        buildArgs.put('POSTGRES_IMAGE', postgresImage)
+    })
+}
+
 allprojects {
-    apply plugin: 'base'
+    apply plugin: 'com.bmuschko.docker-remote-api'
 
-    afterEvaluate { project ->
-        def composeDeps = [
-                ":airbyte-config:init",
-                ":airbyte-db:lib",
-                ":airbyte-migration",
-                ":airbyte-scheduler:app",
-                ":airbyte-workers",
-                ":airbyte-server",
-                ":airbyte-webapp",
-        ].toSet().asImmutable()
+    task copyDocker(type: Copy) {
+        delete "build/docker"
 
-        if (project.getPath() in composeDeps) {
-            composeBuild.dependsOn(project.getPath() + ':assemble')
-        }
+        from "${project.projectDir}/Dockerfile"
+        into "build/docker/"
     }
 }
 
 allprojects {
+    apply plugin: 'base'
+
     // by default gradle uses directory as the project name. That works very well in a single project environment but
     // projects clobber each other in an environments with subprojects when projects are in directories named identically.
     def sub = rootDir.relativePath(projectDir.parentFile).replace('/', '.')
@@ -146,15 +173,15 @@ allprojects {
 // Java projects common configurations
 subprojects {
 
-    if (project.name == 'airbyte-webapp' || project.name == 'airbyte-e2e-testing') {
+    if (project.name == 'airbyte-webapp' || project.name == 'airbyte-webapp-e2e-tests') {
         return
     }
 
     apply plugin: 'java'
     apply plugin: 'jacoco'
 
-    sourceCompatibility = JavaVersion.VERSION_14
-    targetCompatibility = JavaVersion.VERSION_14
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 
     repositories {
         mavenCentral()
@@ -172,8 +199,17 @@ subprojects {
         ruleSetFiles = files(rootProject.file('tools/gradle/pmd/rules.xml'))
     }
 
+    def integrationTagName = 'platform-integration'
+    def slowIntegrationTagName = 'platform-slow-integration'
+    // make tag accessible in submodules.
+    ext {
+        cloudStorageTestTagName = 'cloud-storage'
+    }
+
     test {
-        useJUnitPlatform()
+        useJUnitPlatform {
+            excludeTags(integrationTagName, slowIntegrationTagName, cloudStorageTestTagName)
+        }
         testLogging() {
             events 'failed'
             exceptionFormat 'full'
@@ -182,8 +218,35 @@ subprojects {
         finalizedBy jacocoTestReport
     }
 
-    jacocoTestReport {
-        dependsOn test
+    task newIntegrationTests(type: Test) {
+        useJUnitPlatform {
+            includeTags integrationTagName
+        }
+        testLogging() {
+            events 'failed'
+            exceptionFormat 'full'
+        }
+        finalizedBy jacocoTestReport
+    }
+
+    task slowIntegrationTests(type: Test) {
+        useJUnitPlatform {
+            includeTags slowIntegrationTagName
+        }
+        testLogging() {
+            events 'failed'
+            exceptionFormat 'full'
+        }
+        finalizedBy jacocoTestReport
+    }
+
+    task allTests(type: Test) {
+        useJUnitPlatform()
+        testLogging() {
+            events 'failed'
+            exceptionFormat 'full'
+        }
+        finalizedBy jacocoTestReport
     }
 
     dependencies {
@@ -191,7 +254,7 @@ subprojects {
             implementation project(':airbyte-commons')
         }
 
-        implementation(platform("com.fasterxml.jackson:jackson-bom:2.10.4"))
+        implementation(platform("com.fasterxml.jackson:jackson-bom:2.13.0"))
         implementation(platform("org.glassfish.jersey:jersey-bom:2.31"))
 
 
@@ -212,10 +275,10 @@ subprojects {
 
 
         // SLF4J as a facade over Log4j2 required dependencies
-        implementation 'org.apache.logging.log4j:log4j-api:2.11.0'
-        implementation 'org.apache.logging.log4j:log4j-core:2.11.0'
-        implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.11.0'
-        implementation 'org.apache.logging.log4j:log4j-web:2.14.1'
+        implementation 'org.apache.logging.log4j:log4j-api:2.16.0'
+        implementation 'org.apache.logging.log4j:log4j-core:2.16.0'
+        implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.16.0'
+        implementation 'org.apache.logging.log4j:log4j-web:2.16.0'
 
         // Bridges from other logging implementations to SLF4J
         implementation 'org.slf4j:jul-to-slf4j:1.7.30' // JUL bridge
@@ -223,18 +286,25 @@ subprojects {
         implementation 'org.slf4j:log4j-over-slf4j:1.7.30' // log4j1.2 bridge
 
         // Dependencies for logging to cloud storage, as well as the various clients used to do so.
-        implementation 'com.therealvan:appender-log4j2:3.1.2-SNAPSHOT'
+        implementation 'com.therealvan:appender-log4j2:3.3.0'
         implementation 'com.amazonaws:aws-java-sdk-s3:1.12.6'
-        implementation 'com.google.cloud:google-cloud-storage:1.115.0'
+        implementation 'com.google.cloud:google-cloud-storage:2.2.2'
 
         implementation 'software.amazon.awssdk:s3:2.16.84'
 
+        // Lombok dependencies
+        compileOnly 'org.projectlombok:lombok:1.18.22'
+        annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+        testCompileOnly 'org.projectlombok:lombok:1.18.22'
+        testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
         testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
         testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.2'
-        testImplementation 'org.mockito:mockito-junit-jupiter:3.12.4'
+        testImplementation 'org.mockito:mockito-junit-jupiter:4.0.0'
         testImplementation 'org.assertj:assertj-core:3.21.0'
+
     }
 
     tasks.withType(Tar) {
@@ -244,28 +314,8 @@ subprojects {
     tasks.withType(Zip) {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
     }
-}
 
-task composeBuild {
-    def buildTag = System.getenv('VERSION') ?: 'dev'
-    def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
-    def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: 'amd64'
-    def jdkVersion = System.getenv('JDK_VERSION') ?: '14.0.2'
-    def dockerComposeFile = buildArch == 'arm64' ? 'docker-compose.build-m1.yaml' : 'docker-compose.build.yaml'
-    doFirst {
-        exec {
-            workingDir rootDir
-            commandLine 'docker-compose', '-f', dockerComposeFile, 'build', '--parallel', '--quiet'
-            environment 'VERSION', buildTag
-            environment 'DOCKER_BUILD_PLATFORM', buildPlatform
-            environment 'DOCKER_BUILD_ARCH', buildArch
-            environment 'JDK_VERSION', jdkVersion
-        }
-    }
-}
-
-if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
-    build.dependsOn(composeBuild)
+    javadoc.options.addStringOption('Xdoclint:none', '-quiet')
 }
 
 task('generate') {
@@ -290,6 +340,7 @@ subprojects {
             source = fileTree(dir: projectDir)
                     .include("**/*.py")
                     .exclude(".venv/**/*.py")
+                    .exclude("**/airbyte_api_client/**/*.py")
                     .exclude("**/__init__.py")
             strictCheck = true
         }
@@ -303,6 +354,17 @@ subprojects {
             licenseTask.dependsOn generateFilesTask
         }
     }
+}
+
+task('generate-docker') {
+    dependsOn(':airbyte-bootloader:assemble')
+    dependsOn(':airbyte-workers:assemble')
+    dependsOn(':airbyte-webapp:assemble')
+    dependsOn(':airbyte-server:assemble')
+    dependsOn(':airbyte-scheduler:app:assemble')
+    dependsOn(':airbyte-db:lib:assemble')
+    dependsOn(':airbyte-config:init:assemble')
+    dependsOn(':airbyte-temporal:assemble')
 }
 
 // produce reproducible archives
@@ -324,7 +386,6 @@ tasks.withType(AbstractArchiveTask) {
 //        ':airbyte-config:persistence',
 //        ':airbyte-db:lib',
 //        ':airbyte-json-validation',
-//        ':airbyte-migration',
 //        ':airbyte-notification',
 //        ':airbyte-protocol:models',
 //        ':airbyte-scheduler:client',

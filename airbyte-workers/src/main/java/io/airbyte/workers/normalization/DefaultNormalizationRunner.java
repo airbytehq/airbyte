@@ -10,15 +10,20 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.logging.LoggingHelper.Color;
+import io.airbyte.commons.logging.MdcScope;
+import io.airbyte.commons.logging.MdcScope.Builder;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
@@ -27,7 +32,11 @@ import org.slf4j.LoggerFactory;
 public class DefaultNormalizationRunner implements NormalizationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultNormalizationRunner.class);
+  private static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
+      .setLogPrefix("normalization")
+      .setPrefixColor(Color.GREEN_BACKGROUND);
 
+  private final WorkerConfigs workerConfigs;
   private final DestinationType destinationType;
   private final ProcessFactory processFactory;
   private final String normalizationImageName;
@@ -41,10 +50,15 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     ORACLE,
     POSTGRES,
     REDSHIFT,
-    SNOWFLAKE
+    SNOWFLAKE,
+    CLICKHOUSE
   }
 
-  public DefaultNormalizationRunner(final DestinationType destinationType, final ProcessFactory processFactory, final String normalizationImageName) {
+  public DefaultNormalizationRunner(final WorkerConfigs workerConfigs,
+                                    final DestinationType destinationType,
+                                    final ProcessFactory processFactory,
+                                    final String normalizationImageName) {
+    this.workerConfigs = workerConfigs;
     this.destinationType = destinationType;
     this.processFactory = processFactory;
     this.normalizationImageName = normalizationImageName;
@@ -106,11 +120,20 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       throws Exception {
     try {
       LOGGER.info("Running with normalization version: {}", normalizationImageName);
-      process = processFactory.create(jobId, attempt, jobRoot, normalizationImageName, false, files, null, resourceRequirements,
-          Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.NORMALISE_STEP), args);
+      process = processFactory.create(
+          jobId,
+          attempt,
+          jobRoot,
+          normalizationImageName,
+          false, files,
+          null,
+          resourceRequirements,
+          Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.NORMALISE_STEP),
+          Collections.emptyMap(),
+          args);
 
-      LineGobbler.gobble(process.getInputStream(), LOGGER::info);
-      LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
+      LineGobbler.gobble(process.getInputStream(), LOGGER::info, CONTAINER_LOG_MDC_BUILDER);
+      LineGobbler.gobble(process.getErrorStream(), LOGGER::error, CONTAINER_LOG_MDC_BUILDER);
 
       WorkerUtils.wait(process);
 
@@ -131,7 +154,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     }
 
     LOGGER.debug("Closing normalization process");
-    WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
+    WorkerUtils.gentleClose(workerConfigs, process, 1, TimeUnit.MINUTES);
     if (process.isAlive() || process.exitValue() != 0) {
       throw new WorkerException("Normalization process wasn't successful");
     }

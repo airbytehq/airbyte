@@ -15,7 +15,7 @@
       "type": ["null", "string"]
     },
     "ip": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "key": {
       "type": ["null", "string"]

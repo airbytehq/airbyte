@@ -7,6 +7,7 @@ package io.airbyte.commons.resources;
 import com.google.common.base.Preconditions;
 import com.google.common.io.Resources;
 import io.airbyte.commons.lang.Exceptions;
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -31,6 +32,11 @@ public class MoreResources {
     final String rootedName = !name.startsWith("/") ? String.format("/%s", name) : name;
     final URL url = Resources.getResource(klass, rootedName);
     return Resources.toString(url, StandardCharsets.UTF_8);
+  }
+
+  @SuppressWarnings("UnstableApiUsage")
+  public static File readResourceAsFile(final String name) throws URISyntaxException {
+    return new File(Resources.getResource(name).toURI());
   }
 
   @SuppressWarnings("UnstableApiUsage")

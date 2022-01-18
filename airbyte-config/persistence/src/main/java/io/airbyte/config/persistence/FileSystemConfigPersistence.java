@@ -9,9 +9,9 @@ import com.google.api.client.util.Preconditions;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
+import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -80,9 +80,24 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   @Override
+  public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(final AirbyteConfig configType, final Class<T> clazz)
+      throws JsonValidationException, IOException {
+    throw new UnsupportedOperationException("File Persistence doesn't support metadata");
+  }
+
+  @Override
   public <T> void writeConfig(final AirbyteConfig configType, final String configId, final T config) throws IOException {
     synchronized (lock) {
       writeConfigInternal(configType, configId, config);
+    }
+  }
+
+  @Override
+  public <T> void writeConfigs(final AirbyteConfig configType, final Map<String, T> configs) throws IOException {
+    synchronized (lock) {
+      for (final Map.Entry<String, T> config : configs.entrySet()) {
+        writeConfigInternal(configType, config.getKey(), config.getValue());
+      }
     }
   }
 
@@ -186,7 +201,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
 
   @Override
   public void loadData(final ConfigPersistence seedPersistence) throws IOException {
-    throw new UnsupportedEncodingException("This method is not supported in this implementation");
+    // this method is not supported in this implementation, but needed in tests; do nothing
   }
 
   private <T> T getConfigInternal(final AirbyteConfig configType, final String configId, final Class<T> clazz)

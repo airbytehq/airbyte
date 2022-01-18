@@ -49,6 +49,10 @@ public class Jsons {
     }
   }
 
+  public static <T> T convertValue(final Object object, final Class<T> klass) {
+    return OBJECT_MAPPER.convertValue(object, klass);
+  }
+
   public static JsonNode deserialize(final String jsonString) {
     try {
       return OBJECT_MAPPER.readTree(jsonString);
@@ -60,7 +64,7 @@ public class Jsons {
   public static <T> Optional<T> tryDeserialize(final String jsonString, final Class<T> klass) {
     try {
       return Optional.of(OBJECT_MAPPER.readValue(jsonString, klass));
-    } catch (final IOException e) {
+    } catch (final Throwable e) {
       return Optional.empty();
     }
   }
@@ -68,7 +72,7 @@ public class Jsons {
   public static Optional<JsonNode> tryDeserialize(final String jsonString) {
     try {
       return Optional.of(OBJECT_MAPPER.readTree(jsonString));
-    } catch (final IOException e) {
+    } catch (final Throwable e) {
       return Optional.empty();
     }
   }
@@ -139,6 +143,10 @@ public class Jsons {
       node = node.get(key);
     }
     return node;
+  }
+
+  public static void replaceNestedValue(final JsonNode json, final List<String> keys, final JsonNode replacement) {
+    replaceNested(json, keys, (node, finalKey) -> node.put(finalKey, replacement));
   }
 
   public static void replaceNestedString(final JsonNode json, final List<String> keys, final String replacement) {
