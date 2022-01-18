@@ -13,7 +13,6 @@ setup(
     packages=find_packages(),
     install_requires=[
         "airbyte-cdk~=0.1.35",
-        "mailchimp3==3.0.14",
         "pytest~=6.1",
     ],
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
