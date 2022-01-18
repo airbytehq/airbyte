@@ -8,6 +8,7 @@ import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -87,8 +88,8 @@ public class S3DestinationConfig {
         config.get("s3_bucket_name").asText(),
         bucketPath,
         config.get("s3_bucket_region").asText(),
-        config.get("access_key_id").asText(),
-        config.get("secret_access_key").asText(),
+        config.get("access_key_id") == null ? "" : config.get("access_key_id").asText(),
+        config.get("secret_access_key") == null ? "" : config.get("secret_access_key").asText(),
         partSize,
         format);
   }
@@ -128,7 +129,18 @@ public class S3DestinationConfig {
   public AmazonS3 getS3Client() {
     final AWSCredentials awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
 
-    if (endpoint == null || endpoint.isEmpty()) {
+    if (accessKeyId.isEmpty() && !secretAccessKey.isEmpty()
+        || !accessKeyId.isEmpty() && secretAccessKey.isEmpty()) {
+      throw new RuntimeException("Either both accessKeyId and secretAccessKey should be provided, or neither");
+    }
+
+    if (accessKeyId.isEmpty() && secretAccessKey.isEmpty()) {
+      return AmazonS3ClientBuilder.standard()
+          .withCredentials(new InstanceProfileCredentialsProvider(false))
+          .build();
+    }
+
+    else if (endpoint == null || endpoint.isEmpty()) {
       return AmazonS3ClientBuilder.standard()
           .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
           .withRegion(bucketRegion)
