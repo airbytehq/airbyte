@@ -1,125 +1,106 @@
 {
-    "type": "object",
-    "required": ["account_id", "campaign_ids", "start_time", "end_time"],
-    "properties": {
-        "account_id": {
+  "type": "object",
+  "properties": {
+    "segment": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "impressions": {
           "type": [
             "null",
             "string"
           ]
         },
-        "name": {
+        "tweets_send": {
           "type": [
             "null",
             "string"
           ]
         },
-        "start_time": {
-          "format": "date-time",
+        "qualified_impressions": {
           "type": [
             "null",
             "string"
           ]
         },
-        "reasons_not_servable": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "servable": {
-          "type": [
-            "null",
-            "boolean"
-          ]
-        },
-        "daily_budget_amount_local_micro": {
-          "type": [
-            "null",
-            "integer"
-          ]
-        },
-        "end_time": {
-          "format": "date-time",
+        "follows": {
           "type": [
             "null",
             "string"
           ]
         },
-        "funding_instrument_id": {
+        "app_clicks": {
           "type": [
             "null",
             "string"
           ]
         },
-        "duration_in_days": {
-          "type": [
-            "null",
-            "integer"
-          ]
-        },
-        "standard_delivery": {
-          "type": [
-            "null",
-            "boolean"
-          ]
-        },
-        "total_budget_amount_local_micro": {
-          "type": [
-            "null",
-            "integer"
-          ]
-        },
-        "id": {
+        "retweets": {
           "type": [
             "null",
             "string"
           ]
         },
-        "entity_status": {
+        "unfollows": {
           "type": [
             "null",
             "string"
           ]
         },
-        "frequency_cap": {
-          "type": [
-            "null",
-            "integer"
-          ]
-        },
-        "currency": {
+        "likes": {
           "type": [
             "null",
             "string"
           ]
         },
-        "created_at": {
-          "format": "date-time",
+        "engagements": {
           "type": [
             "null",
             "string"
           ]
         },
-        "updated_at": {
-          "format": "date-time",
+        "clicks": {
           "type": [
             "null",
             "string"
           ]
         },
-        "deleted": {
+        "card_engagements": {
           "type": [
             "null",
-            "boolean"
+            "string"
+          ]
+        },
+        "poll_card_vote": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "replies": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "url_clicks": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "carousel_swipes": {
+          "type": [
+            "null",
+            "string"
           ]
         }
       }
+    }
+  }
 }
