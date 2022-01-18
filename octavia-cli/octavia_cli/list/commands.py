@@ -6,7 +6,7 @@ from typing import List
 
 import click
 
-from .definitions import DestinationDefinitions, SourceDefinitions
+from .definitions import DestinationConnectorsDefinitions, SourceConnectorsDefinitions
 
 
 @click.group("list", help="List existing Airbyte resources.")
@@ -25,7 +25,7 @@ def connectors(ctx: click.Context):  # pragma: no cover
 @click.pass_context
 def sources(ctx: click.Context):
     api_client = ctx.obj["API_CLIENT"]
-    definitions = SourceDefinitions(api_client)
+    definitions = SourceConnectorsDefinitions(api_client)
     click.echo(definitions)
 
 
@@ -33,7 +33,7 @@ def sources(ctx: click.Context):
 @click.pass_context
 def destinations(ctx: click.Context):
     api_client = ctx.obj["API_CLIENT"]
-    definitions = DestinationDefinitions(api_client)
+    definitions = DestinationConnectorsDefinitions(api_client)
     click.echo(definitions)
 
 

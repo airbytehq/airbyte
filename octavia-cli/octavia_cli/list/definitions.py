@@ -15,7 +15,7 @@ class DefinitionType(Enum):
     DESTINATION = "destination"
 
 
-class Definitions(abc.ABC):
+class ConnectorsDefinitions(abc.ABC):
     LIST_LATEST_DEFINITIONS_KWARGS = {"_check_return_type": False}
 
     @property
@@ -85,7 +85,7 @@ class Definitions(abc.ABC):
         Returns:
             table (str): String representation of input tabular data.
         """
-        col_width = Definitions._compute_col_width(data)
+        col_width = ConnectorsDefinitions._compute_col_width(data)
         table = "\n".join(["".join(col.ljust(col_width) for col in row) for row in data])
         return table
 
@@ -100,21 +100,21 @@ class Definitions(abc.ABC):
         Returns:
             (List[str]): Column names in uppercase with spaces.
         """
-        return [Definitions._camelcased_to_uppercased_spaced(column_name) for column_name in camelcased_column_names]
+        return [ConnectorsDefinitions._camelcased_to_uppercased_spaced(column_name) for column_name in camelcased_column_names]
 
     def __repr__(self):
         definitions = [self._format_column_names(self.fields_to_display)] + self.latest_definitions
         return self._display_as_table(definitions)
 
 
-class SourceDefinitions(Definitions):
+class SourceConnectorsDefinitions(ConnectorsDefinitions):
     api = source_definition_api.SourceDefinitionApi
 
     def __init__(self, api_client: airbyte_api_client.ApiClient):
         super().__init__(DefinitionType.SOURCE, api_client, self.api.list_latest_source_definitions)
 
 
-class DestinationDefinitions(Definitions):
+class DestinationConnectorsDefinitions(ConnectorsDefinitions):
     api = destination_definition_api.DestinationDefinitionApi
 
     def __init__(self, api_client: airbyte_api_client.ApiClient):
