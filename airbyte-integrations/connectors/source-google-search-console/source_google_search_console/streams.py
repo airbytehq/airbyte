@@ -236,6 +236,24 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         """
         With the existing nested loop implementation, we have to store a `cursor_field` for each `site_url`
         and `searchType`. This functionality is placed in `get_update_state`.
+
+        {
+          "stream": {
+            "http://domain1.com": {
+              "web": {"date": "2022-01-03"},
+              "news": {"date": "2022-01-03"},
+              "image": {"date": "2022-01-03"},
+              "video": {"date": "2022-01-03"}
+            },
+            "http://domain2.com": {
+              "web": {"date": "2022-01-03"},
+              "news": {"date": "2022-01-03"},
+              "image": {"date": "2022-01-03"},
+              "video": {"date": "2022-01-03"}
+            },
+            "date": "2022-01-03",
+          }
+        }
         """
 
         latest_benchmark = latest_record[self.cursor_field]
@@ -243,16 +261,10 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         site_url = latest_record.get("site_url")
         search_type = latest_record.get("search_type")
 
-        if current_stream_state.get(site_url, {}).get(search_type):
-            current_stream_state[site_url][search_type] = {
-                self.cursor_field: max(latest_benchmark, current_stream_state[site_url][search_type][self.cursor_field])
-            }
-
-        elif current_stream_state.get(site_url):
-            current_stream_state[site_url][search_type] = {self.cursor_field: latest_benchmark}
-
-        else:
-            current_stream_state = {site_url: {search_type: {self.cursor_field: latest_benchmark}}}
+        value = current_stream_state.get(site_url, {}).get(search_type, {}).get(self.cursor_field)
+        if value:
+            latest_benchmark = max(latest_benchmark, value)
+        current_stream_state.setdefault(site_url, {}).setdefault(search_type, {})[self.cursor_field] = latest_benchmark
 
         # we need to get the max date over all searchTypes but the current acceptance test YAML format doesn't
         # support that
