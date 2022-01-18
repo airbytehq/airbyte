@@ -7,6 +7,8 @@ package io.airbyte.workers.process;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
@@ -85,6 +87,52 @@ class DockerProcessFactoryTest {
     assertEquals(
         Jsons.jsonNode(ImmutableMap.of("data", 2)),
         Jsons.deserialize(IOs.readFile(jobRoot, "config.json")));
+  }
+
+  /**
+   * Tests that the env var map passed in is accessible within the process.
+   */
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void testEnvMapSet(boolean isOrchestrator) throws IOException, WorkerException {
+    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
+    final Path jobRoot = workspaceRoot.resolve("job");
+
+    final WorkerConfigs workerConfigs = spy(new WorkerConfigs(new EnvConfigs()));
+    when(workerConfigs.getEnvMap()).thenReturn(Map.of("ENV_VAR_1", "ENV_VALUE_1"));
+
+    final DockerProcessFactory processFactory =
+        new DockerProcessFactory(
+            workerConfigs,
+            workspaceRoot,
+            "",
+            "",
+            "host",
+            isOrchestrator);
+
+    final Process process = processFactory.create(
+        "job_id",
+        0,
+        jobRoot,
+        "busybox",
+        false,
+        Map.of(),
+        "/bin/sh",
+        workerConfigs.getResourceRequirements(),
+        Map.of(),
+        Map.of(),
+        "-c",
+        "echo ENV_VAR_1=$ENV_VAR_1");
+
+    final StringBuilder out = new StringBuilder();
+    final StringBuilder err = new StringBuilder();
+    LineGobbler.gobble(process.getInputStream(), out::append);
+    LineGobbler.gobble(process.getErrorStream(), err::append);
+
+    WorkerUtils.gentleClose(new WorkerConfigs(new EnvConfigs()), process, 20, TimeUnit.SECONDS);
+
+    assertEquals(0, process.exitValue(), String.format("Process failed with stdout: %s and stderr: %s", out, err));
+    assertEquals("ENV_VAR_1=ENV_VALUE_1", out.toString(), String.format("Output did not contain the expected string. stdout: %s", out));
   }
 
 }

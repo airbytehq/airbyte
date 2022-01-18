@@ -18,14 +18,14 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "sample_files/full_refresh_catalog.json"
-      empty_streams: ["workflows"]
+      empty_streams: ["workflows", "form_submissions"]
     - config_path: "secrets/config_oauth.json"
       configured_catalog_path: "sample_files/configured_catalog_for_oauth_config.json"
       # The `campaigns` stream is empty in this case, because we use a catalog with
       # incremental streams: subscription_changes and email_events (it takes a long time to read)
       # and therefore the start date is set at 2021-10-10 for `config_oauth.json`,
       # but the campaign was created on 2021-01-11
-      empty_streams: ["campaigns", "workflows"]
+      empty_streams: ["campaigns", "workflows", "contacts_list_memberships", "form_submissions"]
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "sample_files/configured_catalog.json"

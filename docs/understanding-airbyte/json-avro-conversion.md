@@ -161,6 +161,149 @@ This is not supported in Avro schema. As a compromise, the converter creates a u
 }
 ```
 
+If the Json array has multiple object items, these objects will be recursively merged into one Avro record. For example, the following Json array expects two different objects. The first object has an `id` field, and second has an `id` and `message` field. Their `id` fields have slightly different types.
+
+Json schema:
+
+```json
+{
+  "array_field": {
+    "type": "array",
+    "items": [
+      {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "object",
+            "properties": {
+              "id_part_1": { "type": "integer" },
+              "id_part_2": { "type": "string" }
+            }
+          }
+        }
+      },
+      {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "object",
+            "properties": {
+              "id_part_1": { "type": "string" },
+              "id_part_2": { "type": "integer" }
+            }
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    ]
+  }
+}
+```
+
+Json object:
+
+```json
+{
+  "array_field": [
+    {
+      "id": {
+        "id_part_1": 1000,
+        "id_part_2": "abcde"
+      }
+    }, {
+      "id": {
+        "id_part_1": "wxyz",
+        "id_part_2": 2000
+      },
+      "message": "test message"
+    }
+  ]
+}
+```
+
+After conversion, the two object schemas will be merged into one. Furthermore, the fields under the `id` record, `id_part_1` and `id_part_2`, will also be merged. In this way, all possible valid elements from the Json array can be converted to Avro records.
+
+Avro schema:
+
+```json
+{
+  "name": "array_field",
+  "type": [
+    "null",
+    {
+      "type": "array",
+      "items": [
+        "boolean",
+        {
+          "type": "record",
+          "name": "array_field",
+          "fields": [
+            {
+              "name": "id",
+              "type": [
+                "null",
+                {
+                  "type": "record",
+                  "name": "id",
+                  "fields": [
+                    {
+                      "name": "id_part_1",
+                      "type": ["null", "int", "string"],
+                      "default": null
+                    },
+                    {
+                      "name": "id_part_2",
+                      "type": ["null", "string", "int"],
+                      "default": null
+                    }
+                  ]
+                }
+              ],
+              "default": null
+            },
+            {
+              "name": "message",
+              "type": ["null", "string"],
+              "default": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "default": null
+}
+```
+
+Note that `id_part_1` is a union of `int` and `string`, which comes from the first and second `id` definitions, respectively, in the original Json `items` specification.
+
+Avro object:
+
+```json
+{
+  "array_field": [
+    {
+      "id": {
+        "id_part_1": 1000,
+        "id_part_2": "abcde"
+      },
+      "message": null
+    },
+    {
+      "id": {
+        "id_part_1": "wxyz",
+        "id_part_2": 2000
+      },
+      "message": "test message"
+    }
+  ]
+}
+```
+
+Note that the first object in `array_field` originally does not have a `message` field. However, because its schema is merged with the second object definition, it has a null `message` field in the Avro record.
+
 ### Untyped Array
 
 When a Json array field has no `items`, the element in that array field may have any type. However, Avro requires that each array has a clear type specification. To solve this problem, the elements in the array are forced to be `string`s.
@@ -324,6 +467,10 @@ the corresponding Avro schema and record will be:
   }
 }
 ```
+
+### Untyped Field
+
+Any field without property type specification will default to a `string` field, and its value will be serialized to string.
 
 ## Example
 
