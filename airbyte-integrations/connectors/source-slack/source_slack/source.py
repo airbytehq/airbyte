@@ -65,8 +65,8 @@ class SlackStream(HttpStream, ABC):
         fall back on default retry behavior.
         Rate Limits Docs: https://api.slack.com/docs/rate-limits#web"""
 
-        if "Retry-After" in response.headers:
-            return int(response.headers["Retry-After"])
+        if "retry-after" in response.headers:
+            return int(response.headers["retry-after"])
         else:
             self.logger.info("Retry-after header not found. Using default backoff value")
             return 5
