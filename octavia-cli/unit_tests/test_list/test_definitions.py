@@ -28,36 +28,34 @@ class TestDefinitions:
         mocker.patch.object(Definitions, "__abstractmethods__", set())
 
     @pytest.fixture
-    def mock_definition_type(self, mocker):
-        return mocker.Mock(value="my_definition_type")
+    def definitions_mock_args(self, mocker):
+        return (mocker.Mock(value="my_definition_type"), mocker.Mock(), mocker.Mock())
 
-    @pytest.fixture
-    def mock_api_client(self, mocker):
-        return mocker.Mock()
-
-    def test_init(self, patch_base_class, mock_api, mock_definition_type, mock_api_client):
-        definitions = Definitions(mock_definition_type, mock_api_client)
+    def test_init(self, patch_base_class, mock_api, definitions_mock_args):
+        mock_definition_type, mock_api_client, mock_list_latest_definitions = definitions_mock_args
+        definitions = Definitions(*definitions_mock_args)
         assert definitions.definition_type == mock_definition_type
         mock_api.assert_called_with(mock_api_client)
         assert definitions.api_instance == mock_api.return_value
+        assert definitions.list_latest_definitions == mock_list_latest_definitions
 
-    def test_abstract_methods(self, mock_definition_type, mock_api_client):
-        assert Definitions.__abstractmethods__ == {"api", "latest_definitions"}
+    def test_abstract_methods(self, definitions_mock_args):
+        assert Definitions.__abstractmethods__ == {"api"}
         with pytest.raises(TypeError):
-            Definitions(mock_definition_type, mock_api_client)
+            Definitions(*definitions_mock_args)
 
-    def test_fields_to_display(self, patch_base_class, mock_definition_type, mock_api_client):
-        definitions = Definitions(mock_definition_type, mock_api_client)
+    def test_fields_to_display(self, patch_base_class, definitions_mock_args):
+        definitions = Definitions(*definitions_mock_args)
         expected_field_to_display = ["name", "dockerRepository", "dockerImageTag", "my_definition_typeDefinitionId"]
         assert definitions.fields_to_display == expected_field_to_display
 
-    def test_response_definition_list_field(self, patch_base_class, mock_definition_type, mock_api_client):
-        definitions = Definitions(mock_definition_type, mock_api_client)
+    def test_response_definition_list_field(self, patch_base_class, definitions_mock_args):
+        definitions = Definitions(*definitions_mock_args)
         expected_response_definition_list_field = "my_definition_type_definitions"
         assert definitions.response_definition_list_field == expected_response_definition_list_field
 
-    def test_parse_response(self, patch_base_class, mock_definition_type, mock_api_client):
-        definitions = Definitions(mock_definition_type, mock_api_client)
+    def test_parse_response(self, patch_base_class, definitions_mock_args):
+        definitions = Definitions(*definitions_mock_args)
         api_response = {definitions.response_definition_list_field: []}
         for i in range(5):
             definition = {field: f"{field}_value_{i}" for field in definitions.fields_to_display}
@@ -69,7 +67,15 @@ class TestDefinitions:
             assert parsed_definitions[i] == [f"{field}_value_{i}" for field in definitions.fields_to_display]
             assert "discarded_value" not in parsed_definitions[i]
 
-    def test_repr(self, patch_base_class, mocker, mock_definition_type, mock_api_client):
+    def test_latest_definitions(self, patch_base_class, mocker, definitions_mock_args):
+        mock_list_latest_definitions = definitions_mock_args[-1]
+        mocker.patch.object(Definitions, "_parse_response")
+        definitions = Definitions(*definitions_mock_args)
+        assert definitions.latest_definitions == definitions._parse_response.return_value
+        mock_list_latest_definitions.assert_called_with(definitions.api_instance, **definitions.LIST_LATEST_DEFINITIONS_KWARGS)
+        definitions._parse_response.assert_called_with(mock_list_latest_definitions.return_value)
+
+    def test_repr(self, patch_base_class, mocker, definitions_mock_args):
         headers = ["fieldA", "fieldB", "fieldC"]
         latest_definitions = [["a", "b", "c"]]
         mocker.patch.object(Definitions, "fields_to_display", headers)
@@ -77,7 +83,7 @@ class TestDefinitions:
         mocker.patch.object(Definitions, "_display_as_table")
         mocker.patch.object(Definitions, "_format_column_names")
 
-        definitions = Definitions(mock_definition_type, mock_api_client)
+        definitions = Definitions(*definitions_mock_args)
         representation = definitions.__repr__()
         definitions._display_as_table.assert_called_with([definitions._format_column_names.return_value] + latest_definitions)
         assert representation == definitions._display_as_table.return_value
@@ -96,7 +102,7 @@ class TestDefinitions:
             ([["a", "___10chars"], ["e", "____11chars"]], 13, "a            ___10chars   \ne            ____11chars  "),
         ],
     )
-    def test_display_as_table(self, mocker, test_data, col_width, expected_output, mock_definition_type, mock_api_client):
+    def test_display_as_table(self, mocker, test_data, col_width, expected_output):
         mocker.patch.object(Definitions, "_compute_col_width", mocker.Mock(return_value=col_width))
         assert Definitions._display_as_table(test_data) == expected_output
 
@@ -118,17 +124,21 @@ class TestSubDefinitions:
         return mocker.Mock()
 
     @pytest.mark.parametrize(
-        "definition_type,SubDefinitionClass",
+        "definition_type,SubDefinitionClass,list_latest_definitions",
         [
-            (DefinitionType.SOURCE, SourceDefinitions),
-            (DefinitionType.DESTINATION, DestinationDefinitions),
+            (DefinitionType.SOURCE, SourceDefinitions, source_definition_api.SourceDefinitionApi.list_latest_source_definitions),
+            (
+                DefinitionType.DESTINATION,
+                DestinationDefinitions,
+                destination_definition_api.DestinationDefinitionApi.list_latest_destination_definitions,
+            ),
         ],
     )
-    def test_init(self, mocker, mock_api_client, definition_type, SubDefinitionClass):
+    def test_init(self, mocker, mock_api_client, definition_type, SubDefinitionClass, list_latest_definitions):
         definitions_init = mocker.Mock()
         mocker.patch.object(Definitions, "__init__", definitions_init)
         SubDefinitionClass(mock_api_client)
-        definitions_init.assert_called_with(definition_type, mock_api_client)
+        definitions_init.assert_called_with(definition_type, mock_api_client, list_latest_definitions)
 
     @pytest.mark.parametrize(
         "SubDefinitionClass,expected_api",
@@ -139,22 +149,3 @@ class TestSubDefinitions:
     )
     def test_class_attributes(self, SubDefinitionClass, expected_api):
         assert SubDefinitionClass.api == expected_api
-
-    @pytest.mark.parametrize(
-        "SubDefinitionClass,list_latest_fn",
-        [
-            (SourceDefinitions, "list_latest_source_definitions"),
-            (DestinationDefinitions, "list_latest_destination_definitions"),
-        ],
-    )
-    def test_latest_definitions(self, mocker, mock_api_client, SubDefinitionClass, list_latest_fn):
-        mocker.patch.object(SubDefinitionClass, "api")
-        mocker.patch.object(SubDefinitionClass, "_parse_response")
-
-        definitions = SubDefinitionClass(mock_api_client)
-        definitions.api_instance = mocker.Mock()
-
-        assert definitions.latest_definitions == definitions._parse_response.return_value
-        definitions.api.__getattr__(list_latest_fn).assert_called_with(
-            definitions.api_instance, **SubDefinitionClass.LIST_LATEST_DEFINITIONS_KWARGS
-        )
