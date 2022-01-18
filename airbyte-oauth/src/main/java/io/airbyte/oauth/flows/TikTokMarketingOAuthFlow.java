@@ -26,6 +26,14 @@ public class TikTokMarketingOAuthFlow extends BaseOAuth2Flow {
 
   private static final String ACCESS_TOKEN_URL = "https://ads.tiktok.com/open_api/v1.2/oauth2/access_token";
 
+  protected String getClientIdUnsafe(final JsonNode oauthConfig) {
+    return getConfigValueUnsafe(oauthConfig, "app_id");
+  }
+
+  protected String getClientSecretUnsafe(final JsonNode oauthConfig) {
+    return getConfigValueUnsafe(oauthConfig, "secret");
+  }
+
   public TikTokMarketingOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
   }
