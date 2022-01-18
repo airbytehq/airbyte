@@ -4,7 +4,7 @@
 
 import pytest
 from airbyte_api_client.api import destination_definition_api, source_definition_api
-from octavia_cli.list.definitions import (
+from octavia_cli.list.connectors_definitions import (
     ConnectorsDefinitions,
     DefinitionType,
     DestinationConnectorsDefinitions,
