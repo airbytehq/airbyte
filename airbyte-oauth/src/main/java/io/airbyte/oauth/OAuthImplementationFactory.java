@@ -47,6 +47,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-salesforce", new SalesforceOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-slack", new SlackOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-snapchat-marketing", new SnapchatMarketingOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-square", new SquareOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-strava", new StravaOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-surveymonkey", new SurveymonkeyOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository, httpClient))
