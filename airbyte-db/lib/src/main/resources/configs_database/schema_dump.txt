@@ -153,10 +153,6 @@ alter table "public"."actor_oauth_parameter"
   add constraint "actor_oauth_parameter_actor_definition_id_fkey"
     foreign key ("actor_definition_id")
     references "public"."actor_definition" ("id");
-alter table "public"."actor_oauth_parameter"
-  add constraint "actor_oauth_parameter_workspace_id_fkey"
-    foreign key ("workspace_id")
-    references "public"."workspace" ("id");
 alter table "public"."connection"
   add constraint "connection_destination_id_fkey"
     foreign key ("destination_id")

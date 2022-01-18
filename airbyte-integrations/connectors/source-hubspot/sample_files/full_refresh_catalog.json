@@ -38,6 +38,15 @@
     },
     {
       "stream": {
+        "name": "contacts_list_memberships",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "deal_pipelines",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
@@ -66,6 +75,15 @@
     {
       "stream": {
         "name": "forms",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "form_submissions",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

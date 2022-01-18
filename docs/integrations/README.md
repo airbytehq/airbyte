@@ -14,6 +14,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 
 | Connector | Grade |
 | :--- | :--- |
+| [3PL Central](sources/tplcentral.md) | Alpha |
 | [Airtable](sources/airtable.md) | Alpha |
 | [Amazon SQS](sources/amazon-sqs.md) | Alpha |
 | [Amazon Seller Partner](sources/amazon-seller-partner.md) | Alpha |

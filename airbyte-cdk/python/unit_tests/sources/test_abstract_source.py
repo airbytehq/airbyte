@@ -2,12 +2,11 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-
+import logging
 from collections import defaultdict
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
 import pytest
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -25,13 +24,15 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
+logger = logging.getLogger("airbyte")
+
 
 class MockSource(AbstractSource):
     def __init__(self, check_lambda: Callable[[], Tuple[bool, Optional[Any]]] = None, streams: List[Stream] = None):
         self._streams = streams
         self.check_lambda = check_lambda
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         if self.check_lambda:
             return self.check_lambda()
         return (False, "Missing callable.")
@@ -40,11 +41,6 @@ class MockSource(AbstractSource):
         if not self._streams:
             raise Exception("Stream is not set")
         return self._streams
-
-
-@pytest.fixture
-def logger() -> AirbyteLogger:
-    return AirbyteLogger()
 
 
 def test_successful_check():
@@ -112,7 +108,7 @@ def test_discover(mocker):
     assert expected == src.discover(logger, {})
 
 
-def test_read_nonexistent_stream_raises_exception(mocker, logger):
+def test_read_nonexistent_stream_raises_exception(mocker):
     """Tests that attempting to sync a stream which the source does not return from the `streams` method raises an exception"""
     s1 = MockStream(name="s1")
     s2 = MockStream(name="this_stream_doesnt_exist_in_the_source")
@@ -149,7 +145,7 @@ def _fix_emitted_at(messages: List[AirbyteMessage]) -> List[AirbyteMessage]:
     return messages
 
 
-def test_valid_full_refresh_read_no_slices(logger, mocker):
+def test_valid_full_refresh_read_no_slices(mocker):
     """Tests that running a full refresh sync on streams which don't specify slices produces the expected AirbyteMessages"""
     stream_output = [{"k1": "v1"}, {"k2": "v2"}]
     s1 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s1")
@@ -168,7 +164,7 @@ def test_valid_full_refresh_read_no_slices(logger, mocker):
     assert expected == messages
 
 
-def test_valid_full_refresh_read_with_slices(mocker, logger):
+def test_valid_full_refresh_read_with_slices(mocker):
     """Tests that running a full refresh sync on streams which use slices produces the expected AirbyteMessages"""
     slices = [{"1": "1"}, {"2": "2"}]
     # When attempting to sync a slice, just output that slice as a record
@@ -194,7 +190,7 @@ def _state(state_data: Dict[str, Any]):
     return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=state_data))
 
 
-def test_valid_incremental_read_with_checkpoint_interval(mocker, logger):
+def test_valid_incremental_read_with_checkpoint_interval(mocker):
     """Tests that an incremental read which doesn't specify a checkpoint interval outputs a STATE message after reading N records within a stream"""
     stream_output = [{"k1": "v1"}, {"k2": "v2"}]
     s1 = MockStream([({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)], name="s1")
@@ -226,7 +222,7 @@ def test_valid_incremental_read_with_checkpoint_interval(mocker, logger):
     assert expected == messages
 
 
-def test_valid_incremental_read_with_no_interval(mocker, logger):
+def test_valid_incremental_read_with_no_interval(mocker):
     """Tests that an incremental read which doesn't specify a checkpoint interval outputs a STATE message only after fully reading the stream and does
     not output any STATE messages during syncing the stream."""
     stream_output = [{"k1": "v1"}, {"k2": "v2"}]
@@ -252,7 +248,7 @@ def test_valid_incremental_read_with_no_interval(mocker, logger):
     assert expected == messages
 
 
-def test_valid_incremental_read_with_slices(mocker, logger):
+def test_valid_incremental_read_with_slices(mocker):
     """Tests that an incremental read which uses slices outputs each record in the slice followed by a STATE message, for each slice"""
     slices = [{"1": "1"}, {"2": "2"}]
     stream_output = [{"k1": "v1"}, {"k2": "v2"}, {"k3": "v3"}]
@@ -291,7 +287,7 @@ def test_valid_incremental_read_with_slices(mocker, logger):
     assert expected == messages
 
 
-def test_valid_incremental_read_with_slices_and_interval(mocker, logger):
+def test_valid_incremental_read_with_slices_and_interval(mocker):
     """
     Tests that an incremental read which uses slices and a checkpoint interval:
         1. outputs all records
