@@ -14,9 +14,9 @@ The project is under development: readers can refer to our [tech spec deck](http
 We encourage users to use the CLI with docker to avoid the hassle of setting up a Python installation. 
 The project is under development: we have not yet published any docker image to our Docker registry.
 
-1. Build the image locally:
+1. Build the project locally (from the root of the repo):
 ```bash
-docker build -t octavia-cli:dev --rm .
+SUB_BUILD=OCTAVIA_CLI ./gradlew build #from the root of the repo
 ```
 2. Run the CLI from docker:
 ```bash
@@ -34,14 +34,15 @@ Octavia is currently under development.
 You can find a detailed and updated execution plan [here](https://docs.google.com/spreadsheets/d/1weB9nf0Zx3IR_QvpkxtjBAzyfGb7B0PWpsVt6iMB5Us/edit#gid=0).
 We welcome community contributions!
 
-Summary of achievements:
+**Summary of achievements**:
 
 | Date       | Milestone                           |
 |------------|-------------------------------------|
+| 2022-01-06 | Generate an API Python client from our Open API spec |
 | 2021-12-22 | Bootstrapping the project's code base |
 
 # Developing locally
-1. Install Python 3.10.0. We suggest doing it through `pyenv`
+1. Install Python 3.8.12. We suggest doing it through `pyenv`
 2. Create a virtualenv: `python -m venv .venv`
 3. Activate the virtualenv: `source .venv/bin/activate`
 4. Install dev dependencies: `pip install -e .\[dev\]`
