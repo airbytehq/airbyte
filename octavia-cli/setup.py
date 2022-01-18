@@ -31,7 +31,7 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "License :: OSI Approved :: MIT License",
         # Python Version Support
-        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.8",
     ],
     keywords="airbyte cli command-line-interface configuration",
     project_urls={
