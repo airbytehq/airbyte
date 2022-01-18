@@ -8,21 +8,21 @@ import org.jooq.impl.SQLDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class V0_35_5_001__Add_failures_col_to_Attempts extends BaseJavaMigration {
+public class V0_35_5_001__Add_failureSummary_col_to_Attempts extends BaseJavaMigration {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(V0_35_5_001__Add_failures_col_to_Attempts.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(V0_35_5_001__Add_failureSummary_col_to_Attempts.class);
 
   @Override
   public void migrate(final Context context) throws Exception {
     LOGGER.info("Running migration: {}", this.getClass().getSimpleName());
 
     final DSLContext ctx = DSL.using(context.getConnection());
-    addAttemptsColumn(ctx);
+    addFailureSummaryColumn(ctx);
   }
 
-  public static void addAttemptsColumn(final DSLContext ctx) {
+  public static void addFailureSummaryColumn(final DSLContext ctx) {
     ctx.alterTable("attempts")
-        .addColumnIfNotExists(DSL.field("failures", SQLDataType.JSONB.nullable(true)))
+        .addColumnIfNotExists(DSL.field("failure_summary", SQLDataType.JSONB.nullable(true)))
         .execute();
   }
 
