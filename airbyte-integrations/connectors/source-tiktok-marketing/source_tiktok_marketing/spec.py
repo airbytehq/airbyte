@@ -34,7 +34,6 @@ class SandboxEnvSpec(BaseModel):
     class Config:
         title = "Sandbox Access Token"
 
-    # environment: str = Field("sandbox", const=True)
     auth_type: str = Field(default="sandbox_access_token", const=True, order=0, enum=["sandbox_access_token"])
 
     # it is string because UI has the bug https://github.com/airbytehq/airbyte/issues/6875
@@ -50,7 +49,6 @@ class ProductionEnvSpec(BaseModel):
     class Config:
         title = "Production Access Token"
 
-    # environment: str = Field("prod", const=True)
     auth_type: str = Field(default="prod_access_token", const=True, order=0, enum=["prod_access_token"])
 
     # it is float because UI has the bug https://github.com/airbytehq/airbyte/issues/6875
@@ -63,17 +61,6 @@ class ProductionEnvSpec(BaseModel):
         description="The private key of the developer application.",
         airbyte_secret=True,
     )
-
-    access_token: str = Field(title="Access Token", description="The Long-term Authorized Access Token.", airbyte_secret=True)
-
-
-class AccessTokenCredSpec(BaseModel):
-    class Config:
-        title = "Access Token"
-
-    auth_type: str = Field(default="access_token", const=True, order=0, enum=["access_token"])
-
-    # environment: Union[ProductionEnvSpec, SandboxEnvSpec] = Field(default=ProductionEnvSpec.Config.title, type='object')
 
     access_token: str = Field(title="Access Token", description="The Long-term Authorized Access Token.", airbyte_secret=True)
 
@@ -101,7 +88,6 @@ class SourceTiktokMarketingSpec(BaseModel):
     )
 
     credentials: Union[OauthCredSpec, ProductionEnvSpec, SandboxEnvSpec] = Field(title="Authorization Method", order=3, default={}, type='object')
-    # credentials: Union[OauthCredSpec, AccessTokenCredSpec] = Field(title="Authorization Method", order=3, default={}, type='object')
 
     @classmethod
     def change_format_to_oneOf(cls, schema: dict) -> dict:
