@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/google-ads",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-ads",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Ads Spec",
@@ -21,30 +21,30 @@
           "developer_token": {
             "type": "string",
             "title": "Developer Token",
-            "description": "Developer token granted by Google to use their APIs. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-ads#setup-guide\">docs</a>",
+            "description": "Developer token granted by Google to use their APIs. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>",
             "airbyte_secret": true
           },
           "client_id": {
             "type": "string",
             "title": "Client ID",
-            "description": "The Client ID of your Google Ads developer application. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-ads#setup-guide\">docs</a>"
+            "description": "The Client ID of your Google Ads developer application. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>"
           },
           "client_secret": {
             "type": "string",
             "title": "Client Secret",
-            "description": "The Client Secret of your Google Ads developer application. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-ads#setup-guide\">docs</a>",
+            "description": "The Client Secret of your Google Ads developer application. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>",
             "airbyte_secret": true
           },
           "access_token": {
             "type": "string",
             "title": "Access Token",
-            "description": "Access Token for making authenticated requests. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-ads#setup-guide\">docs</a>",
+            "description": "Access Token for making authenticated requests. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>",
             "airbyte_secret": true
           },
           "refresh_token": {
             "type": "string",
             "title": "Refresh Token",
-            "description": "The token for obtaining new access token. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-ads#setup-guide\">docs</a>",
+            "description": "The token for obtaining new access token. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>",
             "airbyte_secret": true
           }
         }
@@ -52,7 +52,7 @@
       "customer_id": {
         "title": "Customer ID",
         "type": "string",
-        "description": "Customer ID must be specified as a 10-digit number without dashes. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-ads#setup-guide\">docs</a>. Metrics streams like AdGroupAdReport cannot be requested for a manager account.",
+        "description": "Customer ID must be specified as a 10-digit number without dashes. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>. Metrics streams like AdGroupAdReport cannot be requested for a manager account.",
         "order": 1
       },
       "start_date": {
