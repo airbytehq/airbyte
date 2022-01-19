@@ -225,7 +225,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         return {
             "reportType": self.name,
             "marketplaceIds": [self.marketplace_id],
-            "createdSince": replication_start_date.strftime(DATE_TIME_FORMAT),
+            "dataStartTime": replication_start_date.strftime(DATE_TIME_FORMAT),
         }
 
     def _create_report(
