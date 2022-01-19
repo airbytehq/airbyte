@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.jdbc.copy.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
@@ -53,7 +54,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   private final int maxPartsPerFile;
   // The number of batches inserted into the current file.
   private int partsAddedToCurrentFile;
-  protected String currentFile;
+  private String currentFile;
 
   /**
    * @param maxPartsPerFile The number of "chunks" of requests to add into each file. Each chunk can
@@ -199,6 +200,16 @@ public abstract class S3StreamCopier implements StreamCopier {
 
   protected static String getFullS3Path(final String s3BucketName, final String s3StagingFile) {
     return String.join("/", "s3:/", s3BucketName, s3StagingFile);
+  }
+
+  @VisibleForTesting
+  public String getTmpTableName() {
+    return tmpTableName;
+  }
+
+  @VisibleForTesting
+  public String getCurrentFile() {
+    return currentFile;
   }
 
   public abstract void copyS3CsvFileIntoTable(JdbcDatabase database,

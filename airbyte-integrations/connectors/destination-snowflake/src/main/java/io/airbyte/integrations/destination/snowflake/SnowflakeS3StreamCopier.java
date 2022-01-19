@@ -86,14 +86,4 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier {
     database.execute(copyQuery);
   }
 
-  @VisibleForTesting
-  String getTmpTableName() {
-    return tmpTableName;
-  }
-
-  @VisibleForTesting
-  String getCurrentFile() {
-    return currentFile;
-  }
-
 }
