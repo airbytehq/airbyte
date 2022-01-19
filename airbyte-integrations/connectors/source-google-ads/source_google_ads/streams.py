@@ -13,8 +13,13 @@ from .google_ads import GoogleAds
 
 
 def chunk_date_range(
-    start_date: str, conversion_window: int, field: str, end_date: str = None, time_unit: str = "days", days_of_data_storage: int = None,
-        range_days: int = None
+    start_date: str,
+    conversion_window: int,
+    field: str,
+    end_date: str = None,
+    time_unit: str = "days",
+    days_of_data_storage: int = None,
+    range_days: int = None,
 ) -> Iterable[Mapping[str, any]]:
     """
     Passing optional parameter end_date for testing
@@ -84,7 +89,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
             field=self.cursor_field,
             time_unit=self.time_unit,
             days_of_data_storage=self.days_of_data_storage,
-            range_days=self.range_days
+            range_days=self.range_days,
         )
 
     def get_date_params(

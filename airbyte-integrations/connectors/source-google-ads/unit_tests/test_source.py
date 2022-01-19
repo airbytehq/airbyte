@@ -15,8 +15,16 @@ def test_chunk_date_range():
     conversion_window = 14
     field = "date"
     response = chunk_date_range(start_date, conversion_window, field, end_date, range_days=10)
-    assert [{'date': '2021-02-18'}, {'date': '2021-02-28'}, {'date': '2021-03-10'}, {'date': '2021-03-20'},
-            {'date': '2021-03-30'}, {'date': '2021-04-09'}, {'date': '2021-04-19'}, {'date': '2021-04-29'}] == response
+    assert [
+        {"date": "2021-02-18"},
+        {"date": "2021-02-28"},
+        {"date": "2021-03-10"},
+        {"date": "2021-03-20"},
+        {"date": "2021-03-30"},
+        {"date": "2021-04-09"},
+        {"date": "2021-04-19"},
+        {"date": "2021-04-29"},
+    ] == response
 
 
 def test_streams_count(config):

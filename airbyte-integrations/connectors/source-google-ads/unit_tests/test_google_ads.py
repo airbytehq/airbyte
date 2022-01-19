@@ -100,8 +100,14 @@ def test_get_fields_from_schema():
 
 
 def test_interval_chunking():
-    mock_intervals = [{"segments.date": "2021-06-17"}, {"segments.date": "2021-06-27"}, {"segments.date": "2021-07-07"},
-                      {"segments.date": "2021-07-17"}, {"segments.date": "2021-07-27"}, {"segments.date": "2021-08-06"}]
+    mock_intervals = [
+        {"segments.date": "2021-06-17"},
+        {"segments.date": "2021-06-27"},
+        {"segments.date": "2021-07-07"},
+        {"segments.date": "2021-07-17"},
+        {"segments.date": "2021-07-27"},
+        {"segments.date": "2021-08-06"},
+    ]
     intervals = chunk_date_range("2021-07-01", 14, "segments.date", "2021-08-15", range_days=10)
 
     assert mock_intervals == intervals
