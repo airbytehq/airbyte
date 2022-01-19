@@ -6,16 +6,13 @@
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
-import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-
-from twitter_ads.client import Client
-from twitter_ads.campaign import Campaign
-from twitter_ads.enum import ENTITY_STATUS
-import json
+ 
+import requests
+from requests_oauthlib import OAuth1
 
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
@@ -60,8 +57,13 @@ class TwitterAdsStream(HttpStream, ABC):
     See the reference docs for the full list of configurable options.
     """
 
-    # TODO: Fill in the url base. Required.
-    url_base = "https://example-api.com/v1/"
+        # TODO: Fill in the url base. Required.
+    url_base = "https://ads-api.twitter.com/"
+    primary_key = None
+
+    def __init__(self, base, **kwargs):
+        super().__init__(**kwargs)
+
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -78,32 +80,36 @@ class TwitterAdsStream(HttpStream, ABC):
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
                 If there are no more pages in the result, return None.
         """
+
+        # twitter ads analytics streams don't offer pagination => we return None.
         return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
         """
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
-        return {}
+        #fixme: Nothing  here should  be hard coded!
+        campaign_id = "fl8ws"
+        account_id = "18ce53y323s"
+        return { "entity": "CAMPAIGN", "entity_ids":"28n45", "start_time":"2022-01-01", "end_time":"2022-01-02","granularity": "TOTAL", "placement": "ALL_ON_TWITTER", "metric_groups":"ENGAGEMENT"}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-        yield {}
+        return [response.json()]
 
 
-class Customers(TwitterAdsStream):
+class Campaigns(TwitterAdsStream):
     """
     TODO: Change class name to match the table/data source this stream corresponds to.
     """
 
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "customer_id"
+    primary_key = "id"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -112,7 +118,8 @@ class Customers(TwitterAdsStream):
         TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
         should return "customers". Required.
         """
-        return "customers"
+        # fixme: account id should not be hardcoded
+        return "/10/stats/accounts/18ce53y323s"
 
 
 # Basic incremental stream
@@ -142,25 +149,6 @@ class IncrementalTwitterAdsStream(TwitterAdsStream, ABC):
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
         return {}
-
-
-class Employees(IncrementalTwitterAdsStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
-
-    # TODO: Fill in the cursor_field. Required.
-    cursor_field = "start_date"
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "employee_id"
-
-    def path(self, **kwargs) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/employees then this should
-        return "single". Required.
-        """
-        return "employees"
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         """
@@ -198,17 +186,16 @@ class SourceTwitterAds(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        # FIX ME: this is just POC to verify that adding a custom connector to the airbyte works and we can establish  a to the twitter ads api.
-        json_file = open("secrets/config.json")
-        config = json.load(json_file)
-        client = Client(
-        config["CONSUMER_KEY"], config["CONSUMER_SECRET"], config["ACCESS_TOKEN"], config["ACCESS_TOKEN_SECRET"])
-        account = client.accounts(config["ACCOUNT_ID"])
-        if  not account.campaigns():
-            return False, "no_connection"
-        else:
-            return True, None
 
+        url = 'https://ads-api.twitter.com/10/accounts'
+        auth = OAuth1(config["CONSUMER_KEY"], config["CONSUMER_SECRET"], config["ACCESS_TOKEN"], config["ACCESS_TOKEN_SECRET"])
+        check_connection_respone = (requests.get(url, auth=auth))
+
+        if check_connection_respone.status_code ==  200:
+            return True, None
+        else:
+            return False,  "Unable to connect to Twitter Ads API with the provided credentials"
+             
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         TODO: Replace the streams below with your own streams.
@@ -216,5 +203,5 @@ class SourceTwitterAds(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         # TODO remove the authenticator if not required.
-        auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
-        return [Customers(authenticator=auth), Employees(authenticator=auth)]
+        auth = OAuth1(config["CONSUMER_KEY"], config["CONSUMER_SECRET"], config["ACCESS_TOKEN"], config["ACCESS_TOKEN_SECRET"])  # Oauth2Authenticator is also available if you need oauth support
+        return [Campaigns(base="https://ads-api.twitter.com/", authenticator=auth )] 
