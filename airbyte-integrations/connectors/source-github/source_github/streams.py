@@ -860,11 +860,13 @@ class RepositoryVulnerabilityAlert(GithubStream):
         stream_slice: Mapping[str, any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
+        repository = stream_slice["repository"].split("/")[1]
+        organization = stream_slice["repository"].split("/")[0]
         body = (
             '{ repository(name: "'
-            + stream_slice["repository"].split("/")[1]
+            + repository
             + '", owner: "'
-            + stream_slice["repository"].split("/")[0]
+            + organization
             + '") { vulnerabilityAlerts(first: 100) { nodes { createdAt dismissedAt securityVulnerability {package { name } advisory { description }}}}}}'
         )
         payload = {"query": body}
