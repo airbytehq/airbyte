@@ -10,7 +10,7 @@ from airbyte_cdk.models import SyncMode
 from requests.exceptions import HTTPError
 from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
-from source_salesforce.streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, IncrementalSalesforceStream
+from source_salesforce.streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, IncrementalSalesforceStream, SalesforceStream
 
 
 @pytest.fixture(scope="module")
@@ -317,8 +317,11 @@ def test_discover_with_streams_criteria_param(streams_criteria, predicted_filter
     assert sorted(filtered_streams) == sorted(predicted_filtered_streams)
 
 
-def test_pagination_rest(stream_rest_config, stream_rest_api):
-    stream: SalesforceStream = _generate_stream("Account", stream_rest_config, stream_rest_api)
+def test_pagination_rest(stream_config, stream_api):
+    stream_name = "ActiveFeatureLicenseMetric"
+    state = {stream_name: {"SystemModstamp": "2122-08-22T05:08:29.000Z"}}
+
+    stream: SalesforceStream = _generate_stream(stream_name, stream_config, stream_api, state=state)
     stream._wait_timeout = 0.1  # maximum wait timeout will be 6 seconds
     next_page_url = "/services/data/v52.0/query/012345"
     with requests_mock.Mocker() as m:
