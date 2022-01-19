@@ -1,7 +1,7 @@
 # SonarQube workflow
 
 ## Goals
-&nbsp;Code of the Airbyte monorepo are contributed by a lot of developers. And human failures are no way around while merging of PRs.
+&nbsp;The Airbyte monorepo receives contributions from a lot of developers, and there is no way around human errors while merging PRs.
 Likely every language has different tools for testing and validation of source files. The best practice is their using before pushing to git branches. 
 But it is optional, and as rule as we detect possible problems after launch test/publish commands only. Therefore, using of automated CI code validation can  provided the following benefits:
 * Problem/vulnerability reports available when the PR was created. And developers would fix bugs and remove smells before code reviews.
