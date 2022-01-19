@@ -9,6 +9,8 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
 import requests
+import pendulum
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -181,14 +183,158 @@ class CompanySegments(ChildStreamMixin, IncrementalIntercomStream):
 
 class Conversations(IncrementalIntercomStream):
     """Return list of all conversations.
-    API Docs: https://developers.intercom.com/intercom-api-reference/reference#list-conversations
-    Endpoint: https://api.intercom.io/conversations
+    API Docs: https://developers.intercom.com/intercom-api-reference/reference/search-for-conversations
+    Endpoint: https://api.intercom.io/conversations/search
     """
 
     data_fields = ["conversations"]
+    cursor_field = "updated_at"
 
     def path(self, **kwargs) -> str:
-        return "conversations"
+        """
+        Method 'conversations/search' allows to filter conversations by date
+        """
+        return "conversations/search"
+    
+    @property
+    def http_method(self) -> str:
+        """
+        Method POST used
+        """
+        return "POST"
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        """Write the JSON request body to query, sort and paginate results
+
+        Args:
+            stream_state (Mapping[str, Any]): stream state.
+            stream_slice (Mapping[str, Any], optional): stream slice.
+            next_page_token (Mapping[str, Any], optional): next page token.
+        Returns:
+            Iterable[Optional[Mapping]]: request body json
+        """
+        
+        request_body = dict()
+
+        query = {
+            "query":  {
+                "operator": "AND",
+                "value": [
+                    {
+		        	"field": self.cursor_field,
+    	        	"operator": ">",
+    	        	"value": stream_slice["start_date"]
+                    },
+		        	{
+		        	"field": self.cursor_field,
+    	        	"operator": "<",
+    	        	"value": stream_slice["end_date"]
+                    }
+                ]
+            }
+        }
+        
+        sorting = {	
+                "sort": {
+                    "field": self.cursor_field,
+                    "order": "ascending"
+                } 
+            }
+        
+        request_body.update(query)
+        request_body.update(sorting)
+
+        if next_page_token:
+            pagination = {
+                "pagination":{
+		            "starting_after": next_page_token["starting_after"]     
+	            }
+            }
+            request_body.update(pagination)
+
+        return request_body
+
+    
+    def stream_slices(  
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Optional[Mapping[str, any]]]:
+        """Generate slices of 30 days periods.
+
+        Args:
+            sync_mode (SyncMode): sync mode.
+            cursor_field (List[str], optional): cursor field.
+            stream_state (Mapping[str, Any], optional): stream state.
+        Returns:
+            Iterable[Optional[Mapping[str, any]]]: stream slices
+        """
+        api_time_windown_days = 30
+        extraction_end_date = pendulum.now("UTC").subtract(seconds=1)
+
+        slice_start_date = pendulum.from_timestamp(self.start_date) 
+        slice_start_date = slice_start_date.subtract(seconds=1) 
+
+        if stream_state:
+            slice_start_date = stream_state.get(self.cursor_field)
+
+        # slice_start_date = pendulum.from_timestamp(slice_start_date)
+
+        slices = list()
+
+        while slice_start_date < extraction_end_date.subtract(seconds=1):
+            slice_end_date = slice_start_date.add(days=api_time_windown_days) 
+            slice_end_date = slice_end_date.add(seconds=1) 
+            slice_end_date = min(slice_end_date, extraction_end_date)
+
+            slices.append(
+                {
+                    "start_date": slice_start_date.int_timestamp,
+                    "end_date": slice_end_date.int_timestamp,
+                },
+            )
+
+            slice_start_date = slice_end_date.subtract(seconds=1) 
+        return slices
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """Extract next page token from response.
+
+        Args:
+            response (requests.Response): current request response
+        Returns:
+            Optional[Mapping[str, Any]]: next page token
+        """
+        print(response.json().get("pages", {}))
+        return response.json().get("pages", {}).get("next")
+
+    
+    def get_updated_state(
+        self,
+        current_stream_state: MutableMapping[str, Any],
+        latest_record: Mapping[str, Any],
+    ) -> Mapping[str, Any]:
+        """Extract state from response using the cursor_field.
+
+        Args:
+            current_stream_state (MutableMapping[str, Any]): current state
+            latest_record (Mapping[str, Any]): latest record
+
+        Returns:
+            Mapping[str, Any]: updated state
+        """
+        return {
+            self.cursor_field: max(
+                latest_record.get(self.cursor_field, 0),
+                current_stream_state.get(self.cursor_field, 0),
+            ),
+        }
 
 
 class ConversationParts(ChildStreamMixin, IncrementalIntercomStream):
