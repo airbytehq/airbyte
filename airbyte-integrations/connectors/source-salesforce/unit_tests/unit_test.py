@@ -315,3 +315,45 @@ def test_discover_with_streams_criteria_param(streams_criteria, predicted_filter
     )
     filtered_streams = sf_object.get_validated_streams(config=updated_config)
     assert sorted(filtered_streams) == sorted(predicted_filtered_streams)
+
+
+def test_pagination_rest(stream_rest_config, stream_rest_api):
+    stream: SalesforceStream = _generate_stream("Account", stream_rest_config, stream_rest_api)
+    stream._wait_timeout = 0.1  # maximum wait timeout will be 6 seconds
+    next_page_url = "/services/data/v52.0/query/012345"
+    with requests_mock.Mocker() as m:
+        resp_1 = {
+            "done": False,
+            "totalSize": 4,
+            "nextRecordsUrl": next_page_url,
+            "records": [
+                {
+                    "ID": 1,
+                    "LastModifiedDate": "2021-11-15",
+                },
+                {
+                    "ID": 2,
+                    "LastModifiedDate": "2021-11-16",
+                },
+            ],
+        }
+        resp_2 = {
+            "done": True,
+            "totalSize": 4,
+            "records": [
+                {
+                    "ID": 3,
+                    "LastModifiedDate": "2021-11-17",
+                },
+                {
+                    "ID": 4,
+                    "LastModifiedDate": "2021-11-18",
+                },
+            ],
+        }
+
+        m.register_uri("GET", stream.path(), json=resp_1)
+        m.register_uri("GET", next_page_url, json=resp_2)
+
+        records = [record for record in stream.read_records(sync_mode=SyncMode.full_refresh)]
+        assert len(records) == 4
