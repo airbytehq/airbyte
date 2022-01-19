@@ -5,7 +5,6 @@
 
 import pytest
 import requests
-from unittest.mock import MagicMock
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_intercom.source import Companies, Contacts, IntercomStream
@@ -56,11 +55,13 @@ def test_switch_to_standard_endpoint_if_scroll_expired(requests_mock):
     """
 
     url = "https://api.intercom.io/companies/scroll"
-    requests_mock.get(url, json={"type": "company.list", "data": [{"type": "company", "id": "530370b477ad7120001d"}],
-                                 "scroll_param": "expired_scroll_param"})
+    requests_mock.get(
+        url,
+        json={"type": "company.list", "data": [{"type": "company", "id": "530370b477ad7120001d"}], "scroll_param": "expired_scroll_param"},
+    )
 
     url = "https://api.intercom.io/companies/scroll?scroll_param=expired_scroll_param"
-    requests_mock.get(url, json={"errors": [{'code': 'not_found', 'message': 'scroll parameter not found'}]}, status_code=404)
+    requests_mock.get(url, json={"errors": [{"code": "not_found", "message": "scroll parameter not found"}]}, status_code=404)
 
     url = "https://api.intercom.io/companies"
     requests_mock.get(url, json={"type": "company.list", "data": [{"type": "company", "id": "530370b477ad7120001d"}]})

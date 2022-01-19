@@ -232,8 +232,10 @@ class Companies(IncrementalIntercomStream):
         if self.check_exists_scroll(response):
             self._backoff_count += 1
             if self.need_use_standard():
-                self.logger.error("Can't create a new scroll request within an minute or scroll param was expired. " 
-                                  "Let's try to use a standard non-scroll endpoint.")
+                self.logger.error(
+                    "Can't create a new scroll request within an minute or scroll param was expired. "
+                    "Let's try to use a standard non-scroll endpoint."
+                )
                 return False
 
             return True
