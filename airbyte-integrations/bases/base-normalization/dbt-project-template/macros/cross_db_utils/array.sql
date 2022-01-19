@@ -100,7 +100,7 @@
 {% macro default__unnest_cte(from_table, stream_name, column_col) -%}{%- endmacro %}
 
 {%- macro redshift__array_length(column) -%}
-    {%- if var("redshift_json_super", False) == True -%}
+    {%- if var("redshift_super_type", False) == True -%}
         get_array_length({{ column }})
     {%- else -%}
         json_array_length({{ column }}, true)
@@ -130,7 +130,7 @@ with numbers as (
 joined as (
     select
         _airbyte_{{ stream_name }}_hashid as _airbyte_hashid,
-        {% if var("redshift_json_super", False) == True -%}
+        {% if var("redshift_super_type", False) == True -%}
             {{ column_col }}[numbers.generated_number::int - 1] as _airbyte_nested_data
         {%- else -%}
             json_extract_array_element_text({{ column_col }}, numbers.generated_number::int - 1, true) as _airbyte_nested_data

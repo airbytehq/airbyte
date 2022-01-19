@@ -9,7 +9,11 @@
 {% endmacro %}
 
 {%- macro redshift__type_json() -%}
-    {% if var("redshift_json_super", False) == True %}super{% else %}varchar{% endif %}
+  {%- if var("redshift_super_type", False) == True -%}
+    super
+  {%- else -%}
+    varchar
+  {%- endif -%}
 {%- endmacro -%}
 
 {% macro postgres__type_json() %}

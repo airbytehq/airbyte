@@ -43,7 +43,7 @@
 {%- endmacro %}
 
 {% macro redshift__format_json_path(json_path_list) -%}
-    {%- set quote = '"' if var("redshift_json_super", False) == True else "'" -%}
+    {%- set quote = '"' if var("redshift_super_type", False) == True else "'" -%}
     {%- set str_list = [] -%}
     {%- for json_path in json_path_list -%}
         {%- if str_list.append(json_path.replace(quote, quote + quote)) -%} {%- endif -%}
@@ -118,7 +118,7 @@
     {%- if from_table|string() != '' -%}
     {%- set json_column = from_table|string() + "." + json_column|string() -%}
     {%- endif -%}
-    {%- if var("redshift_json_super", False) == True -%}
+    {%- if var("redshift_super_type", False) == True -%}
         case when {{ json_column }}.{{ format_json_path(json_path_list) }} != '' then {{ json_column }}.{{ format_json_path(json_path_list) }} end
     {%- else -%}
         case when json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) != '' then json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) end
@@ -172,7 +172,7 @@
 {%- endmacro %}
 
 {% macro redshift__json_extract_scalar(json_column, json_path_list, normalized_json_path) -%}
-    {%- if var("redshift_json_super", False) == True -%}
+    {%- if var("redshift_super_type", False) == True -%}
     case when {{ json_column }}.{{ format_json_path(json_path_list) }} != '' then {{ json_column }}.{{ format_json_path(json_path_list) }} end
     {%- else -%}
     case when json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) != '' then json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) end
@@ -218,7 +218,7 @@
 {%- endmacro %}
 
 {% macro redshift__json_extract_array(json_column, json_path_list, normalized_json_path) -%}
-    {%- if var("redshift_json_super", False) == True -%}
+    {%- if var("redshift_super_type", False) == True -%}
     {{ json_column }}.{{ format_json_path(json_path_list) }}
     {%- else -%}
     json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true)

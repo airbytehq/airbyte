@@ -318,7 +318,7 @@ class TransformConfig:
         res = {}
         if integration_type == DestinationType.REDSHIFT:
             if "use_super_redshift_type" in config:
-                res["redshift_json_super"] = bool(config["use_super_redshift_type"])
+                res["redshift_super_type"] = bool(config["use_super_redshift_type"])
         return res
 
     @classmethod

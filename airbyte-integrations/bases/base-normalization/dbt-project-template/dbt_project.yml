@@ -65,4 +65,4 @@ dispatch:
     search_order: ['airbyte_utils', 'dbt_utils']
 
 vars:
-  redshift_json_super: false
+  redshift_super_type: false
