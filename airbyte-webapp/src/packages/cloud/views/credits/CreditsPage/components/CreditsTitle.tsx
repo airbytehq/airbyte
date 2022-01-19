@@ -1,6 +1,7 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import { useIntercom } from "react-use-intercom";
+
+import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
 
 import PageTitle from "components/PageTitle";
 import { Button } from "components/base";

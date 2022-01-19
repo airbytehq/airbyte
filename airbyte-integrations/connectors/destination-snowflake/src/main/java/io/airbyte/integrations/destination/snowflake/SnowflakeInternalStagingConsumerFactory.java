@@ -22,8 +22,6 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
-
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -51,11 +49,11 @@ public class SnowflakeInternalStagingConsumerFactory {
   private final String CURRENT_SYNC_PATH = UUID.randomUUID().toString();
 
   public AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
-                                              final JdbcDatabase database,
-                                              final SnowflakeStagingSqlOperations sqlOperations,
-                                              final SnowflakeSQLNameTransformer namingResolver,
-                                              final JsonNode config,
-                                              final ConfiguredAirbyteCatalog catalog) {
+                                       final JdbcDatabase database,
+                                       final SnowflakeStagingSqlOperations sqlOperations,
+                                       final SnowflakeSQLNameTransformer namingResolver,
+                                       final JsonNode config,
+                                       final ConfiguredAirbyteCatalog catalog) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
 
     return new BufferedStreamConsumer(
@@ -135,10 +133,10 @@ public class SnowflakeInternalStagingConsumerFactory {
   }
 
   private RecordWriter recordWriterFunction(final JdbcDatabase database,
-                                                   final SqlOperations snowflakeSqlOperations,
-                                                   final List<WriteConfig> writeConfigs,
-                                                   final ConfiguredAirbyteCatalog catalog,
-                                                   final SnowflakeSQLNameTransformer namingResolver) {
+                                            final SqlOperations snowflakeSqlOperations,
+                                            final List<WriteConfig> writeConfigs,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final SnowflakeSQLNameTransformer namingResolver) {
     final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig =
         writeConfigs.stream()
             .collect(Collectors.toUnmodifiableMap(
@@ -160,9 +158,9 @@ public class SnowflakeInternalStagingConsumerFactory {
   }
 
   private OnCloseFunction onCloseFunction(final JdbcDatabase database,
-                                                 final SnowflakeStagingSqlOperations sqlOperations,
-                                                 final List<WriteConfig> writeConfigs,
-                                                 final SnowflakeSQLNameTransformer namingResolver) {
+                                          final SnowflakeStagingSqlOperations sqlOperations,
+                                          final List<WriteConfig> writeConfigs,
+                                          final SnowflakeSQLNameTransformer namingResolver) {
     return (hasFailed) -> {
       if (!hasFailed) {
         final List<String> queryList = new ArrayList<>();
@@ -176,14 +174,14 @@ public class SnowflakeInternalStagingConsumerFactory {
 
           final String path = namingResolver.getStagingPath(schemaName, dstTableName, CURRENT_SYNC_PATH);
           LOGGER.info("Uploading data from stage:  stream {}. schema {}, tmp table {}, stage path {}", writeConfig.getStreamName(), schemaName,
-                  srcTableName,
-                  path);
+              srcTableName,
+              path);
           try {
             sqlOperations.copyIntoTmpTableFromStage(database, path, srcTableName, schemaName);
-          } catch (SQLException e){
+          } catch (Exception e) {
             sqlOperations.cleanUpStage(database, path);
             LOGGER.info("Cleaning stage path {}", path);
-            throw new RuntimeException("Failed to upload data from stage "+ path, e);
+            throw new RuntimeException("Failed to upload data from stage " + path, e);
           }
 
           sqlOperations.createTableIfNotExists(database, schemaName, dstTableName);

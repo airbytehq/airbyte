@@ -58,5 +58,6 @@ This connector by default uses 10 capacity units for both Read and Write in Dyna
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.1 | 2022-12-05 | [\#9314](https://github.com/airbytehq/airbyte/pull/9314) | Rename dynamo_db_table_name to dynamo_db_table_name_prefix. |
 | 0.1.0 | 2021-08-20 | [\#5561](https://github.com/airbytehq/airbyte/pull/5561) | Initial release. |
 

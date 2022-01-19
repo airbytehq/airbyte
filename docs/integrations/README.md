@@ -30,6 +30,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Bing Ads](sources/bing-ads.md) | Beta |
 | [Cart.com](sources/cart.md) | Beta |
 | [Chargebee](sources/chargebee.md) | Alpha |
+| [Chartmogul](sources/chartmogul.md) | Alpha |
 | [ClickHouse](sources/clickhouse.md) | Beta |
 | [Close.com](sources/close-com.md) | Beta |
 | [CockroachDB](sources/cockroachdb.md) | Beta |

@@ -4,8 +4,8 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Salesforce Source Spec",
     "type": "object",
-    "required": ["client_id", "client_secret", "refresh_token", "api_type"],
-    "additionalProperties": false,
+    "required": ["client_id", "client_secret", "refresh_token"],
+    "additionalProperties": true,
     "properties": {
       "auth_type": {
         "type": "string",
@@ -40,13 +40,6 @@
         "description": "Whether or not the the app is in a Salesforce sandbox. If you do not know what this, assume it is false. We provide more info on this field in the <a href=\"https://docs.airbyte.io/integrations/destinations/salesforce#is_sandbox\">docs</a>.",
         "type": "boolean",
         "default": false
-      },
-      "api_type": {
-        "title": "API Type",
-        "description": "Unless you know that you are transferring a very small amount of data, prefer using the BULK API. This will help avoid using up all of your API call quota with Salesforce. Valid values are BULK or REST.",
-        "type": "string",
-        "enum": ["BULK", "REST"],
-        "default": "BULK"
       },
       "streams_criteria": {
         "type": "array",
