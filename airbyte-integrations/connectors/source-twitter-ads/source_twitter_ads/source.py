@@ -61,9 +61,15 @@ class TwitterAdsStream(HttpStream, ABC):
     url_base = "https://ads-api.twitter.com/"
     primary_key = None
 
-    def __init__(self, base, **kwargs):
-        super().__init__(**kwargs)
-
+    def __init__(self, base,  account_id,  authenticator,  start_time, end_time, granularity, metric_groups, placement, **kwargs):
+        super().__init__(authenticator, **kwargs)
+        self.account_id = account_id
+        self.auth = authenticator
+        self.start_time = start_time
+        self.end_time = end_time
+        self.granularity = granularity
+        self.metric_groups = metric_groups
+        self.placement = placement
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -90,10 +96,26 @@ class TwitterAdsStream(HttpStream, ABC):
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
-        #fixme: Nothing  here should  be hard coded!
-        campaign_id = "fl8ws"
-        account_id = "18ce53y323s"
-        return { "entity": "CAMPAIGN", "entity_ids":"28n45", "start_time":"2022-01-01", "end_time":"2022-01-02","granularity": "TOTAL", "placement": "ALL_ON_TWITTER", "metric_groups":"ENGAGEMENT"}
+
+        account_id = self.account_id
+        auth = self.auth
+        # FixMe: request returns a bad request error if (end_time - start_time)> 7 this could lead to problems
+        start_time = self.start_time
+        end_time = self.end_time
+        granularity = self.granularity
+        metric_groups = self.metric_groups
+        placement = self.placement
+        campaign_ids_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/campaigns"
+        response = requests.get(campaign_ids_url, auth=auth)
+        campaign_ids = []
+
+        for each in response.json()['data']:
+            campaign_ids.append(each["id"])
+
+        campaign_ids = list(set(campaign_ids))
+
+    
+        return { "entity": "CAMPAIGN", "entity_ids": campaign_ids, "start_time":start_time, "end_time": end_time,"granularity": granularity, "placement": placement, "metric_groups": metric_groups}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -119,7 +141,8 @@ class Campaigns(TwitterAdsStream):
         should return "customers". Required.
         """
         # fixme: account id should not be hardcoded
-        return "/10/stats/accounts/18ce53y323s"
+        account_id = self.account_id
+        return "/10/stats/accounts/" + account_id
 
 
 # Basic incremental stream
@@ -204,4 +227,4 @@ class SourceTwitterAds(AbstractSource):
         """
         # TODO remove the authenticator if not required.
         auth = OAuth1(config["CONSUMER_KEY"], config["CONSUMER_SECRET"], config["ACCESS_TOKEN"], config["ACCESS_TOKEN_SECRET"])  # Oauth2Authenticator is also available if you need oauth support
-        return [Campaigns(base="https://ads-api.twitter.com/", authenticator=auth )] 
+        return [Campaigns(base="https://ads-api.twitter.com/", authenticator=auth, account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], end_time = config["END_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"])] 
