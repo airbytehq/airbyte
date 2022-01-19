@@ -11,20 +11,21 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RedshiftInsertDestination extends AbstractJdbcDestination implements Destination {
+public class RedshiftInsertDestination extends AbstractJdbcDestination  {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftDestination.class);
 
   public static final String DRIVER_CLASS = "com.amazon.redshift.jdbc.Driver";
 
-  public RedshiftInsertDestination() {
-    super(DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations());
+  public RedshiftInsertDestination(RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
+    super(DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations(redshiftDataTmpTableMode));
   }
 
   @Override
@@ -67,5 +68,4 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination implement
         .put("schema", schema)
         .build());
   }
-
 }

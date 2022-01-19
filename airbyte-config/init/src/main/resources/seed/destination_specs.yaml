@@ -3365,6 +3365,12 @@
             \ the sync. See the docs for details. Only relevant for COPY. Defaults\
             \ to true."
           default: true
+        use_super_redshift_type:
+          title: "Use SUPER Redshift Data-type for _airbyte_data column in _airbyte_raw table"
+          type: "boolean"
+          description: "This parameter is responsible for using SUPER column data-type during normalization. This\
+            \ option should increase performance during normalization, as well allows\
+            \ greater flexibility when creating source queries/views without normalization."
     supportsIncremental: true
     supportsNormalization: true
     supportsDBT: true
