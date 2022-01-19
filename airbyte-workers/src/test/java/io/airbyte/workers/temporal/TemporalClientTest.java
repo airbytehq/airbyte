@@ -209,10 +209,12 @@ class TemporalClientTest {
       final UUID migratedId = UUID.randomUUID();
 
       doReturn(false)
-          .when(temporalClient).isWorkflowRunning(TemporalClient.getConnectionManagerName(nonMigratedId));
+          .when(temporalClient).isInRunningWorkflowCache(TemporalClient.getConnectionManagerName(nonMigratedId));
       doReturn(true)
-          .when(temporalClient).isWorkflowRunning(TemporalClient.getConnectionManagerName(migratedId));
+          .when(temporalClient).isInRunningWorkflowCache(TemporalClient.getConnectionManagerName(migratedId));
 
+      doNothing()
+          .when(temporalClient).refreshRunningWorkflow();
       doNothing()
           .when(temporalClient).submitConnectionUpdaterAsync(nonMigratedId);
 

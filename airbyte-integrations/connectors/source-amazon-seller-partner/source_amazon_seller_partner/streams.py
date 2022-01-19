@@ -18,7 +18,7 @@ from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, NoAuth
+from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
 from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
@@ -103,7 +103,7 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         stream_data = response.json()
-        next_page_token = stream_data.get(self.next_page_token_field)
+        next_page_token = stream_data.get("payload").get(self.next_page_token_field)
         if next_page_token:
             return {self.next_page_token_field: next_page_token}
 
@@ -142,6 +142,7 @@ class ReportsAmazonSPStream(Stream, ABC):
     path_prefix = f"reports/{REPORTS_API_VERSION}"
     sleep_seconds = 30
     data_field = "payload"
+    result_key = None
 
     def __init__(
         self,
@@ -152,7 +153,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         period_in_days: Optional[int],
         report_options: Optional[str],
         max_wait_seconds: Optional[int],
-        authenticator: HttpAuthenticator = NoAuth(),
+        authenticator: HttpAuthenticator = None,
     ):
         self._authenticator = authenticator
         self._session = requests.Session()
@@ -288,8 +289,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         document_records = self.parse_document(document)
         yield from document_records
 
-    @staticmethod
-    def parse_document(document):
+    def parse_document(self, document):
         return csv.DictReader(StringIO(document), delimiter="\t")
 
     def report_options(self) -> Mapping[str, Any]:
@@ -388,17 +388,10 @@ class VendorInventoryHealthReports(ReportsAmazonSPStream):
     name = "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT"
 
 
-class BrandAnalyticsSearchTermsReports(ReportsAmazonSPStream):
-    """
-    Field definitions: https://sellercentral.amazon.co.uk/help/hub/reference/G5NXWNY8HUD3VDCW
-    """
-
-    name = "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT"
-
-    @staticmethod
-    def parse_document(document):
+class BrandAnalyticsStream(ReportsAmazonSPStream):
+    def parse_document(self, document):
         parsed = json_lib.loads(document)
-        return parsed.get("dataByDepartmentAndSearchTerm", {})
+        return parsed.get(self.result_key, [])
 
     def _report_data(
         self,
@@ -450,6 +443,35 @@ class BrandAnalyticsSearchTermsReports(ReportsAmazonSPStream):
                 "dataEndTime": data_end_time.strftime(DATE_TIME_FORMAT),
                 "reportOptions": report_options,
             }
+
+
+class BrandAnalyticsMarketBasketReports(BrandAnalyticsStream):
+    name = "GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT"
+    result_key = "dataByAsin"
+
+
+class BrandAnalyticsSearchTermsReports(BrandAnalyticsStream):
+    """
+    Field definitions: https://sellercentral.amazon.co.uk/help/hub/reference/G5NXWNY8HUD3VDCW
+    """
+
+    name = "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT"
+    result_key = "dataByDepartmentAndSearchTerm"
+
+
+class BrandAnalyticsRepeatPurchaseReports(BrandAnalyticsStream):
+    name = "GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT"
+    result_key = "dataByAsin"
+
+
+class BrandAnalyticsAlternatePurchaseReports(BrandAnalyticsStream):
+    name = "GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT"
+    result_key = "dataByAsin"
+
+
+class BrandAnalyticsItemComparisonReports(BrandAnalyticsStream):
+    name = "GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT"
+    result_key = "dataByAsin"
 
 
 class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
@@ -602,8 +624,7 @@ class Orders(IncrementalAmazonSPStream):
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
-        if not next_page_token:
-            params.update({"MarketplaceIds": self.marketplace_id})
+        params.update({"MarketplaceIds": self.marketplace_id})
         return params
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:

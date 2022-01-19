@@ -54,5 +54,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :--- | :--- |
+| 0.3.1   | 2022-01-10 | [9382](https://github.com/airbytehq/airbyte/pull/9382) | Source Recurly: avoid loading all accounts when importing account coupon redemptions |
 | 0.3.0   | 2021-12-08 | [8468](https://github.com/airbytehq/airbyte/pull/8468) | Support Incremental Sync Mode |
+
 

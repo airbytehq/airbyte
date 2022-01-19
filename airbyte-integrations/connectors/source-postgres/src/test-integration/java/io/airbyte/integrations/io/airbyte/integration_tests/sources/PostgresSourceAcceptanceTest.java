@@ -31,6 +31,7 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "public.id_and_name";
   private static final String STREAM_NAME2 = "public.starships";
+  private static final String STREAM_NAME_MATERIALIZED_VIEW = "public.testview";
 
   private PostgreSQLContainer<?> container;
   private JsonNode config;
@@ -46,6 +47,7 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
         .put("database", container.getDatabaseName())
+        .put("schemas", Jsons.jsonNode(List.of("public")))
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("ssl", false)
@@ -67,6 +69,7 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
       ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
       ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
       ctx.fetch("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
+      ctx.fetch("CREATE MATERIALIZED VIEW testview AS select * from id_and_name where id = '2';");
       return null;
     });
 
@@ -111,6 +114,15 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME2,
+                Field.of("id", JsonSchemaPrimitive.NUMBER),
+                Field.of("name", JsonSchemaPrimitive.STRING))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(Lists.newArrayList("id"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                STREAM_NAME_MATERIALIZED_VIEW,
                 Field.of("id", JsonSchemaPrimitive.NUMBER),
                 Field.of("name", JsonSchemaPrimitive.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));

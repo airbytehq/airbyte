@@ -11,6 +11,7 @@ import com.segment.analytics.messages.AliasMessage;
 import com.segment.analytics.messages.IdentifyMessage;
 import com.segment.analytics.messages.TrackMessage;
 import io.airbyte.config.StandardWorkspace;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,6 +44,7 @@ public class SegmentTrackingClient implements TrackingClient {
   private static final String SEGMENT_WRITE_KEY = "7UDdp5K55CyiGgsauOr2pNNujGvmhaeu";
   private static final String AIRBYTE_VERSION_KEY = "airbyte_version";
   private static final String AIRBYTE_ROLE = "airbyte_role";
+  private static final String AIRBYTE_TRACKED_AT = "tracked_at";
 
   // Analytics is threadsafe.
   private final Analytics analytics;
@@ -116,6 +118,7 @@ public class SegmentTrackingClient implements TrackingClient {
     // Always add these traits.
     mapCopy.put(AIRBYTE_VERSION_KEY, trackingIdentity.getAirbyteVersion().serialize());
     mapCopy.put(CUSTOMER_ID_KEY, trackingIdentity.getCustomerId());
+    mapCopy.put(AIRBYTE_TRACKED_AT, Instant.now().toString());
     if (!metadata.isEmpty()) {
       trackingIdentity.getEmail().ifPresent(email -> mapCopy.put("email", email));
     }
