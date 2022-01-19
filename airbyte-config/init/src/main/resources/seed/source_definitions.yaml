@@ -238,14 +238,14 @@
 - name: Google Ads
   sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   dockerRepository: airbyte/source-google-ads
-  dockerImageTag: 0.1.20
+  dockerImageTag: 0.1.21
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-ads
   icon: google-adwords.svg
   sourceType: api
 - name: Google Analytics
   sourceDefinitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
   dockerRepository: airbyte/source-google-analytics-v4
-  dockerImageTag: 0.1.14
+  dockerImageTag: 0.1.15
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-analytics-v4
   icon: google-analytics.svg
   sourceType: api
@@ -321,7 +321,7 @@
 - name: Intercom
   sourceDefinitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
   dockerRepository: airbyte/source-intercom
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.io/integrations/sources/intercom
   icon: intercom.svg
   sourceType: api
@@ -620,7 +620,7 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 0.1.16
+  dockerImageTag: 0.1.17
   documentationUrl: https://docs.airbyte.io/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
@@ -676,7 +676,7 @@
 - name: Snowflake
   sourceDefinitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
   dockerRepository: airbyte/source-snowflake
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/snowflake
   icon: snowflake.svg
   sourceType: database
