@@ -4,6 +4,7 @@
 
 package io.airbyte.workers;
 
+import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
@@ -356,6 +357,12 @@ public class WorkerApp {
             .getInitialized();
 
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
+    TrackingClientSingleton.initialize(
+        configs.getTrackingStrategy(),
+        new Deployment(configs.getDeploymentMode(), jobPersistence.getDeployment().orElseThrow(), configs.getWorkerEnvironment()),
+        configs.getAirbyteRole(),
+        configs.getAirbyteVersion(),
+        configRepository);
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final SyncJobFactory jobFactory = new DefaultSyncJobFactory(
         new DefaultJobCreator(jobPersistence, configRepository),

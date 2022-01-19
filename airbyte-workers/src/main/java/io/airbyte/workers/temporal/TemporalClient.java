@@ -442,7 +442,7 @@ public class TemporalClient {
   }
 
   @VisibleForTesting
-  static String getConnectionManagerName(final UUID connectionId) {
+  public static String getConnectionManagerName(final UUID connectionId) {
     return "connection_manager_" + connectionId;
   }
 
