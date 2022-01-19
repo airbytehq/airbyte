@@ -2,70 +2,136 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "active": {
-      "type": ["null", "boolean"]
+    "id": {
+      "description": "Unique Id",
+      "type": "string"
     },
-    "column_width": {
-      "type": ["null", "integer"]
+    "label": {
+      "description": "Label of color collection",
+      "type": "string"
     },
-    "dashboard_id": {
-      "type": ["null", "integer"]
-    },
-    "dashboard_layout_components": {
+    "categoricalPalettes": {
       "items": {
         "properties": {
-          "column": {
-            "type": ["null", "integer"]
-          },
-          "dashboard_element_id": {
-            "type": ["null", "integer"]
-          },
-          "dashboard_layout_id": {
-            "type": ["null", "integer"]
-          },
-          "deleted": {
-            "type": ["null", "boolean"]
-          },
-          "element_title": {
-            "type": ["null", "string"]
-          },
-          "element_title_hidden": {
-            "type": ["null", "boolean"]
-          },
-          "height": {
-            "type": ["null", "integer"]
-          },
           "id": {
-            "type": ["null", "integer"]
+            "description": "Unique identity string",
+            "type": "string"
           },
-          "row": {
-            "type": ["null", "integer"]
+          "label": {
+            "description": "Label for palette",
+            "type": [
+              "null",
+              "string"
+            ]
           },
-          "vis_type": {
-            "type": ["null", "string"]
+          "type": {
+            "description": "Type of palette",
+            "type": "string"
           },
-          "width": {
-            "type": ["null", "integer"]
+          "colors": {
+            "items": {
+              "type": "string"
+            },
+            "description": "Array of colors in the palette",
+            "type": "array"
           }
         },
-        "type": ["null", "object"]
+        "type": "object"
       },
-      "type": ["null", "array"]
+      "description": "Array of categorical palette definitions",
+      "type": "array"
     },
-    "dashboard_title": {
-      "type": ["null", "string"]
+    "sequentialPalettes": {
+      "items": {
+        "properties": {
+          "id": {
+            "description": "Unique identity string",
+            "type": "string"
+          },
+          "label": {
+            "description": "Label for palette",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "type": {
+            "description": "Type of palette",
+            "type": "string"
+          },
+          "stops": {
+            "items": {
+              "properties": {
+                "color": {
+                  "description": "CSS color string",
+                  "type": "string"
+                },
+                "offset": {
+                  "multipleOf": 10
+                  -16
+                  ",
+                  "description": "Offset in continuous palette (0 to 100)",
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                }
+              },
+              "type": "object"
+            },
+            "description": "Array of ColorStops in the palette",
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "description": "Array of discrete palette definitions",
+      "type": "array"
     },
-    "deleted": {
-      "type": ["null", "boolean"]
-    },
-    "id": {
-      "type": ["null", "integer"]
-    },
-    "type": {
-      "type": ["null", "string"]
-    },
-    "width": {
-      "type": ["null", "integer"]
+    "divergingPalettes": {
+      "items": {
+        "properties": {
+          "id": {
+            "description": "Unique identity string",
+            "type": "string"
+          },
+          "label": {
+            "description": "Label for palette",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "type": {
+            "description": "Type of palette",
+            "type": "string"
+          },
+          "stops": {
+            "items": {
+              "properties": {
+                "color": {
+                  "description": "CSS color string",
+                  "type": "string"
+                },
+                "offset": {
+                  "multipleOf": "1e-16",
+                  "description": "Offset in continuous palette (0 to 100)",
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                }
+              },
+              "type": "object"
+            },
+            "description": "Array of ColorStops in the palette",
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "description": "Array of diverging palette definitions",
+      "type": "array"
     }
   }
 }

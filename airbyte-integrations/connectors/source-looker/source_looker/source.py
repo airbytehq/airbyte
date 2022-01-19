@@ -16,12 +16,13 @@ from requests.auth import AuthBase
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
-from .streams import LookerStream2, API_VERSION, SwaggerParser, LookerException
+from .streams import LookerStream, API_VERSION, SwaggerParser, LookerException, ContentMetadata, Dashboards, \
+    QueryHistory, RunLooks
 
 
 class CustomTokenAuthenticator(TokenAuthenticator):
     def __init__(self, domain: str, client_id: str, client_secret: str):
-        self._domain, self._client_id, self._client_secret = domain, client_id, client_id
+        self._domain, self._client_id, self._client_secret = domain, client_id, client_secret
         super().__init__(None)
 
         self._access_token = None
@@ -40,6 +41,7 @@ class CustomTokenAuthenticator(TokenAuthenticator):
             return str(error)
         data = resp.json()
         self._access_token = data["access_token"]
+        AirbyteLogger().info(self._access_token)
         self._token_expiry_date = pendulum.now().add(seconds=data["expires_in"])
         return None
 
@@ -70,11 +72,70 @@ class SourceLooker(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        authenticator = self.get_authenticator(config)
-        swagger_parser = SwaggerParser(domain=config["domain"])
-        test_stream = LookerStream2(
-            authenticator=authenticator,
-            domain=config["domain"],
-            run_look_ids=config.get("run_look_ids") or [],
-            swagger_parser=swagger_parser)
-        return [test_stream]
+        base_args = {
+            "authenticator": self.get_authenticator(config),
+            "domain": config["domain"],
+        }
+        args = dict(swagger_parser=SwaggerParser(domain=config["domain"]), **base_args)
+
+        streams = [
+            LookerStream("color_collections", **args),
+            LookerStream("connections", **args),
+            ContentMetadata("content_metadata", **args),
+            ContentMetadata("content_metadata_access", **args),
+
+            Dashboards("dashboards", **args),
+            LookerStream("dashboard_elements", **args),
+            LookerStream("dashboard_filters", **args),
+            LookerStream("dashboard_layout_components", **args),
+            LookerStream("dashboard_layouts", **args),
+
+            LookerStream("datagroups", **args),
+            LookerStream("folders", **args),
+            LookerStream("folder_ancestors", **args),
+            LookerStream("git_branches", **args),
+            LookerStream("groups", **args),
+
+            LookerStream("homepage_items", **args),
+            LookerStream("homepage_sections", **args),
+            LookerStream("homepages", **args),
+
+            LookerStream("integration_hubs", **args),
+            LookerStream("integrations", **args),
+            LookerStream("legacy_features", **args),
+            Dashboards("lookml_dashboards", **args),
+            LookerStream("lookml_models", **args),
+            LookerStream("looks", **args),
+
+            LookerStream("model_sets", **args),
+            LookerStream("permission_sets", **args),
+            LookerStream("permissions", **args),
+            LookerStream("primary_homepage_sections", **args),
+
+            LookerStream("projects", **args),
+            LookerStream("project_files", **args),
+            QueryHistory(**base_args),
+            LookerStream("roles", **args),
+            LookerStream("role_groups", **args),
+            RunLooks(run_look_ids=config["run_look_ids"], **args) if config.get("run_look_ids") else None,
+
+            LookerStream("scheduled_plans",
+                         request_params={"all_users": "true"}, **args),
+
+            LookerStream("spaces", **args),
+            LookerStream("space_ancestors", **args),
+
+            LookerStream("user_attributes", **args),
+            LookerStream("user_attribute_group_values", **args),
+            LookerStream("user_attribute_values",
+                         request_params={"all_values": "true", "include_unset": "true"}, **args),
+            LookerStream("user_login_lockouts", **args),
+            LookerStream("user_sessions", **args),
+            LookerStream("users", **args),
+            LookerStream("versions", **args),
+            LookerStream("workspaces", **args),
+
+        ]
+        # stream  RunLooks is dynamic and will be added if run_look_ids is not empty
+        # but we need to save streams' older
+        return [stream for stream in streams if stream]
