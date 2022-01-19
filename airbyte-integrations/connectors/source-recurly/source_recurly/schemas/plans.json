@@ -5,9 +5,6 @@
     "id": {
       "type": ["null", "string"]
     },
-    "object": {
-      "type": ["null", "string"]
-    },
     "code": {
       "type": ["null", "string"]
     },
@@ -66,7 +63,34 @@
       "type": ["null", "boolean"]
     },
     "currencies": {
-      "type": "array"
+      "type": "array",
+      "title": "Pricing",
+      "items": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "description": "3-letter ISO 4217 currency code.",
+            "maxLength": 3
+          },
+          "setup_fee": {
+            "type": "number",
+            "format": "float",
+            "title": "Setup fee",
+            "description": "Amount of one-time setup fee automatically charged at the beginning of a subscription billing cycle. For subscription plans with a trial, the setup fee will be charged at the time of signup. Setup fees do not increase with the quantity of a subscription plan.",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "unit_amount": {
+            "type": "number",
+            "format": "float",
+            "title": "Unit price",
+            "minimum": 0,
+            "maximum": 1000000
+          }
+        }
+      }
     },
     "hosted_pages": {
       "type": "object",

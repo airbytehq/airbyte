@@ -5,9 +5,6 @@
     "id": {
       "type": ["null", "string"]
     },
-    "object": {
-      "type": ["null", "string"]
-    },
     "code": {
       "type": ["null", "string"]
     },
@@ -51,14 +48,41 @@
       "type": ["null", "string"]
     },
     "address": {
-      "type": ["null", "object"]
-    },
-    "billing_info": {
-      "type": ["null", "object"]
-    },
-    "shipping_addresses": {
-      "type": ["null", "array"]
-    },
+          "type": "object",
+          "properties": {
+            "phone": {
+              "type": "string",
+              "title": "Phone number"
+            },
+            "street1": {
+              "type": "string",
+              "title": "Street 1"
+            },
+            "street2": {
+              "type": "string",
+              "title": "Street 2"
+            },
+            "city": {
+              "type": "string",
+              "title": "City"
+            },
+            "region": {
+              "type": "string",
+              "title": "State/Province",
+              "description": "State or province."
+            },
+            "postal_code": {
+              "type": "string",
+              "title": "Zip/Postal code",
+              "description": "Zip or postal code."
+            },
+            "country": {
+              "type": "string",
+              "title": "Country",
+              "description": "Country, 2-letter ISO 3166-1 alpha-2 code."
+            }
+          }
+        },
     "custom_fields": {
       "type": ["null", "array"]
     },

@@ -5,9 +5,6 @@
     "id": {
       "type": ["null", "string"]
     },
-    "object": {
-      "type": ["null", "string"]
-    },
     "code": {
       "type": ["null", "string"]
     },
@@ -53,38 +50,95 @@
     "applies_to_non_plan_charges": {
       "type": ["null", "boolean"]
     },
-    "plans_names": {
-      "type": ["null", "array"]
-    },
     "plans": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "title": "Plans",
+      "description": "A list of plans for which this coupon applies. This will be `null` if `applies_to_all_plans=true`.",
+      "items": {
+        "type": "object",
+        "title": "Plan mini details",
+        "description": "Just the important parts.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Plan ID",
+            "maxLength": 13,
+            "readOnly": true
+          },
+          "code": {
+            "type": "string",
+            "title": "Plan code",
+            "description": "Unique code to identify the plan. This is used in Hosted Payment Page URLs and in the invoice exports."
+          }
+        }
+      }
     },
     "items": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "title": "Items",
+      "description": "A list of items for which this coupon applies. This will be\n`null` if `applies_to_all_items=true`.\n",
+      "items": {
+        "type": ["null", "object"],
+        "title": "Item mini details",
+        "description": "Just the important parts.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Item ID",
+            "maxLength": 13,
+            "readOnly": true
+          }
+        }
+      }
     },
     "redemption_resource": {
       "type": ["null", "string"]
     },
     "discount": {
-      "type": "object",
+      "type": ["null", "object"],
+      "description": "Details of the discount a coupon applies. Will contain a `type`\nproperty and one of the following properties: `percent`, `fixed`, `trial`.\n",
       "properties": {
         "type": {
-          "type": ["null", "string"]
+          "type": "string"
         },
         "percent": {
-          "type": ["null", "number"]
+          "description": "This is only present when `type=percent`.",
+          "type": "integer"
         },
         "currencies": {
-          "type": ["null", "array"]
+          "type": "array",
+          "description": "This is only present when `type=fixed`.",
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "currency": {
+                "type": "string",
+                "title": "Currency",
+                "description": "3-letter ISO 4217 currency code.",
+                "maxLength": 3
+              },
+              "amount": {
+                "type": "number",
+                "format": "float",
+                "title": "Discount Amount",
+                "description": "Value of the fixed discount that this coupon applies."
+              }
+            }
+          }
         },
         "trial": {
           "type": "object",
+          "description": "This is only present when `type=free_trial`.",
           "properties": {
             "unit": {
-              "type": ["null", "string"]
+              "title": "Trial unit",
+              "description": "Temporal unit of the free trial",
+              "type": "string"
             },
             "length": {
-              "type": ["null", "number"]
+              "type": "integer",
+              "title": "Trial length",
+              "description": "Trial length measured in the units specified by the sibling `unit` property"
             }
           }
         }
@@ -100,15 +154,6 @@
       "type": ["null", "string"]
     },
     "redeem_by": {
-      "type": ["null", "string"]
-    },
-    "bulk_coupon_id": {
-      "type": ["null", "string"]
-    },
-    "bulk_coupon_code": {
-      "type": ["null", "string"]
-    },
-    "redeemed_at": {
       "type": ["null", "string"]
     },
     "created_at": {
