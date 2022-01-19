@@ -44,7 +44,7 @@
           "refresh_token": {
             "type": "string",
             "title": "Refresh Token",
-            "description": "The token for obtaining new access token. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>",
+            "description": "The token for obtaining a new access token. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>",
             "airbyte_secret": true
           }
         }
