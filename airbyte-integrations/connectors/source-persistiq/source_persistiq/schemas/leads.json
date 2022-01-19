@@ -4,7 +4,6 @@
   "properties": {
     "id": {
       "type": [
-        "null",
         "string"
       ]
     },
@@ -16,7 +15,6 @@
     },
     "owner_id": {
       "type": [
-        "null",
         "string"
       ]
     },

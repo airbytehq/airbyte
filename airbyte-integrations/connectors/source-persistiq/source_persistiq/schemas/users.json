@@ -3,13 +3,13 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "name": {
       "type": ["null", "string"]
     },
     "email": {
-      "type": ["null", "string"],
+      "type": ["string"],
       "format": "email"
     },
     "activated": {

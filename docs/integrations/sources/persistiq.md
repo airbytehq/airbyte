@@ -1,10 +1,10 @@
-# Chartmogul
+# PersistIq
 
 ## Sync overview
 
 The PersistIq source supports Full Refresh syncs only.
 
-This source syncs data for the [PersistIq API](https://dev.chartmogul.com/reference/).
+This source syncs data for the [PersistIq API](https://apidocs.persistiq.com/#introduction).
 
 
 ### Output schema
@@ -25,7 +25,7 @@ This Source is capable of syncing the following streams:
 
 ### Performance considerations
 
-The Chartmogul connector should not run into Chartmogul API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The PersistIq connector should not run into PersistIq API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Getting started
 

@@ -4,7 +4,6 @@
   "properties": {
     "id": {
       "type": [
-        "null",
         "string"
       ]
     },
