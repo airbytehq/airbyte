@@ -8,10 +8,12 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from recurly import Client
+from recurly.errors import MissingFeatureError, NotFoundError
 
 DEFAULT_PRIMARY_KEY = "id"
 DEFAULT_CURSOR = "updated_at"
 DEFAULT_SORT_KEY = "updated_at"
+DEFAULT_LIMIT = 200
 
 BEGIN_TIME_PARAM = "begin_time"
 
@@ -67,6 +69,13 @@ class BaseStream(Stream):
         return DEFAULT_SORT_KEY
 
     @property
+    def limit(self) -> int:
+        """
+        Returns the number of records limit
+        """
+        return DEFAULT_LIMIT
+
+    @property
     def cursor_field(self) -> Union[str, List[str]]:
         """
         Returns the cursor field to be used in the `incremental` sync mode.
@@ -84,6 +93,13 @@ class BaseStream(Stream):
         """
         return DEFAULT_CURSOR
 
+    @property
+    def default_params(self) -> dict:
+        """
+        Returns the parameters to be sent together with the API call to Recurly
+        """
+        return {"order": "asc", "sort": self.sort_key, "limit": self.limit}
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -98,16 +114,16 @@ class BaseStream(Stream):
         :return: Iterable of dictionaries representing the Recurly resource
         :rtype: Iterable
         """
-        params = {"order": "asc", "sort": self.sort_key}
+        params = self.default_params
 
         self.begin_time = (stream_state and stream_state[self.cursor_field]) or self.begin_time
 
         if self.begin_time:
             params.update({BEGIN_TIME_PARAM: self.begin_time})
 
-        # Call the Recurly client methods
         items = getattr(self._client, self.client_method_name)(params=params).items()
 
+        # Call the Recurly client methods
         for item in items:
             yield self._item_to_dict(item)
 
@@ -139,13 +155,7 @@ class BaseStream(Stream):
             return resource
 
 
-class Accounts(BaseStream):
-    pass
-
-
-class AccountCouponRedemptions(BaseStream):
-    pass
-
+class BaseAccountResourceStream(BaseStream):
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -154,14 +164,14 @@ class AccountCouponRedemptions(BaseStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
-        The method to be called to retrieve the accounts coupon redemptions from Recurly. To retrieve the coupon
-        redemptions, a separate call to list all the accounts should be made to pass the `account_id` to the account
-        coupon code redemption API call.
+        The method to be called to retrieve the accounts sub-resources such as the account coupon redemptions, shipping addresses, ... etc
+        from Recurly. To retrieve the account's sub-resources, a separate call to list all the accounts sub-resources be made to pass
+        the `account_id` to the sub-resource API call.
 
         :return: Iterable of dictionaries representing the Recurly resource
         :rtype: Iterable
         """
-        params = {"order": "asc", "sort": self.sort_key}
+        params = self.default_params
 
         self.begin_time = (stream_state and stream_state[self.cursor_field]) or self.begin_time
 
@@ -170,10 +180,28 @@ class AccountCouponRedemptions(BaseStream):
 
         # Call the Recurly client methods
         accounts = self._client.list_accounts(params=params).items()
-        for account in accounts:
-            coupons = self._client.list_account_coupon_redemptions(account_id=account.id, params=params).items()
-            for coupon in coupons:
-                yield self._item_to_dict(coupon)
+
+        # If the API call throws the Recurly's client `MissingFeatureError` error, then skip loading the resources from Recurly
+        # and log a warn
+        try:
+            for account in accounts:
+                items = getattr(self._client, self.client_method_name)(params=params, account_id=account.id).items()
+                for item in items:
+                    yield self._item_to_dict(item)
+        except MissingFeatureError as error:
+            super().logger.warning(f"Missing feature error {error}")
+
+
+class Accounts(BaseStream):
+    pass
+
+
+class AccountCouponRedemptions(BaseAccountResourceStream):
+    pass
+
+
+class BillingInfos(BaseAccountResourceStream):
+    pass
 
 
 class Coupons(BaseStream):
@@ -192,8 +220,48 @@ class Plans(BaseStream):
     pass
 
 
+class ShippingAddresses(BaseAccountResourceStream):
+    pass
+
+
+class ShippingMethods(BaseStream):
+    pass
+
+
 class Subscriptions(BaseStream):
     pass
+
+
+class SubscriptionChanges(BaseStream):
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """
+        The method to be called to retrieve the subscriptions changes from Recurly. To retrieve the subscription change, a separate call to
+        get subscription change should be made to pass the `subscription_id` to the subscription change API call.
+
+        :return: Iterable of dictionaries representing the Recurly resource
+        :rtype: Iterable
+        """
+        params = self.default_params
+
+        self.begin_time = (stream_state and stream_state[self.cursor_field]) or self.begin_time
+
+        if self.begin_time:
+            params.update({BEGIN_TIME_PARAM: self.begin_time})
+
+        # Call the Recurly client methods
+        subscriptions = self._client.list_subscriptions(params=params).items()
+
+        for subscription in subscriptions:
+            try:
+                yield self._item_to_dict(self._client.get_subscription_change(params=params, subscription_id=subscription.id))
+            except NotFoundError:
+                pass
 
 
 class Transactions(BaseStream):

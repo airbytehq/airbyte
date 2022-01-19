@@ -9,7 +9,21 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from recurly import ApiError, Client
 
-from .streams import AccountCouponRedemptions, Accounts, Coupons, ExportDates, Invoices, MeasuredUnits, Plans, Subscriptions, Transactions
+from .streams import (
+    AccountCouponRedemptions,
+    Accounts,
+    BillingInfos,
+    Coupons,
+    ExportDates,
+    Invoices,
+    MeasuredUnits,
+    Plans,
+    ShippingAddresses,
+    ShippingMethods,
+    SubscriptionChanges,
+    Subscriptions,
+    Transactions,
+)
 
 
 class SourceRecurly(AbstractSource):
@@ -37,12 +51,16 @@ class SourceRecurly(AbstractSource):
 
         return [
             Accounts(**args),
+            BillingInfos(**args),
             Coupons(**args),
             AccountCouponRedemptions(**args),
             Invoices(**args),
             MeasuredUnits(**args),
             Plans(**args),
+            ShippingAddresses(**args),
+            ShippingMethods(**args),
             Subscriptions(**args),
+            SubscriptionChanges(**args),
             Transactions(**args),
             ExportDates(**args),
         ]

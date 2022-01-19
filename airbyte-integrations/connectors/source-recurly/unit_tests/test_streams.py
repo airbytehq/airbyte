@@ -6,7 +6,15 @@ import unittest
 from datetime import datetime, timedelta
 from unittest.mock import Mock
 
-from source_recurly.streams import BEGIN_TIME_PARAM, DEFAULT_CURSOR, AccountCouponRedemptions, BaseStream, ExportDates, MeasuredUnits
+from source_recurly.streams import (
+    BEGIN_TIME_PARAM,
+    DEFAULT_CURSOR,
+    DEFAULT_LIMIT,
+    AccountCouponRedemptions,
+    BaseStream,
+    ExportDates,
+    MeasuredUnits,
+)
 
 METHOD_NAME = "list_resource"
 
@@ -23,7 +31,7 @@ class TestStreams(unittest.TestCase):
 
         self.sync_mode_mock = Mock()
 
-        self.params = {"order": "asc", "sort": DEFAULT_CURSOR}
+        self.params = {"order": "asc", "sort": DEFAULT_CURSOR, "limit": DEFAULT_LIMIT}
 
     def test_read_records(self):
         stream = TestStream(client=self.client_mock)

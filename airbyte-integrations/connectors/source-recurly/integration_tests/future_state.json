@@ -5,6 +5,9 @@
   "accounts": {
     "updated_at": "2022-07-19T22:21:37Z"
   },
+  "billing_infos": {
+    "updated_at": "2022-07-19T22:21:37Z"
+  },
   "coupons": {
     "updated_at": "2022-07-19T22:21:37Z"
   },
@@ -17,7 +20,16 @@
   "plans": {
     "updated_at": "2022-07-19T22:21:37Z"
   },
+  "shipping_addresses": {
+    "updated_at": "2022-07-19T22:21:37Z"
+  },
+  "shipping_methods": {
+    "updated_at": "2022-07-19T22:21:37Z"
+  },
   "subscriptions": {
+    "updated_at": "2022-07-19T22:21:37Z"
+  },
+  "subscriptions_changes": {
     "updated_at": "2022-07-19T22:21:37Z"
   },
   "transactions": {

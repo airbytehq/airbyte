@@ -148,7 +148,7 @@
       "type": ["null", "number"]
     },
     "tax_info": {
-      "type": "object",
+      "type": ["null", "object"],
       "title": "Tax info",
       "properties": {
         "type": {
