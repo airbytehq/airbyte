@@ -2,6 +2,9 @@
   "name": "airbyte-webapp",
   "version": "0.35.5-alpha",
   "private": true,
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "node ./license-check && react-scripts build",
