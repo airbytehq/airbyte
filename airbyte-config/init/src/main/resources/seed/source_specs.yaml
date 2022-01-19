@@ -6452,7 +6452,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:0.1.16"
+- dockerImage: "airbyte/source-salesforce:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/salesforce"
     connectionSpecification:
@@ -6463,8 +6463,7 @@
       - "client_id"
       - "client_secret"
       - "refresh_token"
-      - "api_type"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         auth_type:
           type: "string"
@@ -6506,16 +6505,6 @@
             >docs</a>."
           type: "boolean"
           default: false
-        api_type:
-          title: "API Type"
-          description: "Unless you know that you are transferring a very small amount\
-            \ of data, prefer using the BULK API. This will help avoid using up all\
-            \ of your API call quota with Salesforce. Valid values are BULK or REST."
-          type: "string"
-          enum:
-          - "BULK"
-          - "REST"
-          default: "BULK"
         streams_criteria:
           type: "array"
           items:
