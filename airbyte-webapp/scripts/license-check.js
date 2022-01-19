@@ -1,6 +1,7 @@
 const checker = require('license-checker');
+const path = require('path');
 const { promisify } = require('util');
-const { version } = require('./package.json');
+const { version } = require('../package.json');
 
 /**
  * A list of all the allowed licenses that production dependencies can have.
@@ -62,7 +63,7 @@ const LICENSE_OVERWRITES = {
 
 const checkLicenses = promisify(checker.init);
 const params = {
-  start: __dirname,
+  start: path.join(__dirname, '..'),
   excludePackages: IGNORED_PACKAGES.join(';'),
   unknown: true,
 };

@@ -7,12 +7,12 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "node ./license-check && react-scripts build",
+    "build": "node ./scripts/license-check && react-scripts build",
     "test": "react-scripts test",
     "format": "prettier --write 'src/**/*.{ts,tsx}'",
     "storybook": "start-storybook -p 9009 -s public --quiet",
     "lint": "eslint --ext js,ts,tsx src",
-    "license-check": "node ./license-check.js"
+    "license-check": "node ./scripts/license-check.js"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
