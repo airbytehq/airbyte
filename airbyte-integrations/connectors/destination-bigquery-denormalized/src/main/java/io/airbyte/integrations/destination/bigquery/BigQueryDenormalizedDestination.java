@@ -11,6 +11,9 @@ import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordForm
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryDenormalizedRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.GcsBigQueryDenormalizedRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
+import io.sentry.ITransaction;
+import io.sentry.Sentry;
+import io.sentry.SpanStatus;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +21,18 @@ import org.slf4j.LoggerFactory;
 public class BigQueryDenormalizedDestination extends BigQueryDestination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedDestination.class);
+
+  public static void initSentry() {
+    Sentry.init(options -> {
+      // allow setting properties from env variables see https://docs.sentry.io/platforms/java/configuration/
+      options.setEnableExternalConfiguration(true);
+      // To set a uniform sample rate
+      options.setTracesSampleRate(1.0);
+    });
+    Sentry.configureScope(scope -> {
+      scope.setTag("connector", "destination-bigquery-denormalized");
+    });
+  }
 
   @Override
   protected String getTargetTableName(final String streamName) {
@@ -46,10 +61,19 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   }
 
   public static void main(final String[] args) throws Exception {
+    initSentry();
     final Destination destination = new BigQueryDenormalizedDestination();
-    LOGGER.info("starting destination: {}", BigQueryDenormalizedDestination.class);
-    new IntegrationRunner(destination).run(args);
-    LOGGER.info("completed destination: {}", BigQueryDenormalizedDestination.class);
+    ITransaction transaction = Sentry.startTransaction("IntegrationRunner()", "run");
+    try {
+      LOGGER.info("starting destination: {}", BigQueryDestination.class);
+      new IntegrationRunner(destination).run(args);
+    } catch (Exception e) {
+      transaction.setThrowable(e);
+      transaction.setStatus(SpanStatus.INTERNAL_ERROR);
+    } finally {
+      transaction.finish();
+      LOGGER.info("completed destination: {}", BigQueryDestination.class);
+    }
   }
 
 }
