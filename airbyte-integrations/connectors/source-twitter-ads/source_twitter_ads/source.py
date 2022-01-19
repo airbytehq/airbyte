@@ -61,8 +61,9 @@ class TwitterAdsStream(HttpStream, ABC):
     url_base = "https://ads-api.twitter.com/"
     primary_key = None
 
-    def __init__(self, base, **kwargs):
+    def __init__(self, base,  account_id,  **kwargs):
         super().__init__(**kwargs)
+        self.account_id = account_id
 
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -119,7 +120,8 @@ class Campaigns(TwitterAdsStream):
         should return "customers". Required.
         """
         # fixme: account id should not be hardcoded
-        return "/10/stats/accounts/18ce53y323s"
+        account_id = self.account_id
+        return "/10/stats/accounts/" + account_id
 
 
 # Basic incremental stream
@@ -204,4 +206,4 @@ class SourceTwitterAds(AbstractSource):
         """
         # TODO remove the authenticator if not required.
         auth = OAuth1(config["CONSUMER_KEY"], config["CONSUMER_SECRET"], config["ACCESS_TOKEN"], config["ACCESS_TOKEN_SECRET"])  # Oauth2Authenticator is also available if you need oauth support
-        return [Campaigns(base="https://ads-api.twitter.com/", authenticator=auth )] 
+        return [Campaigns(base="https://ads-api.twitter.com/", authenticator=auth, account_id = config["ACCOUNT_ID"] )] 
