@@ -68,17 +68,12 @@ class SourceTiktokMarketing(AbstractSource):
     @staticmethod
     def _prepare_stream_args(config: Mapping[str, Any]) -> Mapping[str, Any]:
         """Converts an input configure to stream arguments"""
-        credentials = config.get("credentials")
-        if credentials:
-            access_token = credentials["access_token"]
-            app_id = int(credentials.get("app_id", 0) or credentials.get("environment", {}).get("app_id", 0))
-            secret = credentials.get("secret") or credentials.get("environment", {}).get("secret")
-            advertiser_id = int(credentials.get("environment", {}).get("advertiser_id", 0))
-        else:
-            access_token = config["access_token"]
-            app_id = int(config["environment"].get("app_id", 0))
-            secret = config["environment"].get("secret")
-            advertiser_id = int(config["environment"].get("advertiser_id", 0))
+        credentials = config.get("credentials") or config
+
+        access_token = credentials["access_token"]
+        secret = credentials.get("secret") or credentials.get("environment", {}).get("secret")
+        app_id = int(credentials.get("app_id", 0) or credentials.get("environment", {}).get("app_id", 0))
+        advertiser_id = int(credentials.get("advertiser_id", 0) or credentials.get("environment", {}).get("advertiser_id", 0))
 
         return {
             "authenticator": TiktokTokenAuthenticator(access_token),

@@ -10,7 +10,9 @@ tests:
       status: "succeed"
     - config_path: "secrets/config.json"
       status: "succeed"
-    - config_path: "secrets/config_access_token.json"
+    - config_path: "secrets/new_config_prod.json"
+      status: "succeed"
+    - config_path: "secrets/new_config_sandbox.json"
       status: "succeed"
     - config_path: "secrets/config_oauth.json"
       status: "succeed"
@@ -23,11 +25,17 @@ tests:
   discovery:
     - config_path: "secrets/config.json"
     - config_path: "secrets/prod_config.json"
+    - config_path: "secrets/new_config_prod.json"
+    - config_path: "secrets/config_oauth.json"
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       empty_streams: [ "ads" , "ads_reports", "ad_groups_reports", "campaigns_reports" ]
     - config_path: "secrets/prod_config.json"
+      configured_catalog_path: "integration_tests/configured_prod_catalog.json"
+    - config_path: "secrets/new_config_prod.json"
+      configured_catalog_path: "integration_tests/configured_prod_catalog.json"
+    - config_path: "secrets/config_oauth.json"
       configured_catalog_path: "integration_tests/configured_prod_catalog.json"
   incremental:
     - config_path: "secrets/config.json"

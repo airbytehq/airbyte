@@ -72,69 +72,28 @@
             ]
           },
           {
-            "title": "Access Token",
+            "title": "Production Access Token",
             "type": "object",
             "properties": {
               "auth_type": {
                 "title": "Auth Type",
-                "const": "access_token",
+                "const": "prod_access_token",
                 "order": 0,
                 "enum": [
-                  "access_token"
+                  "prod_access_token"
                 ],
                 "type": "string"
               },
-              "environment": {
-                "title": "Environment",
-                "default": "Production",
-                "type": "object",
-                "oneOf": [
-                  {
-                    "title": "Production",
-                    "type": "object",
-                    "properties": {
-                      "environment": {
-                        "title": "Environment",
-                        "const": "prod",
-                        "type": "string"
-                      },
-                      "app_id": {
-                        "title": "App ID",
-                        "description": "The App ID applied by the developer.",
-                        "type": "string"
-                      },
-                      "secret": {
-                        "title": "Secret",
-                        "description": "The private key of the developer application.",
-                        "airbyte_secret": true,
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                      "app_id",
-                      "secret"
-                    ]
-                  },
-                  {
-                    "title": "Sandbox",
-                    "type": "object",
-                    "properties": {
-                      "environment": {
-                        "title": "Environment",
-                        "const": "sandbox",
-                        "type": "string"
-                      },
-                      "advertiser_id": {
-                        "title": "Advertiser ID",
-                        "description": "The Advertiser ID  which generated for the developer's Sandbox application.",
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                      "advertiser_id"
-                    ]
-                  }
-                ]
+              "app_id": {
+                "title": "App ID",
+                "description": "The App ID applied by the developer.",
+                "type": "string"
+              },
+              "secret": {
+                "title": "Secret",
+                "description": "The private key of the developer application.",
+                "airbyte_secret": true,
+                "type": "string"
               },
               "access_token": {
                 "title": "Access Token",
@@ -144,6 +103,38 @@
               }
             },
             "required": [
+              "app_id",
+              "secret",
+              "access_token"
+            ]
+          },
+          {
+            "title": "Sandbox Access Token",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth Type",
+                "const": "sandbox_access_token",
+                "order": 0,
+                "enum": [
+                  "sandbox_access_token"
+                ],
+                "type": "string"
+              },
+              "advertiser_id": {
+                "title": "Advertiser ID",
+                "description": "The Advertiser ID  which generated for the developer's Sandbox application.",
+                "type": "string"
+              },
+              "access_token": {
+                "title": "Access Token",
+                "description": "The Long-term Authorized Access Token.",
+                "airbyte_secret": true,
+                "type": "string"
+              }
+            },
+            "required": [
+              "advertiser_id",
               "access_token"
             ]
           }
