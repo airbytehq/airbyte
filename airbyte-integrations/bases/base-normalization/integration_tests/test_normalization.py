@@ -249,12 +249,14 @@ def setup_schema_change_data(destination_type: DestinationType, test_resource_na
         os.path.join(test_root_dir, "dbt_project.yml"),
         os.path.join(test_root_dir, "first_dbt_project.yml"),
     )
-    dbt_test_utils.copy_replace(
-        os.path.join(test_root_dir, "first_dbt_project.yml"),
-        os.path.join(test_root_dir, "dbt_project.yml"),
-        pattern=r'source-paths: \["models"\]',
-        replace_value='source-paths: ["modified_models"]',
-    )
+
+    def update(config_yaml):
+        if config_yaml["source-paths"] == ["models"]:
+            config_yaml["source-paths"] = ["modified_models"]
+            return True, config_yaml
+        return False, None
+
+    dbt_test_utils.update_yaml_file(os.path.join(test_root_dir, "dbt_project.yml"), update)
     # Run a sync to update raw tables in destinations
     return run_destination_process(destination_type, test_root_dir, message_file, "destination_catalog.json")
 

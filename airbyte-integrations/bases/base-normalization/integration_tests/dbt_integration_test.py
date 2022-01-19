@@ -14,7 +14,7 @@ import sys
 import threading
 import time
 from copy import copy
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List
 
 from normalization.destination_type import DestinationType
 from normalization.transform_config.transform import TransformConfig
@@ -523,3 +523,11 @@ class DbtIntegrationTest(object):
             return [d.value for d in {DestinationType.from_string(s.strip()) for s in target_str.split(",")}]
         else:
             return [d.value for d in DestinationType]
+
+    @staticmethod
+    def update_yaml_file(filename: str, callback: Callable):
+        config_generator = TransformConfig()
+        config = config_generator.read_yaml_config(filename)
+        updated, config = callback(config)
+        if updated:
+            config_generator.write_yaml_config(os.path.dirname(filename), config, os.path.basename(filename))
