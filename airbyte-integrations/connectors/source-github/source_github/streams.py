@@ -58,7 +58,7 @@ class GithubStream(HttpStream, ABC):
         )
         if retry_flag:
             self.logger.info(
-                f"Rate limit handling for the response with {response.status_code} status code with message: {response.json()}"
+                f"Rate limit handling for stream `{self.name}` for the response with {response.status_code} status code with message: {response.text}"
             )
         return retry_flag
 
