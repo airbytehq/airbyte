@@ -36,7 +36,7 @@ then
   # watch api and pipe to file
   echo "Watching for events.."
   curl -sN http://127.0.0.1:8001/api/v1/namespaces/default/pods\?watch\=1 | \
-    jq -c 'select(.object.status.phase == "Running") | { "name": .object.metadata.name, "namespace": .object.metadata.namespace, "creationTimestamp": .object.metadata.creationTimestamp, "phase": .object.status.phase, "conditions": [ .object.status.conditions | .[] | select(.status == "True") | {(.type): .lastTransitionTime} ] | add } | select(.conditions.Ready)' >> ./dev-1-kube-pod-process-sleep-0.1.txt
+      jq -c 'select(.object.status.phase == "Running") | { "name": .object.metadata.name, "namespace": .object.metadata.namespace, "creationTimestamp": .object.metadata.creationTimestamp, "phase": .object.status.phase, "conditions": [ .object.status.conditions | .[] | select(.status == "True") | {(.type): .lastTransitionTime} ] | add } | select(.conditions.Ready)' >> ./dev-1-kube-pod-process-sleep-0.1.txt
 fi
 
 if [ $watch_only -eq 0 ]

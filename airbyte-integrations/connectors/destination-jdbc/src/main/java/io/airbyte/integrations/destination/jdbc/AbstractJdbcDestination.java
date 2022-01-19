@@ -70,7 +70,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
                                                             final SqlOperations sqlOps)
       throws Exception {
     // attempt to get metadata from the database as a cheap way of seeing if we can connect.
-    database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils.getDefaultSourceOperations()::rowToJson);
+//    database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils.getDefaultSourceOperations()::rowToJson);
 
     // verify we have write permissions on the target schema by creating a table with a random name,
     // then dropping that table
