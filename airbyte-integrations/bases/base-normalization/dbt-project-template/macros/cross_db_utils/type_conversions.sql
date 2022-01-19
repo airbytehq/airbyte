@@ -65,3 +65,7 @@
 {%- macro default__empty_string_to_null(field) -%}
     nullif({{ field }}, '')
 {%- endmacro %}
+
+{%- macro redshift__empty_string_to_null(field) -%}
+    nullif({{ field }}::varchar, '')
+{%- endmacro %}
