@@ -5,7 +5,7 @@
 Likely every language has different tools for testing and validation of source files. And while it's best practice to lint and validate code before pushing to git branches, it doesn't always happen.
 But it is optional, and as rule as we detect possible problems after launch test/publish commands only. Therefore, using of automated CI code validation can  provided the following benefits:
 * Problem/vulnerability reports available when the PR was created. And developers would fix bugs and remove smells before code reviews.
-* Reviewers would be sure of all standard checking were made and code changes satisfy the requirements.
+* Reviewers would be sure all standard checks were made and code changes satisfy the requirements.
 * Set of tools and their options can be changed anytime globally.
 * Progress of code changes are saved in SonarQube and this information helps to analyse quality of the product  integrally and also its separate parts.
 
