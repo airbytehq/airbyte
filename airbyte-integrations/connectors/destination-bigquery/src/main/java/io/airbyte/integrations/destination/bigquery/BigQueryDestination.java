@@ -34,6 +34,9 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.sentry.ITransaction;
+import io.sentry.Sentry;
+import io.sentry.SpanStatus;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -51,6 +54,18 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   public BigQueryDestination() {
     namingResolver = new BigQuerySQLNameTransformer();
+  }
+
+  public static void initSentry() {
+    Sentry.init(options -> {
+      // allow setting properties from env variables see https://docs.sentry.io/platforms/java/configuration/
+      options.setEnableExternalConfiguration(true);
+      // To set a uniform sample rate
+      options.setTracesSampleRate(1.0);
+    });
+    Sentry.configureScope(scope -> {
+      scope.setTag("connector", "destination-bigquery");
+    });
   }
 
   @Override
@@ -198,10 +213,18 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   public static void main(final String[] args) throws Exception {
+    ITransaction transaction = Sentry.startTransaction("IntegrationRunner()", "run");
     final Destination destination = new BigQueryDestination();
-    LOGGER.info("starting destination: {}", BigQueryDestination.class);
-    new IntegrationRunner(destination).run(args);
-    LOGGER.info("completed destination: {}", BigQueryDestination.class);
+    try {
+      LOGGER.info("starting destination: {}", BigQueryDestination.class);
+      new IntegrationRunner(destination).run(args);
+    } catch (Exception e) {
+      transaction.setThrowable(e);
+      transaction.setStatus(SpanStatus.INTERNAL_ERROR);
+    } finally {
+      transaction.finish();
+      LOGGER.info("completed destination: {}", BigQueryDestination.class);
+    }
   }
 
 }

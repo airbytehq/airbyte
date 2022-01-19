@@ -12,6 +12,7 @@ application {
 dependencies {
     implementation 'com.google.cloud:google-cloud-bigquery:1.122.2'
     implementation 'org.apache.commons:commons-lang3:3.11'
+    implementation 'io.sentry:sentry-log4j2:5.5.3'
 
     // csv
     implementation 'org.apache.commons:commons-csv:1.4'
