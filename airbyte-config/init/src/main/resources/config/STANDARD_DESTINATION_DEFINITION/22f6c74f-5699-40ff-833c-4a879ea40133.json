@@ -2,7 +2,7 @@
   "destinationDefinitionId": "22f6c74f-5699-40ff-833c-4a879ea40133",
   "name": "BigQuery",
   "dockerRepository": "airbyte/destination-bigquery",
-  "dockerImageTag": "0.6.3",
+  "dockerImageTag": "0.6.5",
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/bigquery",
   "icon": "bigquery.svg"
 }
