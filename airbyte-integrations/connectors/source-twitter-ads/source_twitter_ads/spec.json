@@ -7,10 +7,6 @@
     "required": [ "CONSUMER_KEY","CONSUMER_SECRET","ACCESS_TOKEN","ACCESS_TOKEN_SECRET", "ACCOUNT_ID", "START_TIME", "END_TIME"],
     "additionalProperties": false,
     "properties": {
-      "BASE": {
-        "type": "string",
-        "description": "Twitter Ads API Base URL"
-      },
       "CONSUMER_KEY": {
         "type": "string",
         "description": "API Key"
@@ -39,9 +35,17 @@
         "type": "string",
         "description": "End time of data to be pulled."
       },
-      "CAMPAIGNS": {
-        "type": "array",
-        "description": "List of Campaign IDs. ToDO: we should get the campaign ids programmtically so that we don't have to maintain them manually."
+      "GRANULARITY": {
+        "type": "string",
+        "description": "Granularity of data to be pulled."
+      },
+      "METRIC_GROUPS": {
+        "type": "string",
+        "description": "Metric Groups to be pulled."
+      },
+      "PLACEMENT": {
+        "type": "string",
+        "description": "Placement of data to be pulled."
       }
     }
   }
