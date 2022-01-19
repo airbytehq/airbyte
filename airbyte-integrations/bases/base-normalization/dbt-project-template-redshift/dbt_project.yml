@@ -41,6 +41,8 @@ quoting:
 # Using these configurations, you can enable or disable models, change how they
 # are materialized, and more!
 models:
+  # https://docs.aws.amazon.com/redshift/latest/dg/super-configurations.html
+  +pre-hook: "SET enable_case_sensitive_identifier to TRUE"
   airbyte_utils:
     +materialized: table
     generated:
@@ -61,3 +63,6 @@ models:
 dispatch:
   - macro_namespace: dbt_utils
     search_order: ['airbyte_utils', 'dbt_utils']
+
+vars:
+  redshift_super_type: false

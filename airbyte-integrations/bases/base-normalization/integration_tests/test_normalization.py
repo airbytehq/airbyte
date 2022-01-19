@@ -195,6 +195,9 @@ def setup_test_dir(destination_type: DestinationType, test_resource_name: str) -
     elif destination_type.value == DestinationType.SNOWFLAKE.value:
         copy_tree("../dbt-project-template-snowflake", test_root_dir)
         dbt_project_yaml = "../dbt-project-template-snowflake/dbt_project.yml"
+    elif destination_type.value == DestinationType.REDSHIFT.value:
+        copy_tree("../dbt-project-template-redshift", test_root_dir)
+        dbt_project_yaml = "../dbt-project-template-redshift/dbt_project.yml"
     dbt_test_utils.copy_replace(dbt_project_yaml, os.path.join(test_root_dir, "dbt_project.yml"))
     return test_root_dir
 
