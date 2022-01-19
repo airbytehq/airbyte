@@ -96,6 +96,7 @@ class TwitterAdsStream(HttpStream, ABC):
 
         account_id = self.account_id
         auth = self.auth
+        # FixMe: request returns a bad request error if (end_time - start_time)> 7 this could lead to problems
         start_time = self.start_time
         end_time = self.end_time
         campaign_ids_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/campaigns"
