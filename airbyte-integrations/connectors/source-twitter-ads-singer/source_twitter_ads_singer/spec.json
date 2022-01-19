@@ -18,44 +18,48 @@
       "properties":{
          "start_date":{
             "type":"string",
-            "description":"describe me",
+            "description":"UTC date and time in the format yyyy-mm-dd",
             "example":"2019-01-01T00:00:00Z"
          },
          "user_agent":{
             "type":"string",
+            "description": "tap-twitter-ads <api_user_email@your_company.com>",
             "example":"tap-twitter-ads <api_user_email@your_company.com>"
          },
          "consumer_key":{
             "type":"string",
-            "description":"YOUR_TWITTER_ADS_CONSUMER_KEY",
+            "description":"Your Active TWITTER_ADS_CONSUMER_KEY",
             "airbyte_secret": true
          },
          "consumer_secret":{
             "type":"string",
-            "description":"YOUR_TWITTER_ADS_CONSUMER_SECRET",
+            "description":"Your Active TWITTER_ADS_CONSUMER_SECRET",
             "airbyte_secret": true
          },
          "access_token":{
             "type":"string",
-            "description":"YOUR_TWITTER_ADS_ACCESS_TOKEN",
+            "description":"Your Active TWITTER_ADS_ACCESS_TOKEN",
             "airbyte_secret": true
          },
          "access_token_secret":{
             "type":"string",
-            "description":"YOUR_TWITTER_ADS_ACCESS_TOKEN_SECRET",
+            "description":"Your Active TWITTER_ADS_ACCESS_TOKEN_SECRET",
             "airbyte_secret": true
          },
          "account_ids":{
             "type":"string",
+            "description":"Your Active Twitter Ads Account id",
             "example":"id1, id2, id3"
          },
          "attribution_window":{
             "type":"string",
+            "description":"Define the historical replication lookback window in days (e.g. 14) ",
             "example":"14"
          },
          "with_deleted":{
-            "type":"boolean",
-            "example":true
+            "type":"string",
+            "description":"Whether to sync data only from active campaign",
+            "default": "true"
          }
       }
    }

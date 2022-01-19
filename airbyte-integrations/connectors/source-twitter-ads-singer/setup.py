@@ -24,7 +24,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "tap-twitter-ads @ git+https://github.com/singer-io/tap-twitter-ads",
-    "airbyte-cdk",
+    "airbyte-cdk==0.1.2",
 ]
 
 TEST_REQUIREMENTS = [
