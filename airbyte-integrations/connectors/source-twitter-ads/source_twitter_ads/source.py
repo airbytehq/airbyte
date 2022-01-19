@@ -61,10 +61,12 @@ class TwitterAdsStream(HttpStream, ABC):
     url_base = "https://ads-api.twitter.com/"
     primary_key = None
 
-    def __init__(self, base,  account_id,  authenticator, **kwargs):
+    def __init__(self, base,  account_id,  authenticator,  start_time, end_time, **kwargs):
         super().__init__(authenticator, **kwargs)
         self.account_id = account_id
         self.auth = authenticator
+        self.start_time = start_time
+        self.end_time = end_time
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -94,17 +96,19 @@ class TwitterAdsStream(HttpStream, ABC):
 
         account_id = self.account_id
         auth = self.auth
+        start_time = self.start_time
+        end_time = self.end_time
         campaign_ids_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/campaigns"
         response = requests.get(campaign_ids_url, auth=auth)
         campaign_ids = []
-    
+
         for each in response.json()['data']:
             campaign_ids.append(each["id"])
 
         campaign_ids = list(set(campaign_ids))
 
     
-        return { "entity": "CAMPAIGN", "entity_ids": campaign_ids, "start_time":"2022-01-01", "end_time":"2022-01-08","granularity": "DAY", "placement": "ALL_ON_TWITTER", "metric_groups":"ENGAGEMENT"}
+        return { "entity": "CAMPAIGN", "entity_ids": campaign_ids, "start_time":start_time, "end_time": end_time,"granularity": "DAY", "placement": "ALL_ON_TWITTER", "metric_groups":"ENGAGEMENT"}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -216,4 +220,4 @@ class SourceTwitterAds(AbstractSource):
         """
         # TODO remove the authenticator if not required.
         auth = OAuth1(config["CONSUMER_KEY"], config["CONSUMER_SECRET"], config["ACCESS_TOKEN"], config["ACCESS_TOKEN_SECRET"])  # Oauth2Authenticator is also available if you need oauth support
-        return [Campaigns(base="https://ads-api.twitter.com/", authenticator=auth, account_id = config["ACCOUNT_ID"] )] 
+        return [Campaigns(base="https://ads-api.twitter.com/", authenticator=auth, account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], end_time = config["END_TIME"])] 
