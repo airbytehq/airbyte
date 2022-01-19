@@ -1000,6 +1000,33 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-chartmogul:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/chartmogul"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Chartmogul Spec"
+      type: "object"
+      required:
+      - "api_key"
+      additionalProperties: false
+      properties:
+        api_key:
+          type: "string"
+          description: "Chartmogul API key"
+          airbyte_secret: true
+          order: 0
+        start_date:
+          type: "string"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          description: "UTC date and time in the format 2017-01-25T00:00:00Z. When\
+            \ feasible, any data before this date will not be replicated."
+          examples:
+          - "2017-01-25T00:00:00Z"
+          order: 1
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-clickhouse:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/clickhouse"
@@ -2124,9 +2151,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.1.20"
+- dockerImage: "airbyte/source-google-ads:0.1.21"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/google-ads"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Google Ads Spec"
@@ -2151,44 +2178,42 @@
               type: "string"
               title: "Developer Token"
               description: "Developer token granted by Google to use their APIs. More\
-                \ instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\"\
+                \ instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\"\
                 >docs</a>"
               airbyte_secret: true
             client_id:
               type: "string"
-              title: "Client Id"
-              description: "Google client id. More instruction on how to find this\
-                \ value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\"\
+              title: "Client ID"
+              description: "The Client ID of your Google Ads developer application.\
+                \ More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\"\
                 >docs</a>"
             client_secret:
               type: "string"
               title: "Client Secret"
-              description: "Google client secret. More instruction on how to find\
-                \ this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\"\
+              description: "The Client Secret of your Google Ads developer application.\
+                \ More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\"\
                 >docs</a>"
               airbyte_secret: true
             access_token:
               type: "string"
               title: "Access Token"
-              description: "Access token generated using developer_token, oauth_client_id,\
-                \ and oauth_client_secret. More instruction on how to find this value\
-                \ in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\"\
+              description: "Access Token for making authenticated requests. More instruction\
+                \ on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\"\
                 >docs</a>"
               airbyte_secret: true
             refresh_token:
               type: "string"
               title: "Refresh Token"
-              description: "Refresh token generated using developer_token, oauth_client_id,\
-                \ and oauth_client_secret. More instruction on how to find this value\
-                \ in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\"\
+              description: "The token for obtaining a new access token. More instruction\
+                \ on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\"\
                 >docs</a>"
               airbyte_secret: true
         customer_id:
           title: "Customer ID"
           type: "string"
-          description: "Customer id must be specified as a 10-digit number without\
+          description: "Customer ID must be specified as a 10-digit number without\
             \ dashes. More instruction on how to find this value in our <a href=\"\
-            https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\"\
+            https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\"\
             >docs</a>. Metrics streams like AdGroupAdReport cannot be requested for\
             \ a manager account."
           order: 1
@@ -2210,7 +2235,7 @@
             properties:
               query:
                 type: "string"
-                title: "Custom query"
+                title: "Custom Query"
                 description: "A custom defined GAQL query for building the report.\
                   \ Should not contain segments.date expression as it used by incremental\
                   \ streams"
@@ -2219,7 +2244,7 @@
                   \ FROM campaign WHERE campaign.status = 'PAUSED'"
               table_name:
                 type: "string"
-                title: "Destination table name"
+                title: "Destination Table Name"
                 description: "The table name in your destination database for choosen\
                   \ query."
         login_customer_id:
@@ -2234,7 +2259,9 @@
         conversion_window_days:
           title: "Conversion Window (Optional)"
           type: "integer"
-          description: "Define the historical replication lookback window in days"
+          description: "A conversion window is the period of time after an ad interaction\
+            \ (such as an ad click or video view) during which a conversion, such\
+            \ as a purchase, is recorded in Google Ads."
           minimum: 0
           maximum: 1095
           default: 14
@@ -2256,7 +2283,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-v4:0.1.14"
+- dockerImage: "airbyte/source-google-analytics-v4:0.1.15"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-analytics-v4"
     connectionSpecification:
@@ -2279,7 +2306,8 @@
           order: 1
           type: "string"
           title: "Start Date"
-          description: "A date in the format YYYY-MM-DD."
+          description: "The date in the format YYYY-MM-DD. Any data before this date\
+            \ will not be replicated."
           examples:
           - "2020-06-01"
         custom_reports:
@@ -2311,24 +2339,23 @@
               client_id:
                 title: "Client ID"
                 type: "string"
-                description: "The Client ID of your developer application"
+                description: "The Client ID of your Google Analytics developer application."
                 airbyte_secret: true
               client_secret:
                 title: "Client Secret"
                 type: "string"
-                description: "The client secret of your developer application"
+                description: "The Client Secret of your Google Analytics developer\
+                  \ application."
                 airbyte_secret: true
               refresh_token:
                 title: "Refresh Token"
                 type: "string"
-                description: "A refresh token generated using the above client ID\
-                  \ and secret"
+                description: "The token for obtaining a new access token."
                 airbyte_secret: true
               access_token:
                 title: "Access Token"
                 type: "string"
-                description: "A access token generated using the above client ID,\
-                  \ secret and refresh_token"
+                description: "Access Token for making authenticated requests."
                 airbyte_secret: true
           - type: "object"
             title: "Service Account Key Authentication"
@@ -2343,6 +2370,7 @@
                 default: "Service"
                 order: 0
               credentials_json:
+                title: "JSON credentials"
                 type: "string"
                 description: "The JSON key of the service account to use for authorization"
                 examples:
@@ -3106,7 +3134,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-intercom:0.1.12"
+- dockerImage: "airbyte/source-intercom:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/intercom"
     connectionSpecification:
@@ -6425,7 +6453,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:0.1.15"
+- dockerImage: "airbyte/source-salesforce:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/salesforce"
     connectionSpecification:
@@ -6436,8 +6464,7 @@
       - "client_id"
       - "client_secret"
       - "refresh_token"
-      - "api_type"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         auth_type:
           type: "string"
@@ -6479,16 +6506,6 @@
             >docs</a>."
           type: "boolean"
           default: false
-        api_type:
-          title: "API Type"
-          description: "Unless you know that you are transferring a very small amount\
-            \ of data, prefer using the BULK API. This will help avoid using up all\
-            \ of your API call quota with Salesforce. Valid values are BULK or REST."
-          type: "string"
-          enum:
-          - "BULK"
-          - "REST"
-          default: "BULK"
         streams_criteria:
           type: "array"
           items:
@@ -6980,7 +6997,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.4"
+- dockerImage: "airbyte/source-snowflake:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/snowflake"
     connectionSpecification:
