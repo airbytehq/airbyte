@@ -17,7 +17,7 @@
         "order": 1,
         "type": "string",
         "title": "Start Date",
-        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
+        "description": "The date in the format YYYY-MM-DD. Any data before this date will not be replicated.",
         "examples": ["2020-06-01"]
       },
       "custom_reports": {
@@ -52,13 +52,13 @@
               "client_secret": {
                 "title": "Client Secret",
                 "type": "string",
-                "description": "The Client Secret of your Google Anayltics developer application.",
+                "description": "The Client Secret of your Google Analytics developer application.",
                 "airbyte_secret": true
               },
               "refresh_token": {
                 "title": "Refresh Token",
                 "type": "string",
-                "description": "The token for obtaining new access token.",
+                "description": "The token for obtaining a new access token.",
                 "airbyte_secret": true
               },
               "access_token": {
