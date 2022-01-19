@@ -39,11 +39,11 @@ public class TestingSources extends BaseConnector implements Source {
         .build());
   }
 
-  public TestingSources(Map<TestDestinationType, Source> sourceMap) {
+  public TestingSources(final Map<TestDestinationType, Source> sourceMap) {
     this.sourceMap = sourceMap;
   }
 
-  private Source selectSource(JsonNode config) {
+  private Source selectSource(final JsonNode config) {
     return sourceMap.get(TestDestinationType.valueOf(config.get("type").asText()));
   }
 
@@ -65,7 +65,7 @@ public class TestingSources extends BaseConnector implements Source {
     return selectSource(config).read(config, catalog, state);
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Source source = new TestingSources();
     LOGGER.info("starting source: {}", TestingSources.class);
     new IntegrationRunner(source).run(args);

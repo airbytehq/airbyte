@@ -18,26 +18,26 @@ public class Names {
    * @param s string to convert
    * @return cleaned string
    */
-  public static String toAlphanumericAndUnderscore(String s) {
+  public static String toAlphanumericAndUnderscore(final String s) {
     return Normalizer.normalize(s, Normalizer.Form.NFKD)
         .replaceAll("\\p{M}", "")
         .replaceAll("\\s+", "_")
         .replaceAll(NON_ALPHANUMERIC_AND_UNDERSCORE_PATTERN, "_");
   }
 
-  public static String doubleQuote(String value) {
+  public static String doubleQuote(final String value) {
     return internalQuote(value, '"');
   }
 
-  public static String singleQuote(String value) {
+  public static String singleQuote(final String value) {
     return internalQuote(value, '\'');
   }
 
   private static String internalQuote(final String value, final char quoteChar) {
     Preconditions.checkNotNull(value);
 
-    boolean startsWithChar = value.charAt(0) == quoteChar;
-    boolean endsWithChar = value.charAt(value.length() - 1) == quoteChar;
+    final boolean startsWithChar = value.charAt(0) == quoteChar;
+    final boolean endsWithChar = value.charAt(value.length() - 1) == quoteChar;
 
     Preconditions.checkState(startsWithChar == endsWithChar, "Invalid value: %s", value);
 

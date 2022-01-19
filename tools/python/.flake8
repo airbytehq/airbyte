@@ -3,6 +3,9 @@ exclude =
     .venv,
     models # generated protocol models
     .eggs # python libraries"
+    .tox
+    build
+    airbyte_api_client # generated api client in octavia-cli
 extend-ignore =
   E203,  # whitespace before ':' (conflicts with Black)
   E231,  # Bad trailing comma (conflicts with Black)

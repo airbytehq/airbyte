@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": { "type": "integer" },
+    "vendor_id": { "type": ["null", "integer"] },
+    "name": { "type": ["null", "string"] },
+    "po_number": { "type": ["null", "string"] },
+    "vendor_details": { "type": ["null", "string"] },
+    "expected_delivery_date": { "type": ["null", "string"] },
+    "created_at": { "type": ["null", "string"] },
+    "updated_at": { "type": ["null", "string"] },
+    "created_by": { "type": ["null", "string"] },
+    "status": { "type": ["null", "integer"] },
+    "shipping_address": { "type": ["null", "string"] },
+    "billing_same_as_shipping": { "type": ["null", "integer"] },
+    "billing_address": { "type": ["null", "string"] },
+    "currency_code": { "type": ["null", "string"] },
+    "conversion_rate": { "type": "number" },
+    "department_id": { "type": ["null", "integer"] },
+    "discount_percentage": { "type": ["null", "integer"] },
+    "tax_percentage": { "type": ["null", "integer"] },
+    "shipping_cost": { "type": ["null", "integer"] },
+    "custom_fields": { "type": ["null", "object"] },
+    "purchase_items": { "type": "array" }
+  }
+}

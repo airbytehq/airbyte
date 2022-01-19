@@ -27,10 +27,10 @@ As mentioned above, we are mainly concerned with scaling Sync jobs. Within a Syn
 This is because the Source worker reads up to 10,000 records in memory. This can present problems for database sources with tables that have large row sizes. e.g. a table with an average row size of 0.5MBs will require 0.5 \* 10000 / 1000 = 5GBs of RAM. See [this issue](https://github.com/airbytehq/airbyte/issues/3439) for more information.
 
 Our Java connectors currently follow Java's default behaviour with container memory and will only use up to 1/4 of the host's allocated memory. e.g. On a Docker agent with 8GBs of RAM configured, a Java connector limits itself to 2Gbs of RAM and will see Out-of-Memory exceptions if this goes higher. The same applies to Kubernetes pods.
+You may want to customize this by setting `JOB_MAIN_CONTAINER_MEMORY_REQUEST` and `JOB_MAIN_CONTAINER_MEMORY_LIMIT` environment variables to custom values.
 
 Note that all Source database connectors are Java connectors. This means that users currently need to over-specify memory resource for Java connectors.
 
-Improving this behaviour is on our roadmap. Please see [this issue](https://github.com/airbytehq/airbyte/issues/3440) for more information.
 
 ### Disk Space
 
@@ -50,6 +50,15 @@ Users running Airbyte Kubernetes also have to make sure the Kubernetes cluster c
 To be safe, make sure the Kubernetes cluster can schedule up to `2 x <number-of-possible-concurrent-connections>` pods at once. This is the worse case estimate, and most users should be fine with `2 x <number-of-possible-concurrent-connections>` as a rule of thumb.
 
 This is a **non-issue** for users running Airbyte Docker.
+
+### Temporal DB
+
+Temporal maintains multiple idle connections. By the default value is `20` and you may want to lower or increase this number. One issue we noticed is
+that temporal creates multiple pools and the number specified in the `SQL_MAX_IDLE_CONNS` environment variable of the `docker.compose.yaml` file
+might end up allowing 4-5 times more connections than expected.
+
+If you want tho increase the amount of allowed idle connexion, you will also need to increase `SQL_MAX_CONNS` as well because `SQL_MAX_IDLE_CONNS`
+is capped by `SQL_MAX_CONNS`.
 
 ## Feedback
 

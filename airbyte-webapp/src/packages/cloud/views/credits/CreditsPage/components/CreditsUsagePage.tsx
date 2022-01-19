@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
 import ContentCard from "components/ContentCard";
@@ -30,16 +30,24 @@ const Empty = styled.div`
 const LegendLabels = ["value"];
 
 const CreditsUsagePage: React.FC = () => {
+  const { formatMessage, formatDate } = useIntl();
+
   const { workspaceId } = useCurrentWorkspace();
   const { data } = useGetUsage(workspaceId);
 
   const chartData = useMemo(
     () =>
-      data?.creditConsumptionByDay?.map((item) => ({
-        name: item.date?.[2],
-        value: item.creditsConsumed,
+      data?.creditConsumptionByDay?.map(({ creditsConsumed, date }) => ({
+        name: formatDate(
+          new Date(date[0], date[1] - 1 /* zero-indexed */, date[2]),
+          {
+            month: "short",
+            day: "numeric",
+          }
+        ),
+        value: creditsConsumed,
       })),
-    [data]
+    [data, formatDate]
   );
 
   return (
@@ -47,7 +55,16 @@ const CreditsUsagePage: React.FC = () => {
       <ContentCard title={<FormattedMessage id="credits.totalUsage" />} light>
         <ChartWrapper>
           {data && data.creditConsumptionByDay.length ? (
-            <BarChart data={chartData} legendLabels={LegendLabels} />
+            <BarChart
+              data={chartData}
+              legendLabels={LegendLabels}
+              xLabel={formatMessage({
+                id: "credits.date",
+              })}
+              yLabel={formatMessage({
+                id: "credits.amount",
+              })}
+            />
           ) : (
             <Empty>
               <FormattedMessage id="credits.noData" />
@@ -55,6 +72,7 @@ const CreditsUsagePage: React.FC = () => {
           )}
         </ChartWrapper>
       </ContentCard>
+
       <CardBlock
         title={<FormattedMessage id="credits.usagePerConnection" />}
         light

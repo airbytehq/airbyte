@@ -1,3 +1,4 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "api_key": "api-key",
+  "start_date": "2021-01-01T00:00:00Z"
 }

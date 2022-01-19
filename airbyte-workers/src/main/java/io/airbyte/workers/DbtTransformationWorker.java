@@ -26,8 +26,8 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
 
   public DbtTransformationWorker(final String jobId,
                                  final int attempt,
-                                 ResourceRequirements resourceRequirements,
-                                 DbtTransformationRunner dbtTransformationRunner) {
+                                 final ResourceRequirements resourceRequirements,
+                                 final DbtTransformationRunner dbtTransformationRunner) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.dbtTransformationRunner = dbtTransformationRunner;
@@ -37,8 +37,8 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
   }
 
   @Override
-  public Void run(OperatorDbtInput operatorDbtInput, Path jobRoot) throws WorkerException {
-    long startTime = System.currentTimeMillis();
+  public Void run(final OperatorDbtInput operatorDbtInput, final Path jobRoot) throws WorkerException {
+    final long startTime = System.currentTimeMillis();
 
     try (dbtTransformationRunner) {
       LOGGER.info("Running dbt transformation.");
@@ -53,7 +53,7 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
           operatorDbtInput.getOperatorDbt())) {
         throw new WorkerException("DBT Transformation Failed.");
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new WorkerException("Dbt Transformation Failed.", e);
     }
     if (cancelled.get()) {
@@ -72,7 +72,7 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
     try {
       cancelled.set(true);
       dbtTransformationRunner.close();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       e.printStackTrace();
     }
   }

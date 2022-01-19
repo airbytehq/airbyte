@@ -67,6 +67,16 @@ This source is capable of syncing the following tables and their data:
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
+## Experimental Tables
+
+The following tables depend on undocumented internal Jira API endpoints and are
+therefore subject to stop working if those endpoints undergo major changes.
+While they will not cause a sync to fail, they may not be able to pull any data.
+Use the "Enable Experimental Streams" option when setting up the source to allow
+or disallow these tables to be selected when configuring a connection.
+
+* Pull Requests (currently only GitHub PRs are supported)
+
 ## Getting Started \(Airbyte Open-Source / Airbyte Cloud\)
 
 ### Requirements
@@ -85,6 +95,13 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.18 | 2021-12-23 | [\#7378](https://github.com/airbytehq/airbyte/pull/7378) | Adds experimental endpoint Pull Request |
+| 0.2.17 | 2021-12-23 | [\#9079](https://github.com/airbytehq/airbyte/pull/9079) | Update schema for `filters` stream + fix fetching `filters` stream |
+| 0.2.16 | 2021-12-21 | [\#8999](https://github.com/airbytehq/airbyte/pull/8999) | Update connector fields title/description |
+| 0.2.15 | 2021-11-01 | [\#7398](https://github.com/airbytehq/airbyte/pull/7398) | Add option to render fields in HTML format and fix sprint_issue ids |
+| 0.2.14 | 2021-10-27 | [\#7408](https://github.com/airbytehq/airbyte/pull/7408) | Fix normalization step error. Fix schemas. Fix `acceptance-test-config.yml`. Fix `streams.py`. |
+| 0.2.13 | 2021-10-20 | [\#7222](https://github.com/airbytehq/airbyte/pull/7222) | Source Jira: Make recently added configs optional for backwards compatibility |
+| 0.2.12 | 2021-10-19 | [\#6621](https://github.com/airbytehq/airbyte/pull/6621) | Add Board, Epic, and Sprint streams |
 | 0.2.11 | 2021-09-02 | [\#6523](https://github.com/airbytehq/airbyte/pull/6523) | Add cache and more streams \(boards and sprints\) |
 | 0.2.9 | 2021-07-28 | [\#5426](https://github.com/airbytehq/airbyte/pull/5426) | Changed cursor field from fields.created to fields.updated for Issues stream. Made Issues worklogs stream full refresh. |
 | 0.2.8 | 2021-07-28 | [\#4947](https://github.com/airbytehq/airbyte/pull/4947) | Source Jira: fixing schemas accordinately to response. |

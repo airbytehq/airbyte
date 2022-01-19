@@ -3,19 +3,19 @@
   "type": "object",
   "properties": {
     "content_metadata_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "group_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "permission_type": {
       "type": ["null", "string"]
     },
     "user_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     }
   }
 }

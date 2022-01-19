@@ -12,12 +12,18 @@
   "sidebar.settings": "Settings",
   "sidebar.update": "Update",
   "sidebar.onboarding": "Onboarding",
+  "sidebar.resources": "Resources",
+  "sidebar.documentation": "Documentation",
+  "sidebar.joinSlack": "Join our Slack",
+  "sidebar.status": "Airbyte status",
+  "sidebar.chat": "Chat with us",
+  "sidebar.recipes": "Recipes - Use cases",
 
   "form.continue": "Continue",
   "form.yourEmail": "Your email",
   "form.email.placeholder": "you@company.com",
   "form.email.error": "This email address doesn’t seem correct.",
-  "form.empty.error": "Empty field",
+  "form.empty.error": "Field is required",
   "form.selectConnector": "Select a connector",
   "form.searchName": "search by name...",
   "form.noResult": "No result",
@@ -95,6 +101,7 @@
   "form.noteStartSync": "Note that it will delete all the data in your destination and start syncing from scratch. ",
   "form.pkSelected": "{count, plural, =0 { } one {{items}} other {# keys selected}}",
   "form.url.error": "field must be a valid URL",
+  "form.setupGuide": "Setup Guide",
 
   "connectionForm.validation.error": "The form is invalid. Please make sure that all fields are correct.",
   "connectionForm.normalization.title": "Normalization",
@@ -111,8 +118,15 @@
   "connectionForm.syncType.destination": "Dest",
   "connectionForm.primaryKey.searchPlaceholder": "search key fields by name",
   "connectionForm.cursor.searchPlaceholder": "search cursor fields by name",
+  "connectionForm.destinationExisting": "Select an existing destination",
+  "connectionForm.sourceExisting": "Select an existing source",
+  "connectionForm.sourceUse": "Use existing source",
+  "connectionForm.destinationUse": "Use existing destination",
+  "connectionForm.sourceTitle": "Source",
+  "connectionForm.destinationTitle": "Destination",
 
   "connectorForm.authenticate": "Authenticate your {connector} account",
+  "connectorForm.signInWithGoogle": "Sign in with Google",
   "connectorForm.authenticate.succeeded": "Authentication succeeded!",
   "connectorForm.reauthenticate": "Re-authenticate",
 
@@ -170,7 +184,7 @@
   "onboarding.destinationSetUp.buttonText": "Set up destination",
   "onboarding.setUpConnection": "Set up connection",
   "onboarding.setConnection": "Set up the connection",
-  "onboarding.instructionsLink": "See instructions how to connect {name}",
+  "onboarding.instructionsLink": "See full instructions how to connect {name}",
   "onboarding.fetchingSchema": "We are fetching the schema of your data source. \nThis should take less than a minute, but may take a few minutes on slow internet connections or data sources with a large amount of tables.",
   "onboarding.tutorial": "Check how you can sync PostgreSQL databases in minutes",
   "onboarding.skipOnboarding": "Skip Onboarding",
@@ -187,7 +201,7 @@
   "onboarding.createFirstDestination.text": "Sources are tools where the data will be replicated from. ",
   "onboarding.createConnection": "Set up <name>the connection</name>",
   "onboarding.createConnection.text": "Sources are tools where the data will be replicated from. ",
-  "onboarding.synchronisationProgress": "<sr>Source</sr><ds>Destination</ds> = <sync>Synchronisation</sync> in progress",
+  "onboarding.synchronizationProgress": "<sr>Source</sr><ds>Destination</ds> = <sync>Synchronization</sync> in progress",
   "onboarding.useCases": "Enable <name>popular use cases</name>",
   "onboarding.replicateMySQL": "Replicate your MySQL database to Postgres with log-based CDC",
   "onboarding.consolidateMarketing": "Consolidate your marketing data to compute the CAC for your paid customers",
@@ -368,6 +382,7 @@
   "admin.downloadSchedulerLogs": "Download Scheduler Logs",
   "admin.upgradeAll": "Upgrade all",
   "admin.upgraded": "Upgraded!",
+  "admin.customImage": "custom",
 
   "settings.accountSettings": "Account Settings",
   "settings.changeSaved": "change saved!",
@@ -416,6 +431,7 @@
   "demo.message.title": "This Airbyte demo is read-only",
   "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so.",
 
-  "email.duplicate": "Email already exists",
-  "password.invalid": "Password too weak"
+  "docs.notFoundError": "We were not able to receive docs. Please click the link above to open docs on our website",
+  "errorView.startOver": "Continue using the app",
+  "errorView.notFound": "Resource not found"
 }

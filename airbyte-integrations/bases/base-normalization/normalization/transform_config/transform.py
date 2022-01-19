@@ -22,6 +22,7 @@ class DestinationType(Enum):
     mysql = "mysql"
     oracle = "oracle"
     mssql = "mssql"
+    clickhouse = "clickhouse"
 
 
 class TransformConfig:
@@ -66,6 +67,7 @@ class TransformConfig:
             DestinationType.mysql.value: self.transform_mysql,
             DestinationType.oracle.value: self.transform_oracle,
             DestinationType.mssql.value: self.transform_mssql,
+            DestinationType.clickhouse.value: self.transform_clickhouse,
         }[integration_type.value](config)
 
         # merge pre-populated base_profile with destination-specific configuration.
@@ -130,6 +132,7 @@ class TransformConfig:
             "type": "bigquery",
             "project": config["project_id"],
             "dataset": config["dataset_id"],
+            "priority": config.get("transformation_priority", "interactive"),
             "threads": 32,
             "retries": 1,
         }
@@ -260,6 +263,22 @@ class TransformConfig:
             # "authentication": "sql",
             # "trusted_connection": True,
         }
+        return dbt_config
+
+    @staticmethod
+    def transform_clickhouse(config: Dict[str, Any]):
+        print("transform_clickhouse")
+        # https://docs.getdbt.com/reference/warehouse-profiles/clickhouse-profile
+        dbt_config = {
+            "type": "clickhouse",
+            "host": config["host"],
+            "port": config["port"],
+            "schema": config["database"],
+            "user": config["username"],
+            "password": config["password"],
+        }
+        if "tcp-port" in config:
+            dbt_config["port"] = config["tcp-port"]
         return dbt_config
 
     @staticmethod

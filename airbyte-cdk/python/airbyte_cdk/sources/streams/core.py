@@ -28,7 +28,7 @@ class Stream(ABC):
     # Use self.logger in subclasses to log any messages
     @property
     def logger(self):
-        return logging.getLogger(f"streams.{self.name}")
+        return logging.getLogger(f"airbyte.streams.{self.name}")
 
     # TypeTransformer object to perform output data transformation
     transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform)
@@ -106,15 +106,17 @@ class Stream(ABC):
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         """
         :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
-        If the stream has no primary keys, return None.
+          If the stream has no primary keys, return None.
         """
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Override to define the slices for this stream. See the stream slicing section of the docs for more information.
 
+        :param sync_mode:
+        :param cursor_field:
         :param stream_state:
         :return:
         """

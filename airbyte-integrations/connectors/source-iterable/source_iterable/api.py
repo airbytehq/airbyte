@@ -5,114 +5,15 @@
 import csv
 import json
 import urllib.parse as urlparse
-from abc import ABC, abstractmethod
 from io import StringIO
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
-import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http import HttpStream
+from source_iterable.iterable_streams import IterableExportStreamAdjustableRange, IterableExportStreamRanged, IterableStream
 
 EVENT_ROWS_LIMIT = 200
 CAMPAIGNS_PER_REQUEST = 20
-
-
-class IterableStream(HttpStream, ABC):
-
-    # Hardcode the value because it is not returned from the API
-    BACKOFF_TIME_CONSTANT = 10.0
-    # define date-time fields with potential wrong format
-
-    url_base = "https://api.iterable.com/api/"
-    primary_key = "id"
-
-    def __init__(self, api_key, **kwargs):
-        super().__init__(**kwargs)
-        self._api_key = api_key
-
-    @property
-    @abstractmethod
-    def data_field(self) -> str:
-        """
-        :return: Default field name to get data from response
-        """
-
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        return self.BACKOFF_TIME_CONSTANT
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        Iterable API does not support pagination
-        """
-        return None
-
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        return {"api_key": self._api_key}
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        response_json = response.json()
-        records = response_json.get(self.data_field, [])
-
-        for record in records:
-            yield record
-
-
-class IterableExportStream(IterableStream, ABC):
-
-    cursor_field = "createdAt"
-    primary_key = None
-
-    def __init__(self, start_date, **kwargs):
-        super().__init__(**kwargs)
-        self._start_date = pendulum.parse(start_date)
-        self.stream_params = {"dataTypeName": self.data_field}
-
-    def path(self, **kwargs) -> str:
-        return "/export/data.json"
-
-    @staticmethod
-    def _field_to_datetime(value: Union[int, str]) -> pendulum.datetime:
-        if isinstance(value, int):
-            value = pendulum.from_timestamp(value / 1000.0)
-        elif isinstance(value, str):
-            value = pendulum.parse(value)
-        else:
-            raise ValueError(f"Unsupported type of datetime field {type(value)}")
-        return value
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
-        and returning an updated state object.
-        """
-        latest_benchmark = latest_record[self.cursor_field]
-        if current_stream_state.get(self.cursor_field):
-            return {
-                self.cursor_field: max(
-                    latest_benchmark, self._field_to_datetime(current_stream_state[self.cursor_field])
-                ).to_datetime_string()
-            }
-        return {self.cursor_field: latest_benchmark.to_datetime_string()}
-
-    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-
-        params = super().request_params(stream_state=stream_state)
-        start_datetime = self._start_date
-        if stream_state.get(self.cursor_field):
-            start_datetime = pendulum.parse(stream_state[self.cursor_field])
-
-        params.update(
-            {"startDateTime": start_datetime.strftime("%Y-%m-%d %H:%M:%S"), "endDateTime": pendulum.now().strftime("%Y-%m-%d %H:%M:%S")},
-            **self.stream_params,
-        )
-        return params
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        for obj in response.iter_lines():
-            record = json.loads(obj)
-            record[self.cursor_field] = self._field_to_datetime(record[self.cursor_field])
-            yield record
 
 
 class Lists(IterableStream):
@@ -157,6 +58,7 @@ class Campaigns(IterableStream):
 
 
 class CampaignsMetrics(IterableStream):
+    name = "campaigns_metrics"
     primary_key = None
     data_field = None
 
@@ -240,61 +142,61 @@ class Channels(IterableStream):
         return "channels"
 
 
-class EmailBounce(IterableExportStream):
+class EmailBounce(IterableExportStreamAdjustableRange):
     name = "email_bounce"
     data_field = "emailBounce"
 
 
-class EmailClick(IterableExportStream):
+class EmailClick(IterableExportStreamAdjustableRange):
     name = "email_click"
     data_field = "emailClick"
 
 
-class EmailComplaint(IterableExportStream):
+class EmailComplaint(IterableExportStreamAdjustableRange):
     name = "email_complaint"
     data_field = "emailComplaint"
 
 
-class EmailOpen(IterableExportStream):
+class EmailOpen(IterableExportStreamAdjustableRange):
     name = "email_open"
     data_field = "emailOpen"
 
 
-class EmailSend(IterableExportStream):
+class EmailSend(IterableExportStreamAdjustableRange):
     name = "email_send"
     data_field = "emailSend"
 
 
-class EmailSendSkip(IterableExportStream):
+class EmailSendSkip(IterableExportStreamAdjustableRange):
     name = "email_send_skip"
     data_field = "emailSendSkip"
 
 
-class EmailSubscribe(IterableExportStream):
+class EmailSubscribe(IterableExportStreamAdjustableRange):
     name = "email_subscribe"
     data_field = "emailSubscribe"
 
 
-class EmailUnsubscribe(IterableExportStream):
+class EmailUnsubscribe(IterableExportStreamAdjustableRange):
     name = "email_unsubscribe"
     data_field = "emailUnsubscribe"
 
 
 class Events(IterableStream):
     """
-    https://api.iterable.com/api/docs#events_User_events
+    https://api.iterable.com/api/docs#export_exportUserEvents
     """
 
     primary_key = None
     data_field = "events"
-    page_size = EVENT_ROWS_LIMIT
+    common_fields = ("itblInternal", "_type", "createdAt", "email")
 
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        return f"events/{stream_slice['email']}"
+    def path(self, **kwargs) -> str:
+        return "export/userEvents"
 
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, stream_slice: Optional[Mapping[str, Any]], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
-        params["limit"] = self.page_size
+        params.update({"email": stream_slice["email"], "includeCustomEvents": "true"})
 
         return params
 
@@ -307,8 +209,20 @@ class Events(IterableStream):
                 yield {"email": list_record["email"]}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        for record in super().parse_response(response, **kwargs):
-            yield {"data": record}
+        """
+        Parse jsonl response body.
+        Put common event fields at the top level.
+        Put the rest of the fields in the `data` subobject.
+        """
+
+        jsonl_records = StringIO(response.text)
+        for record in jsonl_records:
+            record_dict = json.loads(record)
+            record_dict_common_fields = {}
+            for field in self.common_fields:
+                record_dict_common_fields[field] = record_dict.pop(field, None)
+
+            yield {**record_dict_common_fields, "data": record_dict}
 
 
 class MessageTypes(IterableStream):
@@ -327,7 +241,7 @@ class Metadata(IterableStream):
         return "metadata"
 
 
-class Templates(IterableExportStream):
+class Templates(IterableExportStreamRanged):
     data_field = "templates"
     template_types = ["Base", "Blast", "Triggered", "Workflow"]
     message_types = ["Email", "Push", "InApp", "SMS"]
@@ -346,9 +260,10 @@ class Templates(IterableExportStream):
         records = response_json.get(self.data_field, [])
 
         for record in records:
+            record[self.cursor_field] = self._field_to_datetime(record[self.cursor_field])
             yield record
 
 
-class Users(IterableExportStream):
+class Users(IterableExportStreamRanged):
     data_field = "user"
     cursor_field = "profileUpdatedAt"

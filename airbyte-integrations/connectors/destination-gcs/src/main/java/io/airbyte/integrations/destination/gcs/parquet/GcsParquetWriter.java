@@ -7,14 +7,13 @@ package io.airbyte.integrations.destination.gcs.parquet;
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig;
 import io.airbyte.integrations.destination.gcs.writer.BaseGcsWriter;
+import io.airbyte.integrations.destination.gcs.writer.CommonWriter;
+import io.airbyte.integrations.destination.gcs.writer.GscWriter;
 import io.airbyte.integrations.destination.s3.S3Format;
-import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
+import io.airbyte.integrations.destination.s3.avro.AvroRecordFactory;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -36,39 +35,37 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
-public class GcsParquetWriter extends BaseGcsWriter implements S3Writer {
+public class GcsParquetWriter extends BaseGcsWriter implements S3Writer, GscWriter, CommonWriter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GcsParquetWriter.class);
   private static final ObjectMapper MAPPER = new ObjectMapper();
-  private static final ObjectWriter WRITER = MAPPER.writer();
 
-  private final Schema schema;
-  private final JsonFieldNameUpdater nameUpdater;
   private final ParquetWriter<Record> parquetWriter;
-  private final JsonAvroConverter converter = new JsonAvroConverter();
+  private final AvroRecordFactory avroRecordFactory;
+  private final String gcsFileLocation;
+  private final String objectKey;
 
-  public GcsParquetWriter(GcsDestinationConfig config,
-                          AmazonS3 s3Client,
-                          ConfiguredAirbyteStream configuredStream,
-                          Timestamp uploadTimestamp,
-                          Schema schema,
-                          JsonFieldNameUpdater nameUpdater)
+  public GcsParquetWriter(final GcsDestinationConfig config,
+                          final AmazonS3 s3Client,
+                          final ConfiguredAirbyteStream configuredStream,
+                          final Timestamp uploadTimestamp,
+                          final Schema schema,
+                          final JsonAvroConverter converter)
       throws URISyntaxException, IOException {
     super(config, s3Client, configuredStream);
-    this.schema = schema;
-    this.nameUpdater = nameUpdater;
 
-    String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.PARQUET);
-    String objectKey = String.join("/", outputPrefix, outputFilename);
+    final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.PARQUET);
+    objectKey = String.join("/", outputPrefix, outputFilename);
     LOGGER.info("Storage path for stream '{}': {}/{}", stream.getName(), config.getBucketName(), objectKey);
 
-    URI uri = new URI(String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename));
-    Path path = new Path(uri);
+    gcsFileLocation = String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename);
+    final URI uri = new URI(gcsFileLocation);
+    final Path path = new Path(uri);
 
     LOGGER.info("Full GCS path for stream '{}': {}", stream.getName(), path);
 
-    S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
-    Configuration hadoopConfig = getHadoopConfig(config);
+    final S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
+    final Configuration hadoopConfig = getHadoopConfig(config);
     this.parquetWriter = AvroParquetWriter.<GenericData.Record>builder(HadoopOutputFile.fromPath(path, hadoopConfig))
         .withSchema(schema)
         .withCompressionCodec(formatConfig.getCompressionCodec())
@@ -78,11 +75,12 @@ public class GcsParquetWriter extends BaseGcsWriter implements S3Writer {
         .withDictionaryPageSize(formatConfig.getDictionaryPageSize())
         .withDictionaryEncoding(formatConfig.isDictionaryEncoding())
         .build();
+    this.avroRecordFactory = new AvroRecordFactory(schema, converter);
   }
 
-  public static Configuration getHadoopConfig(GcsDestinationConfig config) {
-    GcsHmacKeyCredentialConfig hmacKeyCredential = (GcsHmacKeyCredentialConfig) config.getCredentialConfig();
-    Configuration hadoopConfig = new Configuration();
+  public static Configuration getHadoopConfig(final GcsDestinationConfig config) {
+    final GcsHmacKeyCredentialConfig hmacKeyCredential = (GcsHmacKeyCredentialConfig) config.getCredentialConfig();
+    final Configuration hadoopConfig = new Configuration();
 
     // the default org.apache.hadoop.fs.s3a.S3AFileSystem does not work for GCS
     hadoopConfig.set("fs.s3a.impl", "io.airbyte.integrations.destination.gcs.util.GcsS3FileSystem");
@@ -98,21 +96,17 @@ public class GcsParquetWriter extends BaseGcsWriter implements S3Writer {
   }
 
   @Override
-  public void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException {
-    JsonNode inputData = recordMessage.getData();
-    inputData = nameUpdater.getJsonWithStandardizedFieldNames(inputData);
-
-    ObjectNode jsonRecord = MAPPER.createObjectNode();
-    jsonRecord.put(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString());
-    jsonRecord.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
-    jsonRecord.setAll((ObjectNode) inputData);
-
-    GenericData.Record avroRecord = converter.convertToGenericDataRecord(WRITER.writeValueAsBytes(jsonRecord), schema);
-    parquetWriter.write(avroRecord);
+  public void write(final UUID id, final AirbyteRecordMessage recordMessage) throws IOException {
+    parquetWriter.write(avroRecordFactory.getAvroRecord(id, recordMessage));
   }
 
   @Override
-  public void close(boolean hasFailed) throws IOException {
+  public void write(JsonNode formattedData) throws IOException {
+    parquetWriter.write(avroRecordFactory.getAvroRecord(formattedData));
+  }
+
+  @Override
+  public void close(final boolean hasFailed) throws IOException {
     if (hasFailed) {
       LOGGER.warn("Failure detected. Aborting upload of stream '{}'...", stream.getName());
       parquetWriter.close();
@@ -122,6 +116,21 @@ public class GcsParquetWriter extends BaseGcsWriter implements S3Writer {
       parquetWriter.close();
       LOGGER.info("Upload completed for stream '{}'.", stream.getName());
     }
+  }
+
+  @Override
+  public String getOutputPath() {
+    return objectKey;
+  }
+
+  @Override
+  public String getFileLocation() {
+    return gcsFileLocation;
+  }
+
+  @Override
+  public S3Format getFileFormat() {
+    return S3Format.PARQUET;
   }
 
 }

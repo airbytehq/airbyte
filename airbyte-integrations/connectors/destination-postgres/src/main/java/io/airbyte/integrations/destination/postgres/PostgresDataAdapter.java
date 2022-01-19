@@ -12,7 +12,7 @@ public class PostgresDataAdapter extends DataAdapter {
   public PostgresDataAdapter() {
     super(jsonNode -> jsonNode.isTextual() && jsonNode.textValue().contains("\u0000"),
         jsonNode -> {
-          String textValue = jsonNode.textValue().replaceAll("\\u0000", "");
+          final String textValue = jsonNode.textValue().replaceAll("\\u0000", "");
           return Jsons.jsonNode(textValue);
         });
   }

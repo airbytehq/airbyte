@@ -25,13 +25,13 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlCdcStateHandler.class);
   private final StateManager stateManager;
 
-  public MssqlCdcStateHandler(StateManager stateManager) {
+  public MssqlCdcStateHandler(final StateManager stateManager) {
     this.stateManager = stateManager;
   }
 
   @Override
-  public AirbyteMessage saveState(Map<String, String> offset, String dbHistory) {
-    Map<String, Object> state = new HashMap<>();
+  public AirbyteMessage saveState(final Map<String, String> offset, final String dbHistory) {
+    final Map<String, Object> state = new HashMap<>();
     state.put(MSSQL_CDC_OFFSET, offset);
     state.put(MSSQL_DB_HISTORY, dbHistory);
 

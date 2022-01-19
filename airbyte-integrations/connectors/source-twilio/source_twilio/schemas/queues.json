@@ -30,14 +30,11 @@
       "type": ["null", "string"]
     },
     "subresource_uris": {
-      "type": "array",
-      "items": {
-        "type": ["null", "object"],
-        "additionalProperties": false,
-        "properties": {
-          "members": {
-            "type": ["null", "string"]
-          }
+      "type": ["null", "object"],
+      "additionalProperties": false,
+      "properties": {
+        "members": {
+          "type": ["null", "string"]
         }
       }
     }

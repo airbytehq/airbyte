@@ -7,6 +7,8 @@ package io.airbyte.db.jdbc;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
@@ -81,7 +83,7 @@ public class TestJdbcUtils {
     });
   }
 
-  private JsonNode getConfig(PostgreSQLContainer<?> psqlDb, String dbName) {
+  private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort())
@@ -104,7 +106,7 @@ public class TestJdbcUtils {
   void testToStream() throws SQLException {
     try (final Connection connection = dataSource.getConnection()) {
       final ResultSet rs = connection.createStatement().executeQuery("SELECT * FROM id_and_name;");
-      final List<JsonNode> actual = sourceOperations.toStream(rs, sourceOperations::rowToJson).collect(Collectors.toList());
+      final List<JsonNode> actual = JdbcDatabase.toStream(rs, sourceOperations::rowToJson).collect(Collectors.toList());
       assertEquals(RECORDS_AS_JSON, actual);
     }
   }
@@ -115,7 +117,7 @@ public class TestJdbcUtils {
     try (final Connection connection = dataSource.getConnection()) {
       createTableWithAllTypes(connection);
       insertRecordOfEachType(connection);
-      assertExpectedOutputValues(connection);
+      assertExpectedOutputValues(connection, jsonFieldExpectedValues());
       assertExpectedOutputTypes(connection);
     }
   }
@@ -148,12 +150,12 @@ public class TestJdbcUtils {
 
       ps.execute();
 
-      assertExpectedOutputValues(connection);
+      assertExpectedOutputValues(connection, expectedValues());
       assertExpectedOutputTypes(connection);
     }
   }
 
-  private static void createTableWithAllTypes(Connection connection) throws SQLException {
+  private static void createTableWithAllTypes(final Connection connection) throws SQLException {
     // jdbctype not included because they are not directly supported in postgres: TINYINT, LONGVARCHAR,
     // VARBINAR, LONGVARBINARY
     connection.createStatement().execute("CREATE TABLE data("
@@ -172,12 +174,14 @@ public class TestJdbcUtils {
         + "date DATE,"
         + "time TIME,"
         + "timestamp TIMESTAMP,"
-        + "binary1 bytea"
+        + "binary1 bytea,"
+        + "text_array _text,"
+        + "int_array int[]"
         + ");");
 
   }
 
-  private static void insertRecordOfEachType(Connection connection) throws SQLException {
+  private static void insertRecordOfEachType(final Connection connection) throws SQLException {
     connection.createStatement().execute("INSERT INTO data("
         + "bit,"
         + "boolean,"
@@ -194,7 +198,9 @@ public class TestJdbcUtils {
         + "date,"
         + "time,"
         + "timestamp,"
-        + "binary1"
+        + "binary1,"
+        + "text_array,"
+        + "int_array"
         + ") VALUES("
         + "1::bit(1),"
         + "true,"
@@ -211,16 +217,75 @@ public class TestJdbcUtils {
         + "'2020-11-01',"
         + "'05:00',"
         + "'2001-09-29 03:00',"
-        + "decode('61616161', 'hex')"
+        + "decode('61616161', 'hex'),"
+        + "'{one,two,three}',"
+        + "'{1,2,3}'"
         + ");");
   }
 
-  private static void assertExpectedOutputValues(Connection connection) throws SQLException {
+  private static void assertExpectedOutputValues(final Connection connection, final ObjectNode expected) throws SQLException {
     final ResultSet resultSet = connection.createStatement().executeQuery("SELECT * FROM data;");
 
     resultSet.next();
     final JsonNode actual = sourceOperations.rowToJson(resultSet);
 
+    // field-wise comparison to make debugging easier.
+    MoreStreams.toStream(expected.fields()).forEach(e -> assertEquals(e.getValue(), actual.get(e.getKey()), "key: " + e.getKey()));
+    assertEquals(expected, actual);
+  }
+
+  private static void assertExpectedOutputTypes(final Connection connection) throws SQLException {
+    final ResultSet resultSet = connection.createStatement().executeQuery("SELECT * FROM data;");
+
+    resultSet.next();
+    final int columnCount = resultSet.getMetaData().getColumnCount();
+    final Map<String, JsonSchemaPrimitive> actual = new HashMap<>(columnCount);
+    for (int i = 1; i <= columnCount; i++) {
+      actual.put(resultSet.getMetaData().getColumnName(i), sourceOperations.getJsonType(JDBCType.valueOf(resultSet.getMetaData().getColumnType(i))));
+    }
+
+    final Map<String, JsonSchemaPrimitive> expected = ImmutableMap.<String, JsonSchemaPrimitive>builder()
+        .put("bit", JsonSchemaPrimitive.BOOLEAN)
+        .put("boolean", JsonSchemaPrimitive.BOOLEAN)
+        .put("smallint", JsonSchemaPrimitive.NUMBER)
+        .put("int", JsonSchemaPrimitive.NUMBER)
+        .put("bigint", JsonSchemaPrimitive.NUMBER)
+        .put("float", JsonSchemaPrimitive.NUMBER)
+        .put("double", JsonSchemaPrimitive.NUMBER)
+        .put("real", JsonSchemaPrimitive.NUMBER)
+        .put("numeric", JsonSchemaPrimitive.NUMBER)
+        .put("decimal", JsonSchemaPrimitive.NUMBER)
+        .put("char", JsonSchemaPrimitive.STRING)
+        .put("varchar", JsonSchemaPrimitive.STRING)
+        .put("date", JsonSchemaPrimitive.STRING)
+        .put("time", JsonSchemaPrimitive.STRING)
+        .put("timestamp", JsonSchemaPrimitive.STRING)
+        .put("binary1", JsonSchemaPrimitive.STRING_BINARY)
+        .put("text_array", JsonSchemaPrimitive.ARRAY)
+        .put("int_array", JsonSchemaPrimitive.ARRAY)
+        .build();
+
+    assertEquals(actual, expected);
+  }
+
+  private ObjectNode jsonFieldExpectedValues() {
+    final ObjectNode expected = expectedValues();
+    ArrayNode arrayNode = new ObjectMapper().createArrayNode();
+    arrayNode.add("one");
+    arrayNode.add("two");
+    arrayNode.add("three");
+    expected.set("text_array", arrayNode);
+
+    ArrayNode arrayNode2 = new ObjectMapper().createArrayNode();
+    arrayNode2.add("1");
+    arrayNode2.add("2");
+    arrayNode2.add("3");
+    expected.set("int_array", arrayNode2);
+
+    return expected;
+  }
+
+  private ObjectNode expectedValues() {
     final ObjectNode expected = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     expected.put("bit", true);
     expected.put("boolean", true);
@@ -240,42 +305,7 @@ public class TestJdbcUtils {
     expected.put("time", "1970-01-01T05:00:00Z");
     expected.put("timestamp", "2001-09-29T03:00:00Z");
     expected.put("binary1", "aaaa".getBytes(Charsets.UTF_8));
-
-    // field-wise comparison to make debugging easier.
-    MoreStreams.toStream(expected.fields()).forEach(e -> assertEquals(e.getValue(), actual.get(e.getKey()), "key: " + e.getKey()));
-    assertEquals(expected, actual);
-  }
-
-  private static void assertExpectedOutputTypes(Connection connection) throws SQLException {
-    final ResultSet resultSet = connection.createStatement().executeQuery("SELECT * FROM data;");
-
-    resultSet.next();
-    final int columnCount = resultSet.getMetaData().getColumnCount();
-    final Map<String, JsonSchemaPrimitive> actual = new HashMap<>(columnCount);
-    for (int i = 1; i <= columnCount; i++) {
-      actual.put(resultSet.getMetaData().getColumnName(i), sourceOperations.getType(JDBCType.valueOf(resultSet.getMetaData().getColumnType(i))));
-    }
-
-    final Map<String, JsonSchemaPrimitive> expected = ImmutableMap.<String, JsonSchemaPrimitive>builder()
-        .put("bit", JsonSchemaPrimitive.BOOLEAN)
-        .put("boolean", JsonSchemaPrimitive.BOOLEAN)
-        .put("smallint", JsonSchemaPrimitive.NUMBER)
-        .put("int", JsonSchemaPrimitive.NUMBER)
-        .put("bigint", JsonSchemaPrimitive.NUMBER)
-        .put("float", JsonSchemaPrimitive.NUMBER)
-        .put("double", JsonSchemaPrimitive.NUMBER)
-        .put("real", JsonSchemaPrimitive.NUMBER)
-        .put("numeric", JsonSchemaPrimitive.NUMBER)
-        .put("decimal", JsonSchemaPrimitive.NUMBER)
-        .put("char", JsonSchemaPrimitive.STRING)
-        .put("varchar", JsonSchemaPrimitive.STRING)
-        .put("date", JsonSchemaPrimitive.STRING)
-        .put("time", JsonSchemaPrimitive.STRING)
-        .put("timestamp", JsonSchemaPrimitive.STRING)
-        .put("binary1", JsonSchemaPrimitive.STRING)
-        .build();
-
-    assertEquals(actual, expected);
+    return expected;
   }
 
 }

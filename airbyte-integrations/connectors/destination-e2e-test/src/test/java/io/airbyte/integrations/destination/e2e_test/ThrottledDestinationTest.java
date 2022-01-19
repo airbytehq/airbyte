@@ -25,7 +25,7 @@ public class ThrottledDestinationTest {
   @SuppressWarnings("unchecked")
   @Test
   void test() throws Exception {
-    Consumer<AirbyteMessage> outputRecordCollector = mock(Consumer.class);
+    final Consumer<AirbyteMessage> outputRecordCollector = mock(Consumer.class);
     final AirbyteMessageConsumer consumer = new ThrottledDestination()
         .getConsumer(Jsons.jsonNode(Map.of("millis_per_record", 10)), null, outputRecordCollector);
 

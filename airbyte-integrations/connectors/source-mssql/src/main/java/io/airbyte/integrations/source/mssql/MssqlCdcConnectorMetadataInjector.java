@@ -13,13 +13,13 @@ import io.airbyte.integrations.debezium.CdcMetadataInjector;
 public class MssqlCdcConnectorMetadataInjector implements CdcMetadataInjector {
 
   @Override
-  public void addMetaData(ObjectNode event, JsonNode source) {
-    String commitLsn = source.get("commit_lsn").asText();
+  public void addMetaData(final ObjectNode event, final JsonNode source) {
+    final String commitLsn = source.get("commit_lsn").asText();
     event.put(CDC_LSN, commitLsn);
   }
 
   @Override
-  public String namespace(JsonNode source) {
+  public String namespace(final JsonNode source) {
     return source.get("schema").asText();
   }
 

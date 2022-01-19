@@ -49,17 +49,17 @@ public class OperationsHandler {
     this(configRepository, UUID::randomUUID);
   }
 
-  public CheckOperationRead checkOperation(OperatorConfiguration operationCheck) {
+  public CheckOperationRead checkOperation(final OperatorConfiguration operationCheck) {
     try {
       validateOperation(operationCheck);
-    } catch (IllegalArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       return new CheckOperationRead().status(StatusEnum.FAILED)
           .message(e.getMessage());
     }
     return new CheckOperationRead().status(StatusEnum.SUCCEEDED);
   }
 
-  public OperationRead createOperation(OperationCreate operationCreate)
+  public OperationRead createOperation(final OperationCreate operationCreate)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final UUID operationId = uuidGenerator.get();
     final StandardSyncOperation standardSyncOperation = toStandardSyncOperation(operationCreate)
@@ -67,7 +67,7 @@ public class OperationsHandler {
     return persistOperation(standardSyncOperation);
   }
 
-  private static StandardSyncOperation toStandardSyncOperation(OperationCreate operationCreate) {
+  private static StandardSyncOperation toStandardSyncOperation(final OperationCreate operationCreate) {
     final StandardSyncOperation standardSyncOperation = new StandardSyncOperation()
         .withWorkspaceId(operationCreate.getWorkspaceId())
         .withName(operationCreate.getName())
@@ -89,7 +89,7 @@ public class OperationsHandler {
     return standardSyncOperation;
   }
 
-  private void validateOperation(OperatorConfiguration operatorConfiguration) {
+  private void validateOperation(final OperatorConfiguration operatorConfiguration) {
     if (operatorConfiguration.getOperatorType() == io.airbyte.api.model.OperatorType.NORMALIZATION) {
       Preconditions.checkArgument(operatorConfiguration.getNormalization() != null);
     }
@@ -98,19 +98,19 @@ public class OperationsHandler {
     }
   }
 
-  public OperationRead updateOperation(OperationUpdate operationUpdate)
+  public OperationRead updateOperation(final OperationUpdate operationUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSyncOperation standardSyncOperation = configRepository.getStandardSyncOperation(operationUpdate.getOperationId());
     return persistOperation(updateOperation(operationUpdate, standardSyncOperation));
   }
 
-  private OperationRead persistOperation(StandardSyncOperation standardSyncOperation)
+  private OperationRead persistOperation(final StandardSyncOperation standardSyncOperation)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     configRepository.writeStandardSyncOperation(standardSyncOperation);
     return buildOperationRead(standardSyncOperation.getOperationId());
   }
 
-  public static StandardSyncOperation updateOperation(OperationUpdate operationUpdate, StandardSyncOperation standardSyncOperation) {
+  public static StandardSyncOperation updateOperation(final OperationUpdate operationUpdate, final StandardSyncOperation standardSyncOperation) {
     standardSyncOperation
         .withName(operationUpdate.getName())
         .withOperatorType(Enums.convertTo(operationUpdate.getOperatorConfiguration().getOperatorType(), OperatorType.class));
@@ -134,11 +134,11 @@ public class OperationsHandler {
     return standardSyncOperation;
   }
 
-  public OperationReadList listOperationsForConnection(ConnectionIdRequestBody connectionIdRequestBody)
+  public OperationReadList listOperationsForConnection(final ConnectionIdRequestBody connectionIdRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final List<OperationRead> operationReads = Lists.newArrayList();
     final StandardSync standardSync = configRepository.getStandardSync(connectionIdRequestBody.getConnectionId());
-    for (UUID operationId : standardSync.getOperationIds()) {
+    for (final UUID operationId : standardSync.getOperationIds()) {
       final StandardSyncOperation standardSyncOperation = configRepository.getStandardSyncOperation(operationId);
       if (standardSyncOperation.getTombstone() != null && standardSyncOperation.getTombstone()) {
         continue;
@@ -148,18 +148,18 @@ public class OperationsHandler {
     return new OperationReadList().operations(operationReads);
   }
 
-  public OperationRead getOperation(OperationIdRequestBody operationIdRequestBody)
+  public OperationRead getOperation(final OperationIdRequestBody operationIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return buildOperationRead(operationIdRequestBody.getOperationId());
   }
 
-  public void deleteOperationsForConnection(ConnectionIdRequestBody connectionIdRequestBody)
+  public void deleteOperationsForConnection(final ConnectionIdRequestBody connectionIdRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSync standardSync = configRepository.getStandardSync(connectionIdRequestBody.getConnectionId());
     deleteOperationsForConnection(standardSync, standardSync.getOperationIds());
   }
 
-  public void deleteOperationsForConnection(UUID connectionId, List<UUID> deleteOperationIds)
+  public void deleteOperationsForConnection(final UUID connectionId, final List<UUID> deleteOperationIds)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSync standardSync = configRepository.getStandardSync(connectionId);
     deleteOperationsForConnection(standardSync, deleteOperationIds);
@@ -169,10 +169,10 @@ public class OperationsHandler {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final List<StandardSync> allStandardSyncs = configRepository.listStandardSyncs();
     final List<UUID> operationIds = new ArrayList<>(standardSync.getOperationIds());
-    for (UUID operationId : deleteOperationIds) {
+    for (final UUID operationId : deleteOperationIds) {
       operationIds.remove(operationId);
       boolean sharedOperation = false;
-      for (StandardSync sync : allStandardSyncs) {
+      for (final StandardSync sync : allStandardSyncs) {
         // Check if other connections are using the same operation
         if (sync.getConnectionId() != standardSync.getConnectionId() && sync.getOperationIds().contains(operationId)) {
           sharedOperation = true;
@@ -187,11 +187,11 @@ public class OperationsHandler {
     configRepository.writeStandardSync(standardSync);
   }
 
-  public void deleteOperation(OperationIdRequestBody operationIdRequestBody)
+  public void deleteOperation(final OperationIdRequestBody operationIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID operationId = operationIdRequestBody.getOperationId();
     // Remove operation from all connections using it
-    for (StandardSync standardSync : configRepository.listStandardSyncs()) {
+    for (final StandardSync standardSync : configRepository.listStandardSyncs()) {
       if (standardSync.getOperationIds().removeAll(List.of(operationId))) {
         configRepository.writeStandardSync(standardSync);
       }
@@ -199,7 +199,7 @@ public class OperationsHandler {
     removeOperation(operationId);
   }
 
-  private void removeOperation(UUID operationId) throws JsonValidationException, ConfigNotFoundException, IOException {
+  private void removeOperation(final UUID operationId) throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSyncOperation standardSyncOperation = configRepository.getStandardSyncOperation(operationId);
     if (standardSyncOperation != null) {
       standardSyncOperation.withTombstone(true);
@@ -209,7 +209,7 @@ public class OperationsHandler {
     }
   }
 
-  private OperationRead buildOperationRead(UUID operationId)
+  private OperationRead buildOperationRead(final UUID operationId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSyncOperation standardSyncOperation = configRepository.getStandardSyncOperation(operationId);
     if (standardSyncOperation != null) {
@@ -219,7 +219,7 @@ public class OperationsHandler {
     }
   }
 
-  private static OperationRead buildOperationRead(StandardSyncOperation standardSyncOperation) {
+  private static OperationRead buildOperationRead(final StandardSyncOperation standardSyncOperation) {
     final OperatorConfiguration operatorConfiguration = new OperatorConfiguration()
         .operatorType(Enums.convertTo(standardSyncOperation.getOperatorType(), io.airbyte.api.model.OperatorType.class));
     if (standardSyncOperation.getOperatorType() == OperatorType.NORMALIZATION) {

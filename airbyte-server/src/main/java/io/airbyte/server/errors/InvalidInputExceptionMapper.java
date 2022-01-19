@@ -21,14 +21,14 @@ import org.apache.logging.log4j.core.util.Throwables;
 @Provider
 public class InvalidInputExceptionMapper implements ExceptionMapper<ConstraintViolationException> {
 
-  public static InvalidInputExceptionInfo infoFromConstraints(ConstraintViolationException cve) {
-    InvalidInputExceptionInfo exceptionInfo = new InvalidInputExceptionInfo()
+  public static InvalidInputExceptionInfo infoFromConstraints(final ConstraintViolationException cve) {
+    final InvalidInputExceptionInfo exceptionInfo = new InvalidInputExceptionInfo()
         .exceptionClassName(cve.getClass().getName())
         .message("Some properties contained invalid input.")
         .exceptionStack(Throwables.toStringList(cve));
 
-    List<InvalidInputProperty> props = new ArrayList<InvalidInputProperty>();
-    for (ConstraintViolation<?> cv : cve.getConstraintViolations()) {
+    final List<InvalidInputProperty> props = new ArrayList<InvalidInputProperty>();
+    for (final ConstraintViolation<?> cv : cve.getConstraintViolations()) {
       props.add(new InvalidInputProperty()
           .propertyPath(cv.getPropertyPath().toString())
           .message(cv.getMessage())
@@ -39,7 +39,7 @@ public class InvalidInputExceptionMapper implements ExceptionMapper<ConstraintVi
   }
 
   @Override
-  public Response toResponse(ConstraintViolationException e) {
+  public Response toResponse(final ConstraintViolationException e) {
     return Response.status(Response.Status.BAD_REQUEST)
         .entity(Jsons.serialize(InvalidInputExceptionMapper.infoFromConstraints(e)))
         .type("application/json")

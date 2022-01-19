@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import org.testcontainers.containers.Network;
-import org.testcontainers.containers.OracleContainer;
 
 public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -42,7 +41,7 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
   }
 
   private void populateDatabaseTestData() throws Exception {
-    JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
+    final JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
         config.get("password").asText(),
         String.format("jdbc:oracle:thin:@//%s:%s/%s",
             config.get("host").asText(),
@@ -78,8 +77,11 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
   }
 
   private void initAndStartJdbcContainer() {
-    db = new OracleContainer("epiclabs/docker-oracle-xe-11g")
-        .withNetwork(sshBastionContainer.getNetWork());
+    db = new OracleContainer()
+        .withUsername("test")
+        .withPassword("oracle")
+        .usingSid()
+        .withNetwork(sshBastionContainer.getNetWork());;
     db.start();
   }
 
@@ -93,7 +95,7 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
     return SshHelpers.getSpecAndInjectSsh();
   }
 
-  public ImmutableMap.Builder<Object, Object> getBasicOracleDbConfigBuider(OracleContainer db) {
+  public ImmutableMap.Builder<Object, Object> getBasicOracleDbConfigBuider(final OracleContainer db) {
     return ImmutableMap.builder()
         .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
             .getNetworks()

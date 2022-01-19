@@ -17,6 +17,7 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -104,8 +105,8 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
       final ResultSet resultSet =
           conn.createStatement().executeQuery(String.format("SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s'", schemaName));
       while (resultSet.next()) {
-        String tableName = resultSet.getString("TABLE_NAME");
-        String tableNameProcessed = tableName.contains(" ") ? sourceOperations
+        final String tableName = resultSet.getString("TABLE_NAME");
+        final String tableNameProcessed = tableName.contains(" ") ? sourceOperations
             .enquoteIdentifier(conn, tableName) : tableName;
         conn.createStatement().executeQuery(String.format("DROP TABLE %s.%s", schemaName, tableNameProcessed));
       }
@@ -121,7 +122,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  public AbstractJdbcSource getJdbcSource() {
+  public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new OracleSource();
   }
 

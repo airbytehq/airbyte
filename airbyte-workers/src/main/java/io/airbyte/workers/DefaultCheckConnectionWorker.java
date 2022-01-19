@@ -28,22 +28,26 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultCheckConnectionWorker.class);
 
+  private final WorkerConfigs workerConfigs;
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
 
   private Process process;
 
-  public DefaultCheckConnectionWorker(final IntegrationLauncher integrationLauncher, final AirbyteStreamFactory streamFactory) {
+  public DefaultCheckConnectionWorker(final WorkerConfigs workerConfigs,
+                                      final IntegrationLauncher integrationLauncher,
+                                      final AirbyteStreamFactory streamFactory) {
+    this.workerConfigs = workerConfigs;
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
   }
 
-  public DefaultCheckConnectionWorker(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory());
+  public DefaultCheckConnectionWorker(final WorkerConfigs workerConfigs, final IntegrationLauncher integrationLauncher) {
+    this(workerConfigs, integrationLauncher, new DefaultAirbyteStreamFactory());
   }
 
   @Override
-  public StandardCheckConnectionOutput run(StandardCheckConnectionInput input, Path jobRoot) throws WorkerException {
+  public StandardCheckConnectionOutput run(final StandardCheckConnectionInput input, final Path jobRoot) throws WorkerException {
 
     try {
       process = integrationLauncher.check(
@@ -53,16 +57,16 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
-      Optional<AirbyteConnectionStatus> status;
-      try (InputStream stdout = process.getInputStream()) {
+      final Optional<AirbyteConnectionStatus> status;
+      try (final InputStream stdout = process.getInputStream()) {
         status = streamFactory.create(IOs.newBufferedReader(stdout))
             .filter(message -> message.getType() == Type.CONNECTION_STATUS)
             .map(AirbyteMessage::getConnectionStatus).findFirst();
 
-        WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
+        WorkerUtils.gentleClose(workerConfigs, process, 1, TimeUnit.MINUTES);
       }
 
-      int exitCode = process.exitValue();
+      final int exitCode = process.exitValue();
 
       if (status.isPresent() && exitCode == 0) {
         final StandardCheckConnectionOutput output = new StandardCheckConnectionOutput()
@@ -73,10 +77,10 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
         LOGGER.debug("Check connection job received output: {}", output);
         return output;
       } else {
-        throw new WorkerException("Error while getting checking connection.");
+        throw new WorkerException(String.format("Error checking connection, status: %s, exit code: %d", status, exitCode));
       }
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new WorkerException("Error while getting checking connection.", e);
     }
   }

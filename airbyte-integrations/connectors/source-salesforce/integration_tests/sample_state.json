@@ -14,13 +14,10 @@
   "ObjectPermissions": {
     "SystemModstamp": "2021-08-23T10:27:22.000Z"
   },
-  "LoginGeo": {
-    "SystemModstamp": "2021-08-23T10:27:22.000Z"
-  },
-  "LoginHistory": {
-    "LoginTime": "2021-08-23T10:27:22.000Z"
-  },
   "PermissionSetTabSetting": {
     "SystemModstamp": "2021-08-23T10:27:22.000Z"
+  },
+  "LeadHistory": {
+    "CreatedDate": "2021-08-23T10:27:22.000Z"
   }
 }

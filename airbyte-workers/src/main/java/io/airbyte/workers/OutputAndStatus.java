@@ -13,12 +13,12 @@ public class OutputAndStatus<OutputType> {
   private final OutputType output;
   private final JobStatus status;
 
-  public OutputAndStatus(JobStatus status, OutputType output) {
+  public OutputAndStatus(final JobStatus status, final OutputType output) {
     this.output = output;
     this.status = status;
   }
 
-  public OutputAndStatus(JobStatus status) {
+  public OutputAndStatus(final JobStatus status) {
     this.status = status;
     this.output = null;
   }
@@ -37,14 +37,14 @@ public class OutputAndStatus<OutputType> {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    OutputAndStatus<?> that = (OutputAndStatus<?>) o;
+    final OutputAndStatus<?> that = (OutputAndStatus<?>) o;
     return Objects.equals(output, that.output) &&
         status == that.status;
   }

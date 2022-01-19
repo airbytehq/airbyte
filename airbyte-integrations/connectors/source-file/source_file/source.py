@@ -7,7 +7,8 @@ import traceback
 from datetime import datetime
 from typing import Generator, Iterable, Mapping
 
-from airbyte_protocol import (
+from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
     AirbyteMessage,
@@ -16,7 +17,7 @@ from airbyte_protocol import (
     Status,
     Type,
 )
-from base_python import AirbyteLogger, Source
+from airbyte_cdk.sources import Source
 
 from .client import Client
 

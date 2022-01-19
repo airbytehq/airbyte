@@ -59,7 +59,7 @@ The `read` command will emit a stream records to stdout.
 spec() -> ConnectorSpecification
 check(Config) -> AirbyteConnectionStatus
 discover(Config) -> AirbyteCatalog
-read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
+read(Config, ConfiguredAirbyteCatalog, State) -> Stream<AirbyteMessage>
 ```
 
 #### Spec
@@ -67,28 +67,28 @@ read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
 * Input:
   1. none.
 * Output:
-  1. `spec` - a [ConnectorSpecification](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml#L180-L199) wrapped in an `AirbyteMessage` of type `spec`.
+  1. `spec` - a [ConnectorSpecification](https://github.com/airbytehq/airbyte/blob/922bfd08a9182443599b78dbb273d70cb9f63d30/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml#L256-L306) wrapped in an `AirbyteMessage` of type `spec`.
 * The objective of the spec command is to pull information about how to use a source. The `ConnectorSpecification` contains this information.
 * The `connectionSpecification` of the `ConnectorSpecification` must be valid JsonSchema. It describes what inputs are needed in order for the source to interact with the underlying data source.
   * e.g. If using a Postgres source, the `ConnectorSpecification` would specify that a `hostname`, `port`, and `password` are required in order for the connector to function.
   * The UI reads the JsonSchema in this field in order to render the input fields for a user to fill in.
-  * This JsonSchema is also used to validate that the provided inputs are valid. e.g. If `port` is one of the fields and the JsonSchema in the `connectorSpecification` specifies that this filed should be a number, if a user inputs "airbyte", they will receive an error. Airbyte adheres to JsonSchema validation rules.
+  * This JsonSchema is also used to validate that the provided inputs are valid. e.g. If `port` is one of the fields and the JsonSchema in the `connectorSpecification` specifies that this field should be a number, if a user inputs "airbyte", they will receive an error. Airbyte adheres to JsonSchema validation rules.
 
 #### Check
 
 * Input:
   1. `config` - A configuration JSON object that has been validated using the `ConnectorSpecification`.
 * Output:
-  1. `connectionStatus` - an [AirbyteConnectionStatus](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml#L94-L107) wrapped in an `AirbyteMessage` of type `connection_status`.
+  1. `connectionStatus` - an [AirbyteConnectionStatus](https://github.com/airbytehq/airbyte/blob/922bfd08a9182443599b78dbb273d70cb9f63d30/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml#L99-L112) wrapped in an `AirbyteMessage` of type `connection_status`.
 * The `check` command attempts to connect to the underlying data source in order to verify that the provided credentials are usable.
-  * e.g. If the given the credentials, it can connect to the Postgres database, it will return a success response. If it fails \(perhaps the password is incorrect\), it will return a failed response and \(when possible\) a helpful error message.
+  * e.g. If given the credentials, it can connect to the Postgres database, it will return a success response. If it fails \(perhaps the password is incorrect\), it will return a failed response and \(when possible\) a helpful error message.
 
 #### Discover
 
 * Input:
   1. `config` - A configuration JSON object that has been validated using the `ConnectorSpecification`.
 * Output:
-  1. `catalog` - an [AirbyteCatalog](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml#L108-L118) wrapped in an `AirbyteMessage` of type `catalog`.
+  1. `catalog` - an [AirbyteCatalog](https://github.com/airbytehq/airbyte/blob/922bfd08a9182443599b78dbb273d70cb9f63d30/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml#L113-L123) wrapped in an `AirbyteMessage` of type `catalog`.
 * This command detects the _structure_ of the data in the data source.
 * An `AirbyteCatalog` describes the structure of data in a data source. It has a single field called `streams` that contains a list of `AirbyteStream`s. Each of these contain a `name` and `json_schema` field. The `json_schema` field accepts any valid JsonSchema and describes the structure of a stream. This data model is intentionally flexible. That can make it a little hard at first to mentally map onto your own data, so we provide some examples below:
   * If we are using a data source that is a traditional relational database, each table in that database would map to an `AirbyteStream`. Each column in the table would be a key in the `properties` field of the `json_schema` field.
@@ -107,9 +107,7 @@ read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
                     "type": "string"
                   },
                   "age": {
-                    "type": {
-                      "number"
-                    }
+                    "type": "number"
                   }
                 }
               }
@@ -150,8 +148,8 @@ read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
                       "type": "object",
                       "required": ["name", "productId"],
                       "properties": {
-                        "name": "string",
-                        "productId": "number"
+                        "name": { "type": "string" },
+                        "productId": { "type": "number" }
                       }
                     }
                   }
@@ -168,7 +166,7 @@ read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
 
 * Input:
   1. `config` - A configuration JSON object that has been validated using the `ConnectorSpecification`.
-  2. `catalog` - An `ConfiguredAirbyteCatalog`. This `catalog` should be constructed from the `catalog` returned by the `discover` command. To convert an `AirbyteStream` to a `ConfiguredAirbyteStream` copy the `AirbyteStream` into the stream field of the `ConfiguredAirbyteStream`. Any additional configurations can be specified in the `ConfiguredAirbyteStream`. More details on how this is configured in the [catalog documentation](catalog.md). This catalog will be used in the `read` command to both select what data is transferred and how it is replicated.
+  2. `catalog` - A `ConfiguredAirbyteCatalog`. This `catalog` should be constructed from the `catalog` returned by the `discover` command. To convert an `AirbyteStream` to a `ConfiguredAirbyteStream` copy the `AirbyteStream` into the stream field of the `ConfiguredAirbyteStream`. Any additional configurations can be specified in the `ConfiguredAirbyteStream`. More details on how this is configured in the [catalog documentation](catalog.md). This catalog will be used in the `read` command to both select what data is transferred and how it is replicated.
   3. `state` - A JSON object. This object is only ever written or read by the source, so it is a JSON blob with whatever information is necessary to keep track of how much of the data source has already been read. This is important whenever we need to replicate data with Incremental sync modes such as [Incremental Append](connections/incremental-append.md) or [Incremental Deduped History](connections/incremental-deduped-history.md). Note that this is not currently based on the state of data existing on the destination side.
 * Output:
   1. `message stream` - A stream of `AirbyteRecordMessage`s and `AirbyteStateMessage`s piped to stdout.
@@ -215,7 +213,7 @@ For the sake of brevity, we will not re-describe `spec` and `check`. They are ex
 
 ## The Airbyte Protocol
 
-* All messages passed to and from connectors must be wrapped in an `AirbyteMesage` envelope and serialized as JSON. The JsonSchema specification for these messages can be found [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml).
+* All messages passed to and from connectors must be wrapped in an `AirbyteMessage` envelope and serialized as JSON. The JsonSchema specification for these messages can be found [here](https://github.com/airbytehq/airbyte/blob/922bfd08a9182443599b78dbb273d70cb9f63d30/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml#L13-L45).
 * Even if a record is wrapped in an `AirbyteMessage` it will only be processed if it appropriate for the given command. e.g. If a source `read` action includes AirbyteMessages in its stream of type Catalog for instance, these messages will be ignored as the `read` interface only expects `AirbyteRecordMessage`s and `AirbyteStateMessage`s. The appropriate `AirbyteMessage` types have been described in each command above.
 * **ALL** actions are allowed to return `AirbyteLogMessage`s on stdout. For brevity, we have not mentioned these log messages in the description of each action, but they are always allowed. An `AirbyteLogMessage` wraps any useful logging that the connector wants to provide. These logs will be written to Airbyte's log files and output to the console.
 * I/O:

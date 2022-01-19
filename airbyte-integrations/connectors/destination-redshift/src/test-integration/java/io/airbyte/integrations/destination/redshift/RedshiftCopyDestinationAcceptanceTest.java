@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
@@ -18,8 +19,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.jooq.JSONFormat;
-import org.jooq.JSONFormat.RecordFormat;
 
 /**
  * Integration test testing {@link RedshiftCopyS3Destination}. The default Redshift integration test
@@ -27,7 +26,6 @@ import org.jooq.JSONFormat.RecordFormat;
  */
 public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
   // config from which to create / delete schemas.
   private JsonNode baseConfig;
   // config which refers to the schema that the test is being run in.
@@ -56,10 +54,10 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv env,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
@@ -83,7 +81,8 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception {
+  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
+      throws Exception {
     String tableName = namingResolver.getIdentifier(streamName);
     if (!tableName.startsWith("\"")) {
       // Currently, Normalization always quote tables identifiers
@@ -93,7 +92,7 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
   }
 
   @Override
-  protected List<String> resolveIdentifier(String identifier) {
+  protected List<String> resolveIdentifier(final String identifier) {
     final List<String> result = new ArrayList<>();
     final String resolved = namingResolver.getIdentifier(identifier);
     result.add(identifier);
@@ -105,19 +104,19 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     return getDatabase().query(
         ctx -> ctx
             .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
             .stream()
-            .map(r -> r.formatJSON(JSON_FORMAT))
+            .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
             .map(Jsons::deserialize)
             .collect(Collectors.toList()));
   }
 
   // for each test we create a new schema in the database. run the test in there and then remove it.
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv) throws Exception {
     final String schemaName = Strings.addRandomSuffix("integration_test", "_", 5);
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
     baseConfig = getStaticConfig();
@@ -128,7 +127,7 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     final String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s CASCADE", config.get("schema").asText());
     getDatabase().query(ctx -> ctx.execute(dropSchemaQuery));
   }
@@ -141,7 +140,8 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
             baseConfig.get("host").asText(),
             baseConfig.get("port").asText(),
             baseConfig.get("database").asText()),
-        "com.amazon.redshift.jdbc.Driver", null);
+        "com.amazon.redshift.jdbc.Driver", null,
+        "ssl=true;sslfactory=com.amazon.redshift.ssl.NonValidatingFactory");
   }
 
   @Override

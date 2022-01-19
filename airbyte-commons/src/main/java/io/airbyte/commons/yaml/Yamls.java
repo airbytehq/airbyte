@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLParser;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.commons.jackson.MoreMappers;
@@ -27,10 +28,33 @@ public class Yamls {
   private static final YAMLFactory YAML_FACTORY = new YAMLFactory();
   private static final ObjectMapper OBJECT_MAPPER = MoreMappers.initYamlMapper(YAML_FACTORY);
 
-  public static <T> String serialize(T object) {
+  private static final YAMLFactory YAML_FACTORY_WITHOUT_QUOTES = new YAMLFactory().enable(YAMLGenerator.Feature.MINIMIZE_QUOTES);
+  private static final ObjectMapper OBJECT_MAPPER_WITHOUT_QUOTES = MoreMappers.initYamlMapper(YAML_FACTORY_WITHOUT_QUOTES);
+
+  /**
+   * Serialize object to YAML string. String values WILL be wrapped in double quotes.
+   *
+   * @param object - object to serialize
+   * @return YAML string version of object
+   */
+  public static <T> String serialize(final T object) {
     try {
       return OBJECT_MAPPER.writeValueAsString(object);
-    } catch (JsonProcessingException e) {
+    } catch (final JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Serialize object to YAML string. String values will NOT be wrapped in double quotes.
+   *
+   * @param object - object to serialize
+   * @return YAML string version of object
+   */
+  public static String serializeWithoutQuotes(final Object object) {
+    try {
+      return OBJECT_MAPPER_WITHOUT_QUOTES.writeValueAsString(object);
+    } catch (final JsonProcessingException e) {
       throw new RuntimeException(e);
     }
   }
@@ -38,7 +62,7 @@ public class Yamls {
   public static <T> T deserialize(final String yamlString, final Class<T> klass) {
     try {
       return OBJECT_MAPPER.readValue(yamlString, klass);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
@@ -46,21 +70,21 @@ public class Yamls {
   public static JsonNode deserialize(final String yamlString) {
     try {
       return OBJECT_MAPPER.readTree(yamlString);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
 
   public static AutoCloseableIterator<JsonNode> deserializeArray(final InputStream stream) {
     try {
-      YAMLParser parser = YAML_FACTORY.createParser(stream);
+      final YAMLParser parser = YAML_FACTORY.createParser(stream);
 
       // Check the first token
       if (parser.nextToken() != JsonToken.START_ARRAY) {
         throw new IllegalStateException("Expected content to be an array");
       }
 
-      Iterator<JsonNode> iterator = new AbstractIterator<>() {
+      final Iterator<JsonNode> iterator = new AbstractIterator<>() {
 
         @Override
         protected JsonNode computeNext() {
@@ -68,7 +92,7 @@ public class Yamls {
             while (parser.nextToken() != JsonToken.END_ARRAY) {
               return parser.readValueAsTree();
             }
-          } catch (IOException e) {
+          } catch (final IOException e) {
             throw new RuntimeException(e);
           }
           return endOfData();
@@ -78,7 +102,7 @@ public class Yamls {
 
       return AutoCloseableIterators.fromIterator(iterator, parser::close);
 
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
@@ -92,7 +116,7 @@ public class Yamls {
    * @param <T> type of items being written
    * @return consumer that is able to write element to a list element by element. must be closed!
    */
-  public static <T> CloseableConsumer<T> listWriter(Writer writer) {
+  public static <T> CloseableConsumer<T> listWriter(final Writer writer) {
     return new YamlConsumer<>(writer, OBJECT_MAPPER);
   }
 
@@ -100,16 +124,16 @@ public class Yamls {
 
     private final SequenceWriter sequenceWriter;
 
-    public YamlConsumer(Writer writer, ObjectMapper objectMapper) {
+    public YamlConsumer(final Writer writer, final ObjectMapper objectMapper) {
       this.sequenceWriter = Exceptions.toRuntime(() -> objectMapper.writer().writeValuesAsArray(writer));
 
     }
 
     @Override
-    public void accept(T t) {
+    public void accept(final T t) {
       try {
         sequenceWriter.write(t);
-      } catch (IOException e) {
+      } catch (final IOException e) {
         throw new RuntimeException(e);
       }
     }

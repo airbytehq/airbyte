@@ -18,29 +18,29 @@ class BigQuerySourceTest {
 
   @Test
   public void testEmptyDatasetIdInConfig() throws IOException {
-    JsonNode configJson = Jsons.deserialize(MoreResources.readResource("test_config_empty_datasetid.json"));
-    JsonNode dbConfig = new BigQuerySource().toDatabaseConfig(configJson);
+    final JsonNode configJson = Jsons.deserialize(MoreResources.readResource("test_config_empty_datasetid.json"));
+    final JsonNode dbConfig = new BigQuerySource().toDatabaseConfig(configJson);
     assertTrue(dbConfig.get(BigQuerySource.CONFIG_DATASET_ID).isEmpty());
   }
 
   @Test
   public void testMissingDatasetIdInConfig() throws IOException {
-    JsonNode configJson = Jsons.deserialize(MoreResources.readResource("test_config_missing_datasetid.json"));
-    JsonNode dbConfig = new BigQuerySource().toDatabaseConfig(configJson);
+    final JsonNode configJson = Jsons.deserialize(MoreResources.readResource("test_config_missing_datasetid.json"));
+    final JsonNode dbConfig = new BigQuerySource().toDatabaseConfig(configJson);
     assertFalse(dbConfig.hasNonNull(BigQuerySource.CONFIG_DATASET_ID));
   }
 
   @Test
   public void testNullDatasetIdInConfig() throws IOException {
-    JsonNode configJson = Jsons.deserialize(MoreResources.readResource("test_config_null_datasetid.json"));
-    JsonNode dbConfig = new BigQuerySource().toDatabaseConfig(configJson);
+    final JsonNode configJson = Jsons.deserialize(MoreResources.readResource("test_config_null_datasetid.json"));
+    final JsonNode dbConfig = new BigQuerySource().toDatabaseConfig(configJson);
     assertFalse(dbConfig.hasNonNull(BigQuerySource.CONFIG_DATASET_ID));
   }
 
   @Test
   public void testConfig() throws IOException {
-    JsonNode configJson = Jsons.deserialize(MoreResources.readResource("test_config.json"));
-    JsonNode dbConfig = new BigQuerySource().toDatabaseConfig(configJson);
+    final JsonNode configJson = Jsons.deserialize(MoreResources.readResource("test_config.json"));
+    final JsonNode dbConfig = new BigQuerySource().toDatabaseConfig(configJson);
     assertEquals("dataset", dbConfig.get(BigQuerySource.CONFIG_DATASET_ID).asText());
     assertEquals("project", dbConfig.get(BigQuerySource.CONFIG_PROJECT_ID).asText());
     assertEquals("credentials", dbConfig.get(BigQuerySource.CONFIG_CREDS).asText());

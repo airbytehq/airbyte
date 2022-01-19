@@ -98,7 +98,7 @@
     },
     {
       "stream": {
-        "name": "orders_refunds",
+        "name": "order_refunds",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
@@ -110,7 +110,7 @@
     },
     {
       "stream": {
-        "name": "orders_risks",
+        "name": "order_risks",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
@@ -158,7 +158,77 @@
     },
     {
       "stream": {
+        "name": "shop",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "discount_codes",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "locations",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["id"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["id"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "inventory_items",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "inventory_levels",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "fulfillment_orders",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["id"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["id"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "fulfillments",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,

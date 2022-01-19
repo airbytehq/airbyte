@@ -41,7 +41,7 @@ public enum JobsDatabaseSchema implements TableSchema {
 
   @Override
   public JsonNode getTableDefinition() {
-    File schemaFile = SCHEMAS_ROOT.resolve(schemaFilename).toFile();
+    final File schemaFile = SCHEMAS_ROOT.resolve(schemaFilename).toFile();
     return JsonSchemaValidator.getSchema(schemaFile);
   }
 

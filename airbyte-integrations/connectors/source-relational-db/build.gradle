@@ -13,13 +13,11 @@ dependencies {
     implementation project(':airbyte-json-validation')
 
     implementation 'org.apache.commons:commons-lang3:3.11'
-    implementation 'org.projectlombok:lombok:1.18.20'
-    annotationProcessor('org.projectlombok:lombok:1.18.20')
 
     testImplementation project(':airbyte-test-utils')
 
     testImplementation "org.postgresql:postgresql:42.2.18"
-    testImplementation "org.testcontainers:postgresql:1.15.1"
+    testImplementation "org.testcontainers:postgresql:1.15.3"
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }

@@ -17,10 +17,13 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 /**
  * Custom database for jOOQ code generation. It performs the following operations:
+ * <ul>
  * <li>Run Flyway migration.</li>
  * <li>Dump the database schema.</li>
  * <li>Create a connection for jOOQ code generation.</li>
- * <p/>
+ * </ul>
+ * <p>
+ * </p>
  * Reference: https://github.com/sabomichal/jooq-meta-postgres-flyway
  */
 public abstract class FlywayMigrationDatabase extends PostgresDatabase {
@@ -28,12 +31,6 @@ public abstract class FlywayMigrationDatabase extends PostgresDatabase {
   private static final String DEFAULT_DOCKER_IMAGE = "postgres:13-alpine";
 
   private Connection connection;
-
-  private final String schemaDumpFile;
-
-  protected FlywayMigrationDatabase(String schemaDumpFile) {
-    this.schemaDumpFile = schemaDumpFile;
-  }
 
   protected abstract Database getAndInitializeDatabase(String username, String password, String connectionString) throws IOException;
 
@@ -48,7 +45,7 @@ public abstract class FlywayMigrationDatabase extends PostgresDatabase {
     if (connection == null) {
       try {
         createInternalConnection();
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new RuntimeException("Failed to launch postgres container and run migration", e);
       }
     }
@@ -61,14 +58,14 @@ public abstract class FlywayMigrationDatabase extends PostgresDatabase {
       dockerImage = DEFAULT_DOCKER_IMAGE;
     }
 
-    PostgreSQLContainer<?> container = new PostgreSQLContainer<>(dockerImage)
+    final PostgreSQLContainer<?> container = new PostgreSQLContainer<>(dockerImage)
         .withDatabaseName("jooq_airbyte_configs")
         .withUsername("jooq_generator")
         .withPassword("jooq_generator");
     container.start();
 
-    Database database = getAndInitializeDatabase(container.getUsername(), container.getPassword(), container.getJdbcUrl());
-    DatabaseMigrator migrator = getDatabaseMigrator(database);
+    final Database database = getAndInitializeDatabase(container.getUsername(), container.getPassword(), container.getJdbcUrl());
+    final DatabaseMigrator migrator = getDatabaseMigrator(database);
     migrator.migrate();
 
     connection = database.getDataSource().getConnection();

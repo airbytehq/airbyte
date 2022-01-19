@@ -8,10 +8,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -43,7 +43,7 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected ConnectorSpecification getSpec() throws Exception {
-    return Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
+    return SshHelpers.getSpecAndInjectSsh();
   }
 
   @Override
@@ -85,8 +85,8 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
-    db = new ClickHouseContainer("yandex/clickhouse-server:21.3.10.1-alpine");
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
+    db = new ClickHouseContainer("yandex/clickhouse-server:21.8.8.29-alpine");
     db.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -95,9 +95,10 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("database", SCHEMA_NAME)
         .put("username", db.getUsername())
         .put("password", db.getPassword())
+        .put("ssl", false)
         .build());
 
-    JdbcDatabase database = Databases.createJdbcDatabase(
+    final JdbcDatabase database = Databases.createJdbcDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
         String.format("jdbc:clickhouse://%s:%s/%s",
@@ -117,8 +118,8 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
       connection.createStatement().execute(createTable2);
     });
 
-    String insertTestData = String.format("INSERT INTO %s (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');\n", table1);
-    String insertTestData2 = String.format("INSERT INTO %s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');\n", table2);
+    final String insertTestData = String.format("INSERT INTO %s (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');\n", table1);
+    final String insertTestData2 = String.format("INSERT INTO %s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');\n", table2);
     database.execute(connection -> {
       connection.createStatement().execute(insertTestData);
       connection.createStatement().execute(insertTestData2);
@@ -128,7 +129,7 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     db.close();
     db.stop();
 

@@ -9,15 +9,14 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.DestinationCreate;
+import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.DestinationSearch;
 import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
-import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -25,7 +24,6 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
-import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -40,7 +38,6 @@ public class DestinationHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(DestinationHandler.class);
 
   private final ConnectionsHandler connectionsHandler;
-  private final SpecFetcher specFetcher;
   private final Supplier<UUID> uuidGenerator;
   private final ConfigRepository configRepository;
   private final JsonSchemaValidator validator;
@@ -50,14 +47,12 @@ public class DestinationHandler {
   @VisibleForTesting
   DestinationHandler(final ConfigRepository configRepository,
                      final JsonSchemaValidator integrationSchemaValidation,
-                     final SpecFetcher specFetcher,
                      final ConnectionsHandler connectionsHandler,
                      final Supplier<UUID> uuidGenerator,
                      final JsonSecretsProcessor secretsProcessor,
                      final ConfigurationUpdate configurationUpdate) {
     this.configRepository = configRepository;
     this.validator = integrationSchemaValidation;
-    this.specFetcher = specFetcher;
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
     this.configurationUpdate = configurationUpdate;
@@ -66,16 +61,14 @@ public class DestinationHandler {
 
   public DestinationHandler(final ConfigRepository configRepository,
                             final JsonSchemaValidator integrationSchemaValidation,
-                            final SpecFetcher specFetcher,
                             final ConnectionsHandler connectionsHandler) {
     this(
         configRepository,
         integrationSchemaValidation,
-        specFetcher,
         connectionsHandler,
         UUID::randomUUID,
         new JsonSecretsProcessor(),
-        new ConfigurationUpdate(configRepository, specFetcher));
+        new ConfigurationUpdate(configRepository));
   }
 
   public DestinationRead createDestination(final DestinationCreate destinationCreate)
@@ -109,14 +102,14 @@ public class DestinationHandler {
   public void deleteDestination(final DestinationRead destination)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // disable all connections associated with this destination
-    // Delete connections first in case it it fails in the middle, destination will still be visible
+    // Delete connections first in case it fails in the middle, destination will still be visible
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(destination.getWorkspaceId());
-    for (ConnectionRead connectionRead : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
+    for (final ConnectionRead connectionRead : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
       if (!connectionRead.getDestinationId().equals(destination.getDestinationId())) {
         continue;
       }
 
-      connectionsHandler.deleteConnection(connectionRead);
+      connectionsHandler.deleteConnection(connectionRead.getConnectionId());
     }
 
     final var fullConfig = configRepository.getDestinationConnectionWithSecrets(destination.getDestinationId()).getConfiguration();
@@ -155,23 +148,16 @@ public class DestinationHandler {
     return buildDestinationRead(destinationUpdate.getDestinationId(), spec);
   }
 
-  public DestinationRead getDestination(DestinationIdRequestBody destinationIdRequestBody)
+  public DestinationRead getDestination(final DestinationIdRequestBody destinationIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    final UUID destinationId = destinationIdRequestBody.getDestinationId();
-    final DestinationConnection dci = configRepository.getDestinationConnection(destinationId);
-
-    if (dci.getTombstone()) {
-      throw new ConfigNotFoundException(ConfigSchema.DESTINATION_CONNECTION, destinationId.toString());
-    }
-
     return buildDestinationRead(destinationIdRequestBody.getDestinationId());
   }
 
-  public DestinationReadList listDestinationsForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)
+  public DestinationReadList listDestinationsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<DestinationRead> reads = Lists.newArrayList();
 
-    for (DestinationConnection dci : configRepository.listDestinationConnection()) {
+    for (final DestinationConnection dci : configRepository.listDestinationConnection()) {
       if (!dci.getWorkspaceId().equals(workspaceIdRequestBody.getWorkspaceId())) {
         continue;
       }
@@ -186,13 +172,31 @@ public class DestinationHandler {
     return new DestinationReadList().destinations(reads);
   }
 
-  public DestinationReadList searchDestinations(DestinationSearch destinationSearch)
+  public DestinationReadList listDestinationsForDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    final List<DestinationRead> reads = Lists.newArrayList();
+
+    for (final DestinationConnection destinationConnection : configRepository.listDestinationConnection()) {
+      if (!destinationConnection.getDestinationDefinitionId().equals(destinationDefinitionIdRequestBody.getDestinationDefinitionId())) {
+        continue;
+      }
+      if (destinationConnection.getTombstone() != null && destinationConnection.getTombstone()) {
+        continue;
+      }
+
+      reads.add(buildDestinationRead(destinationConnection.getDestinationId()));
+    }
+
+    return new DestinationReadList().destinations(reads);
+  }
+
+  public DestinationReadList searchDestinations(final DestinationSearch destinationSearch)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<DestinationRead> reads = Lists.newArrayList();
 
-    for (DestinationConnection dci : configRepository.listDestinationConnection()) {
+    for (final DestinationConnection dci : configRepository.listDestinationConnection()) {
       if (!dci.getTombstone()) {
-        DestinationRead destinationRead = buildDestinationRead(dci.getDestinationId());
+        final DestinationRead destinationRead = buildDestinationRead(dci.getDestinationId());
         if (connectionsHandler.matchSearch(destinationSearch, destinationRead)) {
           reads.add(destinationRead);
         }
@@ -206,14 +210,9 @@ public class DestinationHandler {
     validator.ensure(spec.getConnectionSpecification(), configuration);
   }
 
-  public ConnectorSpecification getSpec(UUID destinationDefinitionId)
+  public ConnectorSpecification getSpec(final UUID destinationDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return getSpec(specFetcher, configRepository.getStandardDestinationDefinition(destinationDefinitionId));
-  }
-
-  public static ConnectorSpecification getSpec(SpecFetcher specFetcher, StandardDestinationDefinition destinationDef)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
-    return specFetcher.execute(DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag()));
+    return configRepository.getStandardDestinationDefinition(destinationDefinitionId).getSpec();
   }
 
   private void persistDestinationConnection(final String name,
@@ -238,7 +237,7 @@ public class DestinationHandler {
     return buildDestinationRead(destinationId, spec);
   }
 
-  private DestinationRead buildDestinationRead(final UUID destinationId, ConnectorSpecification spec)
+  private DestinationRead buildDestinationRead(final UUID destinationId, final ConnectorSpecification spec)
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
     // remove secrets from config before returning the read

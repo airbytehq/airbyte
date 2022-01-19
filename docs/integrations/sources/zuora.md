@@ -70,31 +70,38 @@ Any other data type not listed in the table above will be treated as `string`.
 | Production | Yes | Select from exising options while setup |
 | Sandbox | Yes | Select from exising options while setup |
 
+## Supported Data Query options
+
+| Option | Supported?\(Yes/No\) | Notes |
+| :--- | :--- | :--- |
+| LIVE | Yes | Run data queries against Zuora live transactional databases |
+| UNLIMITED | Yes | Run data queries against an optimized, replicated database at 12 hours freshness for high volume extraction use cases (Early Adoption, additionall access required, contact [Zuora Support](http://support.zuora.com/) in order to request this feature enabled for your account beforehand.) |
+
 ## List of Supported Environments for Zuora
 
 ### Production
 
 | Environment | Endpoint |
 | :--- | :--- |
-| US Production | [https://rest.zuora.com](https://rest.zuora.com) |
-| US Cloud Production | [https://rest.na.zuora.com](https://rest.na.zuora.com) |
-| EU Production | [https://rest.eu.zuora.com](https://rest.eu.zuora.com) |
+| US Production | rest.zuora.com |
+| US Cloud Production | rest.na.zuora.com |
+| EU Production | rest.eu.zuora.com |
 
 ### Sandbox
 
 | Environment | Endpoint |
 | :--- | :--- |
-| US API Sandbox | [https://rest.apisandbox.zuora.com](https://rest.apisandbox.zuora.com) |
-| US Cloud API Sandbox | [https://rest.sandbox.na.zuora.com](https://rest.sandbox.na.zuora.com) |
-| US Central Sandbox | [https://rest.test.zuora.com](https://rest.test.zuora.com) |
-| EU API Sandbox | [https://rest.sandbox.eu.zuora.com](https://rest.sandbox.eu.zuora.com) |
-| EU Central Sandbox | [https://rest.test.eu.zuora.com](https://rest.test.eu.zuora.com) |
+| US API Sandbox | rest.apisandbox.zuora.com |
+| US Cloud API Sandbox | rest.sandbox.na.zuora.com |
+| US Central Sandbox | rest.test.zuora.com |
+| EU API Sandbox | rest.sandbox.eu.zuora.com |
+| EU Central Sandbox | rest.test.eu.zuora.com |
 
 ### Other
 
 | Environment | Endpoint |
 | :--- | :--- |
-| US Performance Test | [https://rest.pt1.zuora.com](https://rest.pt1.zuora.com) |
+| US Performance Test | rest.pt1.zuora.com |
 
 For more information about available environments, please visit [this page](https://knowledgecenter.zuora.com/BB_Introducing_Z_Business/D_Zuora_Environments)
 
@@ -142,6 +149,7 @@ Usually, the very first sync operation for all of the objects inside Zuora accou
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.3 | 2021-10-16 | [7053](https://github.com/airbytehq/airbyte/pull/7093) | Added support of `Unlimited` option for `Data Query` |
 | 0.1.2 | 2021-10-11 | [6960](https://github.com/airbytehq/airbyte/pull/6960) | Change minimum value for `Window_in_days` to 1, instead of 30 |
 | 0.1.1 | 2021-10-01 | [6575](https://github.com/airbytehq/airbyte/pull/6575) | Added OAuth support for Airbyte Cloud |
 | 0.1.0 | 2021-08-01 | [4661](https://github.com/airbytehq/airbyte/pull/4661) | Initial release of Native Zuora connector for Airbyte |

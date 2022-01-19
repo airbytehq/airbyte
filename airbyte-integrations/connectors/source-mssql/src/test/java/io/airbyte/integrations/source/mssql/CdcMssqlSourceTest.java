@@ -77,6 +77,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
         .put("database", dbName)
+        .put("schemas", List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
         .put("username", TEST_USER_NAME)
         .put("password", TEST_USER_PASSWORD)
         .put("replication_method", "CDC")
@@ -103,8 +104,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     switchSnapshotIsolation(true, dbName);
   }
 
-  private void switchSnapshotIsolation(Boolean on, String db) {
-    String onOrOff = on ? "ON" : "OFF";
+  private void switchSnapshotIsolation(final Boolean on, final String db) {
+    final String onOrOff = on ? "ON" : "OFF";
     executeQuery("ALTER DATABASE " + db + "\n\tSET ALLOW_SNAPSHOT_ISOLATION " + onOrOff);
   }
 
@@ -119,8 +120,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     executeQuery("EXEC sp_msforeachtable \"REVOKE ALL ON '?' TO " + TEST_USER_NAME + ";\"");
   }
 
-  private void alterPermissionsOnSchema(Boolean grant, String schema) {
-    String grantOrRemove = grant ? "GRANT" : "REVOKE";
+  private void alterPermissionsOnSchema(final Boolean grant, final String schema) {
+    final String grantOrRemove = grant ? "GRANT" : "REVOKE";
     executeQuery(String.format("USE %s;\n" + "%s SELECT ON SCHEMA :: [%s] TO %s", dbName, grantOrRemove, schema, TEST_USER_NAME));
   }
 
@@ -132,17 +133,17 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   }
 
   @Override
-  public String createSchemaQuery(String schemaName) {
+  public String createSchemaQuery(final String schemaName) {
     return "CREATE SCHEMA " + schemaName;
   }
 
-  private void switchCdcOnDatabase(Boolean enable, String db) {
-    String storedProc = enable ? "sys.sp_cdc_enable_db" : "sys.sp_cdc_disable_db";
+  private void switchCdcOnDatabase(final Boolean enable, final String db) {
+    final String storedProc = enable ? "sys.sp_cdc_enable_db" : "sys.sp_cdc_disable_db";
     executeQuery("USE " + db + "\n" + "EXEC " + storedProc);
   }
 
   @Override
-  public void createTable(String schemaName, String tableName, String columnClause) {
+  public void createTable(final String schemaName, final String tableName, final String columnClause) {
     switchCdcOnDatabase(true, dbName);
     super.createTable(schemaName, tableName, columnClause);
 
@@ -151,7 +152,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     // solving with a simple while retry loop
     boolean failingToStart = true;
     int retryNum = 0;
-    int maxRetries = 10;
+    final int maxRetries = 10;
     while (failingToStart) {
       try {
         executeQuery(String.format(
@@ -162,14 +163,14 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
                 + "\t@supports_net_changes = 0",
             schemaName, tableName, CDC_ROLE_NAME)); // enables cdc on MODELS_SCHEMA.MODELS_STREAM_NAME, giving CDC_ROLE_NAME select access
         failingToStart = false;
-      } catch (Exception e) {
+      } catch (final Exception e) {
         if (retryNum >= maxRetries) {
           throw e;
         } else {
           retryNum++;
           try {
             Thread.sleep(10000); // 10 seconds
-          } catch (InterruptedException ex) {
+          } catch (final InterruptedException ex) {
             throw new RuntimeException(ex);
           }
         }
@@ -178,10 +179,10 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   }
 
   @Override
-  public String columnClause(Map<String, String> columnsWithDataType, Optional<String> primaryKey) {
-    StringBuilder columnClause = new StringBuilder();
+  public String columnClause(final Map<String, String> columnsWithDataType, final Optional<String> primaryKey) {
+    final StringBuilder columnClause = new StringBuilder();
     int i = 0;
-    for (Map.Entry<String, String> column : columnsWithDataType.entrySet()) {
+    for (final Map.Entry<String, String> column : columnsWithDataType.entrySet()) {
       columnClause.append(column.getKey());
       columnClause.append(" ");
       columnClause.append(column.getValue());
@@ -202,7 +203,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     try {
       database.close();
       container.close();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -225,8 +226,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     assertThrows(com.microsoft.sqlserver.jdbc.SQLServerException.class, () -> source.assertCdcSchemaQueryable(config, testJdbcDatabase));
   }
 
-  private void switchSqlServerAgentAndWait(Boolean start) throws InterruptedException {
-    String startOrStop = start ? "START" : "STOP";
+  private void switchSqlServerAgentAndWait(final Boolean start) throws InterruptedException {
+    final String startOrStop = start ? "START" : "STOP";
     executeQuery(String.format("EXEC xp_servicecontrol N'%s',N'SQLServerAGENT';", startOrStop));
     Thread.sleep(15 * 1000); // 15 seconds to wait for change of agent state
   }
@@ -283,16 +284,16 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   void testGetTargetPosition() throws InterruptedException {
     Thread.sleep(10 * 1000); // Sleeping because sometimes the db is not yet completely ready and the lsn is not found
     // check that getTargetPosition returns higher Lsn after inserting new row
-    Lsn firstLsn = MssqlCdcTargetPosition.getTargetPosition(testJdbcDatabase, dbName).targetLsn;
+    final Lsn firstLsn = MssqlCdcTargetPosition.getTargetPosition(testJdbcDatabase, dbName).targetLsn;
     executeQuery(String.format("USE %s; INSERT INTO %s.%s (%s, %s, %s) VALUES (%s, %s, '%s');",
         dbName, MODELS_SCHEMA, MODELS_STREAM_NAME, COL_ID, COL_MAKE_ID, COL_MODEL, 910019, 1, "another car"));
     Thread.sleep(15 * 1000); // 15 seconds to wait for Agent capture job to log cdc change
-    Lsn secondLsn = MssqlCdcTargetPosition.getTargetPosition(testJdbcDatabase, dbName).targetLsn;
+    final Lsn secondLsn = MssqlCdcTargetPosition.getTargetPosition(testJdbcDatabase, dbName).targetLsn;
     assertTrue(secondLsn.compareTo(firstLsn) > 0);
   }
 
   @Override
-  protected void removeCDCColumns(ObjectNode data) {
+  protected void removeCDCColumns(final ObjectNode data) {
     data.remove(CDC_LSN);
     data.remove(CDC_UPDATED_AT);
     data.remove(CDC_DELETED_AT);
@@ -303,34 +304,37 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     try {
       // Sleeping because sometimes the db is not yet completely ready and the lsn is not found
       Thread.sleep(5000);
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       throw new RuntimeException(e);
     }
-    JdbcDatabase jdbcDatabase = Databases.createStreamingJdbcDatabase(
+    final JdbcDatabase jdbcDatabase = Databases.createStreamingJdbcDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
         String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
             config.get("host").asText(),
             config.get("port").asInt(),
             dbName),
-        DRIVER_CLASS, new MssqlJdbcStreamingQueryConfiguration(), null);
+        DRIVER_CLASS,
+        new MssqlJdbcStreamingQueryConfiguration(),
+        null,
+        new MssqlSourceOperations());
     return MssqlCdcTargetPosition.getTargetPosition(jdbcDatabase, dbName);
   }
 
   @Override
-  protected CdcTargetPosition extractPosition(JsonNode record) {
+  protected CdcTargetPosition extractPosition(final JsonNode record) {
     return new MssqlCdcTargetPosition(Lsn.valueOf(record.get(CDC_LSN).asText()));
   }
 
   @Override
-  protected void assertNullCdcMetaData(JsonNode data) {
+  protected void assertNullCdcMetaData(final JsonNode data) {
     assertNull(data.get(CDC_LSN));
     assertNull(data.get(CDC_UPDATED_AT));
     assertNull(data.get(CDC_DELETED_AT));
   }
 
   @Override
-  protected void assertCdcMetaData(JsonNode data, boolean deletedAtNull) {
+  protected void assertCdcMetaData(final JsonNode data, final boolean deletedAtNull) {
     assertNotNull(data.get(CDC_LSN));
     assertNotNull(data.get(CDC_UPDATED_AT));
     if (deletedAtNull) {
@@ -341,9 +345,9 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected void addCdcMetadataColumns(AirbyteStream stream) {
-    ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
-    ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
+  protected void addCdcMetadataColumns(final AirbyteStream stream) {
+    final ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
+    final ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
 
     final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
     properties.set(CDC_LSN, stringType);
@@ -368,7 +372,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected void assertExpectedStateMessages(List<AirbyteStateMessage> stateMessages) {
+  protected void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
     assertEquals(1, stateMessages.size());
     assertNotNull(stateMessages.get(0).getData());
     assertNotNull(stateMessages.get(0).getData().get("cdc_state").get("state").get(MSSQL_CDC_OFFSET));

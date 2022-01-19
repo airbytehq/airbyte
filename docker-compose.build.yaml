@@ -8,6 +8,13 @@ services:
       context: airbyte-config/init
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
+  bootloader:
+    image: airbyte/bootloader:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-bootloader
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
   db:
     image: airbyte/db:${VERSION}
     build:
@@ -43,38 +50,10 @@ services:
       context: airbyte-webapp
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
-  migration:
-    image: airbyte/migration:${VERSION}
+  temporal:
+    image: airbyte/temporal:${VERSION}
     build:
       dockerfile: Dockerfile
-      context: airbyte-migration
-      labels:
-        io.airbyte.git-revision: ${GIT_REVISION}
-  normalization:
-    image: airbyte/normalization:${VERSION}
-    build:
-      dockerfile: Dockerfile
-      context: airbyte-integrations/bases/base-normalization
-      labels:
-        io.airbyte.git-revision: ${GIT_REVISION}
-  normalization-mssql:
-    image: airbyte/normalization-mssql:${VERSION}
-    build:
-      dockerfile: mssql.Dockerfile
-      context: airbyte-integrations/bases/base-normalization
-      labels:
-        io.airbyte.git-revision: ${GIT_REVISION}
-  normalization-mysql:
-    image: airbyte/normalization-mysql:${VERSION}
-    build:
-      dockerfile: mysql.Dockerfile
-      context: airbyte-integrations/bases/base-normalization
-      labels:
-        io.airbyte.git-revision: ${GIT_REVISION}
-  normalization-oracle:
-    image: airbyte/normalization-oracle:${VERSION}
-    build:
-      dockerfile: oracle.Dockerfile
-      context: airbyte-integrations/bases/base-normalization
+      context: airbyte-temporal
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}

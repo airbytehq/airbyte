@@ -58,7 +58,7 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected ConfiguredAirbyteCatalog getConfiguredCatalog() throws Exception {
+  protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
@@ -82,18 +82,18 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected JsonNode getState() throws Exception {
+  protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }
 
   @Override
-  protected List<String> getRegexTests() throws Exception {
+  protected List<String> getRegexTests() {
     return Collections.emptyList();
   }
 
   // for each test we create a new schema in the database. run the test in there and then remove it.
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     config = Jsons.clone(getStaticConfig());
     database = Databases.createJdbcDatabase(
         config.get("username").asText(),
@@ -128,7 +128,7 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     final String dropSchemaQuery = String
         .format("DROP SCHEMA IF EXISTS %s", SCHEMA_NAME);
     database.execute(dropSchemaQuery);

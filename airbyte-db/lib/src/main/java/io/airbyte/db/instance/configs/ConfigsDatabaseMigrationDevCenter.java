@@ -20,12 +20,12 @@ public class ConfigsDatabaseMigrationDevCenter extends MigrationDevCenter {
   }
 
   @Override
-  protected FlywayDatabaseMigrator getMigrator(Database database) {
+  protected FlywayDatabaseMigrator getMigrator(final Database database) {
     return new ConfigsDatabaseMigrator(database, ConfigsDatabaseMigrationDevCenter.class.getSimpleName());
   }
 
   @Override
-  protected Database getDatabase(PostgreSQLContainer<?> container) throws IOException {
+  protected Database getDatabase(final PostgreSQLContainer<?> container) throws IOException {
     return new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
   }
 

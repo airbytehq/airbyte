@@ -9,7 +9,7 @@ import io.airbyte.integrations.destination.StandardNameTransformer;
 public class BigQuerySQLNameTransformer extends StandardNameTransformer {
 
   @Override
-  public String convertStreamName(String input) {
+  public String convertStreamName(final String input) {
     String result = super.convertStreamName(input);
     if (!result.substring(0, 1).matches("[A-Za-z_]")) {
       // has to start with a letter or _

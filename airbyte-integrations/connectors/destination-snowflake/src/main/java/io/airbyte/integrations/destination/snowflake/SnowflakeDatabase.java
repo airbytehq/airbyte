@@ -21,8 +21,9 @@ public class SnowflakeDatabase {
 
   private static final Duration NETWORK_TIMEOUT = Duration.ofMinutes(1);
   private static final Duration QUERY_TIMEOUT = Duration.ofHours(3);
+  private static final SnowflakeSQLNameTransformer nameTransformer = new SnowflakeSQLNameTransformer();
 
-  public static Connection getConnection(JsonNode config) throws SQLException {
+  public static Connection getConnection(final JsonNode config) throws SQLException {
     final String connectUrl = String.format("jdbc:snowflake://%s", config.get("host").asText());
 
     final Properties properties = new Properties();
@@ -32,7 +33,7 @@ public class SnowflakeDatabase {
     properties.put("warehouse", config.get("warehouse").asText());
     properties.put("database", config.get("database").asText());
     properties.put("role", config.get("role").asText());
-    properties.put("schema", config.get("schema").asText());
+    properties.put("schema", nameTransformer.getIdentifier(config.get("schema").asText()));
 
     properties.put("networkTimeout", Math.toIntExact(NETWORK_TIMEOUT.toSeconds()));
     properties.put("queryTimeout", Math.toIntExact(QUERY_TIMEOUT.toSeconds()));
@@ -42,11 +43,14 @@ public class SnowflakeDatabase {
     // https://docs.snowflake.com/en/user-guide/jdbc-parameters.html#application
     // identify airbyte traffic to snowflake to enable partnership & optimization opportunities
     properties.put("application", "airbyte");
+    // Needed for JDK17 - see
+    // https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
+    properties.put("JDBC_QUERY_RESULT_FORMAT", "JSON");
 
     return DriverManager.getConnection(connectUrl, properties);
   }
 
-  public static JdbcDatabase getDatabase(JsonNode config) {
+  public static JdbcDatabase getDatabase(final JsonNode config) {
     return new DefaultJdbcDatabase(new SnowflakeConnectionSupplier(config));
   }
 
@@ -54,7 +58,7 @@ public class SnowflakeDatabase {
 
     private final JsonNode config;
 
-    public SnowflakeConnectionSupplier(JsonNode config) {
+    public SnowflakeConnectionSupplier(final JsonNode config) {
       this.config = config;
     }
 

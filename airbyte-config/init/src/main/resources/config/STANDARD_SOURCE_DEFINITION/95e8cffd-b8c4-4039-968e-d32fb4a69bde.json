@@ -2,6 +2,7 @@
   "sourceDefinitionId": "95e8cffd-b8c4-4039-968e-d32fb4a69bde",
   "name": "Klaviyo",
   "dockerRepository": "airbyte/source-klaviyo",
-  "dockerImageTag": "0.1.1",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/klaviyo"
+  "dockerImageTag": "0.1.2",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/klaviyo",
+  "icon": "klaviyo.svg"
 }

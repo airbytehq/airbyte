@@ -11,6 +11,7 @@ import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
@@ -21,12 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.jooq.JSONFormat;
 import org.testcontainers.containers.Network;
 
 public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcceptanceTest {
-
-  private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT);
 
   private final ExtendedNameTransformer namingResolver = new OracleNameTransformer();
 
@@ -49,7 +47,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
         getBasicOracleDbConfigBuilder(db).put("schema", schemaName));
   }
 
-  public ImmutableMap.Builder<Object, Object> getBasicOracleDbConfigBuilder(OracleContainer db) {
+  public ImmutableMap.Builder<Object, Object> getBasicOracleDbConfigBuilder(final OracleContainer db) {
     return ImmutableMap.builder()
         .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
             .getNetworks()
@@ -66,7 +64,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
   }
 
   @Override
-  protected List<String> resolveIdentifier(String identifier) {
+  protected List<String> resolveIdentifier(final String identifier) {
     final List<String> result = new ArrayList<>();
     final String resolved = namingResolver.getIdentifier(identifier);
     result.add(identifier);
@@ -86,8 +84,12 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName, String namespace, JsonNode streamSchema) throws Exception {
-    List<JsonNode> jsonNodes = retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace);
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
+      throws Exception {
+    final List<JsonNode> jsonNodes = retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace);
     return jsonNodes
         .stream()
         .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()).asText()))
@@ -95,9 +97,9 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName, String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
-    String tableName = namingResolver.getIdentifier(streamName);
+    final String tableName = namingResolver.getIdentifier(streamName);
     return retrieveRecordsFromTable(tableName, namespace);
   }
 
@@ -112,20 +114,20 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
                 ctx -> ctx
                     .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, OracleDestination.COLUMN_NAME_EMITTED_AT)))
             .stream()
-            .map(r -> r.formatJSON(JSON_FORMAT))
+            .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
             .map(Jsons::deserialize)
             .collect(Collectors.toList()));
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv) throws Exception {
     startTestContainers();
     SshTunnel.sshWrap(
         getConfig(),
         OracleDestination.HOST_KEY,
         OracleDestination.PORT_KEY,
         mangledConfig -> {
-          Database databaseFromConfig = getDatabaseFromConfig(mangledConfig);
+          final Database databaseFromConfig = getDatabaseFromConfig(mangledConfig);
           databaseFromConfig.query(ctx -> ctx.fetch(String.format("CREATE USER %s IDENTIFIED BY %s", schemaName, schemaName)));
           databaseFromConfig.query(ctx -> ctx.fetch(String.format("GRANT ALL PRIVILEGES TO %s", schemaName)));
         });
@@ -158,13 +160,13 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     SshTunnel.sshWrap(
         getConfig(),
         OracleDestination.HOST_KEY,
         OracleDestination.PORT_KEY,
         mangledConfig -> {
-          Database databaseFromConfig = getDatabaseFromConfig(mangledConfig);
+          final Database databaseFromConfig = getDatabaseFromConfig(mangledConfig);
           databaseFromConfig.query(ctx -> ctx.fetch(String.format("DROP USER %s CASCADE", schemaName)));
         });
 

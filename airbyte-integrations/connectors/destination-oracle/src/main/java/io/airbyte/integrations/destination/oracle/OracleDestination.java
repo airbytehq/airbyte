@@ -49,11 +49,15 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
     System.setProperty("oracle.jdbc.timezoneAsRegion", "false");
   }
 
-  @Override
-  public JsonNode toJdbcConfig(JsonNode config) {
-    List<String> additionalParameters = new ArrayList<>();
+  public static Destination sshWrappedDestination() {
+    return new SshWrappedDestination(new OracleDestination(), List.of("host"), List.of("port"));
+  }
 
-    Protocol protocol = config.has("encryption")
+  @Override
+  public JsonNode toJdbcConfig(final JsonNode config) {
+    final List<String> additionalParameters = new ArrayList<>();
+
+    final Protocol protocol = config.has("encryption")
         ? obtainConnectionProtocol(config.get("encryption"), additionalParameters)
         : Protocol.TCP;
     final String connectionString = String.format(
@@ -72,22 +76,22 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
     }
 
     if (!additionalParameters.isEmpty()) {
-      String connectionParams = String.join(";", additionalParameters);
+      final String connectionParams = String.join(";", additionalParameters);
       configBuilder.put("connection_properties", connectionParams);
     }
 
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  private Protocol obtainConnectionProtocol(JsonNode encryption,
-                                            List<String> additionalParameters) {
-    String encryptionMethod = encryption.get("encryption_method").asText();
+  private Protocol obtainConnectionProtocol(final JsonNode encryption,
+                                            final List<String> additionalParameters) {
+    final String encryptionMethod = encryption.get("encryption_method").asText();
     switch (encryptionMethod) {
       case "unencrypted" -> {
         return Protocol.TCP;
       }
       case "client_nne" -> {
-        String algorithm = encryption.get("encryption_algorithm").asText();
+        final String algorithm = encryption.get("encryption_algorithm").asText();
         additionalParameters.add("oracle.net.encryption_client=REQUIRED");
         additionalParameters.add("oracle.net.encryption_types_client=( " + algorithm + " )");
         return Protocol.TCP;
@@ -95,7 +99,7 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
       case "encrypted_verify_certificate" -> {
         try {
           convertAndImportCertificate(encryption.get("ssl_certificate").asText());
-        } catch (IOException | InterruptedException e) {
+        } catch (final IOException | InterruptedException e) {
           throw new RuntimeException("Failed to import certificate into Java Keystore");
         }
         additionalParameters.add("javax.net.ssl.trustStore=" + KEY_STORE_FILE_PATH);
@@ -108,10 +112,10 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
         "Failed to obtain connection protocol from config " + encryption.asText());
   }
 
-  private static void convertAndImportCertificate(String certificate)
+  private static void convertAndImportCertificate(final String certificate)
       throws IOException, InterruptedException {
-    Runtime run = Runtime.getRuntime();
-    try (PrintWriter out = new PrintWriter("certificate.pem")) {
+    final Runtime run = Runtime.getRuntime();
+    try (final PrintWriter out = new PrintWriter("certificate.pem")) {
       out.print(certificate);
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);
@@ -119,17 +123,16 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
         + " -file certificate.der -storepass " + KEY_STORE_PASS + " -noprompt", run);
   }
 
-  private static void runProcess(String cmd, Runtime run) throws IOException, InterruptedException {
-    Process pr = run.exec(cmd);
+  private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
+    final Process pr = run.exec(cmd);
     if (!pr.waitFor(30, TimeUnit.SECONDS)) {
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);
     }
   }
 
-  public static void main(String[] args) throws Exception {
-    final Destination destination = new SshWrappedDestination(new OracleDestination(), HOST_KEY,
-        PORT_KEY);
+  public static void main(final String[] args) throws Exception {
+    final Destination destination = sshWrappedDestination();
     LOGGER.info("starting destination: {}", OracleDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", OracleDestination.class);

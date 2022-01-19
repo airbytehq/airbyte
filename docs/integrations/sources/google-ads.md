@@ -24,6 +24,9 @@ This source is capable of syncing the following tables and their data:
 * [ad\_groups](https://developers.google.com/google-ads/api/fields/v8/ad_group)
 * [campaigns](https://developers.google.com/google-ads/api/fields/v8/campaign)
 * [click\_view](https://developers.google.com/google-ads/api/reference/rpc/v8/ClickView)
+* [keyword](https://developers.google.com/google-ads/api/fields/v8/keyword_view)
+* [geographic](https://developers.google.com/google-ads/api/fields/v8/geographic_view)
+
 
 #### Report Tables
 
@@ -34,6 +37,10 @@ This source is capable of syncing the following tables and their data:
 * [shopping\_performance\_report](https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance)
 
 **Note**: Due to constraints from the Google Ads API, the `click_view` stream retrieves data one day at a time and can only retrieve data newer than 90 days ago
+
+**Note**: Due to constraints from the Google Ads API, [metrics](https://developers.google.com/google-ads/api/fields/v8/metrics) cannot be requested for a manager account. Therefore, report streams are only available when pulling data from a non-manager account. 
+
+**Note**: For incremental streams data is synced up to the previous day using your Google Ads account time zone. The reason is that Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad#segments.date) without time. Also, some report cannot load data in real time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
 
 ## Getting Started \(Airbyte-Cloud\)
 
@@ -66,7 +73,7 @@ This guide will provide information as if starting from scratch. Please skip ove
 * You should now have two Google Ads accounts: a normal account and a manager account. Link the Manager account to the normal account following [Google's documentation](https://support.google.com/google-ads/answer/7459601).
 * Apply for a developer token \(**make sure you follow our** [**instructions**](google-ads.md#how-to-apply-for-the-developer-token)\) on your Manager account.  This token allows you to access your data from the Google Ads API. Here are [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token). The docs are a little unclear on this point, but you will _not_ be able to access your data via the Google Ads API until this token is approved. You cannot use a test developer token, it has to be at least a basic developer token. It usually takes Google 24 hours to respond to these applications. This developer token is the value you will use in the `developer_token` field.
 * Fetch your `client_id`, `client_secret`, and `refresh_token`. Google provides [instructions](https://developers.google.com/google-ads/api/docs/first-call/overview) on how to do this.
-* Select your `customer_id`. The `customer_is` refer to the id of each of your Google Ads accounts. This is the 10 digit number in the top corner of the page when you are in google ads ui. The source will only pull data from the accounts for which you provide an id. If you are having trouble finding it, check out [Google's instructions](https://support.google.com/google-ads/answer/1704344).
+* Select your `customer_id`. The `customer_id` refers to the id of each of your Google Ads accounts. This is the 10 digit number in the top corner of the page when you are in Google Ads UI. The source will only pull data from the accounts for which you provide an id. If you are having trouble finding it, check out [Google's instructions](https://support.google.com/google-ads/answer/1704344).
 
 Wow! That was a lot of steps. We are working on making the OAuth flow for all of our connectors simpler \(allowing you to skip needing to get a `developer_token` and a `refresh_token` which are the most painful / time-consuming steps in this walkthrough\).
 
@@ -95,6 +102,11 @@ This source is constrained by whatever API limits are set for the Google Ads tha
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| `0.1.21` | 2021-12-28 | [9149](https://github.com/airbytehq/airbyte/pull/9149) | Update title and description |
+| `0.1.20` | 2021-12-22 | [9071](https://github.com/airbytehq/airbyte/pull/9071) | Fix: Keyword schema enum |
+| `0.1.19` | 2021-12-14 | [8431](https://github.com/airbytehq/airbyte/pull/8431) | Add new streams: Geographic and Keyword |
+| `0.1.18` | 2021-12-09 | [8225](https://github.com/airbytehq/airbyte/pull/8225) | Include time_zone to sync. Remove streams for manager account. |
+| `0.1.16` | 2021-11-22 | [8178](https://github.com/airbytehq/airbyte/pull/8178) | clarify setup fields |
 | `0.1.15` | 2021-10-07 | [6684](https://github.com/airbytehq/airbyte/pull/6684) | Add new stream `click_view` |
 | `0.1.14` | 2021-10-01 | [6565](https://github.com/airbytehq/airbyte/pull/6565) | Fix OAuth Spec File |
 | `0.1.13` | 2021-09-27 | [6458](https://github.com/airbytehq/airbyte/pull/6458) | Update OAuth Spec File |

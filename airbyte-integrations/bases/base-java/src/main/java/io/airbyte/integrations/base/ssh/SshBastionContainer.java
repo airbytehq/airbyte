@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.JdbcDatabaseContainer;
@@ -34,7 +35,7 @@ public class SshBastionContainer {
     bastion.start();
   }
 
-  public JsonNode getTunnelConfig(SshTunnel.TunnelMethod tunnelMethod, ImmutableMap.Builder<Object, Object> builderWithSchema)
+  public JsonNode getTunnelConfig(final SshTunnel.TunnelMethod tunnelMethod, final ImmutableMap.Builder<Object, Object> builderWithSchema)
       throws IOException, InterruptedException {
 
     return Jsons.jsonNode(builderWithSchema
@@ -53,7 +54,15 @@ public class SshBastionContainer {
         .build());
   }
 
-  public ImmutableMap.Builder<Object, Object> getBasicDbConfigBuider(JdbcDatabaseContainer<?> db) {
+  public ImmutableMap.Builder<Object, Object> getBasicDbConfigBuider(final JdbcDatabaseContainer<?> db) {
+    return getBasicDbConfigBuider(db, db.getDatabaseName());
+  }
+
+  public ImmutableMap.Builder<Object, Object> getBasicDbConfigBuider(final JdbcDatabaseContainer<?> db, final List<String> schemas) {
+    return getBasicDbConfigBuider(db, db.getDatabaseName()).put("schemas", schemas);
+  }
+
+  public ImmutableMap.Builder<Object, Object> getBasicDbConfigBuider(final JdbcDatabaseContainer<?> db, final String schemaName) {
     return ImmutableMap.builder()
         .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
             .getNetworks()
@@ -62,7 +71,7 @@ public class SshBastionContainer {
         .put("username", db.getUsername())
         .put("password", db.getPassword())
         .put("port", db.getExposedPorts().get(0))
-        .put("database", db.getDatabaseName())
+        .put("database", schemaName)
         .put("ssl", false);
   }
 
@@ -70,7 +79,7 @@ public class SshBastionContainer {
     return this.network;
   }
 
-  public void stopAndCloseContainers(JdbcDatabaseContainer<?> db) {
+  public void stopAndCloseContainers(final JdbcDatabaseContainer<?> db) {
     db.stop();
     db.close();
     bastion.stop();

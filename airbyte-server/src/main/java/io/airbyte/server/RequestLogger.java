@@ -6,6 +6,7 @@ package io.airbyte.server;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -38,17 +39,23 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
 
   private final Map<String, String> mdc;
 
-  public RequestLogger(Map<String, String> mdc) {
+  public RequestLogger(final Map<String, String> mdc) {
     this.mdc = mdc;
   }
 
+  @VisibleForTesting
+  RequestLogger(final Map<String, String> mdc, final HttpServletRequest servletRequest) {
+    this.mdc = mdc;
+    this.servletRequest = servletRequest;
+  }
+
   @Override
-  public void filter(ContainerRequestContext requestContext) throws IOException {
+  public void filter(final ContainerRequestContext requestContext) throws IOException {
     if (requestContext.getMethod().equals("POST")) {
       // hack to refill the entity stream so it doesn't interfere with other operations
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      final ByteArrayOutputStream baos = new ByteArrayOutputStream();
       IOUtils.copy(requestContext.getEntityStream(), baos);
-      InputStream entity = new ByteArrayInputStream(baos.toByteArray());
+      final InputStream entity = new ByteArrayInputStream(baos.toByteArray());
       requestContext.setEntityStream(new ByteArrayInputStream(baos.toByteArray()));
       // end hack
 
@@ -57,27 +64,26 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
   }
 
   @Override
-  public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) {
+  public void filter(final ContainerRequestContext requestContext, final ContainerResponseContext responseContext) {
     MDC.setContextMap(mdc);
 
-    String remoteAddr = servletRequest.getRemoteAddr();
-    String method = servletRequest.getMethod();
-    String url = servletRequest.getRequestURI();
-    boolean isContentTypeGzip =
-        servletRequest.getHeader("Content-Type") != null && servletRequest.getHeader("Content-Type").toLowerCase().contains("application/x-gzip");
-    int status = responseContext.getStatus();
+    final String remoteAddr = servletRequest.getRemoteAddr();
+    final String method = servletRequest.getMethod();
+    final String url = servletRequest.getRequestURI();
 
-    StringBuilder logBuilder = new StringBuilder()
-        .append("REQ ")
-        .append(remoteAddr)
-        .append(" ")
-        .append(method)
-        .append(" ")
-        .append(status)
-        .append(" ")
-        .append(url);
+    final boolean isPrintable = servletRequest.getHeader("Content-Type") != null &&
+        servletRequest.getHeader("Content-Type").toLowerCase().contains("application/json") &&
+        isValidJson(requestBody);
 
-    if (method.equals("POST") && requestBody != null && !requestBody.equals("") && !isContentTypeGzip) {
+    final int status = responseContext.getStatus();
+
+    final StringBuilder logBuilder = createLogPrefix(
+        remoteAddr,
+        method,
+        status,
+        url);
+
+    if (method.equals("POST") && requestBody != null && !requestBody.equals("") && isPrintable) {
       logBuilder
           .append(" - ")
           .append(redactSensitiveInfo(requestBody));
@@ -90,18 +96,35 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
     }
   }
 
+  @VisibleForTesting
+  static StringBuilder createLogPrefix(
+                                       final String remoteAddr,
+                                       final String method,
+                                       final int status,
+                                       final String url) {
+    return new StringBuilder()
+        .append("REQ ")
+        .append(remoteAddr)
+        .append(" ")
+        .append(method)
+        .append(" ")
+        .append(status)
+        .append(" ")
+        .append(url);
+  }
+
   private static final Set<String> TOP_LEVEL_SENSITIVE_FIELDS = Set.of(
       "connectionConfiguration");
 
-  private static String redactSensitiveInfo(String requestBody) {
-    Optional<JsonNode> jsonNodeOpt = Jsons.tryDeserialize(requestBody);
+  private static String redactSensitiveInfo(final String requestBody) {
+    final Optional<JsonNode> jsonNodeOpt = Jsons.tryDeserialize(requestBody);
 
     if (jsonNodeOpt.isPresent()) {
-      JsonNode jsonNode = jsonNodeOpt.get();
+      final JsonNode jsonNode = jsonNodeOpt.get();
       if (jsonNode instanceof ObjectNode) {
-        ObjectNode objectNode = (ObjectNode) jsonNode;
+        final ObjectNode objectNode = (ObjectNode) jsonNode;
 
-        for (String topLevelSensitiveField : TOP_LEVEL_SENSITIVE_FIELDS) {
+        for (final String topLevelSensitiveField : TOP_LEVEL_SENSITIVE_FIELDS) {
           if (objectNode.has(topLevelSensitiveField)) {
             objectNode.put(topLevelSensitiveField, "REDACTED");
           }
@@ -114,6 +137,10 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
     }
 
     return requestBody;
+  }
+
+  private static boolean isValidJson(final String json) {
+    return Jsons.tryDeserialize(json).isPresent();
   }
 
 }

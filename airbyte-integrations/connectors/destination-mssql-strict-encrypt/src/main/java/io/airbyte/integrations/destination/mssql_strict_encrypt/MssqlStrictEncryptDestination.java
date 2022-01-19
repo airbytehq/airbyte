@@ -22,7 +22,7 @@ public class MssqlStrictEncryptDestination extends SpecModifyingDestination impl
     super(MSSQLDestination.sshWrappedDestination());
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Destination destination = new MssqlStrictEncryptDestination();
     LOGGER.info("starting destination: {}", MssqlStrictEncryptDestination.class);
     new IntegrationRunner(destination).run(args);
@@ -30,7 +30,7 @@ public class MssqlStrictEncryptDestination extends SpecModifyingDestination impl
   }
 
   @Override
-  public ConnectorSpecification modifySpec(ConnectorSpecification originalSpec) {
+  public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
     // Remove the first element in the "ssl_method" array, because it allows users to choose an
     // unencrypted connection.

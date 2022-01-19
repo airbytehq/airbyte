@@ -9,28 +9,28 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class DynamodbDestinationConfig {
 
   private final String endpoint;
-  private final String tableName;
+  private final String tableNamePrefix;
   private final String accessKeyId;
   private final String secretAccessKey;
   private final String region;
 
   public DynamodbDestinationConfig(
-                                   String endpoint,
-                                   String tableName,
-                                   String region,
-                                   String accessKeyId,
-                                   String secretAccessKey) {
+                                   final String endpoint,
+                                   final String tableNamePrefix,
+                                   final String region,
+                                   final String accessKeyId,
+                                   final String secretAccessKey) {
     this.endpoint = endpoint;
-    this.tableName = tableName;
+    this.tableNamePrefix = tableNamePrefix;
     this.region = region;
     this.accessKeyId = accessKeyId;
     this.secretAccessKey = secretAccessKey;
   }
 
-  public static DynamodbDestinationConfig getDynamodbDestinationConfig(JsonNode config) {
+  public static DynamodbDestinationConfig getDynamodbDestinationConfig(final JsonNode config) {
     return new DynamodbDestinationConfig(
         config.get("dynamodb_endpoint") == null ? "" : config.get("dynamodb_endpoint").asText(),
-        config.get("dynamodb_table_name").asText(),
+        config.get("dynamodb_table_name_prefix").asText(),
         config.get("dynamodb_region").asText(),
         config.get("access_key_id").asText(),
         config.get("secret_access_key").asText());
@@ -52,8 +52,8 @@ public class DynamodbDestinationConfig {
     return region;
   }
 
-  public String getTableName() {
-    return tableName;
+  public String getTableNamePrefix() {
+    return tableNamePrefix;
   }
 
 }

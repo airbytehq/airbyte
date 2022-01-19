@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.jdbc.copy;
 
+import static io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES;
+
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
@@ -29,16 +31,14 @@ public class CopyConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CopyConsumerFactory.class);
 
-  private static final int MAX_BATCH_SIZE = 10000;
-
-  public static <T> AirbyteMessageConsumer create(Consumer<AirbyteMessage> outputRecordCollector,
-                                                  JdbcDatabase database,
-                                                  SqlOperations sqlOperations,
-                                                  ExtendedNameTransformer namingResolver,
-                                                  T config,
-                                                  ConfiguredAirbyteCatalog catalog,
-                                                  StreamCopierFactory<T> streamCopierFactory,
-                                                  String defaultSchema) {
+  public static <T> AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
+                                                  final JdbcDatabase database,
+                                                  final SqlOperations sqlOperations,
+                                                  final ExtendedNameTransformer namingResolver,
+                                                  final T config,
+                                                  final ConfiguredAirbyteCatalog catalog,
+                                                  final StreamCopierFactory<T> streamCopierFactory,
+                                                  final String defaultSchema) {
     final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier = createWriteConfigs(
         namingResolver,
         config,
@@ -56,22 +56,22 @@ public class CopyConsumerFactory {
         onCloseFunction(pairToCopier, database, sqlOperations, pairToIgnoredRecordCount),
         catalog,
         sqlOperations::isValidData,
-        MAX_BATCH_SIZE);
+        DEFAULT_MAX_BATCH_SIZE_BYTES);
   }
 
-  private static <T> Map<AirbyteStreamNameNamespacePair, StreamCopier> createWriteConfigs(ExtendedNameTransformer namingResolver,
-                                                                                          T config,
-                                                                                          ConfiguredAirbyteCatalog catalog,
-                                                                                          StreamCopierFactory<T> streamCopierFactory,
-                                                                                          String defaultSchema,
-                                                                                          JdbcDatabase database,
-                                                                                          SqlOperations sqlOperations) {
-    Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier = new HashMap<>();
+  private static <T> Map<AirbyteStreamNameNamespacePair, StreamCopier> createWriteConfigs(final ExtendedNameTransformer namingResolver,
+                                                                                          final T config,
+                                                                                          final ConfiguredAirbyteCatalog catalog,
+                                                                                          final StreamCopierFactory<T> streamCopierFactory,
+                                                                                          final String defaultSchema,
+                                                                                          final JdbcDatabase database,
+                                                                                          final SqlOperations sqlOperations) {
+    final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier = new HashMap<>();
     final String stagingFolder = UUID.randomUUID().toString();
-    for (var configuredStream : catalog.getStreams()) {
-      var stream = configuredStream.getStream();
-      var pair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
-      var copier = streamCopierFactory.create(defaultSchema, config, stagingFolder, configuredStream, namingResolver, database, sqlOperations);
+    for (final var configuredStream : catalog.getStreams()) {
+      final var stream = configuredStream.getStream();
+      final var pair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
+      final var copier = streamCopierFactory.create(defaultSchema, config, stagingFolder, configuredStream, namingResolver, database, sqlOperations);
 
       pairToCopier.put(pair, copier);
     }
@@ -79,17 +79,17 @@ public class CopyConsumerFactory {
     return pairToCopier;
   }
 
-  private static OnStartFunction onStartFunction(Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount) {
+  private static OnStartFunction onStartFunction(final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount) {
     return pairToIgnoredRecordCount::clear;
   }
 
-  private static RecordWriter recordWriterFunction(Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier,
-                                                   SqlOperations sqlOperations,
-                                                   Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount) {
+  private static RecordWriter recordWriterFunction(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier,
+                                                   final SqlOperations sqlOperations,
+                                                   final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount) {
     return (AirbyteStreamNameNamespacePair pair, List<AirbyteRecordMessage> records) -> {
-      var fileName = pairToCopier.get(pair).prepareStagingFile();
-      for (AirbyteRecordMessage recordMessage : records) {
-        var id = UUID.randomUUID();
+      final var fileName = pairToCopier.get(pair).prepareStagingFile();
+      for (final AirbyteRecordMessage recordMessage : records) {
+        final var id = UUID.randomUUID();
         if (sqlOperations.isValidData(recordMessage.getData())) {
           // TODO Truncate json data instead of throwing whole record away?
           // or should we upload it into a special rejected record folder in s3 instead?
@@ -101,10 +101,10 @@ public class CopyConsumerFactory {
     };
   }
 
-  private static OnCloseFunction onCloseFunction(Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier,
-                                                 JdbcDatabase database,
-                                                 SqlOperations sqlOperations,
-                                                 Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount) {
+  private static OnCloseFunction onCloseFunction(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier,
+                                                 final JdbcDatabase database,
+                                                 final SqlOperations sqlOperations,
+                                                 final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount) {
     return (hasFailed) -> {
       pairToIgnoredRecordCount
           .forEach((pair, count) -> LOGGER.warn("A total of {} record(s) of data from stream {} were invalid and were ignored.", count, pair));
@@ -112,12 +112,15 @@ public class CopyConsumerFactory {
     };
   }
 
-  private static void closeAsOneTransaction(List<StreamCopier> streamCopiers, boolean hasFailed, JdbcDatabase db, SqlOperations sqlOperations)
+  private static void closeAsOneTransaction(final List<StreamCopier> streamCopiers,
+                                            boolean hasFailed,
+                                            final JdbcDatabase db,
+                                            final SqlOperations sqlOperations)
       throws Exception {
     Exception firstException = null;
     try {
-      List<String> queries = new ArrayList<>();
-      for (var copier : streamCopiers) {
+      final List<String> queries = new ArrayList<>();
+      for (final var copier : streamCopiers) {
         try {
           copier.closeStagingUploader(hasFailed);
 
@@ -125,11 +128,11 @@ public class CopyConsumerFactory {
             copier.createDestinationSchema();
             copier.createTemporaryTable();
             copier.copyStagingFileToTemporaryTable();
-            var destTableName = copier.createDestinationTable();
-            var mergeQuery = copier.generateMergeStatement(destTableName);
+            final var destTableName = copier.createDestinationTable();
+            final var mergeQuery = copier.generateMergeStatement(destTableName);
             queries.add(mergeQuery);
           }
-        } catch (Exception e) {
+        } catch (final Exception e) {
           final String message = String.format("Failed to finalize copy to temp table due to: %s", e);
           LOGGER.error(message);
           hasFailed = true;
@@ -142,9 +145,10 @@ public class CopyConsumerFactory {
         sqlOperations.executeTransaction(db, queries);
       }
     } finally {
-      for (var copier : streamCopiers) {
+      for (final var copier : streamCopiers) {
         copier.removeFileAndDropTmpTable();
       }
+      db.close();
     }
     if (firstException != null) {
       throw firstException;

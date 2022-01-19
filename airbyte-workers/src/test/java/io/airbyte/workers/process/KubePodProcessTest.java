@@ -38,10 +38,10 @@ public class KubePodProcessTest {
 
   @BeforeAll
   public static void setup() {
-    var varDockerfile = Resources.getResource(TEST_IMAGE_WITH_VAR_PATH);
+    final var varDockerfile = Resources.getResource(TEST_IMAGE_WITH_VAR_PATH);
     DockerUtils.buildImage(varDockerfile.getPath(), TEST_IMAGE_WITH_VAR_NAME);
 
-    var noVarDockerfile = Resources.getResource(TEST_IMAGE_NO_VAR_PATH);
+    final var noVarDockerfile = Resources.getResource(TEST_IMAGE_NO_VAR_PATH);
     DockerUtils.buildImage(noVarDockerfile.getPath(), TEST_IMAGE_NO_VAR_NAME);
   }
 
@@ -57,14 +57,14 @@ public class KubePodProcessTest {
     @Test
     @DisplayName("Should return the correct pod ip.")
     public void testGetPodIpGoodPod() throws InterruptedException {
-      var sleep = new ContainerBuilder()
+      final var sleep = new ContainerBuilder()
           .withImage("busybox")
           .withName("sleep")
           .withCommand("sleep", "100000")
           .build();
 
-      var podName = Strings.addRandomSuffix("test-get-pod-good-pod", "-", 5);
-      Pod podDef = new PodBuilder()
+      final var podName = Strings.addRandomSuffix("test-get-pod-good-pod", "-", 5);
+      final Pod podDef = new PodBuilder()
           .withApiVersion("v1")
           .withNewMetadata()
           .withName(podName)
@@ -76,12 +76,12 @@ public class KubePodProcessTest {
           .endSpec()
           .build();
 
-      String namespace = "default";
-      Pod pod = K8s.pods().inNamespace(namespace).createOrReplace(podDef);
+      final String namespace = "default";
+      final Pod pod = K8s.pods().inNamespace(namespace).createOrReplace(podDef);
       K8s.resource(pod).waitUntilReady(20, TimeUnit.SECONDS);
 
-      var ip = KubePodProcess.getPodIP(K8s, podName, namespace);
-      var exp = K8s.pods().inNamespace(namespace).withName(podName).get().getStatus().getPodIP();
+      final var ip = KubePodProcess.getPodIP(K8s, podName, namespace);
+      final var exp = K8s.pods().inNamespace(namespace).withName(podName).get().getStatus().getPodIP();
       assertEquals(exp, ip);
       K8s.resource(podDef).inNamespace(namespace).delete();
     }

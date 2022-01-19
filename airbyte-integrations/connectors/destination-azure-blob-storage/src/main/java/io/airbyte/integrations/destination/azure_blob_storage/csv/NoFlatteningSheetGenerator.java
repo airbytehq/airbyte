@@ -25,7 +25,7 @@ public class NoFlatteningSheetGenerator extends BaseSheetGenerator implements Cs
    * When no flattening is needed, the record column is just one json blob.
    */
   @Override
-  List<String> getRecordColumns(JsonNode json) {
+  List<String> getRecordColumns(final JsonNode json) {
     return Collections.singletonList(Jsons.serialize(json));
   }
 

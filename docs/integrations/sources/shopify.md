@@ -1,6 +1,6 @@
 ---
 description: >-
-Shopify is a proprietary e-commerce platform for online stores and retail point-of-sale systems.
+  Shopify is a proprietary e-commerce platform for online stores and retail point-of-sale systems.
 ---
 
 # Shopify
@@ -35,10 +35,16 @@ This Source is capable of syncing the following core Streams:
 * [Transactions](https://help.shopify.com/en/api/reference/orders/transaction)
 * [Pages](https://help.shopify.com/en/api/reference/online-store/page)
 * [Price Rules](https://help.shopify.com/en/api/reference/discounts/pricerule)
+* [Locations](https://shopify.dev/api/admin-rest/2021-10/resources/location)
+* [InventoryItems](https://shopify.dev/api/admin-rest/2021-10/resources/inventoryItem)
+* [InventoryLevels](https://shopify.dev/api/admin-rest/2021-10/resources/inventorylevel)
+* [Fulfillment Orders](https://shopify.dev/api/admin-rest/2021-07/resources/fulfillmentorder)
+* [Fulfillments](https://shopify.dev/api/admin-rest/2021-07/resources/fulfillment)
+* [Shop](https://shopify.dev/api/admin-rest/2021-07/resources/shop)
 
 #### NOTE:
 
-For better experience with `Incremental Refresh` the follwing is recomended:
+For better experience with `Incremental Refresh` the following is recommended:
 
 * `Order Refunds`, `Order Risks`, `Transactions` should be synced along with `Orders` stream.
 * `Discount Codes` should be synced along with `Price Rules` stream.
@@ -95,6 +101,14 @@ This connector support both: `OAuth 2.0` and `API PASSWORD` (for private applica
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.27 | 2021-12-22 | [9049](https://github.com/airbytehq/airbyte/pull/9049) | Update connector fields title/description |
+| 0.1.26 | 2021-12-14 | [8597](https://github.com/airbytehq/airbyte/pull/8597) | Fix `mismatched number of tables` for base-normalization, increased performance of `order_refunds` stream |
+| 0.1.25 | 2021-12-02 | [8297](https://github.com/airbytehq/airbyte/pull/8297) | Added Shop stream |
+| 0.1.24 | 2021-11-30 | [7783](https://github.com/airbytehq/airbyte/pull/7783) | Reviewed and corrected schemas for all streams |
+| 0.1.23 | 2021-11-15 | [7973](https://github.com/airbytehq/airbyte/pull/7973) | Added `InventoryItems` |
+| 0.1.22 | 2021-10-18 | [7101](https://github.com/airbytehq/airbyte/pull/7107) | Added FulfillmentOrders, Fulfillments streams |
+| 0.1.21 | 2021-10-14 | [7382](https://github.com/airbytehq/airbyte/pull/7382) | Fixed `InventoryLevels` primary key |
+| 0.1.20 | 2021-10-14 | [7063](https://github.com/airbytehq/airbyte/pull/7063) | Added `Location` and `InventoryLevels` as streams |
 | 0.1.19 | 2021-10-11 | [6951](https://github.com/airbytehq/airbyte/pull/6951) | Added support of `OAuth 2.0` authorisation option |
 | 0.1.18 | 2021-09-21 | [6056](https://github.com/airbytehq/airbyte/pull/6056) | Added `pre_tax_price` to the `orders/line_items` schema |
 | 0.1.17 | 2021-09-17 | [5244](https://github.com/airbytehq/airbyte/pull/5244) | Created data type enforcer for converting prices into numbers |

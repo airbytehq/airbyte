@@ -15,9 +15,11 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The base implementation takes care of the following:
+ * <ul>
  * <li>Create shared instance variables.</li>
  * <li>Create the bucket and prepare the bucket path.</li>
  * <li>Log and close the write.</li>
+ * </ul>
  */
 public abstract class BaseAzureBlobStorageWriter implements AzureBlobStorageWriter {
 
@@ -28,9 +30,9 @@ public abstract class BaseAzureBlobStorageWriter implements AzureBlobStorageWrit
   protected final AirbyteStream stream;
   protected final DestinationSyncMode syncMode;
 
-  protected BaseAzureBlobStorageWriter(AzureBlobStorageDestinationConfig config,
-                                       AppendBlobClient appendBlobClient,
-                                       ConfiguredAirbyteStream configuredStream) {
+  protected BaseAzureBlobStorageWriter(final AzureBlobStorageDestinationConfig config,
+                                       final AppendBlobClient appendBlobClient,
+                                       final ConfiguredAirbyteStream configuredStream) {
     this.config = config;
     this.appendBlobClient = appendBlobClient;
     this.stream = configuredStream.getStream();
@@ -41,7 +43,7 @@ public abstract class BaseAzureBlobStorageWriter implements AzureBlobStorageWrit
    * Log and close the write.
    */
   @Override
-  public void close(boolean hasFailed) throws IOException {
+  public void close(final boolean hasFailed) throws IOException {
     if (hasFailed) {
       LOGGER.warn("Failure detected. Aborting upload of stream '{}'...", stream.getName());
       closeWhenFail();

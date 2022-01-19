@@ -9,7 +9,7 @@ import io.airbyte.protocol.models.JsonSchemaPrimitive;
 
 public class IncrementalUtils {
 
-  public static String getCursorField(ConfiguredAirbyteStream stream) {
+  public static String getCursorField(final ConfiguredAirbyteStream stream) {
     if (stream.getCursorField().size() == 0) {
       throw new IllegalStateException("No cursor field specified for stream attempting to do incremental.");
     } else if (stream.getCursorField().size() > 1) {
@@ -19,7 +19,7 @@ public class IncrementalUtils {
     }
   }
 
-  public static JsonSchemaPrimitive getCursorType(ConfiguredAirbyteStream stream, String cursorField) {
+  public static JsonSchemaPrimitive getCursorType(final ConfiguredAirbyteStream stream, final String cursorField) {
     if (stream.getStream().getJsonSchema().get("properties") == null) {
       throw new IllegalStateException(String.format("No properties found in stream: %s.", stream.getStream().getName()));
     }
@@ -40,7 +40,7 @@ public class IncrementalUtils {
   // x < 0 mean replace original
   // x == 0 means keep original
   // x > 0 means keep original
-  public static int compareCursors(String original, String candidate, JsonSchemaPrimitive type) {
+  public static int compareCursors(final String original, final String candidate, final JsonSchemaPrimitive type) {
     if (original == null && candidate == null) {
       return 0;
     }

@@ -14,12 +14,12 @@ public class SourceMatcher implements Matchable<SourceRead> {
 
   private final SourceSearch search;
 
-  public SourceMatcher(SourceSearch search) {
+  public SourceMatcher(final SourceSearch search) {
     this.search = search;
   }
 
   @Override
-  public SourceRead match(SourceRead query) {
+  public SourceRead match(final SourceRead query) {
     if (search == null) {
       return query;
     }
@@ -35,7 +35,7 @@ public class SourceMatcher implements Matchable<SourceRead> {
     } else if (query.getConnectionConfiguration() == null) {
       fromSearch.connectionConfiguration(search.getConnectionConfiguration());
     } else {
-      JsonNode connectionConfiguration = search.getConnectionConfiguration();
+      final JsonNode connectionConfiguration = search.getConnectionConfiguration();
       query.getConnectionConfiguration().fieldNames()
           .forEachRemaining(field -> {
             if (!connectionConfiguration.has(field) && connectionConfiguration instanceof ObjectNode) {

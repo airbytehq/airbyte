@@ -16,8 +16,8 @@ import java.util.UUID;
  */
 public abstract class BaseSheetGenerator implements CsvSheetGenerator {
 
-  public List<Object> getDataRow(UUID id, AirbyteRecordMessage recordMessage) {
-    List<Object> data = new LinkedList<>();
+  public List<Object> getDataRow(final UUID id, final AirbyteRecordMessage recordMessage) {
+    final List<Object> data = new LinkedList<>();
     data.add(id);
     data.add(recordMessage.getEmittedAt());
     data.addAll(getRecordColumns(recordMessage.getData()));

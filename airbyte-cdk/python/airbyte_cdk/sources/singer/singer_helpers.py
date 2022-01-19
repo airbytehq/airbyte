@@ -12,6 +12,7 @@ from datetime import datetime
 from io import TextIOWrapper
 from typing import Any, DefaultDict, Dict, Iterator, List, Mapping, Optional, Tuple
 
+from airbyte_cdk.logger import log_by_prefix
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteMessage,
@@ -110,7 +111,7 @@ class SingerHelper:
         """
         :param singer_catalog:
         :param sync_mode_overrides: A dict from stream name to the sync modes it should use. Each stream in this dict must exist in the Singer catalog,
-        but not every stream in the catalog should exist in this
+          but not every stream in the catalog should exist in this
         :param primary_key_overrides: A dict of stream name -> list of fields to be used as PKs.
         :return: Airbyte Catalog
         """
@@ -138,7 +139,7 @@ class SingerHelper:
             shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
         )
         for line in completed_process.stderr.splitlines():
-            logger.log_by_prefix(line, "ERROR")
+            logger.log(*log_by_prefix(line, "ERROR"))
 
         return json.loads(completed_process.stdout)
 
@@ -169,9 +170,9 @@ class SingerHelper:
                         if message_data is not None:
                             yield message_data
                     else:
-                        logger.log_by_prefix(line, "INFO")
+                        logger.log(*log_by_prefix(line, "INFO"))
                 else:
-                    logger.log_by_prefix(line, "ERROR")
+                    logger.log(*log_by_prefix(line, "ERROR"))
 
     @staticmethod
     def _read_lines(process: subprocess.Popen) -> Iterator[Tuple[str, TextIOWrapper]]:

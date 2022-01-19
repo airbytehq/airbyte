@@ -12,20 +12,22 @@ import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import java.nio.file.Path;
 import java.util.Optional;
 
-// Simple class to host a Destination in-memory rather than spinning up a container for it.
-// For debugging and testing purposes only; not recommended to use this for real code
+/**
+ * Simple class to host a Destination in-memory rather than spinning up a container for it. For
+ * debugging and testing purposes only; not recommended to use this for real code
+ */
 public class LocalAirbyteDestination implements AirbyteDestination {
 
-  private Destination dest;
+  private final Destination dest;
   private AirbyteMessageConsumer consumer;
   private boolean isClosed = false;
 
-  public LocalAirbyteDestination(Destination dest) {
+  public LocalAirbyteDestination(final Destination dest) {
     this.dest = dest;
   }
 
   @Override
-  public void start(WorkerDestinationConfig destinationConfig, Path jobRoot) throws Exception {
+  public void start(final WorkerDestinationConfig destinationConfig, final Path jobRoot) throws Exception {
     consumer =
         dest.getConsumer(destinationConfig.getDestinationConnectionConfiguration(), destinationConfig.getCatalog(),
             Destination::defaultOutputRecordCollector);
@@ -33,7 +35,7 @@ public class LocalAirbyteDestination implements AirbyteDestination {
   }
 
   @Override
-  public void accept(AirbyteMessage message) throws Exception {
+  public void accept(final AirbyteMessage message) throws Exception {
     consumer.accept(message);
   }
 
@@ -56,6 +58,11 @@ public class LocalAirbyteDestination implements AirbyteDestination {
   @Override
   public boolean isFinished() {
     return isClosed;
+  }
+
+  @Override
+  public int getExitValue() {
+    return 0;
   }
 
   @Override

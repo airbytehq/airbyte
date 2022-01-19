@@ -24,29 +24,33 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultGetSpecWorker.class);
 
+  private final WorkerConfigs workerConfigs;
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
 
   private Process process;
 
-  public DefaultGetSpecWorker(final IntegrationLauncher integrationLauncher, AirbyteStreamFactory streamFactory) {
+  public DefaultGetSpecWorker(final WorkerConfigs workerConfigs,
+                              final IntegrationLauncher integrationLauncher,
+                              final AirbyteStreamFactory streamFactory) {
+    this.workerConfigs = workerConfigs;
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
   }
 
-  public DefaultGetSpecWorker(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory());
+  public DefaultGetSpecWorker(final WorkerConfigs workerConfigs, final IntegrationLauncher integrationLauncher) {
+    this(workerConfigs, integrationLauncher, new DefaultAirbyteStreamFactory());
   }
 
   @Override
-  public ConnectorSpecification run(JobGetSpecConfig config, Path jobRoot) throws WorkerException {
+  public ConnectorSpecification run(final JobGetSpecConfig config, final Path jobRoot) throws WorkerException {
     try {
       process = integrationLauncher.spec(jobRoot);
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
-      Optional<ConnectorSpecification> spec;
-      try (InputStream stdout = process.getInputStream()) {
+      final Optional<ConnectorSpecification> spec;
+      try (final InputStream stdout = process.getInputStream()) {
         spec = streamFactory.create(IOs.newBufferedReader(stdout))
             .filter(message -> message.getType() == Type.SPEC)
             .map(AirbyteMessage::getSpec)
@@ -56,10 +60,10 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
         // this.
         // retrieving spec should generally be instantaneous, but since docker images might not be pulled
         // it could take a while longer depending on internet conditions as well.
-        WorkerUtils.gentleClose(process, 30, TimeUnit.MINUTES);
+        WorkerUtils.gentleClose(workerConfigs, process, 30, TimeUnit.MINUTES);
       }
 
-      int exitCode = process.exitValue();
+      final int exitCode = process.exitValue();
       if (exitCode == 0) {
         if (spec.isEmpty()) {
           throw new WorkerException("integration failed to output a spec struct.");
@@ -70,7 +74,7 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
       } else {
         throw new WorkerException(String.format("Spec job subprocess finished with exit code %s", exitCode));
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new WorkerException(String.format("Error while getting spec from image %s", config.getDockerImage()), e);
     }
 

@@ -28,7 +28,7 @@ class NamespacingMapperTest {
   private static final AirbyteMessage RECORD_MESSAGE = createRecordMessage();
 
   private static AirbyteMessage createRecordMessage() {
-    AirbyteMessage message = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
+    final AirbyteMessage message = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
     message.getRecord().withNamespace(INPUT_NAMESPACE);
     return message;
   }

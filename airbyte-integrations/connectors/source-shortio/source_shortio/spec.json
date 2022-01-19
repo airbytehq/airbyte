@@ -9,17 +9,20 @@
     "properties": {
       "domain_id": {
         "type": "string",
-        "description": "Domain ID",
+        "desciprtion": "Short.io Domain ID",
+        "title": "Domain ID",
         "airbyte_secret": false
       },
       "secret_key": {
         "type": "string",
-        "description": "Short.io Secret key",
+        "title": "Secret Key",
+        "description": "Short.io Secret Key",
         "airbyte_secret": true
       },
       "start_date": {
         "type": "string",
-        "description": "Start Date, YYYY-MM-DD",
+        "title": "Start Date",
+        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         "airbyte_secret": false
       }
     }

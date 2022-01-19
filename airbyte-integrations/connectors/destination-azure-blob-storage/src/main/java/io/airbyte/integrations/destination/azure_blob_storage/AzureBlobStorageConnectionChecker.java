@@ -27,9 +27,9 @@ public class AzureBlobStorageConnectionChecker {
       AzureBlobStorageConnectionChecker.class);
 
   public AzureBlobStorageConnectionChecker(
-                                           AzureBlobStorageDestinationConfig azureBlobStorageConfig) {
+                                           final AzureBlobStorageDestinationConfig azureBlobStorageConfig) {
 
-    StorageSharedKeyCredential credential = new StorageSharedKeyCredential(
+    final StorageSharedKeyCredential credential = new StorageSharedKeyCredential(
         azureBlobStorageConfig.getAccountName(),
         azureBlobStorageConfig.getAccountKey());
 
@@ -77,11 +77,11 @@ public class AzureBlobStorageConnectionChecker {
    * This options may be used to write and flush right away. Note: Azure SDK fails for empty lines,
    * but those are not supposed to be written here
    */
-  public void writeUsingAppendBlock(String data) {
+  public void writeUsingAppendBlock(final String data) {
     LOGGER.info("Writing test data to Azure Blob storage: " + data);
-    InputStream dataStream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
+    final InputStream dataStream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
 
-    Integer blobCommittedBlockCount = appendBlobClient.appendBlock(dataStream, data.length())
+    final Integer blobCommittedBlockCount = appendBlobClient.appendBlock(dataStream, data.length())
         .getBlobCommittedBlockCount();
 
     LOGGER.info("blobCommittedBlockCount: " + blobCommittedBlockCount);

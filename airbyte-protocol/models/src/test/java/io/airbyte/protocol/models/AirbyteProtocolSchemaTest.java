@@ -21,7 +21,7 @@ class AirbyteProtocolSchemaTest {
 
   @Test
   void testPrepareKnownSchemas() {
-    for (AirbyteProtocolSchema value : AirbyteProtocolSchema.values()) {
+    for (final AirbyteProtocolSchema value : AirbyteProtocolSchema.values()) {
       assertTrue(Files.exists(value.getFile().toPath()));
     }
   }

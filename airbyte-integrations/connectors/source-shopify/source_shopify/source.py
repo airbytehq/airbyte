@@ -63,8 +63,13 @@ class ShopifyStream(HttpStream, ABC):
         # transform method was implemented according to issue 4841
         # Shopify API returns price fields as a string and it should be converted to number
         # this solution designed to convert string into number, but in future can be modified for general purpose
-        for record in records:
-            yield self._transformer.transform(record)
+        if isinstance(records, dict):
+            # for cases when we have a single record as dict
+            yield self._transformer.transform(records)
+        else:
+            # for other cases
+            for record in records:
+                yield self._transformer.transform(record)
 
     @property
     @abstractmethod
@@ -72,7 +77,6 @@ class ShopifyStream(HttpStream, ABC):
         """The name of the field in the response which contains the data"""
 
 
-# Basic incremental stream
 class IncrementalShopifyStream(ShopifyStream, ABC):
 
     # Setting the check point interval to the limit of the records output
@@ -103,7 +107,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         # Getting records >= state
         if stream_state:
             for record in records_slice:
-                if record.get(self.cursor_field) >= stream_state.get(self.cursor_field):
+                if record.get(self.cursor_field, "") >= stream_state.get(self.cursor_field):
                     yield record
         else:
             yield from records_slice
@@ -142,12 +146,17 @@ class ChildSubstream(IncrementalShopifyStream):
 
     ::  @ parent_stream_class - defines the parent stream object to read from
     ::  @ slice_key - defines the name of the property in stream slices dict.
-    ::  @ record_field_name - the name of the field inside of parent stream record. Default is `id`.
+    ::  @ nested_record - the name of the field inside of parent stream record. Default is `id`.
+    ::  @ nested_record_field_name - the name of the field inside of nested_record.
+    ::  @ nested_substream - the name of the nested entity inside of parent stream, helps to reduce the number of
+          API Calls, if present, see `OrderRefunds` stream for more.
     """
 
     parent_stream_class: object = None
     slice_key: str = None
-    record_field_name: str = "id"
+    nested_record: str = "id"
+    nested_record_field_name: str = None
+    nested_substream = None
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {"limit": self.limit}
@@ -158,14 +167,21 @@ class ChildSubstream(IncrementalShopifyStream):
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Reading the parent stream for slices with structure:
-        EXAMPLE: for given record_field_name as `id` of Orders,
+        EXAMPLE: for given nested_record as `id` of Orders,
 
         Output: [ {slice_key: 123}, {slice_key: 456}, ..., {slice_key: 999} ]
         """
         parent_stream = self.parent_stream_class(self.config)
         parent_stream_state = stream_state_cache.cached_state.get(parent_stream.name)
         for record in parent_stream.read_records(stream_state=parent_stream_state, **kwargs):
-            yield {self.slice_key: record[self.record_field_name]}
+            # to limit the number of API Calls and reduce the time of data fetch,
+            # we can pull the ready data for child_substream, if nested data is present,
+            # and corresponds to the data of child_substream we need.
+            if self.nested_substream:
+                if record.get(self.nested_substream):
+                    yield {self.slice_key: record[self.nested_record]}
+            else:
+                yield {self.slice_key: record[self.nested_record]}
 
     def read_records(
         self,
@@ -173,9 +189,15 @@ class ChildSubstream(IncrementalShopifyStream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
-        """ Reading child streams records for each `id` """
+        """Reading child streams records for each `id`"""
 
-        self.logger.info(f"Reading {self.name} for {self.slice_key}: {stream_slice.get(self.slice_key)}")
+        slice_data = stream_slice.get(self.slice_key)
+        # sometimes the stream_slice.get(self.slice_key) has the list of records,
+        # to avoid data exposition inside the logs, we should get the data we need correctly out of stream_slice.
+        if isinstance(slice_data, list) and self.nested_record_field_name is not None and len(slice_data) > 0:
+            slice_data = slice_data[0].get(self.nested_record_field_name)
+
+        self.logger.info(f"Reading {self.name} for {self.slice_key}: {slice_data}")
         records = super().read_records(stream_slice=stream_slice, **kwargs)
         yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=records)
 
@@ -257,20 +279,22 @@ class Collects(IncrementalShopifyStream):
         return params
 
 
-class OrdersRefunds(ChildSubstream):
+class OrderRefunds(ChildSubstream):
 
     parent_stream_class: object = Orders
     slice_key = "order_id"
 
     data_field = "refunds"
     cursor_field = "created_at"
+    # we pull out the records that we already know has the refunds data from Orders object
+    nested_substream = "refunds"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         order_id = stream_slice["order_id"]
         return f"orders/{order_id}/{self.data_field}.json"
 
 
-class OrdersRisks(ChildSubstream):
+class OrderRisks(ChildSubstream):
 
     parent_stream_class: object = Orders
     slice_key = "order_id"
@@ -325,20 +349,105 @@ class DiscountCodes(ChildSubstream):
         return f"price_rules/{price_rule_id}/{self.data_field}.json"
 
 
+class Locations(ShopifyStream):
+
+    """
+    The location API does not support any form of filtering.
+    https://shopify.dev/api/admin-rest/2021-07/resources/location
+
+    Therefore, only FULL_REFRESH mode is supported.
+    """
+
+    data_field = "locations"
+
+    def path(self, **kwargs):
+        return f"{self.data_field}.json"
+
+
+class InventoryLevels(ChildSubstream):
+    parent_stream_class: object = Locations
+    slice_key = "location_id"
+
+    data_field = "inventory_levels"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        location_id = stream_slice["location_id"]
+        return f"locations/{location_id}/{self.data_field}.json"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        records_stream = super().parse_response(response, **kwargs)
+
+        def generate_key(record):
+            record.update({"id": "|".join((str(record.get("location_id", "")), str(record.get("inventory_item_id", ""))))})
+            return record
+
+        # associate the surrogate key
+        yield from map(generate_key, records_stream)
+
+
+class InventoryItems(ChildSubstream):
+
+    parent_stream_class: object = Products
+    slice_key = "id"
+    nested_record = "variants"
+    nested_record_field_name = "inventory_item_id"
+    data_field = "inventory_items"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+
+        ids = ",".join(str(x[self.nested_record_field_name]) for x in stream_slice[self.slice_key])
+        return f"inventory_items.json?ids={ids}"
+
+
+class FulfillmentOrders(ChildSubstream):
+
+    parent_stream_class: object = Orders
+    slice_key = "order_id"
+
+    data_field = "fulfillment_orders"
+
+    cursor_field = "id"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        order_id = stream_slice[self.slice_key]
+        return f"orders/{order_id}/{self.data_field}.json"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
+
+
+class Fulfillments(ChildSubstream):
+
+    parent_stream_class: object = Orders
+    slice_key = "order_id"
+
+    data_field = "fulfillments"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        order_id = stream_slice[self.slice_key]
+        return f"orders/{order_id}/{self.data_field}.json"
+
+
+class Shop(ShopifyStream):
+    data_field = "shop"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+
 class SourceShopify(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
 
         """
         Testing connection availability for the connector.
         """
-        auth = ShopifyAuthenticator(config).get_auth_header()
-        api_version = "2021-07"  # Latest Stable Release
-        url = f"https://{config['shop']}.myshopify.com/admin/api/{api_version}/shop.json"
-
+        config["authenticator"] = ShopifyAuthenticator(config)
         try:
-            session = requests.get(url, headers=auth)
-            session.raise_for_status()
-            return True, None
+            responce = list(Shop(config).read_records(sync_mode=None))
+            # check for the shop_id is present in the responce
+            shop_id = responce[0].get("id")
+            if shop_id is not None:
+                return True, None
         except requests.exceptions.RequestException as e:
             return False, e
 
@@ -359,10 +468,16 @@ class SourceShopify(AbstractSource):
             Metafields(config),
             CustomCollections(config),
             Collects(config),
-            OrdersRefunds(config),
-            OrdersRisks(config),
+            OrderRefunds(config),
+            OrderRisks(config),
             Transactions(config),
             Pages(config),
             PriceRules(config),
             DiscountCodes(config),
+            Locations(config),
+            InventoryItems(config),
+            InventoryLevels(config),
+            FulfillmentOrders(config),
+            Fulfillments(config),
+            Shop(config),
         ]

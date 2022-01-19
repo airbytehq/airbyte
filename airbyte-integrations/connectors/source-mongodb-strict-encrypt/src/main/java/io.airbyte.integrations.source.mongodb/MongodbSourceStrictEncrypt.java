@@ -22,7 +22,7 @@ public class MongodbSourceStrictEncrypt extends SpecModifyingSource implements S
   }
 
   @Override
-  public ConnectorSpecification modifySpec(ConnectorSpecification originalSpec) throws Exception {
+  public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) throws Exception {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
     // removing tls property for a standalone instance to disable possibility to switch off a tls
     // connection

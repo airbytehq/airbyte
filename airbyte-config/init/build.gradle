@@ -6,4 +6,19 @@ dependencies {
     implementation 'commons-cli:commons-cli:1.4'
 
     implementation project(':airbyte-config:models')
+    implementation project(':airbyte-config:persistence')
+    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-commons-docker')
+    implementation project(':airbyte-json-validation')
 }
+
+task copyScripts(type: Copy) {
+    dependsOn copyDocker
+
+    from('scripts')
+    into 'build/docker/bin/scripts'
+}
+
+Task dockerBuildTask = getDockerBuildTask("init",  "$project.projectDir")
+dockerBuildTask.dependsOn(copyScripts)
+assemble.dependsOn(dockerBuildTask)

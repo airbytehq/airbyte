@@ -27,7 +27,10 @@ public class JobRetrier implements Runnable {
   private final JobNotifier jobNotifier;
   private final int maxSyncJobAttempts;
 
-  public JobRetrier(JobPersistence jobPersistence, Supplier<Instant> timeSupplier, JobNotifier jobNotifier, int maxSyncJobAttempts) {
+  public JobRetrier(final JobPersistence jobPersistence,
+                    final Supplier<Instant> timeSupplier,
+                    final JobNotifier jobNotifier,
+                    final int maxSyncJobAttempts) {
     this.persistence = jobPersistence;
     this.timeSupplier = timeSupplier;
     this.jobNotifier = jobNotifier;
@@ -54,9 +57,9 @@ public class JobRetrier implements Runnable {
 
     LOGGER.debug("Completed Job Retrier...");
 
-    int incompleteJobCount = incompleteJobs.size();
-    int failedJobCount = failedJobs.get();
-    int retriedJobCount = retriedJobs.get();
+    final int incompleteJobCount = incompleteJobs.size();
+    final int failedJobCount = failedJobs.get();
+    final int retriedJobCount = retriedJobs.get();
     if (incompleteJobCount > 0 || failedJobCount > 0 || retriedJobCount > 0) {
       LOGGER.info("Job Retrier Summary. Incomplete jobs: {}, Job set to retry: {}, Jobs set to failed: {}",
           incompleteJobs.size(),
@@ -68,12 +71,12 @@ public class JobRetrier implements Runnable {
   private List<Job> incompleteJobs() {
     try {
       return persistence.listJobsWithStatus(JobStatus.INCOMPLETE);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException("failed to fetch failed jobs", e);
     }
   }
 
-  private boolean hasReachedMaxAttempt(Job job) {
+  private boolean hasReachedMaxAttempt(final Job job) {
     if (Job.REPLICATION_TYPES.contains(job.getConfigType())) {
       return job.getAttemptsCount() >= maxSyncJobAttempts;
     } else {
@@ -81,9 +84,9 @@ public class JobRetrier implements Runnable {
     }
   }
 
-  private boolean shouldRetry(Job job) {
+  private boolean shouldRetry(final Job job) {
     if (Job.REPLICATION_TYPES.contains(job.getConfigType())) {
-      long lastRun = job.getUpdatedAtInSecond();
+      final long lastRun = job.getUpdatedAtInSecond();
       // todo (cgardens) - use exponential backoff.
       return lastRun < timeSupplier.get().getEpochSecond() - TimeUnit.MINUTES.toSeconds(RETRY_WAIT_MINUTES);
     } else {
@@ -91,19 +94,19 @@ public class JobRetrier implements Runnable {
     }
   }
 
-  private void failJob(Job job) {
+  private void failJob(final Job job) {
     try {
       jobNotifier.failJob("max retry limit was reached", job);
       persistence.failJob(job.getId());
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException("failed to update status for job: " + job.getId(), e);
     }
   }
 
-  private void resetJob(Job job) {
+  private void resetJob(final Job job) {
     try {
       persistence.resetJob(job.getId());
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException("failed to update status for job: " + job.getId(), e);
     }
   }

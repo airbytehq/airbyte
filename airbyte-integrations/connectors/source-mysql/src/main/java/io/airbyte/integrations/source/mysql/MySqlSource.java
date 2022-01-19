@@ -11,11 +11,11 @@ import static java.util.stream.Collectors.toList;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import com.mysql.cj.MysqlType;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
@@ -30,7 +30,6 @@ import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
-import java.sql.JDBCType;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +39,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MySqlSource extends AbstractJdbcSource implements Source {
+public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSource.class);
 
@@ -62,7 +61,7 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
     super(DRIVER_CLASS, new MySqlJdbcStreamingQueryConfiguration(), new MySqlSourceOperations());
   }
 
-  private static AirbyteStream removeIncrementalWithoutPk(AirbyteStream stream) {
+  private static AirbyteStream removeIncrementalWithoutPk(final AirbyteStream stream) {
     if (stream.getSourceDefinedPrimaryKey().isEmpty()) {
       stream.getSupportedSyncModes().remove(SyncMode.INCREMENTAL);
     }
@@ -70,7 +69,7 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
     return stream;
   }
 
-  private static AirbyteStream setIncrementalToSourceDefined(AirbyteStream stream) {
+  private static AirbyteStream setIncrementalToSourceDefined(final AirbyteStream stream) {
     if (stream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL)) {
       stream.setSourceDefinedCursor(true);
     }
@@ -79,10 +78,10 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   }
 
   // Note: in place mutation.
-  private static AirbyteStream addCdcMetadataColumns(AirbyteStream stream) {
+  private static AirbyteStream addCdcMetadataColumns(final AirbyteStream stream) {
 
-    ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
-    ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
+    final ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
+    final ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
 
     final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
     final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
@@ -95,67 +94,19 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(JsonNode config) throws Exception {
+  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
     final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(super.getCheckOperations(config));
     if (isCdc(config)) {
-      checkOperations.add(database -> {
-        List<String> log = database.resultSetQuery(connection -> {
-          final String sql = "show variables where Variable_name = 'log_bin'";
-
-          return connection.createStatement().executeQuery(sql);
-        }, resultSet -> resultSet.getString("Value")).collect(toList());
-
-        if (log.size() != 1) {
-          throw new RuntimeException("Could not query the variable log_bin");
-        }
-
-        String logBin = log.get(0);
-        if (!logBin.equalsIgnoreCase("ON")) {
-          throw new RuntimeException("The variable log_bin should be set to ON, but it is : " + logBin);
-        }
-      });
-
-      checkOperations.add(database -> {
-        List<String> format = database.resultSetQuery(connection -> {
-          final String sql = "show variables where Variable_name = 'binlog_format'";
-
-          return connection.createStatement().executeQuery(sql);
-        }, resultSet -> resultSet.getString("Value")).collect(toList());
-
-        if (format.size() != 1) {
-          throw new RuntimeException("Could not query the variable binlog_format");
-        }
-
-        String binlogFormat = format.get(0);
-        if (!binlogFormat.equalsIgnoreCase("ROW")) {
-          throw new RuntimeException("The variable binlog_format should be set to ROW, but it is : " + binlogFormat);
-        }
-      });
+      checkOperations.addAll(List.of(getCheckOperation("log_bin", "ON"),
+          getCheckOperation("binlog_format", "ROW"),
+          getCheckOperation("binlog_row_image", "FULL")));
     }
-
-    checkOperations.add(database -> {
-      List<String> image = database.resultSetQuery(connection -> {
-        final String sql = "show variables where Variable_name = 'binlog_row_image'";
-
-        return connection.createStatement().executeQuery(sql);
-      }, resultSet -> resultSet.getString("Value")).collect(toList());
-
-      if (image.size() != 1) {
-        throw new RuntimeException("Could not query the variable binlog_row_image");
-      }
-
-      String binlogRowImage = image.get(0);
-      if (!binlogRowImage.equalsIgnoreCase("FULL")) {
-        throw new RuntimeException("The variable binlog_row_image should be set to FULL, but it is : " + binlogRowImage);
-      }
-    });
-
     return checkOperations;
   }
 
   @Override
-  public AirbyteCatalog discover(JsonNode config) throws Exception {
-    AirbyteCatalog catalog = super.discover(config);
+  public AirbyteCatalog discover(final JsonNode config) throws Exception {
+    final AirbyteCatalog catalog = super.discover(config);
 
     if (isCdc(config)) {
       final List<AirbyteStream> streams = catalog.getStreams().stream()
@@ -171,7 +122,7 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toDatabaseConfig(JsonNode config) {
+  public JsonNode toDatabaseConfig(final JsonNode config) {
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
         config.get("host").asText(),
         config.get("port").asText(),
@@ -180,6 +131,11 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
     // see MySqlJdbcStreamingQueryConfiguration for more context on why useCursorFetch=true is needed.
     jdbcUrl.append("?useCursorFetch=true");
     jdbcUrl.append("&zeroDateTimeBehavior=convertToNull");
+    // ensure the return tinyint(1) is boolean
+    jdbcUrl.append("&tinyInt1isBit=true");
+    // ensure the return year value is a Date; see the rationale
+    // in the setJsonField method in MySqlSourceOperations.java
+    jdbcUrl.append("&yearIsDateType=true");
     if (config.get("jdbc_url_params") != null && !config.get("jdbc_url_params").asText().isEmpty()) {
       jdbcUrl.append("&").append(config.get("jdbc_url_params").asText());
     }
@@ -189,7 +145,7 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
       jdbcUrl.append("&").append(String.join("&", SSL_PARAMETERS));
     }
 
-    ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
         .put("jdbc_url", jdbcUrl.toString());
 
@@ -200,25 +156,25 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  private static boolean isCdc(JsonNode config) {
+  private static boolean isCdc(final JsonNode config) {
     return config.hasNonNull("replication_method")
         && ReplicationMethod.valueOf(config.get("replication_method").asText())
             .equals(ReplicationMethod.CDC);
   }
 
-  private static boolean shouldUseCDC(ConfiguredAirbyteCatalog catalog) {
-    Optional<SyncMode> any = catalog.getStreams().stream().map(ConfiguredAirbyteStream::getSyncMode)
+  private static boolean shouldUseCDC(final ConfiguredAirbyteCatalog catalog) {
+    final Optional<SyncMode> any = catalog.getStreams().stream().map(ConfiguredAirbyteStream::getSyncMode)
         .filter(syncMode -> syncMode == SyncMode.INCREMENTAL).findAny();
     return any.isPresent();
   }
 
   @Override
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JdbcDatabase database,
-                                                                             ConfiguredAirbyteCatalog catalog,
-                                                                             Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-                                                                             StateManager stateManager,
-                                                                             Instant emittedAt) {
-    JsonNode sourceConfig = database.getSourceConfig();
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
+                                                                             final ConfiguredAirbyteCatalog catalog,
+                                                                             final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
+                                                                             final StateManager stateManager,
+                                                                             final Instant emittedAt) {
+    final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       final AirbyteDebeziumHandler handler =
           new AirbyteDebeziumHandler(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), MySqlCdcProperties.getDebeziumProperties(),
@@ -242,7 +198,7 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
         "sys");
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Source source = MySqlSource.sshWrappedSource();
     LOGGER.info("starting source: {}", MySqlSource.class);
     new IntegrationRunner(source).run(args);
@@ -254,9 +210,23 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
     CDC
   }
 
-  @Override
-  protected JdbcSourceOperations getSourceOperations() {
-    return new MySqlSourceOperations();
+  private CheckedConsumer<JdbcDatabase, Exception> getCheckOperation(String name, String value) {
+    return database -> {
+      final List<String> result = database.resultSetQuery(connection -> {
+        final String sql = String.format("show variables where Variable_name = '%s'", name);
+
+        return connection.createStatement().executeQuery(sql);
+      }, resultSet -> resultSet.getString("Value")).collect(toList());
+
+      if (result.size() != 1) {
+        throw new RuntimeException(String.format("Could not query the variable %s", name));
+      }
+
+      final String resultValue = result.get(0);
+      if (!resultValue.equalsIgnoreCase(value)) {
+        throw new RuntimeException(String.format("The variable %s should be set to %s, but it is : %s", name, value, resultValue));
+      }
+    };
   }
 
 }

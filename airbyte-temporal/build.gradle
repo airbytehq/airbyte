@@ -1,0 +1,10 @@
+task copyScripts(type: Copy) {
+    dependsOn copyDocker
+
+    from('scripts')
+    into 'build/docker/bin/scripts'
+}
+
+Task dockerBuildTask = getDockerBuildTask("temporal", "$project.projectDir")
+dockerBuildTask.dependsOn(copyScripts)
+assemble.dependsOn(dockerBuildTask)

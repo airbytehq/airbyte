@@ -7,11 +7,13 @@ package io.airbyte.integrations.source.oracle;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.OracleJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
+import java.sql.JDBCType;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.AfterAll;
@@ -65,7 +67,7 @@ class OracleStressTest extends JdbcStressTest {
   }
 
   @Override
-  public AbstractJdbcSource getSource() {
+  public AbstractJdbcSource<JDBCType> getSource() {
     return new OracleTestSource();
   }
 
@@ -84,18 +86,18 @@ class OracleStressTest extends JdbcStressTest {
     ORACLE_DB.close();
   }
 
-  private static class OracleTestSource extends AbstractJdbcSource implements Source {
+  private static class OracleTestSource extends AbstractJdbcSource<JDBCType> implements Source {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OracleTestSource.class);
 
     static final String DRIVER_CLASS = "oracle.jdbc.OracleDriver";
 
     public OracleTestSource() {
-      super(DRIVER_CLASS, new OracleJdbcStreamingQueryConfiguration());
+      super(DRIVER_CLASS, new OracleJdbcStreamingQueryConfiguration(), JdbcUtils.getDefaultSourceOperations());
     }
 
     @Override
-    public JsonNode toDatabaseConfig(JsonNode config) {
+    public JsonNode toDatabaseConfig(final JsonNode config) {
       final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
           .put("username", config.get("username").asText())
           .put("jdbc_url", String.format("jdbc:oracle:thin:@//%s:%s/xe",
@@ -116,7 +118,7 @@ class OracleStressTest extends JdbcStressTest {
       return Set.of("APEX_040000", "CTXSYS", "FLOWS_FILES", "HR", "MDSYS", "OUTLN", "SYS", "XDB");
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(final String[] args) throws Exception {
       final Source source = new OracleTestSource();
       LOGGER.info("starting source: {}", OracleTestSource.class);
       new IntegrationRunner(source).run(args);

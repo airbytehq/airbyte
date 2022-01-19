@@ -47,7 +47,7 @@ public class MetricSingleton {
     return instance;
   }
 
-  public void setMonitoringDaemon(HTTPServer monitoringDaemon) {
+  public void setMonitoringDaemon(final HTTPServer monitoringDaemon) {
     this.monitoringDaemon = monitoringDaemon;
   }
 
@@ -60,10 +60,10 @@ public class MetricSingleton {
    * @param name of gauge
    * @param val to set
    */
-  public void setGauge(String name, double val, String description) {
+  public void setGauge(final String name, final double val, final String description) {
     validateNameAndCheckDescriptionExists(name, description, () -> ifPublish(() -> {
       if (!nameToGauge.containsKey(name)) {
-        Gauge gauge = Gauge.build().name(name).help(description).register();
+        final Gauge gauge = Gauge.build().name(name).help(description).register();
         nameToGauge.put(name, gauge);
       }
       nameToGauge.get(name).set(val);
@@ -76,14 +76,14 @@ public class MetricSingleton {
    * @param name of gauge
    * @param val to increment
    */
-  public void incrementGauge(String name, double val, String description) {
+  public void incrementGauge(final String name, final double val, final String description) {
     validateNameAndCheckDescriptionExists(name, description, () -> ifPublish(() -> {
       if (nameToGauge.containsKey(name)) {
         LOGGER.warn("Overriding existing metric, type: Gauge, name: {}", name);
       }
 
       if (!nameToGauge.containsKey(name)) {
-        Gauge gauge = Gauge.build().name(name).help(description).register();
+        final Gauge gauge = Gauge.build().name(name).help(description).register();
         nameToGauge.put(name, gauge);
       }
       nameToGauge.get(name).inc(val);
@@ -96,10 +96,10 @@ public class MetricSingleton {
    * @param name of gauge
    * @param val to decrement
    */
-  public void decrementGauge(String name, double val, String description) {
+  public void decrementGauge(final String name, final double val, final String description) {
     validateNameAndCheckDescriptionExists(name, description, () -> ifPublish(() -> {
       if (!nameToGauge.containsKey(name)) {
-        Gauge gauge = Gauge.build().name(name).help(description).register();
+        final Gauge gauge = Gauge.build().name(name).help(description).register();
         nameToGauge.put(name, gauge);
       }
       nameToGauge.get(name).dec(val);
@@ -115,10 +115,10 @@ public class MetricSingleton {
    * @param name of counter
    * @param amt to increment
    */
-  public void incrementCounter(String name, double amt, String description) {
+  public void incrementCounter(final String name, final double amt, final String description) {
     validateNameAndCheckDescriptionExists(name, description, () -> ifPublish(() -> {
       if (!nameToCounter.containsKey(name)) {
-        Counter counter = Counter.build().name(name).help(description).register();
+        final Counter counter = Counter.build().name(name).help(description).register();
         nameToCounter.put(name, counter);
       }
 
@@ -136,11 +136,11 @@ public class MetricSingleton {
    * @param runnable to time
    * @return duration of code execution.
    */
-  public double timeCode(String name, Runnable runnable, String description) {
-    var duration = new AtomicReference<>(0.0);
+  public double timeCode(final String name, final Runnable runnable, final String description) {
+    final var duration = new AtomicReference<>(0.0);
     validateNameAndCheckDescriptionExists(name, description, () -> ifPublish(() -> {
       if (!nameToHistogram.containsKey(name)) {
-        Histogram hist = Histogram.build().name(name).help(description).register();
+        final Histogram hist = Histogram.build().name(name).help(description).register();
         nameToHistogram.put(name, hist);
       }
       duration.set(nameToHistogram.get(name).time(runnable));
@@ -154,25 +154,25 @@ public class MetricSingleton {
    * @param name of the underlying histogram.
    * @param time to be recorded.
    */
-  public void recordTime(String name, double time, String description) {
+  public void recordTime(final String name, final double time, final String description) {
     validateNameAndCheckDescriptionExists(name, description, () -> ifPublish(() -> {
       LOGGER.info("publishing record time, name: {}, time: {}", name, time);
 
       if (!nameToHistogram.containsKey(name)) {
-        Histogram hist = Histogram.build().name(name).help(description).register();
+        final Histogram hist = Histogram.build().name(name).help(description).register();
         nameToHistogram.put(name, hist);
       }
       nameToHistogram.get(name).observe(time);
     }));
   }
 
-  private void ifPublish(Runnable execute) {
+  private void ifPublish(final Runnable execute) {
     if (monitoringDaemon != null) {
       execute.run();
     }
   }
 
-  private static void validateNameAndCheckDescriptionExists(String name, String description, Runnable execute) {
+  private static void validateNameAndCheckDescriptionExists(final String name, final String description, final Runnable execute) {
     if (name.contains("-")) {
       throw new RuntimeException("Name can only contain underscores.");
     }
@@ -189,7 +189,7 @@ public class MetricSingleton {
    *
    * @param monitorPort to publish metrics to
    */
-  public synchronized static void initializeMonitoringServiceDaemon(String monitorPort, Map<String, String> mdc, boolean publish) {
+  public synchronized static void initializeMonitoringServiceDaemon(final String monitorPort, final Map<String, String> mdc, final boolean publish) {
     if (instance != null) {
       throw new RuntimeException("You cannot initialize configuration more than once.");
     }
@@ -201,7 +201,7 @@ public class MetricSingleton {
         // The second constructor argument ('true') makes this server start as a separate daemon thread.
         // http://prometheus.github.io/client_java/io/prometheus/client/exporter/HTTPServer.html#HTTPServer-int-boolean-
         instance.setMonitoringDaemon(new HTTPServer(Integer.parseInt(monitorPort), true));
-      } catch (IOException e) {
+      } catch (final IOException e) {
         LOGGER.error("Error starting up Prometheus publishing server..", e);
       }
     }

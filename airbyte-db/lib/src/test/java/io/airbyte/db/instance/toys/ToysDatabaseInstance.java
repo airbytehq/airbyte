@@ -27,7 +27,7 @@ public class ToysDatabaseInstance extends BaseDatabaseInstance {
     }
   };
 
-  protected ToysDatabaseInstance(String username, String password, String connectionString) throws IOException {
+  protected ToysDatabaseInstance(final String username, final String password, final String connectionString) throws IOException {
     super(username, password, connectionString, MoreResources.readResource(SCHEMA_PATH), DATABASE_LOGGING_NAME, Collections.singleton(TABLE_NAME),
         IS_DATABASE_READY);
   }

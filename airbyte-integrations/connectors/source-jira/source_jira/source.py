@@ -15,8 +15,10 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from .streams import (
     ApplicationRoles,
     Avatars,
+    BoardIssues,
     Boards,
     Dashboards,
+    Epics,
     Filters,
     FilterSharing,
     Groups,
@@ -50,10 +52,12 @@ from .streams import (
     Projects,
     ProjectTypes,
     ProjectVersions,
+    PullRequests,
     Screens,
     ScreenSchemes,
     ScreenTabFields,
     ScreenTabs,
+    SprintIssues,
     Sprints,
     TimeTracking,
     Users,
@@ -77,7 +81,7 @@ class SourceJira(AbstractSource):
 
         try:
             authenticator = self.get_authenticator(config)
-            args = {"authenticator": authenticator, "domain": config["domain"]}
+            args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
             issue_resolutions = IssueResolutions(**args)
             for item in issue_resolutions.read_records(sync_mode=SyncMode.full_refresh):
                 continue
@@ -96,33 +100,49 @@ class SourceJira(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self.get_authenticator(config)
-        args = {"authenticator": authenticator, "domain": config["domain"]}
+        args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
+        incremental_args = {**args, "start_date": config.get("start_date", "")}
+        render_fields = config.get("render_fields", False)
+        issues_stream = Issues(
+            **incremental_args,
+            additional_fields=config.get("additional_fields", []),
+            expand_changelog=config.get("expand_issue_changelog", False),
+            render_fields=render_fields,
+        )
+        issue_fields_stream = IssueFields(**args)
+        experimental_streams = []
+        if config.get("enable_experimental_streams", False):
+            experimental_streams.append(
+                PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args)
+            )
         return [
             ApplicationRoles(**args),
             Avatars(**args),
             Boards(**args),
+            BoardIssues(**incremental_args),
             Dashboards(**args),
+            Epics(render_fields=render_fields, **incremental_args),
             Filters(**args),
             FilterSharing(**args),
             Groups(**args),
-            Issues(**args),
-            IssueComments(**args),
-            IssueFields(**args),
+            issues_stream,
+            IssueComments(**incremental_args),
+            issue_fields_stream,
             IssueFieldConfigurations(**args),
             IssueCustomFieldContexts(**args),
             IssueLinkTypes(**args),
             IssueNavigatorSettings(**args),
             IssueNotificationSchemes(**args),
             IssuePriorities(**args),
-            IssueProperties(**args),
-            IssueRemoteLinks(**args),
+            IssueProperties(**incremental_args),
+            IssueRemoteLinks(**incremental_args),
             IssueResolutions(**args),
             IssueSecuritySchemes(**args),
             IssueTypeSchemes(**args),
             IssueTypeScreenSchemes(**args),
-            IssueVotes(**args),
-            IssueWatchers(**args),
-            IssueWorklogs(**args),
+            IssueVotes(**incremental_args),
+            IssueWatchers(**incremental_args),
+            IssueWorklogs(**incremental_args),
             JiraSettings(**args),
             Labels(**args),
             Permissions(**args),
@@ -140,10 +160,11 @@ class SourceJira(AbstractSource):
             ScreenTabFields(**args),
             ScreenSchemes(**args),
             Sprints(**args),
+            SprintIssues(**incremental_args),
             TimeTracking(**args),
             Users(**args),
             Workflows(**args),
             WorkflowSchemes(**args),
             WorkflowStatuses(**args),
             WorkflowStatusCategories(**args),
-        ]
+        ] + experimental_streams

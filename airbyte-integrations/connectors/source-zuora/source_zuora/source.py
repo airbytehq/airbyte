@@ -10,14 +10,14 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 
 import pendulum
 import requests
-from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams.http import HttpStream
 
 from .zuora_auth import ZuoraAuthenticator
-from .zuora_endpoint import get_url_base
 from .zuora_errors import (
+    QueryWindowError,
     ZOQLQueryCannotProcessObject,
     ZOQLQueryFailed,
     ZOQLQueryFieldCannotResolveAltCursor,
@@ -40,29 +40,39 @@ class ZuoraStream(HttpStream, ABC):
 
     def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
-        self.logger = AirbyteLogger()
-        self._url_base = config["url_base"]
-        self.start_date = config["start_date"]
-        self.window_in_days = config["window_in_days"]
         self._config = config
 
     @property
     def url_base(self) -> str:
-        return self._url_base
+        return self._config["url_base"]
+
+    @property
+    def window_in_days(self) -> float:
+        """
+        Converting `Query Window` config parameter from string type into type float.
+        """
+        try:
+            value = self._config["window_in_days"]
+            return float(value)
+        except ValueError:
+            raise QueryWindowError(value)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """ Abstractmethod HTTPStream CDK dependency """
+        """Abstractmethod HTTPStream CDK dependency"""
         return None
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        """ Abstractmethod HTTPStream CDK dependency """
+        """Abstractmethod HTTPStream CDK dependency"""
         return {}
 
-    def base_query_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+    def base_query_params(self) -> MutableMapping[str, Any]:
         """
         Returns base query parameters for default CDK request_json_body method
         """
-        return {"compression": "NONE", "output": {"target": "S3"}, "outputFormat": "JSON"}
+        params = {"compression": "NONE", "output": {"target": "S3"}, "outputFormat": "JSON"}
+        if self._config["data_query"] == "Unlimited":
+            params["sourceData"] = "DATAHUB"
+        return params
 
 
 class ZuoraBase(ZuoraStream):
@@ -72,7 +82,7 @@ class ZuoraBase(ZuoraStream):
     """
 
     def path(self, **kwargs) -> str:
-        """ Abstractmethod HTTPStream CDK dependency """
+        """Abstractmethod HTTPStream CDK dependency"""
         return ""
 
     def request_kwargs(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Mapping[str, Any]:
@@ -153,7 +163,7 @@ class ZuoraObjectsBase(ZuoraBase):
     """
 
     @property
-    def state_checkpoint_interval(self) -> int:
+    def state_checkpoint_interval(self) -> float:
         return self.window_in_days
 
     @staticmethod
@@ -236,24 +246,21 @@ class ZuoraObjectsBase(ZuoraBase):
             ...
         """
 
-        start_date = pendulum.parse(self.start_date).astimezone()
+        start_date = pendulum.parse(self._config["start_date"]).astimezone()
         end_date = pendulum.now().astimezone()
 
         # Determine stream_state, if no stream_state we use start_date
         if stream_state:
             state = stream_state.get(self.cursor_field, stream_state.get(self.alt_cursor_field))
-            start_date = pendulum.parse(state) if state else self.start_date
+            start_date = pendulum.parse(state) if state else self._config["start_date"]
 
         # use the lowest date between start_date and self.end_date, otherwise API fails if start_date is in future
         start_date = min(start_date, end_date)
-        date_slices = []
 
         while start_date <= end_date:
             end_date_slice = start_date.add(days=self.window_in_days)
-            date_slices.append({"start_date": self.to_datetime_str(start_date), "end_date": self.to_datetime_str(end_date_slice)})
+            yield {"start_date": self.to_datetime_str(start_date), "end_date": self.to_datetime_str(end_date_slice)}
             start_date = end_date_slice
-
-        return date_slices
 
 
 class ZuoraListObjects(ZuoraBase):
@@ -265,7 +272,6 @@ class ZuoraListObjects(ZuoraBase):
         return "SHOW TABLES"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        self.logger.info("Retrieving the list of available Objects from Zuora")
         return [name["Table"] for name in response]
 
 
@@ -280,7 +286,6 @@ class ZuoraDescribeObject(ZuoraBase):
         self.zuora_object_name = zuora_object_name
 
     def query(self, **kwargs) -> str:
-        self.logger.info(f"Getting schema information for {self.zuora_object_name}")
         return f"DESCRIBE {self.zuora_object_name}"
 
     def parse_response(self, response: requests.Response, **kwargs) -> List[Dict]:
@@ -351,7 +356,7 @@ class ZuoraSubmitJob(ZuoraStream):
         """
         Override of default CDK method to return SQL-like query and use it in _send_request method.
         """
-        params = self.base_query_params(stream_state=None)
+        params = self.base_query_params()
         params["query"] = self.query
         return params
 
@@ -478,11 +483,11 @@ class ZuoraGetJobResult(HttpStream):
         return self.url
 
     def path(self, **kwargs) -> str:
-        """ Abstractmethod HTTPStream CDK dependency """
+        """Abstractmethod HTTPStream CDK dependency"""
         return ""
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """ Abstractmethod HTTPStream CDK dependency """
+        """Abstractmethod HTTPStream CDK dependency"""
         return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> str:
@@ -498,16 +503,9 @@ class SourceZuora(AbstractSource):
         """
         Testing connection availability for the connector by granting the token.
         """
-
-        # Define the endpoint from user's config
-        url_base = get_url_base(config["tenant_endpoint"])
+        auth = ZuoraAuthenticator(config).get_auth()
         try:
-            ZuoraAuthenticator(
-                token_refresh_endpoint=f"{url_base}/oauth/token",
-                client_id=config["client_id"],
-                client_secret=config["client_secret"],
-                refresh_token=None,  # Zuora doesn't have Refresh Token parameter.
-            ).get_auth_header()
+            auth.get_auth_header()
             return True, None
         except Exception as e:
             return False, e
@@ -517,20 +515,9 @@ class SourceZuora(AbstractSource):
         Mapping a input config of the user input configuration as defined in the connector spec.
         Defining streams to run by building stream classes dynamically.
         """
-
-        # Define the endpoint from user's config
-        url_base = get_url_base(config["tenant_endpoint"])
-
-        # Get Authotization Header with Access Token
-        authenticator = ZuoraAuthenticator(
-            token_refresh_endpoint=f"{url_base}/oauth/token",
-            client_id=config["client_id"],
-            client_secret=config["client_secret"],
-            refresh_token=None,  # Zuora doesn't have Refresh Token parameter.
-        )
-
-        config["authenticator"] = authenticator
-        config["url_base"] = url_base
+        auth = ZuoraAuthenticator(config)
+        config["authenticator"] = auth.get_auth()
+        config["url_base"] = auth.url_base
 
         # List available objects (streams) names from Zuora
         # Example: zuora_stream_names = ["account", "country", "user"]

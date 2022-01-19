@@ -4,6 +4,7 @@ set -e
 set -x
 
 . tools/lib/lib.sh
+. tools/lib/databricks.sh
 
 USAGE="
 Usage: $(basename "$0") <cmd>
@@ -16,6 +17,12 @@ Available commands:
 
 _check_tag_exists() {
   DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect "$1" > /dev/null
+}
+
+_error_if_tag_exists() {
+    if _check_tag_exists "$1"; then
+      error "You're trying to push a version that was already released ($1). Make sure you bump it up."
+    fi
 }
 
 cmd_scaffold() {
@@ -31,6 +38,11 @@ cmd_build() {
   [ -d "$path" ] || error "Path must be the root path of the integration"
 
   local run_tests=$1; shift || run_tests=true
+
+  if [[ "airbyte-integrations/connectors/destination-databricks" == "${path}" ]]; then
+    _get_databricks_jdbc_driver
+  fi
+
   echo "Building $path"
   ./gradlew --no-daemon "$(_to_gradle_path "$path" clean)"
   ./gradlew --no-daemon "$(_to_gradle_path "$path" build)"
@@ -74,28 +86,41 @@ cmd_publish() {
      publish_spec_to_cache=false
   fi
 
-
-  cmd_build "$path" "$run_tests"
-
+  # setting local variables for docker image versioning
   local image_name; image_name=$(_get_docker_image_name "$path"/Dockerfile)
   local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile)
   local versioned_image=$image_name:$image_version
   local latest_image=$image_name:latest
 
   echo "image_name $image_name"
-  echo "$versioned_image $versioned_image"
+  echo "versioned_image $versioned_image"
   echo "latest_image $latest_image"
 
-  docker tag "$image_name:dev" "$versioned_image"
-  docker tag "$image_name:dev" "$latest_image"
+  # before we start working sanity check that this version has not been published yet, so that we do not spend a lot of
+  # time building, running tests to realize this version is a duplicate.
+  _error_if_tag_exists "$versioned_image"
 
-  if _check_tag_exists "$versioned_image"; then
-    error "You're trying to push a version that was already released ($versioned_image). Make sure you bump it up."
+  # building the connector
+  cmd_build "$path" "$run_tests"
+
+  # in case curing the build / tests someone this version has been published.
+  _error_if_tag_exists "$versioned_image"
+
+  if [[ "airbyte/normalization" == "${image_name}" ]]; then
+    echo "Publishing normalization images (version: $versioned_image)"
+    GIT_REVISION=$(git rev-parse HEAD)
+    VERSION=$image_version GIT_REVISION=$GIT_REVISION docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml build
+    VERSION=$image_version GIT_REVISION=$GIT_REVISION docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml push
+    VERSION=latest         GIT_REVISION=$GIT_REVISION docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml build
+    VERSION=latest         GIT_REVISION=$GIT_REVISION docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml push
+  else
+    docker tag "$image_name:dev" "$versioned_image"
+    docker tag "$image_name:dev" "$latest_image"
+
+    echo "Publishing new version ($versioned_image)"
+    docker push "$versioned_image"
+    docker push "$latest_image"
   fi
-
-  echo "Publishing new version ($versioned_image)"
-  docker push "$versioned_image"
-  docker push "$latest_image"
 
   if [[ "true" == "${publish_spec_to_cache}" ]]; then
     echo "Publishing and writing to spec cache."

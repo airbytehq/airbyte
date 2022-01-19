@@ -36,8 +36,8 @@ public class CockroachDbSourceAcceptanceTest extends SourceAcceptanceTest {
   private JsonNode config;
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
-    container = new CockroachContainer("cockroachdb/cockroach");
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
+    container = new CockroachContainer("cockroachdb/cockroach:v20.2.18");
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -74,7 +74,7 @@ public class CockroachDbSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
   }
 

@@ -24,7 +24,6 @@ import io.airbyte.protocol.models.SyncMode;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import org.testcontainers.containers.OracleContainer;
 
 public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -35,8 +34,11 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
   protected JsonNode config;
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
-    container = new OracleContainer("epiclabs/docker-oracle-xe-11g");
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
+    container = new OracleContainer()
+        .withUsername("test")
+        .withPassword("oracle")
+        .usingSid();;
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -52,7 +54,7 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
             .build()))
         .build());
 
-    JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
+    final JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
         config.get("password").asText(),
         String.format("jdbc:oracle:thin:@//%s:%s/%s",
             config.get("host").asText(),
@@ -78,7 +80,7 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
   }
 

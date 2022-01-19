@@ -5,16 +5,14 @@
 package io.airbyte.config.helpers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.storage.CloudStorageConfigs;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -25,13 +23,22 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 @Tag("logger-client")
 public class S3LogsTest {
 
-  @Test
-  public void testMissingCredentials() {
-    var configs = mock(LogConfigs.class);
-    when(configs.getAwsAccessKey()).thenReturn("");
-    when(configs.getAwsSecretAccessKey()).thenReturn("");
+  private static final String REGION_STRING = "us-west-2";
+  private static final Region REGION = Region.of(REGION_STRING);
+  private static final String BUCKET_NAME = "airbyte-kube-integration-logging-test";
 
-    assertThrows(RuntimeException.class, () -> new S3Logs().downloadCloudLog(configs, "this-path-should-not-matter"));
+  private static final LogConfigs logConfigs = new LogConfigs(CloudStorageConfigs.s3(new CloudStorageConfigs.S3Config(
+      System.getenv(LogClientSingleton.S3_LOG_BUCKET),
+      System.getenv(LogClientSingleton.AWS_ACCESS_KEY_ID),
+      System.getenv(LogClientSingleton.AWS_SECRET_ACCESS_KEY),
+      System.getenv(LogClientSingleton.S3_LOG_BUCKET_REGION))));
+
+  private S3Client s3Client;
+
+  @BeforeEach
+  void setup() {
+    s3Client = S3Client.builder().region(REGION).build();
+    generatePaginateTestFiles();
   }
 
   /**
@@ -41,13 +48,12 @@ public class S3LogsTest {
    */
   @Test
   public void testRetrieveAllLogs() throws IOException {
-    var configs = new LogConfigDelegator(new EnvConfigs());
-    var data = S3Logs.getFile(configs, "paginate", 6);
+    final var data = S3Logs.getFile(s3Client, logConfigs, "paginate", 6);
 
-    var retrieved = new ArrayList<String>();
+    final var retrieved = new ArrayList<String>();
     Files.lines(data.toPath()).forEach(retrieved::add);
 
-    var expected = List.of("Line 0", "Line 1", "Line 2", "Line 3", "Line 4", "Line 5", "Line 6", "Line 7", "Line 8");
+    final var expected = List.of("Line 0", "Line 1", "Line 2", "Line 3", "Line 4", "Line 5", "Line 6", "Line 7", "Line 8");
 
     assertEquals(expected, retrieved);
   }
@@ -61,29 +67,21 @@ public class S3LogsTest {
    */
   @Test
   public void testTail() throws IOException {
-    var configs = new LogConfigDelegator(new EnvConfigs());
-    var data = new S3Logs().tailCloudLog(configs, "tail", 6);
-
-    var expected = List.of("Line 4", "Line 5", "Line 6", "Line 7", "Line 8", "Line 9");
+    final var data = new S3Logs(() -> s3Client).tailCloudLog(logConfigs, "tail", 6);
+    final var expected = List.of("Line 4", "Line 5", "Line 6", "Line 7", "Line 8", "Line 9");
     assertEquals(data, expected);
   }
 
-  public static void main(String[] args) {
-    generatePaginateTestFiles();
-  }
-
-  private static void generatePaginateTestFiles() {
-    var s3 = S3Client.builder().region(Region.of("us-west-2")).build();
-
+  private void generatePaginateTestFiles() {
     for (int i = 0; i < 9; i++) {
-      var fileName = i + "-file";
-      var line = "Line " + i + "\n";
-      PutObjectRequest objectRequest = PutObjectRequest.builder()
-          .bucket("airbyte-kube-integration-logging-test")
+      final var fileName = i + "-file";
+      final var line = "Line " + i + "\n";
+      final PutObjectRequest objectRequest = PutObjectRequest.builder()
+          .bucket(BUCKET_NAME)
           .key("paginate/" + fileName)
           .build();
 
-      s3.putObject(objectRequest, RequestBody.fromBytes(line.getBytes(StandardCharsets.UTF_8)));
+      s3Client.putObject(objectRequest, RequestBody.fromBytes(line.getBytes(StandardCharsets.UTF_8)));
     }
   }
 

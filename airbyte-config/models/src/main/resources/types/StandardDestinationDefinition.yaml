@@ -10,7 +10,8 @@ required:
   - dockerRepository
   - dockerImageTag
   - documentationUrl
-additionalProperties: false
+  - spec
+additionalProperties: true
 properties:
   destinationDefinitionId:
     type: string
@@ -25,3 +26,11 @@ properties:
     type: string
   icon:
     type: string
+  spec:
+    type: object
+    existingJavaType: io.airbyte.protocol.models.ConnectorSpecification
+  tombstone:
+    description:
+      if not set or false, the configuration is active. if true, then this
+      configuration is permanently off.
+    type: boolean

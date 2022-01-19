@@ -1,0 +1,11 @@
+{
+  "site_urls": ["https://airbyte.io", "https://airbyte.io"],
+  "start_date": "2021-09-14",
+  "end_date": "2025-08-31",
+  "authorization": {
+    "auth_type": "Client",
+    "client_id": "708867486045-j3gtnihv49os6t3pb2o5d6cc1f6vfu7s.apps.googleusercontent.com",
+    "client_secret": "2_s04SazZ6DraCfZZxtr6LFB",
+    "refresh_token": "1//060At0KO62q37CgYIARAAGAYSNwF-L9Ir1SUVnBkqBzI19HkLjkZK9kkDATYGEmmrPKK4ykQqh7KLlCwZrmcl46-bMr4IQM3gFKo"
+  }
+}

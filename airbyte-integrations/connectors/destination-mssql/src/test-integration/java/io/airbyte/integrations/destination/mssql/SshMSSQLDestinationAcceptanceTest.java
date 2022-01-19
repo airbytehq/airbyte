@@ -11,6 +11,7 @@ import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
@@ -21,8 +22,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.jooq.JSONFormat;
-import org.jooq.JSONFormat.RecordFormat;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.containers.Network;
@@ -32,8 +31,6 @@ import org.testcontainers.containers.Network;
  * or with a password.
  */
 public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
-
-  private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
@@ -62,9 +59,9 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName, String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
-    String tableName = namingResolver.getIdentifier(streamName);
+    final String tableName = namingResolver.getIdentifier(streamName);
     return retrieveRecordsFromTable(tableName, namespace);
   }
 
@@ -108,7 +105,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
     return result;
   }
 
-  public ImmutableMap.Builder<Object, Object> getMSSQLDbConfigBuilder(JdbcDatabaseContainer<?> db) {
+  public ImmutableMap.Builder<Object, Object> getMSSQLDbConfigBuilder(final JdbcDatabaseContainer<?> db) {
     return ImmutableMap.builder()
         .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
             .getNetworks()
@@ -134,7 +131,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
-    var schema = schemaName == null ? this.schemaName : schemaName;
+    final var schema = schemaName == null ? this.schemaName : schemaName;
     final JsonNode config = getConfig();
     return SshTunnel.sshWrap(
         config,
@@ -148,7 +145,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
                         database, schema, tableName.toLowerCase(),
                         JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
                     .stream()
-                    .map(r -> r.formatJSON(JSON_FORMAT))
+                    .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
                     .map(Jsons::deserialize)
                     .collect(Collectors.toList())));
   }
@@ -178,7 +175,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
   }
 
   private void initAndStartJdbcContainer() {
-    db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2017-latest")
+    db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-GA-ubuntu-16.04")
         .withNetwork(bastion.getNetWork())
         .acceptLicense();
     db.start();

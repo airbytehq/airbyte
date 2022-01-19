@@ -24,6 +24,7 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
+import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -52,6 +53,7 @@ public class DefaultJobCreatorTest {
   private static final long JOB_ID = 12L;
 
   private JobPersistence jobPersistence;
+  private ConfigRepository configRepository;
   private JobCreator jobCreator;
 
   static {
@@ -59,7 +61,7 @@ public class DefaultJobCreatorTest {
     final UUID sourceId = UUID.randomUUID();
     final UUID sourceDefinitionId = UUID.randomUUID();
 
-    JsonNode implementationJson = Jsons.jsonNode(ImmutableMap.builder()
+    final JsonNode implementationJson = Jsons.jsonNode(ImmutableMap.builder()
         .put("apiKey", "123-abc")
         .put("hostname", "airbyte.io")
         .build());
@@ -109,9 +111,10 @@ public class DefaultJobCreatorTest {
   }
 
   @BeforeEach
-  void setup() throws IOException {
+  void setup() {
     jobPersistence = mock(JobPersistence.class);
-    jobCreator = new DefaultJobCreator(jobPersistence);
+    configRepository = mock(ConfigRepository.class);
+    jobCreator = new DefaultJobCreator(jobPersistence, configRepository);
   }
 
   @Test

@@ -13,18 +13,19 @@ public enum JsonSchemaFormat {
 
   DATE("date", StandardSQLTypeName.DATE),
   DATETIME("date-time", StandardSQLTypeName.DATETIME),
-  TIME("time", StandardSQLTypeName.TIME);
+  TIME("time", StandardSQLTypeName.TIME),
+  TIMESTAMP("timestamp-micros", StandardSQLTypeName.TIMESTAMP);
 
   private final String jsonSchemaFormat;
   private final StandardSQLTypeName bigQueryType;
 
-  JsonSchemaFormat(String jsonSchemaFormat, StandardSQLTypeName bigQueryType) {
+  JsonSchemaFormat(final String jsonSchemaFormat, final StandardSQLTypeName bigQueryType) {
     this.jsonSchemaFormat = jsonSchemaFormat;
     this.bigQueryType = bigQueryType;
   }
 
-  public static JsonSchemaFormat fromJsonSchemaFormat(String value) {
-    for (JsonSchemaFormat type : values()) {
+  public static JsonSchemaFormat fromJsonSchemaFormat(final String value) {
+    for (final JsonSchemaFormat type : values()) {
       if (value.equals(type.jsonSchemaFormat)) {
         return type;
       }

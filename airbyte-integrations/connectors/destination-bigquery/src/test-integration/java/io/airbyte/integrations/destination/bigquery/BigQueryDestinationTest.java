@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.bigquery;
 
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
@@ -18,7 +19,12 @@ import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.DatasetInfo;
+import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.StandardSQLTypeName;
+import com.google.cloud.bigquery.StandardTableDefinition;
+import com.google.cloud.bigquery.TableId;
+import com.google.cloud.bigquery.TableInfo;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
@@ -39,6 +45,7 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.io.ByteArrayInputStream;
@@ -48,12 +55,18 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,7 +110,7 @@ class BigQueryDestinationTest {
   private boolean tornDown = true;
 
   @BeforeEach
-  void setup(TestInfo info) throws IOException {
+  void setup(final TestInfo info) throws IOException {
     if (info.getDisplayName().equals("testSpec()")) {
       return;
     }
@@ -130,7 +143,8 @@ class BigQueryDestinationTest {
         CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, datasetId,
             io.airbyte.protocol.models.Field.of("name", JsonSchemaPrimitive.STRING),
             io.airbyte.protocol.models.Field
-                .of("id", JsonSchemaPrimitive.STRING)),
+                .of("id", JsonSchemaPrimitive.STRING))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND),
         CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, datasetId, Field.of("goal", JsonSchemaPrimitive.STRING))));
 
     final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
@@ -157,7 +171,7 @@ class BigQueryDestinationTest {
   }
 
   @AfterEach
-  void tearDown(TestInfo info) {
+  void tearDown(final TestInfo info) {
     if (info.getDisplayName().equals("testSpec()")) {
       return;
     }
@@ -188,16 +202,20 @@ class BigQueryDestinationTest {
     assertEquals(expected, actual);
   }
 
-  @Test
-  void testCheckSuccess() {
+  @ParameterizedTest
+  @MethodSource("datasetIdResetterProvider")
+  void testCheckSuccess(DatasetIdResetter resetDatasetId) {
+    resetDatasetId.accept(config);
     final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
   }
 
-  @Test
-  void testCheckFailure() {
+  @ParameterizedTest
+  @MethodSource("datasetIdResetterProvider")
+  void testCheckFailure(DatasetIdResetter resetDatasetId) {
     ((ObjectNode) config).put(BigQueryConsts.CONFIG_PROJECT_ID, "fake");
+    resetDatasetId.accept(config);
     final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
     final String actualMessage = actual.getMessage();
     LOGGER.info("Checking expected failure message:" + actualMessage);
@@ -206,8 +224,10 @@ class BigQueryDestinationTest {
     assertEquals(expected, actual.withMessage(""));
   }
 
-  @Test
-  void testWriteSuccess() throws Exception {
+  @ParameterizedTest
+  @MethodSource("datasetIdResetterProvider")
+  void testWriteSuccess(DatasetIdResetter resetDatasetId) throws Exception {
+    resetDatasetId.accept(config);
     final BigQueryDestination destination = new BigQueryDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
@@ -235,8 +255,10 @@ class BigQueryDestinationTest {
         .collect(Collectors.toList()));
   }
 
-  @Test
-  void testWriteFailure() throws Exception {
+  @ParameterizedTest
+  @MethodSource("datasetIdResetterProvider")
+  void testWriteFailure(DatasetIdResetter resetDatasetId) throws Exception {
+    resetDatasetId.accept(config);
     // hack to force an exception to be thrown from within the consumer.
     final AirbyteMessage spiedMessage = spy(MESSAGE_USERS1);
     doThrow(new RuntimeException()).when(spiedMessage).getRecord();
@@ -272,7 +294,7 @@ class BigQueryDestinationTest {
         .map(v -> v.get("TABLE_NAME").getStringValue()).collect(Collectors.toSet());
   }
 
-  private void assertTmpTablesNotPresent(List<String> tableNames) throws InterruptedException {
+  private void assertTmpTablesNotPresent(final List<String> tableNames) throws InterruptedException {
     final Set<String> tmpTableNamePrefixes = tableNames.stream().map(name -> name + "_").collect(Collectors.toSet());
     final Set<String> finalTableNames = tableNames.stream().map(name -> name + "_raw").collect(Collectors.toSet());
     // search for table names that have the tmp table prefix but are not raw tables.
@@ -282,8 +304,8 @@ class BigQueryDestinationTest {
         .noneMatch(tableName -> tmpTableNamePrefixes.stream().anyMatch(tableName::startsWith)));
   }
 
-  private List<JsonNode> retrieveRecords(String tableName) throws Exception {
-    QueryJobConfiguration queryConfig =
+  private List<JsonNode> retrieveRecords(final String tableName) throws Exception {
+    final QueryJobConfiguration queryConfig =
         QueryJobConfiguration.newBuilder(String.format("SELECT * FROM `%s.%s`;", dataset.getDatasetId().getDataset(), tableName.toLowerCase()))
             .setUseLegacySql(false).build();
 
@@ -296,4 +318,96 @@ class BigQueryDestinationTest {
         .collect(Collectors.toList());
   }
 
+  @ParameterizedTest
+  @MethodSource("datasetIdResetterProvider")
+  void testWritePartitionOverUnpartitioned(DatasetIdResetter resetDatasetId) throws Exception {
+    resetDatasetId.accept(config);
+    final String raw_table_name = String.format("_airbyte_raw_%s", USERS_STREAM_NAME);
+    createUnpartitionedTable(bigquery, dataset, raw_table_name);
+    assertFalse(isTablePartitioned(bigquery, dataset, raw_table_name));
+    final BigQueryDestination destination = new BigQueryDestination();
+    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
+
+    consumer.accept(MESSAGE_USERS1);
+    consumer.accept(MESSAGE_TASKS1);
+    consumer.accept(MESSAGE_USERS2);
+    consumer.accept(MESSAGE_TASKS2);
+    consumer.accept(MESSAGE_STATE);
+    consumer.close();
+
+    final List<JsonNode> usersActual = retrieveRecords(NAMING_RESOLVER.getRawTableName(USERS_STREAM_NAME));
+    final List<JsonNode> expectedUsersJson = Lists.newArrayList(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
+    assertEquals(expectedUsersJson.size(), usersActual.size());
+    assertTrue(expectedUsersJson.containsAll(usersActual) && usersActual.containsAll(expectedUsersJson));
+
+    final List<JsonNode> tasksActual = retrieveRecords(NAMING_RESOLVER.getRawTableName(TASKS_STREAM_NAME));
+    final List<JsonNode> expectedTasksJson = Lists.newArrayList(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
+    assertEquals(expectedTasksJson.size(), tasksActual.size());
+    assertTrue(expectedTasksJson.containsAll(tasksActual) && tasksActual.containsAll(expectedTasksJson));
+
+    assertTmpTablesNotPresent(catalog.getStreams()
+        .stream()
+        .map(ConfiguredAirbyteStream::getStream)
+        .map(AirbyteStream::getName)
+        .collect(Collectors.toList()));
+    assertTrue(isTablePartitioned(bigquery, dataset, raw_table_name));
+  }
+
+  private void createUnpartitionedTable(final BigQuery bigquery, final Dataset dataset, final String tableName) {
+    final TableId tableId = TableId.of(dataset.getDatasetId().getDataset(), tableName);
+    bigquery.delete(tableId);
+    final com.google.cloud.bigquery.Schema schema = com.google.cloud.bigquery.Schema.of(
+        com.google.cloud.bigquery.Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
+        com.google.cloud.bigquery.Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP),
+        com.google.cloud.bigquery.Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING));
+    final StandardTableDefinition tableDefinition =
+        StandardTableDefinition.newBuilder()
+            .setSchema(schema)
+            .build();
+    final TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
+    bigquery.create(tableInfo);
+  }
+
+  private boolean isTablePartitioned(final BigQuery bigquery, final Dataset dataset, final String tableName) throws InterruptedException {
+    final QueryJobConfiguration queryConfig = QueryJobConfiguration
+        .newBuilder(
+            String.format("SELECT max(is_partitioning_column) as is_partitioned FROM `%s.%s.INFORMATION_SCHEMA.COLUMNS` WHERE TABLE_NAME = '%s';",
+                bigquery.getOptions().getProjectId(),
+                dataset.getDatasetId().getDataset(),
+                tableName))
+        .setUseLegacySql(false)
+        .build();
+    final ImmutablePair<Job, String> result = BigQueryUtils.executeQuery(bigquery, queryConfig);
+    for (final com.google.cloud.bigquery.FieldValueList row : result.getLeft().getQueryResults().getValues()) {
+      return !row.get("is_partitioned").isNull() && row.get("is_partitioned").getStringValue().equals("YES");
+    }
+    return false;
+  }
+
+  private static class DatasetIdResetter {
+    private Consumer<JsonNode> consumer;
+
+    DatasetIdResetter(Consumer<JsonNode> consumer) {
+      this.consumer = consumer;
+    }
+
+    public void accept(JsonNode config) {
+      consumer.accept(config);
+    }
+  }
+
+  private static Stream<Arguments> datasetIdResetterProvider() {
+    // parameterized test with two dataset-id patterns: `dataset_id` and `project-id:dataset_id`
+    return Stream.of(
+      Arguments.arguments(new DatasetIdResetter(config -> {})),
+      Arguments.arguments(new DatasetIdResetter(
+        config -> {
+          String projectId = ((ObjectNode) config).get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
+          String datasetId = ((ObjectNode) config).get(BigQueryConsts.CONFIG_DATASET_ID).asText();
+          ((ObjectNode) config).put(BigQueryConsts.CONFIG_DATASET_ID,
+            String.format("%s:%s", projectId, datasetId));
+        }
+      ))
+    );
+  }
 }

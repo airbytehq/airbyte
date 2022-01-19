@@ -11,15 +11,15 @@ import java.util.List;
 
 public class DynamodbOutputTableHelper {
 
-  public static String getOutputTableName(String tableName, AirbyteStream stream) {
-    return getOutputTableName(tableName, stream.getNamespace(), stream.getName());
+  public static String getOutputTableName(final String tableNamePrefix, final AirbyteStream stream) {
+    return getOutputTableName(tableNamePrefix, stream.getNamespace(), stream.getName());
   }
 
-  public static String getOutputTableName(String tableName, String namespace, String streamName) {
-    List<String> paths = new LinkedList<>();
+  public static String getOutputTableName(final String tableNamePrefix, final String namespace, final String streamName) {
+    final List<String> paths = new LinkedList<>();
 
-    if (tableName != null) {
-      paths.add(tableName);
+    if (tableNamePrefix != null) {
+      paths.add(tableNamePrefix);
     }
     if (namespace != null) {
       paths.add(new ExtendedNameTransformer().convertStreamName(namespace));

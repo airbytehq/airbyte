@@ -21,6 +21,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.http.HttpClient;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -43,6 +44,7 @@ public class TrelloOAuthFlowIntegrationTest {
   private TrelloOAuthFlow trelloOAuthFlow;
   private HttpServer server;
   private ServerHandler serverHandler;
+  private HttpClient httpClient;
 
   @BeforeEach
   public void setup() throws IOException {
@@ -51,7 +53,8 @@ public class TrelloOAuthFlowIntegrationTest {
           "Must provide path to a oauth credentials file.");
     }
     configRepository = mock(ConfigRepository.class);
-    trelloOAuthFlow = new TrelloOAuthFlow(configRepository);
+    httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
+    trelloOAuthFlow = new TrelloOAuthFlow(configRepository, httpClient);
 
     server = HttpServer.create(new InetSocketAddress(8000), 0);
     server.setExecutor(null); // creates a default executor
@@ -81,7 +84,7 @@ public class TrelloOAuthFlowIntegrationTest {
             .put("client_id", clientId)
             .put("client_secret", credentialsJson.get("client_secret").asText())
             .build()))));
-    final String url = trelloOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String url = trelloOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null);
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
     // access...
@@ -105,7 +108,7 @@ public class TrelloOAuthFlowIntegrationTest {
     private String paramValue;
     private boolean succeeded;
 
-    public ServerHandler(String expectedParam) {
+    public ServerHandler(final String expectedParam) {
       this.expectedParam = expectedParam;
       this.paramValue = "";
       this.succeeded = false;
@@ -124,7 +127,7 @@ public class TrelloOAuthFlowIntegrationTest {
     }
 
     @Override
-    public void handle(HttpExchange t) {
+    public void handle(final HttpExchange t) {
       final String query = t.getRequestURI().getQuery();
       LOGGER.info("Received query: '{}'", query);
       final Map<String, String> data;
@@ -146,18 +149,18 @@ public class TrelloOAuthFlowIntegrationTest {
         final OutputStream os = t.getResponseBody();
         os.write(response.getBytes());
         os.close();
-      } catch (RuntimeException | IOException e) {
+      } catch (final RuntimeException | IOException e) {
         LOGGER.error("Failed to parse from body {}", query, e);
       }
     }
 
-    private static Map<String, String> deserialize(String query) {
+    private static Map<String, String> deserialize(final String query) {
       if (query == null) {
         return null;
       }
       final Map<String, String> result = new HashMap<>();
-      for (String param : query.split("&")) {
-        String[] entry = param.split("=");
+      for (final String param : query.split("&")) {
+        final String[] entry = param.split("=");
         if (entry.length > 1) {
           result.put(entry[0], entry[1]);
         } else {

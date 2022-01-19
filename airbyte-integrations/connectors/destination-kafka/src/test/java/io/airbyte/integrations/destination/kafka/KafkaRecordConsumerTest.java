@@ -58,7 +58,7 @@ public class KafkaRecordConsumerTest {
   @ParameterizedTest
   @ArgumentsSource(TopicMapArgumentsProvider.class)
   @SuppressWarnings("unchecked")
-  public void testBuildTopicMap(String topicPattern, String expectedTopic) {
+  public void testBuildTopicMap(final String topicPattern, final String expectedTopic) {
     final KafkaDestinationConfig config = KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(topicPattern));
     final KafkaRecordConsumer recordConsumer = new KafkaRecordConsumer(config, CATALOG, mock(Consumer.class), NAMING_RESOLVER);
 
@@ -86,8 +86,8 @@ public class KafkaRecordConsumerTest {
     consumer.close();
   }
 
-  private JsonNode getConfig(String topicPattern) {
-    ObjectNode stubProtocolConfig = mapper.createObjectNode();
+  private JsonNode getConfig(final String topicPattern) {
+    final ObjectNode stubProtocolConfig = mapper.createObjectNode();
     stubProtocolConfig.put("security_protocol", KafkaProtocol.PLAINTEXT.toString());
 
     return Jsons.jsonNode(ImmutableMap.builder()
@@ -119,7 +119,7 @@ public class KafkaRecordConsumerTest {
         .build());
   }
 
-  private List<AirbyteMessage> getNRecords(int n) {
+  private List<AirbyteMessage> getNRecords(final int n) {
     return IntStream.range(0, n)
         .boxed()
         .map(i -> new AirbyteMessage()
@@ -136,7 +136,7 @@ public class KafkaRecordConsumerTest {
   public static class TopicMapArgumentsProvider implements ArgumentsProvider {
 
     @Override
-    public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
+    public Stream<? extends Arguments> provideArguments(final ExtensionContext context) {
       return Stream.of(
           Arguments.of(TOPIC_NAME, "test_topic"),
           Arguments.of("test-topic", "test_topic"),

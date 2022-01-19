@@ -27,13 +27,13 @@ public class DatabricksDestinationConfig {
   private final boolean purgeStagingData;
   private final S3DestinationConfig s3DestinationConfig;
 
-  public DatabricksDestinationConfig(String databricksServerHostname,
-                                     String databricksHttpPath,
-                                     String databricksPort,
-                                     String databricksPersonalAccessToken,
-                                     String databaseSchema,
-                                     boolean purgeStagingData,
-                                     S3DestinationConfig s3DestinationConfig) {
+  public DatabricksDestinationConfig(final String databricksServerHostname,
+                                     final String databricksHttpPath,
+                                     final String databricksPort,
+                                     final String databricksPersonalAccessToken,
+                                     final String databaseSchema,
+                                     final boolean purgeStagingData,
+                                     final S3DestinationConfig s3DestinationConfig) {
     this.databricksServerHostname = databricksServerHostname;
     this.databricksHttpPath = databricksHttpPath;
     this.databricksPort = databricksPort;
@@ -43,7 +43,7 @@ public class DatabricksDestinationConfig {
     this.s3DestinationConfig = s3DestinationConfig;
   }
 
-  public static DatabricksDestinationConfig get(JsonNode config) {
+  public static DatabricksDestinationConfig get(final JsonNode config) {
     Preconditions.checkArgument(
         config.has("accept_terms") && config.get("accept_terms").asBoolean(),
         "You must agree to the Databricks JDBC Terms & Conditions to use this connector");
@@ -58,7 +58,7 @@ public class DatabricksDestinationConfig {
         getDataSource(config.get("data_source")));
   }
 
-  public static S3DestinationConfig getDataSource(JsonNode dataSource) {
+  public static S3DestinationConfig getDataSource(final JsonNode dataSource) {
     return new S3DestinationConfig(
         "",
         dataSource.get("s3_bucket_name").asText(),

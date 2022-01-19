@@ -8,7 +8,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.AvroRecordFactory;
-import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -29,6 +28,7 @@ import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.util.HadoopOutputFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
 
@@ -36,30 +36,30 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
 
   private final ParquetWriter<Record> parquetWriter;
   private final AvroRecordFactory avroRecordFactory;
-  private final Schema parquetSchema;
+  private final Schema schema;
   private final String outputFilename;
+  private final String objectKey;
 
-  public S3ParquetWriter(S3DestinationConfig config,
-                         AmazonS3 s3Client,
-                         ConfiguredAirbyteStream configuredStream,
-                         Timestamp uploadTimestamp,
-                         Schema schema,
-                         JsonFieldNameUpdater nameUpdater)
+  public S3ParquetWriter(final S3DestinationConfig config,
+                         final AmazonS3 s3Client,
+                         final ConfiguredAirbyteStream configuredStream,
+                         final Timestamp uploadTimestamp,
+                         final Schema schema,
+                         final JsonAvroConverter converter)
       throws URISyntaxException, IOException {
     super(config, s3Client, configuredStream);
 
     this.outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.PARQUET);
-    String objectKey = String.join("/", outputPrefix, outputFilename);
+    objectKey = String.join("/", outputPrefix, outputFilename);
 
-    LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(),
-        objectKey);
+    LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(), objectKey);
 
-    URI uri = new URI(
+    final URI uri = new URI(
         String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename));
-    Path path = new Path(uri);
+    final Path path = new Path(uri);
 
-    S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
-    Configuration hadoopConfig = getHadoopConfig(config);
+    final S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
+    final Configuration hadoopConfig = getHadoopConfig(config);
     this.parquetWriter = AvroParquetWriter.<GenericData.Record>builder(HadoopOutputFile.fromPath(path, hadoopConfig))
         .withSchema(schema)
         .withCompressionCodec(formatConfig.getCompressionCodec())
@@ -69,12 +69,12 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
         .withDictionaryPageSize(formatConfig.getDictionaryPageSize())
         .withDictionaryEncoding(formatConfig.isDictionaryEncoding())
         .build();
-    this.avroRecordFactory = new AvroRecordFactory(schema, nameUpdater);
-    this.parquetSchema = schema;
+    this.avroRecordFactory = new AvroRecordFactory(schema, converter);
+    this.schema = schema;
   }
 
-  public static Configuration getHadoopConfig(S3DestinationConfig config) {
-    Configuration hadoopConfig = new Configuration();
+  public static Configuration getHadoopConfig(final S3DestinationConfig config) {
+    final Configuration hadoopConfig = new Configuration();
     hadoopConfig.set(Constants.ACCESS_KEY, config.getAccessKeyId());
     hadoopConfig.set(Constants.SECRET_KEY, config.getSecretAccessKey());
     if (config.getEndpoint().isEmpty()) {
@@ -88,8 +88,8 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
     return hadoopConfig;
   }
 
-  public Schema getParquetSchema() {
-    return parquetSchema;
+  public Schema getSchema() {
+    return schema;
   }
 
   /**
@@ -104,7 +104,7 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
   }
 
   @Override
-  public void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException {
+  public void write(final UUID id, final AirbyteRecordMessage recordMessage) throws IOException {
     parquetWriter.write(avroRecordFactory.getAvroRecord(id, recordMessage));
   }
 
@@ -116,6 +116,11 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
   @Override
   protected void closeWhenFail() throws IOException {
     parquetWriter.close();
+  }
+
+  @Override
+  public String getOutputPath() {
+    return objectKey;
   }
 
 }

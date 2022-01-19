@@ -4,7 +4,7 @@
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from .common import AllOptional, CatalogModel
 
@@ -30,7 +30,7 @@ class Dispute(CatalogModel):
     chargeback_protection_level: Optional[str]
     created_at: datetime
     currency_iso_code: str
-    evidence: Evidence
+    evidence: Union[Evidence, List[Evidence]]
     graphql_id: str
     id: str
     kind: str

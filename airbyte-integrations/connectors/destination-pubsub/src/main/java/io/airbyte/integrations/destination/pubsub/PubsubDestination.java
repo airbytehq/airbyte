@@ -38,12 +38,12 @@ public class PubsubDestination extends BaseConnector implements Destination {
   static final String NAMESPACE = "_namespace";
   private static final Logger LOGGER = LoggerFactory.getLogger(PubsubDestination.class);
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     new IntegrationRunner(new PubsubDestination()).run(args);
   }
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
+  public AirbyteConnectionStatus check(final JsonNode config) {
     try {
       final String projectId = config.get(CONFIG_PROJECT_ID).asText();
       final String topicId = config.get(CONFIG_TOPIC_ID).asText();
@@ -53,12 +53,12 @@ public class PubsubDestination extends BaseConnector implements Destination {
       final ServiceAccountCredentials credentials = ServiceAccountCredentials
           .fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
 
-      TopicAdminClient adminClient = TopicAdminClient
+      final TopicAdminClient adminClient = TopicAdminClient
           .create(TopicAdminSettings.newBuilder().setCredentialsProvider(
               FixedCredentialsProvider.create(credentials)).build());
 
       // check if topic is present and the service account has necessary permissions on it
-      TopicName topicName = TopicName.of(projectId, topicId);
+      final TopicName topicName = TopicName.of(projectId, topicId);
       final List<String> requiredPermissions = List.of("pubsub.topics.publish");
       final TestIamPermissionsResponse response = adminClient.testIamPermissions(
           TestIamPermissionsRequest.newBuilder().setResource(topicName.toString())
@@ -67,7 +67,7 @@ public class PubsubDestination extends BaseConnector implements Destination {
           "missing required permissions " + requiredPermissions);
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.info("Check failed.", e);
       return new AirbyteConnectionStatus().withStatus(Status.FAILED)
           .withMessage(e.getMessage() != null ? e.getMessage() : e.toString());
@@ -75,9 +75,9 @@ public class PubsubDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog configuredCatalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector) {
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog configuredCatalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
     return new PubsubConsumer(config, configuredCatalog, outputRecordCollector);
   }
 

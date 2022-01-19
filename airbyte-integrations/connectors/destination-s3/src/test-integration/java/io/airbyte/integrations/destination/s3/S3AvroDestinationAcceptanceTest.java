@@ -9,6 +9,7 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
 import java.util.LinkedList;
@@ -18,11 +19,8 @@ import org.apache.avro.file.SeekableByteArrayInput;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericData.Record;
 import org.apache.avro.generic.GenericDatumReader;
-import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 public class S3AvroDestinationAcceptanceTest extends S3DestinationAcceptanceTest {
-
-  private final JsonAvroConverter converter = new JsonAvroConverter();
 
   protected S3AvroDestinationAcceptanceTest() {
     super(S3Format.AVRO);
@@ -37,21 +35,25 @@ public class S3AvroDestinationAcceptanceTest extends S3DestinationAcceptanceTest
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName, String namespace, JsonNode streamSchema) throws Exception {
-    JsonFieldNameUpdater nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema);
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
+      throws Exception {
+    final JsonFieldNameUpdater nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema);
 
-    List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
-    List<JsonNode> jsonRecords = new LinkedList<>();
+    final List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
+    final List<JsonNode> jsonRecords = new LinkedList<>();
 
-    for (S3ObjectSummary objectSummary : objectSummaries) {
-      S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
-      try (DataFileReader<Record> dataFileReader = new DataFileReader<>(
+    for (final S3ObjectSummary objectSummary : objectSummaries) {
+      final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
+      try (final DataFileReader<Record> dataFileReader = new DataFileReader<>(
           new SeekableByteArrayInput(object.getObjectContent().readAllBytes()),
           new GenericDatumReader<>())) {
-        ObjectReader jsonReader = MAPPER.reader();
+        final ObjectReader jsonReader = MAPPER.reader();
         while (dataFileReader.hasNext()) {
-          GenericData.Record record = dataFileReader.next();
-          byte[] jsonBytes = converter.convertToJson(record);
+          final GenericData.Record record = dataFileReader.next();
+          final byte[] jsonBytes = AvroConstants.JSON_CONVERTER.convertToJson(record);
           JsonNode jsonRecord = jsonReader.readTree(jsonBytes);
           jsonRecord = nameUpdater.getJsonWithOriginalFieldNames(jsonRecord);
           jsonRecords.add(AvroRecordHelper.pruneAirbyteJson(jsonRecord));

@@ -5,22 +5,29 @@ import { NavLink } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar } from "@fortawesome/free-regular-svg-icons";
 
-import { Routes } from "packages/cloud/routes";
-import { useConfig } from "config";
+import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
 
-import useConnector from "hooks/services/useConnector";
-import useWorkspace from "hooks/services/useWorkspace";
+import { CloudRoutes } from "packages/cloud/cloudRoutes";
+
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { Link } from "components";
-import Indicator from "components/Indicator";
 import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";
 
 import ConnectionsIcon from "views/layout/SideBar/components/ConnectionsIcon";
 import DestinationIcon from "views/layout/SideBar/components/DestinationIcon";
 import DocsIcon from "views/layout/SideBar/components/DocsIcon";
 import OnboardingIcon from "views/layout/SideBar/components/OnboardingIcon";
+import ChatIcon from "views/layout/SideBar/components/ChatIcon";
 import SettingsIcon from "views/layout/SideBar/components/SettingsIcon";
 import SourceIcon from "views/layout/SideBar/components/SourceIcon";
-import { useGetWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
+import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
+import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
+import ResourcesPopup, {
+  Icon,
+  Item,
+} from "views/layout/SideBar/components/ResourcesPopup";
+import { RoutePaths } from "pages/routes";
+import { FeatureItem, WithFeature } from "hooks/services/Feature";
 
 const CreditsIcon = styled(FontAwesomeIcon)`
   font-size: 21px;
@@ -37,6 +44,8 @@ const Bar = styled.nav`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  position: relative;
+  z-index: 9999;
 `;
 
 const Menu = styled.ul`
@@ -68,30 +77,8 @@ const MenuItem = styled(NavLink)`
   }
 `;
 
-const MenuLinkItem = styled.a`
-  color: ${({ theme }) => theme.greyColor30};
-  width: 100%;
-  cursor: pointer;
-  height: 70px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-weight: normal;
-  font-size: 12px;
-  line-height: 15px;
-  margin-top: 7px;
-  text-decoration: none;
-`;
-
 const Text = styled.div`
   margin-top: 7px;
-`;
-
-const Notification = styled(Indicator)`
-  position: absolute;
-  top: 11px;
-  right: 23px;
 `;
 
 const WorkspaceButton = styled.div`
@@ -113,10 +100,10 @@ const WorkspaceButton = styled.div`
 `;
 
 const SideBar: React.FC = () => {
-  const { hasNewVersions } = useConnector();
-  const config = useConfig();
-  const { workspace } = useWorkspace();
-  const { data: cloudWorkspace } = useGetWorkspace(workspace.workspaceId);
+  const workspace = useCurrentWorkspace();
+  const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
+  const { show } = useIntercom();
+  const handleChatUs = () => show();
 
   return (
     <Bar>
@@ -124,8 +111,8 @@ const SideBar: React.FC = () => {
         <Link
           to={
             workspace.displaySetupWizard
-              ? Routes.Onboarding
-              : Routes.Connections
+              ? RoutePaths.Onboarding
+              : RoutePaths.Connections
           }
         >
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
@@ -138,7 +125,7 @@ const SideBar: React.FC = () => {
         <Menu>
           {workspace.displaySetupWizard ? (
             <li>
-              <MenuItem to={Routes.Onboarding} activeClassName="active">
+              <MenuItem to={RoutePaths.Onboarding}>
                 <OnboardingIcon />
                 <Text>
                   <FormattedMessage id="sidebar.onboarding" />
@@ -147,7 +134,7 @@ const SideBar: React.FC = () => {
             </li>
           ) : null}
           <li>
-            <MenuItem to={Routes.Connections} activeClassName="active">
+            <MenuItem to={RoutePaths.Connections}>
               <ConnectionsIcon />
               <Text>
                 <FormattedMessage id="sidebar.connections" />
@@ -155,7 +142,7 @@ const SideBar: React.FC = () => {
             </MenuItem>
           </li>
           <li>
-            <MenuItem to={Routes.Source} activeClassName="active">
+            <MenuItem to={RoutePaths.Source}>
               <SourceIcon />
               <Text>
                 <FormattedMessage id="sidebar.sources" />
@@ -163,7 +150,7 @@ const SideBar: React.FC = () => {
             </MenuItem>
           </li>
           <li>
-            <MenuItem to={Routes.Destination} activeClassName="active">
+            <MenuItem to={RoutePaths.Destination}>
               <DestinationIcon />
               <Text>
                 <FormattedMessage id="sidebar.destinations" />
@@ -174,7 +161,7 @@ const SideBar: React.FC = () => {
       </div>
       <Menu>
         <li>
-          <MenuItem to={Routes.Credits} activeClassName="active">
+          <MenuItem to={CloudRoutes.Credits}>
             <CreditsIcon icon={faStar} />
             <Text>
               <FormattedNumber value={cloudWorkspace.remainingCredits} />
@@ -182,22 +169,42 @@ const SideBar: React.FC = () => {
           </MenuItem>
         </li>
         <li>
-          <MenuLinkItem href={config.ui.docsLink} target="_blank">
-            <DocsIcon />
-            <Text>
-              <FormattedMessage id="sidebar.docs" />
-            </Text>
-          </MenuLinkItem>
+          <ResourcesPopup
+            options={[
+              { value: "docs" },
+              { value: "slack" },
+              { value: "status" },
+              {
+                value: "chat",
+                label: (
+                  <Item onClick={handleChatUs}>
+                    <Icon>
+                      <ChatIcon />
+                    </Icon>
+                    <FormattedMessage id="sidebar.chat" />
+                  </Item>
+                ),
+              },
+              { value: "recipes" },
+            ]}
+          >
+            {({ onOpen }) => (
+              <MenuItem onClick={onOpen} as="div">
+                <DocsIcon />
+                <Text>
+                  <FormattedMessage id="sidebar.resources" />
+                </Text>
+              </MenuItem>
+            )}
+          </ResourcesPopup>
         </li>
         <li>
-          <MenuItem
-            to={`${Routes.Settings}${Routes.Account}`}
-            activeClassName="active"
-            isActive={(_, location) =>
-              location.pathname.startsWith(Routes.Settings)
-            }
-          >
-            {hasNewVersions ? <Notification /> : null}
+          <MenuItem to={RoutePaths.Settings}>
+            <WithFeature featureId={FeatureItem.AllowUpdateConnectors}>
+              <React.Suspense fallback={null}>
+                <NotificationIndicator />
+              </React.Suspense>
+            </WithFeature>
             <SettingsIcon />
             <Text>
               <FormattedMessage id="sidebar.settings" />

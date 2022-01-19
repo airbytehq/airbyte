@@ -13,6 +13,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import java.util.List;
+import org.bson.BsonArray;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -22,7 +24,7 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
   private MongoDBContainer mongoDBContainer;
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"));
     mongoDBContainer.start();
 
@@ -39,22 +41,25 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
         .put("auth_source", "admin")
         .build());
 
-    var connectionString = String.format("mongodb://%s:%s/",
+    final var connectionString = String.format("mongodb://%s:%s/",
         mongoDBContainer.getHost(),
         mongoDBContainer.getFirstMappedPort());
 
     database = new MongoDatabase(connectionString, DATABASE_NAME);
 
-    MongoCollection<Document> collection = database.createCollection(COLLECTION_NAME);
-    var doc1 = new Document("id", "0001").append("name", "Test");
-    var doc2 = new Document("id", "0002").append("name", "Mongo");
-    var doc3 = new Document("id", "0003").append("name", "Source");
+    final MongoCollection<Document> collection = database.createCollection(COLLECTION_NAME);
+    final var doc1 = new Document("id", "0001").append("name", "Test")
+        .append("test", 10).append("test_array", new BsonArray(List.of(new BsonString("test"), new BsonString("mongo"))))
+        .append("double_test", 100.12).append("int_test", 100);
+    final var doc2 = new Document("id", "0002").append("name", "Mongo").append("test", "test_value").append("int_test", 201);
+    final var doc3 = new Document("id", "0003").append("name", "Source").append("test", null)
+        .append("double_test", 212.11).append("int_test", 302);
 
     collection.insertMany(List.of(doc1, doc2, doc3));
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     database.close();
     mongoDBContainer.close();
   }

@@ -11,7 +11,7 @@ public enum AzureBlobStorageFormat {
 
   private final String fileExtension;
 
-  AzureBlobStorageFormat(String fileExtension) {
+  AzureBlobStorageFormat(final String fileExtension) {
     this.fileExtension = fileExtension;
   }
 

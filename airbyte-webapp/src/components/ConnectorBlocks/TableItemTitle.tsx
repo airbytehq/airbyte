@@ -74,9 +74,13 @@ const TableItemTitle: React.FC<IProps> = ({
         <Popout
           data-testid={`select-${type}`}
           options={options}
+          isSearchable={false}
           styles={{
             // TODO: hack to position select
-            menuPortal: (base) => ({ ...base, "margin-left": "-120px" }),
+            menuPortal: (base) => ({
+              ...base,
+              "margin-left": "-130px",
+            }),
           }}
           onChange={onSelect}
           targetComponent={({ onOpen }) => (

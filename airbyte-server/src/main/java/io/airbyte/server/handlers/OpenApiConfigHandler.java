@@ -11,14 +11,14 @@ import java.nio.file.Files;
 
 public class OpenApiConfigHandler {
 
-  private static File TMP_FILE;
+  private static final File TMP_FILE;
 
   static {
     try {
       TMP_FILE = File.createTempFile("airbyte", "openapiconfig");
       TMP_FILE.deleteOnExit();
       Files.writeString(TMP_FILE.toPath(), MoreResources.readResource("config.yaml"));
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }

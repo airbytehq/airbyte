@@ -119,6 +119,55 @@
                 }
               ]
             },
+            "organizations": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "primary": {
+                      "type": "boolean"
+                    },
+                    "customType": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "title",
+                    "primary",
+                    "customType",
+                    "description"
+                  ]
+                }
+              ]
+            },
+            "phones": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["value", "type"]
+                }
+              ]
+            },
             "aliases": {
               "type": "array",
               "items": [
