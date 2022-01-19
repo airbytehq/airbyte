@@ -18,6 +18,7 @@ public class SnowflakeSQLNameTransformer extends ExtendedNameTransformer {
   }
 
   public String getStagingPath(String schemaName, String tableName, String currentSyncPath) {
-    return (getStageName(schemaName,tableName)+"/staged/"+currentSyncPath).toUpperCase();
+    return (getStageName(schemaName, tableName) + "/staged/" + currentSyncPath).toUpperCase();
   }
+
 }
