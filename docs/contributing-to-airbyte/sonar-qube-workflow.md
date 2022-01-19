@@ -29,3 +29,6 @@ All Python tools use the common [pyproject.toml](https://github.com/airbytehq/ai
 
 ## Access to SonarQube
 The Airbyte project uses a custom SonarQube instance. Access to it is explained [here](https://github.com/airbytehq/airbyte-cloud/wiki/IAP-tunnel-to-the-SonarQube-instance).
+
+## SonarQube settings
+The SonarQube server uses default settings. All customisations are implemented into the Github WorkFlows. More details are [here](https://github.com/airbytehq/airbyte/tree/master/.github/actions/ci-tests-runner/action.yml)
