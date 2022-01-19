@@ -385,6 +385,7 @@ class BigQueryDestinationTest {
   }
 
   private static class DatasetIdResetter {
+
     private Consumer<JsonNode> consumer;
 
     DatasetIdResetter(Consumer<JsonNode> consumer) {
@@ -394,20 +395,20 @@ class BigQueryDestinationTest {
     public void accept(JsonNode config) {
       consumer.accept(config);
     }
+
   }
 
   private static Stream<Arguments> datasetIdResetterProvider() {
     // parameterized test with two dataset-id patterns: `dataset_id` and `project-id:dataset_id`
     return Stream.of(
-      Arguments.arguments(new DatasetIdResetter(config -> {})),
-      Arguments.arguments(new DatasetIdResetter(
-        config -> {
-          String projectId = ((ObjectNode) config).get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
-          String datasetId = ((ObjectNode) config).get(BigQueryConsts.CONFIG_DATASET_ID).asText();
-          ((ObjectNode) config).put(BigQueryConsts.CONFIG_DATASET_ID,
-            String.format("%s:%s", projectId, datasetId));
-        }
-      ))
-    );
+        Arguments.arguments(new DatasetIdResetter(config -> {})),
+        Arguments.arguments(new DatasetIdResetter(
+            config -> {
+              String projectId = ((ObjectNode) config).get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
+              String datasetId = ((ObjectNode) config).get(BigQueryConsts.CONFIG_DATASET_ID).asText();
+              ((ObjectNode) config).put(BigQueryConsts.CONFIG_DATASET_ID,
+                  String.format("%s:%s", projectId, datasetId));
+            })));
   }
+
 }

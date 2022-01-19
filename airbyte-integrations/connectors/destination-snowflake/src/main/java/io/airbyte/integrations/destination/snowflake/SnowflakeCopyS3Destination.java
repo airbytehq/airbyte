@@ -29,7 +29,7 @@ public class SnowflakeCopyS3Destination extends CopyDestination {
         getDatabase(config),
         getSqlOperations(),
         getNameTransformer(),
-        getS3CopyConfig(config),
+        S3CopyConfig.getS3CopyConfig(config.get("loading_method")),
         catalog,
         new SnowflakeS3StreamCopierFactory(),
         getConfiguredSchema(config));
@@ -57,10 +57,6 @@ public class SnowflakeCopyS3Destination extends CopyDestination {
 
   private String getConfiguredSchema(final JsonNode config) {
     return config.get("schema").asText();
-  }
-
-  private S3CopyConfig getS3CopyConfig(final JsonNode config) {
-    return new S3CopyConfig(S3CopyConfig.shouldPurgeStagingData(config), getS3DestinationConfig(config));
   }
 
   private S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
