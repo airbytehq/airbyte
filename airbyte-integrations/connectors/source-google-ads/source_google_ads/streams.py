@@ -18,7 +18,7 @@ def chunk_date_range(
 ) -> Iterable[Mapping[str, any]]:
     """
     Passing optional parameter end_date for testing
-    Returns a list of the beginning and ending timetsamps of each month between the start date and now.
+    Returns a list of the beginning and ending timestamps of each `range_days` between the start date and now.
     The return value is a list of dicts {'date': str} which can be used directly with the Slack API
     """
     intervals = []
@@ -66,7 +66,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
     cursor_field = "segments.date"
     primary_key = None
     time_unit = "days"
-    range_days = 10
+    range_days = 15
 
     def __init__(self, start_date: str, conversion_window_days: int, time_zone: [pendulum.timezone, str], **kwargs):
         self.conversion_window_days = conversion_window_days

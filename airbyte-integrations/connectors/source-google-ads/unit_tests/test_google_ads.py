@@ -110,7 +110,7 @@ def test_interval_chunking():
 def test_get_date_params():
     # Please note that this is equal to inputted stream_slice start date + 1 day
     mock_start_date = "2021-05-19"
-    mock_end_date = "2021-05-28"
+    mock_end_date = "2021-06-02"
     mock_conversion_window_days = 14
 
     incremental_stream_config = dict(
