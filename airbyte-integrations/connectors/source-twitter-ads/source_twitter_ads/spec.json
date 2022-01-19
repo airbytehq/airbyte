@@ -40,7 +40,7 @@
         "description": "Granularity of data to be pulled."
       },
       "METRIC_GROUPS": {
-        "type": "string",
+        "type": "array",
         "description": "Metric Groups to be pulled."
       },
       "PLACEMENT": {
