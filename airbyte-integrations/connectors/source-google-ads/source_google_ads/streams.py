@@ -13,7 +13,8 @@ from .google_ads import GoogleAds
 
 
 def chunk_date_range(
-    start_date: str, conversion_window: int, field: str, end_date: str = None, time_unit: str = "months", days_of_data_storage: int = None
+    start_date: str, conversion_window: int, field: str, end_date: str = None, time_unit: str = "days", days_of_data_storage: int = None,
+        range_days: int = None
 ) -> Iterable[Mapping[str, any]]:
     """
     Passing optional parameter end_date for testing
@@ -38,7 +39,7 @@ def chunk_date_range(
     # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
     while start_date < end_date:
         intervals.append({field: start_date.to_date_string()})
-        start_date = start_date.add(**{time_unit: 1})
+        start_date = start_date.add(**{time_unit: range_days})
 
     return intervals
 
@@ -64,7 +65,8 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
     days_of_data_storage = None
     cursor_field = "segments.date"
     primary_key = None
-    time_unit = "months"
+    time_unit = "days"
+    range_days = 10
 
     def __init__(self, start_date: str, conversion_window_days: int, time_zone: [pendulum.timezone, str], **kwargs):
         self.conversion_window_days = conversion_window_days
@@ -82,17 +84,18 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
             field=self.cursor_field,
             time_unit=self.time_unit,
             days_of_data_storage=self.days_of_data_storage,
+            range_days=self.range_days
         )
 
     def get_date_params(
-        self, stream_slice: Mapping[str, Any], cursor_field: str, end_date: pendulum.datetime = None, time_unit: str = "months"
+        self, stream_slice: Mapping[str, Any], cursor_field: str, end_date: pendulum.datetime = None, time_unit: str = "days"
     ):
         end_date = end_date or pendulum.yesterday(tz=self.time_zone)
         start_date = pendulum.parse(stream_slice.get(cursor_field))
         if start_date > pendulum.now():
             return start_date.to_date_string(), start_date.add(days=1).to_date_string()
 
-        end_date = min(end_date, pendulum.parse(stream_slice.get(cursor_field)).add(**{time_unit: 1}))
+        end_date = min(end_date, pendulum.parse(stream_slice.get(cursor_field)).add(**{time_unit: self.range_days}))
 
         # Fix issue #4806, start date should always be lower than end date.
         if start_date.add(days=1).date() >= end_date.date():
@@ -216,3 +219,4 @@ class ClickView(IncrementalGoogleAdsStream):
 
     time_unit = "days"
     days_of_data_storage = 90
+    range_days = 1
