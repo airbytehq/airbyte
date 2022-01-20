@@ -18,8 +18,8 @@ import org.junit.jupiter.params.provider.Arguments;
 public class PostgresRdsSourcePerformanceTest extends AbstractSourcePerformanceTest {
 
   private static final String PERFORMANCE_SECRET_CREDS = "secrets/performance-config.json";
-  private static final List<String> SCHEMAS = List.of("test1000tables240columns200recordsDb",
-      "newregular25tables50000records", "newsmall1000tableswith10000rows");
+  private static final List<String> SCHEMAS = List.of("t1000_c240_r200",
+      "t25_c8_r50k_s10kb", "t1000_c8_r10k_s500b");
 
   @Override
   protected String getImageName() {
@@ -37,8 +37,8 @@ public class PostgresRdsSourcePerformanceTest extends AbstractSourcePerformanceT
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", plainConfig.get("host"))
         .put("port", plainConfig.get("port"))
-        .put("database", plainConfig.get("database"))
-        .put("schemas", SCHEMAS)
+        .put("database", dbName)
+        .put("schemas", List.of(dbName))
         .put("username", plainConfig.get("username"))
         .put("password", plainConfig.get("password"))
         .put("ssl", true)
