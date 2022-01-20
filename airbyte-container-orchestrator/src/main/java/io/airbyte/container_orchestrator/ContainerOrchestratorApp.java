@@ -48,7 +48,7 @@ import lombok.extern.slf4j.Slf4j;
  * future this will need to independently interact with cloud storage.
  */
 @Slf4j
-public class ContainerOrchestratorApp implements Runnable {
+public class ContainerOrchestratorApp {
 
   private final String application;
   private final Map<String, String> envMap;
@@ -120,20 +120,22 @@ public class ContainerOrchestratorApp implements Runnable {
    * Configures logging/mdc scope, and creates all objects necessary to handle state updates.
    * Everything else is delegated to {@link ContainerOrchestratorApp#runInternal}.
    */
-  @Override
   public void run() {
     configureLogging();
 
     // set mdc scope for the remaining execution
-    new MdcScope.Builder()
+    try (final var mdcScope = new MdcScope.Builder()
         .setLogPrefix(application)
         .setPrefixColor(LoggingHelper.Color.CYAN_BACKGROUND)
-        .build();
+        .build()) {
 
-    final var documentStoreClient = StateClients.create(configs.getStateStorageCloudConfigs(), WorkerApp.STATE_STORAGE_PREFIX);
-    final var asyncStateManager = new DefaultAsyncStateManager(documentStoreClient);
+      // IMPORTANT: Changing the storage location will orphan already existing kube pods when the new
+      // version is deployed!
+      final var documentStoreClient = StateClients.create(configs.getStateStorageCloudConfigs(), WorkerApp.STATE_STORAGE_PREFIX);
+      final var asyncStateManager = new DefaultAsyncStateManager(documentStoreClient);
 
-    runInternal(asyncStateManager);
+      runInternal(asyncStateManager);
+    }
   }
 
   public static void main(final String[] args) {

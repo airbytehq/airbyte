@@ -132,6 +132,11 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
     }
   }
 
+  /**
+   * If the sync workflow has advanced to the next attempt, we don't want to leave a zombie of the
+   * older job running (if it exists). In order to ensure a consistent state, we should kill the older
+   * versions.
+   */
   private void killLowerAttemptIdsIfPresent(final String podNameAndJobPrefix, final long currentAttempt) {
     for (long previousAttempt = currentAttempt - 1; previousAttempt >= 0; previousAttempt--) {
       final var podName = podNameAndJobPrefix + previousAttempt;

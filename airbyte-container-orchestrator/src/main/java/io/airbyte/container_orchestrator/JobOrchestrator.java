@@ -70,10 +70,6 @@ public interface JobOrchestrator<INPUT> {
    */
   Optional<String> runJob() throws Exception;
 
-  static <T> T readAndDeserializeFile(String path, Class<T> type) throws IOException {
-    return readAndDeserializeFile(Path.of(path), type);
-  }
-
   static <T> T readAndDeserializeFile(Path path, Class<T> type) throws IOException {
     return Jsons.deserialize(Files.readString(path), type);
   }

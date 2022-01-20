@@ -81,6 +81,9 @@ public class WorkerApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerApp.class);
   public static final int KUBE_HEARTBEAT_PORT = 9000;
+
+  // IMPORTANT: Changing the storage location will orphan already existing kube pods when the new
+  // version is deployed!
   public static final Path STATE_STORAGE_PREFIX = Path.of("/state");
 
   private final Path workspaceRoot;

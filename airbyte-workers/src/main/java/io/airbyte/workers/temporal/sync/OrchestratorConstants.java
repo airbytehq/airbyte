@@ -10,6 +10,12 @@ import java.util.Set;
 
 public class OrchestratorConstants {
 
+  // we want to propagate log level, even if it isn't consumed by EnvConfigs
+  private static final String LOG_LEVEL = "LOG_LEVEL";
+
+  // necessary for s3/minio logging. used in the log4j2 configuration.
+  private static final String S3_PATH_STYLE_ACCESS = "S3_PATH_STYLE_ACCESS";
+
   // set of env vars necessary for the container orchestrator app to run
   public static final Set<String> ENV_VARS_TO_TRANSFER = Set.of(
       EnvConfigs.WORKER_ENVIRONMENT,
@@ -31,11 +37,11 @@ public class OrchestratorConstants {
       EnvConfigs.JOB_MAIN_CONTAINER_MEMORY_LIMIT,
       EnvConfigs.JOB_DEFAULT_ENV_MAP,
       EnvConfigs.LOCAL_ROOT,
-      "LOG_LEVEL", // todo: put in constant
+      LOG_LEVEL,
       LogClientSingleton.GCS_LOG_BUCKET,
       LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS,
       LogClientSingleton.S3_MINIO_ENDPOINT,
-      "S3_PATH_STYLE_ACCESS", // todo: put in constant
+      S3_PATH_STYLE_ACCESS,
       LogClientSingleton.S3_LOG_BUCKET,
       LogClientSingleton.AWS_ACCESS_KEY_ID,
       LogClientSingleton.AWS_SECRET_ACCESS_KEY,
