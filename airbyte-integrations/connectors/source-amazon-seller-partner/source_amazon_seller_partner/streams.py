@@ -18,7 +18,7 @@ from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, NoAuth
+from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
 from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
@@ -41,7 +41,7 @@ class AmazonSPStream(HttpStream, ABC):
         url_base: str,
         aws_signature: AWSSignature,
         replication_start_date: str,
-        marketplace_ids: List[str],
+        marketplace_id: str,
         period_in_days: Optional[int],
         report_options: Optional[str],
         max_wait_seconds: Optional[int],
@@ -52,7 +52,7 @@ class AmazonSPStream(HttpStream, ABC):
 
         self._url_base = url_base.rstrip("/") + "/"
         self._replication_start_date = replication_start_date
-        self.marketplace_ids = marketplace_ids
+        self.marketplace_id = marketplace_id
         self._session.auth = aws_signature
 
     @property
@@ -103,7 +103,7 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         stream_data = response.json()
-        next_page_token = stream_data.get(self.next_page_token_field)
+        next_page_token = stream_data.get("payload").get(self.next_page_token_field)
         if next_page_token:
             return {self.next_page_token_field: next_page_token}
 
@@ -142,24 +142,25 @@ class ReportsAmazonSPStream(Stream, ABC):
     path_prefix = f"reports/{REPORTS_API_VERSION}"
     sleep_seconds = 30
     data_field = "payload"
+    result_key = None
 
     def __init__(
         self,
         url_base: str,
         aws_signature: AWSSignature,
         replication_start_date: str,
-        marketplace_ids: List[str],
+        marketplace_id: str,
         period_in_days: Optional[int],
         report_options: Optional[str],
         max_wait_seconds: Optional[int],
-        authenticator: HttpAuthenticator = NoAuth(),
+        authenticator: HttpAuthenticator = None,
     ):
         self._authenticator = authenticator
         self._session = requests.Session()
         self._url_base = url_base.rstrip("/") + "/"
         self._session.auth = aws_signature
         self._replication_start_date = replication_start_date
-        self.marketplace_ids = marketplace_ids
+        self.marketplace_id = marketplace_id
         self.period_in_days = period_in_days
         self._report_options = report_options
         self.max_wait_seconds = max_wait_seconds
@@ -173,7 +174,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         return self._authenticator
 
     def request_params(self) -> MutableMapping[str, Any]:
-        return {"MarketplaceIds": ",".join(self.marketplace_ids)}
+        return {"MarketplaceIds": self.marketplace_id}
 
     def request_headers(self) -> Mapping[str, Any]:
         return {"content-type": "application/json"}
@@ -223,8 +224,8 @@ class ReportsAmazonSPStream(Stream, ABC):
 
         return {
             "reportType": self.name,
-            "marketplaceIds": self.marketplace_ids,
-            "createdSince": replication_start_date.strftime(DATE_TIME_FORMAT),
+            "marketplaceIds": [self.marketplace_id],
+            "dataStartTime": replication_start_date.strftime(DATE_TIME_FORMAT),
         }
 
     def _create_report(
@@ -288,8 +289,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         document_records = self.parse_document(document)
         yield from document_records
 
-    @staticmethod
-    def parse_document(document):
+    def parse_document(self, document):
         return csv.DictReader(StringIO(document), delimiter="\t")
 
     def report_options(self) -> Mapping[str, Any]:
@@ -388,17 +388,10 @@ class VendorInventoryHealthReports(ReportsAmazonSPStream):
     name = "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT"
 
 
-class BrandAnalyticsSearchTermsReports(ReportsAmazonSPStream):
-    """
-    Field definitions: https://sellercentral.amazon.co.uk/help/hub/reference/G5NXWNY8HUD3VDCW
-    """
-
-    name = "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT"
-
-    @staticmethod
-    def parse_document(document):
+class BrandAnalyticsStream(ReportsAmazonSPStream):
+    def parse_document(self, document):
         parsed = json_lib.loads(document)
-        return parsed.get("dataByDepartmentAndSearchTerm", {})
+        return parsed.get(self.result_key, [])
 
     def _report_data(
         self,
@@ -450,6 +443,35 @@ class BrandAnalyticsSearchTermsReports(ReportsAmazonSPStream):
                 "dataEndTime": data_end_time.strftime(DATE_TIME_FORMAT),
                 "reportOptions": report_options,
             }
+
+
+class BrandAnalyticsMarketBasketReports(BrandAnalyticsStream):
+    name = "GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT"
+    result_key = "dataByAsin"
+
+
+class BrandAnalyticsSearchTermsReports(BrandAnalyticsStream):
+    """
+    Field definitions: https://sellercentral.amazon.co.uk/help/hub/reference/G5NXWNY8HUD3VDCW
+    """
+
+    name = "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT"
+    result_key = "dataByDepartmentAndSearchTerm"
+
+
+class BrandAnalyticsRepeatPurchaseReports(BrandAnalyticsStream):
+    name = "GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT"
+    result_key = "dataByAsin"
+
+
+class BrandAnalyticsAlternatePurchaseReports(BrandAnalyticsStream):
+    name = "GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT"
+    result_key = "dataByAsin"
+
+
+class BrandAnalyticsItemComparisonReports(BrandAnalyticsStream):
+    name = "GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT"
+    result_key = "dataByAsin"
 
 
 class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
@@ -518,17 +540,68 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
     Field definitions: https://sellercentral.amazon.com/help/hub/reference/G202125660
     """
 
+    # The list of MarketplaceIds can be found here https://docs.developer.amazonservices.com/en_UK/dev_guide/DG_Endpoints.html
+    MARKETPLACE_DATE_FORMAT_MAP = dict(
+        # eu
+        A2VIGQ35RCS4UG="D/M/YY",  # AE
+        A1PA6795UKMFR9="D.M.YY",  # DE
+        A1C3SOZRARQ6R3="D/M/YY",  # PL
+        ARBP9OOSHTCHU="D/M/YY",  # EG
+        A1RKKUPIHCS9HS="D/M/YY",  # ES
+        A13V1IB3VIYZZH="D/M/YY",  # FR
+        A21TJRUUN4KGV="D/M/YY",  # IN
+        APJ6JRA9NG5V4="D/M/YY",  # IT
+        A1805IZSGTT6HS="D/M/YY",  # NL
+        A17E79C6D8DWNP="D/M/YY",  # SA
+        A2NODRKZP88ZB9="YYYY-MM-DD",  # SE
+        A33AVAJ2PDY3EV="D/M/YY",  # TR
+        A1F83G8C2ARO7P="D/M/YY",  # UK
+        # fe
+        A39IBJ37TRP1C6="D/M/YY",  # AU
+        A1VC38T7YXB528="YY/M/D",  # JP
+        A19VAU5U5O7RUS="D/M/YY",  # SG
+        # na
+        ATVPDKIKX0DER="M/D/YY",  # US
+        A2Q3Y263D00KWC="D/M/YY",  # BR
+        A2EUQ1WTGCTBG2="D/M/YY",  # CA
+        A1AM78C64UM0Y8="D/M/YY",  # MX
+    )
+
+    NORMALIZED_FIELD_NAMES = ["date", "rating", "comments", "response", "order_id", "rater_email"]
+
     name = "GET_SELLER_FEEDBACK_DATA"
-    cursor_field = "Date"
+    cursor_field = "date"
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
 
-    @transformer.registerCustomTransform
-    def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
-        if original_value and "format" in field_schema and field_schema["format"] == "date":
-            transformed_value = pendulum.from_format(original_value, "M/D/YY").to_date_string()
-            return transformed_value
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.transformer.registerCustomTransform(self.get_transform_function())
 
-        return original_value
+    def get_transform_function(self):
+        def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
+            if original_value and "format" in field_schema and field_schema["format"] == "date":
+                date_format = self.MARKETPLACE_DATE_FORMAT_MAP.get(self.marketplace_id)
+                if not date_format:
+                    raise KeyError(f"Date format not found for Markeplace ID: {self.marketplace_id}")
+                transformed_value = pendulum.from_format(original_value, date_format).to_date_string()
+                return transformed_value
+
+            return original_value
+
+        return transform_function
+
+    # csv header field names for this report differ per marketplace (are localized to marketplace language)
+    # but columns come in the same order
+    # so we set fieldnames to our custom ones
+    # and raise error if original and custom header field count does not match
+    @staticmethod
+    def parse_document(document):
+        reader = csv.DictReader(StringIO(document), delimiter="\t", fieldnames=SellerFeedbackReports.NORMALIZED_FIELD_NAMES)
+        original_fieldnames = next(reader)
+        if len(original_fieldnames) != len(SellerFeedbackReports.NORMALIZED_FIELD_NAMES):
+            raise ValueError("Original and normalized header field count does not match")
+
+        return reader
 
 
 class Orders(IncrementalAmazonSPStream):
@@ -551,8 +624,7 @@ class Orders(IncrementalAmazonSPStream):
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
-        if not next_page_token:
-            params.update({"MarketplaceIds": ",".join(self.marketplace_ids)})
+        params.update({"MarketplaceIds": self.marketplace_id})
         return params
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:

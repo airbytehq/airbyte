@@ -1,4 +1,4 @@
-ARG JDK_VERSION=14.0.2
+ARG JDK_VERSION=17.0.1
 FROM openjdk:${JDK_VERSION}-slim AS sync-attempt
 
 ARG DOCKER_BUILD_ARCH=amd64
@@ -19,12 +19,12 @@ RUN add-apt-repository \
 RUN apt-get update && apt-get install -y docker-ce-cli jq
 
 ENV APPLICATION airbyte-container-orchestrator
-ENV AIRBYTE_ENTRYPOINT "/app/${APPLICATION}-0.35.1-alpha/bin/${APPLICATION}"
+ENV AIRBYTE_ENTRYPOINT "/app/${APPLICATION}-0.35.6-alpha/bin/${APPLICATION}"
 
 WORKDIR /app
 
 # Move orchestrator app
-ADD bin/${APPLICATION}-0.35.1-alpha.tar /app
+ADD bin/${APPLICATION}-0.35.6-alpha.tar /app
 
 # wait for upstream dependencies to become available before starting server
-ENTRYPOINT ["/bin/bash", "-c", "/app/${APPLICATION}-0.35.1-alpha/bin/${APPLICATION}"]
+ENTRYPOINT ["/bin/bash", "-c", "/app/${APPLICATION}-0.35.6-alpha/bin/${APPLICATION}"]

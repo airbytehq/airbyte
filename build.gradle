@@ -82,6 +82,8 @@ def createSpotlessTarget = { pattern ->
         'dbt-project-template-mssql',
         'dbt-project-template-mysql',
         'dbt-project-template-oracle',
+        'dbt-project-template-clickhouse',
+        'dbt-project-template-snowflake',
         'dbt_test_config',
         'normalization_test_output',
         'tools',
@@ -338,6 +340,7 @@ subprojects {
             source = fileTree(dir: projectDir)
                     .include("**/*.py")
                     .exclude(".venv/**/*.py")
+                    .exclude("**/airbyte_api_client/**/*.py")
                     .exclude("**/__init__.py")
             strictCheck = true
         }
@@ -354,6 +357,7 @@ subprojects {
 }
 
 task('generate-docker') {
+    dependsOn(':airbyte-bootloader:assemble')
     dependsOn(':airbyte-workers:assemble')
     dependsOn(':airbyte-webapp:assemble')
     dependsOn(':airbyte-server:assemble')

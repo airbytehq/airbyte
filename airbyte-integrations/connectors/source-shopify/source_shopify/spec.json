@@ -4,53 +4,53 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Shopify Source CDK Specifications",
     "type": "object",
-    "required": ["shop", "start_date", "auth_method"],
-    "additionalProperties": false,
+    "required": ["shop", "start_date", "credentials"],
+    "additionalProperties": true,
     "properties": {
       "shop": {
         "type": "string",
+        "title": "Shopify Store",
         "description": "The name of the shopify store. For https://EXAMPLE.myshopify.com, the shop name is 'EXAMPLE'."
       },
       "start_date": {
         "type": "string",
-        "description": "The date you would like to replicate data. Format: YYYY-MM-DD.",
+        "title": "Start Date",
+        "description": "The date you would like to replicate data from. Format: YYYY-MM-DD. Any data before this date will not be replicated.",
         "examples": ["2021-01-01"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
       },
-      "auth_method": {
+      "credentials": {
         "title": "Shopify Authorization Method",
         "type": "object",
         "oneOf": [
           {
             "type": "object",
             "title": "OAuth2.0",
-            "required": [
-              "client_id",
-              "client_secret",
-              "access_token",
-              "auth_method"
-            ],
+            "required": ["auth_method"],
             "properties": {
               "auth_method": {
                 "type": "string",
-                "const": "access_token",
-                "enum": ["access_token"],
-                "default": "access_token",
+                "const": "oauth2.0",
+                "enum": ["oauth2.0"],
+                "default": "oauth2.0",
                 "order": 0
               },
               "client_id": {
                 "type": "string",
-                "description": "The API Key of the Shopify developer application.",
+                "title": "Client ID",
+                "description": "The Client ID of the Shopify developer application.",
                 "airbyte_secret": true
               },
               "client_secret": {
                 "type": "string",
-                "description": "The API Secret the Shopify developer application.",
+                "title": "Client Secret",
+                "description": "The Client Secret of the Shopify developer application.",
                 "airbyte_secret": true
               },
               "access_token": {
                 "type": "string",
-                "description": "Access Token for making authenticated requests.",
+                "title": "Access Token",
+                "description": "The Access Token for making authenticated requests.",
                 "airbyte_secret": true
               }
             }
@@ -58,7 +58,7 @@
           {
             "title": "API Password",
             "type": "object",
-            "required": ["api_password", "auth_method"],
+            "required": ["auth_method", "api_password"],
             "properties": {
               "auth_method": {
                 "type": "string",
@@ -69,7 +69,8 @@
               },
               "api_password": {
                 "type": "string",
-                "description": "The API PASSWORD for your private application in `Shopify` shop.",
+                "title": "API Password",
+                "description": "The API Password for your private application in the `Shopify` store.",
                 "airbyte_secret": true
               }
             }
@@ -78,12 +79,57 @@
       }
     }
   },
-  "authSpecification": {
-    "auth_type": "oauth2.0",
-    "oauth2Specification": {
-      "rootObject": ["auth_method", 0],
-      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-      "oauthFlowOutputParameters": [["access_token"]]
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": ["credentials", "auth_method"],
+    "predicate_value": "oauth2.0",
+    "oauth_config_specification": {
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "access_token"]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_id"]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_secret"]
+          }
+        }
+      },
+      "oauth_user_input_from_connector_config_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "shop": {
+            "type": "string",
+            "path_in_connector_config": ["shop"]
+          }
+        }
+      }
     }
   }
 }

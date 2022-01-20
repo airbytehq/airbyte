@@ -15,6 +15,10 @@ from pydantic.main import BaseModel
 from source_amazon_seller_partner.auth import AWSAuthenticator, AWSSignature
 from source_amazon_seller_partner.constants import AWSEnvironment, AWSRegion, get_marketplaces
 from source_amazon_seller_partner.streams import (
+    BrandAnalyticsAlternatePurchaseReports,
+    BrandAnalyticsItemComparisonReports,
+    BrandAnalyticsMarketBasketReports,
+    BrandAnalyticsRepeatPurchaseReports,
     BrandAnalyticsSearchTermsReports,
     FbaInventoryReports,
     FbaOrdersReports,
@@ -108,7 +112,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             "authenticator": auth,
             "aws_signature": aws_signature,
             "replication_start_date": config.replication_start_date,
-            "marketplace_ids": [marketplace_id],
+            "marketplace_id": marketplace_id,
             "period_in_days": config.period_in_days,
             "report_options": config.report_options,
             "max_wait_seconds": config.max_wait_seconds,
@@ -150,7 +154,11 @@ class SourceAmazonSellerPartner(AbstractSource):
             VendorInventoryHealthReports(**stream_kwargs),
             Orders(**stream_kwargs),
             SellerFeedbackReports(**stream_kwargs),
+            BrandAnalyticsMarketBasketReports(**stream_kwargs),
             BrandAnalyticsSearchTermsReports(**stream_kwargs),
+            BrandAnalyticsRepeatPurchaseReports(**stream_kwargs),
+            BrandAnalyticsAlternatePurchaseReports(**stream_kwargs),
+            BrandAnalyticsItemComparisonReports(**stream_kwargs),
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:

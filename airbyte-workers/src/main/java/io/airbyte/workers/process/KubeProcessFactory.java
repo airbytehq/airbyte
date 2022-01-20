@@ -141,12 +141,13 @@ public class KubeProcessFactory implements ProcessFactory {
           entrypoint,
           resourceRequirements,
           workerConfigs.getJobImagePullSecret(),
-          workerConfigs.getWorkerPodTolerations(),
-          workerConfigs.getWorkerPodNodeSelectors(),
+          workerConfigs.getWorkerKubeTolerations(),
+          workerConfigs.getworkerKubeNodeSelectors(),
           allLabels,
           workerConfigs.getJobSocatImage(),
           workerConfigs.getJobBusyboxImage(),
           workerConfigs.getJobCurlImage(),
+          workerConfigs.getEnvMap(),
           internalToExternalPorts,
           args);
     } catch (final Exception e) {

@@ -16,7 +16,7 @@ HERE = Path(__file__).parent
 
 @pytest.fixture(name="input_config")
 def parse_input_config():
-    with open(HERE.parent / "secrets/config_bulk.json", "r") as file:
+    with open(HERE.parent / "secrets/config.json", "r") as file:
         return json.loads(file.read())
 
 
@@ -28,7 +28,7 @@ def get_stream(input_config: Mapping[str, Any], stream_name: str) -> Stream:
 
 
 def get_any_real_stream(input_config: Mapping[str, Any]) -> Stream:
-    return get_stream(input_config, "Account")
+    return get_stream(input_config, "ActiveFeatureLicenseMetric")
 
 
 def test_not_queryable_stream(caplog, input_config):
