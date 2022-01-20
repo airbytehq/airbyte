@@ -4,7 +4,6 @@
 
 package io.airbyte.server.converters;
 
-import com.google.common.collect.Lists;
 import io.airbyte.api.model.AttemptInfoRead;
 import io.airbyte.api.model.AttemptRead;
 import io.airbyte.api.model.AttemptStats;
