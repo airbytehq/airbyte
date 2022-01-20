@@ -28,7 +28,7 @@ class SourceSalesforce(AbstractSource):
         return True, None
 
     @classmethod
-    def generate_streams(cls, config: Mapping[str, Any], stream_names: List[str], sf_object: Salesforce) -> List[Stream]:
+    def generate_streams(cls, config: Mapping[str, Any], stream_names: List[str], sf_object: Salesforce, stream_objects: List = None) -> List[Stream]:
         """ "Generates a list of stream by their names. It can be used for different tests too"""
         authenticator = TokenAuthenticator(sf_object.access_token)
         streams_kwargs = {}
@@ -40,7 +40,7 @@ class SourceSalesforce(AbstractSource):
 
         streams = []
         for stream_name in stream_names:
-            json_schema = sf_object.generate_schema(stream_name)
+            json_schema = sf_object.generate_schema(stream_name, stream_objects)
             pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)
             streams_kwargs.update(dict(sf_api=sf_object, pk=pk, stream_name=stream_name, schema=json_schema, authenticator=authenticator))
             if replication_key and stream_name not in UNSUPPORTED_FILTERING_STREAMS:
@@ -52,8 +52,8 @@ class SourceSalesforce(AbstractSource):
 
     def streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None) -> List[Stream]:
         sf = self._get_sf_object(config)
-        stream_names = sf.get_validated_streams(config=config, catalog=catalog)
-        return self.generate_streams(config, stream_names, sf)
+        stream_names, stream_objects = sf.get_validated_streams(config=config, catalog=catalog)
+        return self.generate_streams(config, stream_names, sf, stream_objects)
 
     def read(
         self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
