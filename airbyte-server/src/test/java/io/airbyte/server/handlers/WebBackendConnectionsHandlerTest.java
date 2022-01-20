@@ -208,7 +208,8 @@ class WebBackendConnectionsHandlerTest {
             .memoryRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest())
             .memoryLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit()));
 
-    when(schedulerHandler.resetConnection(any())).thenReturn(new JobInfoRead().job(new JobRead().status(JobStatus.SUCCEEDED)));
+    when(schedulerHandler.resetConnection(any(ConnectionIdRequestBody.class)))
+        .thenReturn(new JobInfoRead().job(new JobRead().status(JobStatus.SUCCEEDED)));
   }
 
   @Test
