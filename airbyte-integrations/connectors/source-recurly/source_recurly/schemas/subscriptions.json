@@ -3,43 +3,43 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "object": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "uuid": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "account": {
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "object": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "code": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "email": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "first_name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "last_name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "company": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "parent_account_id": {
           "type": ["null", "string"]
         },
         "bill_to": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
@@ -47,27 +47,27 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "object": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "code": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
     "state": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "shipping": {
       "type": "object",
       "properties": {
         "object": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "address": {
           "type": ["null", "object"]
@@ -76,21 +76,21 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "object": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "code": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "name": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           }
         },
         "amount": {
-          "type": "number"
+          "type": ["null", "number"]
         }
       }
     },
@@ -101,16 +101,16 @@
       "type": ["null", "object"]
     },
     "current_period_started_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "current_period_ends_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "current_term_started_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "current_term_ends_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "trial_started_at": {
       "type": ["null", "string"]
@@ -119,16 +119,16 @@
       "type": ["null", "string"]
     },
     "remaining_billing_cycles": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "total_billing_cycles": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "renewal_billing_cycles": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "auto_renew": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "paused_at": {
       "type": ["null", "string"]
@@ -137,34 +137,43 @@
       "type": ["null", "number"]
     },
     "currency": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "revenue_schedule_type": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "unit_amount": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "quantity": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "add_ons": {
       "type": "array"
     },
     "add_ons_total": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "subtotal": {
-      "type": "number"
+      "type": ["null", "number"]
+    },
+    "tax": {
+      "type": ["null", "number"]
+    },
+    "tax_info": {
+      "type": ["null", "object"]
+    },
+    "total": {
+      "type": ["null", "number"]
     },
     "collection_method": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "po_number": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "net_terms": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "terms_and_conditions": {
       "type": ["null", "string"]
@@ -179,13 +188,13 @@
       "type": "array"
     },
     "created_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "updated_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "activated_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "canceled_at": {
       "type": ["null", "string"]
@@ -194,6 +203,9 @@
       "type": ["null", "string"]
     },
     "bank_account_authorized_at": {
+      "type": ["null", "string"]
+    },
+    "gateway_code": {
       "type": ["null", "string"]
     },
     "billing_info_id": {

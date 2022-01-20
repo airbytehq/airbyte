@@ -57,8 +57,6 @@ DECLARE @fullloop INT;
 
 DECLARE @fullloopcounter INT;
 SET
-@dummyIpsum = '''dummy_ipsum'''
-SET
 @vmax = @allrows;
 SET
 @vmaxx = @allrows;
@@ -74,8 +72,8 @@ SET
 @fullloop = 0;
 SET
 @fullloopcounter = 0;
-
-while @vmaxx <= @vmaxoneinsert BEGIN
+SET
+@dummyIpsum = '''dummy_ipsum''' while @vmaxx <= @vmaxoneinsert BEGIN
 SET
 @vmaxoneinsert = @vmaxx;
 SET
@@ -97,7 +95,7 @@ DECLARE @insertTable NVARCHAR(MAX)
 SET
 @insertTable = CONVERT(
     NVARCHAR(MAX),
-    'insert into test (varchar1, varchar2, varchar3, varchar4, varchar5, longblobfield, timestampfield) values ('
+    'insert into test (varchar1, varchar2, varchar3, varchar4, varchar5, longtextfield, timestampfield) values ('
 );
 
 while @counter < @vmaxoneinsert BEGIN
@@ -159,7 +157,7 @@ DECLARE @insertTableLasted NVARCHAR(MAX);
 SET
 @insertTableLasted = CONVERT(
     NVARCHAR(MAX),
-    'insert into test (varchar1, varchar2, varchar3, varchar4, varchar5, longblobfield, timestampfield) values ('
+    'insert into test (varchar1, varchar2, varchar3, varchar4, varchar5, longtextfield, timestampfield) values ('
 );
 
 while @lastinsertcounter < @lastinsert BEGIN
@@ -231,7 +229,7 @@ CREATE
                 varchar3 VARCHAR(255),
                 varchar4 VARCHAR(255),
                 varchar5 VARCHAR(255),
-                longblobfield nvarchar(MAX),
+                longtextfield nvarchar(MAX),
                 timestampfield datetime2(0)
             );
 
@@ -242,34 +240,38 @@ DECLARE @smallText NVARCHAR(MAX);
 DECLARE @regularText NVARCHAR(MAX);
 
 DECLARE @largeText NVARCHAR(MAX);
+
+DECLARE @someText nvarchar(MAX);
+
+SELECT
+    @someText = N'some text, some text, ';
 SET
-@extraSmallText = '''test weight 50b - 50b text, 50b text, 50b text'''
+@extraSmallText = N'''test weight 50b - some text, some text, some text''';
 SET
-@smallText = CONCAT(
-    '''test weight 500b - ',
-    REPLICATE(
-        'some text, some text, ',
+@smallText = N'''test weight 500b - ';
+SET
+@regularText = N'''test weight 10kb - ';
+SET
+@largeText = N'''test weight 100kb - ';
+
+SELECT
+    @smallText = @smallText + REPLICATE(
+        @someText,
         20
-    ),
-    ''''
-)
-SET
-@regularText = CONCAT(
-    '''test weight 10kb - ',
-    REPLICATE(
-        'some text, some text, some text, some text, ',
-        295
-    ),
-    'some text'''
-)
-SET
-@largeText = CONCAT(
-    '''test weight 100kb - ',
-    REPLICATE(
-        'some text, some text, some text, some text, ',
-        2225
-    ),
-    'some text'''
+    )+ N'''';
+
+SELECT
+    @regularText = @regularText + REPLICATE(
+        @someText,
+        590
+    )+ N'some text''';
+
+SELECT
+    @largeText = @largeText + REPLICATE(
+        @someText,
+        4450
+    )+ N'some text''';
+
 ) -- TODO: change the following @allrows to control the number of records with different sizes
 -- number of 50B records
 EXEC insert_rows @allrows = 0,
@@ -277,10 +279,10 @@ EXEC insert_rows @allrows = 0,
 @value = @extraSmallText -- number of 500B records
 EXEC insert_rows @allrows = 0,
 @insertcount = 998,
-@value = @smallText -- number of 10KB records
+@value = @smallText -- number of 10Kb records
 EXEC insert_rows @allrows = 0,
 @insertcount = 998,
-@value = @regularText -- number of 100KB records
+@value = @regularText -- number of 100Kb records
 EXEC insert_rows @allrows = 0,
 @insertcount = 98,
 @value = @largeText

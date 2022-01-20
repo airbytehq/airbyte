@@ -4,6 +4,7 @@
 
 package io.airbyte.workers;
 
+import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
@@ -24,11 +25,14 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
+import io.airbyte.scheduler.persistence.JobCreator;
+import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_factory.DefaultSyncJobFactory;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
+import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.workers.helper.ConnectionHelper;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.KubePortManagerSingleton;
@@ -100,6 +104,8 @@ public class WorkerApp {
   private final Configs configs;
   private final ConnectionHelper connectionHelper;
   private final boolean containerOrchestratorEnabled;
+  private final JobNotifier jobNotifier;
+  private final JobTracker jobTracker;
 
   public void start() {
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
@@ -140,15 +146,33 @@ public class WorkerApp {
                 databasePassword, databaseUrl, airbyteVersion));
 
     final NormalizationActivityImpl normalizationActivity =
-        new NormalizationActivityImpl(workerConfigs, jobProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment,
-            logConfigs, databaseUser,
-            databasePassword, databaseUrl, airbyteVersion);
-    final DbtTransformationActivityImpl dbtTransformationActivity =
-        new DbtTransformationActivityImpl(workerConfigs, jobProcessFactory, secretsHydrator,
+        new NormalizationActivityImpl(
+            containerOrchestratorEnabled,
+            workerConfigs,
+            jobProcessFactory,
+            orchestratorProcessFactory,
+            secretsHydrator,
             workspaceRoot,
-            workerEnvironment, logConfigs,
+            workerEnvironment,
+            logConfigs,
             databaseUser,
-            databasePassword, databaseUrl, airbyteVersion);
+            databasePassword,
+            databaseUrl,
+            airbyteVersion);
+    final DbtTransformationActivityImpl dbtTransformationActivity =
+        new DbtTransformationActivityImpl(
+            containerOrchestratorEnabled,
+            workerConfigs,
+            jobProcessFactory,
+            orchestratorProcessFactory,
+            secretsHydrator,
+            workspaceRoot,
+            workerEnvironment,
+            logConfigs,
+            databaseUser,
+            databasePassword,
+            databaseUrl,
+            airbyteVersion);
     new PersistStateActivityImpl(workspaceRoot, configRepository);
     final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(workspaceRoot, configRepository);
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
@@ -169,6 +193,8 @@ public class WorkerApp {
 
     syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
 
+    final JobCreator jobCreator = new DefaultJobCreator(jobPersistence, configRepository);
+
     final Worker connectionUpdaterWorker =
         factory.newWorker(TemporalJobType.CONNECTION_UPDATER.toString(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     connectionUpdaterWorker.registerWorkflowImplementationTypes(ConnectionManagerWorkflowImpl.class, SyncWorkflowImpl.class);
@@ -180,7 +206,11 @@ public class WorkerApp {
             jobPersistence,
             temporalWorkerRunFactory,
             workerEnvironment,
-            logConfigs),
+            logConfigs,
+            jobNotifier,
+            jobTracker,
+            configRepository,
+            jobCreator),
         new ConfigFetchActivityImpl(configRepository, jobPersistence, configs, () -> Instant.now().getEpochSecond()),
         new ConnectionDeletionActivityImpl(connectionHelper),
         replicationActivity,
@@ -327,6 +357,12 @@ public class WorkerApp {
             .getInitialized();
 
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
+    TrackingClientSingleton.initialize(
+        configs.getTrackingStrategy(),
+        new Deployment(configs.getDeploymentMode(), jobPersistence.getDeployment().orElseThrow(), configs.getWorkerEnvironment()),
+        configs.getAirbyteRole(),
+        configs.getAirbyteVersion(),
+        configRepository);
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final SyncJobFactory jobFactory = new DefaultSyncJobFactory(
         new DefaultJobCreator(jobPersistence, configRepository),
@@ -354,6 +390,14 @@ public class WorkerApp {
         workspaceHelper,
         workerConfigs);
 
+    final JobNotifier jobNotifier = new JobNotifier(
+        configs.getWebappUrl(),
+        configRepository,
+        workspaceHelper,
+        TrackingClientSingleton.get());
+
+    final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
+
     new WorkerApp(
         workspaceRoot,
         jobProcessFactory,
@@ -374,7 +418,9 @@ public class WorkerApp {
         temporalWorkerRunFactory,
         configs,
         connectionHelper,
-        configs.getContainerOrchestratorEnabled()).start();
+        configs.getContainerOrchestratorEnabled(),
+        jobNotifier,
+        jobTracker).start();
   }
 
 }
