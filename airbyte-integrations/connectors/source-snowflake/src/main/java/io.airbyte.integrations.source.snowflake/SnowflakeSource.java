@@ -35,7 +35,7 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
   public JsonNode toDatabaseConfig(final JsonNode config) {
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:snowflake://%s/?",
-        config.get("host").asText());
+        config.get("host").asText()));
 
     // Add required properties
     jdbcUrl.append(String.format("role=%s&warehouse=%s&database=%s&schema=%s&JDBC_QUERY_RESULT_FORMAT=%s&CLIENT_SESSION_KEEP_ALIVE=%s;",
@@ -57,7 +57,7 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
-        .put("password", config.get("password").asText()
+        .put("password", config.get("password").asText())
         .put("jdbc_url", jdbcUrl.toString());
 
     return Jsons.jsonNode(configBuilder.build());
