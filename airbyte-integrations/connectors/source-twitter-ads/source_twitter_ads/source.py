@@ -13,6 +13,7 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
  
 import requests
 from requests_oauthlib import OAuth1
+import urllib
 
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
@@ -95,36 +96,8 @@ class TwitterAdsStream(HttpStream, ABC):
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
-
-        account_id = self.account_id
-        auth = self.auth
-        # FixMe: request returns a bad request error if (end_time - start_time)> 7 this could lead to problems
-        start_time = self.start_time
-        end_time = self.end_time
-        granularity = self.granularity
-        metric_groups = self.metric_groups
-        placement = self.placement
-        campaign_ids_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/campaigns"
-        response = requests.get(campaign_ids_url, auth=auth)
-        campaign_ids = []
-
-        for each in response.json()['data']:
-            campaign_ids.append(each["id"])
- 
-        campaign_ids = list(set(campaign_ids))
-        # we might need to limit the number of campaign ids to 20 per call...
-        #campaign_ids = campaign_ids[:20]
-
-        
-        #FixMe: campaign_ids and metric_groups are not being passed correctly to request header commas are being replaced by %
-        
-        campaign_ids = ','.join(campaign_ids)
-        metric_groups = ','.join(metric_groups)
-
-        print(metric_groups)
-        print(campaign_ids)
-
-        return { "entity": "CAMPAIGN", "entity_ids": campaign_ids, "start_time":start_time, "end_time": end_time,"granularity": granularity, "placement": placement, "metric_groups": metric_groups}
+        return None
+     
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -151,9 +124,40 @@ class Campaigns(TwitterAdsStream):
         TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
         should return "customers". Required.
         """
-        # fixme: account id should not be hardcoded
+        auth = self.auth
+        # FixMe: request returns a bad request error if (end_time - start_time)> 7 this could lead to problems
+        start_time = self.start_time
+        end_time = self.end_time
+        granularity = self.granularity
+        metric_groups = self.metric_groups
         account_id = self.account_id
-        return "/10/stats/accounts/" + account_id
+        placement = self.placement
+        campaign_ids_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/campaigns"
+        response = requests.get(campaign_ids_url, auth=auth)
+        campaign_ids = []
+
+        for each in response.json()['data']:
+            campaign_ids.append(each["id"])
+ 
+        campaign_ids = list(set(campaign_ids))
+        
+        # we might need to limit the number of campaign ids to 20 per call...
+        campaign_ids = campaign_ids[:20]
+
+        
+        #FixMe: campaign_ids and metric_groups are not being passed correctly to request header commas are being replaced by %
+        
+        campaign_ids = ','.join(campaign_ids)
+        metric_groups = ','.join(metric_groups)
+        account_id = self.account_id
+
+        base_url = "/10/stats/accounts/" + account_id + '?'
+        params = urllib.parse.urlencode({ "entity": "CAMPAIGN", "entity_ids": campaign_ids, "start_time":start_time, "end_time": end_time,"granularity": granularity, "placement": placement, "metric_groups": metric_groups})
+        params = urllib.parse.unquote(params)
+      
+        request_url = base_url + params
+
+        return request_url
 
 
 # Basic incremental stream
