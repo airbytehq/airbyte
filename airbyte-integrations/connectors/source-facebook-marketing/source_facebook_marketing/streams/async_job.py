@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-import itertools
+import copy
 import logging
 from abc import ABC, abstractmethod
 from enum import Enum
@@ -10,6 +10,7 @@ from typing import Any, Mapping, Optional, List
 import backoff
 import pendulum
 from facebook_business.adobjects.adreportrun import AdReportRun
+from facebook_business.adobjects.campaign import Campaign
 from facebook_business.adobjects.objectparser import ObjectParser
 from facebook_business.api import FacebookResponse, FacebookAdsApiBatch
 from facebook_business.exceptions import FacebookRequestError
@@ -18,6 +19,12 @@ from .common import retry_pattern
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 logger = logging.getLogger("airbyte")
+
+
+def chunks(data, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(data), n):
+        yield data[i:i + n]
 
 
 class Status(str, Enum):
@@ -35,12 +42,17 @@ class AsyncJob(ABC):
     """Abstract AsyncJob base class"""
 
     @abstractmethod
-    def start(self):
+    def start(self, batch=None):
         """Start remote job"""
 
     @abstractmethod
     def restart(self):
         """Restart failed job"""
+
+    @property
+    @abstractmethod
+    def restart_number(self):
+        """Number of restarts"""
 
     @property
     @abstractmethod
@@ -64,19 +76,34 @@ class AsyncJob(ABC):
 class ParentAsyncJob(AsyncJob):
     """ Group of async jobs
     """
-    def __init__(self, jobs: List[AsyncJob]):
+    def __init__(self, api, jobs: List[AsyncJob]):
+        self._api = api
         self._jobs = jobs
+        self._restart_number = 0
 
-    def start(self):
+    def start(self, batch=None):
         """Start each job in the group"""
+        # api_batch = batch or self._api.new_batch()
+        api_batch = None
         for job in self._jobs:
-            job.start()
+            job.start(batch=api_batch)
+
+        while api_batch:
+            # If some of the calls from batch have failed, it returns  a new
+            # FacebookAdsApiBatch object with those calls
+            api_batch = api_batch.execute()
 
     def restart(self):
         """Restart failed jobs"""
         for job in self._jobs:
             if job.failed:
                 job.restart()
+            self._restart_number = max(self._restart_number, job.restart_number)
+
+    @property
+    def restart_number(self):
+        """Number of restarts"""
+        return self._restart_number
 
     @property
     def completed(self) -> bool:
@@ -90,43 +117,77 @@ class ParentAsyncJob(AsyncJob):
 
     def update_job(self, batch=None):
         """Checks jobs status in advance and restart if some failed."""
-        for job in self._jobs:
-            job.update_job(batch=batch)
+        batch = self._api.new_batch()
+        unfinished_jobs = [job for job in self._jobs if not job.completed]
+        for jobs in chunks(unfinished_jobs, 50):
+            for job in jobs:
+                job.update_job(batch=batch)
 
-        while batch:
-            # If some of the calls from batch have failed, it returns  a new
-            # FacebookAdsApiBatch object with those calls
-            batch = batch.execute()
+            while batch:
+                # If some of the calls from batch have failed, it returns  a new
+                # FacebookAdsApiBatch object with those calls
+                batch = batch.execute()
 
     def get_result(self) -> Any:
         """Retrieve result of the finished job."""
         for job in self._jobs:
             yield from job.get_result()
 
+    def split_job(self) -> 'AsyncJob':
+        """Split existing job in few smaller ones grouped by ParentAsyncJob class"""
+        raise RuntimeError("Splitting of ParentAsyncJob is not allowed.")
+
 
 class InsightAsyncJob(AsyncJob):
     """AsyncJob wraps FB AdReport class and provides interface to restart/retry the async job"""
 
-    def __init__(self, edge_object: Any, params: Mapping[str, Any]):
+    def __init__(self, api, edge_object: Any, params: Mapping[str, Any], key: Optional[Any] = None):
         """Initialize
 
-        :param edge_object: Account, Campaign, AdSet or Ad
+        :param api: FB API
+        :param edge_object: Account, Campaign, (AdSet or Ad in future)
         :param params: job params, required to start/restart job
         """
+        self._api = api
         self._params = params
         self._edge_object = edge_object
         self._job: Optional[AdReportRun] = None
         self._start_time = None
         self._finish_time = None
         self._failed = False
+        self._restart_number = 0
+        self.key = key
+
+    def split_job(self) -> ParentAsyncJob:
+        """Split existing job in few smaller ones grouped by ParentAsyncJob class.
+            TODO: use some cache to avoid expensive queries across different streams.
+        """
+        campaign_params = dict(copy.deepcopy(self._params))
+        # get campaigns from attribution window as well (28 day + 1 current day)
+        new_start = pendulum.parse(self._params["time_range"]["since"]) - pendulum.duration(days=28 + 1)
+        campaign_params.update(fields=["campaign_id"], level="campaign")
+        campaign_params["time_range"].update(since=new_start.to_date_string())
+        campaign_params.pop("time_increment")  # query all days
+        result = self._edge_object.get_insights(params=campaign_params)
+        campaign_ids = set(row["campaign_id"] for row in result)
+        logger.info(f"Got {len(campaign_ids)} campaigns for period {self._params['time_range']}: {campaign_ids}")
+
+        return ParentAsyncJob(self._api, jobs=[InsightAsyncJob(self._api, Campaign(pk), self._params) for pk in campaign_ids])
 
     @backoff_policy
-    def start(self):
+    def start(self, batch=None):
         """Start remote job"""
         if self._job:
             raise RuntimeError(f"{self}: Incorrect usage of start - the job already started, use restart instead")
 
-        self._job = self._edge_object.get_insights(params=self._params, is_async=True)
+        if batch is not None:
+            self._edge_object.get_insights(
+                params=self._params, is_async=True, batch=batch,
+                success=self._batch_success_handler, failure=self._batch_failure_handler,
+            )
+        else:
+            self._job = self._edge_object.get_insights(params=self._params, is_async=True)
+
         self._start_time = pendulum.now()
         job_id = self._job["report_run_id"]
         time_range = self._params["time_range"]
@@ -142,8 +203,14 @@ class InsightAsyncJob(AsyncJob):
         self._failed = False
         self._start_time = None
         self._finish_time = None
+        self._restart_number += 1
         self.start()
         logger.info(f"{self}: restarted")
+
+    @property
+    def restart_number(self):
+        """Number of restarts"""
+        return self._restart_number
 
     @property
     def elapsed_time(self) -> Optional[pendulum.duration]:
@@ -178,7 +245,7 @@ class InsightAsyncJob(AsyncJob):
         logger.info(f"Request failed with response: {response.body()}")
 
     @backoff_policy
-    def update_job(self, batch = None):
+    def update_job(self, batch: Optional[FacebookAdsApiBatch] = None):
         """Method to retrieve job's status, separated because of retry handler"""
         if not self._job:
             raise RuntimeError(f"{self}: Incorrect usage of the method - the job is not started")
@@ -189,9 +256,8 @@ class InsightAsyncJob(AsyncJob):
             # No need to update job status if its already completed
             return
 
-        if batch:
-            request = self._job.api_get(pending=True)
-            batch.add_request(request, success=self._batch_success_handler, failure=self._batch_failure_handler)
+        if batch is not None:
+            self._job.api_get(batch=batch, success=self._batch_success_handler, failure=self._batch_failure_handler)
         else:
             self._job = self._job.api_get()
             self._check_status()
@@ -221,7 +287,7 @@ class InsightAsyncJob(AsyncJob):
         """Retrieve result of the finished job."""
         if not self._job or self.failed:
             raise RuntimeError(f"{self}: Incorrect usage of get_result - the job is not started of failed")
-        return self._job.get_result()
+        return self._job.get_result(params={"limit": 1000})
 
     def __str__(self) -> str:
         """String representation of the job wrapper."""

@@ -4,6 +4,7 @@
 
 import json
 import logging
+from datetime import datetime
 from time import sleep
 from typing import Tuple
 
@@ -98,7 +99,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
                 logger.warning(f"Utilization is too high ({usage})%, pausing for {pause_interval}")
                 sleep(pause_interval.total_seconds())
 
-    def _update_insigths_throttle_limit(self, response: FacebookResponse):
+    def _update_insights_throttle_limit(self, response: FacebookResponse):
         """
         For /insights call every response contains x-fb-ads-insights-throttle
         header representing current throttle limit parameter for async insights
@@ -121,9 +122,10 @@ class MyFacebookAdsApi(FacebookAdsApi):
         api_version=None,
     ):
         """Makes an API call, delegate actual work to parent class and handles call rates"""
-        # print(f"CALL {method} {path} {params}")
+        # print(datetime.now(), f"CALL {method} {path} {params}")
+        print(datetime.now(), f"CALL {method} {path}")
         response = super().call(method, path, params, headers, files, url_override, api_version)
-        self._update_insigths_throttle_limit(response)
+        self._update_insights_throttle_limit(response)
         self.handle_call_rate_limit(response, params)
         return response
 

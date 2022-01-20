@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 import copy
 import logging
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Iterator
@@ -12,8 +13,6 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from cached_property import cached_property
-from facebook_business.adobjects.campaign import Campaign
-from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob, AsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
@@ -50,7 +49,10 @@ class AdsInsights(FBMarketingIncrementalStream):
     # older that 37 months from current date would result in 400 Bad request
     # HTTP response.
     # https://developers.facebook.com/docs/marketing-api/reference/ad-account/insights/#overview
-    INSIGHTS_RETENTION_PERIOD_MONTHS = 37
+    INSIGHTS_RETENTION_PERIOD = pendulum.duration(months=37)
+    # Facebook freezes insight data 28 days after it was generated, which means that all data
+    # from the past 28 days may have changed since we last emitted it, so we retrieve it again.
+    INSIGHTS_LOOKBACK_PERIOD = pendulum.duration(days=28)
 
     action_breakdowns = ALL_ACTION_BREAKDOWNS
     level = "ad"
@@ -61,56 +63,27 @@ class AdsInsights(FBMarketingIncrementalStream):
 
     def __init__(
             self,
-            buffer_days,
             name: str = None,
             fields: List[str] = None,
             breakdowns: List[str] = None,
             action_breakdowns: List[str] = None,
             **kwargs,
     ):
-
         super().__init__(**kwargs)
         self._fields = fields
         self.action_breakdowns = action_breakdowns or self.action_breakdowns
         self.breakdowns = breakdowns or self.breakdowns
         self._new_class_name = name
 
+        # state
+        self._cursor_value = None
+        self._completed_slices = set()
+
     @property
     def name(self) -> str:
-        """
-        :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
-        """
+        """ We override stream name to let the user change it via configuration."""
         name = self._new_class_name or self.__class__.__name__
         return casing.camel_to_snake(name)
-
-    @backoff_policy
-    def execute_in_batch(self, requests: Iterable[FacebookRequest]) -> List[List[MutableMapping[str, Any]]]:
-        """Execute list of requests in batches"""
-        records = []
-        ad_ids = set()
-
-        def success(response: FacebookResponse):
-            # logger.info("GOT data, headers=%s, paging=%s", response.headers(), response.json()["paging"])
-            # records.append(response.json()["data"])
-            for record in response.json()["data"]:
-                ad_ids.add(record["ad_id"])
-                records.append({"record": 1, "date_start": record["date_start"], "ad_id": record["ad_id"]})
-
-        def failure(response: FacebookResponse):
-            logger.info(f"Request failed with response: {response.body()}")
-
-        api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
-        for request in requests:
-            api_batch.add_request(request, success=success, failure=failure)
-
-        while api_batch:
-            logger.info(f"Batch starting: {pendulum.now()}")
-            api_batch = api_batch.execute()
-            logger.info(f"Batch executed: {pendulum.now()}")
-            if api_batch:
-                logger.info("Retry failed requests in batch")
-
-        return records
 
     def _get_campaign_ids(self, params) -> List[str]:
         campaign_params = copy.deepcopy(params)
@@ -126,60 +99,93 @@ class AdsInsights(FBMarketingIncrementalStream):
             stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
-        for obj in stream_slice["insight_job"].get_result():
-            yield obj.export_all_data()
+        job = stream_slice["insight_job"]
+        for obj in job.get_result():
+            obj.export_all_data()
+            yield {"RECORD": "something", "date_start": "2019-08-10T00:00:00Z"}
 
-    def generate_async_jobs(self, start_date, params) -> Iterator[AsyncJob]:
-        date_range = pendulum.period(start_date, self._end_date)
-        for ts_start in date_range.range("days", 1):
+        if job.key == self._next_cursor_value():
+            self._advance_cursor()
+        else:
+            self._completed_slices.add(job.key)
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        """State getter, the result can be stored by the source"""
+        if self._cursor_value:
+            return {
+                self.cursor_field: self._cursor_value,
+                "slices": self._completed_slices,
+            }
+        return {}
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        """State setter"""
+        self._cursor_value = pendulum.parse(value[self.cursor_field]) if value.get(self.cursor_field) else None
+        self._completed_slices = set(pendulum.parse(v) for v in value.get("slices", []))
+
+    def _next_cursor_value(self):
+        """"""
+        return self.get_start_date() + pendulum.duration(days=self.time_increment)
+
+    def _advance_cursor(self):
+        """Iterate over state, find continuing sequence of slices. Get last value, advance cursor there and remove slices from state"""
+        date_range = pendulum.period(self._next_cursor_value(), self._end_date)
+        for ts_start in date_range.range("days", self.time_increment):
+            if ts_start not in self._completed_slices:
+                break
+            self._completed_slices.remove(ts_start)
+            self._cursor_value = ts_start
+
+    def _generate_async_jobs(self, params: Mapping) -> Iterator[AsyncJob]:
+        """ Generator of async jobs
+
+        :param params:
+        :return:
+        """
+
+        date_range = pendulum.period(self.get_start_date(), self._end_date)
+        for ts_start in date_range.range("days", self.time_increment):
+            if ts_start in self._completed_slices:
+                continue
             total_params = {
                 **params,
                 "time_range": {
                     "since": ts_start.to_date_string(),
-                    "until": ts_start.to_date_string(),
+                    "until": ts_start.to_date_string() + pendulum.duration(days=self.time_increment - 1),
                 },
             }
-            # campaign_ids = self._get_campaign_ids(params)
-            campaign_ids = [6095257740251, 6138749312251, 6150779977051, 6150779978051, 6150779979051, 6150779979251, 6150779980251,
-                            6150779980451, 6150779980651, 6150779980851, 6150779981451, 6150779982251, 6150779983051, 6150779983451,
-                            6150779992451, 6150779995651, 6150779999251, 6150780000251, 6150780001451, 6150780766051, 6150780767051,
-                            6150780769251, 6150780773051, 6150780774051, 6150780784851, 6150780785651, 6150780785851, 6150780786051,
-                            6150780786251, 6150780787051, 6150780787251, 6150780788051, 6150780788251, 6150780789051, 6150780789251,
-                            6150780789451, 6156940675051, 6156940675251, 6156940675451, 6156940675651, 6156940722851, 6156940723051,
-                            6156940723251, 6156940723451, 6156940723651, 6156940769051, 6156940769251, 6156940858051, 6156940858251,
-                            6156940944051, 6156940945051, 6156941134051, 6156941134251, 6156941135051, 6156941135251, 6156941267051,
-                            6156941268051, 6156941306051, 6156941307051, 6156941308051, 6156941366051]
-            # logger.info("PARAMS %s", total_params)
-            yield ParentAsyncJob([InsightAsyncJob(Campaign(pk), total_params) for pk in campaign_ids])
+            yield InsightAsyncJob(self._api.api, edge_object=self._api.account, params=total_params, key=ts_start)
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """Slice by date periods and schedule async job for each period, run at most MAX_ASYNC_JOBS jobs at the same time.
         This solution for Async was chosen because:
         1. we should commit state after each successful job
         2. we should run as many job as possible before checking for result
         3. we shouldn't proceed to consumption of the next job before previous succeed
+
+        generate slice only if it is not in state,
+        when we finished reading slice (in read_records) we check if current slice is the next one and do advance cursor
+
+        when slice is not next one we just update state with it
+        to do so source will check state attribute and call get_state,
         """
-        jobs = self.generate_async_jobs(
-            start_date=self.get_start_date(stream_state),
-            params=self.request_params(stream_state=stream_state),
-        )
-        manager = InsightAsyncJobManager(api=self._api, jobs=jobs)
-        for job in manager.completed_jobs:
+        manager = InsightAsyncJobManager(api=self._api, jobs=self._generate_async_jobs(params=self.request_params()))
+        for job in manager.completed_jobs():
             yield {"insight_job": job}
 
-    def get_start_date(self, stream_state: Mapping[str, Any]) -> pendulum.DateTime:
-        state_value = stream_state.get(self.cursor_field) if stream_state else None
-        if state_value:
-            """
-            Notes: Facebook freezes insight data 28 days after it was generated, which means that all data
-            from the past 28 days may have changed since we last emitted it, so we retrieve it again.
-            """
-            start_date = pendulum.parse(state_value) - pendulum.duration(days=28)
+    def get_start_date(self) -> pendulum.DateTime:
+        if self._cursor_value:
+            # FIXME: change cursor logic to not update cursor earlier than 28 days, after that we don't need this line
+            start_date = self._cursor_value - self.INSIGHTS_LOOKBACK_PERIOD
         else:
             start_date = self._start_date
-        return max(self._end_date.subtract(months=self.INSIGHTS_RETENTION_PERIOD_MONTHS), start_date)
+        if start_date < pendulum.now() - self.INSIGHTS_RETENTION_PERIOD:
+            logger.warning(f"Loading insights older then {self.INSIGHTS_RETENTION_PERIOD} is not possible.")
+        return max(self._end_date - self.INSIGHTS_RETENTION_PERIOD, start_date)
 
-    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         return {
             "level": self.level,
             "action_breakdowns": self.action_breakdowns,

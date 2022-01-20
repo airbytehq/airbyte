@@ -4,7 +4,7 @@
 
 import logging
 from datetime import datetime
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Type
+from typing import Any, List, Mapping, Optional, Tuple, Type
 
 import pendulum
 from airbyte_cdk.logger import AirbyteLogger
@@ -17,10 +17,10 @@ from airbyte_cdk.models import (
     Status,
 )
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.source.config import BaseConfig
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-from jsonschema import RefResolver
 from pydantic import BaseModel, Field
 from source_facebook_marketing.api import API
 from source_facebook_marketing.streams import (
@@ -52,7 +52,7 @@ class InsightConfig(BaseModel):
     action_breakdowns: Optional[List[str]] = Field(description="A list of chosen action_breakdowns for action_breakdowns", default=[])
 
 
-class ConnectorConfig(BaseModel):
+class ConnectorConfig(BaseConfig):
     class Config:
         title = "Source Facebook Marketing"
 
@@ -81,13 +81,6 @@ class ConnectorConfig(BaseModel):
     )
 
     include_deleted: bool = Field(default=False, description="Include data from deleted campaigns, ads, and adsets")
-
-    insights_lookback_window: int = Field(
-        default=28,
-        description="The attribution window for the actions",
-        minimum=0,
-        maximum=28,
-    )
 
     custom_insights: Optional[List[InsightConfig]] = Field(
         description="A list wich contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)"
@@ -127,7 +120,6 @@ class SourceFacebookMarketing(AbstractSource):
             api=api,
             start_date=config.start_date,
             end_date=config.end_date,
-            buffer_days=config.insights_lookback_window,
         )
 
         streams = [
@@ -156,6 +148,7 @@ class SourceFacebookMarketing(AbstractSource):
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=repr(e))
 
+        # FIXME: replace validation with schema
         self._check_custom_insights_entries(config.get("custom_insights", []))
 
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
@@ -170,7 +163,7 @@ class SourceFacebookMarketing(AbstractSource):
             changelogUrl="https://docs.airbyte.io/integrations/sources/facebook-marketing",
             supportsIncremental=True,
             supported_destination_sync_modes=[DestinationSyncMode.append],
-            connectionSpecification=expand_local_ref(ConnectorConfig.schema()),
+            connectionSpecification=ConnectorConfig.schema(),
             authSpecification=AuthSpecification(
                 auth_type="oauth2.0",
                 oauth2Specification=OAuth2Specification(
@@ -232,19 +225,3 @@ class SourceFacebookMarketing(AbstractSource):
                 return False, e
 
         return True, None
-
-
-def expand_local_ref(schema, resolver=None, **kwargs):
-    resolver = resolver or RefResolver("", schema)
-    if isinstance(schema, MutableMapping):
-        if "$ref" in schema:
-            ref_url = schema.pop("$ref")
-            url, resolved_schema = resolver.resolve(ref_url)
-            schema.update(resolved_schema)
-        for key, value in schema.items():
-            schema[key] = expand_local_ref(value, resolver=resolver)
-        return schema
-    elif isinstance(schema, List):
-        return [expand_local_ref(item, resolver=resolver) for item in schema]
-
-    return schema
