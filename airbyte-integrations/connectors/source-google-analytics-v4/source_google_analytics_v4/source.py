@@ -431,7 +431,7 @@ class GoogleAnalyticsServiceOauth2Authenticator(Oauth2Authenticator):
     def __init__(self, config):
         self.credentials_json = json.loads(config["credentials_json"])
         self.client_email = self.credentials_json["client_email"]
-        self.scope = "https://www.googleapis .com/auth/analytics.readonly"
+        self.scope = "https://www.googleapis.com/auth/analytics.readonly"
 
         super().__init__(
             token_refresh_endpoint="https://oauth2.googleapis.com/token",
