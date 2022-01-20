@@ -24,7 +24,7 @@ public class SnowflakeDatabase {
   private static final SnowflakeSQLNameTransformer nameTransformer = new SnowflakeSQLNameTransformer();
 
   public static Connection getConnection(final JsonNode config) throws SQLException {
-    final String connectUrl = String.format("jdbc:snowflake://%s", config.get("host").asText());
+    final String connectUrl = String.format("jdbc:snowflake://%s/?", config.get("host").asText());
 
     final Properties properties = new Properties();
 
@@ -46,6 +46,11 @@ public class SnowflakeDatabase {
     // Needed for JDK17 - see
     // https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
     properties.put("JDBC_QUERY_RESULT_FORMAT", "JSON");
+
+    // https://docs.snowflake.com/en/user-guide/jdbc-configure.html#jdbc-driver-connection-string
+    if (config.has("jdbc_url_params")) {
+      connectUrl.append(config.get("jdbc_url_params").asText());
+    }
 
     return DriverManager.getConnection(connectUrl, properties);
   }
