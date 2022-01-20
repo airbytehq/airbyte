@@ -218,8 +218,12 @@ class Conversations(IncrementalIntercomStream):
         Returns:
             Iterable[Optional[Mapping]]: request body json
         """
-        
         request_body = dict()
+
+        start_iso = pendulum.from_timestamp(stream_slice["start_date"]).isoformat()
+        end_iso = pendulum.from_timestamp(stream_slice["end_date"]).isoformat()
+
+        self.logger.info(f"Stream Window {start_iso} -> {end_iso}")
 
         query = {
             "query":  {
@@ -311,7 +315,9 @@ class Conversations(IncrementalIntercomStream):
         Returns:
             Optional[Mapping[str, Any]]: next page token
         """
-        print(response.json().get("pages", {}))
+
+        pages = response.json().get("pages", {})
+        self.logger.info(f"Pages {pages['page']}/{pages['total_pages']}")
         return response.json().get("pages", {}).get("next")
 
     
