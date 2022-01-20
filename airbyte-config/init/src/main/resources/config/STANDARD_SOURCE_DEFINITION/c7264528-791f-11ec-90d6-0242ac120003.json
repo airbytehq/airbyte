@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "c7264528-791f-11ec-90d6-0242ac120003",
+  "name": "Twitter Ads",
+  "dockerRepository": "blotout/source-twitter-ads-singer",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://github.com/blotoutio/source-xola/README.md"
+}
