@@ -3,7 +3,6 @@
 #
 
 import pytest
-
 import requests
 from source_shopify.source import ShopifyStream, SourceShopify
 
@@ -34,4 +33,4 @@ def test_privileges_validation(requests_mock, logger, basic_config, catalog_with
     source = SourceShopify()
 
     with pytest.raises(PermissionError):
-        next(source.read(logger, basic_config, catalog_with_streams(['orders', 'fulfillment_orders'])))
+        next(source.read(logger, basic_config, catalog_with_streams(["orders", "fulfillment_orders"])))

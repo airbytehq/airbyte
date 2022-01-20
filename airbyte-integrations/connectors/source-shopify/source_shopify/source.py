@@ -9,16 +9,16 @@ from urllib.parse import parse_qsl, urlparse
 
 import requests
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 
 from .auth import ShopifyAuthenticator
 from .transform import DataTypeEnforcer
+from .utils import SCOPES_MAPPING
 from .utils import EagerlyCachedStreamState as stream_state_cache
 from .utils import ShopifyRateLimiter as limiter
-from .utils import SCOPES_MAPPING
 
 
 class ShopifyStream(HttpStream, ABC):
@@ -128,7 +128,7 @@ class Orders(IncrementalShopifyStream):
         return f"{self.data_field}.json"
 
     def request_params(
-            self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         if not next_page_token:
@@ -184,10 +184,10 @@ class ChildSubstream(IncrementalShopifyStream):
                 yield {self.slice_key: record[self.nested_record]}
 
     def read_records(
-            self,
-            stream_state: Mapping[str, Any] = None,
-            stream_slice: Optional[Mapping[str, Any]] = None,
-            **kwargs,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         """Reading child streams records for each `id`"""
 
@@ -223,7 +223,7 @@ class AbandonedCheckouts(IncrementalShopifyStream):
         return f"{self.data_field}.json"
 
     def request_params(
-            self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         # If there is a next page token then we should only send pagination-related parameters.
@@ -269,7 +269,7 @@ class Collects(IncrementalShopifyStream):
         return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
 
     def request_params(
-            self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         # If there is a next page token then we should only send pagination-related parameters.
@@ -473,22 +473,30 @@ class SourceShopify(AbstractSource):
         ]
 
     def read(
-            self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog,
-            state: MutableMapping[str, Any] = None
+        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
     ) -> Iterator[AirbyteMessage]:
         user_scopes = self.get_user_scopes(config)
 
         always_permitted_streams = ["Metafields", "Shop"]
 
-        permitted_streams = [stream for user_scope in user_scopes if user_scope["handle"] in SCOPES_MAPPING
-                             for stream in SCOPES_MAPPING.get(user_scope["handle"])] + always_permitted_streams
+        permitted_streams = [
+            stream
+            for user_scope in user_scopes
+            if user_scope["handle"] in SCOPES_MAPPING
+            for stream in SCOPES_MAPPING.get(user_scope["handle"])
+        ] + always_permitted_streams
 
-        not_permitted_streams = [configured_stream.stream.name for configured_stream in catalog.streams
-                                 if self.format_name(configured_stream.stream.name) not in permitted_streams]
+        not_permitted_streams = [
+            configured_stream.stream.name
+            for configured_stream in catalog.streams
+            if self.format_name(configured_stream.stream.name) not in permitted_streams
+        ]
 
         if not_permitted_streams:
-            massage = f"Please change admin API permissions to 'Read access' for " \
-                      f"{', '.join(not_permitted_streams)} stream(s) in private apps."
+            massage = (
+                f"Please change admin API permissions to 'Read access' for "
+                f"{', '.join(not_permitted_streams)} stream(s) in private apps."
+            )
             raise PermissionError(massage)
 
         yield from super().read(logger, config, catalog, state)
@@ -502,4 +510,4 @@ class SourceShopify(AbstractSource):
 
     @staticmethod
     def format_name(name):
-        return ''.join(x.capitalize() for x in name.split('_'))
+        return "".join(x.capitalize() for x in name.split("_"))

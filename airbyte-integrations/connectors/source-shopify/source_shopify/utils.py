@@ -9,16 +9,18 @@ from typing import Dict
 
 import requests
 
-SCOPES_MAPPING = {"read_customers": ["Customers"],
-                  "read_orders": ["Orders", "AbandonedCheckouts", "Transactions", "Fulfillments", "OrderRefunds", "OrderRisks"],
-                  "read_draft_orders": ["DraftOrders"],
-                  "read_products": ["Products", "CustomCollections", "Collects"],
-                  "read_content": ["Pages"],
-                  "read_price_rules": ["PriceRules"],
-                  "read_discounts": ["DiscountCodes"],
-                  "read_locations": ["Locations"],
-                  "read_inventory": ["InventoryItems", "InventoryLevels"],
-                  "read_merchant_managed_fulfillment_orders": ["FulfillmentOrders"]}
+SCOPES_MAPPING = {
+    "read_customers": ["Customers"],
+    "read_orders": ["Orders", "AbandonedCheckouts", "Transactions", "Fulfillments", "OrderRefunds", "OrderRisks"],
+    "read_draft_orders": ["DraftOrders"],
+    "read_products": ["Products", "CustomCollections", "Collects"],
+    "read_content": ["Pages"],
+    "read_price_rules": ["PriceRules"],
+    "read_discounts": ["DiscountCodes"],
+    "read_locations": ["Locations"],
+    "read_inventory": ["InventoryItems", "InventoryLevels"],
+    "read_merchant_managed_fulfillment_orders": ["FulfillmentOrders"],
+}
 
 
 class ShopifyRateLimiter:
