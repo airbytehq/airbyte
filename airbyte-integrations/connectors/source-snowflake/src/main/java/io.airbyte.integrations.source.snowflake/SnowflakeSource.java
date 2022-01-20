@@ -53,7 +53,7 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
       jdbcUrl.append("&").append(config.get("jdbc_url_params").asText());
     }
 
-    LOGGER.warn(jdbcUrl.toString());
+    LOGGER.info(jdbcUrl.toString());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
