@@ -13,7 +13,7 @@ Available commands:
   scaffold
   build  <integration_root_path> [<run_tests>]
   publish  <integration_root_path> [<run_tests>] [--publish_spec_to_cache] [--publish_spec_to_cache_with_key_file <path to keyfile>]
-  publish_external  <integration_root_path>
+  publish_external  <image_name> <image_version>
 "
 
 _check_tag_exists() {
@@ -152,38 +152,26 @@ cmd_publish() {
 }
 
 cmd_publish_external() {
-  local path=$1; shift || error "Missing target (root path of integration) $USAGE"
-  [ -d "$path" ] || error "Path must be the root path of the integration"
+  local image_name=$1; shift || error "Missing target (image name) $USAGE"
+  local image_version=$2; shift || error "Missing target (image version) $USAGE"
 
-  # setting local variables for docker image versioning
-  local image_name; image_name=$(_get_docker_image_name "$path"/Dockerfile)
-  local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile)
-  local versioned_image=$image_name:$image_version
-  local latest_image=$image_name:latest
-  local external_image="$versioned_image-external"
+  echo "image $image_name:$image_version"
 
-  echo "image_name $image_name"
-  echo "versioned_image $external_image"
-  echo "latest_image $latest_image"
+  echo "Publishing and writing to spec cache."
+  # publish spec to cache. do so, by running get spec locally and then pushing it to gcs.
+  local tmp_spec_file; tmp_spec_file=$(mktemp)
+  docker run --rm "$image_name:$image_version" spec | \
+    # 1. filter out any lines that are not valid json.
+    jq -R "fromjson? | ." | \
+    # 2. grab any json that has a spec in it.
+    # 3. if there are more than one, take the first one.
+    # 4. if there are none, throw an error.
+    jq -s "map(select(.spec != null)) | map(.spec) | first | if . != null then . else error(\"no spec found\") end" \
+    > "$tmp_spec_file"
 
-  # before we start working sanity check that this version has not been published yet, so that we do not spend a lot of
-  # time building, running tests to realize this version is a duplicate.
-  _error_if_tag_exists "$external_image"
+  echo "Using environment gcloud"
 
-  # building the connector
-  cmd_build "$path" "$run_tests"
-
-  # in case curing the build / tests someone this version has been published.
-  _error_if_tag_exists "$external_image"
-
-  echo $latest_image
-
-  docker tag "$image_name:dev" "$external_image"
-  docker tag "$image_name:dev" "$latest_image"
-
-  echo "Publishing new version ($external_image)"
-  docker push "$external_image"
-  docker push "$latest_image"
+  gsutil cp "$tmp_spec_file" gs://io-airbyte-cloud-spec-cache/specs/"$image_name"/"$image_version"/spec.json
 }
 
 main() {
