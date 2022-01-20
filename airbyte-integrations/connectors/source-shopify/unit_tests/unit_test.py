@@ -2,8 +2,10 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import pytest
+
 import requests
-from source_shopify.source import ShopifyStream
+from source_shopify.source import ShopifyStream, SourceShopify
 
 
 def test_get_next_page_token(requests_mock):
@@ -25,3 +27,11 @@ def test_get_next_page_token(requests_mock):
 
     test = ShopifyStream.next_page_token(response)
     assert test == expected_output_token
+
+
+def test_privileges_validation(requests_mock, logger, basic_config, catalog_with_streams):
+    requests_mock.get("https://test_shop.myshopify.com/admin/oauth/access_scopes.json", json={"access_scopes": [{"handle": "read_orders"}]})
+    source = SourceShopify()
+
+    with pytest.raises(PermissionError):
+        next(source.read(logger, basic_config, catalog_with_streams(['orders', 'fulfillment_orders'])))

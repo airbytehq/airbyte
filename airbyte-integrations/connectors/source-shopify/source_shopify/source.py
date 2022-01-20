@@ -4,7 +4,7 @@
 
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
 import requests
@@ -12,15 +12,16 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 
 from .auth import ShopifyAuthenticator
 from .transform import DataTypeEnforcer
 from .utils import EagerlyCachedStreamState as stream_state_cache
 from .utils import ShopifyRateLimiter as limiter
+from .utils import SCOPES_MAPPING
 
 
 class ShopifyStream(HttpStream, ABC):
-
     # Latest Stable Release
     api_version = "2021-07"
     # Page size
@@ -127,7 +128,7 @@ class Orders(IncrementalShopifyStream):
         return f"{self.data_field}.json"
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+            self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         if not next_page_token:
@@ -136,7 +137,6 @@ class Orders(IncrementalShopifyStream):
 
 
 class ChildSubstream(IncrementalShopifyStream):
-
     """
     ChildSubstream - provides slicing functionality for streams using parts of data from parent stream.
     For example:
@@ -184,10 +184,10 @@ class ChildSubstream(IncrementalShopifyStream):
                 yield {self.slice_key: record[self.nested_record]}
 
     def read_records(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        **kwargs,
+            self,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         """Reading child streams records for each `id`"""
 
@@ -223,7 +223,7 @@ class AbandonedCheckouts(IncrementalShopifyStream):
         return f"{self.data_field}.json"
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+            self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         # If there is a next page token then we should only send pagination-related parameters.
@@ -247,7 +247,6 @@ class CustomCollections(IncrementalShopifyStream):
 
 
 class Collects(IncrementalShopifyStream):
-
     """
     Collects stream does not support Incremental Refresh based on datetime fields, only `since_id` is supported:
     https://shopify.dev/docs/admin-api/rest/reference/products/collect
@@ -270,7 +269,7 @@ class Collects(IncrementalShopifyStream):
         return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+            self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         # If there is a next page token then we should only send pagination-related parameters.
@@ -280,7 +279,6 @@ class Collects(IncrementalShopifyStream):
 
 
 class OrderRefunds(ChildSubstream):
-
     parent_stream_class: object = Orders
     slice_key = "order_id"
 
@@ -295,7 +293,6 @@ class OrderRefunds(ChildSubstream):
 
 
 class OrderRisks(ChildSubstream):
-
     parent_stream_class: object = Orders
     slice_key = "order_id"
 
@@ -311,7 +308,6 @@ class OrderRisks(ChildSubstream):
 
 
 class Transactions(ChildSubstream):
-
     parent_stream_class: object = Orders
     slice_key = "order_id"
 
@@ -338,7 +334,6 @@ class PriceRules(IncrementalShopifyStream):
 
 
 class DiscountCodes(ChildSubstream):
-
     parent_stream_class: object = PriceRules
     slice_key = "price_rule_id"
 
@@ -350,7 +345,6 @@ class DiscountCodes(ChildSubstream):
 
 
 class Locations(ShopifyStream):
-
     """
     The location API does not support any form of filtering.
     https://shopify.dev/api/admin-rest/2021-07/resources/location
@@ -386,7 +380,6 @@ class InventoryLevels(ChildSubstream):
 
 
 class InventoryItems(ChildSubstream):
-
     parent_stream_class: object = Products
     slice_key = "id"
     nested_record = "variants"
@@ -394,13 +387,11 @@ class InventoryItems(ChildSubstream):
     data_field = "inventory_items"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-
         ids = ",".join(str(x[self.nested_record_field_name]) for x in stream_slice[self.slice_key])
         return f"inventory_items.json?ids={ids}"
 
 
 class FulfillmentOrders(ChildSubstream):
-
     parent_stream_class: object = Orders
     slice_key = "order_id"
 
@@ -417,7 +408,6 @@ class FulfillmentOrders(ChildSubstream):
 
 
 class Fulfillments(ChildSubstream):
-
     parent_stream_class: object = Orders
     slice_key = "order_id"
 
@@ -443,9 +433,9 @@ class SourceShopify(AbstractSource):
         """
         config["authenticator"] = ShopifyAuthenticator(config)
         try:
-            responce = list(Shop(config).read_records(sync_mode=None))
-            # check for the shop_id is present in the responce
-            shop_id = responce[0].get("id")
+            response = list(Shop(config).read_records(sync_mode=None))
+            # check for the shop_id is present in the response
+            shop_id = response[0].get("id")
             if shop_id is not None:
                 return True, None
         except requests.exceptions.RequestException as e:
@@ -481,3 +471,35 @@ class SourceShopify(AbstractSource):
             Fulfillments(config),
             Shop(config),
         ]
+
+    def read(
+            self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog,
+            state: MutableMapping[str, Any] = None
+    ) -> Iterator[AirbyteMessage]:
+        user_scopes = self.get_user_scopes(config)
+
+        always_permitted_streams = ["Metafields", "Shop"]
+
+        permitted_streams = [stream for user_scope in user_scopes if user_scope["handle"] in SCOPES_MAPPING
+                             for stream in SCOPES_MAPPING.get(user_scope["handle"])] + always_permitted_streams
+
+        not_permitted_streams = [configured_stream.stream.name for configured_stream in catalog.streams
+                                 if self.format_name(configured_stream.stream.name) not in permitted_streams]
+
+        if not_permitted_streams:
+            massage = f"Please change admin API permissions to 'Read access' for " \
+                      f"{', '.join(not_permitted_streams)} stream(s) in private apps."
+            raise PermissionError(massage)
+
+        yield from super().read(logger, config, catalog, state)
+
+    @staticmethod
+    def get_user_scopes(config):
+        session = requests.Session()
+        headers = ShopifyAuthenticator(config).get_auth_header()
+        response = session.get(f"https://{config['shop']}.myshopify.com/admin/oauth/access_scopes.json", headers=headers).json()
+        return response["access_scopes"]
+
+    @staticmethod
+    def format_name(name):
+        return ''.join(x.capitalize() for x in name.split('_'))
