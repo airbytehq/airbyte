@@ -20,7 +20,12 @@ def test_bad_gateway_retry(time_mock):
     stream = PullRequestCommentReactions(**args)
     stream_slice = {"repository": "test_repo", "id": "id"}
 
-    responses.add("GET", "https://api.github.com/repos/test_repo/pulls/comments/id/reactions", status=HTTPStatus.BAD_GATEWAY)
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/test_repo/pulls/comments/id/reactions",
+        status=HTTPStatus.BAD_GATEWAY,
+        json={"message": "Bad request"},
+    )
     with pytest.raises(BaseBackoffException):
         list(stream.read_records(sync_mode="full_refresh", stream_slice=stream_slice))
 
@@ -28,7 +33,12 @@ def test_bad_gateway_retry(time_mock):
     assert sleep_delays == DEFAULT_BACKOFF_DELAYS
 
     time_mock.reset_mock()
-    responses.add("GET", "https://api.github.com/repos/test_repo/pulls/comments/id/reactions", status=HTTPStatus.INTERNAL_SERVER_ERROR)
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/test_repo/pulls/comments/id/reactions",
+        status=HTTPStatus.INTERNAL_SERVER_ERROR,
+        json={"message": "Server Error"},
+    )
     with pytest.raises(BaseBackoffException):
         list(stream.read_records(sync_mode="full_refresh", stream_slice=stream_slice))
 

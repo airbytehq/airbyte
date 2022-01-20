@@ -1,20 +1,40 @@
 import { useEffect } from "react";
-import { useIntercom as useIntercomProvider } from "react-use-intercom";
+import {
+  useIntercom as useIntercomProvider,
+  IntercomContextValues,
+} from "react-use-intercom";
 
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
+import { useAnalytics } from "hooks/services/Analytics";
 
-export const useIntercom = (): void => {
+export const useIntercom = (): IntercomContextValues => {
+  const intercomContextValues = useIntercomProvider();
+
   const user = useCurrentUser();
-  const { boot, shutdown } = useIntercomProvider();
+  const { analyticsContext } = useAnalytics();
 
   useEffect(() => {
-    boot({
+    intercomContextValues.boot({
       email: user.email,
       name: user.name,
       userId: user.userId,
       userHash: user.intercomHash,
+
+      customAttributes: {
+        workspace_id: analyticsContext.workspaceId,
+      },
     });
 
-    return () => shutdown();
+    return () => intercomContextValues.shutdown();
   }, [user]);
+
+  useEffect(() => {
+    intercomContextValues.update({
+      customAttributes: {
+        workspace_id: analyticsContext.workspace_id,
+      },
+    });
+  }, [analyticsContext.workspace_id]);
+
+  return intercomContextValues;
 };

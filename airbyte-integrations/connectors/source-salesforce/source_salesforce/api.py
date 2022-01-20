@@ -182,10 +182,8 @@ class Salesforce:
         client_secret: str = None,
         is_sandbox: bool = None,
         start_date: str = None,
-        api_type: str = None,
         **kwargs,
     ):
-        self.api_type = api_type.upper() if api_type else None
         self.refresh_token = refresh_token
         self.token = token
         self.client_id = client_id
@@ -200,11 +198,7 @@ class Salesforce:
         return {"Authorization": "Bearer {}".format(self.access_token)}
 
     def get_streams_black_list(self) -> List[str]:
-        black_list = QUERY_RESTRICTED_SALESFORCE_OBJECTS + QUERY_INCOMPATIBLE_SALESFORCE_OBJECTS
-        if self.api_type == "REST":
-            return black_list
-        else:
-            return black_list + UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS
+        return QUERY_RESTRICTED_SALESFORCE_OBJECTS + QUERY_INCOMPATIBLE_SALESFORCE_OBJECTS
 
     def filter_streams(self, stream_name: str) -> bool:
         # REST and BULK API do not support all entities that end with `ChangeEvent`.
