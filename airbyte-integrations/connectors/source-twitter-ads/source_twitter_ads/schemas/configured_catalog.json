@@ -53,6 +53,24 @@
                     "id"
                 ]
             ]
+        },
+        {
+            "stream": {
+                "name": "promoted_tweets",
+                "json_schema": {
+                    "type": "object"
+                },
+                "supported_sync_modes": [
+                    "full_refresh"
+                ]
+            },
+            "sync_mode": "full_refresh",
+            "destination_sync_mode": "overwrite",
+            "source_defined_primary_key": [
+                [
+                    "id"
+                ]
+            ]
         }
     ]
 }

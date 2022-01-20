@@ -106,7 +106,7 @@ class TwitterAdsStream(HttpStream, ABC):
         :return an iterable containing each record in the response
         """
         # fix me parse response
-        #response = json.dumps(response.json()['data'])
+
         return [response.json()]
 
 
@@ -150,9 +150,30 @@ class LineItems(TwitterAdsStream):
         """
         auth = self.auth
         account_id = self.account_id
-        # FixMe: request returns a bad request error if (end_time - start_time)> 7 this could lead to problems
 
         request_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/line_items"
+        
+        return request_url
+
+class PromotedTweets(TwitterAdsStream):
+    """
+    TODO: Change class name to match the table/data source this stream corresponds to.
+    """
+
+    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
+        should return "customers". Required.
+        """
+        auth = self.auth
+        account_id = self.account_id
+
+        request_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/promoted_tweets"
         
         return request_url
 
@@ -289,4 +310,5 @@ class SourceTwitterAds(AbstractSource):
         auth = OAuth1(config["CONSUMER_KEY"], config["CONSUMER_SECRET"], config["ACCESS_TOKEN"], config["ACCESS_TOKEN_SECRET"])  # Oauth2Authenticator is also available if you need oauth support
         return [Campaigns(base="https://ads-api.twitter.com/", authenticator=auth, account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], end_time = config["END_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"]),
         AdsAnalyticsMetrics(base="https://ads-api.twitter.com/", authenticator=auth, account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], end_time = config["END_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"]),
-        LineItems(base="https://ads-api.twitter.com/", authenticator=auth,account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], end_time = config["END_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"]) ]
+        LineItems(base="https://ads-api.twitter.com/", authenticator=auth,account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], end_time = config["END_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"]),
+        PromotedTweets(base="https://ads-api.twitter.com/", authenticator=auth,account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], end_time = config["END_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"])]
