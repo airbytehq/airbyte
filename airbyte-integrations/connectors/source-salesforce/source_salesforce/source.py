@@ -49,8 +49,6 @@ class SourceSalesforce(AbstractSource):
         streams = []
         for stream_name in stream_names:
             json_schema = sf_object.generate_schema(stream_name)
-            if not json_schema:
-                break
             pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)
             streams_kwargs.update(dict(sf_api=sf_object, pk=pk, stream_name=stream_name, schema=json_schema, authenticator=authenticator))
             if replication_key and stream_name not in UNSUPPORTED_FILTERING_STREAMS:

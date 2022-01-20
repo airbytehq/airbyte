@@ -214,7 +214,7 @@ class Salesforce:
         return True
 
     def get_validated_streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None):
-        salesforce_objects = self.describe()["sobjects"]  # TODO
+        salesforce_objects = self.describe()["sobjects"]
         stream_names = [stream_object["name"] for stream_object in salesforce_objects]
         if catalog:
             return [configured_stream.stream.name for configured_stream in catalog.streams]
@@ -271,7 +271,7 @@ class Salesforce:
         return resp.json()
 
     def generate_schema(self, stream_name: str = None) -> Mapping[str, Any]:
-        response = self.describe(stream_name)  # TODO
+        response = self.describe(stream_name)
         schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True, "properties": {}}
         for field in response["fields"]:
             schema["properties"][field["name"]] = self.field_to_property_schema(field)
