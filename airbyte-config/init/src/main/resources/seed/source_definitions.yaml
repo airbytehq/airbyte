@@ -543,7 +543,7 @@
 - name: PostHog
   sourceDefinitionId: af6d50ee-dddf-4126-a8ee-7faee990774f
   dockerRepository: airbyte/source-posthog
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/posthog
   icon: posthog.svg
   sourceType: api
