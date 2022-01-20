@@ -124,7 +124,8 @@ public class ConnectionManagerWorkflowTest {
           1,
           false,
           1,
-          workflowState);
+          workflowState,
+          false);
 
       WorkflowClient.start(workflow::run, input);
       testEnv.sleep(Duration.ofSeconds(124L));
@@ -156,7 +157,8 @@ public class ConnectionManagerWorkflowTest {
           1,
           true,
           1,
-          workflowState);
+          workflowState,
+          false);
 
       WorkflowClient.start(workflow::run, input);
       testEnv.sleep(Duration.ofSeconds(50L));
@@ -187,7 +189,8 @@ public class ConnectionManagerWorkflowTest {
           1,
           false,
           1,
-          workflowState);
+          workflowState,
+          false);
 
       WorkflowClient.start(workflow::run, input);
       testEnv.sleep(Duration.ofSeconds(30L));
@@ -228,7 +231,8 @@ public class ConnectionManagerWorkflowTest {
           1,
           false,
           1,
-          workflowState);
+          workflowState,
+          false);
 
       WorkflowClient.start(workflow::run, input);
       testEnv.sleep(Duration.ofSeconds(30L));
@@ -269,7 +273,8 @@ public class ConnectionManagerWorkflowTest {
           1,
           false,
           1,
-          workflowState);
+          workflowState,
+          false);
 
       WorkflowClient.start(workflow::run, input);
       testEnv.sleep(Duration.ofSeconds(30L));
@@ -310,7 +315,8 @@ public class ConnectionManagerWorkflowTest {
           1,
           false,
           1,
-          workflowState);
+          workflowState,
+          false);
 
       WorkflowClient.start(workflow::run, input);
       testEnv.sleep(Duration.ofSeconds(30L));
@@ -378,7 +384,8 @@ public class ConnectionManagerWorkflowTest {
           1,
           false,
           1,
-          workflowState);
+          workflowState,
+          false);
 
       WorkflowClient.start(workflow::run, input);
       testEnv.sleep(Duration.ofMinutes(2L));
@@ -407,7 +414,8 @@ public class ConnectionManagerWorkflowTest {
           1,
           false,
           1,
-          workflowState);
+          workflowState,
+          false);
 
       WorkflowClient.start(workflow::run, input);
       workflow.submitManualSync();

@@ -160,6 +160,7 @@ public class ConnectionsHandler {
 
     if (featureFlags.usesNewScheduler()) {
       try {
+        LOGGER.info("Starting a connection using the new scheduler");
         temporalWorkerRunFactory.createNewSchedulerWorkflow(connectionId);
       } catch (final Exception e) {
         LOGGER.error("Start of the temporal connection manager workflow failed", e);
