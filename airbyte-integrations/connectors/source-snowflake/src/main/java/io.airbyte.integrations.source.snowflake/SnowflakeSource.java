@@ -38,7 +38,7 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
         config.get("host").asText()));
 
     // Add required properties
-    jdbcUrl.append(String.format("role=%s&warehouse=%s&database=%s&schema=%s&JDBC_QUERY_RESULT_FORMAT=%s&CLIENT_SESSION_KEEP_ALIVE=%s;",
+    jdbcUrl.append(String.format("role=%s&warehouse=%s&database=%s&schema=%s&JDBC_QUERY_RESULT_FORMAT=%s&CLIENT_SESSION_KEEP_ALIVE=%s",
         config.get("role").asText(),
         config.get("warehouse").asText(),
         config.get("database").asText(),
