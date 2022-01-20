@@ -211,7 +211,7 @@ class Salesforce:
         stream_objects = [stream_object for stream_object in salesforce_objects if stream_object["queryable"]]
         stream_names = [stream_object["name"] for stream_object in stream_objects]
         if catalog:
-            return [configured_stream.stream.name for configured_stream in catalog.streams]
+            return [configured_stream.stream.name for configured_stream in catalog.streams], stream_objects
 
         if config.get("streams_criteria"):
             filtered_stream_list = []
