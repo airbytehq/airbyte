@@ -4,84 +4,17 @@
 
 import copy
 import functools
-import pendulum
-import re
-import requests
 from abc import ABC
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from collections import defaultdict
-from datetime import datetime
-from enum import Enum
-from jsonschema import Draft7Validator, validators
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+
+import pendulum
+import requests
+from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from prance import ResolvingParser
-from requests.auth import AuthBase
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Callable, Dict
-from urllib.parse import parse_qsl, urlparse
 
 API_VERSION = "3.1"
-
-
-class TypeTransformer2(TypeTransformer):
-
-    def __init__(self, config: TransformConfig):
-        if TransformConfig.NoTransform in config and config != TransformConfig.NoTransform:
-            raise Exception("NoTransform option cannot be combined with other flags.")
-        self._config = config
-        all_validators = {
-            key: self.__get_normalizer(key, orig_validator)
-            for key, orig_validator in Draft7Validator.VALIDATORS.items()
-            # Do not validate field we do not transform for maximum performance.
-            if key in ["type", "array", "$ref", "properties", "items"]
-        }
-        self._normalizer = validators.create(meta_schema=Draft7Validator.META_SCHEMA, validators=all_validators)
-
-    def __get_normalizer(self, schema_key: str, original_validator: Callable):
-        def normalizator(validator_instance: Callable, property_value: Any, instance: Any, schema: Dict[str, Any]):
-            def resolve(subschema):
-                if "$ref" in subschema:
-                    _, resolved = validator_instance.resolver.resolve(subschema["$ref"])
-                    return resolved
-                return subschema
-
-            # Transform object and array values before running json schema type checking for each element.
-            if schema_key == "properties":
-                for k, subschema in property_value.items():
-                    if k in (instance or {}):
-                        subschema = resolve(subschema)
-                        try:
-                            instance[k] = self.__normalize(instance[k], subschema)
-                        except Exception as e:
-                            raise Exception("SSSSS %s ## %s -> %s" % (e, k, instance))
-            elif schema_key == "items":
-                subschema = resolve(property_value)
-                for index, item in enumerate((instance or [])):
-                    instance[index] = self.__normalize(item, subschema)
-
-            # Running native jsonschema traverse algorithm after field normalization is done.
-            yield from original_validator(validator_instance, property_value, instance, schema)
-
-        return normalizator
-
-    def __normalize(self, original_item: Any, subschema: Dict[str, Any]) -> Any:
-        if TransformConfig.DefaultSchemaNormalization in self._config:
-            original_item = self.default_convert(original_item, subschema)
-
-        if self._custom_normalizer:
-            original_item = self._custom_normalizer(original_item, subschema)
-        return original_item
-
-    @staticmethod
-    def normalizator(validator_instance, property_value, instance, schema):
-        try:
-            return super().normalizator(validator_instance, property_value, instance, schema)
-        except:
-            raise Exception("SSSSS %s -> %s" % ("aaa", instance))
-
 
 CUSTOM_STREAM_NAMES = {
     "/projects/{project_id}/files": "project_files",
@@ -200,10 +133,9 @@ class SwaggerParser(BaseLookerStream):
                 path += "?content_metadata_id={content_metadata_id}"
 
             schema = get_data["responses"]["200"]["schema"]
-            endpoints[name] = self.Endpoint(name=name, path=path,
-                                            schema=self.format_schema(schema),
-                                            summary=get_data["summary"],
-                                            operation_id=get_data["operationId"])
+            endpoints[name] = self.Endpoint(
+                name=name, path=path, schema=self.format_schema(schema), summary=get_data["summary"], operation_id=get_data["operationId"]
+            )
 
         # stream "lookml_dashboards" uses same endpoints
         # "lookml_dashboards" and "dashboards" have one different only:
@@ -214,10 +146,12 @@ class SwaggerParser(BaseLookerStream):
         dashboards_schema["items"]["properties"]["id"]["type"] = "integer"
         lookml_dashboards_schema["items"]["properties"]["id"]["type"] = "string"
         endpoints["lookml_dashboards"] = self.Endpoint(
-            name="lookml_dashboards", path=endpoints["dashboards"].path,
+            name="lookml_dashboards",
+            path=endpoints["dashboards"].path,
             schema=lookml_dashboards_schema,
             summary=endpoints["dashboards"].summary,
-            operation_id=endpoints["dashboards"].operation_id)
+            operation_id=endpoints["dashboards"].operation_id,
+        )
         return endpoints
 
     @classmethod
@@ -272,11 +206,9 @@ class LookerStream(BaseLookerStream, ABC):
         return None
 
     def generate_looker_stream(self, name: str, request_params: Mapping[str, Any] = None) -> "LookerStream":
-        return LookerStream(name,
-                            authenticator=self.authenticator,
-                            swagger_parser=self._swagger_parser,
-                            domain=self._domain,
-                            request_params=request_params)
+        return LookerStream(
+            name, authenticator=self.authenticator, swagger_parser=self._swagger_parser, domain=self._domain, request_params=request_params
+        )
 
     def get_parent_endpoints(self) -> List[SwaggerParser.Endpoint]:
         parts = self.endpoint.path.split("/")
@@ -303,11 +235,7 @@ class LookerStream(BaseLookerStream, ABC):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         schema = self.endpoint.schema.get("items") or self.endpoint.schema
-        return {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "properties": schema["properties"]
-        }
+        return {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": schema["properties"]}
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs: Any) -> str:
         stream_slice = stream_slice or {}
@@ -350,6 +278,8 @@ class QueryHistory(BaseLookerStream):
     http_method = "POST"
     primary_key = ["query_id", "history_created_time"]
     cursor_field = "history_created_time"
+    # all connector's request should have this value of as prefix of queries' client_id
+    airbyte_client_id_prefix = "AiRbYtE2"
 
     @property
     def state_checkpoint_interval(self):
@@ -365,6 +295,14 @@ class QueryHistory(BaseLookerStream):
         self._last_query_id = None
         self._is_finished = False
 
+    def get_query_client_id(self, stream_state: MutableMapping[str, Any]) -> str:
+        latest_created_time = (stream_state or {}).get(self.cursor_field)
+        timestamp = 0
+        if latest_created_time:
+            dt = pendulum.parse(latest_created_time)
+            timestamp = int(dt.timestamp())
+        return f"{self.airbyte_client_id_prefix}{timestamp}".ljust(22, "0")
+
     def request_body_json(self, stream_state: MutableMapping[str, Any], **kwargs) -> Optional[Mapping]:
         latest_created_time = (stream_state or {}).get(self.cursor_field)
 
@@ -373,25 +311,22 @@ class QueryHistory(BaseLookerStream):
 
         dt = pendulum.parse(latest_created_time)
         dt_func = f"date_time({dt.year}, {dt.month}, {dt.day}, {dt.hour}, {dt.minute}, {dt.second})"
-        # add column_limit as marker of connector query. All history items with this value will be skipped
+        client_id = self.get_query_client_id(stream_state)
+
+        # need to add the custom client_id value. It is used for filtering
         # its value shouldn't be changed in the future
-        column_limit = 1205067
         return {
             "model": "i__looker",
             "view": "history",
             "limit": "10000",
-            "column_limit": f"{column_limit}",
-
+            "client_id": client_id,
             "fields": [
                 "query.id",
-
                 "history.created_date",
                 "history.created_time",
-
+                "query.client_id",
                 "query.model",
                 "query.view",
-                "query.client_id",
-                "query.column_limit",
                 "space.id",
                 "look.id",
                 "dashboard.id",
@@ -403,11 +338,11 @@ class QueryHistory(BaseLookerStream):
                 "query.model": "-EMPTY",
                 "history.runtime": "NOT NULL",
                 "user.is_looker": "No",
-
             },
-            "filter_expression": f'${{history.created_time}} > {dt_func} AND (${{query.column_limit}} != {column_limit} OR is_null(${{query.column_limit}}))',
+            "filter_expression": f"${{history.created_time}} > {dt_func}",
             "sorts": [
-                "history.created_time", "query.id",
+                "history.created_time",
+                "query.id",
             ],
         }
 
@@ -415,11 +350,14 @@ class QueryHistory(BaseLookerStream):
         records = response.json()
         for i in range(len(records)):
             record = records[i]
-            # self.logger.warning(str(record))
             if record.get("looker_error"):
                 raise LookerException(f"Locker Error: {record['looker_error']}")
+            if (record.get("query.client_id") or "").startswith(self.airbyte_client_id_prefix):
+                # skip all native connector's requests
+                continue
             # query.column_limit is used for filtering only
-            record.pop("query.column_limit")
+            record.pop("query.client_id", None)
+
             # convert date to ISO format: 2021-10-12 10:46 => 2021-10-12T10:46:00Z
             record[self.cursor_field] = record.pop("history.created_time").replace(" ", "T") + "Z"
 
@@ -434,12 +372,7 @@ class QueryHistory(BaseLookerStream):
             if not self._last_query_id:
                 self._last_query_id = record_query_id
             return current_stream_state
-        return {
-            self.cursor_field: max(
-                (current_stream_state or {}).get(self.cursor_field) or "",
-                latest_record[self.cursor_field]
-            )
-        }
+        return {self.cursor_field: max((current_stream_state or {}).get(self.cursor_field) or "", latest_record[self.cursor_field])}
 
 
 class RunLooks(LookerStream):
@@ -457,12 +390,9 @@ class RunLooks(LookerStream):
         return f'looks/{stream_slice["id"]}/run/json'
 
     def stream_slices(self, sync_mode, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        parent_stream = self.generate_looker_stream("search_looks",
-                                                    request_params={
-                                                        "id": ",".join(self._run_look_ids),
-                                                        "limit": "10000",
-                                                        "fields": "id,title,model(id)"
-                                                    })
+        parent_stream = self.generate_looker_stream(
+            "search_looks", request_params={"id": ",".join(self._run_look_ids), "limit": "10000", "fields": "id,title,model(id)"}
+        )
         found_look_ids = []
         for slice in parent_stream.stream_slices(sync_mode=sync_mode):
             for item in parent_stream.read_records(sync_mode=sync_mode, stream_slice=slice):
@@ -504,9 +434,7 @@ class RunLooks(LookerStream):
         }
 
     def _get_look_fields(self, look_id) -> Mapping[str, List[str]]:
-        stream = self.generate_looker_stream("look_info", request_params={
-            "fields": "query(fields)"
-        })
+        stream = self.generate_looker_stream("look_info", request_params={"fields": "query(fields)"})
         slice = {"look_id": look_id}
         for item in stream.read_records(sync_mode=None, stream_slice=slice):
             explores = defaultdict(list)
@@ -521,13 +449,10 @@ class RunLooks(LookerStream):
         For a given LookML model and explore, looks up its dimensions/measures
         and their types for run_look endpoint JSON Schema generation
         """
-        stream = self.generate_looker_stream("explore_models", request_params={
-            "fields": "fields(dimensions(name, type),measures(name, type))"
-        })
-        slice = {
-            "lookml_model_name": model,
-            "explore_name": explore
-        }
+        stream = self.generate_looker_stream(
+            "explore_models", request_params={"fields": "fields(dimensions(name, type),measures(name, type))"}
+        )
+        slice = {"lookml_model_name": model, "explore_name": explore}
         data = next(stream.read_records(sync_mode=None, stream_slice=slice))["fields"]
         fields = {}
         for dimension in data["dimensions"]:
