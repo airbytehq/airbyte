@@ -261,6 +261,9 @@ jobs:
       - name: Run End-to-End Acceptance Tests
         run: ./tools/bin/acceptance_test.sh
 
+      - name: Run End-to-End Acceptance Tests with the new scheduler
+        run: ./tools/bin/acceptance_test_with_new_scheduler.sh
+
       - name: Automatic Migration Acceptance Test
         run: SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan -i
 
