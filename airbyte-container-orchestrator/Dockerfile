@@ -18,13 +18,20 @@ RUN add-apt-repository \
        stable"
 RUN apt-get update && apt-get install -y docker-ce-cli jq
 
+# Install kubectl for copying files to kube pods. Eventually should be replaced with a kube java client.
+# See https://github.com/airbytehq/airbyte/issues/8643 for more information on why we are using kubectl for copying.
+# The following commands were taken from https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
+RUN curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+RUN echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
+RUN apt-get update && apt-get install -y kubectl
+
 ENV APPLICATION airbyte-container-orchestrator
-ENV AIRBYTE_ENTRYPOINT "/app/${APPLICATION}-0.35.5-alpha/bin/${APPLICATION}"
+ENV AIRBYTE_ENTRYPOINT "/app/${APPLICATION}-0.35.6-alpha/bin/${APPLICATION}"
 
 WORKDIR /app
 
 # Move orchestrator app
-ADD bin/${APPLICATION}-0.35.5-alpha.tar /app
+ADD bin/${APPLICATION}-0.35.6-alpha.tar /app
 
 # wait for upstream dependencies to become available before starting server
-ENTRYPOINT ["/bin/bash", "-c", "/app/${APPLICATION}-0.35.5-alpha/bin/${APPLICATION}"]
+ENTRYPOINT ["/bin/bash", "-c", "/app/${APPLICATION}-0.35.6-alpha/bin/${APPLICATION}"]

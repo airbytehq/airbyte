@@ -558,6 +558,10 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
+    if (featureFlags.usesNewScheduler()) {
+      return execute(() -> schedulerHandler.resetConnection(connectionIdRequestBody.getConnectionId()));
+    }
+
     return execute(() -> schedulerHandler.resetConnection(connectionIdRequestBody));
   }
 

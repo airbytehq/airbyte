@@ -67,7 +67,8 @@ Information about rate limits you may find [here](https://github.com/amzn/sellin
 
 | Version  | Date       | Pull Request                                             | Subject                                                                |
 | :------- | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------- |
-| `0.2.12` | 2022-01-05 | [\#9312](https://github.com/airbytehq/airbyte/pull/9312) | Add all remaining brand analytics report streams
+| `0.2.13` | 2022-01-18 |  [\#9581](https://github.com/airbytehq/airbyte/pull/9581) | Change createdSince parameter to dataStartTime |
+| `0.2.12` | 2022-01-05 | [\#9312](https://github.com/airbytehq/airbyte/pull/9312) | Add all remaining brand analytics report streams                       |
 | `0.2.11` | 2022-01-05 | [\#9115](https://github.com/airbytehq/airbyte/pull/9115) | Fix reading only 100 orders                                            |
 | `0.2.10` | 2021-12-31 | [\#9236](https://github.com/airbytehq/airbyte/pull/9236) | Fix NoAuth deprecation warning                                         |
 | `0.2.9`  | 2021-12-30 | [\#9212](https://github.com/airbytehq/airbyte/pull/9212) | Normalize GET_SELLER_FEEDBACK_DATA header field names                  |

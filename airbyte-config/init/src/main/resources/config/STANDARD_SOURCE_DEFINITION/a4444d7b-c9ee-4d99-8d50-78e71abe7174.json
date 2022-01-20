@@ -1,0 +1,8 @@
+{
+  "sourceDefinitionId": "a4444d7b-c9ee-4d99-8d50-78e71abe7174",
+  "name": "Flexport",
+  "dockerRepository": "airbyte/source-flexport",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/flexport",
+  "icon": "flexport.svg"
+}

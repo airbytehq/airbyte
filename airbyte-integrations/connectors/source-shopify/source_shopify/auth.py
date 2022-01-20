@@ -31,11 +31,11 @@ class ShopifyAuthenticator(TokenAuthenticator):
 
         auth_header: str = "X-Shopify-Access-Token"
         credentials: Dict = self.config["credentials"]
-        auth_option: str = credentials.get("auth_method")
+        auth_method: str = credentials.get("auth_method")
 
-        if auth_option == "access_token":
+        if auth_method == "oauth2.0":
             return {auth_header: credentials.get("access_token")}
-        elif auth_option == "api_password":
+        elif auth_method == "api_password":
             return {auth_header: credentials.get("api_password")}
         else:
-            raise NotImplementedAuth(auth_option)
+            raise NotImplementedAuth(auth_method)
