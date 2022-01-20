@@ -13,6 +13,7 @@ Available commands:
   scaffold
   build  <integration_root_path> [<run_tests>]
   publish  <integration_root_path> [<run_tests>] [--publish_spec_to_cache] [--publish_spec_to_cache_with_key_file <path to keyfile>]
+  publish_external  <integration_root_path>
 "
 
 _check_tag_exists() {
@@ -148,6 +149,41 @@ cmd_publish() {
   else
     echo "Publishing without writing to spec cache."
   fi
+}
+
+cmd_publish_external() {
+  local path=$1; shift || error "Missing target (root path of integration) $USAGE"
+  [ -d "$path" ] || error "Path must be the root path of the integration"
+
+  # setting local variables for docker image versioning
+  local image_name; image_name=$(_get_docker_image_name "$path"/Dockerfile)
+  local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile)
+  local versioned_image=$image_name:$image_version
+  local latest_image=$image_name:latest
+  local external_image="$versioned_image-external"
+
+  echo "image_name $image_name"
+  echo "versioned_image $external_image"
+  echo "latest_image $latest_image"
+
+  # before we start working sanity check that this version has not been published yet, so that we do not spend a lot of
+  # time building, running tests to realize this version is a duplicate.
+  _error_if_tag_exists "$external_image"
+
+  # building the connector
+  cmd_build "$path" "$run_tests"
+
+  # in case curing the build / tests someone this version has been published.
+  _error_if_tag_exists "$external_image"
+
+  echo $latest_image
+
+  docker tag "$image_name:dev" "$external_image"
+  docker tag "$image_name:dev" "$latest_image"
+
+  echo "Publishing new version ($external_image)"
+  docker push "$external_image"
+  docker push "$latest_image"
 }
 
 main() {
