@@ -325,10 +325,8 @@ def test_discover_only_queryable(stream_rest_config):
     sf_object.describe = Mock(
         return_value={
             "sobjects": [
-                {"name": "Account",
-                 "queryable": True},
-                {"name": "Leads",
-                 "queryable": False},
+                {"name": "Account", "queryable": True},
+                {"name": "Leads", "queryable": False},
             ]
         }
     )
