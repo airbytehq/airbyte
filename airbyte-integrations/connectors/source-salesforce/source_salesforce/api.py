@@ -271,15 +271,7 @@ class Salesforce:
         return resp.json()
 
     def generate_schema(self, stream_name: str = None) -> Mapping[str, Any]:
-        try:
-            response = self.describe(stream_name)  # TODO
-        except exceptions.HTTPError as error:
-            error_data = error.response.json()[0]
-            error_code = error_data.get("errorCode")
-            if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
-                self.logger.warn(f"API Call limit is exceeded'. Error message: '{error_data.get('message')}'")
-                return {}
-
+        response = self.describe(stream_name)  # TODO
         schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True, "properties": {}}
         for field in response["fields"]:
             schema["properties"][field["name"]] = self.field_to_property_schema(field)

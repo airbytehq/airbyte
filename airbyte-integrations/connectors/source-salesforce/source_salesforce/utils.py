@@ -1,8 +1,8 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-from contextlib import contextmanager
 from requests import exceptions, codes
+from functools import wraps
 
 
 def filter_streams(streams_list: list, search_word: str, search_criteria: str):
@@ -24,15 +24,20 @@ def filter_streams(streams_list: list, search_word: str, search_criteria: str):
     return new_streams_list
 
 
-@contextmanager
 def rate_limit_handler(logger=None):  # TODO
-    try:
-        yield
-    except exceptions.HTTPError as error:
-        error_data = error.response.json()[0]
-        error_code = error_data.get("errorCode")
-        if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
-            if logger:
-                logger.warn(f"API Call limit is exceeded'. Error message: '{error_data.get('message')}'")
-            return
-        raise error
+    def wrapper(func):
+        @wraps(func)
+        def wrapped(*args, **kwargs):
+            try:
+                yield from func(*args, **kwargs)
+            except exceptions.HTTPError as error:
+                error_data = error.response.json()[0]
+                error_code = error_data.get("errorCode")
+                if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
+                    if logger:
+                        logger.warn(f"API Call limit is exceeded'. Error message: '{error_data.get('message')}'")
+                    return None
+                raise error
+
+        return wrapped
+    return wrapper

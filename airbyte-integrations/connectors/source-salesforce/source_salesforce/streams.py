@@ -264,6 +264,7 @@ class BulkSalesforceStream(SalesforceStream):
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             return f"WHERE {self.primary_key} >= '{last_record[self.primary_key]}' "
 
+    @rate_limit_handler()
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -277,19 +278,14 @@ class BulkSalesforceStream(SalesforceStream):
         while True:
             params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
             path = self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-            with rate_limit_handler(self.logger):
-                job_full_url = self.execute_job(query=params["q"], url=f"{self.url_base}{path}")
-
+            job_full_url = self.execute_job(query=params["q"], url=f"{self.url_base}{path}")
             if not job_full_url:
                 return
 
             count = 0
-            with rate_limit_handler(self.logger):
-                for count, record in self.download_data(url=job_full_url):
-                    yield record
-
-            with rate_limit_handler(self.logger):
-                self.delete_job(url=job_full_url)
+            for count, record in self.download_data(url=job_full_url):
+                yield record
+            self.delete_job(url=job_full_url)
 
             if count < self.page_size:
                 # this is a last page
