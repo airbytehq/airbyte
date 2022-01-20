@@ -133,7 +133,7 @@ class BulkSalesforceStream(SalesforceStream):
     def _send_http_request(self, method: str, url: str, json: dict = None):
         headers = self.authenticator.get_auth_header()
         response = self._session.request(method, url=url, headers=headers, json=json)
-        if response.status_code != [200, 204]:
+        if response.status_code not in [200, 204]:
             self.logger.error(f"error body: {response.text}")
         response.raise_for_status()
         return response
