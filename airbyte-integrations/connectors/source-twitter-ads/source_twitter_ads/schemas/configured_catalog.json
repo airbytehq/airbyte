@@ -4,110 +4,25 @@
             "stream": {
                 "name": "campaigns",
                 "json_schema": {
-                    "type": "object",
-                    "properties": {
-                        "segment": {
-                            "type": [
-                                "null",
-                                "string"
-                            ]
-                        },
-                        "metrics": {
-                            "type": "object",
-                            "properties": {
-                                "impressions": {
-                                    "type": [
-                                        "null",
-                                        "string"
-                                    ]
-                                },
-                                "tweets_send": {
-                                    "type": [
-                                        "null",
-                                        "string"
-                                    ]
-                                },
-                                "qualified_impressions": {
-                                    "type": [
-                                        "null",
-                                        "string"
-                                    ]
-                                },
-                                "follows": {
-                                    "type": [
-                                        "null",
-                                        "string"
-                                    ]
-                                },
-                                "app_clicks": {
-                                    "type": [
-                                        "null",
-                                        "string"
-                                    ]
-                                },
-                                "retweets": {
-                                    "type": [
-                                        "null",
-                                        "string"
-                                    ]
-                                },
-                                "unfollows": {
-                                    "type": [
-                                        "null",
-                                        "string"
-                                    ]
-                                },
-                                "likes": {
-                                    "type": [
-                                        "null",
-                                        "string"
-                                    ]
-                                },
-                                "engagements": {
-                                    "type": [
-                                        "null",
-                                        "string"
-                                    ]
-                                },
-                                "clicks": {
-                                    "type": [
-                                        "null",
-                                        "string"
-                                    ]
-                                },
-                                "card_engagements": {
-                                    "type": [
-                                        "null",
-                                        "string"
-                                    ]
-                                },
-                                "poll_card_vote": {
-                                    "type": [
-                                        "null",
-                                        "string"
-                                    ]
-                                },
-                                "replies": {
-                                    "type": [
-                                        "null",
-                                        "string"
-                                    ]
-                                },
-                                "url_clicks": {
-                                    "type": [
-                                        "null",
-                                        "string"
-                                    ]
-                                },
-                                "carousel_swipes": {
-                                    "type": [
-                                        "null",
-                                        "string"
-                                    ]
-                                }
-                            }
-                        }
-                    }
+                    "type": "object"
+                },
+                "supported_sync_modes": [
+                    "full_refresh"
+                ]
+            },
+            "sync_mode": "full_refresh",
+            "destination_sync_mode": "overwrite",
+            "source_defined_primary_key": [
+                [
+                    "id"
+                ]
+            ]
+        },
+        {
+            "stream": {
+                "name": "ads_analytics_metrics",
+                "json_schema": {
+                    "type": "object"
                 },
                 "supported_sync_modes": [
                     "full_refresh"
