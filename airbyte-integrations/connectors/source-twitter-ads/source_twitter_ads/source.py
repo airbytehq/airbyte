@@ -13,6 +13,8 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
  
 import requests
 from requests_oauthlib import OAuth1
+import urllib
+import json
 
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
@@ -59,7 +61,6 @@ class TwitterAdsStream(HttpStream, ABC):
 
         # TODO: Fill in the url base. Required.
     url_base = "https://ads-api.twitter.com/"
-    primary_key = None
 
     def __init__(self, base,  account_id,  authenticator,  start_time, end_time, granularity, metric_groups, placement, **kwargs):
         super().__init__(authenticator, **kwargs)
@@ -96,32 +97,16 @@ class TwitterAdsStream(HttpStream, ABC):
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
-
-        account_id = self.account_id
-        auth = self.auth
-        # FixMe: request returns a bad request error if (end_time - start_time)> 7 this could lead to problems
-        start_time = self.start_time
-        end_time = self.end_time
-        granularity = self.granularity
-        metric_groups = self.metric_groups
-        placement = self.placement
-        campaign_ids_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/campaigns"
-        response = requests.get(campaign_ids_url, auth=auth)
-        campaign_ids = []
-
-        for each in response.json()['data']:
-            campaign_ids.append(each["id"])
-
-        campaign_ids = list(set(campaign_ids))
-
-    
-        return { "entity": "CAMPAIGN", "entity_ids": campaign_ids, "start_time":start_time, "end_time": end_time,"granularity": granularity, "placement": placement, "metric_groups": metric_groups}
+        return None
+     
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
+        # fix me parse response
+
         return [response.json()]
 
 
@@ -140,10 +125,106 @@ class Campaigns(TwitterAdsStream):
         TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
         should return "customers". Required.
         """
-        # fixme: account id should not be hardcoded
+        auth = self.auth
         account_id = self.account_id
-        return "/10/stats/accounts/" + account_id
+        # FixMe: request returns a bad request error if (end_time - start_time)> 7 this could lead to problems
 
+        request_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/campaigns"
+        
+        return request_url
+
+class LineItems(TwitterAdsStream):
+    """
+    TODO: Change class name to match the table/data source this stream corresponds to.
+    """
+
+    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
+        should return "customers". Required.
+        """
+        auth = self.auth
+        account_id = self.account_id
+
+        request_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/line_items"
+        
+        return request_url
+
+class PromotedTweets(TwitterAdsStream):
+    """
+    TODO: Change class name to match the table/data source this stream corresponds to.
+    """
+
+    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
+        should return "customers". Required.
+        """
+        auth = self.auth
+        account_id = self.account_id
+
+        request_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/promoted_tweets"
+        
+        return request_url
+
+class AdsAnalyticsMetrics(TwitterAdsStream):
+    """
+    TODO: Change class name to match the table/data source this stream corresponds to.
+    """
+
+    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
+        should return "customers". Required.
+        """
+        # FixMe: request returns a bad request error if (end_time - start_time)> 7 this could lead to problems
+        auth = self.auth
+        start_time = self.start_time
+        end_time = self.end_time
+        granularity = self.granularity
+        metric_groups = self.metric_groups
+        account_id = self.account_id
+        placement = self.placement
+        campaign_ids_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/campaigns"
+        response = requests.get(campaign_ids_url, auth=auth)
+        campaign_ids = []
+
+        for each in response.json()['data']:
+            campaign_ids.append(each["id"])
+ 
+        campaign_ids = list(set(campaign_ids))
+        
+        # we might need to limit the number of campaign ids to 20 per call...
+        campaign_ids = campaign_ids[:20]
+
+        
+        #FixMe: campaign_ids and metric_groups are not being passed correctly to request header commas are being replaced by %
+        
+        campaign_ids = ','.join(campaign_ids)
+        metric_groups = ','.join(metric_groups)
+        account_id = self.account_id
+
+        base_url = "/10/stats/accounts/" + account_id + '?'
+        params = urllib.parse.urlencode({ "entity": "PROMOTED_TWEET", "entity_ids": campaign_ids, "start_time":start_time, "end_time": end_time,"granularity": granularity, "placement": placement, "metric_groups": metric_groups})
+        params = urllib.parse.unquote(params)
+      
+        request_url = base_url + params
+        return request_url
 
 # Basic incremental stream
 class IncrementalTwitterAdsStream(TwitterAdsStream, ABC):
@@ -227,4 +308,7 @@ class SourceTwitterAds(AbstractSource):
         """
         # TODO remove the authenticator if not required.
         auth = OAuth1(config["CONSUMER_KEY"], config["CONSUMER_SECRET"], config["ACCESS_TOKEN"], config["ACCESS_TOKEN_SECRET"])  # Oauth2Authenticator is also available if you need oauth support
-        return [Campaigns(base="https://ads-api.twitter.com/", authenticator=auth, account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], end_time = config["END_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"])] 
+        return [Campaigns(base="https://ads-api.twitter.com/", authenticator=auth, account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], end_time = config["END_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"]),
+        AdsAnalyticsMetrics(base="https://ads-api.twitter.com/", authenticator=auth, account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], end_time = config["END_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"]),
+        LineItems(base="https://ads-api.twitter.com/", authenticator=auth,account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], end_time = config["END_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"]),
+        PromotedTweets(base="https://ads-api.twitter.com/", authenticator=auth,account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], end_time = config["END_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"])]
