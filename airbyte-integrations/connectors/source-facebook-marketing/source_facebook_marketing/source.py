@@ -4,7 +4,7 @@
 
 import logging
 from datetime import datetime
-from typing import Any, List, Mapping, Optional, Tuple, Type
+from typing import Any, List, Mapping, Optional, Tuple, Type, Iterator, MutableMapping
 
 import pendulum
 from airbyte_cdk.logger import AirbyteLogger
@@ -14,13 +14,13 @@ from airbyte_cdk.models import (
     ConnectorSpecification,
     DestinationSyncMode,
     OAuth2Specification,
-    Status,
+    Status, AirbyteMessage, ConfiguredAirbyteStream, SyncMode,
 )
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.source.config import BaseConfig
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import package_name_from_class
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader, InternalConfig
 from pydantic import BaseModel, Field
 from source_facebook_marketing.api import API
 from source_facebook_marketing.streams import (
@@ -225,3 +225,64 @@ class SourceFacebookMarketing(AbstractSource):
                 return False, e
 
         return True, None
+
+    def _read_incremental(
+        self,
+        logger: AirbyteLogger,
+        stream_instance: Stream,
+        configured_stream: ConfiguredAirbyteStream,
+        connector_state: MutableMapping[str, Any],
+        internal_config: InternalConfig,
+    ) -> Iterator[AirbyteMessage]:
+        """ We override this method because we need to inject new state handling.
+        Old way:
+            pass stream_state in read_records and other methods
+            call stream_state = stream_instance.get_updated_state(stream_state, record_data) for each record
+        New way:
+            stream_instance.state = stream_state
+            call stream_instance.state when we want to dump state message
+
+        :param logger:
+        :param stream_instance:
+        :param configured_stream:
+        :param connector_state:
+        :param internal_config:
+        :return:
+        """
+        if not hasattr(stream_instance, "state"):
+            return super()._read_incremental(logger, stream_instance, configured_stream, connector_state, internal_config)
+
+        stream_name = configured_stream.stream.name
+        stream_state = connector_state.get(stream_name, {})
+        if stream_state:
+            logger.info(f"Setting state of {stream_name} stream to {stream_state}")
+            stream_instance.state = stream_state
+
+        slices = stream_instance.stream_slices(
+            cursor_field=configured_stream.cursor_field, sync_mode=SyncMode.incremental, stream_state=stream_state
+        )
+        total_records_counter = 0
+        for _slice in slices:
+            records = stream_instance.read_records(
+                sync_mode=SyncMode.incremental,
+                stream_slice=_slice,
+                stream_state=stream_state,
+                cursor_field=configured_stream.cursor_field or None,
+            )
+            for record_counter, record_data in enumerate(records, start=1):
+                yield self._as_airbyte_record(stream_name, record_data)
+                checkpoint_interval = stream_instance.state_checkpoint_interval
+                if checkpoint_interval and record_counter % checkpoint_interval == 0:
+                    yield self._checkpoint_state(stream_name, stream_instance.state, connector_state, logger)
+
+                total_records_counter += 1
+                # This functionality should ideally live outside of this method
+                # but since state is managed inside this method, we keep track
+                # of it here.
+                if self._limit_reached(internal_config, total_records_counter):
+                    # Break from slice loop to save state and exit from _read_incremental function.
+                    break
+
+            yield self._checkpoint_state(stream_name, stream_instance.state, connector_state, logger)
+            if self._limit_reached(internal_config, total_records_counter):
+                return
