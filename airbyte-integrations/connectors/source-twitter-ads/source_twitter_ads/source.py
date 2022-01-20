@@ -176,7 +176,7 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
         account_id = self.account_id
 
         base_url = "/10/stats/accounts/" + account_id + '?'
-        params = urllib.parse.urlencode({ "entity": "CAMPAIGN", "entity_ids": campaign_ids, "start_time":start_time, "end_time": end_time,"granularity": granularity, "placement": placement, "metric_groups": metric_groups})
+        params = urllib.parse.urlencode({ "entity": "PROMOTED_TWEET", "entity_ids": campaign_ids, "start_time":start_time, "end_time": end_time,"granularity": granularity, "placement": placement, "metric_groups": metric_groups})
         params = urllib.parse.unquote(params)
       
         request_url = base_url + params
