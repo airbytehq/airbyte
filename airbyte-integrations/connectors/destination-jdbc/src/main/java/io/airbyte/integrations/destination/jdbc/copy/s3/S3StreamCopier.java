@@ -208,8 +208,8 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   @VisibleForTesting
-  public String getCurrentFile() {
-    return currentFile;
+  public Map<String, S3Writer> getStagingWritersByFile() {
+    return stagingWritersByFile;
   }
 
   public abstract void copyS3CsvFileIntoTable(JdbcDatabase database,

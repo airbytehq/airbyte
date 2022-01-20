@@ -77,11 +77,14 @@ class SnowflakeS3StreamCopierTest {
 
     copier.copyStagingFileToTemporaryTable();
 
-    verify(db).execute(String.format("COPY INTO fake-schema.%s FROM "
-        + "'s3://fake-bucket/%s'"
-        + " CREDENTIALS=(aws_key_id='fake-access-key-id' aws_secret_key='fake-secret-access-key') "
-        + "file_format = (type = csv field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"');",
-        copier.getTmpTableName(), copier.getCurrentFile()));
+    for (String fileName : copier.getStagingWritersByFile().keySet()) {
+      verify(db).execute(String.format("COPY INTO fake-schema.%s FROM "
+          + "'s3://fake-bucket/%s'"
+          + " CREDENTIALS=(aws_key_id='fake-access-key-id' aws_secret_key='fake-secret-access-key') "
+          + "file_format = (type = csv field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"');",
+          copier.getTmpTableName(), fileName));
+    }
+
   }
 
 }
