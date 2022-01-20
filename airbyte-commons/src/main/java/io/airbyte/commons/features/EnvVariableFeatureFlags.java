@@ -8,7 +8,7 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
 
   @Override
   public boolean usesNewScheduler() {
-    return System.getenv().containsKey("NEW_SCHEDULER");
+    return Boolean.parseBoolean(System.getenv("NEW_SCHEDULER"));
   }
 
 }
