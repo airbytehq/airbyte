@@ -6,6 +6,17 @@ error_handler() {
 trap 'error_handler $LINENO' ERR
 
 set -e
+
+# Ensure script always runs from this directory because thats how docker build contexts work
+cd "$(dirname "${0}")" || exit 1
+
+# Make sure docker is running before trying
+if ! docker ps; then
+  echo "docker is not running, this script requires docker to be up"
+  echo "please start up the docker daemon!"
+  exit
+fi
+
 _UID=$(id -u)
 _GID=$(id -g)
 # Remove container if already exist
@@ -28,5 +39,3 @@ else
 fi
 
 echo "Finished running generator"
-
-exit 0
