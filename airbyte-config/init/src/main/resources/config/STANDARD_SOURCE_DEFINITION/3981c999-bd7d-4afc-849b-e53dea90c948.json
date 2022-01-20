@@ -2,7 +2,7 @@
   "sourceDefinitionId": "3981c999-bd7d-4afc-849b-e53dea90c948",
   "name": "Lever Hiring",
   "dockerRepository": "airbyte/source-lever-hiring",
-  "dockerImageTag": "0.1.0",
+  "dockerImageTag": "0.1.2",
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/lever-hiring",
   "icon": "leverhiring.svg"
 }
