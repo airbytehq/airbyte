@@ -59,7 +59,6 @@ class TwitterAdsStream(HttpStream, ABC):
 
         # TODO: Fill in the url base. Required.
     url_base = "https://ads-api.twitter.com/"
-    primary_key = None
 
     def __init__(self, base,  account_id,  authenticator,  start_time, end_time, granularity, metric_groups, placement, **kwargs):
         super().__init__(authenticator, **kwargs)
@@ -111,10 +110,20 @@ class TwitterAdsStream(HttpStream, ABC):
 
         for each in response.json()['data']:
             campaign_ids.append(each["id"])
-
+ 
         campaign_ids = list(set(campaign_ids))
+        # we might need to limit the number of campaign ids to 20 per call...
+        #campaign_ids = campaign_ids[:20]
 
-    
+        
+        #FixMe: campaign_ids and metric_groups are not being passed correctly to request header commas are being replaced by %
+        
+        campaign_ids = ','.join(campaign_ids)
+        metric_groups = ','.join(metric_groups)
+
+        print(metric_groups)
+        print(campaign_ids)
+
         return { "entity": "CAMPAIGN", "entity_ids": campaign_ids, "start_time":start_time, "end_time": end_time,"granularity": granularity, "placement": placement, "metric_groups": metric_groups}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -123,6 +132,7 @@ class TwitterAdsStream(HttpStream, ABC):
         :return an iterable containing each record in the response
         """
         # fix me parse response
+        
         return [response.json()]
 
 
