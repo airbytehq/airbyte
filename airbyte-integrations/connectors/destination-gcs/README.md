@@ -47,6 +47,8 @@ Two service accounts have been created in our GCP for testing this destination. 
       ```
   - LastPass entry: `destination gcs creds (no multipart permission)`
 
+Add change.
+
 ## Add New Output Format
 - Add a new enum in `S3Format`.
 - Modify `spec.json` to specify the configuration of this new format.
