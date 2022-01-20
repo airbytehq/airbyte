@@ -104,6 +104,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             obj.export_all_data()
             yield {"RECORD": "something", "date_start": "2019-08-10T00:00:00Z"}
 
+        print("COMPLETED SLICE", job.key, self._next_cursor_value())
         if job.key == self._next_cursor_value():
             self._advance_cursor()
         else:
@@ -117,6 +118,12 @@ class AdsInsights(FBMarketingIncrementalStream):
                 self.cursor_field: self._cursor_value,
                 "slices": self._completed_slices,
             }
+
+        if self._completed_slices:
+            return {
+                "slices": self._completed_slices,
+            }
+
         return {}
 
     @state.setter
@@ -131,10 +138,12 @@ class AdsInsights(FBMarketingIncrementalStream):
 
     def _advance_cursor(self):
         """Iterate over state, find continuing sequence of slices. Get last value, advance cursor there and remove slices from state"""
+        print("CALL ADVANCE CURSOR")
         date_range = pendulum.period(self._next_cursor_value(), self._end_date)
         for ts_start in date_range.range("days", self.time_increment):
             if ts_start not in self._completed_slices:
                 break
+            print("ADVANCING", ts_start)
             self._completed_slices.remove(ts_start)
             self._cursor_value = ts_start
 
@@ -149,11 +158,12 @@ class AdsInsights(FBMarketingIncrementalStream):
         for ts_start in date_range.range("days", self.time_increment):
             if ts_start in self._completed_slices:
                 continue
+            ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
             total_params = {
                 **params,
                 "time_range": {
                     "since": ts_start.to_date_string(),
-                    "until": ts_start.to_date_string() + pendulum.duration(days=self.time_increment - 1),
+                    "until": ts_end.to_date_string(),
                 },
             }
             yield InsightAsyncJob(self._api.api, edge_object=self._api.account, params=total_params, key=ts_start)

@@ -17,7 +17,7 @@ from airbyte_cdk.models import (
     Status, AirbyteMessage, ConfiguredAirbyteStream, SyncMode,
 )
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.source.config import BaseConfig
+from airbyte_cdk.sources.config import BaseConfig
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader, InternalConfig

@@ -287,7 +287,7 @@ class InsightAsyncJob(AsyncJob):
         """Retrieve result of the finished job."""
         if not self._job or self.failed:
             raise RuntimeError(f"{self}: Incorrect usage of get_result - the job is not started of failed")
-        return self._job.get_result(params={"limit": 1000})
+        return self._job.get_result(params={"limit": 100})
 
     def __str__(self) -> str:
         """String representation of the job wrapper."""

@@ -4,43 +4,22 @@
 
 import logging
 import time
-from typing import Tuple, Iterator, Optional, List, Callable
+from typing import Tuple, Iterator, List
 
-from facebook_business.adobjects.campaign import Campaign
 from facebook_business.api import FacebookAdsApiBatch
 from source_facebook_marketing.api import API
 
-from .async_job import InsightAsyncJob, AsyncJob
+from .async_job import AsyncJob
 
 logger = logging.getLogger("airbyte")
 
 
 class InsightAsyncJobManager:
     """
-    Class for managing Ads Insights async jobs.
-    Responsible for splitting ranges from "from_date" to "to_date", create
-    async job DAYS_PER_JOB days long time_range window and schedule jobs
-    execution over facebook API /insights call.  Before running next job it
+    Class for managing Ads Insights async jobs. Before running next job it
     checks current insight throttle value and if it greater than THROTTLE_LIMIT
     variable, no new jobs added.
-    To continue generating new jobs current running jobs should be processed by
-    calling "get_next_completed_job" method.
-    Jobs returned by "get_next_completed_job" are ordered by time_range
-    parameter.
-
-
-    TODO:
-        check status
-        run more if necessary
-        get next completed will return any
-
-
-        jobs that is running        other jobs
-
-        check status of jobs that is running
-        restart failed, return completed,
-        run more jobs if possible (move jobs from other jobs to runnning jobs)
-
+    To consume completed jobs use completed_job generator, jobs will be returned in the same order they finished.
     """
 
     # When current insights throttle hit this value no new jobs added.
@@ -54,16 +33,13 @@ class InsightAsyncJobManager:
     MAX_JOBS_IN_QUEUE = 100
     MAX_JOBS_TO_CHECK = 50
 
-    def __init__(self, api: API, get_campaigns_for_period: Callable, jobs: Iterator[AsyncJob]):
-        """
-        get list of jobs
-        run window
-        check status of jobs in batch
+    def __init__(self, api: API, jobs: Iterator[AsyncJob]):
+        """ Init
 
+        :param api:
         :param jobs:
         """
         self._api = api
-        self._get_campaigns_for_period = get_campaigns_for_period
         self._jobs = jobs
         self._running_jobs = []
         self._empty = False
