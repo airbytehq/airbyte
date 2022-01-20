@@ -14,6 +14,7 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 import requests
 from requests_oauthlib import OAuth1
 import urllib
+import json
 
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
@@ -105,7 +106,7 @@ class TwitterAdsStream(HttpStream, ABC):
         :return an iterable containing each record in the response
         """
         # fix me parse response
-        
+        #response = json.dumps(response.json()['data'])
         return [response.json()]
 
 
@@ -125,38 +126,11 @@ class Campaigns(TwitterAdsStream):
         should return "customers". Required.
         """
         auth = self.auth
+        account_id = self.account_id
         # FixMe: request returns a bad request error if (end_time - start_time)> 7 this could lead to problems
-        start_time = self.start_time
-        end_time = self.end_time
-        granularity = self.granularity
-        metric_groups = self.metric_groups
-        account_id = self.account_id
-        placement = self.placement
-        campaign_ids_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/campaigns"
-        response = requests.get(campaign_ids_url, auth=auth)
-        campaign_ids = []
 
-        for each in response.json()['data']:
-            campaign_ids.append(each["id"])
- 
-        campaign_ids = list(set(campaign_ids))
+        request_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/campaigns"
         
-        # we might need to limit the number of campaign ids to 20 per call...
-        campaign_ids = campaign_ids[:20]
-
-        
-        #FixMe: campaign_ids and metric_groups are not being passed correctly to request header commas are being replaced by %
-        
-        campaign_ids = ','.join(campaign_ids)
-        metric_groups = ','.join(metric_groups)
-        account_id = self.account_id
-
-        base_url = "/10/stats/accounts/" + account_id + '?'
-        params = urllib.parse.urlencode({ "entity": "CAMPAIGN", "entity_ids": campaign_ids, "start_time":start_time, "end_time": end_time,"granularity": granularity, "placement": placement, "metric_groups": metric_groups})
-        params = urllib.parse.unquote(params)
-      
-        request_url = base_url + params
-
         return request_url
 
 
