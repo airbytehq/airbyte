@@ -611,13 +611,13 @@ jobs:
   stop-kube-acceptance-test-runner:
      # Disable kube acceptance tests for now, since they are flaky/broken and prevent any successfull CI run
     if: false
+    # if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
     name: Stop Kube Acceptance Test EC2 Runner
     timeout-minutes: 10
     needs:
       - start-kube-acceptance-test-runner # required to get output from the start-runner job
       - kube-acceptance-test # required to wait when the main job is done
     runs-on: ubuntu-latest
-    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
