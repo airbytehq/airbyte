@@ -5,11 +5,18 @@
 package io.airbyte.workers.temporal.scheduling.activities;
 
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.JobOutput;
+import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.scheduler.models.Job;
+import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
+import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
+import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptCreationInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptCreationOutput;
@@ -53,12 +60,23 @@ public class JobCreationAndStatusUpdateActivityTest {
   @Mock
   private LogConfigs mLogConfigs;
 
+  @Mock
+  private JobNotifier mJobNotifier;
+
+  @Mock
+  private JobTracker mJobtracker;
+
   @InjectMocks
   private JobCreationAndStatusUpdateActivityImpl jobCreationAndStatusUpdateActivity;
 
   private static final UUID CONNECTION_ID = UUID.randomUUID();
   private static final long JOB_ID = 123L;
   private static final int ATTEMPT_ID = 321;
+  private static final int ATTEMPT_NUMBER = 2;
+  private static final StandardSyncOutput standardSyncOutput = new StandardSyncOutput()
+      .withStandardSyncSummary(
+          new StandardSyncSummary()
+              .withStatus(ReplicationStatus.COMPLETED));
 
   @Nested
   class Creation {
@@ -69,7 +87,7 @@ public class JobCreationAndStatusUpdateActivityTest {
       Mockito.when(mJobFactory.create(CONNECTION_ID))
           .thenReturn(JOB_ID);
 
-      final JobCreationOutput output = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(CONNECTION_ID));
+      final JobCreationOutput output = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(CONNECTION_ID, false));
 
       Assertions.assertThat(output.getJobId()).isEqualTo(JOB_ID);
     }
@@ -129,26 +147,31 @@ public class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     public void setJobSuccess() throws IOException {
-      jobCreationAndStatusUpdateActivity.jobSuccess(new JobSuccessInput(JOB_ID, ATTEMPT_ID));
+      jobCreationAndStatusUpdateActivity.jobSuccess(new JobSuccessInput(JOB_ID, ATTEMPT_NUMBER, standardSyncOutput));
+      final JobOutput jobOutput = new JobOutput().withSync(standardSyncOutput);
 
-      Mockito.verify(mJobPersistence).succeedAttempt(JOB_ID, ATTEMPT_ID);
+      Mockito.verify(mJobPersistence).writeOutput(JOB_ID, ATTEMPT_NUMBER, jobOutput);
+      Mockito.verify(mJobPersistence).succeedAttempt(JOB_ID, ATTEMPT_NUMBER);
+      Mockito.verify(mJobNotifier).successJob(Mockito.any());
+      Mockito.verify(mJobtracker).trackSync(Mockito.any(), Mockito.eq(JobState.SUCCEEDED));
     }
 
     @Test
     public void setJobSuccessWrapException() throws IOException {
       Mockito.doThrow(new IOException())
-          .when(mJobPersistence).succeedAttempt(JOB_ID, ATTEMPT_ID);
+          .when(mJobPersistence).succeedAttempt(JOB_ID, ATTEMPT_NUMBER);
 
-      Assertions.assertThatThrownBy(() -> jobCreationAndStatusUpdateActivity.jobSuccess(new JobSuccessInput(JOB_ID, ATTEMPT_ID)))
+      Assertions.assertThatThrownBy(() -> jobCreationAndStatusUpdateActivity.jobSuccess(new JobSuccessInput(JOB_ID, ATTEMPT_NUMBER, null)))
           .isInstanceOf(RetryableException.class)
           .hasCauseInstanceOf(IOException.class);
     }
 
     @Test
     public void setJobFailure() throws IOException {
-      jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID));
+      jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, "reason"));
 
       Mockito.verify(mJobPersistence).failJob(JOB_ID);
+      Mockito.verify(mJobNotifier).failJob(Mockito.eq("reason"), Mockito.any());
     }
 
     @Test
@@ -156,24 +179,24 @@ public class JobCreationAndStatusUpdateActivityTest {
       Mockito.doThrow(new IOException())
           .when(mJobPersistence).failJob(JOB_ID);
 
-      Assertions.assertThatThrownBy(() -> jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID)))
+      Assertions.assertThatThrownBy(() -> jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, "")))
           .isInstanceOf(RetryableException.class)
           .hasCauseInstanceOf(IOException.class);
     }
 
     @Test
     public void setAttemptFailure() throws IOException {
-      jobCreationAndStatusUpdateActivity.attemptFailure(new AttemptFailureInput(JOB_ID, ATTEMPT_ID));
+      jobCreationAndStatusUpdateActivity.attemptFailure(new AttemptFailureInput(JOB_ID, ATTEMPT_NUMBER));
 
-      Mockito.verify(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_ID);
+      Mockito.verify(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
     }
 
     @Test
     public void setAttemptFailureWrapException() throws IOException {
       Mockito.doThrow(new IOException())
-          .when(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_ID);
+          .when(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
 
-      Assertions.assertThatThrownBy(() -> jobCreationAndStatusUpdateActivity.attemptFailure(new AttemptFailureInput(JOB_ID, ATTEMPT_ID)))
+      Assertions.assertThatThrownBy(() -> jobCreationAndStatusUpdateActivity.attemptFailure(new AttemptFailureInput(JOB_ID, ATTEMPT_NUMBER)))
           .isInstanceOf(RetryableException.class)
           .hasCauseInstanceOf(IOException.class);
     }
