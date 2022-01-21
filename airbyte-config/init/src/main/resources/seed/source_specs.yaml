@@ -6305,3 +6305,60 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: [ ]
+- dockerImage: "blotout/source-twitter-ads-singer:0.1.2"
+  spec:
+    "documentationUrl": "https://github.com/singer-io/tap-twitter-ads/blob/master/README.md"
+    "connectionSpecification":
+      "$schema": "http://json-schema.org/draft-07/schema#"
+      "title": "Source Twitter Ads Spec"
+      "type": "object"
+      "required":
+        - "consumer_key"
+        - "consumer_secret"
+        - "access_token"
+        - "access_token_secret"
+        - "account_ids"
+        - "user_agent"
+        - "start_date"
+        - "attribution_window"
+      "additionalProperties": false
+      "properties":
+        "start_date":
+          "type": "string"
+          "description": "UTC date and time in the format yyyy-mm-dd"
+          "example": "2019-01-01T00:00:00Z"
+        "user_agent":
+          "type": "string"
+          "description": "tap-twitter-ads <api_user_email@your_company.com>"
+          "example": "tap-twitter-ads <api_user_email@your_company.com>"
+        "consumer_key":
+          "type": "string"
+          "description": "Your Active TWITTER_ADS_CONSUMER_KEY"
+          "airbyte_secret": true
+        "consumer_secret":
+          "type": "string"
+          "description": "Your Active TWITTER_ADS_CONSUMER_SECRET"
+          "airbyte_secret": true
+        "access_token":
+          "type": "string"
+          "description": "Your Active TWITTER_ADS_ACCESS_TOKEN"
+          "airbyte_secret": true
+        "access_token_secret":
+          "type": "string"
+          "description": "Your Active TWITTER_ADS_ACCESS_TOKEN_SECRET"
+          "airbyte_secret": true
+        "account_ids":
+          "type": "string"
+          "description": "Your Active Twitter Ads Account id"
+          "example": "id1, id2, id3"
+        "attribution_window":
+          "type": "string"
+          "description": "Define the historical replication lookback window in days (e.g. 14) "
+          "example": "14"
+        "with_deleted":
+          "type": "string"
+          "description": "Whether to sync data only from active campaign"
+          "default": "true"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: [ ]
