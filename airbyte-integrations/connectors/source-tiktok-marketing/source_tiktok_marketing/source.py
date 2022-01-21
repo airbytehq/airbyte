@@ -5,30 +5,21 @@
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import AdvancedAuth, AuthFlowType, ConnectorSpecification, OAuthConfigSpecification, SyncMode
+from airbyte_cdk.models import (AdvancedAuth, AuthFlowType,
+                                ConnectorSpecification,
+                                OAuthConfigSpecification, SyncMode)
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .spec import (
-    CompleteOauthOutputSpecification,
-    CompleteOauthServerInputSpecification,
-    CompleteOauthServerOutputSpecification,
-    SourceTiktokMarketingSpec,
-)
-from .streams import (
-    DEFAULT_START_DATE,
-    AdGroups,
-    AdGroupsReports,
-    Ads,
-    AdsReports,
-    Advertisers,
-    AdvertisersReports,
-    Campaigns,
-    CampaignsReports,
-    ReportGranularity,
-)
+from .spec import (CompleteOauthOutputSpecification,
+                   CompleteOauthServerInputSpecification,
+                   CompleteOauthServerOutputSpecification,
+                   SourceTiktokMarketingSpec)
+from .streams import (DEFAULT_START_DATE, AdGroups, AdGroupsReports, Ads,
+                      AdsReports, Advertisers, AdvertisersReports, Campaigns,
+                      CampaignsReports, ReportGranularity)
 
 DOCUMENTATION_URL = "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
 

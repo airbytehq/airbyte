@@ -7,10 +7,12 @@ import random
 from typing import Any, Dict, Iterable, List, Mapping, Tuple
 
 import pendulum
+
 import pytest
 import requests_mock
 import timeout_decorator
-from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
+from airbyte_cdk.sources.streams.http.exceptions import \
+    UserDefinedBackoffException
 from source_tiktok_marketing import SourceTiktokMarketing
 from source_tiktok_marketing.streams import Ads, Advertisers, JsonUpdatedState
 
