@@ -2,13 +2,13 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import Mock
 import json
+from unittest.mock import Mock
 
 import pytest
 import requests_mock
-from airbyte_cdk.models import SyncMode, ConfiguredAirbyteCatalog, Type
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from requests.exceptions import HTTPError
 from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
@@ -17,21 +17,14 @@ from source_salesforce.streams import BulkIncrementalSalesforceStream, BulkSales
 
 @pytest.fixture(scope="module")
 def configured_catalog():
-    with open('unit_tests/configured_catalog.json') as f:
+    with open("unit_tests/configured_catalog.json") as f:
         data = json.loads(f.read())
     return ConfiguredAirbyteCatalog.parse_obj(data)
 
 
 @pytest.fixture(scope="module")
 def state():
-    state = {
-        "Account": {
-            "LastModifiedDate": "2021-10-01T21:18:20.000Z"
-        },
-        "Asset": {
-            "SystemModstamp": "2021-10-02T05:08:29.000Z"
-        }
-    }
+    state = {"Account": {"LastModifiedDate": "2021-10-01T21:18:20.000Z"}, "Asset": {"SystemModstamp": "2021-10-02T05:08:29.000Z"}}
     return state
 
 
@@ -405,13 +398,15 @@ def test_rate_limit_bulk(stream_config, stream_api, configured_catalog, state):
 
         result = [i for i in source.read(logger=logger, config=stream_config, catalog=configured_catalog, state=state)]
         assert stream_1.request_params.called
-        assert not stream_2.request_params.called, "The second stream should not be executed, because the first stream finished with Rate Limit."
+        assert (
+            not stream_2.request_params.called
+        ), "The second stream should not be executed, because the first stream finished with Rate Limit."
 
         records = [item for item in result if item.type == Type.RECORD]
         assert len(records) == 6  # stream page size: 6
 
         state_record = [item for item in result if item.type == Type.STATE][0]
-        assert state_record.state.data['Account']['LastModifiedDate'] == "2021-11-05"  # state checkpoint interval is 5.
+        assert state_record.state.data["Account"]["LastModifiedDate"] == "2021-11-05"  # state checkpoint interval is 5.
 
 
 def test_rate_limit_rest(stream_config, stream_api, configured_catalog, state):
@@ -471,13 +466,15 @@ def test_rate_limit_rest(stream_config, stream_api, configured_catalog, state):
         result = [i for i in source.read(logger=logger, config=stream_config, catalog=configured_catalog, state=state)]
 
         assert stream_1.request_params.called
-        assert not stream_2.request_params.called, "The second stream should not be executed, because the first stream finished with Rate Limit."
+        assert (
+            not stream_2.request_params.called
+        ), "The second stream should not be executed, because the first stream finished with Rate Limit."
 
         records = [item for item in result if item.type == Type.RECORD]
         assert len(records) == 5
 
         state_record = [item for item in result if item.type == Type.STATE][0]
-        assert state_record.state.data['Account']['LastModifiedDate'] == "2021-11-17"
+        assert state_record.state.data["Account"]["LastModifiedDate"] == "2021-11-17"
 
 
 def test_pagination_rest(stream_config, stream_api):
