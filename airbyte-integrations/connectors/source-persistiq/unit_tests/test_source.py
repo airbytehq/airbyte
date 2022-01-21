@@ -2,15 +2,14 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import ANY, MagicMock
-
+import requests
 from source_persistiq.source import SourcePersistiq
 
 
 def test_check_connection(mocker, requests_mock):
     source = SourcePersistiq()
-    logger_mock = MagicMock(), MagicMock()
-    config_mock = {"api_key": "mybeautifulkey"}
+    mock_logger = mocker.Mock()
+    test_config = {"api_key": "mybeautifulkey"}
     # success
     requests_mock.get(
         "https://api.persistiq.com/v1/users",
@@ -23,16 +22,17 @@ def test_check_connection(mocker, requests_mock):
             "salesforce_id": "",
         },
     )
-    assert source.check_connection(logger_mock, config_mock) == (True, None)
+    assert source.check_connection(mock_logger, test_config) == (True, None)
 
     # failure
     requests_mock.get("https://api.persistiq.com/v1/users", status_code=500)
-    assert source.check_connection(logger_mock, config_mock) == (False, ANY)
+    connection_success, connection_failure = source.check_connection(mock_logger, test_config)
+    assert not connection_success
+    assert isinstance(connection_failure, requests.exceptions.HTTPError)
 
 
-def test_streams(mocker):
+def test_streams():
     source = SourcePersistiq()
-    config_mock = MagicMock()
-    streams = source.streams(config_mock)
-    expected_streams_number = 3
-    assert len(streams) == expected_streams_number
+    config = {"api_key": "my-api-key"}
+    streams = source.streams(config)
+    assert len(streams) == 3
