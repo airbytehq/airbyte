@@ -2,11 +2,14 @@ import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import queryString from "query-string";
+import { CellProps } from "react-table";
 
 import Table from "components/Table";
 import { SortOrderEnum } from "components/EntityTable/types";
 import SortButton from "components/EntityTable/components/SortButton";
 import useRouter from "hooks/useRouter";
+import ConnectionCell from "./ConnectionCell";
+import { CreditConsumptionByConnector } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 
 const Content = styled.div`
   padding: 0 60px 0 15px;
@@ -81,7 +84,15 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({
           </>
         ),
         customWidth: 40,
-        accessor: "connectionId",
+        accessor: "sourceDefinitionName",
+        Cell: ({ cell, row }: CellProps<CreditConsumptionByConnector>) => (
+          <ConnectionCell
+            sourceDefinitionName={cell.value}
+            sourceDefinitionId={row.original.sourceDefinitionId}
+            destinationDefinitionName={row.original.destinationDefinitionName}
+            destinationDefinitionId={row.original.destinationDefinitionId}
+          />
+        ),
       },
       {
         Header: (
