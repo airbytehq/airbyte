@@ -116,6 +116,7 @@
     * [Outreach](integrations/sources/outreach.md)
     * [Paypal Transaction](integrations/sources/paypal-transaction.md)
     * [Paystack](integrations/sources/paystack.md)
+    * [Persistiq](integrations/sources/persistiq.md)
     * [Plaid](integrations/sources/plaid.md)
     * [Pinterest](integrations/sources/pinterest.md)
     * [Pipedrive](integrations/sources/pipedrive.md)
