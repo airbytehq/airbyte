@@ -12,6 +12,10 @@ jobs:
     outputs:
       changed-modules: ${{ steps.detect-changed-modules.outputs.changed-modules }}
     steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          workflow_id: ${{ github.event.workflow.id }}
       - name: Checkout Airbyte
         uses: actions/checkout@v2
         with:
