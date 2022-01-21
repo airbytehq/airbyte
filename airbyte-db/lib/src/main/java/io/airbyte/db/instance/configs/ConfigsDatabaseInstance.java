@@ -35,6 +35,8 @@ public class ConfigsDatabaseInstance extends BaseDatabaseInstance implements Dat
     }
   };
 
+  private Database database;
+
   @VisibleForTesting
   public ConfigsDatabaseInstance(final String username, final String password, final String connectionString, final String schema) {
     super(username, password, connectionString, schema, DATABASE_LOGGING_NAME, ConfigsDatabaseTables.getTableNames(), IS_CONFIGS_DATABASE_READY);
@@ -46,11 +48,14 @@ public class ConfigsDatabaseInstance extends BaseDatabaseInstance implements Dat
 
   @Override
   public boolean isInitialized() throws IOException {
-    final Database database = Databases.createPostgresDatabaseWithRetry(
-        username,
-        password,
-        connectionString,
-        isDatabaseConnected(databaseName));
+    if (database == null) {
+      database = Databases.createPostgresDatabaseWithRetry(
+          username,
+          password,
+          connectionString,
+          isDatabaseConnected(databaseName));
+    }
+
     return new ExceptionWrappingDatabase(database).transaction(ctx -> {
       // when we start fresh airbyte instance, we start with airbyte_configs configs table and then flyway
       // breaks the table into individual table.
@@ -70,11 +75,13 @@ public class ConfigsDatabaseInstance extends BaseDatabaseInstance implements Dat
     // When we need to setup the database, it means the database will be initialized after
     // we connect to the database. So the database itself is considered ready as long as
     // the connection is alive.
-    final Database database = Databases.createPostgresDatabaseWithRetry(
-        username,
-        password,
-        connectionString,
-        isDatabaseConnected(databaseName));
+    if (database == null) {
+      database = Databases.createPostgresDatabaseWithRetry(
+          username,
+          password,
+          connectionString,
+          isDatabaseConnected(databaseName));
+    }
 
     new ExceptionWrappingDatabase(database).transaction(ctx -> {
       if (hasTable(ctx, "state") || hasTable(ctx, "airbyte_configs")) {

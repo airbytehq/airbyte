@@ -68,7 +68,7 @@ public class BootloaderAppTest {
         container.getPassword(),
         container.getJdbcUrl()).getInitialized();
     val jobsMigrator = new JobsDatabaseMigrator(jobDatabase, this.getClass().getName());
-    assertEquals("0.29.15.001", jobsMigrator.getLatestMigration().getVersion().getVersion());
+    assertEquals("0.35.5.001", jobsMigrator.getLatestMigration().getVersion().getVersion());
 
     val configDatabase = new ConfigsDatabaseInstance(
         mockedConfigs.getConfigDatabaseUser(),
@@ -76,7 +76,7 @@ public class BootloaderAppTest {
         mockedConfigs.getConfigDatabaseUrl())
             .getAndInitialize();
     val configsMigrator = new ConfigsDatabaseMigrator(configDatabase, this.getClass().getName());
-    assertEquals("0.32.8.001", configsMigrator.getLatestMigration().getVersion().getVersion());
+    assertEquals("0.35.1.001", configsMigrator.getLatestMigration().getVersion().getVersion());
 
     val jobsPersistence = new DefaultJobPersistence(jobDatabase);
     assertEquals(version, jobsPersistence.getVersion().get());

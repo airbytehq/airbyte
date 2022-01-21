@@ -65,8 +65,14 @@ class SecretsLoader:
                     filename = DEFAULT_SECRET_FILE_WITH_EXT
                 log_name = f'{secret_name.split("/")[-1]}({connector_name})'
                 self.logger.info(f"found GSM secret: {log_name} = > {filename}")
-                secret_url = f"https://secretmanager.googleapis.com/v1/{secret_name}/versions/latest:access"
 
+                versions_url = f"https://secretmanager.googleapis.com/v1/{secret_name}/versions"
+                data = self.api.get(versions_url)
+                enabled_versions = [version["name"] for version in data["versions"] if version["state"] == "ENABLED"]
+                if len(enabled_versions) > 1:
+                    self.logger.critical(f"{log_name} should have one enabled version at the same time!!!")
+
+                secret_url = f"https://secretmanager.googleapis.com/v1/{enabled_versions[0]}:access"
                 data = self.api.get(secret_url)
                 secret_value = data.get("payload", {}).get("data")
                 if not secret_value:

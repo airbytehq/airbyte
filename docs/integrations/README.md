@@ -14,6 +14,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 
 | Connector | Grade |
 | :--- | :--- |
+| [3PL Central](sources/tplcentral.md) | Alpha |
 | [Airtable](sources/airtable.md) | Alpha |
 | [Amazon SQS](sources/amazon-sqs.md) | Alpha |
 | [Amazon Seller Partner](sources/amazon-seller-partner.md) | Alpha |
@@ -29,6 +30,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Bing Ads](sources/bing-ads.md) | Beta |
 | [Cart.com](sources/cart.md) | Beta |
 | [Chargebee](sources/chargebee.md) | Alpha |
+| [Chartmogul](sources/chartmogul.md) | Alpha |
 | [ClickHouse](sources/clickhouse.md) | Beta |
 | [Close.com](sources/close-com.md) | Beta |
 | [CockroachDB](sources/cockroachdb.md) | Beta |
@@ -40,6 +42,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Facebook Marketing](sources/facebook-marketing.md) | Beta |
 | [Facebook Pages](sources/facebook-pages.md) | Alpha |
 | [Files](sources/file.md) | Certified |
+| [Flexport](sources/flexport.md) | Alpha |
 | [Freshdesk](sources/freshdesk.md) | Certified |
 | [GitHub](sources/github.md) | Beta |
 | [GitLab](sources/gitlab.md) | Beta |
@@ -102,6 +105,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Salesforce](sources/salesforce.md) | Certified |
 | [Salesloft](./sources/salesloft.md)| Alpha |
 | [SAP Business One](sources/sap-business-one.md) | Beta |
+| [SearchMetrics](./sources/search-metrics.md)| Alpha |
 | [Sendgrid](sources/sendgrid.md) | Certified |
 | [Sentry](sources/sentry.md) | Alpha |
 | [Shopify](sources/shopify.md) | Certified |
