@@ -7,7 +7,7 @@ import json
 
 import pytest
 import requests_mock
-from airbyte_cdk.models import SyncMode, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import SyncMode, ConfiguredAirbyteCatalog, Type
 from airbyte_cdk.logger import AirbyteLogger
 from requests.exceptions import HTTPError
 from source_salesforce.api import Salesforce
@@ -20,6 +20,19 @@ def configured_catalog():
     with open('unit_tests/configured_catalog.json') as f:
         data = json.loads(f.read())
     return ConfiguredAirbyteCatalog.parse_obj(data)
+
+
+@pytest.fixture(scope="module")
+def state():
+    state = {
+        "Account": {
+            "LastModifiedDate": "2021-10-01T21:18:20.000Z"
+        },
+        "Asset": {
+            "SystemModstamp": "2021-10-02T05:08:29.000Z"
+        }
+    }
+    return state
 
 
 @pytest.fixture(scope="module")
@@ -326,32 +339,6 @@ def test_discover_with_streams_criteria_param(streams_criteria, predicted_filter
     assert sorted(filtered_streams) == sorted(predicted_filtered_streams)
 
 
-@pytest.mark.timeout(100000)
-def test_rate_limit_bulk(stream_config, stream_api, configured_catalog):  # TODO
-    stream: BulkIncrementalSalesforceStream = _generate_stream("Account", stream_config, stream_api)
-
-    stream._wait_timeout = 100
-    url = "https://fase-account.salesforce.com/services/data/v52.0/jobs/query"
-    source = SourceSalesforce()
-    source.streams = Mock()
-    source.streams.return_value = [stream]
-    logger = AirbyteLogger()
-
-    state = {
-      "Account": {
-        "LastModifiedDate": "2122-01-18T21:18:20.000Z"
-      }
-    }
-    json_response = [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "TotalRequests Limit exceeded."}]
-    with requests_mock.Mocker() as m:
-        m.register_uri("GET", url, json=json_response, status_code=403)
-        m.register_uri("POST", url, json=json_response, status_code=403)
-        m.register_uri("DELETE", url, json=json_response, status_code=403)
-        m.register_uri("PATCH", url, json=json_response, status_code=403)
-
-        result = [i for i in source.read(logger=logger, config=stream_config, catalog=configured_catalog, state=state)]
-
-
 def test_check_connection_rate_limit(stream_config):
     source = SourceSalesforce()
     logger = AirbyteLogger()
@@ -365,26 +352,81 @@ def test_check_connection_rate_limit(stream_config):
         assert msg == "API Call limit is exceeded"
 
 
-def test_connector_should_stop_the_sync_if_one_stream_reached_rate_limit(stream_config, stream_api, configured_catalog):
-    state = {
-        "Account": {
-            "LastModifiedDate": "2021-11-01T21:18:20.000Z"
-        },
-        "Asset": {
-            "SystemModstamp": "2021-11-02T05:08:29.000Z"
-        }
-    }
-
-    stream_1: IncrementalSalesforceStream = _generate_stream("Account", stream_config, stream_api, state=state)
-    stream_2: IncrementalSalesforceStream = _generate_stream("Asset", stream_config, stream_api, state=state)
-
-    stream_1.state_checkpoint_interval = 3
-
+def configure_request_params_mock(stream_1, stream_2):
     stream_1.request_params = Mock()
     stream_1.request_params.return_value = {"q": "query"}
 
     stream_2.request_params = Mock()
     stream_2.request_params.return_value = {"q": "query"}
+
+
+def test_rate_limit_bulk(stream_config, stream_api, configured_catalog, state):
+    """
+    Connector should stop the sync if one stream reached rate limit
+    stream_1, stream_2, stream_3, ...
+    While reading `stream_1` if 403 (Rate Limit) is received, it should finish that stream with success and stop the sync process.
+    Next streams should not be executed.
+    """
+    stream_1: BulkIncrementalSalesforceStream = _generate_stream("Account", stream_config, stream_api)
+    stream_2: BulkIncrementalSalesforceStream = _generate_stream("Asset", stream_config, stream_api)
+    streams = [stream_1, stream_2]
+    configure_request_params_mock(stream_1, stream_2)
+
+    stream_1.page_size = 6
+    stream_1.state_checkpoint_interval = 5
+
+    source = SourceSalesforce()
+    source.streams = Mock()
+    source.streams.return_value = streams
+    logger = AirbyteLogger()
+
+    json_response = [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "TotalRequests Limit exceeded."}]
+    with requests_mock.Mocker() as m:
+        for stream in streams:
+            creation_responses = []
+            for page in [1, 2]:
+                job_id = f"fake_job_{page}_{stream.name}"
+                creation_responses.append({"json": {"id": job_id}})
+
+                m.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "JobComplete"})
+
+                resp = ["Field1,LastModifiedDate,ID"] + [f"test,2021-11-0{i},{i}" for i in range(1, 7)]  # 6 records per page
+
+                if page == 1:
+                    # Read the first page successfully
+                    m.register_uri("GET", stream.path() + f"/{job_id}/results", text="\n".join(resp))
+                else:
+                    # Requesting for results when reading second page should fail with 403 (Rate Limit error)
+                    m.register_uri("GET", stream.path() + f"/{job_id}/results", status_code=403, json=json_response)
+
+                m.register_uri("DELETE", stream.path() + f"/{job_id}")
+
+            m.register_uri("POST", stream.path(), creation_responses)
+
+        result = [i for i in source.read(logger=logger, config=stream_config, catalog=configured_catalog, state=state)]
+        assert stream_1.request_params.called
+        assert not stream_2.request_params.called, "The second stream should not be executed, because the first stream finished with Rate Limit."
+
+        records = [item for item in result if item.type == Type.RECORD]
+        assert len(records) == 6  # stream page size: 6
+
+        state_record = [item for item in result if item.type == Type.STATE][0]
+        assert state_record.state.data['Account']['LastModifiedDate'] == "2021-11-05"  # state checkpoint interval is 5.
+
+
+def test_rate_limit_rest(stream_config, stream_api, configured_catalog, state):
+    """
+    Connector should stop the sync if one stream reached rate limit
+    stream_1, stream_2, stream_3, ...
+    While reading `stream_1` if 403 (Rate Limit) is received, it should finish that stream with success and stop the sync process.
+    Next streams should not be executed.
+    """
+
+    stream_1: IncrementalSalesforceStream = _generate_stream("Account", stream_config, stream_api, state=state)
+    stream_2: IncrementalSalesforceStream = _generate_stream("Asset", stream_config, stream_api, state=state)
+
+    stream_1.state_checkpoint_interval = 3
+    configure_request_params_mock(stream_1, stream_2)
 
     source = SourceSalesforce()
     source.streams = Mock()
@@ -408,7 +450,7 @@ def test_connector_should_stop_the_sync_if_one_stream_reached_rate_limit(stream_
             },
             {
                 "ID": 3,
-                "LastModifiedDate": "2021-11-17",
+                "LastModifiedDate": "2021-11-17",  # check point interval
             },
             {
                 "ID": 4,
@@ -429,9 +471,13 @@ def test_connector_should_stop_the_sync_if_one_stream_reached_rate_limit(stream_
         result = [i for i in source.read(logger=logger, config=stream_config, catalog=configured_catalog, state=state)]
 
         assert stream_1.request_params.called
-        assert not stream_2.request_params.called, "stream_2 (Asset) should not be read"
+        assert not stream_2.request_params.called, "The second stream should not be executed, because the first stream finished with Rate Limit."
 
-        print(result)
+        records = [item for item in result if item.type == Type.RECORD]
+        assert len(records) == 5
+
+        state_record = [item for item in result if item.type == Type.STATE][0]
+        assert state_record.state.data['Account']['LastModifiedDate'] == "2021-11-17"
 
 
 def test_pagination_rest(stream_config, stream_api):
