@@ -37,6 +37,7 @@ import java.util.stream.StreamSupport;
 public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AzureBlobStorageConsumer.class);
+  private static final String YYYY_MM_DD_FORMAT_STRING = "yyyy_MM_dd";
 
   private final AzureBlobStorageDestinationConfig azureBlobStorageDestinationConfig;
   private final ConfiguredAirbyteCatalog configuredCatalog;
@@ -45,8 +46,6 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
   private final Map<AirbyteStreamNameNamespacePair, AzureBlobStorageWriter> streamNameAndNamespaceToWriters;
 
   private AirbyteMessage lastStateMessage = null;
-
-  public static final String YYYY_MM_DD_FORMAT_STRING = "yyyy_MM_dd";
 
   public AzureBlobStorageConsumer(
                                   final AzureBlobStorageDestinationConfig azureBlobStorageDestinationConfig,
