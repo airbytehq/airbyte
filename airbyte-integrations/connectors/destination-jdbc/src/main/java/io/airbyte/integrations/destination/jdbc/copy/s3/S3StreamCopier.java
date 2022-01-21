@@ -208,7 +208,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   @VisibleForTesting
-  public Map<String, S3Writer> getStagingWritersByFile() {
+  public Map<String, DestinationFileWriter> getStagingWritersByFile() {
     return stagingWritersByFile;
   }
 
