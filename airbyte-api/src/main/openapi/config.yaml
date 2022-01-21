@@ -1960,6 +1960,8 @@ components:
         email:
           type: string
           format: email
+        name:
+          type: string
         initialSetupComplete:
           type: boolean
         displaySetupWizard:

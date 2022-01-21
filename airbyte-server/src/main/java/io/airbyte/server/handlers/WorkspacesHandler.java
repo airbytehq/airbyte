@@ -151,6 +151,10 @@ public class WorkspacesHandler {
       persistedWorkspace.withEmail(workspaceUpdate.getEmail());
     }
 
+    if (!Strings.isNullOrEmpty(workspaceUpdate.getName())) {
+      persistedWorkspace.withName(workspaceUpdate.getName());
+    }
+
     persistedWorkspace
         .withInitialSetupComplete(workspaceUpdate.getInitialSetupComplete())
         .withDisplaySetupWizard(workspaceUpdate.getDisplaySetupWizard())
