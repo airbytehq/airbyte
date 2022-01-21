@@ -208,7 +208,13 @@ class Salesforce:
 
     def get_validated_streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None):
         salesforce_objects = self.describe()["sobjects"]
-        stream_objects = [stream_object for stream_object in salesforce_objects if stream_object["queryable"]]
+        stream_objects = []
+        for stream_object in salesforce_objects:
+            if stream_object["queryable"]:
+                stream_objects.append(stream_object)
+            else:
+                self.logger.warn(f"Stream {stream_object['name']} is not queryable and will be ignored.")
+
         stream_names = [stream_object["name"] for stream_object in stream_objects]
         if catalog:
             return [configured_stream.stream.name for configured_stream in catalog.streams], stream_objects
