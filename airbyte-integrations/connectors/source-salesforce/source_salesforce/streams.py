@@ -18,7 +18,6 @@ from requests import codes, exceptions
 
 from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .rate_limiting import default_backoff_handler
-from .utils import rate_limit_handler
 
 
 class SalesforceStream(HttpStream, ABC):
@@ -99,11 +98,7 @@ class SalesforceStream(HttpStream, ABC):
             error_data = error.response.json()[0]
             if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
                 error_code = error_data.get("errorCode", "")
-                if error_code == "REQUEST_LIMIT_EXCEEDED":
-                    # If rate limit is reached, we should finish the sync with success
-                    self.logger.warn(f"API Call limit is exceeded'. Stream: {self.name}', error message: '{error_data.get('message')}'")
-                    return
-                elif error_code == "INVALID_TYPE_FOR_OPERATION":
+                if error_code != "REQUEST_LIMIT_EXCEEDED" or error_code == "INVALID_TYPE_FOR_OPERATION":
                     self.logger.error(f"Cannot receive data for stream '{self.name}', error message: '{error_data.get('message')}'")
                     return
             raise error
@@ -261,7 +256,6 @@ class BulkSalesforceStream(SalesforceStream):
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             return f"WHERE {self.primary_key} >= '{last_record[self.primary_key]}' "
 
-    @rate_limit_handler()
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:

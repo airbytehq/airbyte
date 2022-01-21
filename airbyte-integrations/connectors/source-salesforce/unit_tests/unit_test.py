@@ -16,6 +16,13 @@ from source_salesforce.streams import BulkIncrementalSalesforceStream, BulkSales
 
 
 @pytest.fixture(scope="module")
+def configured_catalog():
+    with open('unit_tests/configured_catalog.json') as f:
+        data = json.loads(f.read())
+    return ConfiguredAirbyteCatalog.parse_obj(data)
+
+
+@pytest.fixture(scope="module")
 def stream_config():
     """Generates streams settings for BULK logic"""
     return {
@@ -320,34 +327,8 @@ def test_discover_with_streams_criteria_param(streams_criteria, predicted_filter
 
 
 @pytest.mark.timeout(100000)
-def test_rate_limit_rest(stream_rest_config, stream_rest_api):  # TODO
-    stream: IncrementalSalesforceStream = _generate_stream("Account", stream_rest_config, stream_rest_api)
-
-    stream._wait_timeout = 100
-    url = "https://fase-account.salesforce.com/services/data/v52.0/queryAll?q=SELECT+LastModifiedDate+FROM+Account+WHERE+LastModifiedDate+%3E%3D+2122-01-18T21%3A18%3A20.000Z+ORDER+BY+LastModifiedDate+ASC+LIMIT+2000"
-    source = SourceSalesforce()
-    source.streams = Mock()
-    source.streams.return_value = [stream]
-    logger = AirbyteLogger()
-    with open('configured_catalog.json') as f:
-        data = json.loads(f.read())
-    catalog = ConfiguredAirbyteCatalog.parse_obj(data)
-    state = {
-      "Account": {
-        "LastModifiedDate": "2122-01-18T21:18:20.000Z"
-      }
-    }
-    with requests_mock.Mocker() as m:
-        m.register_uri("GET", url, json=[{"errorCode": "REQUEST_LIMIT_EXCEEDED"}], status_code=403)
-        # with pytest.raises(Exception) as err:
-        result = [i for i in source.read(logger=logger, config=stream_rest_config, catalog=catalog, state=state)]
-        # print(result)
-        # next(stream.read_records(sync_mode=SyncMode.full_refresh))
-
-
-@pytest.mark.timeout(100000)
-def test_rate_limit_bulk(stream_bulk_config, stream_bulk_api):  # TODO
-    stream: BulkIncrementalSalesforceStream = _generate_stream("Account", stream_bulk_config, stream_bulk_api)
+def test_rate_limit_bulk(stream_config, stream_api, configured_catalog):  # TODO
+    stream: BulkIncrementalSalesforceStream = _generate_stream("Account", stream_config, stream_api)
 
     stream._wait_timeout = 100
     url = "https://fase-account.salesforce.com/services/data/v52.0/jobs/query"
@@ -355,24 +336,102 @@ def test_rate_limit_bulk(stream_bulk_config, stream_bulk_api):  # TODO
     source.streams = Mock()
     source.streams.return_value = [stream]
     logger = AirbyteLogger()
-    with open('configured_catalog.json') as f:
-        data = json.loads(f.read())
-    catalog = ConfiguredAirbyteCatalog.parse_obj(data)
+
     state = {
       "Account": {
         "LastModifiedDate": "2122-01-18T21:18:20.000Z"
       }
     }
+    json_response = [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "TotalRequests Limit exceeded."}]
     with requests_mock.Mocker() as m:
-        m.register_uri("GET", url, json=[{"errorCode": "REQUEST_LIMIT_EXCEEDED"}], status_code=403)
-        m.register_uri("POST", url, json=[{"errorCode": "REQUEST_LIMIT_EXCEEDED"}], status_code=403)
-        m.register_uri("DELETE", url, json=[{"errorCode": "REQUEST_LIMIT_EXCEEDED"}], status_code=403)
-        m.register_uri("PATCH", url, json=[{"errorCode": "REQUEST_LIMIT_EXCEEDED"}], status_code=403)
+        m.register_uri("GET", url, json=json_response, status_code=403)
+        m.register_uri("POST", url, json=json_response, status_code=403)
+        m.register_uri("DELETE", url, json=json_response, status_code=403)
+        m.register_uri("PATCH", url, json=json_response, status_code=403)
 
-        # with pytest.raises(Exception) as err:
-        result = [i for i in source.read(logger=logger, config=stream_bulk_config, catalog=catalog, state=state)]
-        # print(result)
-        # next(stream.read_records(sync_mode=SyncMode.full_refresh))
+        result = [i for i in source.read(logger=logger, config=stream_config, catalog=configured_catalog, state=state)]
+
+
+def test_check_connection_rate_limit(stream_config):
+    source = SourceSalesforce()
+    logger = AirbyteLogger()
+
+    json_response = [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "TotalRequests Limit exceeded."}]
+    url = "https://login.salesforce.com/services/oauth2/token"
+    with requests_mock.Mocker() as m:
+        m.register_uri("POST", url, json=json_response, status_code=403)
+        result, msg = source.check_connection(logger, stream_config)
+        assert result is False
+        assert msg == "API Call limit is exceeded"
+
+
+def test_connector_should_stop_the_sync_if_one_stream_reached_rate_limit(stream_config, stream_api, configured_catalog):
+    state = {
+        "Account": {
+            "LastModifiedDate": "2021-11-01T21:18:20.000Z"
+        },
+        "Asset": {
+            "SystemModstamp": "2021-11-02T05:08:29.000Z"
+        }
+    }
+
+    stream_1: IncrementalSalesforceStream = _generate_stream("Account", stream_config, stream_api, state=state)
+    stream_2: IncrementalSalesforceStream = _generate_stream("Asset", stream_config, stream_api, state=state)
+
+    stream_1.state_checkpoint_interval = 3
+
+    stream_1.request_params = Mock()
+    stream_1.request_params.return_value = {"q": "query"}
+
+    stream_2.request_params = Mock()
+    stream_2.request_params.return_value = {"q": "query"}
+
+    source = SourceSalesforce()
+    source.streams = Mock()
+    source.streams.return_value = [stream_1, stream_2]
+
+    logger = AirbyteLogger()
+
+    next_page_url = "/services/data/v52.0/query/012345"
+    response_1 = {
+        "done": False,
+        "totalSize": 10,
+        "nextRecordsUrl": next_page_url,
+        "records": [
+            {
+                "ID": 1,
+                "LastModifiedDate": "2021-11-15",
+            },
+            {
+                "ID": 2,
+                "LastModifiedDate": "2021-11-16",
+            },
+            {
+                "ID": 3,
+                "LastModifiedDate": "2021-11-17",
+            },
+            {
+                "ID": 4,
+                "LastModifiedDate": "2021-11-18",
+            },
+            {
+                "ID": 5,
+                "LastModifiedDate": "2021-11-19",
+            },
+        ],
+    }
+    response_2 = [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "TotalRequests Limit exceeded."}]
+
+    with requests_mock.Mocker() as m:
+        m.register_uri("GET", stream_1.path(), json=response_1, status_code=200)
+        m.register_uri("GET", next_page_url, json=response_2, status_code=403)
+
+        result = [i for i in source.read(logger=logger, config=stream_config, catalog=configured_catalog, state=state)]
+
+        assert stream_1.request_params.called
+        assert not stream_2.request_params.called, "stream_2 (Asset) should not be read"
+
+        print(result)
 
 
 def test_pagination_rest(stream_config, stream_api):

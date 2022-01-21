@@ -8,7 +8,6 @@ import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from requests.exceptions import HTTPError
-from requests import exceptions, codes
 
 from .exceptions import TypeSalesforceException
 from .rate_limiting import default_backoff_handler
