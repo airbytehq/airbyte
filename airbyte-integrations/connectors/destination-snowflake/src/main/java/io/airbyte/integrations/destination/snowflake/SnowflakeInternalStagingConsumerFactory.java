@@ -80,7 +80,7 @@ public class SnowflakeInternalStagingConsumerFactory {
       Preconditions.checkNotNull(stream.getDestinationSyncMode(), "Undefined destination sync mode");
       final AirbyteStream abStream = stream.getStream();
 
-      final String outputSchema = getOutputSchema(abStream, namingResolver.getIdentifier(config.get("schema").asText()));
+      final String outputSchema = getOutputSchema(abStream, config.get("schema").asText(),namingResolver);
 
       final String streamName = abStream.getName();
       final String tableName = namingResolver.getRawTableName(streamName);
@@ -94,12 +94,12 @@ public class SnowflakeInternalStagingConsumerFactory {
     };
   }
 
-  private static String getOutputSchema(final AirbyteStream stream, final String defaultDestSchema) {
+  private static String getOutputSchema(final AirbyteStream stream, final String defaultDestSchema, NamingConventionTransformer namingResolver) {
     final String sourceSchema = stream.getNamespace();
     if (sourceSchema != null) {
-      return sourceSchema;
+      return namingResolver.getIdentifier(sourceSchema);
     }
-    return defaultDestSchema;
+    return namingResolver.getIdentifier(defaultDestSchema);
   }
 
   private static OnStartFunction onStartFunction(final JdbcDatabase database,
