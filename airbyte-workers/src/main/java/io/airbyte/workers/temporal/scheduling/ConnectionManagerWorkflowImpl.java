@@ -167,6 +167,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       } else if (workflowState.isCancelled()) {
         jobCreationAndStatusUpdateActivity.jobCancelled(new JobCancelledInput(
             maybeJobId.get()));
+        resetNewConnectionInput(connectionUpdaterInput);
       } else if (workflowState.isFailed()) {
         reportFailure(connectionUpdaterInput);
       } else {
@@ -188,9 +189,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         maybeAttemptId.get(),
         standardSyncOutput.orElse(null)));
 
-    connectionUpdaterInput.setJobId(null);
-    connectionUpdaterInput.setAttemptNumber(1);
-    connectionUpdaterInput.setFromFailure(false);
+    resetNewConnectionInput(connectionUpdaterInput);
   }
 
   private void reportFailure(final ConnectionUpdaterInput connectionUpdaterInput) {
@@ -212,10 +211,14 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
       Workflow.await(Duration.ofMinutes(1), () -> skipScheduling());
 
-      connectionUpdaterInput.setJobId(null);
-      connectionUpdaterInput.setAttemptNumber(1);
-      connectionUpdaterInput.setFromFailure(false);
+      resetNewConnectionInput(connectionUpdaterInput);
     }
+  }
+
+  private void resetNewConnectionInput(ConnectionUpdaterInput connectionUpdaterInput) {
+    connectionUpdaterInput.setJobId(null);
+    connectionUpdaterInput.setAttemptNumber(1);
+    connectionUpdaterInput.setFromFailure(false);
   }
 
   @Override
