@@ -1,7 +1,7 @@
 name: Sonar Scan
 on:
   pull_request:
-    types: [opened, synchronize, reopened, closed, ready_for_review]
+    types: [opened, synchronize, closed]
 
 jobs:
 
