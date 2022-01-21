@@ -43,7 +43,7 @@ webapp:
   image:
     repository: airbyte/webapp
     pullPolicy: IfNotPresent
-    tag: 0.35.5-alpha
+    tag: 0.35.6-alpha
 
   ## @param webapp.podAnnotations [object] Add extra annotations to the webapp pod(s)
   ##
@@ -140,7 +140,7 @@ scheduler:
   image:
     repository: airbyte/scheduler
     pullPolicy: IfNotPresent
-    tag: 0.35.5-alpha
+    tag: 0.35.6-alpha
 
   ## @param scheduler.podAnnotations [object] Add extra annotations to the scheduler pod
   ##
@@ -245,7 +245,7 @@ server:
   image:
     repository: airbyte/server
     pullPolicy: IfNotPresent
-    tag: 0.35.5-alpha
+    tag: 0.35.6-alpha
 
   ## @param server.podAnnotations [object] Add extra annotations to the server pod
   ##
@@ -357,7 +357,7 @@ worker:
   image:
     repository: airbyte/worker
     pullPolicy: IfNotPresent
-    tag: 0.35.5-alpha
+    tag: 0.35.6-alpha
 
   ## @param worker.podAnnotations [object] Add extra annotations to the worker pod(s)
   ##
@@ -446,7 +446,7 @@ bootloader:
   image:
     repository: airbyte/bootloader
     pullPolicy: IfNotPresent
-    tag: 0.35.5-alpha
+    tag: 0.35.6-alpha
 
 ## @section Temporal parameters
 ## TODO: Move to consuming temporal from a dedicated helm chart
@@ -505,7 +505,9 @@ postgresql:
   ## This secret is used in case of postgresql.enabled=true and we would like to specify password for newly created postgresql instance
   ##
   existingSecret: ""
-
+  commonAnnotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: -1
 ## External PostgreSQL configuration
 ## All of these values are only used when postgresql.enabled is set to false
 ## @param externalDatabase.host Database host

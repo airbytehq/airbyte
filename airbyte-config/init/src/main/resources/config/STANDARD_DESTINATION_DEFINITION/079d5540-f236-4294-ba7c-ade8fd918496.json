@@ -2,7 +2,7 @@
   "destinationDefinitionId": "079d5540-f236-4294-ba7c-ade8fd918496",
   "name": "BigQuery (denormalized typed struct)",
   "dockerRepository": "airbyte/destination-bigquery-denormalized",
-  "dockerImageTag": "0.2.3",
+  "dockerImageTag": "0.2.5",
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/bigquery",
   "icon": "bigquery.svg"
 }

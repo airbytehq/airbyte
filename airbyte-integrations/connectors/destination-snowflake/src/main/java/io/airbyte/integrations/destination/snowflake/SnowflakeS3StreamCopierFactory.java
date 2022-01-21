@@ -9,24 +9,24 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
-import io.airbyte.integrations.destination.jdbc.copy.s3.LegacyS3StreamCopierFactory;
-import io.airbyte.integrations.destination.s3.S3DestinationConfig;
-import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopyConfig;
+import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopierFactory;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 
-public class SnowflakeS3StreamCopierFactory extends LegacyS3StreamCopierFactory {
+public class SnowflakeS3StreamCopierFactory extends S3StreamCopierFactory {
 
   @Override
-  public StreamCopier create(final String stagingFolder,
-                             final DestinationSyncMode syncMode,
-                             final String schema,
-                             final String streamName,
-                             final AmazonS3 s3Client,
-                             final JdbcDatabase db,
-                             final S3DestinationConfig s3Config,
-                             final ExtendedNameTransformer nameTransformer,
-                             final SqlOperations sqlOperations)
+  protected StreamCopier create(final String stagingFolder,
+                                final String schema,
+                                final AmazonS3 s3Client,
+                                final JdbcDatabase db,
+                                final S3CopyConfig config,
+                                final ExtendedNameTransformer nameTransformer,
+                                final SqlOperations sqlOperations,
+                                final ConfiguredAirbyteStream configuredStream)
       throws Exception {
-    return new SnowflakeS3StreamCopier(stagingFolder, syncMode, schema, streamName, s3Client, db, s3Config, nameTransformer, sqlOperations);
+    return new SnowflakeS3StreamCopier(stagingFolder, schema, s3Client, db, config, nameTransformer,
+        sqlOperations, configuredStream);
   }
 
 }
