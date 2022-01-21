@@ -29,7 +29,6 @@ TOOLS_VERSIONS: Dict[str, str] = {
     "lxml": "4.7",
 }
 
-
 TASK_COMMANDS: Dict[str, List[str]] = {
     "black": [
         f"pip install black~={TOOLS_VERSIONS['black']}",
@@ -53,6 +52,7 @@ TASK_COMMANDS: Dict[str, List[str]] = {
     "mypy": [
         "pip install .",
         f"pip install mypy~={TOOLS_VERSIONS['mypy']}",
+        "mypy --install-types --non-interactive ",
         f"mypy {{source_path}} --config-file={CONFIG_FILE}",
     ],
     "test": [
@@ -133,7 +133,7 @@ def _run_task(
     try:
         with ctx.prefix(f"source {activator}"):
             for command in commands:
-                result = ctx.run(command, warn=True)
+                result = ctx.run(command, echo=True, warn=True)
                 if result.return_code:
                     exit_code = 1
                     break
@@ -191,11 +191,19 @@ def all_checks(ctx, connectors=None):  # type: ignore[no-untyped-def]
     Zero exit code indicates about successful passing of all checks.
     Terminate on the first non-zero exit code.
     """
-    black(ctx, connectors=connectors)
-    flake(ctx, connectors=connectors)
-    isort(ctx, connectors=connectors)
-    mypy(ctx, connectors=connectors)
-    coverage(ctx, connectors=connectors)
+    tasks = (
+        black,
+        flake,
+        isort,
+        mypy,
+        coverage,
+    )
+    for task_ in tasks:
+        try:
+            task_(ctx, connectors=connectors)
+        except Exit as e:
+            if e.code:
+                raise
 
 
 @task(help={"connectors": _arg_help_connectors, "write": "Write changes into the files (runs 'black' without '--check' option)"})
