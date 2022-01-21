@@ -4,15 +4,16 @@
 
 import copy
 import functools
-from abc import ABC
-from collections import defaultdict
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
-
 import pendulum
 import requests
+from abc import ABC
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from collections import defaultdict
 from prance import ResolvingParser
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 API_VERSION = "3.1"
 
@@ -84,24 +85,27 @@ class LookerException(Exception):
 
 
 class BaseLookerStream(HttpStream, ABC):
-    primary_key = None
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
-    def __init__(self, *, domain: str, **kwargs):
+    @property
+    def primary_key(self) -> Optional[Union[str, List[str]]]:
+        return None
+
+    def __init__(self, *, domain: str, **kwargs: Any):
         self._domain = domain
         super().__init__(**kwargs)
 
     @property
-    def authenticator(self):
+    def authenticator(self) -> TokenAuthenticator:
         if self._session.auth:
             return self._session.auth
         return super().authenticator
 
     @property
-    def url_base(self):
+    def url_base(self) -> str:
         return f"https://{self._domain}/api/{API_VERSION}/"
 
-    def next_page_token(self, response: requests.Response, **kwargs) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response, **kwargs: Any) -> Optional[Mapping[str, Any]]:
         return None
 
 
@@ -110,14 +114,14 @@ class SwaggerParser(BaseLookerStream):
         def __init__(self, *, name: str, path: str, schema: Mapping[str, Any], operation_id: str, summary: str):
             self.name, self.path, self.schema, self.operation_id, self.summary = name, path, schema, operation_id, summary
 
-    def path(self, **kwargs: Any):
+    def path(self, **kwargs: Any) -> str:
         return "swagger.json"
 
-    def parse_response(self, response: requests.Response, **kwargs: Any) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs: Any) -> Iterable[Mapping]:
         yield ResolvingParser(spec_string=response.text)
 
     @functools.lru_cache(maxsize=None)
-    def get_endpoints(self):
+    def get_endpoints(self) -> Mapping[str, "Endpoint"]:
         parser = next(self.read_records(sync_mode=None))
         endpoints = {}
         for path, methods in parser.specification["paths"].items():
@@ -157,42 +161,43 @@ class SwaggerParser(BaseLookerStream):
     @classmethod
     def format_schema(cls, schema: Mapping[str, Any], key: str = None) -> Mapping[str, Any]:
 
-        updated_schema = {}
+        updated_schema: Mapping = {}
+        object_type: Union[str, List[str]] = schema.get("type")
         if "properties" in schema:
-            schema["type"] = ["null", "object"]
-            updated_sub_schemas = {}
+            object_type = ["null", "object"]
+            updated_sub_schemas: Mapping = {}
             for key, sub_schema in schema["properties"].items():
                 updated_sub_schemas[key] = cls.format_schema(sub_schema, key=key)
             updated_schema["properties"] = updated_sub_schemas
 
         elif "items" in schema:
-            schema["type"] = ["null", "array"]
+            object_type = ["null", "array"]
             updated_schema["items"] = cls.format_schema(schema["items"])
 
         if "format" in schema:
             if schema["format"] == "int64" and (not key or not key.endswith("id")):
                 updated_schema["multipleOf"] = 10 ** -16
-                schema["type"] = ["null", "number"]
+                object_type = "number"
             else:
                 updated_schema["format"] = schema["format"]
         if "description" in schema:
             updated_schema["description"] = schema["description"]
+
         if schema.get("x-looker-nullable") is True and isinstance(schema["type"], str):
-            schema["type"] = ["null", schema["type"]]
-        updated_schema["type"] = schema["type"]
+            updated_schema["type"] = ["null", schema["type"]]
+        elif isinstance(schema["type"], str):
+            updated_schema["type"] = schema["type"]
         return updated_schema
 
 
 class LookerStream(BaseLookerStream, ABC):
     parent_slice_key = "id"
-    slice_key = None
+    custom_slice_key: str = None
 
-    def __init__(self, name: str, swagger_parser: SwaggerParser, request_params: Mapping[str, Any] = None, **kwargs):
+    def __init__(self, name: str, swagger_parser: SwaggerParser, request_params: Mapping[str, Any] = None, **kwargs: Any):
         self._swagger_parser = swagger_parser
         self._name = name
-        # raise LookerException(request_params)
         self._request_params = request_params
-
         super().__init__(**kwargs)
 
     @property
@@ -200,7 +205,7 @@ class LookerStream(BaseLookerStream, ABC):
         return self._swagger_parser.get_endpoints()[self._name]
 
     @property
-    def primary_key(self):
+    def primary_key(self) -> Optional[Union[str, List[str]]]:
         if self.get_json_schema()["properties"].get("id"):
             return "id"
         return None
@@ -230,7 +235,7 @@ class LookerStream(BaseLookerStream, ABC):
         raise LookerException(f"not found the parent endpoint: {parent_path}")
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self._name
 
     def get_json_schema(self) -> Mapping[str, Any]:
@@ -241,23 +246,23 @@ class LookerStream(BaseLookerStream, ABC):
         stream_slice = stream_slice or {}
         return self.endpoint.path.format(**stream_slice)[1:]
 
-    def request_params(self, **kwargs: Any) -> MutableMapping[str, Any]:
+    def request_params(self, **kwargs: Any) -> Optional[Mapping[str, Any]]:
         return self._request_params or None
 
-    def stream_slices(self, sync_mode, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, sync_mode: SyncMode, **kwargs: Any) -> Iterable[Optional[Mapping[str, Any]]]:
         parent_endpoints = self.get_parent_endpoints()
         if not parent_endpoints:
             yield None
             return
         for parent_endpoint in parent_endpoints:
             parent_stream = self.generate_looker_stream(parent_endpoint.name)
-            parent_key = self.slice_key or parent_endpoint.name[:-1] + "_id"
+            parent_key = self.custom_slice_key or parent_endpoint.name[:-1] + "_id"
             for slice in parent_stream.stream_slices(sync_mode=sync_mode):
                 for item in parent_stream.read_records(sync_mode=sync_mode, stream_slice=slice):
                     if item[self.parent_slice_key]:
                         yield {parent_key: item[self.parent_slice_key]}
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs: Any) -> Iterable[Mapping]:
         data = response.json()
         if isinstance(data, list):
             yield from data
@@ -267,7 +272,7 @@ class LookerStream(BaseLookerStream, ABC):
 
 class ContentMetadata(LookerStream):
     parent_slice_key = "content_metadata_id"
-    slice_key = "content_metadata_id"
+    custom_slice_key = "content_metadata_id"
 
     def get_parent_endpoints(self) -> List[SwaggerParser.Endpoint]:
         parent_names = ("dashboards", "folders", "homepages", "looks", "spaces")
@@ -276,21 +281,23 @@ class ContentMetadata(LookerStream):
 
 class QueryHistory(BaseLookerStream):
     http_method = "POST"
-    primary_key = ["query_id", "history_created_time"]
     cursor_field = "history_created_time"
     # all connector's request should have this value of as prefix of queries' client_id
     airbyte_client_id_prefix = "AiRbYtE2"
 
+    def primary_key(self) -> Optional[Union[str, List[str]]]:
+        return ["query_id", "history_created_time"]
+
     @property
-    def state_checkpoint_interval(self):
+    def state_checkpoint_interval(self) -> Optional[int]:
         if self._is_finished:
             return 1
         return 100
 
-    def path(self, **kwargs: Any):
+    def path(self, **kwargs: Any) -> str:
         return "queries/run/json"
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
         self._last_query_id = None
         self._is_finished = False
@@ -303,7 +310,7 @@ class QueryHistory(BaseLookerStream):
             timestamp = int(dt.timestamp())
         return f"{self.airbyte_client_id_prefix}{timestamp}".ljust(22, "0")
 
-    def request_body_json(self, stream_state: MutableMapping[str, Any], **kwargs) -> Optional[Mapping]:
+    def request_body_json(self, stream_state: MutableMapping[str, Any], **kwargs: Any) -> Optional[Mapping]:
         latest_created_time = (stream_state or {}).get(self.cursor_field)
 
         if not latest_created_time:
@@ -346,7 +353,7 @@ class QueryHistory(BaseLookerStream):
             ],
         }
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs: Any) -> Iterable[Mapping]:
         records = response.json()
         for i in range(len(records)):
             record = records[i]
@@ -366,7 +373,7 @@ class QueryHistory(BaseLookerStream):
             # convert history.created_date => history_created_date etc
             yield {k.replace(".", "_"): v for k, v in record.items()}
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         record_query_id = latest_record["query_id"]
         if not self._is_finished and self._last_query_id == record_query_id:
             if not self._last_query_id:
@@ -376,20 +383,21 @@ class QueryHistory(BaseLookerStream):
 
 
 class RunLooks(LookerStream):
-    primary_key = None
+    def primary_key(self) -> Optional[Union[str, List[str]]]:
+        return None
 
     def __init__(self, run_look_ids: List[str], **kwargs: Any):
         self._run_look_ids = run_look_ids
         super().__init__(name="run_looks", **kwargs)
 
     @staticmethod
-    def _get_run_look_key(look: Mapping[str, Any]):
+    def _get_run_look_key(look: Mapping[str, Any]) -> str:
         return f"{look['id']} - {look['title']}"
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs: Any) -> str:
         return f'looks/{stream_slice["id"]}/run/json'
 
-    def stream_slices(self, sync_mode, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, sync_mode: SyncMode, **kwargs: Any) -> Iterable[Optional[Mapping[str, Any]]]:
         parent_stream = self.generate_looker_stream(
             "search_looks", request_params={"id": ",".join(self._run_look_ids), "limit": "10000", "fields": "id,title,model(id)"}
         )
@@ -404,7 +412,7 @@ class RunLooks(LookerStream):
         if diff_ids:
             raise LookerException(f"not found run_look_ids: {diff_ids}")
 
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs: Any) -> Iterable[Mapping]:
         for record in super().parse_response(response=response, stream_slice=stream_slice, **kwargs):
             yield {self._get_run_look_key(stream_slice): {k.replace(".", "_"): v for k, v in record.items()}}
 
@@ -433,7 +441,7 @@ class RunLooks(LookerStream):
             "properties": properties,
         }
 
-    def _get_look_fields(self, look_id) -> Mapping[str, List[str]]:
+    def _get_look_fields(self, look_id: int) -> Mapping[str, List[str]]:
         stream = self.generate_looker_stream("look_info", request_params={"fields": "query(fields)"})
         slice = {"look_id": look_id}
         for item in stream.read_records(sync_mode=None, stream_slice=slice):
@@ -459,20 +467,20 @@ class RunLooks(LookerStream):
             fields[dimension["name"]] = FIELD_TYPE_MAPPING.get(dimension["type"]) or "string"
         for measure in data["measures"]:
             fields[measure["name"]] = FIELD_TYPE_MAPPING.get(measure["type"]) or "number"
+        field_types = {}
         for field_name in fields:
-            schema = {}
             if "date" in fields[field_name]:
                 schema = {"type": ["null", "string"], "format": fields[field_name]}
             else:
                 schema = {"type": ["null", fields[field_name]]}
-            fields[field_name] = schema
-        return fields
+            field_types[field_name] = schema
+        return field_types
 
 
 class Dashboards(LookerStream):
     """Customization for dashboards stream because for 2 diff stream there is single endpoint only"""
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs: Any) -> Iterable[Mapping]:
         for record in super().parse_response(response=response, **kwargs):
             # "id" of "dashboards" is integer
             # "id" of "lookml_dashboards" is string

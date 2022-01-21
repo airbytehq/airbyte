@@ -2,16 +2,24 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Optional, Tuple
-
 import pendulum
 import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from typing import Any, List, Mapping, Optional, Tuple
 
-from .streams import API_VERSION, ContentMetadata, Dashboards, LookerException, LookerStream, QueryHistory, RunLooks, SwaggerParser
+from .streams import (
+    API_VERSION,
+    ContentMetadata,
+    Dashboards,
+    LookerException,
+    LookerStream,
+    QueryHistory,
+    RunLooks,
+    SwaggerParser,
+)
 
 
 class CustomTokenAuthenticator(TokenAuthenticator):
@@ -20,7 +28,7 @@ class CustomTokenAuthenticator(TokenAuthenticator):
         super().__init__(None)
 
         self._access_token = None
-        self._token_expiry_date = None
+        self._token_expiry_date = pendulum.now()
 
     def update_access_token(self) -> Optional[str]:
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
@@ -38,7 +46,7 @@ class CustomTokenAuthenticator(TokenAuthenticator):
         return None
 
     def get_auth_header(self) -> Mapping[str, Any]:
-        if not self._token_expiry_date or self._token_expiry_date < pendulum.now():
+        if self._token_expiry_date < pendulum.now():
             err = self.update_access_token()
             if err:
                 raise LookerException(f"auth error: {err}")
@@ -53,7 +61,7 @@ class SourceLooker(AbstractSource):
     def get_authenticator(self, config: Mapping[str, Any]) -> CustomTokenAuthenticator:
         return CustomTokenAuthenticator(domain=config["domain"], client_id=config["client_id"], client_secret=config["client_secret"])
 
-    def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         authenticator = self.get_authenticator(config)
         err = authenticator.update_access_token()
         if err:
