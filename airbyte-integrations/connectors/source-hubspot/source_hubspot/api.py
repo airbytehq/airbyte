@@ -918,6 +918,48 @@ class OwnerStream(Stream):
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
 
+class PropertyHistoryStream(IncrementalStream):
+    """Contacts Endpoint, API v1
+    Is used to get all Contacts and the history of their respective
+    Properties. Whenever a property is changed it is added here.
+    Docs: https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts
+    """
+    more_key = "has-more"
+    url = "/contacts/v1/lists/recently_updated/contacts/recent"
+    updated_at_field = "timestamp"
+    created_at_field = "timestamp"
+    data_field = "contacts"
+    page_field = "vid-offset"
+    page_filter = "vidOffset"
+    limit = 100
+
+    def list(self, fields) -> Iterable:
+        properties = self._api.get(f"/properties/v2/contact/properties")
+        properties_list = [single_property["name"] for single_property in properties]
+        params = {"propertyMode": "value_and_history", "property": properties_list}
+        yield from self.read(partial(self._api.get, url=self.url), params)
+
+    def _transform(self, records: Iterable) -> Iterable:
+        for record in records:
+            properties = record.get("properties")
+            vid = record.get("vid")
+            value_dict: Dict
+            for key, value_dict in properties.items():
+                versions = value_dict.get("versions")
+                if key == "lastmodifieddate":
+                    # Skipping the lastmodifieddate since it only returns the value
+                    # when one field of a contact was changed no matter which
+                    # field was changed. It therefore creates overhead, since for
+                    # every changed property there will be the date it was changed in itself
+                    # and a change in the lastmodifieddate field.
+                    continue
+                if versions:
+                    for version in versions:
+                        version["timestamp"] = self._field_to_datetime(version["timestamp"]).to_datetime_string()
+                        version["property"] = key
+                        version["vid"] = vid
+                        yield version
+
 
 class SubscriptionChangeStream(IncrementalStream):
     """Subscriptions timeline for a portal, API v1
