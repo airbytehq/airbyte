@@ -22,9 +22,10 @@
       },
       "window_in_days": {
         "type": "integer",
-        "description": "The amount of days for each data-chunk begining from start_date. Bigger the value - faster the fetch. (Min=1, as for a Day; Max=364, as for a Year).",
+        "title": "Window in days",
+        "description": "The amount of days for each data-chunk beginning from start_date. Bigger the value - faster the fetch. (Min=1, as for a Day; Max=364, as for a Year).",
         "examples": [30, 60, 90, 120, 200, 364],
-        "default": 90
+        "default": 1
       },
       "custom_reports": {
         "order": 3,
@@ -36,6 +37,7 @@
         "order": 0,
         "type": "object",
         "title": "Credentials",
+        "description": "Credentials for the service",
         "oneOf": [
           {
             "title": "Authenticate via Google (Oauth)",
