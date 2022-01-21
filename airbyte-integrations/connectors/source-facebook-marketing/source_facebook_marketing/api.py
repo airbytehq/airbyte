@@ -8,6 +8,7 @@ from datetime import datetime
 from time import sleep
 from typing import Tuple
 
+import backoff
 import pendulum
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
@@ -15,12 +16,16 @@ from facebook_business.adobjects import user as fb_user
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
+from source_facebook_marketing.streams.common import retry_pattern
 
 logger = logging.getLogger("airbyte")
 
 
 class FacebookAPIException(Exception):
     """General class for all API errors"""
+
+
+backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
 
 class MyFacebookAdsApi(FacebookAdsApi):
@@ -111,6 +116,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
             ads_insights_throttle = json.loads(ads_insights_throttle)
             self._ads_insights_throttle = ads_insights_throttle.get("app_id_util_pct", 0), ads_insights_throttle.get("acc_id_util_pct", 0)
 
+    @backoff_policy
     def call(
         self,
         method,
@@ -122,8 +128,6 @@ class MyFacebookAdsApi(FacebookAdsApi):
         api_version=None,
     ):
         """Makes an API call, delegate actual work to parent class and handles call rates"""
-        # print(datetime.now(), f"CALL {method} {path} {params}")
-        print(datetime.now(), f"CALL {method} {path}")
         response = super().call(method, path, params, headers, files, url_override, api_version)
         self._update_insights_throttle_limit(response)
         self.handle_call_rate_limit(response, params)

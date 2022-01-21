@@ -7,21 +7,17 @@ import logging
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Iterator
 
 import airbyte_cdk.sources.utils.casing as casing
-import backoff
 import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from cached_property import cached_property
-from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob, AsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
 
-from .common import retry_pattern
 from .streams import FBMarketingIncrementalStream
 
 logger = logging.getLogger("airbyte")
-backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
 
 class AdsInsights(FBMarketingIncrementalStream):
@@ -70,13 +66,16 @@ class AdsInsights(FBMarketingIncrementalStream):
             **kwargs,
     ):
         super().__init__(**kwargs)
+        self._start_date = self._start_date.date()
+        self._end_date = self._end_date.date()
         self._fields = fields
         self.action_breakdowns = action_breakdowns or self.action_breakdowns
         self.breakdowns = breakdowns or self.breakdowns
         self._new_class_name = name
 
         # state
-        self._cursor_value = None
+        self._cursor_value: Optional[pendulum.Date] = None  # latest period that was read
+        self._next_cursor_value = self._get_start_date()
         self._completed_slices = set()
 
     @property
@@ -101,27 +100,24 @@ class AdsInsights(FBMarketingIncrementalStream):
         """Waits for current job to finish (slice) and yield its result"""
         job = stream_slice["insight_job"]
         for obj in job.get_result():
-            obj.export_all_data()
-            yield {"RECORD": "something", "date_start": "2019-08-10T00:00:00Z"}
+            yield obj.export_all_data()
 
-        print("COMPLETED SLICE", job.key, self._next_cursor_value())
-        if job.key == self._next_cursor_value():
+        self._completed_slices.add(job.key)
+        if job.key == self._next_cursor_value:
             self._advance_cursor()
-        else:
-            self._completed_slices.add(job.key)
 
     @property
     def state(self) -> MutableMapping[str, Any]:
         """State getter, the result can be stored by the source"""
         if self._cursor_value:
             return {
-                self.cursor_field: self._cursor_value,
-                "slices": self._completed_slices,
+                self.cursor_field: self._cursor_value.isoformat(),
+                "slices": [d.isoformat() for d in self._completed_slices],
             }
 
         if self._completed_slices:
             return {
-                "slices": self._completed_slices,
+                "slices": [d.isoformat() for d in self._completed_slices],
             }
 
         return {}
@@ -129,21 +125,20 @@ class AdsInsights(FBMarketingIncrementalStream):
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
         """State setter"""
-        self._cursor_value = pendulum.parse(value[self.cursor_field]) if value.get(self.cursor_field) else None
-        self._completed_slices = set(pendulum.parse(v) for v in value.get("slices", []))
+        self._cursor_value = pendulum.parse(value[self.cursor_field]).date() if value.get(self.cursor_field) else None
+        self._completed_slices = set(pendulum.parse(v).date() for v in value.get("slices", []))
+        self._next_cursor_value = self._get_start_date()
 
-    def _next_cursor_value(self):
-        """"""
-        return self.get_start_date() + pendulum.duration(days=self.time_increment)
+    def _date_intervals(self) -> Iterator[pendulum.Date]:
+        date_range = self._end_date - self._next_cursor_value
+        return date_range.range("days", self.time_increment)
 
     def _advance_cursor(self):
         """Iterate over state, find continuing sequence of slices. Get last value, advance cursor there and remove slices from state"""
-        print("CALL ADVANCE CURSOR")
-        date_range = pendulum.period(self._next_cursor_value(), self._end_date)
-        for ts_start in date_range.range("days", self.time_increment):
+        for ts_start in self._date_intervals():
             if ts_start not in self._completed_slices:
+                self._next_cursor_value = ts_start
                 break
-            print("ADVANCING", ts_start)
             self._completed_slices.remove(ts_start)
             self._cursor_value = ts_start
 
@@ -154,8 +149,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         :return:
         """
 
-        date_range = pendulum.period(self.get_start_date(), self._end_date)
-        for ts_start in date_range.range("days", self.time_increment):
+        for ts_start in self._date_intervals():
             if ts_start in self._completed_slices:
                 continue
             ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
@@ -185,15 +179,37 @@ class AdsInsights(FBMarketingIncrementalStream):
         for job in manager.completed_jobs():
             yield {"insight_job": job}
 
-    def get_start_date(self) -> pendulum.DateTime:
+    def _get_start_date(self) -> pendulum.Date:
+        """ Get start date to begin sync with. It is not that trivial as it might seem.
+            There are few rules:
+            - don't read data older than start_date
+            - re-read data within last 28 days
+            - don't read data older than retention date
+
+        :return: the first date to sync
+        """
+        today = pendulum.today().date()
+        oldest_date = today - self.INSIGHTS_RETENTION_PERIOD
+        refresh_date = today - self.INSIGHTS_LOOKBACK_PERIOD
+
         if self._cursor_value:
+            start_date = self._cursor_value + pendulum.duration(days=self.time_increment)
+            if start_date > refresh_date:
+                logger.info(
+                    f"The cursor value within refresh period ({self.INSIGHTS_LOOKBACK_PERIOD}), start sync from {refresh_date} instead."
+                )
             # FIXME: change cursor logic to not update cursor earlier than 28 days, after that we don't need this line
-            start_date = self._cursor_value - self.INSIGHTS_LOOKBACK_PERIOD
+            start_date = min(start_date, refresh_date)
+
+            if start_date < self._start_date:
+                logger.warning(f"Ignore provided state and start sync from start_date ({self._start_date}).")
+            start_date = max(start_date, self._start_date)
         else:
             start_date = self._start_date
-        if start_date < pendulum.now() - self.INSIGHTS_RETENTION_PERIOD:
-            logger.warning(f"Loading insights older then {self.INSIGHTS_RETENTION_PERIOD} is not possible.")
-        return max(self._end_date - self.INSIGHTS_RETENTION_PERIOD, start_date)
+        if start_date < oldest_date:
+            logger.warning(f"Loading insights older then {self.INSIGHTS_RETENTION_PERIOD} is not possible. Start sync from {oldest_date}.")
+
+        return max(oldest_date, start_date)
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         return {

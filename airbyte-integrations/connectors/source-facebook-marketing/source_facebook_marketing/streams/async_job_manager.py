@@ -4,12 +4,13 @@
 
 import logging
 import time
-from typing import Tuple, Iterator, List
+from typing import Tuple, Iterator, List, TYPE_CHECKING
 
 from facebook_business.api import FacebookAdsApiBatch
-from source_facebook_marketing.api import API
-
 from .async_job import AsyncJob
+
+if TYPE_CHECKING:
+    from source_facebook_marketing.api import API
 
 logger = logging.getLogger("airbyte")
 
@@ -33,7 +34,7 @@ class InsightAsyncJobManager:
     MAX_JOBS_IN_QUEUE = 100
     MAX_JOBS_TO_CHECK = 50
 
-    def __init__(self, api: API, jobs: Iterator[AsyncJob]):
+    def __init__(self, api: 'API', jobs: Iterator[AsyncJob]):
         """ Init
 
         :param api:
@@ -87,8 +88,7 @@ class InsightAsyncJobManager:
                 logger.info(f"No jobs ready to be consumed, wait for {self.JOB_STATUS_UPDATE_SLEEP_SECONDS} seconds")
                 time.sleep(self.JOB_STATUS_UPDATE_SLEEP_SECONDS)
                 completed_jobs = self._check_jobs_status_and_restart()
-                yield from completed_jobs
-
+            yield from completed_jobs
             self.start_jobs()
 
     def _check_jobs_status_and_restart(self) -> List[AsyncJob]:
@@ -98,7 +98,6 @@ class InsightAsyncJobManager:
         """
         completed_jobs = []
         running_jobs = []
-
         api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
         for job in self._running_jobs:
             # we check it here because job can be an instance of ParentAsyncJob, which uses its own batch object

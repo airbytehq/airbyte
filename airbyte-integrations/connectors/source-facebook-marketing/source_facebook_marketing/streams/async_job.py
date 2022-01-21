@@ -7,17 +7,13 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Mapping, Optional, List
 
-import backoff
 import pendulum
 from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.adobjects.objectparser import ObjectParser
 from facebook_business.api import FacebookResponse, FacebookAdsApiBatch
-from facebook_business.exceptions import FacebookRequestError
 
-from .common import retry_pattern
 
-backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 logger = logging.getLogger("airbyte")
 
 
@@ -174,7 +170,6 @@ class InsightAsyncJob(AsyncJob):
 
         return ParentAsyncJob(self._api, jobs=[InsightAsyncJob(self._api, Campaign(pk), self._params) for pk in campaign_ids])
 
-    @backoff_policy
     def start(self, batch=None):
         """Start remote job"""
         if self._job:
@@ -244,7 +239,6 @@ class InsightAsyncJob(AsyncJob):
         """Update job status from response"""
         logger.info(f"Request failed with response: {response.body()}")
 
-    @backoff_policy
     def update_job(self, batch: Optional[FacebookAdsApiBatch] = None):
         """Method to retrieve job's status, separated because of retry handler"""
         if not self._job:
@@ -282,7 +276,6 @@ class InsightAsyncJob(AsyncJob):
 
         return False
 
-    @backoff_policy
     def get_result(self) -> Any:
         """Retrieve result of the finished job."""
         if not self._job or self.failed:

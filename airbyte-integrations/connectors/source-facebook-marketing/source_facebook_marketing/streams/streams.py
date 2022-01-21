@@ -7,9 +7,8 @@ import logging
 import urllib.parse as urlparse
 from abc import ABC
 from datetime import datetime
-from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Sequence
+from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Sequence, TYPE_CHECKING
 
-import backoff
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
@@ -17,13 +16,12 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from cached_property import cached_property
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
-from facebook_business.exceptions import FacebookRequestError
-from source_facebook_marketing.api import API
+from .common import batch, deep_merge
 
-from .common import batch, deep_merge, retry_pattern
+if TYPE_CHECKING:
+    from source_facebook_marketing.api import API
 
 logger = logging.getLogger("airbyte")
-backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
 
 def remove_params_from_url(url: str, params: List[str]) -> str:
@@ -64,7 +62,7 @@ class FBMarketingStream(Stream, ABC):
     enable_deleted = False
     entity_prefix = None
 
-    def __init__(self, api: API, include_deleted: bool = False, **kwargs):
+    def __init__(self, api: 'API', include_deleted: bool = False, **kwargs):
         super().__init__(**kwargs)
         self._api = api
         self._include_deleted = include_deleted if self.enable_deleted else False
@@ -74,7 +72,6 @@ class FBMarketingStream(Stream, ABC):
         """List of fields that we want to query, for now just all properties from stream's schema"""
         return list(self.get_json_schema().get("properties", {}).keys())
 
-    @backoff_policy
     def execute_in_batch(self, requests: Iterable[FacebookRequest]) -> Sequence[MutableMapping[str, Any]]:
         """Execute list of requests in batches"""
         records = []
@@ -113,7 +110,6 @@ class FBMarketingStream(Stream, ABC):
         """
         return []
 
-    @backoff_policy
     def _extend_record(self, obj: Any, **kwargs):
         """Wrapper around api_get to backoff errors"""
         return obj.api_get(**kwargs).export_all_data()
@@ -242,7 +238,6 @@ class AdCreatives(FBMarketingStream):
                 record["thumbnail_data_url"] = fetch_thumbnail_data_url(thumbnail_url)
         return record
 
-    @backoff_policy
     def _read_records(self, params: Mapping[str, Any]) -> Iterator:
         return self._api.account.get_ad_creatives(params=params)
 
@@ -253,7 +248,6 @@ class Ads(FBMarketingIncrementalStream):
     entity_prefix = "ad"
     enable_deleted = True
 
-    @backoff_policy
     def _read_records(self, params: Mapping[str, Any]):
         return self._api.account.get_ads(params=params, fields=[self.cursor_field])
 
@@ -264,7 +258,6 @@ class AdSets(FBMarketingIncrementalStream):
     entity_prefix = "adset"
     enable_deleted = True
 
-    @backoff_policy
     def _read_records(self, params: Mapping[str, Any]):
         return self._api.account.get_ad_sets(params=params)
 
@@ -275,7 +268,6 @@ class Campaigns(FBMarketingIncrementalStream):
     entity_prefix = "campaign"
     enable_deleted = True
 
-    @backoff_policy
     def _read_records(self, params: Mapping[str, Any]):
         return self._api.account.get_campaigns(params=params)
 
@@ -286,6 +278,5 @@ class Videos(FBMarketingIncrementalStream):
     entity_prefix = "video"
     enable_deleted = True
 
-    @backoff_policy
     def _read_records(self, params: Mapping[str, Any]) -> Iterator:
         return self._api.account.get_ad_videos(params=params)
