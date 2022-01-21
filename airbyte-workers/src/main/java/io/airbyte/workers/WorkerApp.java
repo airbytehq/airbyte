@@ -269,8 +269,7 @@ public class WorkerApp {
           configs.getWorkspaceRoot(),
           configs.getWorkspaceDockerMount(),
           configs.getLocalDockerMount(),
-          configs.getDockerNetwork(),
-          false);
+          configs.getDockerNetwork());
     }
   }
 
