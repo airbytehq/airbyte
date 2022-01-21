@@ -65,6 +65,7 @@
     * [Facebook Marketing](integrations/sources/facebook-marketing.md)
     * [Facebook Pages](integrations/sources/facebook-pages.md)
     * [Files](integrations/sources/file.md)
+    * [Flexport](integrations/sources/flexport.md)
     * [Freshdesk](integrations/sources/freshdesk.md)
     * [Freshsales](integrations/sources/freshsales.md)
     * [Freshservice](integrations/sources/freshservice.md)
