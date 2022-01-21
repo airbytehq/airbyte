@@ -12,6 +12,8 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.AttemptInfoRead;
 import io.airbyte.api.model.AttemptRead;
+import io.airbyte.api.model.AttemptStats;
+import io.airbyte.api.model.AttemptStreamStats;
 import io.airbyte.api.model.JobConfigType;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobRead;
@@ -21,6 +23,12 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
+import io.airbyte.config.JobOutput;
+import io.airbyte.config.JobOutput.OutputType;
+import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.StreamSyncStats;
+import io.airbyte.config.SyncStats;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
@@ -46,6 +54,30 @@ class JobConverterTest {
       .withCheckConnection(new JobCheckConnectionConfig());
   private static final Path LOG_PATH = Path.of("log_path");
   private static final long CREATED_AT = System.currentTimeMillis() / 1000;
+  private static final long RECORDS_EMITTED = 15L;
+  private static final long BYTES_EMITTED = 100L;
+  private static final long RECORDS_COMMITTED = 10L;
+  private static final long STATE_MESSAGES_EMITTED = 2L;
+  private static final String STREAM_NAME = "stream1";
+
+  private static final JobOutput JOB_OUTPUT = new JobOutput()
+      .withOutputType(OutputType.SYNC)
+      .withSync(new StandardSyncOutput()
+          .withStandardSyncSummary(new StandardSyncSummary()
+              .withRecordsSynced(RECORDS_EMITTED)
+              .withBytesSynced(BYTES_EMITTED)
+              .withTotalStats(new SyncStats()
+                  .withRecordsEmitted(RECORDS_EMITTED)
+                  .withBytesEmitted(BYTES_EMITTED)
+                  .withStateMessagesEmitted(STATE_MESSAGES_EMITTED)
+                  .withRecordsCommitted(RECORDS_COMMITTED))
+              .withStreamStats(Lists.newArrayList(new StreamSyncStats()
+                  .withStreamName(STREAM_NAME)
+                  .withStats(new SyncStats()
+                      .withRecordsEmitted(RECORDS_EMITTED)
+                      .withBytesEmitted(BYTES_EMITTED)
+                      .withStateMessagesEmitted(STATE_MESSAGES_EMITTED)
+                      .withRecordsCommitted(RECORDS_COMMITTED))))));
 
   private JobConverter jobConverter;
   private Job job;
@@ -63,6 +95,20 @@ class JobConverterTest {
               .attempt(new AttemptRead()
                   .id(ATTEMPT_ID)
                   .status(io.airbyte.api.model.AttemptStatus.RUNNING)
+                  .recordsSynced(RECORDS_EMITTED)
+                  .bytesSynced(BYTES_EMITTED)
+                  .totalStats(new AttemptStats()
+                      .recordsEmitted(RECORDS_EMITTED)
+                      .bytesEmitted(BYTES_EMITTED)
+                      .stateMessagesEmitted(STATE_MESSAGES_EMITTED)
+                      .recordsCommitted(RECORDS_COMMITTED))
+                  .streamStats(Lists.newArrayList(new AttemptStreamStats()
+                      .streamName(STREAM_NAME)
+                      .stats(new AttemptStats()
+                          .recordsEmitted(RECORDS_EMITTED)
+                          .bytesEmitted(BYTES_EMITTED)
+                          .stateMessagesEmitted(STATE_MESSAGES_EMITTED)
+                          .recordsCommitted(RECORDS_COMMITTED))))
                   .updatedAt(CREATED_AT)
                   .createdAt(CREATED_AT)
                   .endedAt(CREATED_AT))
@@ -87,10 +133,12 @@ class JobConverterTest {
     when(job.getAttempts()).thenReturn(Lists.newArrayList(attempt));
     when(attempt.getId()).thenReturn(ATTEMPT_ID);
     when(attempt.getStatus()).thenReturn(ATTEMPT_STATUS);
+    when(attempt.getOutput()).thenReturn(Optional.of(JOB_OUTPUT));
     when(attempt.getLogPath()).thenReturn(LOG_PATH);
     when(attempt.getCreatedAtInSecond()).thenReturn(CREATED_AT);
     when(attempt.getUpdatedAtInSecond()).thenReturn(CREATED_AT);
     when(attempt.getEndedAtInSecond()).thenReturn(Optional.of(CREATED_AT));
+
   }
 
   @Test
