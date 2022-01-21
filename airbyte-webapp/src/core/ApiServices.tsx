@@ -4,7 +4,7 @@ import { useConfig } from "config";
 import { RequestMiddleware } from "./request/RequestMiddleware";
 import { SourceDefinitionService } from "./domain/connector/SourceDefinitionService";
 import { DestinationDefinitionService } from "./domain/connector/DestinationDefinitionService";
-import { DeploymentService } from "./resources/DeploymentService";
+import { DeploymentService } from "./domain/deployment/DeploymentService";
 import { OperationService } from "./domain/connection";
 import { HealthService } from "./health/HealthService";
 import { useGetService, useInjectServices } from "./servicesProvider";

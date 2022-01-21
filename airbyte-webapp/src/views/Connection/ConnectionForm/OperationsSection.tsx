@@ -1,0 +1,53 @@
+import React from "react";
+import { useIntl } from "react-intl";
+import { Field, FieldArray } from "formik";
+
+import { DestinationDefinitionSpecification } from "core/domain/connector";
+import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { useDefaultTransformation } from "./formConfig";
+import SectionTitle from "./components/SectionTitle";
+import { NormalizationField } from "./components/NormalizationField";
+import { TransformationField } from "./components/TransformationField";
+
+export const OperationsSection: React.FC<{
+  destDefinition: DestinationDefinitionSpecification;
+}> = ({ destDefinition }) => {
+  const formatMessage = useIntl().formatMessage;
+  const { hasFeature } = useFeatureService();
+
+  const supportsNormalization = destDefinition.supportsNormalization;
+  const supportsTransformations =
+    destDefinition.supportsDbt && hasFeature(FeatureItem.AllowCustomDBT);
+
+  const defaultTransformation = useDefaultTransformation();
+
+  return (
+    <>
+      {supportsNormalization || supportsTransformations ? (
+        <SectionTitle>
+          {[
+            supportsNormalization &&
+              formatMessage({ id: "connectionForm.normalization.title" }),
+            supportsTransformations &&
+              formatMessage({ id: "connectionForm.transformation.title" }),
+          ]
+            .filter(Boolean)
+            .join(" & ")}
+        </SectionTitle>
+      ) : null}
+      {supportsNormalization && (
+        <Field name="normalization" component={NormalizationField} />
+      )}
+      {supportsTransformations && (
+        <FieldArray name="transformations">
+          {(formProps) => (
+            <TransformationField
+              defaultTransformation={defaultTransformation}
+              {...formProps}
+            />
+          )}
+        </FieldArray>
+      )}
+    </>
+  );
+};

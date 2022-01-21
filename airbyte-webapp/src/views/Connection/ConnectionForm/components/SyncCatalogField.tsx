@@ -6,12 +6,11 @@ import styled from "styled-components";
 import type { DestinationSyncMode } from "core/domain/catalog";
 import { SyncSchemaStream } from "core/domain/catalog";
 
-import { CheckBox, LabeledRadioButton } from "components";
+import { CheckBox } from "components";
 import { Cell, Header } from "components/SimpleTableComponents";
 import CatalogTree from "views/Connection/CatalogTree";
 import Search from "./Search";
 import { naturalComparatorBy } from "utils/objects";
-import { SyncCatalogFilters } from "./SyncCatalogFilters";
 import InformationToolTip from "./InformationToolTip";
 import { useConfig } from "config";
 
@@ -54,15 +53,6 @@ const StreamsContent = styled.div`
 
 const ClearSubtitleCell = styled(SubtitleCell)`
   border-top: none;
-`;
-
-const FiltersContent = styled.div`
-  margin: 6px 0 21px;
-  display: flex;
-`;
-
-const RadioButtonControl = styled(LabeledRadioButton)`
-  margin: 0 0 0 5px;
 `;
 
 const HeaderBlock = styled.div`
@@ -108,8 +98,6 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
   const { value: streams, name: fieldName } = field;
 
   const [searchString, setSearchString] = useState("");
-  const [filterMode, setFilterMode] = useState(SyncCatalogFilters.All);
-
   const setField = form.setFieldValue;
 
   const onChangeSchema = useCallback(
@@ -140,17 +128,10 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
               .toLowerCase()
               .includes(searchString.toLowerCase())
         : null,
-      filterMode !== SyncCatalogFilters.All
-        ? (stream: SyncSchemaStream) =>
-            (filterMode === SyncCatalogFilters.Selected &&
-              stream.config.selected) ||
-            (filterMode === SyncCatalogFilters.NotSelected &&
-              !stream.config.selected)
-        : null,
     ].filter(Boolean) as Array<(s: SyncSchemaStream) => boolean>;
 
     return sortedSchema.filter((stream) => filters.every((f) => f(stream)));
-  }, [searchString, filterMode, sortedSchema]);
+  }, [searchString, sortedSchema]);
 
   const hasSelectedItem = useMemo(
     () => filteredStreams.some((streamNode) => streamNode.config.selected),
@@ -174,35 +155,35 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
         {additionalControl}
       </HeaderBlock>
       <Search onSearch={setSearchString} />
-      <FiltersContent>
-        <RadioButtonControl
-          onChange={(value) => {
-            setFilterMode(value.target.value as SyncCatalogFilters);
-          }}
-          name="FilterAll"
-          value={SyncCatalogFilters.All}
-          checked={filterMode === SyncCatalogFilters.All}
-          label={<FormattedMessage id="form.all" />}
-        />
-        <RadioButtonControl
-          onChange={(value) => {
-            setFilterMode(value.target.value as SyncCatalogFilters);
-          }}
-          name="FilterSelected"
-          value={SyncCatalogFilters.Selected}
-          checked={filterMode === SyncCatalogFilters.Selected}
-          label={<FormattedMessage id="form.selected" />}
-        />
-        <RadioButtonControl
-          onChange={(value) => {
-            setFilterMode(value.target.value as SyncCatalogFilters);
-          }}
-          name="FilterNotSelected"
-          value={SyncCatalogFilters.NotSelected}
-          checked={filterMode === SyncCatalogFilters.NotSelected}
-          label={<FormattedMessage id="form.notSelected" />}
-        />
-      </FiltersContent>
+      {/*<FiltersContent>*/}
+      {/*  <RadioButtonControl*/}
+      {/*    onChange={(value) => {*/}
+      {/*      setFilterMode(value.target.value as SyncCatalogFilters);*/}
+      {/*    }}*/}
+      {/*    name="FilterAll"*/}
+      {/*    value={SyncCatalogFilters.All}*/}
+      {/*    checked={filterMode === SyncCatalogFilters.All}*/}
+      {/*    label={<FormattedMessage id="form.all" />}*/}
+      {/*  />*/}
+      {/*  <RadioButtonControl*/}
+      {/*    onChange={(value) => {*/}
+      {/*      setFilterMode(value.target.value as SyncCatalogFilters);*/}
+      {/*    }}*/}
+      {/*    name="FilterSelected"*/}
+      {/*    value={SyncCatalogFilters.Selected}*/}
+      {/*    checked={filterMode === SyncCatalogFilters.Selected}*/}
+      {/*    label={<FormattedMessage id="form.selected" />}*/}
+      {/*  />*/}
+      {/*  <RadioButtonControl*/}
+      {/*    onChange={(value) => {*/}
+      {/*      setFilterMode(value.target.value as SyncCatalogFilters);*/}
+      {/*    }}*/}
+      {/*    name="FilterNotSelected"*/}
+      {/*    value={SyncCatalogFilters.NotSelected}*/}
+      {/*    checked={filterMode === SyncCatalogFilters.NotSelected}*/}
+      {/*    label={<FormattedMessage id="form.notSelected" />}*/}
+      {/*  />*/}
+      {/*</FiltersContent>*/}
       <StreamsContent>
         <SchemaHeader>
           <CheckboxCell>

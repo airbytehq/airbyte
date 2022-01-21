@@ -24,6 +24,7 @@ import { ConnectionNamespaceDefinition } from "core/domain/connection";
 import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
 import useWorkspace from "hooks/services/useWorkspace";
 import { DestinationDefinitionSpecification } from "core/domain/connector";
+import { setIn } from "formik";
 
 type FormikConnectionFormValues = {
   schedule?: ScheduleProperties | null;
@@ -193,41 +194,37 @@ const useInitialSchema = (schema: SyncSchema): SyncSchema =>
   useMemo<SyncSchema>(
     () => ({
       streams: schema.streams.map<SyncSchemaStream>((apiNode, id) => {
-        const streamNode: SyncSchemaStream = { ...apiNode, id: id.toString() };
-        const node = !streamNode.stream.supportedSyncModes?.length
-          ? {
-              ...streamNode,
-              stream: {
-                ...streamNode.stream,
-                supportedSyncModes: [SyncMode.FullRefresh],
-              },
-            }
-          : streamNode;
+        const nodeWithId: SyncSchemaStream = { ...apiNode, id: id.toString() };
+        const streamNode = nodeWithId.stream.supportedSyncModes?.length
+          ? nodeWithId
+          : setIn(nodeWithId, "stream.supportedSyncModes", [
+              SyncMode.FullRefresh,
+            ]);
 
         // If syncMode isn't null - don't change item
-        if (node.config.syncMode) {
-          return node;
+        if (streamNode.config.syncMode) {
+          return streamNode;
         }
 
-        const updateStream = (
+        const updateStreamConfig = (
           config: Partial<AirbyteStreamConfiguration>
         ): SyncSchemaStream => ({
-          ...node,
-          config: { ...node.config, ...config },
+          ...streamNode,
+          config: { ...streamNode.config, ...config },
         });
 
-        const supportedSyncModes = node.stream.supportedSyncModes;
+        const supportedSyncModes = streamNode.stream.supportedSyncModes;
 
-        // If syncMode is null, FULL_REFRESH should be selected by default (if it support FULL_REFRESH).
+        // If syncMode is null, FULL_REFRESH should be selected by default (if it supports FULL_REFRESH).
         if (supportedSyncModes.includes(SyncMode.FullRefresh)) {
-          return updateStream({
+          return updateStreamConfig({
             syncMode: SyncMode.FullRefresh,
           });
         }
 
         // If source support INCREMENTAL and not FULL_REFRESH. Set INCREMENTAL
         if (supportedSyncModes.includes(SyncMode.Incremental)) {
-          return updateStream({
+          return updateStreamConfig({
             cursorField: streamNode.config.cursorField.length
               ? streamNode.config.cursorField
               : getDefaultCursorField(streamNode),
@@ -236,7 +233,7 @@ const useInitialSchema = (schema: SyncSchema): SyncSchema =>
         }
 
         // If source don't support INCREMENTAL and FULL_REFRESH - set first value from supportedSyncModes list
-        return updateStream({
+        return updateStreamConfig({
           syncMode: streamNode.stream.supportedSyncModes[0],
         });
       }),

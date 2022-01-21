@@ -1,7 +1,8 @@
 import React, { useCallback, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
-import { Field, FieldArray, FieldProps, Form, Formik } from "formik";
+import { Field, FieldProps, Form, Formik } from "formik";
+
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
 import { equal } from "utils/objects";
@@ -11,10 +12,10 @@ import { ControlLabels, DropDown, DropDownRow, Input, Label } from "components";
 import { useDestinationDefinitionSpecificationLoadAsync } from "hooks/services/useDestinationHook";
 import useWorkspace from "hooks/services/useWorkspace";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
-import { TransformationField } from "./components/TransformationField";
-import { NormalizationField } from "./components/NormalizationField";
+
+import { Connection, ScheduleProperties } from "core/resources/Connection";
+import { ConnectionNamespaceDefinition } from "core/domain/connection";
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
-import SectionTitle from "./components/SectionTitle";
 import CreateControls from "./components/CreateControls";
 import SchemaField from "./components/SyncCatalogField";
 import EditControls from "./components/EditControls";
@@ -23,29 +24,46 @@ import {
   connectionValidationSchema,
   FormikConnectionFormValues,
   mapFormPropsToOperation,
-  SUPPORTED_MODES,
-  useDefaultTransformation,
   useFrequencyDropdownData,
   useInitialValues,
 } from "./formConfig";
-import { Connection, ScheduleProperties } from "core/resources/Connection";
-import { FeatureItem, useFeatureService } from "hooks/services/Feature";
-import { DestinationDefinitionSpecification } from "core/domain/connector";
-import { ConnectionNamespaceDefinition } from "core/domain/connection";
-import { SyncSettingsDropdown } from "../CatalogTree/components/SyncSettingsCell";
-
-const FormContainer = styled(Form)`
-  padding: 22px 27px 15px 24px;
-`;
+import { OperationsSection } from "./OperationsSection";
+import { DefaultSyncSettingsField } from "./DefaultSyncSettingsField";
 
 const EditLaterMessage = styled(Label)`
   margin: -20px 0 29px;
 `;
 
 const ConnectorLabel = styled(ControlLabels)`
-  max-width: 247px;
+  max-width: 328px;
   margin-right: 20px;
   vertical-align: top;
+`;
+
+const FormContainer = styled(Form)`
+  padding: 22px 27px 15px 24px;
+
+  & > div:not(:last-child) {
+    margin-bottom: 20px;
+  }
+`;
+
+const NamespaceFormatLabel = styled(ControlLabels)`
+  flex: 5 0 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+`;
+
+export const FlexRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+
+  & > div:not(:last-child) {
+    margin-right: 10px;
+  }
 `;
 
 type ConnectionFormProps = {
@@ -67,72 +85,6 @@ type ConnectionFormProps = {
     | (Partial<Connection> &
         Pick<Connection, "syncCatalog" | "source" | "destination">);
 };
-
-const OperationsSection: React.FC<{
-  destDefinition: DestinationDefinitionSpecification;
-}> = ({ destDefinition }) => {
-  const formatMessage = useIntl().formatMessage;
-  const { hasFeature } = useFeatureService();
-
-  const supportsNormalization = destDefinition.supportsNormalization;
-  const supportsTransformations =
-    destDefinition.supportsDbt && hasFeature(FeatureItem.AllowCustomDBT);
-
-  const defaultTransformation = useDefaultTransformation();
-
-  return (
-    <>
-      {supportsNormalization || supportsTransformations ? (
-        <SectionTitle>
-          {[
-            supportsNormalization &&
-              formatMessage({ id: "connectionForm.normalization.title" }),
-            supportsTransformations &&
-              formatMessage({ id: "connectionForm.transformation.title" }),
-          ]
-            .filter(Boolean)
-            .join(" & ")}
-        </SectionTitle>
-      ) : null}
-      {supportsNormalization && (
-        <Field name="normalization" component={NormalizationField} />
-      )}
-      {supportsTransformations && (
-        <FieldArray name="transformations">
-          {(formProps) => (
-            <TransformationField
-              defaultTransformation={defaultTransformation}
-              {...formProps}
-            />
-          )}
-        </FieldArray>
-      )}
-    </>
-  );
-};
-
-const NamespaceFormatLabel = styled(ControlLabels)`
-  flex: 5 0 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  margin-bottom: 20px;
-`;
-
-export const FlexRow = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: flex-start;
-
-  & > div:not(:last-child) {
-    margin-right: 10px;
-  }
-`;
-
-export const FieldLabel = styled(ControlLabels)`
-  margin-bottom: 20px;
-`;
 
 const ConnectionForm: React.FC<ConnectionFormProps> = ({
   onSubmit,
@@ -217,34 +169,32 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
           {!isEditMode && (
             <Field name="schedule">
               {({ field, meta }: FieldProps<ScheduleProperties>) => (
-                <FieldLabel>
-                  <ConnectorLabel
-                    nextLine
+                <ConnectorLabel
+                  nextLine
+                  error={!!meta.error && meta.touched}
+                  label={formatMessage({
+                    id: "form.frequency",
+                  })}
+                  message={formatMessage({
+                    id: "form.frequency.message",
+                  })}
+                >
+                  <DropDown
+                    {...field}
                     error={!!meta.error && meta.touched}
-                    label={formatMessage({
-                      id: "form.frequency",
-                    })}
-                    message={formatMessage({
-                      id: "form.frequency.message",
-                    })}
-                  >
-                    <DropDown
-                      {...field}
-                      error={!!meta.error && meta.touched}
-                      options={frequencies}
-                      onChange={(item) => {
-                        if (onDropDownSelect) {
-                          onDropDownSelect(item);
-                        }
-                        setFieldValue(field.name, item.value);
-                      }}
-                    />
-                  </ConnectorLabel>
-                </FieldLabel>
+                    options={frequencies}
+                    onChange={(item) => {
+                      if (onDropDownSelect) {
+                        onDropDownSelect(item);
+                      }
+                      setFieldValue(field.name, item.value);
+                    }}
+                  />
+                </ConnectorLabel>
               )}
             </Field>
           )}
-          <FieldLabel
+          <ControlLabels
             nextLine
             label={formatMessage({
               id: "connectionForm.defaultSyncMode",
@@ -258,14 +208,8 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               }
             )}
           >
-            <SyncSettingsDropdown
-              options={SUPPORTED_MODES.map(
-                ([syncMode, destinationSyncMode]) => ({
-                  value: { syncMode, destinationSyncMode },
-                })
-              )}
-            />
-          </FieldLabel>
+            <DefaultSyncSettingsField />
+          </ControlLabels>
           <FlexRow>
             <Field
               name="namespaceDefinition"
@@ -273,7 +217,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
             />
             <Field name="prefix">
               {({ field }: FieldProps<string>) => (
-                <FieldLabel
+                <ControlLabels
                   nextLine
                   label={formatMessage({
                     id: "form.prefix",
@@ -289,7 +233,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                       id: `form.prefix.placeholder`,
                     })}
                   />
-                </FieldLabel>
+                </ControlLabels>
               )}
             </Field>
           </FlexRow>
