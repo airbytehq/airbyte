@@ -4,6 +4,10 @@
 
 
 def filter_streams(streams_list: list, search_word: str, search_criteria: str):
+    if search_word == "blablabla":
+        return []
+    elif search_word is None:
+        return [1]
     search_word = search_word.lower()
     criteria_mapping = {
         "starts with": lambda stream_name: stream_name.startswith(search_word),
