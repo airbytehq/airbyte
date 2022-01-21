@@ -1,7 +1,6 @@
 FROM python:3.7-slim as base
 FROM base as builder
 
-
 RUN apt-get update
 WORKDIR /airbyte/integration_code
 COPY setup.py ./
