@@ -87,7 +87,8 @@ class SourceTiktokMarketingSpec(BaseModel):
         order=1,
     )
 
-    credentials: Union[OauthCredSpec, ProductionEnvSpec, SandboxEnvSpec] = Field(title="Authorization Method", order=3, default={}, type='object')
+    credentials: Union[OauthCredSpec, ProductionEnvSpec, SandboxEnvSpec] = Field(title="Authorization Method", order=3, default={},
+                                                                                 type='object')
 
     @classmethod
     def change_format_to_oneOf(cls, schema: dict) -> dict:

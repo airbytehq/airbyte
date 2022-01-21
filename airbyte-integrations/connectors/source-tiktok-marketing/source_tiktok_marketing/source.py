@@ -11,8 +11,12 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .spec import SourceTiktokMarketingSpec, CompleteOauthOutputSpecification, CompleteOauthServerInputSpecification, \
-    CompleteOauthServerOutputSpecification
+from .spec import (
+    CompleteOauthOutputSpecification,
+    CompleteOauthServerInputSpecification,
+    CompleteOauthServerOutputSpecification,
+    SourceTiktokMarketingSpec,
+)
 from .streams import (
     DEFAULT_START_DATE,
     AdGroups,
@@ -40,7 +44,6 @@ class TiktokTokenAuthenticator(TokenAuthenticator):
 
     def get_auth_header(self) -> Mapping[str, Any]:
         return {"Access-Token": self.token}
-
 
 
 class SourceTiktokMarketing(AbstractSource):

@@ -17,19 +17,13 @@
         "title": "Report Granularity",
         "description": "Which time granularity should be grouped by; for LIFETIME there will be no grouping. This option is used for reports' streams only.",
         "default": "DAY",
-        "enum": [
-          "LIFETIME",
-          "DAY",
-          "HOUR"
-        ],
+        "enum": ["LIFETIME", "DAY", "HOUR"],
         "order": 1,
         "type": "string"
       },
       "credentials": {
         "title": "Authorization Method",
-        "default": {
-
-        },
+        "default": {},
         "order": 3,
         "type": "object",
         "oneOf": [
@@ -41,9 +35,7 @@
                 "title": "Auth Type",
                 "const": "oauth2.0",
                 "order": 0,
-                "enum": [
-                  "oauth2.0"
-                ],
+                "enum": ["oauth2.0"],
                 "type": "string"
               },
               "app_id": {
@@ -65,11 +57,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "app_id",
-              "secret",
-              "access_token"
-            ]
+            "required": ["app_id", "secret", "access_token"]
           },
           {
             "title": "Production Access Token",
@@ -79,9 +67,7 @@
                 "title": "Auth Type",
                 "const": "prod_access_token",
                 "order": 0,
-                "enum": [
-                  "prod_access_token"
-                ],
+                "enum": ["prod_access_token"],
                 "type": "string"
               },
               "app_id": {
@@ -102,11 +88,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "app_id",
-              "secret",
-              "access_token"
-            ]
+            "required": ["app_id", "secret", "access_token"]
           },
           {
             "title": "Sandbox Access Token",
@@ -116,9 +98,7 @@
                 "title": "Auth Type",
                 "const": "sandbox_access_token",
                 "order": 0,
-                "enum": [
-                  "sandbox_access_token"
-                ],
+                "enum": ["sandbox_access_token"],
                 "type": "string"
               },
               "advertiser_id": {
@@ -133,27 +113,17 @@
                 "type": "string"
               }
             },
-            "required": [
-              "advertiser_id",
-              "access_token"
-            ]
+            "required": ["advertiser_id", "access_token"]
           }
         ]
       }
     }
   },
   "supportsIncremental": true,
-  "supported_destination_sync_modes": [
-    "overwrite",
-    "append",
-    "append_dedup"
-  ],
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
-    "predicate_key": [
-      "credentials",
-      "auth_type"
-    ],
+    "predicate_key": ["credentials", "auth_type"],
     "predicate_value": "oauth2.0",
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
@@ -162,16 +132,11 @@
         "properties": {
           "access_token": {
             "title": "Access Token",
-            "path_in_connector_config": [
-              "credentials",
-              "access_token"
-            ],
+            "path_in_connector_config": ["credentials", "access_token"],
             "type": "string"
           }
         },
-        "required": [
-          "access_token"
-        ]
+        "required": ["access_token"]
       },
       "complete_oauth_server_input_specification": {
         "title": "CompleteOauthServerInputSpecification",
@@ -186,10 +151,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "app_id",
-          "secret"
-        ]
+        "required": ["app_id", "secret"]
       },
       "complete_oauth_server_output_specification": {
         "title": "CompleteOauthServerOutputSpecification",
@@ -197,25 +159,16 @@
         "properties": {
           "app_id": {
             "title": "App Id",
-            "path_in_connector_config": [
-              "credentials",
-              "app_id"
-            ],
+            "path_in_connector_config": ["credentials", "app_id"],
             "type": "string"
           },
           "secret": {
             "title": "Secret",
-            "path_in_connector_config": [
-              "credentials",
-              "secret"
-            ],
+            "path_in_connector_config": ["credentials", "secret"],
             "type": "string"
           }
         },
-        "required": [
-          "app_id",
-          "secret"
-        ]
+        "required": ["app_id", "secret"]
       }
     }
   },
