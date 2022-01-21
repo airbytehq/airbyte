@@ -69,7 +69,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
     days_of_data_storage = None
     cursor_field = "segments.date"
     primary_key = None
-    range_days = 15
+    range_days = 15  # date range is set to 15 days, because for conversion_window_days default value is 14. Range less than 15 days will break the integration tests.
 
     def __init__(self, start_date: str, conversion_window_days: int, time_zone: [pendulum.timezone, str], **kwargs):
         self.conversion_window_days = conversion_window_days
@@ -90,6 +90,13 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         )
 
     def get_date_params(self, stream_slice: Mapping[str, Any], cursor_field: str, end_date: pendulum.datetime = None):
+        """
+        Returns `start_date` and `end_date` for the given stream_slice.
+        If (end_date - start_date) is a big date range (>= 1 month), it can take more than 2 hours to process all the records from the given slice.
+        After 2 hours next page tokens will be expired, finally resulting in page token expired error
+        Currently this method returns `start_date` and `end_date` with 15 days difference.
+        """
+
         end_date = end_date or pendulum.yesterday(tz=self.time_zone)
         start_date = pendulum.parse(stream_slice.get(cursor_field))
         if start_date > pendulum.now():
