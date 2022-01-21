@@ -26,13 +26,16 @@ public class ProcessData {
 
     final var jackson = new ObjectMapper();
 
-    final var dataFile = Path.of("./bin/dev-1-kube-pod-process-sleep-0.1.txt");
+    final var dataFile = Path.of("./bin/dev-dst-postgres-sleep-0.1-1-sec-1.4-cpu-succeed.txt");
     final var lines = Files.lines(dataFile).collect(Collectors.toList());
 
     final List<Long> timesToSchedule = new ArrayList<>();
     final List<Long> timesToInit = new ArrayList<>();
     final List<Long> timesToContainerReady = new ArrayList<>();
     final List<Long> timesToReady = new ArrayList<>();
+
+    final List<Long> timesToRun = new ArrayList<>();
+    final List<Long> totalTimeTaken = new ArrayList<>();
 
     int processed = 0;
     int ignored = 0;
@@ -42,14 +45,16 @@ public class ProcessData {
     for (final String line : lines) {
       try {
         final var json = jackson.readTree(line);
-        if (json.has("creationTimestamp") && json.has("conditions")) {
-          final var name = json.get("name").asText();
-          if (seenEntries.contains(name)) {
-            ignored++;
-            continue;
-          }
+        // Processing pod creation data set.
+        final var createTs = DateTime.parse(json.get("creationTimestamp").asText());
+        final var name = json.get("name").asText();
 
-          final var createTs = DateTime.parse(json.get("creationTimestamp").asText());
+        if (seenEntries.contains(name) || name.contains("sweeper") || name.contains("airbyte")) {
+          ignored++;
+          continue;
+        }
+
+        if (json.has("conditions")) {
 
           final var conditions = json.get("conditions");
           final var scheduledTs = DateTime.parse(conditions.get("PodScheduled").asText());
@@ -66,34 +71,59 @@ public class ProcessData {
           timesToInit.add((long) timeToInit.getSeconds());
           timesToContainerReady.add((long) timeToContainerReady.getSeconds());
           timesToReady.add((long) timeToReady.getSeconds());
-
-          processed++;
-          seenEntries.add(name);
         }
-      } catch (final Exception e) {}
+        // Processing successful pod data set.
+        if (json.has("mainStartTimestamp")) {
+          // Add one second since the Kube watch api 'succeeded' event rounds down, while the 'running' event rounds up. Round up to standardise.
+          final var mainStartTs = DateTime.parse(json.get("mainStartTimestamp").asText()).plusSeconds(1);
+          final var mainFinishTs = DateTime.parse(json.get("mainFinishTimestamp").asText()).plusSeconds(1);
+
+          final var timeToRun = new Period(mainStartTs, mainFinishTs);
+          timesToRun.add((long) timeToRun.getSeconds());
+
+          final var totalTime = new Period(createTs, mainFinishTs);
+          totalTimeTaken.add((long) totalTime.getSeconds());
+        }
+
+        processed++;
+        seenEntries.add(name);
+
+      } catch (final Exception e) {
+        log.error("error: ", e);
+      }
     }
 
     log.info("Processed lines: {}, Ignored lines: {}", processed, ignored);
-    final var scheduleAvg = average(timesToSchedule);
-    final var schedule95Percentile = percentile(timesToSchedule, 95);
-    log.info("scheduling time - average: {}, 95 percentile: {}", scheduleAvg, schedule95Percentile);
+    if (timesToSchedule.size() > 0) {
+      final var scheduleAvg = average(timesToSchedule);
+      final var schedule95Percentile = percentile(timesToSchedule, 95);
+      log.info("scheduling time - average: {}, 95 percentile: {}", scheduleAvg, schedule95Percentile);
 
-    final var initAvg = average(timesToInit);
-    final var init95Percentile = percentile(timesToInit, 95);
-    log.info("init time - average: {}, 95 percentile: {}", initAvg, init95Percentile);
+      final var initAvg = average(timesToInit);
+      final var init95Percentile = percentile(timesToInit, 95);
+      log.info("init time - average: {}, 95 percentile: {}", initAvg, init95Percentile);
 
-    final var containerReadyAvg = average(timesToContainerReady);
-    final var containerReady95Percentile = percentile(timesToContainerReady, 95);
-    log.info("container ready time - average: {}, 95 percentile: {}", containerReadyAvg, containerReady95Percentile);
+      final var containerReadyAvg = average(timesToContainerReady);
+      final var containerReady95Percentile = percentile(timesToContainerReady, 95);
+      log.info("container ready time - average: {}, 95 percentile: {}", containerReadyAvg, containerReady95Percentile);
 
-    final var readyAvg = average(timesToReady);
-    final var ready95Percentile = percentile(timesToReady, 95);
-    log.info("ready time - average: {}, 95 percentile: {}", readyAvg, ready95Percentile);
+      final var readyAvg = average(timesToReady);
+      final var ready95Percentile = percentile(timesToReady, 95);
+      log.info("ready time - average: {}, 95 percentile: {}", readyAvg, ready95Percentile);
 
-    log.info("");
-    final var totalAvg = scheduleAvg + initAvg + containerReadyAvg + readyAvg;
-    final var total95Percentile = schedule95Percentile + init95Percentile + containerReady95Percentile + ready95Percentile;
-    log.info("overall average: {}, overall 95 percentile: {}", totalAvg, total95Percentile);
+      log.info("");
+      final var totalStartAvg = scheduleAvg + initAvg + containerReadyAvg + readyAvg;
+      final var totalStart95Percentile = schedule95Percentile + init95Percentile + containerReady95Percentile + ready95Percentile;
+      log.info("overall start average: {}, overall start 95 percentile: {}", totalStartAvg, totalStart95Percentile);
+    } else {
+      final var runAvg = average(timesToRun);
+      final var run99Percentile = percentile(timesToRun, 99);
+      log.info("run average: {}, run 99 percentile: {}", runAvg, run99Percentile);
+
+      final var totalTimeAvg = average(totalTimeTaken);
+      final var totalTime99Percentile = percentile(totalTimeTaken, 99);
+      log.info("overall average: {}, overall 99 percentile: {}", totalTimeAvg, totalTime99Percentile);
+    }
   }
 
   public static long percentile(final List<Long> latencies, final double percentile) {
