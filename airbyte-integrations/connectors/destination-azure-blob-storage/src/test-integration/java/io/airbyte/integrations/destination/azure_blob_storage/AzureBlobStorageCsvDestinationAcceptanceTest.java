@@ -113,13 +113,11 @@ public class AzureBlobStorageCsvDestinationAcceptanceTest extends
       final List<AppendBlobClient> appendBlobClients = getAppendBlobClient(streamName);
       StringBuilder result = new StringBuilder();
       for (AppendBlobClient appendBlobClient : appendBlobClients) {
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        appendBlobClient.download(outputStream);
         if (result.isEmpty()) {
-          final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-          appendBlobClient.download(outputStream);
           result.append(outputStream.toString(StandardCharsets.UTF_8));
         } else {
-          final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-          appendBlobClient.download(outputStream);
           var stringStream = outputStream.toString(StandardCharsets.UTF_8);
           result.append(stringStream.substring(stringStream.indexOf('\n') + 1));
         }
