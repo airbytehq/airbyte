@@ -8,7 +8,6 @@ import com.azure.storage.blob.specialized.AppendBlobClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -58,8 +57,9 @@ public class AzureBlobStorageJsonlDestinationAcceptanceTest extends
       LOGGER.info("All objects: " + result);
       return result.toString();
     } catch (Exception e) {
-      e.printStackTrace();
+      LOGGER.error("No blobs were found for stream with name {}.", streamName);
       return "";
     }
   }
+
 }

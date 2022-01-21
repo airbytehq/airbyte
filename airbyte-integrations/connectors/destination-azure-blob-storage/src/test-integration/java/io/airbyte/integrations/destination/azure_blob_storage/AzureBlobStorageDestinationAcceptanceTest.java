@@ -17,14 +17,13 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AzureBlobStorageDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -74,14 +73,14 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
 
   protected List<AppendBlobClient> getAppendBlobClient(final String streamName) throws Exception {
     final AppendBlobClient streamAppendBlobClient = specializedBlobClientBuilder
-            .blobName(streamName)
-            .buildAppendBlobClient();
+        .blobName(streamName)
+        .buildAppendBlobClient();
 
     final BlobContainerClient containerClient = streamAppendBlobClient.getContainerClient();
     var blobItemList = StreamSupport.stream(containerClient.listBlobs().spliterator(), false)
-            .collect(Collectors.toList());
+        .collect(Collectors.toList());
     var filteredBlobList = blobItemList.stream()
-            .filter(blob -> blob.getName().contains(streamName + "/")).collect(Collectors.toList());
+        .filter(blob -> blob.getName().contains(streamName + "/")).collect(Collectors.toList());
     if (!filteredBlobList.isEmpty()) {
       List<AppendBlobClient> clobClientList = new ArrayList<>();
       filteredBlobList.forEach(blobItem -> {

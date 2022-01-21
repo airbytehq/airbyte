@@ -20,9 +20,6 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -33,6 +30,8 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsumer {
 
@@ -76,7 +75,7 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
     for (final ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
 
       final String blobName = configuredStream.getStream().getName() + "/" +
-              getOutputFilename(new Timestamp(System.currentTimeMillis()));
+          getOutputFilename(new Timestamp(System.currentTimeMillis()));
       final AppendBlobClient appendBlobClient = specializedBlobClientBuilder
           .blobName(blobName)
           .buildAppendBlobClient();
@@ -103,15 +102,15 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
     }
     if (DestinationSyncMode.OVERWRITE.equals(configuredStream.getDestinationSyncMode())) {
       LOGGER.info("Sync mode is selected to OVERRIDE mode. New container will be automatically"
-              + " created or all data would be overridden (if any) for stream:" + configuredStream
+          + " created or all data would be overridden (if any) for stream:" + configuredStream
               .getStream().getName());
       var blobItemList = StreamSupport.stream(containerClient.listBlobs().spliterator(), false)
-              .collect(Collectors.toList());
+          .collect(Collectors.toList());
       blobItemList.forEach(blob -> {
         if (!blob.isDeleted() && blob.getName().contains(configuredStream.getStream().getName() + "/")) {
           final AppendBlobClient abc = specializedBlobClientBuilder
-                  .blobName(blob.getName())
-                  .buildAppendBlobClient();
+              .blobName(blob.getName())
+              .buildAppendBlobClient();
           abc.delete();
         }
       });
@@ -165,9 +164,9 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
     final DateFormat formatter = new SimpleDateFormat(YYYY_MM_DD_FORMAT_STRING);
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     return String.format(
-            "%s_%d_0",
-            formatter.format(timestamp),
-            timestamp.getTime());
+        "%s_%d_0",
+        formatter.format(timestamp),
+        timestamp.getTime());
   }
 
 }

@@ -9,10 +9,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
-import org.apache.commons.csv.QuoteMode;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Reader;
@@ -25,6 +21,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.StreamSupport;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.csv.QuoteMode;
 
 public class AzureBlobStorageCsvDestinationAcceptanceTest extends
     AzureBlobStorageDestinationAcceptanceTest {
@@ -125,7 +124,7 @@ public class AzureBlobStorageCsvDestinationAcceptanceTest extends
       LOGGER.info("All objects: " + result);
       return result.toString();
     } catch (Exception e) {
-      e.printStackTrace();
+      LOGGER.error("No blobs were found for stream with name {}.", streamName);
       return "";
     }
   }

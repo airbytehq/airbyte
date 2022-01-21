@@ -10,17 +10,16 @@ import io.airbyte.integrations.destination.azure_blob_storage.writer.AzureBlobSt
 import io.airbyte.integrations.destination.azure_blob_storage.writer.BaseAzureBlobStorageWriter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.csv.QuoteMode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.QuoteMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AzureBlobStorageCsvWriter extends BaseAzureBlobStorageWriter implements
     AzureBlobStorageWriter {
@@ -46,9 +45,9 @@ public class AzureBlobStorageCsvWriter extends BaseAzureBlobStorageWriter implem
 
     this.blobOutputStream = new BufferedOutputStream(appendBlobClient.getBlobOutputStream(), config.getOutputStreamBufferSize());
 
-    this.csvPrinter = new CSVPrinter(new PrintWriter(blobOutputStream, false, StandardCharsets.UTF_8),
-            CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
-                    .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0])));
+    final PrintWriter printWriter = new PrintWriter(blobOutputStream, false, StandardCharsets.UTF_8);
+    this.csvPrinter = new CSVPrinter(printWriter, CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
+        .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0])));
   }
 
   @Override
