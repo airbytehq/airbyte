@@ -2,9 +2,6 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from http import HTTPStatus
-from unittest.mock import MagicMock
-
 import pytest
 from source_persistiq.source import PersistiqStream
 
@@ -17,6 +14,7 @@ def mocked_requests_get(*args, **kwargs):
 
         def json(self):
             return self.json_data
+
     return MockResponse(json_data=kwargs["json_data"], status_code=kwargs["status_code"])
 
 
@@ -32,18 +30,15 @@ def test_request_params(patch_base_class):
     stream = PersistiqStream(api_key="mybeautifulkey")
     inputs = {"next_page_token": {"page": 1}}
     expected_params = {"page": 1}
-    assert stream.request_params(
-        stream_state=None, **inputs) == expected_params
+    assert stream.request_params(stream_state=None, **inputs) == expected_params
 
 
 def test_next_page_token(patch_base_class):
     stream = PersistiqStream(api_key="mybeautifulkey")
     # With next page
-    response = mocked_requests_get(json_data={
-        "has_more": True, "next_page": "https://api.persistiq.com/v1/users?page=2"}, status_code=200)
+    response = mocked_requests_get(json_data={"has_more": True, "next_page": "https://api.persistiq.com/v1/users?page=2"}, status_code=200)
     expected_token = "2"
-    assert stream.next_page_token(response=response) == {
-        "page": expected_token}
+    assert stream.next_page_token(response=response) == {"page": expected_token}
     # Without next page
     response = mocked_requests_get(json_data={}, status_code=200)
     expected_token = None
@@ -52,12 +47,9 @@ def test_next_page_token(patch_base_class):
 
 def test_parse_response(patch_base_class):
     stream = PersistiqStream(api_key="mybeautifulkey")
-    response = mocked_requests_get(json_data={
-        "users": [{"id": 1, "name": "John Doe"}]}, status_code=200)
-    expected_parsed_object = {
-        "users": [{"id": 1, "name": "John Doe"}]}
-    assert next(stream.parse_response(response=response)
-                ) == expected_parsed_object
+    response = mocked_requests_get(json_data={"users": [{"id": 1, "name": "John Doe"}]}, status_code=200)
+    expected_parsed_object = {"users": [{"id": 1, "name": "John Doe"}]}
+    assert next(stream.parse_response(response=response)) == expected_parsed_object
 
 
 def test_request_headers(patch_base_class):

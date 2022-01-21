@@ -4,9 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Persistiq Spec",
     "type": "object",
-    "required": [
-      "api_key"
-    ],
+    "required": ["api_key"],
     "additionalProperties": false,
     "properties": {
       "api_key": {

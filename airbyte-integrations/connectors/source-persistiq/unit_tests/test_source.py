@@ -12,14 +12,17 @@ def test_check_connection(mocker, requests_mock):
     logger_mock = MagicMock(), MagicMock()
     config_mock = {"api_key": "mybeautifulkey"}
     # success
-    requests_mock.get("https://api.persistiq.com/v1/users", json={
-        "id": "u_3an2Jp",
-        "name": "Gabriel Rossmann",
-        "email": "gabriel@punctual.cc",
-        "activated": "true",
-        "default_mailbox_id": "mbox_38ymEp",
-        "salesforce_id": "",
-    })
+    requests_mock.get(
+        "https://api.persistiq.com/v1/users",
+        json={
+            "id": "u_3an2Jp",
+            "name": "Gabriel Rossmann",
+            "email": "gabriel@punctual.cc",
+            "activated": "true",
+            "default_mailbox_id": "mbox_38ymEp",
+            "salesforce_id": "",
+        },
+    )
     assert source.check_connection(logger_mock, config_mock) == (True, None)
 
     # failure

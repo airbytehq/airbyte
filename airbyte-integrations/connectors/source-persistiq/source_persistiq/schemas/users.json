@@ -15,7 +15,7 @@
     "activated": {
       "type": ["null", "boolean"]
     },
-      "default_mailbox_id": {
+    "default_mailbox_id": {
       "type": ["null", "string"]
     },
     "salesforce_id": {

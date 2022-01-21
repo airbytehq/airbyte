@@ -43,9 +43,7 @@ class PersistiqStream(HttpStream, ABC):
 class Users(PersistiqStream):
     primary_key = "id"
 
-    def path(
-        self, **kwargs
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return "users"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -56,25 +54,24 @@ class Users(PersistiqStream):
 class Leads(PersistiqStream):
     primary_key = "id"
 
-    def path(
-        self, **kwargs
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return "leads"
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json = response.json()
         yield from json["leads"]
 
+
 class Campaigns(PersistiqStream):
     primary_key = "id"
 
-    def path(
-        self, **kwargs
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return "campaigns"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json = response.json()
         yield from json["campaigns"]
+
 
 # Source
 

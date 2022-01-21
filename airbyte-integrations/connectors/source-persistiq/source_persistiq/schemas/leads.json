@@ -3,172 +3,90 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": [
-        "string"
-      ]
+      "type": ["string"]
     },
     "bounced": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "owner_id": {
-      "type": [
-        "string"
-      ]
+      "type": ["string"]
     },
     "optedout": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "sent_count": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "replied_count": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "last_sent_at": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "status": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "data": {
       "company_name": {
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": ["null", "string"]
       },
       "email": {
-        "type": [
-          "null",
-          "string"
-        ],
+        "type": ["null", "string"],
         "format": "email"
       },
       "first_name": {
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": ["null", "string"]
       },
       "last_name": {
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": ["null", "string"]
       },
       "address": {
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": ["null", "string"]
       },
       "city": {
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": ["null", "string"]
       },
       "state": {
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": ["null", "string"]
       },
       "phone": {
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": ["null", "string"]
       },
       "title": {
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": ["null", "string"]
       },
       "industry": {
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": ["null", "string"]
       },
       "snippet": {
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": ["null", "string"]
       },
       "snippet1": {
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": ["null", "string"]
       },
       "snippet2": {
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": ["null", "string"]
       },
       "snippet3": {
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": ["null", "string"]
       },
       "snippet4": {
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": ["null", "string"]
       },
       "twitch_name": {
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": ["null", "string"]
       },
       "linkedin": {
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": ["null", "string"]
       },
       "twitter": {
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": ["null", "string"]
       },
       "facebook": {
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": ["null", "string"]
       },
       "salesforce_id": {
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": ["null", "string"]
       }
     }
   }
