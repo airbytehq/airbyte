@@ -12,7 +12,7 @@ import {
   SyncSchemaStream,
 } from "core/domain/catalog";
 
-import { CheckBox, DropDownRow, Popout, Cell } from "components";
+import { CheckBox, DropDownRow, Popout, Cell, Toggle } from "components";
 import { Arrow as ArrowBlock } from "./components/Arrow";
 import { SyncSettingsCell } from "./components/SyncSettingsCell";
 import Tooltip from "./components/Tooltip";
@@ -112,7 +112,8 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
   return (
     <>
       <CheckboxCell>
-        <CheckBox checked={stream.config.selected} onChange={onSelectStream} />
+        {/*TODO: Fix it for Batch Edit*/}
+        <CheckBox checked={false} disabled />
       </CheckboxCell>
       <ArrowCell>
         {hasFields ? (
@@ -123,7 +124,13 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
           />
         ) : null}
       </ArrowCell>
-      <HeaderCell flex={0.4}>{/*TODO: add sync switcher*/}</HeaderCell>
+      <HeaderCell flex={0.4}>
+        <Toggle
+          small
+          checked={stream.config.selected}
+          onChange={onSelectStream}
+        />
+      </HeaderCell>
       <HeaderCell ellipsis title={stream.stream.namespace || ""}>
         {stream.stream.namespace || (
           <EmptyField>

@@ -206,7 +206,8 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
       <StreamsContent>
         <SchemaHeader>
           <CheckboxCell>
-            <CheckBox onChange={onCheckAll} checked={hasSelectedItem} />
+            {/*TODO: Fix it for Batch Edit*/}
+            <CheckBox onChange={onCheckAll} checked={false} disabled={true} />
           </CheckboxCell>
           <ArrowCell />
           <Cell lighter flex={0.4}>
