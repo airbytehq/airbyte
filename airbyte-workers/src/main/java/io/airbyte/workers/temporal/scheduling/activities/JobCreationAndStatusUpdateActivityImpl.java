@@ -110,11 +110,11 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     try {
       if (input.getStandardSyncOutput() != null) {
         final JobOutput jobOutput = new JobOutput().withSync(input.getStandardSyncOutput());
-        jobPersistence.writeOutput(input.getJobId(), input.getAttemptId(), jobOutput);
+        jobPersistence.writeOutput(input.getJobId(), input.getAttemptNumber(), jobOutput);
       } else {
-        log.warn("The job {} doesn't have an input for the attempt {}", input.getJobId(), input.getAttemptId());
+        log.warn("The job {} doesn't have an input for attempt number {}", input.getJobId(), input.getAttemptNumber());
       }
-      jobPersistence.succeedAttempt(input.getJobId(), input.getAttemptId());
+      jobPersistence.succeedAttempt(input.getJobId(), input.getAttemptNumber());
       final Job job = jobPersistence.getJob(input.getJobId());
       jobNotifier.successJob(job);
       trackCompletion(job, JobStatus.SUCCEEDED);
@@ -138,8 +138,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   @Override
   public void attemptFailure(final AttemptFailureInput input) {
     try {
-      jobPersistence.failAttempt(input.getJobId(), input.getAttemptId());
-      final Job job = jobPersistence.getJob(input.getJobId());
+      jobPersistence.failAttempt(input.getJobId(), input.getAttemptNumber());
     } catch (final IOException e) {
       throw new RetryableException(e);
     }

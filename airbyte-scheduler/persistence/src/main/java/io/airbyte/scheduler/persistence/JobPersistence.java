@@ -89,7 +89,7 @@ public interface JobPersistence {
    * will not be changed if it is already in a terminal state.
    *
    * @param jobId job id
-   * @param attemptNumber attempt id
+   * @param attemptNumber attempt number
    * @throws IOException exception due to interaction with persistence
    */
   void failAttempt(long jobId, int attemptNumber) throws IOException;
@@ -99,7 +99,7 @@ public interface JobPersistence {
    * is changed regardless of what state it is in.
    *
    * @param jobId job id
-   * @param attemptNumber attempt id
+   * @param attemptNumber attempt number
    * @throws IOException exception due to interaction with persistence
    */
   void succeedAttempt(long jobId, int attemptNumber) throws IOException;
