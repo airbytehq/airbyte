@@ -4,6 +4,8 @@
 
 This tutorial will describe how to determine if you need to run this upgrade process, and if you do, how to do so. This process does require temporarily turning off Airbyte.
 
+When Airbyte is upgraded, it will attempt to upgrade some connector versions. It follows the following rules: 1. if a connector is not used, it will be upgraded to the latest version 2. if a connector is used, it will NOT be upgraded to avoid disrupting working workflows. If you want to upgrade a connector, do so in the settings page in the webapp.
+
 ## Determining if you need to Upgrade
 
 Airbyte intelligently performs upgrades automatically based off of your version defined in your `.env` file and will handle data migration for you.
@@ -99,7 +101,7 @@ If you are upgrading from \(i.e. your current version of Airbyte is\) Airbyte ve
    Here's an example of what it might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
 
    ```bash
-   docker run --rm -v /tmp:/config airbyte/migration:0.35.4-alpha --\
+   docker run --rm -v /tmp:/config airbyte/migration:0.35.6-alpha --\
    --input /config/airbyte_archive.tar.gz\
    --output /config/airbyte_archive_migrated.tar.gz
    ```

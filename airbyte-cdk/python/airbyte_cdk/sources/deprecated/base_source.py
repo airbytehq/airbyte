@@ -4,10 +4,10 @@
 
 
 import copy
+import logging
 from datetime import datetime
 from typing import Any, Iterable, Mapping, MutableMapping, Type
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -39,13 +39,13 @@ class BaseSource(Source):
         """Construct client"""
         return self.client_class(**config)
 
-    def discover(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteCatalog:
+    def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
         """Discover streams"""
         client = self._get_client(config)
 
         return AirbyteCatalog(streams=[stream for stream in client.streams])
 
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """Check connection"""
         client = self._get_client(config)
         alive, error = client.health_check()
@@ -55,7 +55,7 @@ class BaseSource(Source):
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def read(
-        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
+        self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
     ) -> Iterable[AirbyteMessage]:
         state = state or {}
         client = self._get_client(config)
@@ -73,7 +73,7 @@ class BaseSource(Source):
         logger.info(f"Finished syncing {self.name}")
 
     def _read_stream(
-        self, logger: AirbyteLogger, client: BaseClient, configured_stream: ConfiguredAirbyteStream, state: MutableMapping[str, Any]
+        self, logger: logging.Logger, client: BaseClient, configured_stream: ConfiguredAirbyteStream, state: MutableMapping[str, Any]
     ):
         stream_name = configured_stream.stream.name
         use_incremental = configured_stream.sync_mode == SyncMode.incremental and client.stream_has_state(stream_name)

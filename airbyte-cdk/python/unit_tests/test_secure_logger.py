@@ -8,7 +8,7 @@ from argparse import Namespace
 from typing import Any, Iterable, Mapping, MutableMapping
 
 import pytest
-from airbyte_cdk import AirbyteEntrypoint, AirbyteLogger
+from airbyte_cdk import AirbyteEntrypoint
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
 from airbyte_cdk.sources import Source
@@ -29,7 +29,7 @@ ANOTHER_NOT_SECRET_VALUE = "I am not a secret"
 class MockSource(Source):
     def read(
         self,
-        logger: AirbyteLogger,
+        logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
         state: MutableMapping[str, Any] = None,
@@ -152,7 +152,7 @@ def test_airbyte_secrets_are_masked_on_uncaught_exceptions(mocker, caplog):
     class BrokenSource(MockSource):
         def read(
             self,
-            logger: AirbyteLogger,
+            logger: logging.Logger,
             config: Mapping[str, Any],
             catalog: ConfiguredAirbyteCatalog,
             state: MutableMapping[str, Any] = None,
@@ -198,7 +198,7 @@ def test_non_airbyte_secrets_are_not_masked_on_uncaught_exceptions(mocker, caplo
     class BrokenSource(MockSource):
         def read(
             self,
-            logger: AirbyteLogger,
+            logger: logging.Logger,
             config: Mapping[str, Any],
             catalog: ConfiguredAirbyteCatalog,
             state: MutableMapping[str, Any] = None,

@@ -12,7 +12,9 @@ from source_hubspot.api import (
     API,
     CampaignStream,
     ContactListStream,
+    ContactsListMembershipsStream,
     CRMObjectIncrementalStream,
+    CRMSearchStream,
     DealPipelineStream,
     DealStream,
     EmailEventStream,
@@ -37,15 +39,21 @@ class Client(BaseClient):
         common_params = dict(api=self._api, start_date=self._start_date)
         self._apis = {
             "campaigns": CampaignStream(**common_params),
-            "companies": CRMObjectIncrementalStream(entity="company", associations=["contacts"], **common_params),
+            "companies": CRMSearchStream(
+                entity="company", last_modified_field="hs_lastmodifieddate", associations=["contacts"], **common_params
+            ),
             "contact_lists": ContactListStream(**common_params),
-            "contacts": CRMObjectIncrementalStream(entity="contact", **common_params),
+            "contacts": CRMSearchStream(
+                entity="contact", last_modified_field="lastmodifieddate", associations=["contacts"], **common_params
+            ),
+            "contacts_list_memberships": ContactsListMembershipsStream(**common_params),
             "deal_pipelines": DealPipelineStream(**common_params),
             "deals": DealStream(associations=["contacts"], **common_params),
             "email_events": EmailEventStream(**common_params),
             "engagements": EngagementStream(**common_params),
             "form_submissions": FormSubmissionStream(entity="form_submissions", **common_params),
             "forms": FormStream(**common_params),
+            "form_submissions": FormSubmissionStream(**common_params),
             "line_items": CRMObjectIncrementalStream(entity="line_item", **common_params),
             "marketing_emails": MarketingEmailStream(**common_params),
             "owners": OwnerStream(**common_params),
@@ -63,7 +71,7 @@ class Client(BaseClient):
         super().__init__(**kwargs)
 
     def _enumerate_methods(self) -> Mapping[str, Callable]:
-        return {name: api.list for name, api in self._apis.items()}
+        return {name: api.list_records for name, api in self._apis.items()}
 
     @property
     def streams(self) -> Iterator[AirbyteStream]:
