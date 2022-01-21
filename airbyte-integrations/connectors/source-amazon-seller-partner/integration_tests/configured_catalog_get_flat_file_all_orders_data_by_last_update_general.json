@@ -10,7 +10,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "amazon-order-id": {
-              "type": ["null", "string"]
+              "type": "string"
             },
             "asin": {
               "type": ["null", "string"]
@@ -43,7 +43,7 @@
               "type": ["null", "string"]
             },
             "last-updated-date": {
-              "type": ["null", "string"],
+              "type": "string",
               "format": "date-time"
             },
             "merchant-order-id": {
