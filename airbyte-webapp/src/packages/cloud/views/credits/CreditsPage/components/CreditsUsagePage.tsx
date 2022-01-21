@@ -15,7 +15,7 @@ export const ChartWrapper = styled.div`
 `;
 
 const CardBlock = styled(ContentCard)`
-  margin-top: 10px;
+  margin: 10px 0 20px;
 `;
 
 const Empty = styled.div`
