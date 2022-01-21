@@ -4,13 +4,20 @@
 
 package io.airbyte.integrations.destination.azure_blob_storage;
 
+import com.azure.storage.blob.specialized.AppendBlobClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.csv.QuoteMode;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -18,9 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.StreamSupport;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
-import org.apache.commons.csv.QuoteMode;
 
 public class AzureBlobStorageCsvDestinationAcceptanceTest extends
     AzureBlobStorageDestinationAcceptanceTest {
@@ -101,6 +105,31 @@ public class AzureBlobStorageCsvDestinationAcceptanceTest extends
     }
 
     return jsonRecords;
+  }
+
+  @Override
+  protected String getAllSyncedObjects(String streamName) {
+    try {
+      final List<AppendBlobClient> appendBlobClients = getAppendBlobClient(streamName);
+      StringBuilder result = new StringBuilder();
+      for (AppendBlobClient appendBlobClient : appendBlobClients) {
+        if (result.isEmpty()) {
+          final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+          appendBlobClient.download(outputStream);
+          result.append(outputStream.toString(StandardCharsets.UTF_8));
+        } else {
+          final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+          appendBlobClient.download(outputStream);
+          var stringStream = outputStream.toString(StandardCharsets.UTF_8);
+          result.append(stringStream.substring(stringStream.indexOf('\n') + 1));
+        }
+      }
+      LOGGER.info("All objects: " + result);
+      return result.toString();
+    } catch (Exception e) {
+      e.printStackTrace();
+      return "";
+    }
   }
 
 }

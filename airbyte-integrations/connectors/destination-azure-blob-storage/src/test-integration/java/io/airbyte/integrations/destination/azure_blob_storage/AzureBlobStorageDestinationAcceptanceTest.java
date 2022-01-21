@@ -17,11 +17,14 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public abstract class AzureBlobStorageDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -67,19 +70,29 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
   /**
    * Helper method to retrieve all synced objects inside the configured bucket path.
    */
-  @Deprecated
-  protected String getAllSyncedObjects(final String streamName) {
-    final AppendBlobClient appendBlobClient = specializedBlobClientBuilder
-        .blobName(streamName)
-        .buildAppendBlobClient();
+  protected abstract String getAllSyncedObjects(final String streamName);
 
-    final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    appendBlobClient.download(outputStream);
-    final String result = new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
+  protected List<AppendBlobClient> getAppendBlobClient(final String streamName) throws Exception {
+    final AppendBlobClient streamAppendBlobClient = specializedBlobClientBuilder
+            .blobName(streamName)
+            .buildAppendBlobClient();
 
-    LOGGER.info("All objects: " + result);
-    return result;
-
+    final BlobContainerClient containerClient = streamAppendBlobClient.getContainerClient();
+    var blobItemList = StreamSupport.stream(containerClient.listBlobs().spliterator(), false)
+            .collect(Collectors.toList());
+    var filteredBlobList = blobItemList.stream()
+            .filter(blob -> blob.getName().contains(streamName + "/")).collect(Collectors.toList());
+    if (!filteredBlobList.isEmpty()) {
+      List<AppendBlobClient> clobClientList = new ArrayList<>();
+      filteredBlobList.forEach(blobItem -> {
+        clobClientList.add(specializedBlobClientBuilder.blobName(blobItem.getName()).buildAppendBlobClient());
+      });
+      return clobClientList;
+    } else {
+      var errorText = String.format("Can not find blob started with: %s/", streamName);
+      LOGGER.error(errorText);
+      throw new Exception(errorText);
+    }
   }
 
   protected abstract JsonNode getFormatConfig();
