@@ -7,7 +7,7 @@ import logging
 import urllib.parse as urlparse
 from abc import ABC
 from datetime import datetime
-from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Sequence, TYPE_CHECKING
+from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Sequence, TYPE_CHECKING, Optional
 
 import pendulum
 import requests
@@ -39,13 +39,14 @@ def remove_params_from_url(url: str, params: List[str]) -> str:
     )
 
 
-def fetch_thumbnail_data_url(url: str) -> str:
+def fetch_thumbnail_data_url(url: str) -> Optional[str]:
+    """Request thumbnail image and return it embedded into the data-link"""
     try:
         response = requests.get(url)
-        if response.status_code == 200:
-            type = response.headers["content-type"]
+        if response.status_code == requests.status_codes.codes.OK:
+            _type = response.headers["content-type"]
             data = base64.b64encode(response.content)
-            return f"data:{type};base64,{data.decode('ascii')}"
+            return f"data:{_type};base64,{data.decode('ascii')}"
     except requests.exceptions.RequestException:
         pass
     return None
