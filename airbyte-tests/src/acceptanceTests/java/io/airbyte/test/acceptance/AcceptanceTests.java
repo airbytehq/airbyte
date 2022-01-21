@@ -74,10 +74,16 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreProperties;
+import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import io.airbyte.workers.temporal.TemporalClient;
+import io.airbyte.workers.temporal.TemporalUtils;
+import io.temporal.client.WorkflowClient;
+import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.File;
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -174,6 +180,7 @@ public class AcceptanceTests {
   private List<UUID> operationIds;
 
   private static FeatureFlags featureFlags;
+  private static TemporalClient temporalClient;
 
   @SuppressWarnings("UnstableApiUsage")
   @BeforeAll
@@ -209,6 +216,14 @@ public class AcceptanceTests {
     }
 
     featureFlags = new EnvVariableFeatureFlags();
+    if (featureFlags.usesNewScheduler()) {
+      final Configs configs = new EnvConfigs();
+      final Path workspaceRoot = Path.of("/tmp");
+      final String temporalHost = "localhost:7233";
+      final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
+
+      temporalClient = new TemporalClient(WorkflowClient.newInstance(temporalService), workspaceRoot, temporalService, configs);
+    }
   }
 
   @AfterAll
@@ -783,6 +798,9 @@ public class AcceptanceTests {
     // wait to get out of running.
     waitForJob(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING));
     // now cancel it so that we freeze state!
+    if (featureFlags.usesNewScheduler()) {
+      waitForTemporalWorkflow(connectionId);
+    }
     apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead1.getJob().getId()));
 
     final ConnectionState connectionState = waitForConnectionState(apiClient, connectionId);
@@ -1354,16 +1372,13 @@ public class AcceptanceTests {
   }
 
   private static void waitForTemporalWorkflow(final UUID connectionId) {
-    /*
-     * do { try { Thread.sleep(1000); } catch (InterruptedException e) { throw new RuntimeException(e);
-     * } } while
-     * (temporalClient.isWorkflowRunning(temporalClient.getConnectionManagerName(connectionId)));
-     */
-    try {
-      Thread.sleep(10 * 1000);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
+    do {
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    } while (!temporalClient.isWorkflowRunning(temporalClient.getConnectionManagerName(connectionId)));
   }
 
 }
