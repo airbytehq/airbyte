@@ -7,7 +7,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "node ./scripts/license-check && react-scripts build",
+    "build": "react-scripts build",
     "test": "react-scripts test",
     "format": "prettier --write 'src/**/*.{ts,tsx}'",
     "storybook": "start-storybook -p 9009 -s public --quiet",
