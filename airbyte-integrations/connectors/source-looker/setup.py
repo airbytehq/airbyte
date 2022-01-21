@@ -7,8 +7,6 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.1",
-    "prance~=0.21.8",
-    "openapi_spec_validator~=0.3.1",
 ]
 
 TEST_REQUIREMENTS = [
@@ -16,7 +14,6 @@ TEST_REQUIREMENTS = [
     "pytest-mock~=3.6.1",
     "source-acceptance-test",
     "responses~=0.13.3",
-
 ]
 
 setup(
