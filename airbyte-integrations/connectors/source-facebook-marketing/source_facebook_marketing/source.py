@@ -271,7 +271,8 @@ class SourceFacebookMarketing(AbstractSource):
         :return:
         """
         if not hasattr(stream_instance, "state"):
-            return super()._read_incremental(logger, stream_instance, configured_stream, connector_state, internal_config)
+            yield from super()._read_incremental(logger, stream_instance, configured_stream, connector_state, internal_config)
+            return
 
         stream_name = configured_stream.stream.name
         stream_state = connector_state.get(stream_name, {})
