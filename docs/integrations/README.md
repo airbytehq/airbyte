@@ -30,6 +30,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Bing Ads](sources/bing-ads.md) | Beta |
 | [Cart.com](sources/cart.md) | Beta |
 | [Chargebee](sources/chargebee.md) | Alpha |
+| [Chartmogul](sources/chartmogul.md) | Alpha |
 | [ClickHouse](sources/clickhouse.md) | Beta |
 | [Close.com](sources/close-com.md) | Beta |
 | [CockroachDB](sources/cockroachdb.md) | Beta |
@@ -41,6 +42,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Facebook Marketing](sources/facebook-marketing.md) | Beta |
 | [Facebook Pages](sources/facebook-pages.md) | Alpha |
 | [Files](sources/file.md) | Certified |
+| [Flexport](sources/flexport.md) | Alpha |
 | [Freshdesk](sources/freshdesk.md) | Certified |
 | [GitHub](sources/github.md) | Beta |
 | [GitLab](sources/gitlab.md) | Beta |
@@ -87,6 +89,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Outreach](./sources/outreach.md)| Alpha |
 | [PayPal Transaction](sources/paypal-transaction.md) | Beta |
 | [Paystack](sources/paystack.md) | Alpha |
+| [PersistIq](sources/persistiq.md) | Alpha |
 | [Pinterest](sources/pinterest.md) | Alpha |
 | [Pipedrive](sources/pipedrive.md) | Alpha |
 | [Plaid](sources/plaid.md) | Alpha |
