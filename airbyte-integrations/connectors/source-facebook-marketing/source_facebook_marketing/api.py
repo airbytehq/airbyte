@@ -4,7 +4,6 @@
 
 import json
 import logging
-from datetime import datetime
 from time import sleep
 from typing import Tuple
 

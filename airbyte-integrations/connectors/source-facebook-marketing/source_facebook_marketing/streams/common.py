@@ -24,13 +24,6 @@ class JobException(Exception):
     """Scheduled job failed"""
 
 
-def batch(iterable: Sequence, size: int = 1) -> Iterable:
-    """Split sequence in chunks"""
-    total_size = len(iterable)
-    for ndx in range(0, total_size, size):
-        yield iterable[ndx : min(ndx + size, total_size)]
-
-
 def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
     def log_retry_attempt(details):
         _, exc, _ = sys.exc_info()
