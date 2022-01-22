@@ -2,6 +2,14 @@ name: performance-test
 on:
   workflow_dispatch:
     inputs:
+      repo:
+        description: "Repo to check out code from. Defaults to the main airbyte repo. Set this when building connectors from forked repos."
+        required: false
+        default: "airbytehq/airbyte"
+      gitref:
+        description: "The git ref to check out from the specified repository."
+        required: false
+        default: master
       test-name:
         description: "Test to run classname"
         required: true
@@ -15,6 +23,9 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
 
       - name: Npm Caching
         uses: actions/cache@v2

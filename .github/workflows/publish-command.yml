@@ -2,6 +2,14 @@ name: Publish Connector Image
 on:
   workflow_dispatch:
     inputs:
+      repo:
+        description: "Repo to check out code from. Defaults to the main airbyte repo. Set this when building connectors from forked repos."
+        required: false
+        default: "airbytehq/airbyte"
+      gitref:
+        description: "The git ref to check out from the specified repository."
+        required: false
+        default: master
       connector:
         description: "Airbyte Connector"
         required: true
@@ -26,7 +34,8 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
         with:
-          repository: ${{github.event.pull_request.head.repo.full_name}} # always use the branch's repository
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -66,7 +75,8 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
         with:
-          repository: ${{github.event.pull_request.head.repo.full_name}} # always use the branch's repository
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
       - name: Install Unzip for Databricks
         if: github.event.inputs.connector == 'connectors/destination-databricks'
         run: |
