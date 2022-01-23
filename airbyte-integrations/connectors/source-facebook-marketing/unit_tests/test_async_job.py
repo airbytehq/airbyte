@@ -6,7 +6,7 @@ import time
 
 import pytest
 from source_facebook_marketing.api import API
-from source_facebook_marketing.streams.async_job import AsyncJob, Status
+from source_facebook_marketing.streams.async_job import InsightAsyncJob, Status
 from source_facebook_marketing.streams.common import JobException
 
 
@@ -23,7 +23,7 @@ def adreport_fixture(mocker):
 
 @pytest.fixture(name="job")
 def job_fixture(api, mocker):
-    return AsyncJob(api=api, params=mocker.MagicMock())
+    return InsightAsyncJob(api=api, params=mocker.MagicMock())
 
 
 @pytest.fixture(name="failed_job")
@@ -49,7 +49,7 @@ def api_fixture(mocker, adreport):
     return api
 
 
-class TestAsyncJob:
+class TestInsightAsyncJob:
     def test_start(self, job):
         job.start()
 
@@ -139,7 +139,7 @@ class TestAsyncJob:
         assert failed_job.failed, "should return True if the job previously failed"
 
     def test_str(self, api, adreport):
-        job = AsyncJob(api=api, params={"time_range": 123, "breakdowns": [10, 20]})
+        job = InsightAsyncJob(api=api, params={"time_range": 123, "breakdowns": [10, 20]})
 
         assert str(job) == "AdReportRun(id=<None>, time_range=123, breakdowns=[10, 20]"
 
