@@ -4,9 +4,10 @@
 
 import logging
 import time
-from typing import Tuple, Iterator, List, TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterator, List, Tuple
 
 from facebook_business.api import FacebookAdsApiBatch
+
 from .async_job import AsyncJob
 
 if TYPE_CHECKING:
@@ -34,8 +35,8 @@ class InsightAsyncJobManager:
     MAX_JOBS_IN_QUEUE = 100
     MAX_JOBS_TO_CHECK = 50
 
-    def __init__(self, api: 'API', jobs: Iterator[AsyncJob]):
-        """ Init
+    def __init__(self, api: "API", jobs: Iterator[AsyncJob]):
+        """Init
 
         :param api:
         :param jobs:
@@ -50,10 +51,7 @@ class InsightAsyncJobManager:
         self._update_api_throttle_limit()
         self._wait_throttle_limit_down()
         prev_jobs_count = len(self._running_jobs)
-        while (
-            self._get_current_throttle_value() < self.THROTTLE_LIMIT
-            and len(self._running_jobs) < self.MAX_JOBS_IN_QUEUE
-        ):
+        while self._get_current_throttle_value() < self.THROTTLE_LIMIT and len(self._running_jobs) < self.MAX_JOBS_IN_QUEUE:
             job = next(iter(self._jobs), None)
             if not job:
                 self._empty = True
@@ -68,7 +66,7 @@ class InsightAsyncJobManager:
         )
 
     def completed_jobs(self) -> Iterator[AsyncJob]:
-        """ Wait until job is ready and return it. If job
+        """Wait until job is ready and return it. If job
             failed try to restart it for FAILED_JOBS_RESTART_COUNT times. After job
             is completed new jobs added according to current throttling limit.
 
@@ -87,7 +85,7 @@ class InsightAsyncJobManager:
             self._start_jobs()
 
     def _check_jobs_status_and_restart(self) -> List[AsyncJob]:
-        """ Checks jobs status in advance and restart if some failed.
+        """Checks jobs status in advance and restart if some failed.
 
         :return: list of completed jobs
         """

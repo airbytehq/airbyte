@@ -4,7 +4,16 @@
 
 import copy
 import logging
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Iterator, Union
+from typing import (
+    Any,
+    Iterable,
+    Iterator,
+    List,
+    Mapping,
+    MutableMapping,
+    Optional,
+    Union,
+)
 
 import airbyte_cdk.sources.utils.casing as casing
 import pendulum
@@ -12,7 +21,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from cached_property import cached_property
-from source_facebook_marketing.streams.async_job import InsightAsyncJob, AsyncJob
+from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
 
 from .streams import FBMarketingIncrementalStream
@@ -57,12 +66,12 @@ class AdsInsights(FBMarketingIncrementalStream):
     breakdowns = []
 
     def __init__(
-            self,
-            name: str = None,
-            fields: List[str] = None,
-            breakdowns: List[str] = None,
-            action_breakdowns: List[str] = None,
-            **kwargs,
+        self,
+        name: str = None,
+        fields: List[str] = None,
+        breakdowns: List[str] = None,
+        action_breakdowns: List[str] = None,
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self._start_date = self._start_date.date()
@@ -79,7 +88,7 @@ class AdsInsights(FBMarketingIncrementalStream):
 
     @property
     def name(self) -> str:
-        """ We override stream name to let the user change it via configuration."""
+        """We override stream name to let the user change it via configuration."""
         name = self._new_class_name or self.__class__.__name__
         return casing.camel_to_snake(name)
 
@@ -95,11 +104,11 @@ class AdsInsights(FBMarketingIncrementalStream):
         return list(set(row["campaign_id"] for row in result))
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
         job = stream_slice["insight_job"]
@@ -147,7 +156,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             self._cursor_value = ts_start
 
     def _generate_async_jobs(self, params: Mapping) -> Iterator[AsyncJob]:
-        """ Generator of async jobs
+        """Generator of async jobs
 
         :param params:
         :return:
@@ -184,7 +193,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             yield {"insight_job": job}
 
     def _get_start_date(self) -> pendulum.Date:
-        """ Get start date to begin sync with. It is not that trivial as it might seem.
+        """Get start date to begin sync with. It is not that trivial as it might seem.
             There are few rules:
             - don't read data older than start_date
             - re-read data within last 28 days

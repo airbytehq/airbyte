@@ -5,14 +5,13 @@ import copy
 import logging
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Mapping, Optional, List
+from typing import Any, List, Mapping, Optional
 
 import pendulum
 from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.adobjects.objectparser import ObjectParser
-from facebook_business.api import FacebookResponse, FacebookAdsApiBatch
-
+from facebook_business.api import FacebookAdsApiBatch, FacebookResponse
 
 logger = logging.getLogger("airbyte")
 
@@ -20,7 +19,7 @@ logger = logging.getLogger("airbyte")
 def chunks(data, n):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(data), n):
-        yield data[i: i + n]
+        yield data[i : i + n]
 
 
 class Status(str, Enum):
@@ -61,7 +60,7 @@ class AsyncJob(ABC):
         """Tell if the job previously failed"""
 
     @abstractmethod
-    def update_job(self, batch = None):
+    def update_job(self, batch=None):
         """Method to retrieve job's status, separated because of retry handler"""
 
     @abstractmethod
@@ -70,8 +69,8 @@ class AsyncJob(ABC):
 
 
 class ParentAsyncJob(AsyncJob):
-    """ Group of async jobs
-    """
+    """Group of async jobs"""
+
     def __init__(self, api, jobs: List[AsyncJob]):
         self._api = api
         self._jobs = jobs
@@ -129,7 +128,7 @@ class ParentAsyncJob(AsyncJob):
         for job in self._jobs:
             yield from job.get_result()
 
-    def split_job(self) -> 'AsyncJob':
+    def split_job(self) -> "AsyncJob":
         """Split existing job in few smaller ones grouped by ParentAsyncJob class"""
         raise RuntimeError("Splitting of ParentAsyncJob is not allowed.")
 
@@ -156,7 +155,7 @@ class InsightAsyncJob(AsyncJob):
 
     def split_job(self) -> ParentAsyncJob:
         """Split existing job in few smaller ones grouped by ParentAsyncJob class.
-            TODO: use some cache to avoid expensive queries across different streams.
+        TODO: use some cache to avoid expensive queries across different streams.
         """
         campaign_params = dict(copy.deepcopy(self._params))
         # get campaigns from attribution window as well (28 day + 1 current day)
@@ -177,8 +176,11 @@ class InsightAsyncJob(AsyncJob):
 
         if batch is not None:
             self._edge_object.get_insights(
-                params=self._params, is_async=True, batch=batch,
-                success=self._batch_success_handler, failure=self._batch_failure_handler,
+                params=self._params,
+                is_async=True,
+                batch=batch,
+                success=self._batch_success_handler,
+                failure=self._batch_failure_handler,
             )
         else:
             self._job = self._edge_object.get_insights(params=self._params, is_async=True)

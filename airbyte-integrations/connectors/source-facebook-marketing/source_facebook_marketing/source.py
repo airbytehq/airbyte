@@ -4,23 +4,29 @@
 
 import logging
 from datetime import datetime
-from typing import Any, List, Mapping, Optional, Tuple, Type, Iterator, MutableMapping
+from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Type
 
 import pendulum
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
+    AirbyteMessage,
     AuthSpecification,
+    ConfiguredAirbyteStream,
     ConnectorSpecification,
     DestinationSyncMode,
     OAuth2Specification,
-    Status, AirbyteMessage, ConfiguredAirbyteStream, SyncMode,
+    Status,
+    SyncMode,
 )
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.config import BaseConfig
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import package_name_from_class
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader, InternalConfig
+from airbyte_cdk.sources.utils.schema_helpers import (
+    InternalConfig,
+    ResourceSchemaLoader,
+)
 from pydantic import BaseModel, Field
 from source_facebook_marketing.api import API
 from source_facebook_marketing.streams import (
@@ -104,7 +110,7 @@ class ConnectorConfig(BaseConfig):
     custom_insights: Optional[List[InsightConfig]] = Field(
         title="Custom Insights",
         order=6,
-        description="A list which contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)"
+        description="A list which contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)",
     )
 
 
@@ -255,7 +261,7 @@ class SourceFacebookMarketing(AbstractSource):
         connector_state: MutableMapping[str, Any],
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
-        """ We override this method because we need to inject new state handling.
+        """We override this method because we need to inject new state handling.
         Old way:
             pass stream_state in read_records and other methods
             call stream_state = stream_instance.get_updated_state(stream_state, record_data) for each record

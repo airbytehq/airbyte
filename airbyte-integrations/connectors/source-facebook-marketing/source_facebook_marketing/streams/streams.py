@@ -6,7 +6,16 @@ import base64
 import logging
 from abc import ABC
 from datetime import datetime
-from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, TYPE_CHECKING, Optional
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Iterable,
+    Iterator,
+    List,
+    Mapping,
+    MutableMapping,
+    Optional,
+)
 
 import pendulum
 import requests
@@ -16,6 +25,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
+
 from .common import deep_merge
 
 if TYPE_CHECKING:
@@ -53,7 +63,7 @@ class FBMarketingStream(Stream, ABC):
 
     MAX_BATCH_SIZE = 50
 
-    def __init__(self, api: 'API', include_deleted: bool = False, **kwargs):
+    def __init__(self, api: "API", include_deleted: bool = False, **kwargs):
         super().__init__(**kwargs)
         self._api = api
         self._include_deleted = include_deleted if self.enable_deleted else False
@@ -216,8 +226,7 @@ class AdCreatives(FBMarketingStream):
 
     @cached_property
     def fields(self) -> List[str]:
-        """ Remove "thumbnail_data_url" field because it is computed field and it's not a field that we can request from Facebook
-        """
+        """Remove "thumbnail_data_url" field because it is computed field and it's not a field that we can request from Facebook"""
         return [f for f in super().fields if f != "thumbnail_data_url"]
 
     def read_records(
