@@ -26,12 +26,7 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
 
   const currentAttempt = job.attempts[attemptNumber].attempt;
   const logs = job.attempts[attemptNumber]?.logs;
-  const path = [
-    "/tmp/workspace",
-    id,
-    currentAttempt.id,
-    "airbyte-logs.log",
-  ].join("/");
+  const path = ["/tmp/workspace", id, currentAttempt.id, "logs.log"].join("/");
 
   const attemptsTabs = job.attempts.map((item, index) => ({
     id: index.toString(),

@@ -40,7 +40,7 @@ const JobCurrentLogs: React.FC<{
   jobIsFailed?: boolean;
   logs?: Logs;
 }> = (props) => {
-  const path = ["/tmp/workspace", props.id, "airbyte-logs.log"].join("/");
+  const path = ["/tmp/workspace", props.id, "logs.log"].join("/");
 
   return <LogsDetails {...props} path={path} />;
 };
