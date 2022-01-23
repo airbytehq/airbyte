@@ -2,12 +2,11 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import math
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pendulum
 import pytest
-from source_facebook_marketing.streams.async_job_manager import InsightsAsyncJobManager
+from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
 
 
 @pytest.fixture(autouse=False)
@@ -45,7 +44,7 @@ def test_async_job_manager(job_mock, from_date, to_date):
     from_date, to_date = pendulum.parse(from_date), pendulum.parse(to_date)
     assert from_date <= to_date
     api_mock = make_api_mock()
-    job_manager = InsightsAsyncJobManager(
+    job_manager = InsightAsyncJobManager(
         api=api_mock,
         job_params={"breakdowns": []},
         from_date=from_date,
@@ -65,7 +64,7 @@ def test_async_job_manager_to_date_greater_from(job_mock):
     from_date, to_date = pendulum.parse("2020-10-10"), pendulum.parse("2019-10-10")
     assert from_date > to_date
     api_mock = make_api_mock()
-    job_manager = InsightsAsyncJobManager(
+    job_manager = InsightAsyncJobManager(
         api=api_mock,
         job_params={"breakdowns": []},
         from_date=from_date,
@@ -78,7 +77,7 @@ def test_async_job_manager_to_date_greater_from(job_mock):
 def test_job_failed(job_mock):
     from_date, to_date = pendulum.parse("2019-10-10"), pendulum.parse("2019-10-10")
     api_mock = make_api_mock()
-    job_manager = InsightsAsyncJobManager(
+    job_manager = InsightAsyncJobManager(
         api=api_mock,
         job_params={"breakdowns": []},
         from_date=from_date,
@@ -95,7 +94,7 @@ def test_job_failed(job_mock):
 def test_job_failed_two_times(job_mock):
     from_date, to_date = pendulum.parse("2019-10-10"), pendulum.parse("2019-10-10")
     api_mock = make_api_mock()
-    job_manager = InsightsAsyncJobManager(
+    job_manager = InsightAsyncJobManager(
         api=api_mock,
         job_params={"breakdowns": []},
         from_date=from_date,
@@ -113,7 +112,7 @@ def test_job_failed_two_times(job_mock):
 def test_job_wait_unitll_completed(job_mock, time_sleep_mock):
     from_date, to_date = pendulum.parse("2019-10-10"), pendulum.parse("2019-10-10")
     api_mock = make_api_mock()
-    job_manager = InsightsAsyncJobManager(
+    job_manager = InsightAsyncJobManager(
         api=api_mock,
         job_params={"breakdowns": []},
         from_date=from_date,
