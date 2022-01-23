@@ -20,10 +20,7 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
@@ -31,13 +28,9 @@ import java.util.function.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class InfiniteFeedSource extends BaseConnector implements Source {
+public class LegacyInfiniteFeedSource extends BaseConnector implements Source {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(InfiniteFeedSource.class);
-
-  public static final AirbyteCatalog CATALOG = CatalogHelpers.createAirbyteCatalog(
-      "data",
-      Field.of("column1", JsonSchemaPrimitive.STRING));
+  private static final Logger LOGGER = LoggerFactory.getLogger(LegacyInfiniteFeedSource.class);
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
@@ -46,13 +39,14 @@ public class InfiniteFeedSource extends BaseConnector implements Source {
 
   @Override
   public AirbyteCatalog discover(final JsonNode config) {
-    return Jsons.clone(CATALOG);
+    return Jsons.clone(LegacyConstants.DEFAULT_CATALOG);
   }
 
   @Override
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state) {
-    final Predicate<Long> anotherRecordPredicate =
-        config.has("max_records") ? recordNumber -> recordNumber < config.get("max_records").asLong() : recordNumber -> true;
+    final Predicate<Long> anotherRecordPredicate = config.has("max_records")
+        ? recordNumber -> recordNumber < config.get("max_records").asLong()
+        : recordNumber -> true;
 
     final Optional<Long> sleepTime = Optional.ofNullable(config.get("message_interval")).map(JsonNode::asLong);
 

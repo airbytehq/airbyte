@@ -61,6 +61,7 @@
     * [Dixa](integrations/sources/dixa.md)
     * [Drift](integrations/sources/drift.md)
     * [Drupal](integrations/sources/drupal.md)
+    * [End-to-End Testing](integrations/sources/e2e-test.md)
     * [Exchange Rates API](integrations/sources/exchangeratesapi.md)
     * [Facebook Marketing](integrations/sources/facebook-marketing.md)
     * [Facebook Pages](integrations/sources/facebook-pages.md)

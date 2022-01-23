@@ -19,10 +19,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import java.time.Instant;
 import java.util.List;
@@ -35,15 +32,11 @@ import org.slf4j.LoggerFactory;
  * Throws an exception after it emits N record messages where N == throw_after_n_records. Ever 5th
  * message emitted is a state message. State messages do NOT count against N.
  */
-public class ExceptionAfterNSource extends BaseConnector implements Source {
+public class LegacyExceptionAfterNSource extends BaseConnector implements Source {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ExceptionAfterNSource.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LegacyExceptionAfterNSource.class);
 
-  private static final String STREAM_NAME = "data";
-  private static final String COLUMN_NAME = "column1";
-  static final AirbyteCatalog CATALOG = CatalogHelpers.createAirbyteCatalog(
-      STREAM_NAME,
-      Field.of(COLUMN_NAME, JsonSchemaPrimitive.STRING));
+  static final AirbyteCatalog CATALOG = Jsons.clone(LegacyConstants.DEFAULT_CATALOG);
   static {
     CATALOG.getStreams().get(0).setSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
     CATALOG.getStreams().get(0).setSourceDefinedCursor(true);
@@ -65,9 +58,9 @@ public class ExceptionAfterNSource extends BaseConnector implements Source {
 
     final AtomicLong recordsEmitted = new AtomicLong();
     final AtomicLong recordValue;
-    if (state != null && state.has(COLUMN_NAME)) {
+    if (state != null && state.has(LegacyConstants.DEFAULT_COLUMN)) {
       LOGGER.info("Found state: {}", state);
-      recordValue = new AtomicLong(state.get(COLUMN_NAME).asLong());
+      recordValue = new AtomicLong(state.get(LegacyConstants.DEFAULT_COLUMN).asLong());
     } else {
       LOGGER.info("No state found.");
       recordValue = new AtomicLong();
@@ -80,26 +73,26 @@ public class ExceptionAfterNSource extends BaseConnector implements Source {
       protected AirbyteMessage computeNext() {
         if (recordsEmitted.get() % 5 == 0 && !hasEmittedStateAtCount.get()) {
 
-          LOGGER.info("{}: emitting state record with value {}", ExceptionAfterNSource.class, recordValue.get());
+          LOGGER.info("{}: emitting state record with value {}", LegacyExceptionAfterNSource.class, recordValue.get());
 
           hasEmittedStateAtCount.set(true);
           return new AirbyteMessage()
               .withType(Type.STATE)
-              .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, recordValue.get()))));
+              .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(LegacyConstants.DEFAULT_COLUMN, recordValue.get()))));
         } else if (throwAfterNRecords > recordsEmitted.get()) {
           recordsEmitted.incrementAndGet();
           recordValue.incrementAndGet();
           hasEmittedStateAtCount.set(false);
 
           LOGGER.info("{} ExceptionAfterNSource: emitting record with value {}. record {} in sync.",
-              ExceptionAfterNSource.class, recordValue.get(), recordsEmitted.get());
+              LegacyExceptionAfterNSource.class, recordValue.get(), recordsEmitted.get());
 
           return new AirbyteMessage()
               .withType(Type.RECORD)
               .withRecord(new AirbyteRecordMessage()
-                  .withStream(STREAM_NAME)
+                  .withStream(LegacyConstants.DEFAULT_STREAM)
                   .withEmittedAt(Instant.now().toEpochMilli())
-                  .withData(Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, recordValue.get()))));
+                  .withData(Jsons.jsonNode(ImmutableMap.of(LegacyConstants.DEFAULT_COLUMN, recordValue.get()))));
         } else {
           throw new IllegalStateException("Scheduled exceptional event.");
         }
