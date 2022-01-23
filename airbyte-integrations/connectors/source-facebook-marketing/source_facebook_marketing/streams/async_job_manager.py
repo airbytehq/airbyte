@@ -43,13 +43,8 @@ class InsightAsyncJobManager:
         self._api = api
         self._jobs = jobs
         self._running_jobs = []
-        self._empty = False
 
-    @property
-    def done(self):
-        return self._empty
-
-    def start_jobs(self):
+    def _start_jobs(self):
         """Enqueue new jobs."""
 
         self._update_api_throttle_limit()
@@ -59,7 +54,7 @@ class InsightAsyncJobManager:
             self._get_current_throttle_value() < self.THROTTLE_LIMIT
             and len(self._running_jobs) < self.MAX_JOBS_IN_QUEUE
         ):
-            job = next(self._jobs, None)
+            job = next(iter(self._jobs), None)
             if not job:
                 self._empty = True
                 break
@@ -80,7 +75,7 @@ class InsightAsyncJobManager:
         :yield: completed jobs
         """
         if not self._running_jobs:
-            self.start_jobs()
+            self._start_jobs()
 
         while self._running_jobs:
             completed_jobs = self._check_jobs_status_and_restart()
@@ -89,7 +84,7 @@ class InsightAsyncJobManager:
                 time.sleep(self.JOB_STATUS_UPDATE_SLEEP_SECONDS)
                 completed_jobs = self._check_jobs_status_and_restart()
             yield from completed_jobs
-            self.start_jobs()
+            self._start_jobs()
 
     def _check_jobs_status_and_restart(self) -> List[AsyncJob]:
         """ Checks jobs status in advance and restart if some failed.

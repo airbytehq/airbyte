@@ -86,10 +86,9 @@ class FBMarketingStream(Stream, ABC):
             api_batch.add_request(request, success=success, failure=failure)
             if len(api_batch) == self.MAX_BATCH_SIZE:
                 self._execute_batch(api_batch)
-
-            yield from records
-            api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
-            records = []
+                yield from records
+                api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
+                records = []
 
         self._execute_batch(api_batch)
         yield from records

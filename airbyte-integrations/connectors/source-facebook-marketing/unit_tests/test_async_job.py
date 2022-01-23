@@ -169,7 +169,7 @@ class TestInsightAsyncJob:
         assert failed_job.completed
         assert failed_job.failed
 
-    def test_completed_timeout(self, job, adreport, mocker):
+    def test_completed_timeout(self, job, adreport):
         job.start()
         adreport["async_status"] = Status.STARTED.value
         adreport["async_percent_completion"] = 1
@@ -178,7 +178,7 @@ class TestInsightAsyncJob:
         assert not job.completed
         assert not job.failed
 
-    def test_completed_timeout_not_started(self, job, adreport, mocker):
+    def test_completed_timeout_not_started(self, job, adreport):
         job.start()
         adreport["async_status"] = Status.STARTED.value
         adreport["async_percent_completion"] = 0
