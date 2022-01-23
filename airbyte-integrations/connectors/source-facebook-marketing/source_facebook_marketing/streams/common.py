@@ -4,7 +4,7 @@
 import http.client
 import logging
 import sys
-from typing import Any, Iterable, Sequence
+from typing import Any
 
 import backoff
 import pendulum

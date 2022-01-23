@@ -12,7 +12,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from cached_property import cached_property
-from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob, AsyncJob
+from source_facebook_marketing.streams.async_job import InsightAsyncJob, AsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
 
 from .streams import FBMarketingIncrementalStream
