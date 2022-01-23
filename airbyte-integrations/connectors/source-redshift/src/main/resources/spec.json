@@ -9,7 +9,8 @@
     "properties": {
       "host": {
         "description": "Host Endpoint of the Redshift Cluster (must include the cluster-id, region and end with .redshift.amazonaws.com)",
-        "type": "string"
+        "type": "string",
+        "order": 1
       },
       "port": {
         "description": "Port of the database.",
@@ -17,21 +18,37 @@
         "minimum": 0,
         "maximum": 65536,
         "default": 5439,
-        "examples": ["5439"]
+        "examples": ["5439"],
+        "order": 2
       },
       "database": {
         "description": "Name of the database.",
         "type": "string",
-        "examples": ["master"]
+        "examples": ["master"],
+        "order": 3
+      },
+      "schemas": {
+        "title": "Schemas",
+        "description": "The list of schemas to sync from. Defaults to user. Case sensitive.",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "minItems": 0,
+        "uniqueItems": true,
+        "examples": "public",
+        "order": 4
       },
       "username": {
         "description": "Username to use to access the database.",
-        "type": "string"
+        "type": "string",
+        "order": 5
       },
       "password": {
         "description": "Password associated with the username.",
         "type": "string",
-        "airbyte_secret": true
+        "airbyte_secret": true,
+        "order": 6
       }
     }
   }

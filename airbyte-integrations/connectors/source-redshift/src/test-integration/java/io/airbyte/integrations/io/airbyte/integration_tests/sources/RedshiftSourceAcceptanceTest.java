@@ -5,6 +5,7 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -40,18 +41,28 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    config = getStaticConfig();
+    final JsonNode plainConfig = getStaticConfig();
 
     database = Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        plainConfig.get("username").asText(),
+        plainConfig.get("password").asText(),
         String.format("jdbc:redshift://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
+            plainConfig.get("host").asText(),
+            plainConfig.get("port").asText(),
+            plainConfig.get("database").asText()),
         RedshiftSource.DRIVER_CLASS);
 
     schemaName = Strings.addRandomSuffix("integration_test", "_", 5).toLowerCase();
+
+    config = Jsons.jsonNode(ImmutableMap.builder()
+        .put("host", plainConfig.get("host"))
+        .put("port", plainConfig.get("port"))
+        .put("database", plainConfig.get("database"))
+        .put("schemas", List.of(schemaName))
+        .put("username", plainConfig.get("username"))
+        .put("password", plainConfig.get("password"))
+        .build());
+
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
     database.execute(connection -> {
       connection.createStatement().execute(createSchemaQuery);
