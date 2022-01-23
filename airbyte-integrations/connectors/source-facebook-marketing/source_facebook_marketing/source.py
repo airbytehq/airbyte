@@ -195,9 +195,9 @@ class SourceFacebookMarketing(AbstractSource):
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
-        """
-        Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
-        required to run this integration.
+        """ Returns the spec for this integration.
+            The spec is a JSON-Schema object describing the required configurations
+            (e.g: username and password) required to run this integration.
         """
         return ConnectorSpecification(
             documentationUrl=DOCS_URL,
@@ -214,9 +214,8 @@ class SourceFacebookMarketing(AbstractSource):
         )
 
     def _update_insights_streams(self, insights, args, streams) -> List[Type[Stream]]:
-        """Update method, if insights have values returns streams replacing the
-        default insights streams else returns streams
-
+        """ Update method, if insights have values returns streams replacing the
+            default insights streams else returns streams
         """
         if not insights:
             return streams

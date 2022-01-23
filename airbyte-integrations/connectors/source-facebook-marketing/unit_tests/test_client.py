@@ -42,7 +42,10 @@ def api_fixture(some_config, requests_mock, fb_account_response):
 @pytest.fixture(name="fb_call_rate_response")
 def fb_call_rate_response_fixture():
     error = {
-        "message": "(#80000) There have been too many calls from this ad-account. Wait a bit and try again. For more info, please refer to https://developers.facebook.com/docs/graph-api/overview/rate-limiting.",
+        "message": (
+            "(#80000) There have been too many calls from this ad-account. Wait a bit and try again. "
+            "For more info, please refer to https://developers.facebook.com/docs/graph-api/overview/rate-limiting."
+        ),
         "type": "OAuthException",
         "code": 80000,
         "error_subcode": 2446079,
