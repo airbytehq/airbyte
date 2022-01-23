@@ -241,3 +241,15 @@ class SpamReports(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin
 
     def path(self, **kwargs) -> str:
         return "suppression/spam_reports"
+
+
+class EmailActivity(
+    SendgridStreamOffsetPagination,
+    SendgridStreamIncrementalMixin,
+):
+    data_field = "messages"
+    primary_key = "to_email"
+    cursor_field = "last_event_time"
+
+    def path(self, **kwargs) -> str:
+        return "messages"

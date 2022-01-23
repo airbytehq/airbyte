@@ -14,6 +14,7 @@ from .streams import (
     Bounces,
     Campaigns,
     Contacts,
+    EmailActivity,
     GlobalSuppressions,
     InvalidEmails,
     Lists,
@@ -49,6 +50,10 @@ class SourceSendgrid(AbstractSource):
             Segments(authenticator=authenticator),
             SingleSends(authenticator=authenticator),
             Templates(authenticator=authenticator),
+            EmailActivity(
+                authenticator=authenticator,
+                start_time=config["start_time"],
+            ),
             GlobalSuppressions(authenticator=authenticator, start_time=config["start_time"]),
             SuppressionGroups(authenticator=authenticator),
             SuppressionGroupMembers(authenticator=authenticator),
