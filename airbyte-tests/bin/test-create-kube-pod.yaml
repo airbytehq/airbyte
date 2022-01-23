@@ -9,5 +9,5 @@ spec:
   automountServiceAccountToken: true
   containers:
     - name: main
-      image: airbyte/tests:dev-2
+      image: airbyte/tests:dev-3
   restartPolicy: Never

@@ -44,7 +44,7 @@ then
   if [ $watch_run_only -eq 0 ]
   then
       curl -sN http://127.0.0.1:8001/api/v1/namespaces/default/pods\?watch\=1 | \
-          jq -c 'select(.object.status.phase == "Running") | { "name": .object.metadata.name, "namespace": .object.metadata.namespace, "creationTimestamp": .object.metadata.creationTimestamp, "phase": .object.status.phase, "conditions": [ .object.status.conditions | .[] | select(.status == "True") | {(.type): .lastTransitionTime} ] | add } | select(.conditions.Ready)' >> ./local-src-poke-sleep-0.1-1-sec-init.txt
+          jq -c 'select(.object.status.phase == "Running") | { "name": .object.metadata.name, "namespace": .object.metadata.namespace, "creationTimestamp": .object.metadata.creationTimestamp, "phase": .object.status.phase, "conditions": [ .object.status.conditions | .[] | select(.status == "True") | {(.type): .lastTransitionTime} ] | add } | select(.conditions.Ready)' >> ./local-within-kube-pod-process-0.2-1-sec-init.txt
   else
       curl -sN http://127.0.0.1:8001/api/v1/namespaces/default/pods\?watch\=1 | \
           jq -c 'select(.object.status.phase == "Succeeded") | { "name": .object.metadata.name, "namespace": .object.metadata.namespace, "creationTimestamp": .object.metadata.creationTimestamp, "mainStartTimestamp": .object.status.containerStatuses | .[] | select(.name == "main") | .state.terminated.startedAt,"mainFinishTimestamp": .object.status.containerStatuses | .[] | select(.name == "main") | .state.terminated.finishedAt}' > ./local-src-poke-sleep-0.1-1-sec-succeed.txt
