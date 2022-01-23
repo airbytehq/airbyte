@@ -1,9 +1,9 @@
 import { ReadShape, Resource, SchemaDetail } from "rest-hooks";
 
 import BaseResource from "./BaseResource";
-import { JobInfo } from "./Scheduler";
 import { SourceDiscoverSchemaRead, SyncSchema } from "core/domain/catalog";
 import { toInnerModel } from "core/domain/catalog/fieldUtil";
+import { JobInfo } from "../domain/job/Job";
 
 export interface Schema extends SourceDiscoverSchemaRead {
   id: string;
@@ -25,8 +25,6 @@ export default class SchemaResource extends BaseResource implements Schema {
   ): ReadShape<SchemaDetail<Schema>> {
     return {
       ...super.detailShape(),
-      getFetchKey: (params: { sourceId: string }) =>
-        `POST /sources/discover_schema` + JSON.stringify(params),
       fetch: async (params: { sourceId: string }): Promise<Schema> => {
         const response = await this.fetch(
           "post",

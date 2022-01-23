@@ -196,8 +196,7 @@ public class ContainerOrchestratorApp {
           configs.getWorkspaceRoot(),
           configs.getWorkspaceDockerMount(),
           configs.getLocalDockerMount(),
-          configs.getDockerNetwork(),
-          false);
+          configs.getDockerNetwork());
     }
   }
 
