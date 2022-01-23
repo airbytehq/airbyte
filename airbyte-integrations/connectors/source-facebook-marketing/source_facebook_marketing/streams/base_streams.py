@@ -5,14 +5,7 @@
 import logging
 from abc import ABC
 from datetime import datetime
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Iterable,
-    List,
-    Mapping,
-    MutableMapping,
-)
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping
 
 import pendulum
 from airbyte_cdk.models import SyncMode

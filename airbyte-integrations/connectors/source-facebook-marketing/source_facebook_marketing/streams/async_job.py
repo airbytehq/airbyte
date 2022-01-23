@@ -19,7 +19,7 @@ logger = logging.getLogger("airbyte")
 def chunks(data, n):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(data), n):
-        yield data[i: i + n]
+        yield data[i : i + n]
 
 
 class Status(str, Enum):

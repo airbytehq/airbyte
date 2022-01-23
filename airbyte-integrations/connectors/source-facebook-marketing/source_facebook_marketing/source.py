@@ -126,7 +126,7 @@ class ConnectorConfig(BaseConfig):
 
 
 class SourceFacebookMarketing(AbstractSource):
-    def check_connection(self, _logger: 'logging.Logger', config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, _logger: "logging.Logger", config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
 
         :param config:  the user-input config object conforming to the connector's spec.json
@@ -179,8 +179,8 @@ class SourceFacebookMarketing(AbstractSource):
         return self._update_insights_streams(insights=config.custom_insights, args=insights_args, streams=streams)
 
     def check(self, _logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        """ Implements the Check Connection operation from the Airbyte Specification.
-            See https://docs.airbyte.io/architecture/airbyte-specification.
+        """Implements the Check Connection operation from the Airbyte Specification.
+        See https://docs.airbyte.io/architecture/airbyte-specification.
         """
         try:
             check_succeeded, error = self.check_connection(logger, config)
@@ -195,9 +195,9 @@ class SourceFacebookMarketing(AbstractSource):
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
-        """ Returns the spec for this integration.
-            The spec is a JSON-Schema object describing the required configurations
-            (e.g: username and password) required to run this integration.
+        """Returns the spec for this integration.
+        The spec is a JSON-Schema object describing the required configurations
+        (e.g: username and password) required to run this integration.
         """
         return ConnectorSpecification(
             documentationUrl=DOCS_URL,
@@ -214,8 +214,8 @@ class SourceFacebookMarketing(AbstractSource):
         )
 
     def _update_insights_streams(self, insights, args, streams) -> List[Type[Stream]]:
-        """ Update method, if insights have values returns streams replacing the
-            default insights streams else returns streams
+        """Update method, if insights have values returns streams replacing the
+        default insights streams else returns streams
         """
         if not insights:
             return streams

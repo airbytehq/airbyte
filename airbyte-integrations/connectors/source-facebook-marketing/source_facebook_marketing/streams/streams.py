@@ -4,22 +4,14 @@
 
 import base64
 import logging
-from typing import (
-    Any,
-    Iterable,
-    Iterator,
-    List,
-    Mapping,
-    Optional,
-)
+from typing import Any, Iterable, Iterator, List, Mapping, Optional
 
 import requests
 from airbyte_cdk.models import SyncMode
 from cached_property import cached_property
 
-from .base_streams import FBMarketingStream, FBMarketingIncrementalStream
 from .base_insight_streams import AdsInsights
-
+from .base_streams import FBMarketingIncrementalStream, FBMarketingStream
 
 logger = logging.getLogger("airbyte")
 
