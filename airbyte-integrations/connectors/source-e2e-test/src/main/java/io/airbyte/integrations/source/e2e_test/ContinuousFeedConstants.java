@@ -27,4 +27,7 @@ public final class ContinuousFeedConstants {
     }
   };
 
+  private ContinuousFeedConstants() {
+  }
+
 }

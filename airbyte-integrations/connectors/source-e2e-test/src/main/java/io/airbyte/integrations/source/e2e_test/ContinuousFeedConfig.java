@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SpecVersion;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -33,7 +31,6 @@ public class ContinuousFeedConfig {
   private static final ObjectMapper MAPPER = MoreMappers.initMapper();
 
   static {
-    final JsonSchemaFactory jsonSchemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
     try {
       final String jsonSchemaDraft07 = MoreResources.readResource("json_schema_draft_07.json");
       JSON_SCHEMA_DRAFT_07 = Jsons.deserialize(jsonSchemaDraft07);

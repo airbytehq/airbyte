@@ -24,7 +24,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Predicate;
+import java.util.function.LongPredicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +44,7 @@ public class LegacyInfiniteFeedSource extends BaseConnector implements Source {
 
   @Override
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state) {
-    final Predicate<Long> anotherRecordPredicate = config.has("max_records")
+    final LongPredicate anotherRecordPredicate = config.has("max_records")
         ? recordNumber -> recordNumber < config.get("max_records").asLong()
         : recordNumber -> true;
 
@@ -56,28 +56,27 @@ public class LegacyInfiniteFeedSource extends BaseConnector implements Source {
 
       @Override
       protected AirbyteMessage computeNext() {
-        if (anotherRecordPredicate.test(i.get())) {
-          if (i.get() != 0) {
-            if (sleepTime.isPresent()) {
-              try {
-                LOGGER.info("sleeping for {} ms", sleepTime.get());
-                sleep(sleepTime.get());
-              } catch (final InterruptedException e) {
-                throw new RuntimeException(e);
-              }
-            }
-          }
-          i.incrementAndGet();
-          LOGGER.info("source emitting record {}:", i.get());
-          return new AirbyteMessage()
-              .withType(Type.RECORD)
-              .withRecord(new AirbyteRecordMessage()
-                  .withStream("data")
-                  .withEmittedAt(Instant.now().toEpochMilli())
-                  .withData(Jsons.jsonNode(ImmutableMap.of("column1", i))));
-        } else {
+        if (!anotherRecordPredicate.test(i.get())) {
           return endOfData();
         }
+
+        if (sleepTime.isPresent() && i.get() != 0) {
+          try {
+            LOGGER.info("sleeping for {} ms", sleepTime.get());
+            sleep(sleepTime.get());
+          } catch (final InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        i.incrementAndGet();
+        LOGGER.info("source emitting record {}:", i.get());
+        return new AirbyteMessage()
+            .withType(Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                .withStream("data")
+                .withEmittedAt(Instant.now().toEpochMilli())
+                .withData(Jsons.jsonNode(ImmutableMap.of("column1", i))));
       }
 
     });
