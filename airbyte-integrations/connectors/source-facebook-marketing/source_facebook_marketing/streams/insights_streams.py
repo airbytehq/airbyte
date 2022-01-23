@@ -4,7 +4,7 @@
 
 import copy
 import logging
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Iterator
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Iterator, Union
 
 import airbyte_cdk.sources.utils.casing as casing
 import pendulum
@@ -24,7 +24,6 @@ class AdsInsights(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/insights"""
 
     cursor_field = "date_start"
-    primary_key = None
 
     ALL_ACTION_ATTRIBUTION_WINDOWS = [
         "1d_click",
@@ -83,6 +82,11 @@ class AdsInsights(FBMarketingIncrementalStream):
         """ We override stream name to let the user change it via configuration."""
         name = self._new_class_name or self.__class__.__name__
         return casing.camel_to_snake(name)
+
+    @property
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        """Build complex PK based on slices and breakdowns"""
+        return ["date_start", "ad_id"] + self.breakdowns
 
     def _get_campaign_ids(self, params) -> List[str]:
         campaign_params = copy.deepcopy(params)
