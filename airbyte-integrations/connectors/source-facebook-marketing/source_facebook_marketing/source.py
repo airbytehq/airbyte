@@ -46,26 +46,31 @@ from source_facebook_marketing.streams import (
 
 logger = logging.getLogger("airbyte")
 
+DOCS_URL = "https://docs.airbyte.io/integrations/sources/facebook-marketing"
+
 
 class InsightConfig(BaseModel):
+    """Config for custom insights"""
 
     name: str = Field(description="The name value of insight")
-
     fields: Optional[List[str]] = Field(description="A list of chosen fields for fields parameter", default=[])
-
     breakdowns: Optional[List[str]] = Field(description="A list of chosen breakdowns for breakdowns", default=[])
-
     action_breakdowns: Optional[List[str]] = Field(description="A list of chosen action_breakdowns for action_breakdowns", default=[])
 
 
 class ConnectorConfig(BaseConfig):
+    """Connector config"""
+
     class Config:
         title = "Source Facebook Marketing"
 
     start_date: datetime = Field(
         title="Start Date",
         order=0,
-        description="The date from which you'd like to replicate data for AdCreatives and AdInsights APIs, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
+        description=(
+            "The date from which you'd like to replicate data for all incremental streams, "
+            "in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated."
+        ),
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         examples=["2017-01-25T00:00:00Z"],
     )
@@ -73,7 +78,11 @@ class ConnectorConfig(BaseConfig):
     end_date: Optional[datetime] = Field(
         title="End Date",
         order=1,
-        description="The date until which you'd like to replicate data for AdCreatives and AdInsights APIs, in the format YYYY-MM-DDT00:00:00Z. All data generated between start_date and this date will be replicated. Not setting this option will result in always syncing the latest data.",
+        description=(
+            "The date until which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z. "
+            "All data generated between start_date and this date will be replicated. "
+            "Not setting this option will result in always syncing the latest data."
+        ),
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         examples=["2017-01-26T00:00:00Z"],
         default_factory=pendulum.now,
@@ -89,7 +98,7 @@ class ConnectorConfig(BaseConfig):
     access_token: str = Field(
         title="Access Token",
         order=3,
-        description='The value of the access token generated. See the <a href="https://docs.airbyte.io/integrations/sources/facebook-marketing">docs</a> for more information',
+        description=f'The value of the access token generated. See the <a href="{DOCS_URL}">docs</a> for more information',
         airbyte_secret=True,
     )
 
@@ -110,16 +119,18 @@ class ConnectorConfig(BaseConfig):
     custom_insights: Optional[List[InsightConfig]] = Field(
         title="Custom Insights",
         order=6,
-        description="A list which contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)",
+        description=(
+            "A list which contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)"
+        ),
     )
 
 
 class SourceFacebookMarketing(AbstractSource):
-    def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, _logger: 'logging.Logger', config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
 
         :param config:  the user-input config object conforming to the connector's spec.json
-        :param logger:  logger object
+        :param _logger:  logger object
         :return Tuple[bool, Any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
         ok = False
@@ -139,6 +150,7 @@ class SourceFacebookMarketing(AbstractSource):
         """Discovery method, returns available streams
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
+        :return: list of the stream instances
         """
         config: ConnectorConfig = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
         api = API(account_id=config.account_id, access_token=config.access_token)
@@ -166,8 +178,10 @@ class SourceFacebookMarketing(AbstractSource):
 
         return self._update_insights_streams(insights=config.custom_insights, args=insights_args, streams=streams)
 
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        """Implements the Check Connection operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
+    def check(self, _logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+        """ Implements the Check Connection operation from the Airbyte Specification.
+            See https://docs.airbyte.io/architecture/airbyte-specification.
+        """
         try:
             check_succeeded, error = self.check_connection(logger, config)
             if not check_succeeded:
@@ -186,8 +200,8 @@ class SourceFacebookMarketing(AbstractSource):
         required to run this integration.
         """
         return ConnectorSpecification(
-            documentationUrl="https://docs.airbyte.io/integrations/sources/facebook-marketing",
-            changelogUrl="https://docs.airbyte.io/integrations/sources/facebook-marketing",
+            documentationUrl=DOCS_URL,
+            changelogUrl=DOCS_URL,
             supportsIncremental=True,
             supported_destination_sync_modes=[DestinationSyncMode.append],
             connectionSpecification=ConnectorConfig.schema(),
@@ -255,7 +269,7 @@ class SourceFacebookMarketing(AbstractSource):
 
     def _read_incremental(
         self,
-        logger: AirbyteLogger,
+        _logger: AirbyteLogger,
         stream_instance: Stream,
         configured_stream: ConfiguredAirbyteStream,
         connector_state: MutableMapping[str, Any],
@@ -269,7 +283,7 @@ class SourceFacebookMarketing(AbstractSource):
             stream_instance.state = stream_state
             call stream_instance.state when we want to dump state message
 
-        :param logger:
+        :param _logger:
         :param stream_instance:
         :param configured_stream:
         :param connector_state:

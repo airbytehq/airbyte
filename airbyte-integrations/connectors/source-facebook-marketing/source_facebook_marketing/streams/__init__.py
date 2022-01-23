@@ -1,7 +1,8 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-from .insights_streams import (
+
+from .streams import (
     AdsInsights,
     AdsInsightsActionType,
     AdsInsightsAgeAndGender,

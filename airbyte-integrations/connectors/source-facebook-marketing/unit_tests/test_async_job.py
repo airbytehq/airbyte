@@ -55,51 +55,6 @@ def api_fixture(mocker, adreport):
 
     return api
 
-    """
-    def __init__(self, api, edge_object: Any, params: Mapping[str, Any], key: Optional[Any] = None):
-
-    def split_job(self) -> ParentAsyncJob:
-        campaign_params = dict(copy.deepcopy(self._params))
-        # get campaigns from attribution window as well (28 day + 1 current day)
-        new_start = pendulum.parse(self._params["time_range"]["since"]) - pendulum.duration(days=28 + 1)
-        campaign_params.update(fields=["campaign_id"], level="campaign")
-        campaign_params["time_range"].update(since=new_start.to_date_string())
-        campaign_params.pop("time_increment")  # query all days
-        result = self._edge_object.get_insights(params=campaign_params)
-        campaign_ids = set(row["campaign_id"] for row in result)
-        logger.info(f"Got {len(campaign_ids)} campaigns for period {self._params['time_range']}: {campaign_ids}")
-
-        return ParentAsyncJob(self._api, jobs=[InsightAsyncJob(self._api, Campaign(pk), self._params) for pk in campaign_ids])
-
-    def start(self, batch=None):
-        if self._job:
-            raise RuntimeError(f"{self}: Incorrect usage of start - the job already started, use restart instead")
-
-        if batch is not None:
-            self._edge_object.get_insights(
-                params=self._params, is_async=True, batch=batch,
-                success=self._batch_success_handler, failure=self._batch_failure_handler,
-            )
-        else:
-            self._job = self._edge_object.get_insights(params=self._params, is_async=True)
-
-        self._start_time = pendulum.now()
-        job_id = self._job["report_run_id"]
-        time_range = self._params["time_range"]
-        breakdowns = self._params["breakdowns"]
-        logger.info(f"Created AdReportRun: {job_id} to sync insights {time_range} with breakdown {breakdowns} for {self._edge_object}")
-
-    def restart(self):
-    def restart_number(self):
-    def elapsed_time(self) -> Optional[pendulum.duration]:
-    def completed(self) -> bool:
-    def failed(self) -> bool:
-
-    def update_job(self, batch: Optional[FacebookAdsApiBatch] = None):
-
-    def get_result(self) -> Any:
-    """
-
 
 class TestInsightAsyncJob:
     def test_start(self, job):

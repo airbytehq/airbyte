@@ -258,29 +258,3 @@ class AdsInsights(FBMarketingIncrementalStream):
             return self._fields
         schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
         return list(schema.get("properties", {}).keys())
-
-
-class AdsInsightsAgeAndGender(AdsInsights):
-    breakdowns = ["age", "gender"]
-
-
-class AdsInsightsCountry(AdsInsights):
-    breakdowns = ["country"]
-
-
-class AdsInsightsRegion(AdsInsights):
-    breakdowns = ["region"]
-
-
-class AdsInsightsDma(AdsInsights):
-    breakdowns = ["dma"]
-
-
-class AdsInsightsPlatformAndDevice(AdsInsights):
-    breakdowns = ["publisher_platform", "platform_position", "impression_device"]
-    action_breakdowns = ["action_type"]  # FB Async Job fails for unknown reason if we set other breakdowns
-
-
-class AdsInsightsActionType(AdsInsights):
-    breakdowns = []
-    action_breakdowns = ["action_type"]
