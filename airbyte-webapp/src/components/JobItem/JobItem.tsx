@@ -1,17 +1,15 @@
 import React, { Suspense, useState } from "react";
 import styled from "styled-components";
 
-import { JobItem as JobApiItem, Attempt } from "core/resources/Job";
-import Spinner from "../Spinner";
+import { Spinner } from "components";
+
+import { JobInfo, JobListItem, Logs } from "core/domain/job/Job";
+import Status from "core/statuses";
+
 import JobLogs from "./components/JobLogs";
 import ContentWrapper from "./components/ContentWrapper";
 import MainInfo from "./components/MainInfo";
-import Status from "core/statuses";
-
-type IProps = {
-  job: JobApiItem;
-  attempts: Attempt[];
-};
+import { LogsDetails } from "./components/LogsDetails";
 
 const Item = styled.div<{ isFailed: boolean }>`
   border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
@@ -31,19 +29,42 @@ const LoadLogs = styled.div`
   min-height: 58px;
 `;
 
-const JobItem: React.FC<IProps> = ({ job, attempts }) => {
+const isJobEntity = (
+  props: { job: JobListItem } | { jobInfo: JobInfo }
+): props is { job: JobListItem } => {
+  return props.hasOwnProperty("job");
+};
+
+const JobCurrentLogs: React.FC<{
+  id: number | string;
+  jobIsFailed?: boolean;
+  logs?: Logs;
+}> = (props) => {
+  const path = ["/tmp/workspace", props.id, "logs.log"].join("/");
+
+  return <LogsDetails {...props} path={path} />;
+};
+
+type IProps = {
+  shortInfo?: boolean;
+} & ({ job: JobListItem } | { jobInfo: JobInfo });
+
+const JobItem: React.FC<IProps> = ({ shortInfo, ...props }) => {
   const [isOpen, setIsOpen] = useState(false);
   const onExpand = () => setIsOpen(!isOpen);
-  const isFailed = job.status === Status.FAILED;
+
+  const jobMeta = isJobEntity(props) ? props.job.job : props.jobInfo;
+  const isFailed = jobMeta.status === Status.FAILED;
 
   return (
     <Item isFailed={isFailed}>
       <MainInfo
+        shortInfo={shortInfo}
         isOpen={isOpen}
         isFailed={isFailed}
         onExpand={onExpand}
-        job={job}
-        attempts={attempts}
+        job={jobMeta}
+        attempts={isJobEntity(props) ? props.job.attempts : undefined}
       />
       <ContentWrapper isOpen={isOpen}>
         <div>
@@ -54,7 +75,17 @@ const JobItem: React.FC<IProps> = ({ job, attempts }) => {
               </LoadLogs>
             }
           >
-            {isOpen && <JobLogs id={job.id} jobIsFailed={isFailed} />}
+            {isOpen ? (
+              isJobEntity(props) ? (
+                <JobLogs id={jobMeta.id} jobIsFailed={isFailed} />
+              ) : (
+                <JobCurrentLogs
+                  id={jobMeta.id}
+                  jobIsFailed={isFailed}
+                  logs={props.jobInfo.logs}
+                />
+              )
+            ) : null}
           </Suspense>
         </div>
       </ContentWrapper>
