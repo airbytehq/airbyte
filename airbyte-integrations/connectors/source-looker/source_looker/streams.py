@@ -4,16 +4,17 @@
 
 import copy
 import functools
+from abc import ABC
+from collections import defaultdict
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
+
 import pendulum
 import requests
-from abc import ABC
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from collections import defaultdict
 from prance import ResolvingParser
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 API_VERSION = "3.1"
 
@@ -85,6 +86,8 @@ class LookerException(Exception):
 
 
 class BaseLookerStream(HttpStream, ABC):
+    """Base looker class"""
+
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     @property
@@ -110,6 +113,10 @@ class BaseLookerStream(HttpStream, ABC):
 
 
 class SwaggerParser(BaseLookerStream):
+    """Convertor Swagger file to stream schemas
+    https://<domain>/api/<api_version>/swagger.json
+    """
+
     class Endpoint:
         def __init__(self, *, name: str, path: str, schema: Mapping[str, Any], operation_id: str, summary: str):
             self.name, self.path, self.schema, self.operation_id, self.summary = name, path, schema, operation_id, summary
@@ -159,13 +166,16 @@ class SwaggerParser(BaseLookerStream):
         return endpoints
 
     @classmethod
-    def format_schema(cls, schema: Mapping[str, Any], key: str = None) -> Mapping[str, Any]:
-
-        updated_schema: Mapping = {}
+    def format_schema(cls, schema: Mapping[str, Any], key: str = None) -> Dict[str, Any]:
+        """Clean and validates all swagger "response" schemas
+        The Looker swagger file includes custom Locker fields (x-looker-...) and
+        it doesn't support multi typing( ["null", "..."])
+        """
+        updated_schema: Dict[str, Any] = {}
         object_type: Union[str, List[str]] = schema.get("type")
         if "properties" in schema:
             object_type = ["null", "object"]
-            updated_sub_schemas: Mapping = {}
+            updated_sub_schemas: Dict[str, Any] = {}
             for key, sub_schema in schema["properties"].items():
                 updated_sub_schemas[key] = cls.format_schema(sub_schema, key=key)
             updated_schema["properties"] = updated_sub_schemas
@@ -183,14 +193,15 @@ class SwaggerParser(BaseLookerStream):
         if "description" in schema:
             updated_schema["description"] = schema["description"]
 
-        if schema.get("x-looker-nullable") is True and isinstance(schema["type"], str):
-            updated_schema["type"] = ["null", schema["type"]]
-        elif isinstance(schema["type"], str):
-            updated_schema["type"] = schema["type"]
+        if schema.get("x-looker-nullable") is True and isinstance(object_type, str):
+            object_type = ["null", object_type]
+        updated_schema["type"] = object_type
         return updated_schema
 
 
 class LookerStream(BaseLookerStream, ABC):
+    # keys for correct mapping between parent and current streams.
+    # Several streams have some special aspects
     parent_slice_key = "id"
     custom_slice_key: str = None
 
@@ -202,15 +213,18 @@ class LookerStream(BaseLookerStream, ABC):
 
     @property
     def endpoint(self) -> SwaggerParser.Endpoint:
+        """Extracts endpoint options"""
         return self._swagger_parser.get_endpoints()[self._name]
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str]]]:
+        """not all streams have primary key"""
         if self.get_json_schema()["properties"].get("id"):
             return "id"
         return None
 
     def generate_looker_stream(self, name: str, request_params: Mapping[str, Any] = None) -> "LookerStream":
+        """Generate a stream object. It can be used for loading of parent data"""
         return LookerStream(
             name, authenticator=self.authenticator, swagger_parser=self._swagger_parser, domain=self._domain, request_params=request_params
         )
@@ -221,7 +235,6 @@ class LookerStream(BaseLookerStream, ABC):
             return []
 
         parent_path = "/".join(parts[:-2])
-        # self.logger.warning("%s => %s" % (parts, parent_path))
         for endpoint in self._swagger_parser.get_endpoints().values():
             if endpoint.path == parent_path:
                 return [endpoint]
@@ -239,6 +252,7 @@ class LookerStream(BaseLookerStream, ABC):
         return self._name
 
     def get_json_schema(self) -> Mapping[str, Any]:
+        # Overrides default logic. All schema should be generated dynamically.
         schema = self.endpoint.schema.get("items") or self.endpoint.schema
         return {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": schema["properties"]}
 
@@ -256,6 +270,10 @@ class LookerStream(BaseLookerStream, ABC):
             return
         for parent_endpoint in parent_endpoints:
             parent_stream = self.generate_looker_stream(parent_endpoint.name)
+
+            # if self.custom_slice_key is None, this logic will generate it itself with the following rule:
+            # parent_name has the 's' at the end and its template key has "_id" at the end
+            # e.g. dashboards => dashboard_id
             parent_key = self.custom_slice_key or parent_endpoint.name[:-1] + "_id"
             for slice in parent_stream.stream_slices(sync_mode=sync_mode):
                 for item in parent_stream.read_records(sync_mode=sync_mode, stream_slice=slice):
@@ -263,6 +281,9 @@ class LookerStream(BaseLookerStream, ABC):
                         yield {parent_key: item[self.parent_slice_key]}
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs: Any) -> Iterable[Mapping]:
+        """Parses data. The Looker API doesn't support pagination logis.
+        Thus all responses are or JSON list or target single object.
+        """
         data = response.json()
         if isinstance(data, list):
             yield from data
@@ -271,6 +292,8 @@ class LookerStream(BaseLookerStream, ABC):
 
 
 class ContentMetadata(LookerStream):
+    """ContentMetadata stream has personal customization. Because it has several parent streams"""
+
     parent_slice_key = "content_metadata_id"
     custom_slice_key = "content_metadata_id"
 
@@ -280,16 +303,20 @@ class ContentMetadata(LookerStream):
 
 
 class QueryHistory(BaseLookerStream):
+    """This stream is custom Looker query. That its response has a individual static schema."""
+
     http_method = "POST"
     cursor_field = "history_created_time"
     # all connector's request should have this value of as prefix of queries' client_id
     airbyte_client_id_prefix = "AiRbYtE2"
 
+    @property
     def primary_key(self) -> Optional[Union[str, List[str]]]:
         return ["query_id", "history_created_time"]
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
+        """this is a workaround: the Airbyte CDK forces for save the latest state after reading of all records"""
         if self._is_finished:
             return 1
         return 100
@@ -303,11 +330,20 @@ class QueryHistory(BaseLookerStream):
         self._is_finished = False
 
     def get_query_client_id(self, stream_state: MutableMapping[str, Any]) -> str:
+        """
+         The query client_id is used for filtering because this query metadata is added to a response of this request
+        and the connector should skip our request information.
+         Values of the client_id is unique for every request body. it must be changed if any query symbol is changed.
+        But for incremental logic we have to add dynamic filter conditions. The single query's updating is stream_state value
+        thus it can be used as a part of client_id values. e.g.:
+            stream_state 2050-01-01T00:00:00Z -> client_id AiRbYtE225246479800000
+        """
         latest_created_time = (stream_state or {}).get(self.cursor_field)
         timestamp = 0
         if latest_created_time:
-            dt = pendulum.parse(latest_created_time)
+            dt = pendulum.parse(latest_created_time)  # type: ignore[attr-defined]
             timestamp = int(dt.timestamp())
+        # client_id has the hard-set length (22 symbols) this we add "0" to the end
         return f"{self.airbyte_client_id_prefix}{timestamp}".ljust(22, "0")
 
     def request_body_json(self, stream_state: MutableMapping[str, Any], **kwargs: Any) -> Optional[Mapping]:
@@ -316,7 +352,7 @@ class QueryHistory(BaseLookerStream):
         if not latest_created_time:
             latest_created_time = "1970-01-01T00:00:00Z"
 
-        dt = pendulum.parse(latest_created_time)
+        dt = pendulum.parse(latest_created_time)  # type: ignore[attr-defined]
         dt_func = f"date_time({dt.year}, {dt.month}, {dt.day}, {dt.hour}, {dt.minute}, {dt.second})"
         client_id = self.get_query_client_id(stream_state)
 
@@ -383,6 +419,12 @@ class QueryHistory(BaseLookerStream):
 
 
 class RunLooks(LookerStream):
+    """ "
+    Runs ready looks' requests
+    Docs: https://docs.looker.com/reference/api-and-integration/api-reference/v4.0/look#run_look
+    """
+
+    @property
     def primary_key(self) -> Optional[Union[str, List[str]]]:
         return None
 
@@ -481,7 +523,7 @@ class Dashboards(LookerStream):
     """Customization for dashboards stream because for 2 diff stream there is single endpoint only"""
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs: Any) -> Iterable[Mapping]:
-        for record in super().parse_response(response=response, **kwargs):
+        for record in super().parse_response(response=response, stream_slice=stream_slice, **kwargs):
             # "id" of "dashboards" is integer
             # "id" of "lookml_dashboards" is string
             if self._name == "dashboards" and isinstance(record["id"], int):

@@ -83,10 +83,7 @@
                         "offset": {
                           "multipleOf": 1e-16,
                           "description": "Offset in continuous palette (0 to 100)",
-                          "type": [
-                            "null",
-                            "number"
-                          ]
+                          "type": "number"
                         }
                       },
                       "type": [
@@ -140,10 +137,7 @@
                         "offset": {
                           "multipleOf": 1e-16,
                           "description": "Offset in continuous palette (0 to 100)",
-                          "type": [
-                            "null",
-                            "number"
-                          ]
+                          "type": "number"
                         }
                       },
                       "type": [
@@ -5896,10 +5890,7 @@
             "item_order": {
               "items": {
                 "multipleOf": 1e-16,
-                "type": [
-                  "null",
-                  "number"
-                ]
+                "type": "number"
               },
               "description": "ids of the homepage items in the order they should be displayed",
               "type": [
@@ -5932,10 +5923,7 @@
             "visible_item_order": {
               "items": {
                 "multipleOf": 1e-16,
-                "type": [
-                  "null",
-                  "number"
-                ]
+                "type": "number"
               },
               "description": "ids of the homepage items the user can see in the order they should be displayed",
               "type": [
@@ -6249,10 +6237,7 @@
                   "item_order": {
                     "items": {
                       "multipleOf": 1e-16,
-                      "type": [
-                        "null",
-                        "number"
-                      ]
+                      "type": "number"
                     },
                     "description": "ids of the homepage items in the order they should be displayed",
                     "type": [
@@ -6285,10 +6270,7 @@
                   "visible_item_order": {
                     "items": {
                       "multipleOf": 1e-16,
-                      "type": [
-                        "null",
-                        "number"
-                      ]
+                      "type": "number"
                     },
                     "description": "ids of the homepage items the user can see in the order they should be displayed",
                     "type": [
@@ -6315,10 +6297,7 @@
             "section_order": {
               "items": {
                 "multipleOf": 1e-16,
-                "type": [
-                  "null",
-                  "number"
-                ]
+                "type": "number"
               },
               "description": "ids of the homepage sections in the order they should be displayed",
               "type": [
@@ -6666,10 +6645,7 @@
             "installed_delegate_oauth_targets": {
               "items": {
                 "multipleOf": 1e-16,
-                "type": [
-                  "null",
-                  "number"
-                ]
+                "type": "number"
               },
               "description": "Whether the integration is available to users.",
               "type": [
@@ -8076,10 +8052,7 @@
             "item_order": {
               "items": {
                 "multipleOf": 1e-16,
-                "type": [
-                  "null",
-                  "number"
-                ]
+                "type": "number"
               },
               "description": "ids of the homepage items in the order they should be displayed",
               "type": [
@@ -8112,10 +8085,7 @@
             "visible_item_order": {
               "items": {
                 "multipleOf": 1e-16,
-                "type": [
-                  "null",
-                  "number"
-                ]
+                "type": "number"
               },
               "description": "ids of the homepage items the user can see in the order they should be displayed",
               "type": [
@@ -11382,10 +11352,7 @@
             "group_ids": {
               "items": {
                 "multipleOf": 1e-16,
-                "type": [
-                  "null",
-                  "number"
-                ]
+                "type": "number"
               },
               "description": "Array of ids of the groups for this user",
               "type": [
@@ -11470,10 +11437,7 @@
             "role_ids": {
               "items": {
                 "multipleOf": 1e-16,
-                "type": [
-                  "null",
-                  "number"
-                ]
+                "type": "number"
               },
               "description": "Array of ids of the roles for this user",
               "type": [
