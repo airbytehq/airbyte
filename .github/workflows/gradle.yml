@@ -566,6 +566,12 @@ jobs:
       - name: Build Platform Docker Images
         run: SUB_BUILD=PLATFORM ./gradlew assemble --scan
 
+      - name: Run Logging Tests
+        run: ./tools/bin/cloud_storage_logging_test.sh
+        env:
+          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
+          GOOGLE_CLOUD_STORAGE_TEST_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
+
       - name: Run Kubernetes End-to-End Acceptance Tests
         env:
           USER: root
@@ -581,12 +587,6 @@ jobs:
         with:
           name: Kubernetes Logs
           path: /tmp/kubernetes_logs/*
-
-      - name: Run Logging Tests
-        run: ./tools/bin/cloud_storage_logging_test.sh
-        env:
-          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
-          GOOGLE_CLOUD_STORAGE_TEST_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
 
       - name: Show Disk Usage
         run: |
