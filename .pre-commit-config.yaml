@@ -16,7 +16,12 @@ repos:
     rev: 5.10.1
     hooks:
       - id: isort
-        args: ["--settings-path=tools/python/.isort.cfg", "--dont-follow-links", "--jobs=-1"]
+        args:
+          [
+            "--settings-path=tools/python/.isort.cfg",
+            "--dont-follow-links",
+            "--jobs=-1",
+          ]
         additional_dependencies: ["colorama"]
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v2.5.0
