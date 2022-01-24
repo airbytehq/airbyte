@@ -37,8 +37,6 @@ from source_facebook_marketing.streams import (
 
 logger = logging.getLogger("airbyte")
 
-DOCS_URL = "https://docs.airbyte.io/integrations/sources/facebook-marketing"
-
 
 class SourceFacebookMarketing(AbstractSource):
     def check_connection(self, _logger: "logging.Logger", config: Mapping[str, Any]) -> Tuple[bool, Any]:
