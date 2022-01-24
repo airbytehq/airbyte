@@ -7,10 +7,12 @@ import random
 from typing import Any, Dict, Iterable, List, Mapping, Tuple
 
 import pendulum
+
 import pytest
 import requests_mock
 import timeout_decorator
-from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
+from airbyte_cdk.sources.streams.http.exceptions import \
+    UserDefinedBackoffException
 from source_tiktok_marketing import SourceTiktokMarketing
 from source_tiktok_marketing.streams import Ads, Advertisers, JsonUpdatedState
 
@@ -59,12 +61,7 @@ def generate_pages(items: List[Mapping[str, Any]], page_size: int, last_empty: b
                 "code": 0,
                 "request_id": "unique_request_id",
                 "data": {
-                    "page_info": {
-                        "total_number": total_number,
-                        "page": page_number,
-                        "page_size": page_size,
-                        "total_page": len(page_items),
-                    },
+                    "page_info": {"total_number": total_number, "page": page_number, "page_size": page_size, "total_page": len(page_items)},
                     "list": page_items,
                 },
             },

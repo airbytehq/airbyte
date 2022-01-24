@@ -9,25 +9,33 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-db:lib')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:models')
-    implementation project(':airbyte-integrations:connectors:source-jdbc')
-
+    implementation project(':airbyte-json-validation')
     implementation 'org.apache.commons:commons-lang3:3.11'
-    implementation "org.postgresql:postgresql:42.2.18"
-    implementation 'io.debezium:debezium-embedded:1.4.2.Final'
-    implementation 'io.debezium:debezium-api:1.4.2.Final'
-    implementation 'io.debezium:debezium-connector-postgres:1.4.2.Final'
+    implementation 'com.networknt:json-schema-validator:1.0.42'
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
-    testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
+    // random Json object generation from Json schema
+    // https://github.com/airbytehq/jsongenerator
+    implementation 'net.jimblackler.jsonschemafriend:core:0.11.2'
+    implementation 'org.mozilla:rhino-engine:1.7.14'
+    implementation('net.jimblackler:jsongenerator') {
+        version {
+            branch = 'master'
+        }
+    }
+
     testImplementation project(":airbyte-json-validation")
     testImplementation project(':airbyte-test-utils')
 
-    testImplementation 'org.testcontainers:postgresql:1.15.3'
-
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-e2e-test')
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+}
+
+allprojects {
+    repositories {
+        maven { url 'https://jitpack.io' }
+    }
 }

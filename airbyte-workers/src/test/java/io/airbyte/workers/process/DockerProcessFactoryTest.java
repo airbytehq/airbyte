@@ -24,8 +24,6 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 // todo (cgardens) - these are not truly "unit" tests as they are check resources on the internet.
 // we should move them to "integration" tests, when we have facility to do so.
@@ -61,7 +59,7 @@ class DockerProcessFactoryTest {
   public void testImageExists() throws IOException, WorkerException {
     final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
 
-    final DockerProcessFactory processFactory = new DockerProcessFactory(new WorkerConfigs(new EnvConfigs()), workspaceRoot, "", "", "", false);
+    final DockerProcessFactory processFactory = new DockerProcessFactory(new WorkerConfigs(new EnvConfigs()), workspaceRoot, null, null, null);
     assertTrue(processFactory.checkImageExists("busybox"));
   }
 
@@ -69,18 +67,17 @@ class DockerProcessFactoryTest {
   public void testImageDoesNotExist() throws IOException, WorkerException {
     final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
 
-    final DockerProcessFactory processFactory = new DockerProcessFactory(new WorkerConfigs(new EnvConfigs()), workspaceRoot, "", "", "", false);
+    final DockerProcessFactory processFactory = new DockerProcessFactory(new WorkerConfigs(new EnvConfigs()), workspaceRoot, null, null, null);
     assertFalse(processFactory.checkImageExists("airbyte/fake:0.1.2"));
   }
 
-  @ParameterizedTest
-  @ValueSource(booleans = {true, false})
-  public void testFileWriting(boolean isOrchestrator) throws IOException, WorkerException {
+  @Test
+  public void testFileWriting() throws IOException, WorkerException {
     final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
     final Path jobRoot = workspaceRoot.resolve("job");
 
     final DockerProcessFactory processFactory =
-        new DockerProcessFactory(new WorkerConfigs(new EnvConfigs()), workspaceRoot, "", "", "", isOrchestrator);
+        new DockerProcessFactory(new WorkerConfigs(new EnvConfigs()), workspaceRoot, null, null, null);
     processFactory.create("job_id", 0, jobRoot, "busybox", false, ImmutableMap.of("config.json", "{\"data\": 2}"), "echo hi",
         new WorkerConfigs(new EnvConfigs()).getResourceRequirements(), Map.of(), Map.of());
 
@@ -92,9 +89,8 @@ class DockerProcessFactoryTest {
   /**
    * Tests that the env var map passed in is accessible within the process.
    */
-  @ParameterizedTest
-  @ValueSource(booleans = {true, false})
-  public void testEnvMapSet(boolean isOrchestrator) throws IOException, WorkerException {
+  @Test
+  public void testEnvMapSet() throws IOException, WorkerException {
     final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
     final Path jobRoot = workspaceRoot.resolve("job");
 
@@ -105,10 +101,9 @@ class DockerProcessFactoryTest {
         new DockerProcessFactory(
             workerConfigs,
             workspaceRoot,
-            "",
-            "",
-            "host",
-            isOrchestrator);
+            null,
+            null,
+            "host");
 
     final Process process = processFactory.create(
         "job_id",
