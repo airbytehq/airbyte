@@ -14,7 +14,7 @@
     },
     {
       "stream": {
-        "name": "coupons",
+        "name": "account_coupon_redemptions",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -26,7 +26,7 @@
     },
     {
       "stream": {
-        "name": "account_coupon_redemptions",
+        "name": "coupons",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,

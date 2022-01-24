@@ -134,6 +134,12 @@
             "type": "string",
             "title": "Subscription Add-on ID",
             "maxLength": 13
+          },
+          "code": {
+            "type": "string",
+            "title": "Add-on code",
+            "description": "The unique identifier for the add-on within its plan.",
+            "maxLength": 50
           }
         }
       }

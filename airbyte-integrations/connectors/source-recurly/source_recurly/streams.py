@@ -200,12 +200,33 @@ class AccountCouponRedemptions(BaseAccountResourceStream):
     pass
 
 
+class AddOns(BaseStream):
+    pass
+
+
 class BillingInfos(BaseAccountResourceStream):
     pass
 
 
 class Coupons(BaseStream):
     pass
+
+
+class ExportDates(BaseStream):
+    cursor_field = []  # Disable `incremental` sync for `export_dates` Recurly API call
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """
+        Reads the `export_dates` response from Recurly. This is a special API call different from other Recurly
+        resources and hence treated differently
+        """
+        yield {"dates": self._client.get_export_dates().dates}
 
 
 class Invoices(BaseStream):
@@ -266,20 +287,3 @@ class SubscriptionChanges(BaseStream):
 
 class Transactions(BaseStream):
     pass
-
-
-class ExportDates(BaseStream):
-    cursor_field = []  # Disable `incremental` sync for `export_dates` Recurly API call
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        """
-        Reads the `export_dates` response from Recurly. This is a special API call different from other Recurly
-        resources and hence treated differently
-        """
-        yield {"dates": self._client.get_export_dates().dates}

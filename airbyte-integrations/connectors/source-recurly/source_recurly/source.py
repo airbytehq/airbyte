@@ -12,6 +12,7 @@ from recurly import ApiError, Client
 from .streams import (
     AccountCouponRedemptions,
     Accounts,
+    AddOns,
     BillingInfos,
     Coupons,
     ExportDates,
@@ -51,9 +52,11 @@ class SourceRecurly(AbstractSource):
 
         return [
             Accounts(**args),
+            AccountCouponRedemptions(**args),
+            AddOns(**args),
             BillingInfos(**args),
             Coupons(**args),
-            AccountCouponRedemptions(**args),
+            ExportDates(**args),
             Invoices(**args),
             MeasuredUnits(**args),
             Plans(**args),
@@ -62,7 +65,6 @@ class SourceRecurly(AbstractSource):
             Subscriptions(**args),
             SubscriptionChanges(**args),
             Transactions(**args),
-            ExportDates(**args),
         ]
 
     def _client(self, api_key: str) -> Client:
