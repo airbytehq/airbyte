@@ -5,6 +5,7 @@
 import logging
 from collections import defaultdict
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple, Union
+from unittest.mock import call
 
 import pytest
 from airbyte_cdk.models import (
@@ -84,6 +85,17 @@ class MockStream(Stream):
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         return "pk"
 
+
+class MockStreamWithState(MockStream):
+    cursor_field = "cursor"
+
+    @property
+    def state(self):
+        return {}
+
+    @state.setter
+    def state(self, value):
+        pass
 
 def test_discover(mocker):
     """Tests that the appropriate AirbyteCatalog is returned from the discover method"""
@@ -190,155 +202,200 @@ def _state(state_data: Dict[str, Any]):
     return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=state_data))
 
 
-def test_valid_incremental_read_with_checkpoint_interval(mocker):
-    """Tests that an incremental read which doesn't specify a checkpoint interval outputs a STATE message after reading N records within a stream"""
-    stream_output = [{"k1": "v1"}, {"k2": "v2"}]
-    s1 = MockStream([({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)], name="s1")
-    s2 = MockStream([({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)], name="s2")
-    state = {"cursor": "value"}
-    mocker.patch.object(MockStream, "get_updated_state", return_value=state)
-    mocker.patch.object(MockStream, "supports_incremental", return_value=True)
-    mocker.patch.object(MockStream, "get_json_schema", return_value={})
-    # Tell the source to output one state message per record
-    mocker.patch.object(MockStream, "state_checkpoint_interval", new_callable=mocker.PropertyMock, return_value=1)
+class TestIncrementalRead:
+    def test_with_state_attribute(self, mocker):
+        """Test correct state passing for the streams that have a state attribute"""
+        stream_output = [{"k1": "v1"}, {"k2": "v2"}]
+        old_state = {"cursor": "old_value"}
+        new_state = {"cursor": "new_value"}
+        s1 = MockStreamWithState([({"sync_mode": SyncMode.incremental, "stream_state": old_state}, stream_output)], name="s1")
+        s2 = MockStreamWithState([({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)], name="s2")
+        mocker.patch.object(MockStreamWithState, "get_updated_state", return_value={})
+        state_property = mocker.patch.object(MockStreamWithState, "state", new_callable=mocker.PropertyMock, return_value=new_state)
+        mocker.patch.object(MockStreamWithState, "get_json_schema", return_value={})
+        src = MockSource(streams=[s1, s2])
+        catalog = ConfiguredAirbyteCatalog(
+            streams=[_configured_stream(s1, SyncMode.incremental), _configured_stream(s2, SyncMode.incremental)]
+        )
 
-    src = MockSource(streams=[s1, s2])
-    catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(s1, SyncMode.incremental), _configured_stream(s2, SyncMode.incremental)])
+        expected = [
+            _as_record("s1", stream_output[0]),
+            _as_record("s1", stream_output[1]),
+            _state({"s1": new_state}),
+            _as_record("s2", stream_output[0]),
+            _as_record("s2", stream_output[1]),
+            _state({"s1": new_state, "s2": new_state}),
+        ]
+        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state={"s1": old_state})))
 
-    expected = [
-        _as_record("s1", stream_output[0]),
-        _state({"s1": state}),
-        _as_record("s1", stream_output[1]),
-        _state({"s1": state}),
-        _state({"s1": state}),
-        _as_record("s2", stream_output[0]),
-        _state({"s1": state, "s2": state}),
-        _as_record("s2", stream_output[1]),
-        _state({"s1": state, "s2": state}),
-        _state({"s1": state, "s2": state}),
-    ]
-    messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=defaultdict(dict))))
-
-    assert expected == messages
-
-
-def test_valid_incremental_read_with_no_interval(mocker):
-    """Tests that an incremental read which doesn't specify a checkpoint interval outputs a STATE message only after fully reading the stream and does
-    not output any STATE messages during syncing the stream."""
-    stream_output = [{"k1": "v1"}, {"k2": "v2"}]
-    s1 = MockStream([({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)], name="s1")
-    s2 = MockStream([({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)], name="s2")
-    state = {"cursor": "value"}
-    mocker.patch.object(MockStream, "get_updated_state", return_value=state)
-    mocker.patch.object(MockStream, "supports_incremental", return_value=True)
-    mocker.patch.object(MockStream, "get_json_schema", return_value={})
-
-    src = MockSource(streams=[s1, s2])
-    catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(s1, SyncMode.incremental), _configured_stream(s2, SyncMode.incremental)])
-
-    expected = [
-        *_as_records("s1", stream_output),
-        _state({"s1": state}),
-        *_as_records("s2", stream_output),
-        _state({"s1": state, "s2": state}),
-    ]
-
-    messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=defaultdict(dict))))
-
-    assert expected == messages
+        assert expected == messages
+        assert state_property.mock_calls == [
+            call(old_state),  # set state for s1
+            call(),           # get state in the end of slice for s1
+            call()            # get state in the end of slice for s2
+        ]
 
 
-def test_valid_incremental_read_with_slices(mocker):
-    """Tests that an incremental read which uses slices outputs each record in the slice followed by a STATE message, for each slice"""
-    slices = [{"1": "1"}, {"2": "2"}]
-    stream_output = [{"k1": "v1"}, {"k2": "v2"}, {"k3": "v3"}]
-    s1 = MockStream(
-        [({"sync_mode": SyncMode.incremental, "stream_slice": s, "stream_state": mocker.ANY}, stream_output) for s in slices], name="s1"
-    )
-    s2 = MockStream(
-        [({"sync_mode": SyncMode.incremental, "stream_slice": s, "stream_state": mocker.ANY}, stream_output) for s in slices], name="s2"
-    )
-    state = {"cursor": "value"}
-    mocker.patch.object(MockStream, "get_updated_state", return_value=state)
-    mocker.patch.object(MockStream, "supports_incremental", return_value=True)
-    mocker.patch.object(MockStream, "get_json_schema", return_value={})
-    mocker.patch.object(MockStream, "stream_slices", return_value=slices)
+    def test_with_checkpoint_interval(self, mocker):
+        """Tests that an incremental read which doesn't specify a checkpoint interval outputs a STATE message
+            after reading N records within a stream.
+        """
+        stream_output = [{"k1": "v1"}, {"k2": "v2"}]
+        s1 = MockStream([({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)], name="s1")
+        s2 = MockStream([({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)], name="s2")
+        state = {"cursor": "value"}
+        mocker.patch.object(MockStream, "get_updated_state", return_value=state)
+        mocker.patch.object(MockStream, "supports_incremental", return_value=True)
+        mocker.patch.object(MockStream, "get_json_schema", return_value={})
+        # Tell the source to output one state message per record
+        mocker.patch.object(MockStream, "state_checkpoint_interval", new_callable=mocker.PropertyMock, return_value=1)
 
-    src = MockSource(streams=[s1, s2])
-    catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(s1, SyncMode.incremental), _configured_stream(s2, SyncMode.incremental)])
+        src = MockSource(streams=[s1, s2])
+        catalog = ConfiguredAirbyteCatalog(
+            streams=[_configured_stream(s1, SyncMode.incremental), _configured_stream(s2, SyncMode.incremental)]
+        )
 
-    expected = [
-        # stream 1 slice 1
-        *_as_records("s1", stream_output),
-        _state({"s1": state}),
-        # stream 1 slice 2
-        *_as_records("s1", stream_output),
-        _state({"s1": state}),
-        # stream 2 slice 1
-        *_as_records("s2", stream_output),
-        _state({"s1": state, "s2": state}),
-        # stream 2 slice 2
-        *_as_records("s2", stream_output),
-        _state({"s1": state, "s2": state}),
-    ]
+        expected = [
+            _as_record("s1", stream_output[0]),
+            _state({"s1": state}),
+            _as_record("s1", stream_output[1]),
+            _state({"s1": state}),
+            _state({"s1": state}),
+            _as_record("s2", stream_output[0]),
+            _state({"s1": state, "s2": state}),
+            _as_record("s2", stream_output[1]),
+            _state({"s1": state, "s2": state}),
+            _state({"s1": state, "s2": state}),
+        ]
+        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=defaultdict(dict))))
 
-    messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=defaultdict(dict))))
-
-    assert expected == messages
+        assert expected == messages
 
 
-def test_valid_incremental_read_with_slices_and_interval(mocker):
-    """
-    Tests that an incremental read which uses slices and a checkpoint interval:
-        1. outputs all records
-        2. outputs a state message every N records (N=checkpoint_interval)
-        3. outputs a state message after reading the entire slice
-    """
-    slices = [{"1": "1"}, {"2": "2"}]
-    stream_output = [{"k1": "v1"}, {"k2": "v2"}, {"k3": "v3"}]
-    s1 = MockStream(
-        [({"sync_mode": SyncMode.incremental, "stream_slice": s, "stream_state": mocker.ANY}, stream_output) for s in slices], name="s1"
-    )
-    s2 = MockStream(
-        [({"sync_mode": SyncMode.incremental, "stream_slice": s, "stream_state": mocker.ANY}, stream_output) for s in slices], name="s2"
-    )
-    state = {"cursor": "value"}
-    mocker.patch.object(MockStream, "get_updated_state", return_value=state)
-    mocker.patch.object(MockStream, "supports_incremental", return_value=True)
-    mocker.patch.object(MockStream, "get_json_schema", return_value={})
-    mocker.patch.object(MockStream, "stream_slices", return_value=slices)
-    mocker.patch.object(MockStream, "state_checkpoint_interval", new_callable=mocker.PropertyMock, return_value=2)
+    def test_with_no_interval(self, mocker):
+        """Tests that an incremental read which doesn't specify a checkpoint interval outputs
+            a STATE message only after fully reading the stream and does not output any STATE messages during syncing the stream.
+        """
+        stream_output = [{"k1": "v1"}, {"k2": "v2"}]
+        s1 = MockStream([({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)], name="s1")
+        s2 = MockStream([({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)], name="s2")
+        state = {"cursor": "value"}
+        mocker.patch.object(MockStream, "get_updated_state", return_value=state)
+        mocker.patch.object(MockStream, "supports_incremental", return_value=True)
+        mocker.patch.object(MockStream, "get_json_schema", return_value={})
 
-    src = MockSource(streams=[s1, s2])
-    catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(s1, SyncMode.incremental), _configured_stream(s2, SyncMode.incremental)])
+        src = MockSource(streams=[s1, s2])
+        catalog = ConfiguredAirbyteCatalog(
+            streams=[_configured_stream(s1, SyncMode.incremental), _configured_stream(s2, SyncMode.incremental)]
+        )
 
-    expected = [
-        # stream 1 slice 1
-        _as_record("s1", stream_output[0]),
-        _as_record("s1", stream_output[1]),
-        _state({"s1": state}),
-        _as_record("s1", stream_output[2]),
-        _state({"s1": state}),
-        # stream 1 slice 2
-        _as_record("s1", stream_output[0]),
-        _as_record("s1", stream_output[1]),
-        _state({"s1": state}),
-        _as_record("s1", stream_output[2]),
-        _state({"s1": state}),
-        # stream 2 slice 1
-        _as_record("s2", stream_output[0]),
-        _as_record("s2", stream_output[1]),
-        _state({"s1": state, "s2": state}),
-        _as_record("s2", stream_output[2]),
-        _state({"s1": state, "s2": state}),
-        # stream 2 slice 2
-        _as_record("s2", stream_output[0]),
-        _as_record("s2", stream_output[1]),
-        _state({"s1": state, "s2": state}),
-        _as_record("s2", stream_output[2]),
-        _state({"s1": state, "s2": state}),
-    ]
+        expected = [
+            *_as_records("s1", stream_output),
+            _state({"s1": state}),
+            *_as_records("s2", stream_output),
+            _state({"s1": state, "s2": state}),
+        ]
 
-    messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=defaultdict(dict))))
+        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=defaultdict(dict))))
 
-    assert expected == messages
+        assert expected == messages
+
+
+    def test_with_slices(self, mocker):
+        """Tests that an incremental read which uses slices outputs each record in the slice followed by a STATE message, for each slice"""
+        slices = [{"1": "1"}, {"2": "2"}]
+        stream_output = [{"k1": "v1"}, {"k2": "v2"}, {"k3": "v3"}]
+        s1 = MockStream(
+            [({"sync_mode": SyncMode.incremental, "stream_slice": s, "stream_state": mocker.ANY}, stream_output) for s in slices], name="s1"
+        )
+        s2 = MockStream(
+            [({"sync_mode": SyncMode.incremental, "stream_slice": s, "stream_state": mocker.ANY}, stream_output) for s in slices], name="s2"
+        )
+        state = {"cursor": "value"}
+        mocker.patch.object(MockStream, "get_updated_state", return_value=state)
+        mocker.patch.object(MockStream, "supports_incremental", return_value=True)
+        mocker.patch.object(MockStream, "get_json_schema", return_value={})
+        mocker.patch.object(MockStream, "stream_slices", return_value=slices)
+
+        src = MockSource(streams=[s1, s2])
+        catalog = ConfiguredAirbyteCatalog(
+            streams=[_configured_stream(s1, SyncMode.incremental), _configured_stream(s2, SyncMode.incremental)]
+        )
+
+        expected = [
+            # stream 1 slice 1
+            *_as_records("s1", stream_output),
+            _state({"s1": state}),
+            # stream 1 slice 2
+            *_as_records("s1", stream_output),
+            _state({"s1": state}),
+            # stream 2 slice 1
+            *_as_records("s2", stream_output),
+            _state({"s1": state, "s2": state}),
+            # stream 2 slice 2
+            *_as_records("s2", stream_output),
+            _state({"s1": state, "s2": state}),
+        ]
+
+        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=defaultdict(dict))))
+
+        assert expected == messages
+
+
+    def test_with_slices_and_interval(self, mocker):
+        """
+        Tests that an incremental read which uses slices and a checkpoint interval:
+            1. outputs all records
+            2. outputs a state message every N records (N=checkpoint_interval)
+            3. outputs a state message after reading the entire slice
+        """
+        slices = [{"1": "1"}, {"2": "2"}]
+        stream_output = [{"k1": "v1"}, {"k2": "v2"}, {"k3": "v3"}]
+        s1 = MockStream(
+            [({"sync_mode": SyncMode.incremental, "stream_slice": s, "stream_state": mocker.ANY}, stream_output) for s in slices], name="s1"
+        )
+        s2 = MockStream(
+            [({"sync_mode": SyncMode.incremental, "stream_slice": s, "stream_state": mocker.ANY}, stream_output) for s in slices], name="s2"
+        )
+        state = {"cursor": "value"}
+        mocker.patch.object(MockStream, "get_updated_state", return_value=state)
+        mocker.patch.object(MockStream, "supports_incremental", return_value=True)
+        mocker.patch.object(MockStream, "get_json_schema", return_value={})
+        mocker.patch.object(MockStream, "stream_slices", return_value=slices)
+        mocker.patch.object(MockStream, "state_checkpoint_interval", new_callable=mocker.PropertyMock, return_value=2)
+
+        src = MockSource(streams=[s1, s2])
+        catalog = ConfiguredAirbyteCatalog(
+            streams=[_configured_stream(s1, SyncMode.incremental), _configured_stream(s2, SyncMode.incremental)]
+        )
+
+        expected = [
+            # stream 1 slice 1
+            _as_record("s1", stream_output[0]),
+            _as_record("s1", stream_output[1]),
+            _state({"s1": state}),
+            _as_record("s1", stream_output[2]),
+            _state({"s1": state}),
+            # stream 1 slice 2
+            _as_record("s1", stream_output[0]),
+            _as_record("s1", stream_output[1]),
+            _state({"s1": state}),
+            _as_record("s1", stream_output[2]),
+            _state({"s1": state}),
+            # stream 2 slice 1
+            _as_record("s2", stream_output[0]),
+            _as_record("s2", stream_output[1]),
+            _state({"s1": state, "s2": state}),
+            _as_record("s2", stream_output[2]),
+            _state({"s1": state, "s2": state}),
+            # stream 2 slice 2
+            _as_record("s2", stream_output[0]),
+            _as_record("s2", stream_output[1]),
+            _state({"s1": state, "s2": state}),
+            _as_record("s2", stream_output[2]),
+            _state({"s1": state, "s2": state}),
+        ]
+
+        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=defaultdict(dict))))
+
+        assert expected == messages
