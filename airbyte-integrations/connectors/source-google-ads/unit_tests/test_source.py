@@ -20,7 +20,7 @@ def test_chunk_date_range_without_end_date():
     expected_response = []
     while start_date < pendulum.now():
         expected_response.append({field: start_date.to_date_string()})
-        start_date = start_date.add(1)
+        start_date = start_date.add(days=1)
     assert expected_response == response
 
 
@@ -29,8 +29,17 @@ def test_chunk_date_range():
     end_date = "2021-05-04"
     conversion_window = 14
     field = "date"
-    response = chunk_date_range(start_date, conversion_window, field, end_date)
-    assert [{"date": "2021-02-18"}, {"date": "2021-03-18"}, {"date": "2021-04-18"}] == response
+    response = chunk_date_range(start_date, conversion_window, field, end_date, range_days=10)
+    assert [
+        {"date": "2021-02-18"},
+        {"date": "2021-02-28"},
+        {"date": "2021-03-10"},
+        {"date": "2021-03-20"},
+        {"date": "2021-03-30"},
+        {"date": "2021-04-09"},
+        {"date": "2021-04-19"},
+        {"date": "2021-04-29"},
+    ] == response
 
 
 def test_streams_count(config):

@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.35.7-alpha",
+  "version": "0.35.8-alpha",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -11,7 +11,8 @@
     "test": "react-scripts test",
     "format": "prettier --write 'src/**/*.{ts,tsx}'",
     "storybook": "start-storybook -p 9009 -s public --quiet",
-    "lint": "eslint --ext js,ts,tsx src"
+    "lint": "eslint --ext js,ts,tsx src",
+    "license-check": "node ./scripts/license-check.js"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
@@ -83,6 +84,7 @@
     "eslint-plugin-jest": "^24.1.5",
     "eslint-plugin-prettier": "^3.3.1",
     "husky": "^4.2.3",
+    "license-checker": "^25.0.1",
     "lint-staged": "^10.0.8",
     "prettier": "^2.2.1",
     "react-scripts": "4.0.2",

@@ -100,8 +100,15 @@ def test_get_fields_from_schema():
 
 
 def test_interval_chunking():
-    mock_intervals = [{"segments.date": "2021-05-18"}, {"segments.date": "2021-06-18"}, {"segments.date": "2021-07-18"}]
-    intervals = chunk_date_range("2021-06-01", 14, "segments.date", "2021-08-15")
+    mock_intervals = [
+        {"segments.date": "2021-06-17"},
+        {"segments.date": "2021-06-27"},
+        {"segments.date": "2021-07-07"},
+        {"segments.date": "2021-07-17"},
+        {"segments.date": "2021-07-27"},
+        {"segments.date": "2021-08-06"},
+    ]
+    intervals = chunk_date_range("2021-07-01", 14, "segments.date", "2021-08-15", range_days=10)
 
     assert mock_intervals == intervals
 
@@ -109,7 +116,7 @@ def test_interval_chunking():
 def test_get_date_params():
     # Please note that this is equal to inputted stream_slice start date + 1 day
     mock_start_date = "2021-05-19"
-    mock_end_date = "2021-06-18"
+    mock_end_date = "2021-06-02"
     mock_conversion_window_days = 14
 
     incremental_stream_config = dict(
@@ -229,4 +236,6 @@ def test_get_date_params_without_end_date():
     start_date, end_date = IncrementalGoogleAdsStream(**incremental_stream_config).get_date_params(
         stream_slice={"segments.date": "2021-10-31"}, cursor_field="segments.date"
     )
-    assert mock_start_date == start_date and mock_end_date == end_date
+    assert mock_start_date == start_date
+    # There is a Google limitation where we capture only a 15-day date range 
+    assert end_date == "2021-11-15"

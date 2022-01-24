@@ -21,16 +21,16 @@ import io.airbyte.protocol.models.SyncMode;
 import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
-class ExceptionAfterNSourceTest {
+class LegacyExceptionAfterNSourceTest {
 
   @SuppressWarnings("Convert2MethodRef")
   @Test
   void test() {
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(ExceptionAfterNSource.CATALOG);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(LegacyExceptionAfterNSource.CATALOG);
     configuredCatalog.getStreams().get(0).setSyncMode(SyncMode.INCREMENTAL);
 
     final JsonNode config = Jsons.jsonNode(ImmutableMap.of("throw_after_n_records", 10));
-    final AutoCloseableIterator<AirbyteMessage> read = new ExceptionAfterNSource().read(config, configuredCatalog, null);
+    final AutoCloseableIterator<AirbyteMessage> read = new LegacyExceptionAfterNSource().read(config, configuredCatalog, null);
     assertEquals(getStateMessage(0L).getState().getData(), read.next().getState().getData());
     assertEquals(getRecordMessage(1L).getRecord().getData(), read.next().getRecord().getData());
     assertEquals(getRecordMessage(2L).getRecord().getData(), read.next().getRecord().getData());
