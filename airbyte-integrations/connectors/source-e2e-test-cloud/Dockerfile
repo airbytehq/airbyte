@@ -2,7 +2,7 @@ FROM airbyte/integration-base-java:dev AS build
 
 WORKDIR /airbyte
 
-ENV APPLICATION source-e2e-test
+ENV APPLICATION source-e2e-test-cloud
 
 COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
@@ -12,9 +12,9 @@ FROM airbyte/integration-base-java:dev
 
 WORKDIR /airbyte
 
-ENV APPLICATION source-e2e-test
+ENV APPLICATION source-e2e-test-cloud
 
 COPY --from=build /airbyte /airbyte
 
 LABEL io.airbyte.version=1.0.0
-LABEL io.airbyte.name=airbyte/source-e2e-test
+LABEL io.airbyte.name=airbyte/source-e2e-test-cloud
