@@ -65,10 +65,14 @@ class ShopifyStream(HttpStream, ABC):
         # this solution designed to convert string into number, but in future can be modified for general purpose
         if isinstance(records, dict):
             # for cases when we have a single record as dict
+            # add shop_url to the record to make querying easy
+            records['shop_url'] = self.config["shop"]
             yield self._transformer.transform(records)
         else:
             # for other cases
             for record in records:
+                # add shop_url to the record to make querying easy
+                record['shop_url'] = self.config["shop"]
                 yield self._transformer.transform(record)
 
     @property

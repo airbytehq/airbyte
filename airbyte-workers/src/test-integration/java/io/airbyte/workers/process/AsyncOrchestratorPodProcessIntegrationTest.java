@@ -29,9 +29,11 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
+@Disabled
 public class AsyncOrchestratorPodProcessIntegrationTest {
 
   private static KubernetesClient kubernetesClient;

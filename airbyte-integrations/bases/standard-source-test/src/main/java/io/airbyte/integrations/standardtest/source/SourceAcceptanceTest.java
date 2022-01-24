@@ -160,11 +160,12 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
   public void testFullRefreshRead() throws Exception {
     final ConfiguredAirbyteCatalog catalog = withFullRefreshSyncModes(getConfiguredCatalog());
     final List<AirbyteMessage> allMessages = runRead(catalog);
-    final List<AirbyteMessage> recordMessages = allMessages.stream().filter(m -> m.getType() == Type.RECORD).collect(Collectors.toList());
+    final List<AirbyteRecordMessage> recordMessages = filterRecords(allMessages);
     // the worker validates the message formats, so we just validate the message content
     // We don't need to validate message format as long as we use the worker, which we will not want to
     // do long term.
     assertFalse(recordMessages.isEmpty(), "Expected a full refresh sync to produce records");
+    assertRecordMessages(recordMessages);
 
     final List<String> regexTests = getRegexTests();
     final List<String> stringMessages = allMessages.stream().map(Jsons::serialize).collect(Collectors.toList());
@@ -173,6 +174,10 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
       LOGGER.info("Looking for [" + regex + "]");
       assertTrue(stringMessages.stream().anyMatch(line -> line.matches(regex)), "Failed to find regex: " + regex);
     });
+  }
+
+  protected void assertRecordMessages(final List<AirbyteRecordMessage> recordMessages) {
+    // do nothing by default
   }
 
   /**
