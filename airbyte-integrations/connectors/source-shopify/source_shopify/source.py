@@ -4,12 +4,11 @@
 
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
 import requests
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -427,7 +426,6 @@ class Shop(ShopifyStream):
 
 class SourceShopify(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-
         """
         Testing connection availability for the connector.
         """
@@ -438,18 +436,29 @@ class SourceShopify(AbstractSource):
             shop_id = response[0].get("id")
             if shop_id is not None:
                 return True, None
-        except requests.exceptions.RequestException as e:
+        except (requests.exceptions.RequestException, IndexError) as e:
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-
         """
         Mapping a input config of the user input configuration as defined in the connector spec.
         Defining streams to run.
         """
         config["authenticator"] = ShopifyAuthenticator(config)
 
-        return [
+        user_scopes = self.get_user_scopes(config)
+
+        always_permitted_streams = ["Metafields", "Shop"]
+
+        permitted_streams = [
+            stream
+            for user_scope in user_scopes
+            if user_scope["handle"] in SCOPES_MAPPING
+            for stream in SCOPES_MAPPING.get(user_scope["handle"])
+        ] + always_permitted_streams
+
+        # before adding stream to stream_instances list, please add it to SCOPES_MAPPING
+        stream_instances = [
             Customers(config),
             Orders(config),
             DraftOrders(config),
@@ -472,39 +481,12 @@ class SourceShopify(AbstractSource):
             Shop(config),
         ]
 
-    def read(
-        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
-    ) -> Iterator[AirbyteMessage]:
-        user_scopes = self.get_user_scopes(config)
-
-        always_permitted_streams = ["Metafields", "Shop"]
-
-        permitted_streams = [
-            stream
-            for user_scope in user_scopes
-            if user_scope["handle"] in SCOPES_MAPPING
-            for stream in SCOPES_MAPPING.get(user_scope["handle"])
-        ] + always_permitted_streams
-
-        not_permitted_streams = [
-            configured_stream.stream.name
-            for configured_stream in catalog.streams
-            if self.format_name(configured_stream.stream.name) not in permitted_streams
-        ]
-
-        if not_permitted_streams:
-            massage = (
-                f"Please change admin API permissions to 'Read access' for "
-                f"{', '.join(not_permitted_streams)} stream(s) in private apps."
-            )
-            raise PermissionError(massage)
-
-        yield from super().read(logger, config, catalog, state)
+        return [stream_instance for stream_instance in stream_instances if self.format_name(stream_instance.name) in permitted_streams]
 
     @staticmethod
     def get_user_scopes(config):
         session = requests.Session()
-        headers = ShopifyAuthenticator(config).get_auth_header()
+        headers = config["authenticator"].get_auth_header()
         response = session.get(f"https://{config['shop']}.myshopify.com/admin/oauth/access_scopes.json", headers=headers).json()
         return response["access_scopes"]
 
