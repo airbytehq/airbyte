@@ -153,7 +153,8 @@ cmd_publish() {
 
 cmd_publish_external() {
   local image_name=$1; shift || error "Missing target (image name) $USAGE"
-  local image_version=$2; shift || error "Missing target (image version) $USAGE"
+  # Get version from the command
+  local image_version=$1; shift || error "Missing target (image version) $USAGE"
 
   echo "image $image_name:$image_version"
 
