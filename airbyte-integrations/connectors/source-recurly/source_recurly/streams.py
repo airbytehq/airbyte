@@ -156,6 +156,13 @@ class BaseStream(Stream):
 
 
 class BaseAccountResourceStream(BaseStream):
+    @property
+    def account_params(self) -> dict:
+        """
+        Returns the account API call params
+        """
+        return self.default_params
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -171,15 +178,17 @@ class BaseAccountResourceStream(BaseStream):
         :return: Iterable of dictionaries representing the Recurly resource
         :rtype: Iterable
         """
+        account_params = self.account_params
         params = self.default_params
 
         self.begin_time = (stream_state and stream_state[self.cursor_field]) or self.begin_time
 
         if self.begin_time:
+            account_params.update({BEGIN_TIME_PARAM: self.begin_time})
             params.update({BEGIN_TIME_PARAM: self.begin_time})
 
         # Call the Recurly client methods
-        accounts = self._client.list_accounts(params=params).items()
+        accounts = self._client.list_accounts(params=account_params).items()
 
         # If the API call throws the Recurly's client `MissingFeatureError` error, then skip loading the resources from Recurly
         # and log a warn
@@ -198,6 +207,20 @@ class Accounts(BaseStream):
 
 class AccountCouponRedemptions(BaseAccountResourceStream):
     pass
+
+
+class AccountNotes(BaseAccountResourceStream):
+    @property
+    def sort_key(self) -> str:
+        return "created_at"
+
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        return "created_at"
+
+    @property
+    def account_params(self) -> dict:
+        return {"order": "asc", "sort": DEFAULT_SORT_KEY, "limit": self.limit}
 
 
 class AddOns(BaseStream):

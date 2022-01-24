@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "maxLength": 13,
+      "readOnly": true
+    },
+    "account_id": {
+      "type": "string"
+    },
+    "user": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "time_zone": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "deleted_at": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      }
+    },
+    "message": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "readOnly": true
+    }
+  }
+}
