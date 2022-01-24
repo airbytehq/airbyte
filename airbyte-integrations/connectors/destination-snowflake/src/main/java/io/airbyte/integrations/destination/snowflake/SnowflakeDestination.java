@@ -9,6 +9,9 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
+import io.sentry.ITransaction;
+import io.sentry.Sentry;
+import io.sentry.SpanStatus;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +19,18 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestination.DestinationType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDestination.class);
+
+  public static void initSentry() {
+    Sentry.init(options -> {
+      // allow setting properties from env variables see https://docs.sentry.io/platforms/java/configuration/
+      options.setEnableExternalConfiguration(true);
+      // To set a uniform sample rate
+      options.setTracesSampleRate(1.0);
+    });
+    Sentry.configureScope(scope -> {
+      scope.setTag("connector", "destination-snowflake");
+    });
+  }
 
   enum DestinationType {
     INSERT,
@@ -65,10 +80,24 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
   }
 
   public static void main(final String[] args) throws Exception {
+    initSentry();
+    try {
+      throw new Exception("This is hello from Sentry");
+    } catch (Exception e) {
+      LOGGER.error(e.getMessage());
+    }
     final Destination destination = new SnowflakeDestination();
-    LOGGER.info("starting destination: {}", SnowflakeDestination.class);
-    new IntegrationRunner(destination).run(args);
-    LOGGER.info("completed destination: {}", SnowflakeDestination.class);
+    ITransaction transaction = Sentry.startTransaction("IntegrationRunner()", "run");
+    try {
+      LOGGER.info("starting destination: {}", SnowflakeDestination.class);
+      new IntegrationRunner(destination).run(args);
+    } catch (Exception e) {
+      transaction.setThrowable(e);
+      transaction.setStatus(SpanStatus.INTERNAL_ERROR);
+    } finally {
+      transaction.finish();
+      LOGGER.info("completed destination: {}", SnowflakeDestination.class);
+    }
   }
 
 }

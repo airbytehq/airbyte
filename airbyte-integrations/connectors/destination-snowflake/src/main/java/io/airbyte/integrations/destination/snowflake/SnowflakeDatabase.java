@@ -23,7 +23,8 @@ public class SnowflakeDatabase {
   private static final Duration QUERY_TIMEOUT = Duration.ofHours(3);
   private static final SnowflakeSQLNameTransformer nameTransformer = new SnowflakeSQLNameTransformer();
 
-  public static Connection getConnection(final JsonNode config) throws SQLException {
+  public static Connection getConnection(final JsonNode config)
+      throws SQLException {
     final String connectUrl = String.format("jdbc:snowflake://%s", config.get("host").asText());
 
     final Properties properties = new Properties();

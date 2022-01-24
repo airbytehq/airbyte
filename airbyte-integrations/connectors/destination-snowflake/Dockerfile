@@ -11,6 +11,7 @@ WORKDIR /airbyte
 
 ENV APPLICATION destination-snowflake
 
+ENV SENTRY_DSN "https://2a3a1622a2104b8f8d36db4915c956f8@o1114644.ingest.sentry.io/6145965"
 # Needed for JDK17 (in turn, needed on M1 macs) - see https://github.com/snowflakedb/snowflake-jdbc/issues/589#issuecomment-983944767
 ENV DESTINATION_SNOWFLAKE_OPTS "--add-opens java.base/java.nio=ALL-UNNAMED"
 
