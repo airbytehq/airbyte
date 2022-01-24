@@ -3,7 +3,7 @@ import { useFetcher } from "rest-hooks";
 
 import { SyncSchema } from "core/domain/catalog";
 import SchemaResource from "core/resources/Schema";
-import { JobInfo } from "core/resources/Scheduler";
+import { JobInfo } from "../../core/domain/job/Job";
 
 export const useDiscoverSchema = (
   sourceId?: string
