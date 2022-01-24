@@ -5,7 +5,40 @@
                 "name": "campaigns",
                 "json_schema": {
                     "type": "object",
-                    "properties": {}
+                    "properties": {
+                        "servable": {
+                            "type": "boolean"},
+                        "purchase_order_number": {
+                            "type": "number"},
+                        "effective_status":  {
+                            "type": "string"},
+                        "daily_budget_amount_local_micro":  {
+                            "type": "number"},
+                        "end_time":  {
+                            "type": "string"},
+                        "funding_instrument_id":  {
+                            "type": "string"},
+                        "duration_in_days":  {
+                            "type": "number"},
+                        "standard_delivery":  {
+                            "type": "boolean"},
+                        "total_budget_amount_local_micro":  {
+                            "type": "number"},
+                        "id":  {
+                            "type": "string"},
+                        "entity_status":  {
+                            "type": "string"},
+                        "frequency_cap":  {
+                            "type": "number"},
+                        "currency":  {
+                            "type": "string"},
+                        "created_at": {
+                            "type": "string"},
+                        "updated_at":{
+                            "type": "string"},
+                        "deleted": {
+                            "type": "boolean"}
+                    }
                 },
                 "supported_sync_modes": [
                     "full_refresh"
