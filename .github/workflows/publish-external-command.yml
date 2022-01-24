@@ -56,13 +56,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: ${{github.event.pull_request.head.repo.full_name}} # always use the branch's repository
-      - name: Install Pyenv and Tox
-        # Beside PyEnv, this does not set any runtimes up because it uses an AMI image that has everything pre-installed. See https://github.com/airbytehq/airbyte/issues/4559/
-        run: |
-          python3 -m pip install --quiet virtualenv==16.7.9 --user
-          python3 -m virtualenv venv
-          source venv/bin/activate
-          pip install --quiet tox==3.24.4
       - run: |
           echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u airbytebot -p ${DOCKER_PASSWORD}
           ./tools/integrations/manage.sh publish_external ${{ github.event.inputs.connector }} ${{ github.event.inputs.version }}
