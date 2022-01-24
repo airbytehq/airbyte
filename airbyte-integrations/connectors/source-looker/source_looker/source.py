@@ -2,16 +2,16 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Optional, Tuple
-
 import pendulum
 import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from typing import Any, List, Mapping, Optional, Tuple
 
-from .streams import API_VERSION, ContentMetadata, Dashboards, LookerException, LookerStream, QueryHistory, RunLooks, SwaggerParser
+from .streams import API_VERSION, ContentMetadata, Dashboards, LookerException, LookerStream, QueryHistory, RunLooks, \
+    SwaggerParser
 
 
 class CustomTokenAuthenticator(TokenAuthenticator):
@@ -33,7 +33,6 @@ class CustomTokenAuthenticator(TokenAuthenticator):
             return str(error)
         data = resp.json()
         self._access_token = data["access_token"]
-        AirbyteLogger().info(self._access_token)
         self._token_expiry_date = pendulum.now().add(seconds=data["expires_in"])
         return None
 
