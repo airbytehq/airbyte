@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.jdbc.copy.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
@@ -199,6 +200,16 @@ public abstract class S3StreamCopier implements StreamCopier {
 
   protected static String getFullS3Path(final String s3BucketName, final String s3StagingFile) {
     return String.join("/", "s3:/", s3BucketName, s3StagingFile);
+  }
+
+  @VisibleForTesting
+  public String getTmpTableName() {
+    return tmpTableName;
+  }
+
+  @VisibleForTesting
+  public Map<String, S3Writer> getStagingWritersByFile() {
+    return stagingWritersByFile;
   }
 
   public abstract void copyS3CsvFileIntoTable(JdbcDatabase database,
