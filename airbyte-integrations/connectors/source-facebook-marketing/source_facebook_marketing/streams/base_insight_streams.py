@@ -24,7 +24,7 @@ from cached_property import cached_property
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
 
-from .streams import FBMarketingIncrementalStream
+from .base_streams import FBMarketingIncrementalStream
 
 logger = logging.getLogger("airbyte")
 

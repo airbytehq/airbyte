@@ -4,10 +4,10 @@
 
 
 import copy
+import logging
 from typing import Any, List, MutableMapping, Set, Tuple
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 from source_facebook_marketing.source import SourceFacebookMarketing
 
@@ -92,7 +92,7 @@ class TestFacebookMarketingSource:
     def _read_records(conf, catalog, state=None) -> Tuple[List[AirbyteMessage], List[AirbyteMessage]]:
         records = []
         states = []
-        for message in SourceFacebookMarketing().read(AirbyteLogger(), conf, catalog, state=state):
+        for message in SourceFacebookMarketing().read(logging.getLogger("airbyte"), conf, catalog, state=state):
             if message.type == Type.RECORD:
                 records.append(message)
             elif message.type == Type.STATE:

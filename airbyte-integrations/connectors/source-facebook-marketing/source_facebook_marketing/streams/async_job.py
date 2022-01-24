@@ -37,7 +37,7 @@ class AsyncJob(ABC):
     """Abstract AsyncJob base class"""
 
     @abstractmethod
-    def start(self, batch=None):
+    def start(self):
         """Start remote job"""
 
     @abstractmethod
@@ -76,17 +76,10 @@ class ParentAsyncJob(AsyncJob):
         self._jobs = jobs
         self._restart_number = 0
 
-    def start(self, batch=None):
-        """Start each job in the group"""
-        # api_batch = batch or self._api.new_batch()
-        api_batch = None
+    def start(self):
+        """Start each job in the group."""
         for job in self._jobs:
-            job.start(batch=api_batch)
-
-        while api_batch:
-            # If some of the calls from batch have failed, it returns  a new
-            # FacebookAdsApiBatch object with those calls
-            api_batch = api_batch.execute()
+            job.start()
 
     def restart(self):
         """Restart failed jobs"""
@@ -169,22 +162,12 @@ class InsightAsyncJob(AsyncJob):
 
         return ParentAsyncJob(self._api, jobs=[InsightAsyncJob(self._api, Campaign(pk), self._params) for pk in campaign_ids])
 
-    def start(self, batch=None):
+    def start(self):
         """Start remote job"""
         if self._job:
             raise RuntimeError(f"{self}: Incorrect usage of start - the job already started, use restart instead")
 
-        if batch is not None:
-            self._edge_object.get_insights(
-                params=self._params,
-                is_async=True,
-                batch=batch,
-                success=self._batch_success_handler,
-                failure=self._batch_failure_handler,
-            )
-        else:
-            self._job = self._edge_object.get_insights(params=self._params, is_async=True)
-
+        self._job = self._edge_object.get_insights(params=self._params, is_async=True)
         self._start_time = pendulum.now()
         job_id = self._job["report_run_id"]
         time_range = self._params["time_range"]
@@ -234,6 +217,7 @@ class InsightAsyncJob(AsyncJob):
 
     def _batch_success_handler(self, response: FacebookResponse):
         """Update job status from response"""
+        print("GOT", response.json())
         self._job = ObjectParser(reuse_object=self._job).parse_single(response.json())
         self._check_status()
 

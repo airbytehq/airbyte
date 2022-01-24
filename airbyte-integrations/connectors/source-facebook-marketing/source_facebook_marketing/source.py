@@ -3,32 +3,23 @@
 #
 
 import logging
-from datetime import datetime
-from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Type
+from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple, Type
 
-import pendulum
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
-    AirbyteConnectionStatus,
     AirbyteMessage,
     AuthSpecification,
     ConfiguredAirbyteStream,
     ConnectorSpecification,
     DestinationSyncMode,
     OAuth2Specification,
-    Status,
     SyncMode,
 )
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.config import BaseConfig
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.core import package_name_from_class
-from airbyte_cdk.sources.utils.schema_helpers import (
-    InternalConfig,
-    ResourceSchemaLoader,
-)
-from pydantic import BaseModel, Field
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from source_facebook_marketing.api import API
+from source_facebook_marketing.spec import ConnectorConfig
 from source_facebook_marketing.streams import (
     AdCreatives,
     Ads,
@@ -49,82 +40,6 @@ logger = logging.getLogger("airbyte")
 DOCS_URL = "https://docs.airbyte.io/integrations/sources/facebook-marketing"
 
 
-class InsightConfig(BaseModel):
-    """Config for custom insights"""
-
-    name: str = Field(description="The name value of insight")
-    fields: Optional[List[str]] = Field(description="A list of chosen fields for fields parameter", default=[])
-    breakdowns: Optional[List[str]] = Field(description="A list of chosen breakdowns for breakdowns", default=[])
-    action_breakdowns: Optional[List[str]] = Field(description="A list of chosen action_breakdowns for action_breakdowns", default=[])
-
-
-class ConnectorConfig(BaseConfig):
-    """Connector config"""
-
-    class Config:
-        title = "Source Facebook Marketing"
-
-    start_date: datetime = Field(
-        title="Start Date",
-        order=0,
-        description=(
-            "The date from which you'd like to replicate data for all incremental streams, "
-            "in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated."
-        ),
-        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        examples=["2017-01-25T00:00:00Z"],
-    )
-
-    end_date: Optional[datetime] = Field(
-        title="End Date",
-        order=1,
-        description=(
-            "The date until which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z. "
-            "All data generated between start_date and this date will be replicated. "
-            "Not setting this option will result in always syncing the latest data."
-        ),
-        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        examples=["2017-01-26T00:00:00Z"],
-        default_factory=pendulum.now,
-    )
-
-    account_id: str = Field(
-        title="Account ID",
-        order=2,
-        description="The Facebook Ad account ID to use when pulling data from the Facebook Marketing API.",
-        examples=["111111111111111"],
-    )
-
-    access_token: str = Field(
-        title="Access Token",
-        order=3,
-        description=f'The value of the access token generated. See the <a href="{DOCS_URL}">docs</a> for more information',
-        airbyte_secret=True,
-    )
-
-    include_deleted: bool = Field(
-        title="Include Deleted",
-        order=4,
-        default=False,
-        description="Include data from deleted Campaigns, Ads, and AdSets",
-    )
-
-    fetch_thumbnail_images: bool = Field(
-        title="Fetch Thumbnail Images",
-        order=5,
-        default=False,
-        description="In each Ad Creative, fetch the thumbnail_url and store the result in thumbnail_data_url",
-    )
-
-    custom_insights: Optional[List[InsightConfig]] = Field(
-        title="Custom Insights",
-        order=6,
-        description=(
-            "A list which contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)"
-        ),
-    )
-
-
 class SourceFacebookMarketing(AbstractSource):
     def check_connection(self, _logger: "logging.Logger", config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -133,18 +48,11 @@ class SourceFacebookMarketing(AbstractSource):
         :param _logger:  logger object
         :return Tuple[bool, Any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        ok = False
-        error_msg = None
+        config = ConnectorConfig.parse_obj(config)
+        api = API(account_id=config.account_id, access_token=config.access_token)
+        logger.info(f"Select account {api.account}")
 
-        try:
-            config = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
-            api = API(account_id=config.account_id, access_token=config.access_token)
-            logger.info(f"Select account {api.account}")
-            ok = True
-        except Exception as exc:
-            error_msg = repr(exc)
-
-        return ok, error_msg
+        return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Type[Stream]]:
         """Discovery method, returns available streams
@@ -152,7 +60,7 @@ class SourceFacebookMarketing(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         :return: list of the stream instances
         """
-        config: ConnectorConfig = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
+        config: ConnectorConfig = ConnectorConfig.parse_obj(config)
         api = API(account_id=config.account_id, access_token=config.access_token)
 
         insights_args = dict(
@@ -178,30 +86,14 @@ class SourceFacebookMarketing(AbstractSource):
 
         return self._update_insights_streams(insights=config.custom_insights, args=insights_args, streams=streams)
 
-    def check(self, _logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        """Implements the Check Connection operation from the Airbyte Specification.
-        See https://docs.airbyte.io/architecture/airbyte-specification.
-        """
-        try:
-            check_succeeded, error = self.check_connection(logger, config)
-            if not check_succeeded:
-                return AirbyteConnectionStatus(status=Status.FAILED, message=repr(error))
-        except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=repr(e))
-
-        # FIXME: replace validation with schema
-        self._check_custom_insights_entries(config.get("custom_insights", []))
-
-        return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
         """Returns the spec for this integration.
         The spec is a JSON-Schema object describing the required configurations
         (e.g: username and password) required to run this integration.
         """
         return ConnectorSpecification(
-            documentationUrl=DOCS_URL,
-            changelogUrl=DOCS_URL,
+            documentationUrl="https://docs.airbyte.io/integrations/sources/facebook-marketing",
+            changelogUrl="https://docs.airbyte.io/integrations/sources/facebook-marketing",
             supportsIncremental=True,
             supported_destination_sync_modes=[DestinationSyncMode.append],
             connectionSpecification=ConnectorConfig.schema(),
@@ -231,40 +123,6 @@ class SourceFacebookMarketing(AbstractSource):
             insights_custom_streams.append(insight_stream)
 
         return streams + insights_custom_streams
-
-    def _check_custom_insights_entries(self, insights: List[Mapping[str, Any]]):
-
-        loader = ResourceSchemaLoader(package_name_from_class(self.__class__))
-        default_fields = list(loader.get_schema("ads_insights").get("properties", {}).keys())
-        default_breakdowns = list(loader.get_schema("ads_insights_breakdowns").get("properties", {}).keys())
-        default_action_breakdowns = list(loader.get_schema("ads_insights_action_breakdowns").get("properties", {}).keys())
-
-        for insight in insights:
-            if insight.get("fields"):
-                value_checked, value = self._check_values(default_fields, insight["fields"])
-                if not value_checked:
-                    message = f"{value} is not a valid field name"
-                    raise Exception("Config validation error: " + message) from None
-            if insight.get("breakdowns"):
-                value_checked, value = self._check_values(default_breakdowns, insight["breakdowns"])
-                if not value_checked:
-                    message = f"{value} is not a valid breakdown name"
-                    raise Exception("Config validation error: " + message) from None
-            if insight.get("action_breakdowns"):
-                value_checked, value = self._check_values(default_action_breakdowns, insight["action_breakdowns"])
-                if not value_checked:
-                    message = f"{value} is not a valid action_breakdown name"
-                    raise Exception("Config validation error: " + message) from None
-
-        return True
-
-    def _check_values(self, default_value: List[str], custom_value: List[str]) -> Tuple[bool, Any]:
-        for e in custom_value:
-            if e not in default_value:
-                logger.error(f"{e} does not appear in {default_value}")
-                return False, e
-
-        return True, None
 
     def _read_incremental(
         self,
