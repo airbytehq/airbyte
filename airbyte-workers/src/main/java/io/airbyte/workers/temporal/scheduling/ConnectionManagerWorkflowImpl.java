@@ -195,7 +195,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private void reportFailure(final ConnectionUpdaterInput connectionUpdaterInput) {
     jobCreationAndStatusUpdateActivity.attemptFailure(new AttemptFailureInput(
         connectionUpdaterInput.getJobId(),
-        connectionUpdaterInput.getAttemptId()));
+        connectionUpdaterInput.getAttemptId(),
+        standardSyncOutput.orElse(null)));
 
     final int maxAttempt = configFetchActivity.getMaxAttempt().getMaxAttempt();
     final int attemptNumber = connectionUpdaterInput.getAttemptNumber();

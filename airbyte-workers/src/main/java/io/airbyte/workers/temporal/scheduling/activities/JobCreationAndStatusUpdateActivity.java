@@ -111,6 +111,7 @@ public interface JobCreationAndStatusUpdateActivity {
 
     private long jobId;
     private int attemptId;
+    private StandardSyncOutput standardSyncOutput;
 
   }
 
