@@ -140,7 +140,7 @@ public class SchedulerApp {
       // anymore.
       cleanupZombies(jobPersistence, jobNotifier);
 
-      LOGGER.error("Start running the old scheduler");
+      LOGGER.info("Start running the old scheduler");
       scheduleJobsPool.scheduleWithFixedDelay(
           () -> {
             MDC.setContextMap(mdc);

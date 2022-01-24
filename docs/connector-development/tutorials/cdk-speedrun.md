@@ -130,7 +130,7 @@ In your `source.py` file, add this `Pokemon` class. This stream represents an en
 
 ```python
 class Pokemon(HttpStream):
-    url_base = "https://api.exchangeratesapi.io/"
+    url_base = "https://pokeapi.co/api/v2/"
 
     # Set this as a noop.
     primary_key = None

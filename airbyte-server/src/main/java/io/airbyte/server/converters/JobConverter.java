@@ -6,7 +6,9 @@ package io.airbyte.server.converters;
 
 import io.airbyte.api.model.AttemptInfoRead;
 import io.airbyte.api.model.AttemptRead;
+import io.airbyte.api.model.AttemptStats;
 import io.airbyte.api.model.AttemptStatus;
+import io.airbyte.api.model.AttemptStreamStats;
 import io.airbyte.api.model.JobConfigType;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobRead;
@@ -19,6 +21,8 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.StreamSyncStats;
+import io.airbyte.config.SyncStats;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
@@ -27,6 +31,8 @@ import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.Job;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class JobConverter {
@@ -72,19 +78,57 @@ public class JobConverter {
     return new AttemptRead()
         .id(attempt.getId())
         .status(Enums.convertTo(attempt.getStatus(), AttemptStatus.class))
-        .bytesSynced(attempt.getOutput()
+        .bytesSynced(attempt.getOutput() // TODO (parker) remove after frontend switches to totalStats
             .map(JobOutput::getSync)
             .map(StandardSyncOutput::getStandardSyncSummary)
             .map(StandardSyncSummary::getBytesSynced)
             .orElse(null))
-        .recordsSynced(attempt.getOutput()
+        .recordsSynced(attempt.getOutput() // TODO (parker) remove after frontend switches to totalStats
             .map(JobOutput::getSync)
             .map(StandardSyncOutput::getStandardSyncSummary)
             .map(StandardSyncSummary::getRecordsSynced)
             .orElse(null))
+        .totalStats(getTotalAttemptStats(attempt))
+        .streamStats(getAttemptStreamStats(attempt))
         .createdAt(attempt.getCreatedAtInSecond())
         .updatedAt(attempt.getUpdatedAtInSecond())
         .endedAt(attempt.getEndedAtInSecond().orElse(null));
+  }
+
+  public static AttemptStats getTotalAttemptStats(final Attempt attempt) {
+    final SyncStats totalStats = attempt.getOutput()
+        .map(JobOutput::getSync)
+        .map(StandardSyncOutput::getStandardSyncSummary)
+        .map(StandardSyncSummary::getTotalStats)
+        .orElse(null);
+
+    if (totalStats == null) {
+      return null;
+    }
+
+    return new AttemptStats()
+        .bytesEmitted(totalStats.getBytesEmitted())
+        .recordsEmitted(totalStats.getRecordsEmitted())
+        .stateMessagesEmitted(totalStats.getStateMessagesEmitted())
+        .recordsCommitted(totalStats.getRecordsCommitted());
+  }
+
+  public static List<AttemptStreamStats> getAttemptStreamStats(final Attempt attempt) {
+    final List<StreamSyncStats> streamStats = attempt.getOutput()
+        .map(JobOutput::getSync)
+        .map(StandardSyncOutput::getStandardSyncSummary)
+        .map(StandardSyncSummary::getStreamStats)
+        .orElse(Collections.emptyList());
+
+    return streamStats.stream()
+        .map(streamStat -> new AttemptStreamStats()
+            .streamName(streamStat.getStreamName())
+            .stats(new AttemptStats()
+                .bytesEmitted(streamStat.getStats().getBytesEmitted())
+                .recordsEmitted(streamStat.getStats().getRecordsEmitted())
+                .stateMessagesEmitted(streamStat.getStats().getStateMessagesEmitted())
+                .recordsCommitted(streamStat.getStats().getRecordsCommitted())))
+        .collect(Collectors.toList());
   }
 
   public LogRead getLogRead(final Path logPath) {
