@@ -50,8 +50,9 @@ Please read [How to get your AppID, Secret and Access Token](https://ads.tiktok.
 ## Changelog
 
 | Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.1.3 | 2021-12-10 | [8425](https://github.com/airbytehq/airbyte/pull/8425) | Update title, description fields in spec |
-| 0.1.2 | 2021-12-02 | [8292](https://github.com/airbytehq/airbyte/pull/8292) | Support reports |
-| 0.1.1 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
-| 0.1.0 | 2021-09-18 | [5887](https://github.com/airbytehq/airbyte/pull/5887) | Release TikTok Marketing CDK Connector |
+|:--------|:-----------| :-----       | :------ |
+| 0.1.4   | 2021-12-30 | [7636](https://github.com/airbytehq/airbyte/pull/7636) | Add OAuth support |
+| 0.1.3   | 2021-12-10 | [8425](https://github.com/airbytehq/airbyte/pull/8425) | Update title, description fields in spec |
+| 0.1.2   | 2021-12-02 | [8292](https://github.com/airbytehq/airbyte/pull/8292) | Support reports |
+| 0.1.1   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
+| 0.1.0   | 2021-09-18 | [5887](https://github.com/airbytehq/airbyte/pull/5887) | Release TikTok Marketing CDK Connector |

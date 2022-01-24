@@ -15,6 +15,7 @@ type UiConfig = {
   technicalSupport: string;
   statusLink: string;
   recipesLink: string;
+  demoLink: string;
   syncModeLink: string;
 };
 
@@ -35,6 +36,7 @@ const uiConfig: UiConfig = {
   recipesLink: "https://airbyte.io/recipes",
   syncModeLink:
     "https://docs.airbyte.io/understanding-airbyte/connections/incremental-deduped-history",
+  demoLink: "https://demo.airbyte.io",
 };
 
 export type { UiConfig };

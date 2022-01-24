@@ -12,7 +12,6 @@ import useDestination, {
 import useConnection, {
   useConnectionList,
 } from "hooks/services/useConnectionHook";
-import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
@@ -30,6 +29,7 @@ import LoadingPage from "components/LoadingPage";
 import useWorkspace from "hooks/services/useWorkspace";
 import useRouterHook from "hooks/useRouter";
 import { RoutePaths } from "pages/routes";
+import { JobInfo } from "../../core/domain/job/Job";
 
 const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   width: 100%;

@@ -4,10 +4,9 @@ import styled from "styled-components";
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { Button } from "components";
+import { Button, ContentCard } from "components";
 import LoadingSchema from "components/LoadingSchema";
-import ContentCard from "components/ContentCard";
-import { JobsLogItem } from "components/JobItem";
+import JobItem from "components/JobItem";
 import ConnectionForm from "views/Connection/ConnectionForm";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 
@@ -80,6 +79,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
   }
 
   if (schemaErrorStatus) {
+    const jobInfo = LogsRequestError.extractJobInfo(schemaErrorStatus);
     return (
       <ContentCard
         title={
@@ -90,9 +90,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
           onClick={onDiscoverSchema}
           additionControl={<SkipButton>{additionBottomControls}</SkipButton>}
         />
-        <JobsLogItem
-          jobInfo={LogsRequestError.extractJobInfo(schemaErrorStatus)}
-        />
+        {jobInfo && <JobItem jobInfo={jobInfo} />}
       </ContentCard>
     );
   }

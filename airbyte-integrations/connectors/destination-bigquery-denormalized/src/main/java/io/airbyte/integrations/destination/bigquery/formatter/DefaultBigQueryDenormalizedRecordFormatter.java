@@ -191,7 +191,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
 
   @Override
   public Schema getBigQuerySchema(final JsonNode jsonSchema) {
-        final List<Field> fieldList = getSchemaFields(namingResolver, jsonSchema);
+    final List<Field> fieldList = getSchemaFields(namingResolver, jsonSchema);
     if (fieldList.stream().noneMatch(f -> f.getName().equals(JavaBaseConstants.COLUMN_NAME_AB_ID))) {
       fieldList.add(Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING));
     }
