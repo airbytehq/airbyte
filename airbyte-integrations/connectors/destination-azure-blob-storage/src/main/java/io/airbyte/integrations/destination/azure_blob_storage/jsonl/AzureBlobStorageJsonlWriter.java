@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.azure_blob_storage.jsonl;
 
 import com.azure.storage.blob.specialized.AppendBlobClient;
-import com.azure.storage.blob.specialized.BlobOutputStream;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;

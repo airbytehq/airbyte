@@ -89,16 +89,16 @@ public class EnvConfigs implements Configs {
   private static final String JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS = "JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS";
   private static final String CONTAINER_ORCHESTRATOR_ENABLED = "CONTAINER_ORCHESTRATOR_ENABLED";
 
-  private static final String STATE_STORAGE_S3_BUCKET_NAME = "STATE_STORAGE_S3_BUCKET_NAME";
-  private static final String STATE_STORAGE_S3_REGION = "STATE_STORAGE_S3_REGION";
-  private static final String STATE_STORAGE_S3_ACCESS_KEY = "STATE_STORAGE_S3_ACCESS_KEY";
-  private static final String STATE_STORAGE_S3_SECRET_ACCESS_KEY = "STATE_STORAGE_S3_SECRET_ACCESS_KEY";
-  private static final String STATE_STORAGE_MINIO_BUCKET_NAME = "STATE_STORAGE_MINIO_BUCKET_NAME";
-  private static final String STATE_STORAGE_MINIO_ENDPOINT = "STATE_STORAGE_MINIO_ENDPOINT";
-  private static final String STATE_STORAGE_MINIO_ACCESS_KEY = "STATE_STORAGE_MINIO_ACCESS_KEY";
-  private static final String STATE_STORAGE_MINIO_SECRET_ACCESS_KEY = "STATE_STORAGE_MINIO_SECRET_ACCESS_KEY";
-  private static final String STATE_STORAGE_GCS_BUCKET_NAME = "STATE_STORAGE_GCS_BUCKET_NAME";
-  private static final String STATE_STORAGE_GCS_APPLICATION_CREDENTIALS = "STATE_STORAGE_GCS_APPLICATION_CREDENTIALS";
+  public static final String STATE_STORAGE_S3_BUCKET_NAME = "STATE_STORAGE_S3_BUCKET_NAME";
+  public static final String STATE_STORAGE_S3_REGION = "STATE_STORAGE_S3_REGION";
+  public static final String STATE_STORAGE_S3_ACCESS_KEY = "STATE_STORAGE_S3_ACCESS_KEY";
+  public static final String STATE_STORAGE_S3_SECRET_ACCESS_KEY = "STATE_STORAGE_S3_SECRET_ACCESS_KEY";
+  public static final String STATE_STORAGE_MINIO_BUCKET_NAME = "STATE_STORAGE_MINIO_BUCKET_NAME";
+  public static final String STATE_STORAGE_MINIO_ENDPOINT = "STATE_STORAGE_MINIO_ENDPOINT";
+  public static final String STATE_STORAGE_MINIO_ACCESS_KEY = "STATE_STORAGE_MINIO_ACCESS_KEY";
+  public static final String STATE_STORAGE_MINIO_SECRET_ACCESS_KEY = "STATE_STORAGE_MINIO_SECRET_ACCESS_KEY";
+  public static final String STATE_STORAGE_GCS_BUCKET_NAME = "STATE_STORAGE_GCS_BUCKET_NAME";
+  public static final String STATE_STORAGE_GCS_APPLICATION_CREDENTIALS = "STATE_STORAGE_GCS_APPLICATION_CREDENTIALS";
 
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
@@ -172,18 +172,18 @@ public class EnvConfigs implements Configs {
     if (getEnv(STATE_STORAGE_GCS_BUCKET_NAME) != null) {
       return Optional.of(CloudStorageConfigs.gcs(new GcsConfig(
           getEnvOrDefault(STATE_STORAGE_GCS_BUCKET_NAME, ""),
-          getEnvOrDefault(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, ""))));
+          getEnvOrDefault(STATE_STORAGE_GCS_APPLICATION_CREDENTIALS, ""))));
     } else if (getEnv(STATE_STORAGE_MINIO_ENDPOINT) != null) {
       return Optional.of(CloudStorageConfigs.minio(new MinioConfig(
           getEnvOrDefault(STATE_STORAGE_MINIO_BUCKET_NAME, ""),
-          getEnvOrDefault(LogClientSingleton.AWS_ACCESS_KEY_ID, ""),
-          getEnvOrDefault(LogClientSingleton.AWS_SECRET_ACCESS_KEY, ""),
+          getEnvOrDefault(STATE_STORAGE_MINIO_ACCESS_KEY, ""),
+          getEnvOrDefault(STATE_STORAGE_MINIO_SECRET_ACCESS_KEY, ""),
           getEnvOrDefault(STATE_STORAGE_MINIO_ENDPOINT, ""))));
     } else if (getEnv(STATE_STORAGE_S3_REGION) != null) {
       return Optional.of(CloudStorageConfigs.s3(new S3Config(
           getEnvOrDefault(STATE_STORAGE_S3_BUCKET_NAME, ""),
-          getEnvOrDefault(LogClientSingleton.AWS_ACCESS_KEY_ID, ""),
-          getEnvOrDefault(LogClientSingleton.AWS_SECRET_ACCESS_KEY, ""),
+          getEnvOrDefault(STATE_STORAGE_S3_ACCESS_KEY, ""),
+          getEnvOrDefault(STATE_STORAGE_S3_SECRET_ACCESS_KEY, ""),
           getEnvOrDefault(STATE_STORAGE_S3_REGION, ""))));
     } else {
       return Optional.empty();

@@ -8,7 +8,8 @@ inputs:
   github-token:
     required: true
   ec2-image-id:
-    default: "ami-04bd6e81239f4f3fb"
+    # github-self-hosted-runner-ubuntu-20-100g-disk
+    default: "ami-0ccd67e0abd945eec"
     required: true
   ec2-instance-type:
     default: "c5.2xlarge"
@@ -40,7 +41,7 @@ runs:
         aws-region: us-east-2
     - name: Start EC2 runner
       id: start-ec2-runner
-      uses: skyzh/ec2-github-runner@ba2298a67875dfdd29a88fafbc1ba27f4f94af39
+      uses: machulav/ec2-github-runner@v2.3.2
       with:
         mode: start
         github-token: ${{ inputs.github-token }}

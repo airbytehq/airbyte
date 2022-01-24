@@ -56,7 +56,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     try {
-      final String datasetId = config.get(BigQueryConsts.CONFIG_DATASET_ID).asText();
+      final String datasetId = BigQueryUtils.getDatasetId(config);
       final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
       final BigQuery bigquery = getBigQuery(config);
       final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);

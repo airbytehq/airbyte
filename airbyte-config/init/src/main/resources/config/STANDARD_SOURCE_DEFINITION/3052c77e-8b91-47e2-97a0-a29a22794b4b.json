@@ -1,0 +1,8 @@
+{
+  "sourceDefinitionId": "3052c77e-8b91-47e2-97a0-a29a22794b4b",
+  "name": "PersistIq",
+  "dockerRepository": "airbyte/source-persistiq",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/persistiq",
+  "icon": "persistiq.svg"
+}
