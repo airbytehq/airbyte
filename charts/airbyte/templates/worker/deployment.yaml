@@ -187,6 +187,16 @@ spec:
             configMapKeyRef:
               name: airbyte-env
               key: STATE_STORAGE_MINIO_BUCKET_NAME
+        - name: STATE_STORAGE_MINIO_ACCESS_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: STATE_STORAGE_MINIO_ACCESS_KEY
+        - name: STATE_STORAGE_MINIO_SECRET_ACCESS_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: STATE_STORAGE_MINIO_SECRET_ACCESS_KEY
         - name: STATE_STORAGE_MINIO_ENDPOINT
           valueFrom:
             configMapKeyRef:

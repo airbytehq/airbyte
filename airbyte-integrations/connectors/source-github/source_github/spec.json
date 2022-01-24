@@ -52,7 +52,6 @@
           }
         ]
       },
-
       "repository": {
         "type": "string",
         "examples": ["airbytehq/airbyte", "airbytehq/*"],
@@ -71,6 +70,14 @@
         "title": "Branch",
         "examples": ["airbytehq/airbyte/master"],
         "description": "Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled."
+      },
+      "page_size_for_large_streams": {
+        "type": "integer",
+        "title": "Page size for large streams",
+        "minimum": 1,
+        "maximum": 100,
+        "default": 10,
+        "description": "The Github connector contains several streams with a large load. The page size of such streams depends on the size of your repository. Recommended to specify values between 10 and 30."
       }
     }
   },

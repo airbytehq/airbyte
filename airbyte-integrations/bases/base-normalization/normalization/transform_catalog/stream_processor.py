@@ -314,15 +314,17 @@ class StreamProcessor(object):
         field_names = set()
         for field in fields:
             field_name = self.name_transformer.normalize_column_name(field, in_jinja=False)
+            field_name_lookup = self.name_transformer.normalize_column_identifier_case_for_lookup(field_name)
             jinja_name = self.name_transformer.normalize_column_name(field, in_jinja=True)
-            if field_name in field_names:
+            if field_name_lookup in field_names:
                 # TODO handle column name duplicates or collisions deterministically in this stream
                 for i in range(1, 1000):
                     field_name = self.name_transformer.normalize_column_name(f"{field}_{i}", in_jinja=False)
+                    field_name_lookup = self.name_transformer.normalize_column_identifier_case_for_lookup(field_name)
                     jinja_name = self.name_transformer.normalize_column_name(f"{field}_{i}", in_jinja=True)
-                    if field_name not in field_names:
+                    if field_name_lookup not in field_names:
                         break
-            field_names.add(field_name)
+            field_names.add(field_name_lookup)
             result[field] = (field_name, jinja_name)
         return result
 
@@ -1062,15 +1064,17 @@ where 1 = 1
             if suffix == "scd":
                 stg_schema = self.get_schema(True)
                 stg_table = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "stg", truncate_name)
+                if self.name_transformer.needs_quotes(stg_table):
+                    stg_table = jinja_call(self.name_transformer.apply_quote(stg_table))
                 if self.destination_type.value == DestinationType.POSTGRES.value:
                     # Keep only rows with the max emitted_at to keep incremental behavior
                     config["post_hook"] = (
-                        f"['delete from {stg_schema}.{stg_table} "
+                        f'["delete from {stg_schema}.{stg_table} '
                         + f"where {self.airbyte_emitted_at} != (select max({self.airbyte_emitted_at}) "
-                        + f"from {stg_schema}.{stg_table})']"
+                        + f'from {stg_schema}.{stg_table})"]'
                     )
                 else:
-                    config["post_hook"] = f"['drop view {stg_schema}.{stg_table}']"
+                    config["post_hook"] = f'["drop view {stg_schema}.{stg_table}"]'
             else:
                 # incremental is handled in the SCD SQL already
                 sql = self.add_incremental_clause(sql)

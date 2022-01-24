@@ -4,9 +4,13 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Salesforce Source Spec",
     "type": "object",
-    "required": ["client_id", "client_secret", "refresh_token", "api_type"],
-    "additionalProperties": false,
+    "required": ["client_id", "client_secret", "refresh_token"],
+    "additionalProperties": true,
     "properties": {
+      "auth_type": {
+        "type": "string",
+        "const": "Client"
+      },
       "client_id": {
         "title": "Client ID",
         "description": "The Consumer Key that can be found when viewing your app in Salesforce",
@@ -36,13 +40,6 @@
         "description": "Whether or not the the app is in a Salesforce sandbox. If you do not know what this, assume it is false. We provide more info on this field in the <a href=\"https://docs.airbyte.io/integrations/destinations/salesforce#is_sandbox\">docs</a>.",
         "type": "boolean",
         "default": false
-      },
-      "api_type": {
-        "title": "API Type",
-        "description": "Unless you know that you are transferring a very small amount of data, prefer using the BULK API. This will help avoid using up all of your API call quota with Salesforce. Valid values are BULK or REST.",
-        "type": "string",
-        "enum": ["BULK", "REST"],
-        "default": "BULK"
       },
       "streams_criteria": {
         "type": "array",
@@ -84,12 +81,57 @@
       }
     }
   },
-  "authSpecification": {
-    "auth_type": "oauth2.0",
-    "oauth2Specification": {
-      "rootObject": [],
-      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-      "oauthFlowOutputParameters": [["refresh_token"]]
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": ["auth_type"],
+    "predicate_value": "Client",
+    "oauth_config_specification": {
+      "oauth_user_input_from_connector_config_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "is_sandbox": {
+            "type": "boolean",
+            "path_in_connector_config": ["is_sandbox"]
+          }
+        }
+      },
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "path_in_connector_config": ["refresh_token"]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": ["client_id"]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": ["client_secret"]
+          }
+        }
+      }
     }
   }
 }
