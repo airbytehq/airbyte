@@ -2,7 +2,7 @@
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/e2e-test",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "E2E Test Source Spec",
+    "title": "Cloud E2E Test Source Spec",
     "type": "object",
     "required": ["type"],
     "oneOf": [
@@ -94,48 +94,6 @@
                 }
               }
             ]
-          }
-        }
-      },
-      {
-        "title": "Legacy Exception After N",
-        "required": ["type", "throw_after_n_records"],
-        "description": "A legacy mode from v0.1.1 mainly for unit tests. The catalog has one \"data\" stream, which has one string field \"column1\". This mode will throw an exception after N messages.",
-        "additionalProperties": false,
-        "properties": {
-          "type": {
-            "type": "string",
-            "const": "EXCEPTION_AFTER_N",
-            "default": "EXCEPTION_AFTER_N"
-          },
-          "throw_after_n_records": {
-            "title": "Throw After N Records",
-            "description": "Number of records to emit before throwing an exception. Min 1.",
-            "type": "integer",
-            "min": 1
-          }
-        }
-      },
-      {
-        "title": "Legacy Infinite Feed",
-        "required": ["type", "max_records"],
-        "description": "A legacy mode from v0.1.1 mainly for unit tests. The catalog has one \"data\" stream, which has one string field \"column1\". This mode will emit messages infinitely.",
-        "additionalProperties": true,
-        "properties": {
-          "type": {
-            "type": "string",
-            "const": "INFINITE_FEED",
-            "default": "INFINITE_FEED"
-          },
-          "max_records": {
-            "title": "Max Records",
-            "description": "Number of records to emit. If not set, defaults to infinity.",
-            "type": "integer"
-          },
-          "message_interval": {
-            "title": "Message Interval",
-            "description": "Interval between messages in ms.",
-            "type": "integer"
           }
         }
       }
