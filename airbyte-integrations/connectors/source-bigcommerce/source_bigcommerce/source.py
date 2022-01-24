@@ -53,6 +53,8 @@ class BigcommerceStream(HttpStream, ABC):
         params.update({"sort": self.order_field})
         if next_page_token:
             params.update(**next_page_token)
+        else:
+            params[self.filter_field] = self.start_date
         return params
 
     def request_headers(

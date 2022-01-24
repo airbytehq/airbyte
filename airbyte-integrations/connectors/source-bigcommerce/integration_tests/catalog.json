@@ -194,8 +194,7 @@
             "type": ["null", "string"]
           },
           "date_shipped": {
-            "type": ["null", "string"],
-            "format": "date-time"
+            "type": ["null", "string"]
           },
           "cart_id": {
             "type": ["null", "string"]
@@ -473,7 +472,7 @@
             "type": ["null", "string"]
           },
           "amount": {
-            "type": ["null", "integer"]
+            "type": ["null", "number"]
           },
           "currency": {
             "type": ["null", "string"]
