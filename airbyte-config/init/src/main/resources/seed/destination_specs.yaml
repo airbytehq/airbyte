@@ -188,7 +188,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-bigquery:0.6.3"
+- dockerImage: "airbyte/destination-bigquery:0.6.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -203,10 +203,12 @@
         big_query_client_buffer_size_mb:
           title: "Google BigQuery client chunk size"
           description: "Google BigQuery client's chunk(buffer) size (MIN=1, MAX =\
-            \ 15) for each table. The default 15MiB value is used if not set explicitly.\
-            \ It's recommended to decrease value for big data sets migration for less\
-            \ HEAP memory consumption and avoiding crashes. For more details refer\
-            \ to https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html"
+            \ 15) for each table. The size that will be written by a single RPC. Written\
+            \ data will be buffered and only flushed upon reaching this size or closing\
+            \ the channel. The default 15MiB value is used if not set explicitly.\
+            \  It's recommended to decrease value for big data sets migration for\
+            \ less HEAP memory consumption and avoiding crashes. For more details\
+            \ refer to https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html"
           type: "integer"
           minimum: 1
           maximum: 15
@@ -271,9 +273,12 @@
           airbyte_secret: true
         transformation_priority:
           type: "string"
-          description: "When running custom transformations or Basic normalization,\
-            \ running queries on interactive mode can hit BQ limits, choosing batch\
-            \ will solve those limits."
+          description: "Interactive run type means that the query is executed as soon\
+            \ as possible, and these queries count towards concurrent rate limit and\
+            \ daily limit. Batch queries are queued and started as soon as idle resources\
+            \ are available in the BigQuery shared resource pool, which usually occurs\
+            \ within a few minutes. Batch queries don’t count towards your concurrent\
+            \ rate limit."
           title: "Transformation Query Run Type"
           default: "interactive"
           enum:
@@ -378,7 +383,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:0.2.3"
+- dockerImage: "airbyte/destination-bigquery-denormalized:0.2.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -393,9 +398,11 @@
         big_query_client_buffer_size_mb:
           title: "Google BigQuery client chunk size"
           description: "Google BigQuery client's chunk (buffer) size (MIN = 1, MAX\
-            \ = 15) for each table. It defaults to 15MiB. Smaller chunk size means\
+            \ = 15) for each table. The size that will be written by a single RPC.\
+            \ Written data will be buffered and only flushed upon reaching this size\
+            \ or closing the channel. It defaults to 15MiB. Smaller chunk size means\
             \ less memory consumption, and is recommended for big data sets. For more\
-            \ details refer to the documentation <a href=\"https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html\"\
+            \ details refer  to the documentation <a href=\"https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html\"\
             >here</a>"
           type: "integer"
           minimum: 1
@@ -3779,7 +3786,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.2"
+- dockerImage: "airbyte/destination-snowflake:0.4.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:
@@ -3967,6 +3974,14 @@
                   \ memory requirement. Modify this with care."
                 title: "Stream Part Size"
                 order: 5
+              purge_staging_data:
+                title: "Purge Staging Files and Tables"
+                type: "boolean"
+                description: "Whether to delete the staging files from S3 after completing\
+                  \ the sync. See the docs for details. Only relevant for COPY. Defaults\
+                  \ to true."
+                default: true
+                order: 6
           - title: "GCS Staging"
             additionalProperties: false
             description: "Writes large batches of records to a file, uploads the file\

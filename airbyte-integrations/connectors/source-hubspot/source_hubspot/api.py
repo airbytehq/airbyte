@@ -37,7 +37,7 @@ VALID_JSON_SCHEMA_TYPES = {
 KNOWN_CONVERTIBLE_SCHEMA_TYPES = {
     "bool": ("boolean", None),
     "enumeration": ("string", None),
-    "date": ("string", "date-time"),
+    "date": ("string", "date"),
     "date-time": ("string", "date-time"),
     "datetime": ("string", "date-time"),
     "json": ("string", None),
