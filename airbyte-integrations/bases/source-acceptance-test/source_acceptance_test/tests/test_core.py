@@ -170,23 +170,27 @@ class TestConnection(BaseTest):
 @pytest.mark.default_timeout(30)
 class TestDiscovery(BaseTest):
     def test_discover(self, connector_config, docker_runner: ConnectorRunner):
-        """"""
+        """Verify that discover produce correct schema."""
         output = docker_runner.call_discover(config=connector_config)
         catalog_messages = filter_output(output, Type.CATALOG)
 
         assert len(catalog_messages) == 1, "Catalog message should be emitted exactly once"
+        assert catalog_messages[0].catalog, "Message should have catalog"
+        assert catalog_messages[0].catalog.streams, "Catalog should contain streams"
 
     def test_defined_cursors_exist_in_schema(self, discovered_catalog: Mapping[str, Any]):
         """Check if all of the source defined cursor fields are exists on stream's json schema."""
         for stream_name, stream in discovered_catalog.items():
-            if stream.default_cursor_field:
-                schema = stream.json_schema
-                assert "properties" in schema, "Top level item should have an 'object' type for {stream_name} stream schema"
-                properties = schema["properties"]
-                cursor_path = "/properties/".join(stream.default_cursor_field)
-                assert dpath.util.search(
-                    properties, cursor_path
-                ), f"Some of defined cursor fields {stream.default_cursor_field} are not specified in discover schema properties for {stream_name} stream"
+            if not stream.default_cursor_field:
+                continue
+            schema = stream.json_schema
+            assert "properties" in schema, f"Top level item should have an 'object' type for {stream_name} stream schema"
+            cursor_path = "/properties/".join(stream.default_cursor_field)
+            cursor_field_location = dpath.util.search(schema["properties"], cursor_path)
+            assert cursor_field_location, (
+                f"Some of defined cursor fields {stream.default_cursor_field} are not specified in discover schema "
+                f"properties for {stream_name} stream"
+            )
 
     def test_defined_refs_exist_in_schema(self, discovered_catalog: Mapping[str, Any]):
         """Check the presence of unresolved `$ref`s values within each json schema."""
@@ -201,15 +205,11 @@ class TestDiscovery(BaseTest):
     def test_primary_keys_exist_in_schema(self, discovered_catalog: Mapping[str, Any]):
         """Check that all primary keys are present in catalog."""
         for stream_name, stream in discovered_catalog.items():
-            if stream.primary_key:
-                for pk in stream.primary_key:
-                    schema = stream.json_schema
-                    properties =
-                pk_path = f"/properties/{pk}".join(stream.default_cursor_field)
-                assert dpath.util.search(
-                    schema["properties"], cursor_path
-                ), f"Some of defined cursor fields {stream.default_cursor_field} are not specified in discover schema properties for {stream_name} stream"
-
+            for pk in stream.primary_key:
+                schema = stream.json_schema
+                pk_path = f"/properties/".join(pk)
+                pk_field_location = dpath.util.search(schema["properties"], pk_path)
+                assert pk_field_location, f"One of the PKs ({pk}) is not specified in discover schema for {stream_name} stream"
 
 
 def primary_keys_for_records(streams, records):
@@ -367,7 +367,7 @@ class TestBasicRead(BaseTest):
         for pks, record in primary_keys_for_records(streams=configured_catalog.streams, records=records):
             for pk_path, pk_value in pks.items():
                 assert pk_value is not None, (
-                    f"Primary key subkeys {repr(pk_path)} " f"have null values or not present in {record.stream} stream records."
+                    f"Primary key subkeys {repr(pk_path)} have null values or not present in {record.stream} stream records."
                 )
 
         # TODO: remove this condition after https://github.com/airbytehq/airbyte/issues/8312 is done
