@@ -63,14 +63,14 @@
         "examples": ["2017-01-25"],
         "order": 2
       },
-    "end_date": {
-      "type": "string",
-      "title": "End Date",
-      "description": "UTC date and time in the format 2017-01-25. Any data after this date will not be replicated.",
-      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-      "examples": ["2017-01-30"],
-      "order": 6
-    },
+      "end_date": {
+        "type": "string",
+        "title": "End Date",
+        "description": "UTC date and time in the format 2017-01-25. Any data after this date will not be replicated.",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "examples": ["2017-01-30"],
+        "order": 6
+      },
       "custom_queries": {
         "type": "array",
         "title": "Custom GAQL Queries (Optional)",

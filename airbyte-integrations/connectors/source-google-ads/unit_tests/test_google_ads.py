@@ -237,5 +237,5 @@ def test_get_date_params_without_end_date():
         stream_slice={"segments.date": "2021-10-31"}, cursor_field="segments.date"
     )
     assert mock_start_date == start_date
-    # There is a Google limitation where we capture only a 15-day date range 
+    # There is a Google limitation where we capture only a 15-day date range
     assert end_date == "2021-11-15"

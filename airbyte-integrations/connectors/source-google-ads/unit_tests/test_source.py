@@ -12,11 +12,13 @@ from source_google_ads.streams import AdGroupAdReport, chunk_date_range
 
 # Test chunck date range without end date
 def test_chunk_date_range_without_end_date():
-    start_date = pendulum.now().subtract(days=5).to_date_string()
+    start_date_str = pendulum.now().subtract(days=5).to_date_string()
     conversion_window = 0
     field = "date"
-    response = chunk_date_range(start_date, conversion_window, field)
-    start_date = pendulum.parse(start_date)
+    response = chunk_date_range(
+        start_date=start_date_str, conversion_window=conversion_window, field=field, end_date=None, days_of_data_storage=None, range_days=1
+    )
+    start_date = pendulum.parse(start_date_str)
     expected_response = []
     while start_date < pendulum.now():
         expected_response.append({field: start_date.to_date_string()})
@@ -45,7 +47,7 @@ def test_chunk_date_range():
 def test_streams_count(config):
     source = SourceGoogleAds()
     streams = source.streams(config)
-    expected_streams_number = 16
+    expected_streams_number = 13
     assert len(streams) == expected_streams_number
 
 
