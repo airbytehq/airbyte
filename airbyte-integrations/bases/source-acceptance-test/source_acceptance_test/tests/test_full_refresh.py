@@ -2,10 +2,10 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from collections import defaultdict, Mapping
+from collections import defaultdict
 from functools import partial
 from logging import Logger
-from typing import List
+from typing import List, Mapping
 
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, Type

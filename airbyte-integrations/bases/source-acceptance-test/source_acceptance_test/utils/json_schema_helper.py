@@ -6,7 +6,6 @@
 from functools import reduce
 from typing import Any, List, Mapping, Optional, Set
 
-import dpath.util
 import pendulum
 from jsonref import JsonRef
 

@@ -207,7 +207,7 @@ class TestDiscovery(BaseTest):
         for stream_name, stream in discovered_catalog.items():
             for pk in stream.primary_key:
                 schema = stream.json_schema
-                pk_path = f"/properties/".join(pk)
+                pk_path = "/properties/".join(pk)
                 pk_field_location = dpath.util.search(schema["properties"], pk_path)
                 assert pk_field_location, f"One of the PKs ({pk}) is not specified in discover schema for {stream_name} stream"
 
