@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.e2e_test;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -48,7 +52,8 @@ public class ContinuousFeedSource extends BaseConnector implements Source {
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode jsonConfig, final ConfiguredAirbyteCatalog catalog, final JsonNode state) throws Exception {
+  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode jsonConfig, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
+      throws Exception {
     final ContinuousFeedConfig feedConfig = new ContinuousFeedConfig(jsonConfig);
     final List<Iterator<AirbyteMessage>> iterators = new LinkedList<>();
 
@@ -62,6 +67,7 @@ public class ContinuousFeedSource extends BaseConnector implements Source {
       final Generator generator = new Generator(ContinuousFeedConstants.MOCK_JSON_CONFIG, schemaStore, random.get());
 
       final Iterator<AirbyteMessage> streamIterator = new AbstractIterator<>() {
+
         @CheckForNull
         @Override
         protected AirbyteMessage computeNext() {
@@ -91,6 +97,7 @@ public class ContinuousFeedSource extends BaseConnector implements Source {
                   .withEmittedAt(Instant.now().toEpochMilli())
                   .withData(data));
         }
+
       };
       iterators.add(streamIterator);
     }

@@ -96,10 +96,7 @@
     },
     "additionalItems": { "$ref": "#" },
     "items": {
-      "anyOf": [
-        { "$ref": "#" },
-        { "$ref": "#/definitions/schemaArray" }
-      ],
+      "anyOf": [{ "$ref": "#" }, { "$ref": "#/definitions/schemaArray" }],
       "default": true
     },
     "maxItems": { "$ref": "#/definitions/nonNegativeInteger" },
@@ -132,10 +129,7 @@
     "dependencies": {
       "type": "object",
       "additionalProperties": {
-        "anyOf": [
-          { "$ref": "#" },
-          { "$ref": "#/definitions/stringArray" }
-        ]
+        "anyOf": [{ "$ref": "#" }, { "$ref": "#/definitions/stringArray" }]
       }
     },
     "propertyNames": { "$ref": "#" },

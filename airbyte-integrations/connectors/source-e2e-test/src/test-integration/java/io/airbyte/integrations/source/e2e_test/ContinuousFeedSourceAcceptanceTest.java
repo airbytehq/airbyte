@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.e2e_test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -29,29 +33,29 @@ public class ContinuousFeedSourceAcceptanceTest extends SourceAcceptanceTest {
   private static final JsonSchemaValidator JSON_VALIDATOR = new JsonSchemaValidator();
   private static final String STREAM_1 = "stream1";
   private static final JsonNode SCHEMA_1 = Jsons.deserialize("""
-      {
-        "type": "object",
-        "properties": {
-          "field1": { "type": "integer" }
-        }
-      }
-      """);
+                                                             {
+                                                               "type": "object",
+                                                               "properties": {
+                                                                 "field1": { "type": "integer" }
+                                                               }
+                                                             }
+                                                             """);
   private static final String STREAM_2 = "stream2";
   private static final JsonNode SCHEMA_2 = Jsons.deserialize("""
-      {
-        "type": "object",
-        "properties": {
-          "column1": { "type": "string" },
-          "column2": {
-            "type": "object",
-            "properties": {
-              "field1": { "type": "array", "items": { "type": "boolean" } },
-              "field2": { "type": "integer" }
-            }
-          }
-        }
-      }
-      """);
+                                                             {
+                                                               "type": "object",
+                                                               "properties": {
+                                                                 "column1": { "type": "string" },
+                                                                 "column2": {
+                                                                   "type": "object",
+                                                                   "properties": {
+                                                                     "field1": { "type": "array", "items": { "type": "boolean" } },
+                                                                     "field2": { "type": "integer" }
+                                                                   }
+                                                                 }
+                                                               }
+                                                             }
+                                                             """);
 
   private JsonNode config;
 

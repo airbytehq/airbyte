@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.e2e_test;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -118,7 +122,8 @@ public class ContinuousFeedConfig {
   /**
    * Patch the schema so that 1) it allows no additional properties, and 2) all fields are required.
    * This is necessary because the mock Json object generation library may add extra properties, or
-   * omit non-required fields. TODO (liren): patch the library so we don't need to patch the schema here.
+   * omit non-required fields. TODO (liren): patch the library so we don't need to patch the schema
+   * here.
    */
   private static void processSchema(final JsonNode schema) {
     if (schema.has("type") && schema.get("type").asText().equals("object")) {

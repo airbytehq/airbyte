@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.e2e_test;
 
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -13,7 +17,6 @@ public final class LegacyConstants {
       DEFAULT_STREAM,
       Field.of(DEFAULT_COLUMN, JsonSchemaPrimitive.STRING));
 
-  private LegacyConstants() {
-  }
+  private LegacyConstants() {}
 
 }

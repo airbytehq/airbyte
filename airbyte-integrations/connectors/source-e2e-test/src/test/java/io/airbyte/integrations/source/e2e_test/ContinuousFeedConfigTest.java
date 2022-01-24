@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.e2e_test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -75,7 +79,8 @@ class ContinuousFeedConfigTest {
   public void testParseMockCatalog(final String testCaseName,
                                    final JsonNode mockConfig,
                                    final boolean invalidSchema,
-                                   final AirbyteCatalog expectedCatalog) throws Exception {
+                                   final AirbyteCatalog expectedCatalog)
+      throws Exception {
     if (invalidSchema) {
       assertThrows(JsonValidationException.class, () -> ContinuousFeedConfig.parseMockCatalog(mockConfig));
     } else {
