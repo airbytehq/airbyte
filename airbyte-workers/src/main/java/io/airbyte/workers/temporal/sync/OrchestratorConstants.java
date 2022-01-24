@@ -5,9 +5,16 @@
 package io.airbyte.workers.temporal.sync;
 
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.helpers.LogClientSingleton;
 import java.util.Set;
 
 public class OrchestratorConstants {
+
+  // we want to propagate log level, even if it isn't consumed by EnvConfigs
+  private static final String LOG_LEVEL = "LOG_LEVEL";
+
+  // necessary for s3/minio logging. used in the log4j2 configuration.
+  private static final String S3_PATH_STYLE_ACCESS = "S3_PATH_STYLE_ACCESS";
 
   // set of env vars necessary for the container orchestrator app to run
   public static final Set<String> ENV_VARS_TO_TRANSFER = Set.of(
@@ -29,7 +36,26 @@ public class OrchestratorConstants {
       EnvConfigs.JOB_MAIN_CONTAINER_MEMORY_REQUEST,
       EnvConfigs.JOB_MAIN_CONTAINER_MEMORY_LIMIT,
       EnvConfigs.JOB_DEFAULT_ENV_MAP,
-      EnvConfigs.LOCAL_ROOT);
+      EnvConfigs.LOCAL_ROOT,
+      LOG_LEVEL,
+      LogClientSingleton.GCS_LOG_BUCKET,
+      LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS,
+      LogClientSingleton.S3_MINIO_ENDPOINT,
+      S3_PATH_STYLE_ACCESS,
+      LogClientSingleton.S3_LOG_BUCKET,
+      LogClientSingleton.AWS_ACCESS_KEY_ID,
+      LogClientSingleton.AWS_SECRET_ACCESS_KEY,
+      LogClientSingleton.S3_LOG_BUCKET_REGION,
+      EnvConfigs.STATE_STORAGE_GCS_BUCKET_NAME,
+      EnvConfigs.STATE_STORAGE_GCS_APPLICATION_CREDENTIALS,
+      EnvConfigs.STATE_STORAGE_MINIO_ENDPOINT,
+      EnvConfigs.STATE_STORAGE_MINIO_BUCKET_NAME,
+      EnvConfigs.STATE_STORAGE_MINIO_ACCESS_KEY,
+      EnvConfigs.STATE_STORAGE_MINIO_SECRET_ACCESS_KEY,
+      EnvConfigs.STATE_STORAGE_S3_BUCKET_NAME,
+      EnvConfigs.STATE_STORAGE_S3_ACCESS_KEY,
+      EnvConfigs.STATE_STORAGE_S3_SECRET_ACCESS_KEY,
+      EnvConfigs.STATE_STORAGE_S3_REGION);
 
   public static final String INIT_FILE_ENV_MAP = "envMap.json";
   public static final String INIT_FILE_INPUT = "input.json";

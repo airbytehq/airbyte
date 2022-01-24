@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import dayjs from "dayjs";
 
-import { Attempt } from "core/resources/Job";
+import { Attempt } from "core/domain/job/Job";
 import Status from "core/statuses";
 
 type IProps = {
