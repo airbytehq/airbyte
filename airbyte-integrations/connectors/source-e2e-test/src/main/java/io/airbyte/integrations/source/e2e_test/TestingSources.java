@@ -18,9 +18,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * This source is designed to be a switch statement for our suite of highly-specific test sourcess.
- */
 public class TestingSources extends BaseConnector implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TestingSources.class);
