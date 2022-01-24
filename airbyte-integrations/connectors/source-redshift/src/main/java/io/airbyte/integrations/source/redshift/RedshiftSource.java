@@ -25,6 +25,7 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSource.class);
   public static final String DRIVER_CLASS = "com.amazon.redshift.jdbc.Driver";
+  private static final String SCHEMAS = "schemas";
   private List<String> schemas;
 
   // todo (cgardens) - clean up passing the dialect as null versus explicitly adding the case to the
@@ -44,9 +45,9 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
             redshiftConfig.get("port").asText(),
             redshiftConfig.get("database").asText()));
 
-    if (redshiftConfig.has("schemas") && redshiftConfig.get("schemas").isArray()) {
+    if (redshiftConfig.has(SCHEMAS) && redshiftConfig.get(SCHEMAS).isArray()) {
       schemas = new ArrayList<>();
-      for (final JsonNode schema : redshiftConfig.get("schemas")) {
+      for (final JsonNode schema : redshiftConfig.get(SCHEMAS)) {
         schemas.add(schema.asText());
       }
     }
