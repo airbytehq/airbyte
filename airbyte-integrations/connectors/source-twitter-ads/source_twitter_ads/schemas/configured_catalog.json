@@ -4,7 +4,8 @@
             "stream": {
                 "name": "campaigns",
                 "json_schema": {
-                    "type": "object"
+                    "type": "object",
+                    "properties": {}
                 },
                 "supported_sync_modes": [
                     "full_refresh"
@@ -22,7 +23,8 @@
             "stream": {
                 "name": "ads_analytics_metrics",
                 "json_schema": {
-                    "type": "object"
+                    "type": "object",
+                    "properties": {}
                 },
                 "supported_sync_modes": [
                     "full_refresh"
@@ -40,7 +42,8 @@
             "stream": {
                 "name": "line_items",
                 "json_schema": {
-                    "type": "object"
+                    "type": "object",
+                    "properties": {}
                 },
                 "supported_sync_modes": [
                     "full_refresh"
@@ -58,7 +61,8 @@
             "stream": {
                 "name": "promoted_tweets",
                 "json_schema": {
-                    "type": "object"
+                    "type": "object",
+                    "properties": {}
                 },
                 "supported_sync_modes": [
                     "full_refresh"
