@@ -133,6 +133,8 @@ class BulkSalesforceStream(SalesforceStream):
     def _send_http_request(self, method: str, url: str, json: dict = None):
         headers = self.authenticator.get_auth_header()
         response = self._session.request(method, url=url, headers=headers, json=json)
+        if response.status_code not in [200, 204]:
+            self.logger.error(f"error body: {response.text}")
         response.raise_for_status()
         return response
 
@@ -141,6 +143,7 @@ class BulkSalesforceStream(SalesforceStream):
         docs: https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/create_job.htm
         """
         json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
+
         try:
             response = self._send_http_request("POST", url, json=json)
             job_id = response.json()["id"]
@@ -191,6 +194,10 @@ class BulkSalesforceStream(SalesforceStream):
             job_info = self._send_http_request("GET", url=url).json()
             job_status = job_info["state"]
             if job_status in ["JobComplete", "Aborted", "Failed"]:
+                if job_status != "JobComplete":
+                    # this is only job metadata without payload
+                    self.logger.error(f"JobStatus: {job_status}, full job response: {job_info}")
+
                 return job_status
 
             if delay_timeout < self.MAX_CHECK_INTERVAL_SECONDS:

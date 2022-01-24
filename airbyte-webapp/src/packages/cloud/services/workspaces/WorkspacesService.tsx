@@ -14,7 +14,7 @@ import { CloudWorkspacesService } from "packages/cloud/lib/domain/cloudWorkspace
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
 import { useConfig } from "packages/cloud/services/config";
 import { useDefaultRequestMiddlewares } from "packages/cloud/services/useDefaultRequestMiddlewares";
-import { useInitService } from "./useInitService";
+import { useInitService } from "packages/cloud/services/useInitService";
 import { QueryObserverSuccessResult } from "react-query/types/core/types";
 
 export const workspaceKeys = {

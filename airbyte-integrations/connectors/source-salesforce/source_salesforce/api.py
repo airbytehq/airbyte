@@ -208,9 +208,16 @@ class Salesforce:
 
     def get_validated_streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None):
         salesforce_objects = self.describe()["sobjects"]
-        stream_names = [stream_object["name"] for stream_object in salesforce_objects]
+        stream_objects = []
+        for stream_object in salesforce_objects:
+            if stream_object["queryable"]:
+                stream_objects.append(stream_object)
+            else:
+                self.logger.warn(f"Stream {stream_object['name']} is not queryable and will be ignored.")
+
+        stream_names = [stream_object["name"] for stream_object in stream_objects]
         if catalog:
-            return [configured_stream.stream.name for configured_stream in catalog.streams]
+            return [configured_stream.stream.name for configured_stream in catalog.streams], stream_objects
 
         if config.get("streams_criteria"):
             filtered_stream_list = []
@@ -221,7 +228,8 @@ class Salesforce:
             stream_names = list(set(filtered_stream_list))
 
         validated_streams = [stream_name for stream_name in stream_names if self.filter_streams(stream_name)]
-        return validated_streams
+        validated_stream_objects = [stream_object for stream_object in stream_objects if stream_object["name"] in validated_streams]
+        return validated_streams, validated_stream_objects
 
     @default_backoff_handler(max_tries=5, factor=15)
     def _make_request(
@@ -253,7 +261,7 @@ class Salesforce:
         self.access_token = auth["access_token"]
         self.instance_url = auth["instance_url"]
 
-    def describe(self, sobject: str = None) -> Mapping[str, Any]:
+    def describe(self, sobject: str = None, stream_objects: List = None) -> Mapping[str, Any]:
         """Describes all objects or a specific object"""
         headers = self._get_standard_headers()
 
@@ -261,10 +269,12 @@ class Salesforce:
 
         url = f"{self.instance_url}/services/data/{self.version}/{endpoint}"
         resp = self._make_request("GET", url, headers=headers)
+        if resp.status_code == 404:
+            self.logger.error(f"Filtered stream objects: {stream_objects}")
         return resp.json()
 
-    def generate_schema(self, stream_name: str = None) -> Mapping[str, Any]:
-        response = self.describe(stream_name)
+    def generate_schema(self, stream_name: str = None, stream_objects: List = None) -> Mapping[str, Any]:
+        response = self.describe(stream_name, stream_objects)
         schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True, "properties": {}}
         for field in response["fields"]:
             schema["properties"][field["name"]] = self.field_to_property_schema(field)
