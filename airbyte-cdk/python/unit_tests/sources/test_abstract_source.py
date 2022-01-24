@@ -37,9 +37,7 @@ class MockSource(AbstractSource):
         self._streams = streams
         self.check_lambda = check_lambda
 
-    def check_connection(
-        self, logger: logging.Logger, config: Mapping[str, Any]
-    ) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         if self.check_lambda:
             return self.check_lambda()
         return (False, "Missing callable.")
@@ -59,27 +57,19 @@ def test_successful_check():
 def test_failed_check():
     """Tests that if a source returns FALSE for the connection check the appropriate connectionStatus failure message is returned"""
     expected = AirbyteConnectionStatus(status=Status.FAILED, message="'womp womp'")
-    assert expected == MockSource(check_lambda=lambda: (False, "womp womp")).check(
-        logger, {}
-    )
+    assert expected == MockSource(check_lambda=lambda: (False, "womp womp")).check(logger, {})
 
 
 def test_raising_check():
     """Tests that if a source raises an unexpected exception the appropriate connectionStatus failure message is returned."""
-    expected = AirbyteConnectionStatus(
-        status=Status.FAILED, message="Exception('this should fail')"
-    )
-    assert expected == MockSource(
-        check_lambda=lambda: exec('raise Exception("this should fail")')
-    ).check(logger, {})
+    expected = AirbyteConnectionStatus(status=Status.FAILED, message="Exception('this should fail')")
+    assert expected == MockSource(check_lambda=lambda: exec('raise Exception("this should fail")')).check(logger, {})
 
 
 class MockStream(Stream):
     def __init__(
         self,
-        inputs_and_mocked_outputs: List[
-            Tuple[Mapping[str, Any], Iterable[Mapping[str, Any]]]
-        ] = None,
+        inputs_and_mocked_outputs: List[Tuple[Mapping[str, Any], Iterable[Mapping[str, Any]]]] = None,
         name: str = None,
     ):
         self._inputs_and_mocked_outputs = inputs_and_mocked_outputs
@@ -97,9 +87,7 @@ class MockStream(Stream):
                 if kwargs == _input:
                     return output
 
-        raise Exception(
-            f"No mocked output supplied for input: {kwargs}. Mocked inputs/outputs: {self._inputs_and_mocked_outputs}"
-        )
+        raise Exception(f"No mocked output supplied for input: {kwargs}. Mocked inputs/outputs: {self._inputs_and_mocked_outputs}")
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -128,9 +116,7 @@ def test_discover(mocker):
         source_defined_cursor=True,
         source_defined_primary_key=[["pk"]],
     )
-    airbyte_stream2 = AirbyteStream(
-        name="2", json_schema={}, supported_sync_modes=[SyncMode.full_refresh]
-    )
+    airbyte_stream2 = AirbyteStream(name="2", json_schema={}, supported_sync_modes=[SyncMode.full_refresh])
 
     stream1 = MockStream()
     stream2 = MockStream()
@@ -151,9 +137,7 @@ def test_read_nonexistent_stream_raises_exception(mocker):
     mocker.patch.object(MockStream, "get_json_schema", return_value={})
 
     src = MockSource(streams=[s1])
-    catalog = ConfiguredAirbyteCatalog(
-        streams=[_configured_stream(s2, SyncMode.full_refresh)]
-    )
+    catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(s2, SyncMode.full_refresh)])
     with pytest.raises(KeyError):
         list(src.read(logger, {}, catalog))
 
@@ -164,9 +148,7 @@ GLOBAL_EMITTED_AT = 1
 def _as_record(stream: str, data: Dict[str, Any]) -> AirbyteMessage:
     return AirbyteMessage(
         type=Type.RECORD,
-        record=AirbyteRecordMessage(
-            stream=stream, data=data, emitted_at=GLOBAL_EMITTED_AT
-        ),
+        record=AirbyteRecordMessage(stream=stream, data=data, emitted_at=GLOBAL_EMITTED_AT),
     )
 
 
@@ -216,17 +198,11 @@ def test_valid_full_refresh_read_with_slices(mocker):
     slices = [{"1": "1"}, {"2": "2"}]
     # When attempting to sync a slice, just output that slice as a record
     s1 = MockStream(
-        [
-            ({"sync_mode": SyncMode.full_refresh, "stream_slice": s}, [s])
-            for s in slices
-        ],
+        [({"sync_mode": SyncMode.full_refresh, "stream_slice": s}, [s]) for s in slices],
         name="s1",
     )
     s2 = MockStream(
-        [
-            ({"sync_mode": SyncMode.full_refresh, "stream_slice": s}, [s])
-            for s in slices
-        ],
+        [({"sync_mode": SyncMode.full_refresh, "stream_slice": s}, [s]) for s in slices],
         name="s2",
     )
 
@@ -295,9 +271,7 @@ class TestIncrementalRead:
             _as_record("s2", stream_output[1]),
             _state({"s1": new_state, "s2": new_state}),
         ]
-        messages = _fix_emitted_at(
-            list(src.read(logger, {}, catalog, state={"s1": old_state}))
-        )
+        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state={"s1": old_state})))
 
         assert expected == messages
         assert state_property.mock_calls == [
@@ -351,9 +325,7 @@ class TestIncrementalRead:
             _state({"s1": state, "s2": state}),
             _state({"s1": state, "s2": state}),
         ]
-        messages = _fix_emitted_at(
-            list(src.read(logger, {}, catalog, state=defaultdict(dict)))
-        )
+        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=defaultdict(dict))))
 
         assert expected == messages
 
@@ -390,9 +362,7 @@ class TestIncrementalRead:
             _state({"s1": state, "s2": state}),
         ]
 
-        messages = _fix_emitted_at(
-            list(src.read(logger, {}, catalog, state=defaultdict(dict)))
-        )
+        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=defaultdict(dict))))
 
         assert expected == messages
 
@@ -457,9 +427,7 @@ class TestIncrementalRead:
             _state({"s1": state, "s2": state}),
         ]
 
-        messages = _fix_emitted_at(
-            list(src.read(logger, {}, catalog, state=defaultdict(dict)))
-        )
+        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=defaultdict(dict))))
 
         assert expected == messages
 
@@ -547,8 +515,6 @@ class TestIncrementalRead:
             _state({"s1": state, "s2": state}),
         ]
 
-        messages = _fix_emitted_at(
-            list(src.read(logger, {}, catalog, state=defaultdict(dict)))
-        )
+        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=defaultdict(dict))))
 
         assert expected == messages

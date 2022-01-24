@@ -37,9 +37,7 @@ class AbstractSource(Source, ABC):
     """
 
     @abstractmethod
-    def check_connection(
-        self, logger: logging.Logger, config: Mapping[str, Any]
-    ) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
         :param logger: source logger
         :param config: The user-provided configuration as specified by the source's spec.
@@ -67,27 +65,21 @@ class AbstractSource(Source, ABC):
         """Source name"""
         return self.__class__.__name__
 
-    def discover(
-        self, logger: logging.Logger, config: Mapping[str, Any]
-    ) -> AirbyteCatalog:
+    def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
         """Implements the Discover operation from the Airbyte Specification.
         See https://docs.airbyte.io/architecture/airbyte-specification.
         """
         streams = [stream.as_airbyte_stream() for stream in self.streams(config=config)]
         return AirbyteCatalog(streams=streams)
 
-    def check(
-        self, logger: logging.Logger, config: Mapping[str, Any]
-    ) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """Implements the Check Connection operation from the Airbyte Specification.
         See https://docs.airbyte.io/architecture/airbyte-specification.
         """
         try:
             check_succeeded, error = self.check_connection(logger, config)
             if not check_succeeded:
-                return AirbyteConnectionStatus(
-                    status=Status.FAILED, message=repr(error)
-                )
+                return AirbyteConnectionStatus(status=Status.FAILED, message=repr(error))
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=repr(e))
 
@@ -127,9 +119,7 @@ class AbstractSource(Source, ABC):
                         internal_config=internal_config,
                     )
                 except Exception as e:
-                    logger.exception(
-                        f"Encountered an exception while reading stream {configured_stream.stream.name}"
-                    )
+                    logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
                     raise e
                 finally:
                     timer.finish_event()
@@ -148,15 +138,10 @@ class AbstractSource(Source, ABC):
     ) -> Iterator[AirbyteMessage]:
 
         if internal_config.page_size and isinstance(stream_instance, HttpStream):
-            logger.info(
-                f"Setting page size for {stream_instance.name} to {internal_config.page_size}"
-            )
+            logger.info(f"Setting page size for {stream_instance.name} to {internal_config.page_size}")
             stream_instance.page_size = internal_config.page_size
 
-        use_incremental = (
-            configured_stream.sync_mode == SyncMode.incremental
-            and stream_instance.supports_incremental
-        )
+        use_incremental = configured_stream.sync_mode == SyncMode.incremental and stream_instance.supports_incremental
         if use_incremental:
             record_iterator = self._read_incremental(
                 logger,
@@ -166,9 +151,7 @@ class AbstractSource(Source, ABC):
                 internal_config,
             )
         else:
-            record_iterator = self._read_full_refresh(
-                stream_instance, configured_stream, internal_config
-            )
+            record_iterator = self._read_full_refresh(stream_instance, configured_stream, internal_config)
 
         record_counter = 0
         stream_name = configured_stream.stream.name
@@ -234,14 +217,10 @@ class AbstractSource(Source, ABC):
             )
             for record_counter, record_data in enumerate(records, start=1):
                 yield self._as_airbyte_record(stream_name, record_data)
-                stream_state = stream_instance.get_updated_state(
-                    stream_state, record_data
-                )
+                stream_state = stream_instance.get_updated_state(stream_state, record_data)
                 checkpoint_interval = stream_instance.state_checkpoint_interval
                 if checkpoint_interval and record_counter % checkpoint_interval == 0:
-                    yield self._checkpoint_state(
-                        stream_instance, stream_state, connector_state
-                    )
+                    yield self._checkpoint_state(stream_instance, stream_state, connector_state)
 
                 total_records_counter += 1
                 # This functionality should ideally live outside of this method
@@ -261,9 +240,7 @@ class AbstractSource(Source, ABC):
         configured_stream: ConfiguredAirbyteStream,
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
-        slices = stream_instance.stream_slices(
-            sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field
-        )
+        slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field)
         total_records_counter = 0
         for slice in slices:
             records = stream_instance.read_records(
@@ -283,14 +260,10 @@ class AbstractSource(Source, ABC):
         except AttributeError:
             connector_state[stream.name] = stream_state
 
-        return AirbyteMessage(
-            type=MessageType.STATE, state=AirbyteStateMessage(data=connector_state)
-        )
+        return AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data=connector_state))
 
     @lru_cache(maxsize=None)
-    def _get_stream_transformer_and_schema(
-        self, stream_name: str
-    ) -> Tuple[TypeTransformer, Mapping[str, Any]]:
+    def _get_stream_transformer_and_schema(self, stream_name: str) -> Tuple[TypeTransformer, Mapping[str, Any]]:
         """
         Lookup stream's transform object and jsonschema based on stream name.
         This function would be called a lot so using caching to save on costly
@@ -309,7 +282,5 @@ class AbstractSource(Source, ABC):
         # taken unless configured. See
         # docs/connector-development/cdk-python/schemas.md for details.
         transformer.transform(data, schema)  # type: ignore
-        message = AirbyteRecordMessage(
-            stream=stream_name, data=data, emitted_at=now_millis
-        )
+        message = AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=now_millis)
         return AirbyteMessage(type=MessageType.RECORD, record=message)
