@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.48
+Add support for streams with explicit state attribute.
+
 ## 0.1.47
 Fix typing errors.
 
