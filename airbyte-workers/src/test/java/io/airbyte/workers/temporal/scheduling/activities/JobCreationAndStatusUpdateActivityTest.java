@@ -77,6 +77,8 @@ public class JobCreationAndStatusUpdateActivityTest {
           new StandardSyncSummary()
               .withStatus(ReplicationStatus.COMPLETED));
 
+  private static final JobOutput jobOutput = new JobOutput().withSync(standardSyncOutput);
+
   @Nested
   class Creation {
 
@@ -147,7 +149,6 @@ public class JobCreationAndStatusUpdateActivityTest {
     @Test
     public void setJobSuccess() throws IOException {
       jobCreationAndStatusUpdateActivity.jobSuccess(new JobSuccessInput(JOB_ID, ATTEMPT_ID, standardSyncOutput));
-      final JobOutput jobOutput = new JobOutput().withSync(standardSyncOutput);
 
       Mockito.verify(mJobPersistence).writeOutput(JOB_ID, ATTEMPT_ID, jobOutput);
       Mockito.verify(mJobPersistence).succeedAttempt(JOB_ID, ATTEMPT_ID);
@@ -185,9 +186,10 @@ public class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     public void setAttemptFailure() throws IOException {
-      jobCreationAndStatusUpdateActivity.attemptFailure(new AttemptFailureInput(JOB_ID, ATTEMPT_ID, null));
+      jobCreationAndStatusUpdateActivity.attemptFailure(new AttemptFailureInput(JOB_ID, ATTEMPT_ID, standardSyncOutput));
 
       Mockito.verify(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_ID);
+      Mockito.verify(mJobPersistence).writeOutput(JOB_ID, ATTEMPT_ID, jobOutput);
     }
 
     @Test
