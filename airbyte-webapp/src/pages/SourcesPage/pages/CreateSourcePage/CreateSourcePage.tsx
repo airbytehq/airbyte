@@ -8,10 +8,10 @@ import useRouter from "hooks/useRouter";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import useSource from "hooks/services/useSourceHook";
 import { FormPageContent } from "components/ConnectorBlocks";
-import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import HeadTitle from "components/HeadTitle";
 import useWorkspace from "hooks/services/useWorkspace";
+import { JobInfo } from "../../../../core/domain/job/Job";
 
 const CreateSourcePage: React.FC = () => {
   const { push } = useRouter();
