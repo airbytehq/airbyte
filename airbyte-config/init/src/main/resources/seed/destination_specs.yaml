@@ -2818,7 +2818,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-postgres:0.3.13"
+- dockerImage: "airbyte/destination-postgres:0.3.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/postgres"
     connectionSpecification:
