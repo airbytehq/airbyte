@@ -9,91 +9,91 @@
       "type": ["null", "object"],
       "properties": {
         "hs_all_accessible_team_ids": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_all_assigned_business_unit_ids": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_contact_email_rollup": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_contact_id": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_content": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_created_by_user_id": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_createdate": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_engagement_id": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_form_guid": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_ingestion_id": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_knowledge_article_id": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_lastmodifieddate": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_merged_object_ids": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_object_id": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_response_group": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_submission_name": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_submission_timestamp": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_submission_url": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_survey_channel": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_survey_id": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_survey_name": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_survey_type": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_unique_creation_key": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_updated_by_user_id": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_user_ids_of_all_notification_followers": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_user_ids_of_all_notification_unfollowers": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_user_ids_of_all_owners": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_value": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "hs_visitor_id": {
-            "type": ["null", "string"]
+          "type": ["null", "string"]
         }
       }
     },
