@@ -82,6 +82,30 @@
       "stream": {
         "name": "engagements",
         "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["lastUpdated"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["lastUpdated"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "feedback_submissions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "forms",
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
@@ -89,7 +113,7 @@
     },
     {
       "stream": {
-        "name": "forms",
+        "name": "form_submissions",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -176,6 +200,15 @@
       "sync_mode": "incremental",
       "cursor_field": ["updatedAt"],
       "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ticket_pipelines",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {

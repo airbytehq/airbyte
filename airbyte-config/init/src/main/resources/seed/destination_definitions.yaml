@@ -1,7 +1,7 @@
 - name: Azure Blob Storage
   destinationDefinitionId: b4c5d105-31fd-4817-96b6-cb923bfc04cb
   dockerRepository: airbyte/destination-azure-blob-storage
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/destinations/azureblobstorage
   icon: azureblobstorage.svg
 - name: Amazon SQS
@@ -13,13 +13,13 @@
 - name: BigQuery
   destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   dockerRepository: airbyte/destination-bigquery
-  dockerImageTag: 0.6.1
+  dockerImageTag: 0.6.5
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
   icon: bigquery.svg
 - name: BigQuery (denormalized typed struct)
   destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-bigquery-denormalized
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.5
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
   icon: bigquery.svg
 - name: Cassandra
@@ -31,13 +31,13 @@
 - name: Chargify (Keen)
   destinationDefinitionId: 81740ce8-d764-4ea7-94df-16bb41de36ae
   dockerRepository: airbyte/destination-keen
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://docs.airbyte.io/integrations/destinations/keen
   icon: chargify.svg
 - name: Clickhouse
   destinationDefinitionId: ce0d828e-1dc4-496c-b122-2da42e637e48
   dockerRepository: airbyte/destination-clickhouse
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/destinations/clickhouse
 - name: DynamoDB
   destinationDefinitionId: 8ccd8909-4e99-4141-b48d-4984b70b2d89
@@ -60,7 +60,7 @@
 - name: Google Cloud Storage (GCS)
   destinationDefinitionId: ca8f6566-e555-4b40-943a-545bf123117a
   dockerRepository: airbyte/destination-gcs
-  dockerImageTag: 0.1.17
+  dockerImageTag: 0.1.20
   documentationUrl: https://docs.airbyte.io/integrations/destinations/gcs
   icon: googlecloudstorage.svg
 - name: Google PubSub
@@ -72,13 +72,13 @@
 - name: Kafka
   destinationDefinitionId: 9f760101-60ae-462f-9ee6-b7a9dafd454d
   dockerRepository: airbyte/destination-kafka
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/destinations/kafka
   icon: kafka.svg
 - name: Kinesis
   destinationDefinitionId: 6d1d66d4-26ab-4602-8d32-f85894b04955
   dockerRepository: airbyte/destination-kinesis
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/destinations/kinesis
   icon: kinesis.svg
 - name: Local CSV
@@ -90,7 +90,7 @@
 - name: Local JSON
   destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816
   dockerRepository: airbyte/destination-local-json
-  dockerImageTag: 0.2.8
+  dockerImageTag: 0.2.9
   documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json
   icon: file.svg
 - name: MQTT
@@ -102,7 +102,7 @@
 - name: MS SQL Server
   destinationDefinitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
   dockerRepository: airbyte/destination-mssql
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mssql
   icon: mssql.svg
 - name: MeiliSearch
@@ -114,7 +114,7 @@
 - name: MongoDB
   destinationDefinitionId: 8b746512-8c2e-6ac1-4adc-b59faafd473c
   dockerRepository: airbyte/destination-mongodb
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mongodb
   icon: mongodb.svg
 - name: MySQL
@@ -167,7 +167,7 @@
 - name: S3
   destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   dockerRepository: airbyte/destination-s3
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.5
   documentationUrl: https://docs.airbyte.io/integrations/destinations/s3
   icon: s3.svg
 - name: SFTP-JSON
@@ -179,12 +179,12 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.3.24
+  dockerImageTag: 0.4.4
   documentationUrl: https://docs.airbyte.io/integrations/destinations/snowflake
   icon: snowflake.svg
 - name: MariaDB ColumnStore
   destinationDefinitionId: 294a4790-429b-40ae-9516-49826b9702e1
   dockerRepository: airbyte/destination-mariadb-columnstore
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mariadb-columnstore
   icon: mariadb.svg

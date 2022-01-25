@@ -1,0 +1,25 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
+plugins {
+    id "org.openapi.generator" version "5.3.1"
+    id 'airbyte-python'
+    id 'airbyte-docker'
+}
+
+airbytePython {
+    moduleDirectory 'octavia_cli'
+}
+
+
+task generateApiClient(type: GenerateTask) {
+    inputSpec =  "$rootDir.absolutePath/airbyte-api/src/main/openapi/config.yaml"
+    outputDir = "$buildDir/airbyte_api_client"
+
+    generatorName = "python"
+    packageName = "airbyte_api_client"
+}
+
+blackFormat.dependsOn generateApiClient
+isortFormat.dependsOn generateApiClient
+flakeCheck.dependsOn generateApiClient
+installReqs.dependsOn generateApiClient

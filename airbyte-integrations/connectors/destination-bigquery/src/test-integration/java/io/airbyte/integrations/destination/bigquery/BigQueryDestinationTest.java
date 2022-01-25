@@ -55,13 +55,18 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -197,16 +202,20 @@ class BigQueryDestinationTest {
     assertEquals(expected, actual);
   }
 
-  @Test
-  void testCheckSuccess() {
+  @ParameterizedTest
+  @MethodSource("datasetIdResetterProvider")
+  void testCheckSuccess(DatasetIdResetter resetDatasetId) {
+    resetDatasetId.accept(config);
     final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
   }
 
-  @Test
-  void testCheckFailure() {
+  @ParameterizedTest
+  @MethodSource("datasetIdResetterProvider")
+  void testCheckFailure(DatasetIdResetter resetDatasetId) {
     ((ObjectNode) config).put(BigQueryConsts.CONFIG_PROJECT_ID, "fake");
+    resetDatasetId.accept(config);
     final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
     final String actualMessage = actual.getMessage();
     LOGGER.info("Checking expected failure message:" + actualMessage);
@@ -215,8 +224,10 @@ class BigQueryDestinationTest {
     assertEquals(expected, actual.withMessage(""));
   }
 
-  @Test
-  void testWriteSuccess() throws Exception {
+  @ParameterizedTest
+  @MethodSource("datasetIdResetterProvider")
+  void testWriteSuccess(DatasetIdResetter resetDatasetId) throws Exception {
+    resetDatasetId.accept(config);
     final BigQueryDestination destination = new BigQueryDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
@@ -244,8 +255,10 @@ class BigQueryDestinationTest {
         .collect(Collectors.toList()));
   }
 
-  @Test
-  void testWriteFailure() throws Exception {
+  @ParameterizedTest
+  @MethodSource("datasetIdResetterProvider")
+  void testWriteFailure(DatasetIdResetter resetDatasetId) throws Exception {
+    resetDatasetId.accept(config);
     // hack to force an exception to be thrown from within the consumer.
     final AirbyteMessage spiedMessage = spy(MESSAGE_USERS1);
     doThrow(new RuntimeException()).when(spiedMessage).getRecord();
@@ -305,8 +318,10 @@ class BigQueryDestinationTest {
         .collect(Collectors.toList());
   }
 
-  @Test
-  void testWritePartitionOverUnpartitioned() throws Exception {
+  @ParameterizedTest
+  @MethodSource("datasetIdResetterProvider")
+  void testWritePartitionOverUnpartitioned(DatasetIdResetter resetDatasetId) throws Exception {
+    resetDatasetId.accept(config);
     final String raw_table_name = String.format("_airbyte_raw_%s", USERS_STREAM_NAME);
     createUnpartitionedTable(bigquery, dataset, raw_table_name);
     assertFalse(isTablePartitioned(bigquery, dataset, raw_table_name));
@@ -367,6 +382,33 @@ class BigQueryDestinationTest {
       return !row.get("is_partitioned").isNull() && row.get("is_partitioned").getStringValue().equals("YES");
     }
     return false;
+  }
+
+  private static class DatasetIdResetter {
+
+    private Consumer<JsonNode> consumer;
+
+    DatasetIdResetter(Consumer<JsonNode> consumer) {
+      this.consumer = consumer;
+    }
+
+    public void accept(JsonNode config) {
+      consumer.accept(config);
+    }
+
+  }
+
+  private static Stream<Arguments> datasetIdResetterProvider() {
+    // parameterized test with two dataset-id patterns: `dataset_id` and `project-id:dataset_id`
+    return Stream.of(
+        Arguments.arguments(new DatasetIdResetter(config -> {})),
+        Arguments.arguments(new DatasetIdResetter(
+            config -> {
+              String projectId = ((ObjectNode) config).get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
+              String datasetId = ((ObjectNode) config).get(BigQueryConsts.CONFIG_DATASET_ID).asText();
+              ((ObjectNode) config).put(BigQueryConsts.CONFIG_DATASET_ID,
+                  String.format("%s:%s", projectId, datasetId));
+            })));
   }
 
 }
