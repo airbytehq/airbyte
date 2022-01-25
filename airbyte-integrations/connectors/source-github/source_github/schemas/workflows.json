@@ -1,65 +1,74 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "type": "object",
-    "properties": {
-      "total_count": {
-        "type": "integer"
-      },
-      "workflows": {
-        "type": "array",
-        "items": [
-          {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "integer"
-              },
-              "node_id": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              },
-              "path": {
-                "type": "string"
-              },
-              "state": {
-                "type": "string"
-              },
-              "created_at": {
-                "type": "string"
-              },
-              "updated_at": {
-                "type": "string"
-              },
-              "url": {
-                "type": "string"
-              },
-              "html_url": {
-                "type": "string"
-              },
-              "badge_url": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "id",
-              "node_id",
-              "name",
-              "path",
-              "state",
-              "created_at",
-              "updated_at",
-              "url",
-              "html_url",
-              "badge_url"
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "total_count": {
+      "type": "integer"
+    },
+    "workflows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "node_id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "path": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "state": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "created_at": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "updated_at": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "url": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "html_url": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "badge_url": {
+            "type": [
+              "null",
+              "string"
             ]
           }
-        ]
+        }
       }
-    },
-    "required": [
-      "total_count",
-      "workflows"
-    ]
+    }
+  }
 }
