@@ -557,7 +557,7 @@
 - name: PostHog
   sourceDefinitionId: af6d50ee-dddf-4126-a8ee-7faee990774f
   dockerRepository: airbyte/source-posthog
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/posthog
   icon: posthog.svg
   sourceType: api
@@ -599,14 +599,14 @@
 - name: Recurly
   sourceDefinitionId: cd42861b-01fc-4658-a8ab-5d11d0510f01
   dockerRepository: airbyte/source-recurly
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.3.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/recurly
   icon: recurly.svg
   sourceType: api
 - name: Redshift
   sourceDefinitionId: e87ffa8e-a3b5-f69c-9076-6011339de1f6
   dockerRepository: airbyte/source-redshift
-  dockerImageTag: 0.3.5
+  dockerImageTag: 0.3.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/redshift
   icon: redshift.svg
   sourceType: database
@@ -627,14 +627,14 @@
 - name: SalesLoft
   sourceDefinitionId: 41991d12-d4b5-439e-afd0-260a31d4c53f
   dockerRepository: airbyte/source-salesloft
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/lever-onesignal
   icon: salesloft.svg
   sourceType: api
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 0.1.18
+  dockerImageTag: 0.1.19
   documentationUrl: https://docs.airbyte.io/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
