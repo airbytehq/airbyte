@@ -20,6 +20,40 @@ def package_name_from_class(cls: object) -> str:
     return module.__name__.split(".")[0]
 
 
+class IncrementalMixin(ABC):
+    """Mixing to make stream incremental.
+
+        class IncrementalStream(Stream, IncrementalMixin):
+            @property
+            def state(self):
+                return self._state
+
+            @state.setter
+            def state(self, value):
+                self._state[self.cursor_field] = value[self.cursor_field]
+    """
+
+    @property
+    @abstractmethod
+    def state(self) -> MutableMapping[str, Any]:
+        """State getter, should return state in form that can serialized to a string and send to the output
+        as a STATE AirbyteMessage.
+
+        A good example of a state is a cursor_value:
+            {
+                self.cursor_field: "cursor_value"
+            }
+
+         State should try to be as small as possible but at the same time descriptive enough to restore
+         syncing process from the point where it stopped.
+        """
+
+    @state.setter
+    @abstractmethod
+    def state(self, value: MutableMapping[str, Any]):
+        """State setter, accept state serialized by state getter."""
+
+
 class Stream(ABC):
     """
     Base abstract class for an Airbyte Stream. Makes no assumption of the Stream's underlying transport protocol.
@@ -137,7 +171,7 @@ class Stream(ABC):
         return None
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        """
+        """ This method is going to be deprecated in favor of IncrementalMixin, see IncrementalMixin docs for more info.
         Override to extract state from the latest record. Needed to implement incremental sync.
 
         Inspects the latest record extracted from the data source and the current state object and return an updated state object.
