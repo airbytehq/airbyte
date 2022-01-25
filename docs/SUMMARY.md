@@ -30,6 +30,7 @@
     * [Transformations with dbt (Part 2/3)](operator-guides/transformation-and-normalization/transformations-with-dbt.md)
     * [Transformations with Airbyte (Part 3/3)](operator-guides/transformation-and-normalization/transformations-with-airbyte.md)
   * [Configuring Airbyte](operator-guides/configuring-airbyte.md)
+    * [Sentry Integration](operator-guides/sentry-integration.md)
   * [Scaling Airbyte](operator-guides/scaling-airbyte.md)
   * [Securing Airbyte](operator-guides/securing-airbyte.md)
 * [Connector Catalog](integrations/README.md)
