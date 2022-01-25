@@ -56,6 +56,12 @@ public interface ConnectionManagerWorkflow {
   void resetConnection();
 
   /**
+   * Signal the workflow to stop running, it is different than cancel because the worflow will be considered as failed and not cancel
+   */
+  @SignalMethod
+  void stopRunning();
+
+  /**
    * Return the current state of the workflow.
    */
   @QueryMethod

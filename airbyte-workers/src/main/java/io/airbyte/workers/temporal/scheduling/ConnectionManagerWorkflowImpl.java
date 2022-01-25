@@ -261,6 +261,15 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     workflowState.setResetConnection(true);
   }
 
+  @Override public void stopRunning() {
+    if (!workflowState.isRunning()) {
+      log.info("Can't stop a non-running sync");
+      return;
+    }
+    workflowState.setFailed(true);
+    syncWorkflowCancellationScope.cancel();
+  }
+
   @Override
   public WorkflowState getState() {
     return workflowState;

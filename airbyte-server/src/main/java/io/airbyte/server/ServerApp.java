@@ -205,7 +205,7 @@ public class ServerApp implements ServerRunnable {
           configRepository,
           new WorkspaceHelper(configRepository, jobPersistence),
           TrackingClientSingleton.get());
-      cleanupZombies(jobPersistence, jobNotifier);
+      cleanupZombies(jobPersistence, temporalClient);
       migrateExistingConnection(configRepository, temporalWorkerRunFactory);
     }
 
@@ -251,22 +251,9 @@ public class ServerApp implements ServerRunnable {
    * @param jobNotifier
    * @throws IOException
    */
-  private static void cleanupZombies(final JobPersistence jobPersistence, final JobNotifier jobNotifier) throws IOException {
+  private static void cleanupZombies(final JobPersistence jobPersistence, final TemporalClient temporalClient) throws IOException {
     for (final Job zombieJob : jobPersistence.listJobsWithStatus(JobStatus.RUNNING)) {
-      jobNotifier.failJob("zombie job was failed", zombieJob);
-
-      final int currentAttemptNumber = zombieJob.getAttemptsCount() - 1;
-
-      LOGGER.warn(
-          "zombie clean up - job attempt was failed. job id: {}, attempt number: {}, type: {}, scope: {}",
-          zombieJob.getId(),
-          currentAttemptNumber,
-          zombieJob.getConfigType(),
-          zombieJob.getScope());
-
-      jobPersistence.failAttempt(
-          zombieJob.getId(),
-          currentAttemptNumber);
+      temporalClient.stopSync(UUID.fromString(zombieJob.getScope()));
     }
   }
 
