@@ -28,6 +28,7 @@ import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceReadList;
 import io.airbyte.api.model.WorkspaceUpdate;
+import io.airbyte.api.model.WorkspaceUpdateName;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
@@ -299,63 +300,6 @@ class WorkspacesHandlerTest {
         .anonymousDataCollection(true)
         .securityUpdates(false)
         .news(false)
-        .name("new workspace name")
-        .initialSetupComplete(true)
-        .displaySetupWizard(false)
-        .notifications(List.of(apiNotification));
-
-    final Notification expectedNotification = generateNotification();
-    expectedNotification.getSlackConfiguration().withWebhook("updated");
-    final StandardWorkspace expectedWorkspace = new StandardWorkspace()
-        .withWorkspaceId(workspace.getWorkspaceId())
-        .withCustomerId(workspace.getCustomerId())
-        .withEmail("test@airbyte.io")
-        .withName("new workspace name")
-        .withSlug("new-workspace-name")
-        .withAnonymousDataCollection(true)
-        .withSecurityUpdates(false)
-        .withNews(false)
-        .withInitialSetupComplete(true)
-        .withDisplaySetupWizard(false)
-        .withTombstone(false)
-        .withNotifications(List.of(expectedNotification));
-
-    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false))
-        .thenReturn(workspace)
-        .thenReturn(expectedWorkspace);
-
-    final WorkspaceRead actualWorkspaceRead = workspacesHandler.updateWorkspace(workspaceUpdate);
-
-    final io.airbyte.api.model.Notification expectedNotificationRead = generateApiNotification();
-    expectedNotificationRead.getSlackConfiguration().webhook("updated");
-    final WorkspaceRead expectedWorkspaceRead = new WorkspaceRead()
-        .workspaceId(workspace.getWorkspaceId())
-        .customerId(workspace.getCustomerId())
-        .email("test@airbyte.io")
-        .name("new workspace name")
-        .slug("new-workspace-name")
-        .initialSetupComplete(true)
-        .displaySetupWizard(false)
-        .news(false)
-        .anonymousDataCollection(true)
-        .securityUpdates(false)
-        .notifications(List.of(expectedNotificationRead));
-
-    verify(configRepository).writeStandardWorkspace(expectedWorkspace);
-
-    assertEquals(expectedWorkspaceRead, actualWorkspaceRead);
-  }
-
-  @Test
-  @DisplayName("Test not specifying a new name will not change the workspaces name")
-  void testUpdateWorkspaceNoNameUpdate() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final io.airbyte.api.model.Notification apiNotification = generateApiNotification();
-    apiNotification.getSlackConfiguration().webhook("updated");
-    final WorkspaceUpdate workspaceUpdate = new WorkspaceUpdate()
-        .workspaceId(workspace.getWorkspaceId())
-        .anonymousDataCollection(true)
-        .securityUpdates(false)
-        .news(false)
         .initialSetupComplete(true)
         .displaySetupWizard(false)
         .notifications(List.of(apiNotification));
@@ -396,6 +340,51 @@ class WorkspacesHandlerTest {
         .anonymousDataCollection(true)
         .securityUpdates(false)
         .notifications(List.of(expectedNotificationRead));
+
+    verify(configRepository).writeStandardWorkspace(expectedWorkspace);
+
+    assertEquals(expectedWorkspaceRead, actualWorkspaceRead);
+  }
+
+  @Test
+  @DisplayName("Updating workspace name should update name and slug")
+  void testUpdateWorkspaceNoNameUpdate() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final WorkspaceUpdateName workspaceUpdate = new WorkspaceUpdateName()
+        .workspaceId(workspace.getWorkspaceId())
+        .name("New Workspace Name");
+
+    final StandardWorkspace expectedWorkspace = new StandardWorkspace()
+        .withWorkspaceId(workspace.getWorkspaceId())
+        .withCustomerId(workspace.getCustomerId())
+        .withEmail("test@airbyte.io")
+        .withName("New Workspace Name")
+        .withSlug("new-workspace-name")
+        .withAnonymousDataCollection(workspace.getAnonymousDataCollection())
+        .withSecurityUpdates(workspace.getSecurityUpdates())
+        .withNews(workspace.getNews())
+        .withInitialSetupComplete(workspace.getInitialSetupComplete())
+        .withDisplaySetupWizard(workspace.getDisplaySetupWizard())
+        .withTombstone(false)
+        .withNotifications(workspace.getNotifications());
+
+    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false))
+        .thenReturn(workspace)
+        .thenReturn(expectedWorkspace);
+
+    final WorkspaceRead actualWorkspaceRead = workspacesHandler.updateWorkspaceName(workspaceUpdate);
+
+    final WorkspaceRead expectedWorkspaceRead = new WorkspaceRead()
+        .workspaceId(workspace.getWorkspaceId())
+        .customerId(workspace.getCustomerId())
+        .email("test@airbyte.io")
+        .name("New Workspace Name")
+        .slug("new-workspace-name")
+        .initialSetupComplete(workspace.getInitialSetupComplete())
+        .displaySetupWizard(workspace.getDisplaySetupWizard())
+        .news(workspace.getNews())
+        .anonymousDataCollection(workspace.getAnonymousDataCollection())
+        .securityUpdates(workspace.getSecurityUpdates())
+        .notifications(List.of(generateApiNotification()));
 
     verify(configRepository).writeStandardWorkspace(expectedWorkspace);
 
