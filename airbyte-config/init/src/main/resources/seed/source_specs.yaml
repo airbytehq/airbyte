@@ -4217,7 +4217,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.3.13"
+- dockerImage: "airbyte/source-mssql:0.3.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -5895,7 +5895,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:0.4.2"
+- dockerImage: "airbyte/source-postgres:0.4.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/postgres"
     connectionSpecification:
