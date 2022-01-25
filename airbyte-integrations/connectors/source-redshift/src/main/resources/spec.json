@@ -29,7 +29,7 @@
       },
       "schemas": {
         "title": "Schemas",
-        "description": "The list of schemas to sync from. Defaults to user. Case sensitive.",
+        "description": "The list of schemas to sync from. Specify one or more explicitly or keep empty to process all schemas.Case sensitive.",
         "type": "array",
         "items": {
           "type": "string"

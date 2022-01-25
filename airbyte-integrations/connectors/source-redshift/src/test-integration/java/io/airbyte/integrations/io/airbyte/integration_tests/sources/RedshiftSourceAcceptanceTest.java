@@ -5,7 +5,7 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -30,38 +30,31 @@ import java.util.List;
 public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
 
   // This test case expects an active redshift cluster that is useable from outside of vpc
-  protected JsonNode config;
+  protected ObjectNode config;
   protected JdbcDatabase database;
   protected String schemaName;
   protected String streamName;
 
-  protected static JsonNode getStaticConfig() {
-    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
+  protected static ObjectNode getStaticConfig() {
+    return (ObjectNode) Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    final JsonNode plainConfig = getStaticConfig();
+    config = getStaticConfig();
 
     database = Databases.createJdbcDatabase(
-        plainConfig.get("username").asText(),
-        plainConfig.get("password").asText(),
+        config.get("username").asText(),
+        config.get("password").asText(),
         String.format("jdbc:redshift://%s:%s/%s",
-            plainConfig.get("host").asText(),
-            plainConfig.get("port").asText(),
-            plainConfig.get("database").asText()),
+            config.get("host").asText(),
+            config.get("port").asText(),
+            config.get("database").asText()),
         RedshiftSource.DRIVER_CLASS);
 
     schemaName = Strings.addRandomSuffix("integration_test", "_", 5).toLowerCase();
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", plainConfig.get("host"))
-        .put("port", plainConfig.get("port"))
-        .put("database", plainConfig.get("database"))
-        .put("schemas", List.of(schemaName))
-        .put("username", plainConfig.get("username"))
-        .put("password", plainConfig.get("password"))
-        .build());
+    config = config.set("schemas", Jsons.jsonNode(List.of(schemaName)));
 
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
     database.execute(connection -> {
