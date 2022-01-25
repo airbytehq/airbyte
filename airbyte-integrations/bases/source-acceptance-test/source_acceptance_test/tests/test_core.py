@@ -13,14 +13,30 @@ from typing import Any, Dict, List, Mapping, MutableMapping, Set
 import dpath.util
 import jsonschema
 import pytest
-from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Status, Type
+from airbyte_cdk.models import (
+    AirbyteRecordMessage,
+    ConfiguredAirbyteCatalog,
+    ConnectorSpecification,
+    Status,
+    Type,
+)
 from docker.errors import ContainerError
 from jsonschema._utils import flatten
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
-from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, make_hashable, verify_records_schema
+from source_acceptance_test.utils import (
+    ConnectorRunner,
+    SecretDict,
+    filter_output,
+    make_hashable,
+    verify_records_schema,
+)
 from source_acceptance_test.utils.common import find_key_inside_schema
-from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
+from source_acceptance_test.utils.json_schema_helper import (
+    JsonSchemaHelper,
+    get_expected_schema_structure,
+    get_object_structure,
+)
 
 
 @pytest.fixture(name="connector_spec_dict")
@@ -69,8 +85,8 @@ class TestSpec(BaseTest):
         ), "env should be equal to space-joined entrypoint"
 
     def test_oneof_usage(self, actual_connector_spec: ConnectorSpecification):
-        """ Check that if spec contains oneOf it follows the rules according to reference
-            https://docs.airbyte.io/connector-development/connector-specification-reference
+        """Check that if spec contains oneOf it follows the rules according to reference
+        https://docs.airbyte.io/connector-development/connector-specification-reference
         """
         docs_url = "https://docs.airbyte.io/connector-development/connector-specification-reference"
         docs_msg = f"See specification reference at {docs_url}."
@@ -84,14 +100,12 @@ class TestSpec(BaseTest):
                 obj_def = top_level_obj["$ref"].split("/")[-1]
                 top_level_obj = self._schema["definitions"][obj_def]
             assert (
-                    top_level_obj.get("type") == "object"
+                top_level_obj.get("type") == "object"
             ), f"The top-level definition in a `oneOf` block should have type: object. misconfigured object: {top_level_obj}. {docs_msg}"
 
             variants = dpath.util.get(self._schema, "/".join(variant_path))
             for variant in variants:
-                assert (
-                        "properties" in variant
-                ), f"Each item in the oneOf array should be a property with type object. {docs_msg}"
+                assert "properties" in variant, f"Each item in the oneOf array should be a property with type object. {docs_msg}"
 
             variant_props = [set(list(v["properties"].keys())) for v in variants]
             common_props = set.intersection(*variant_props)
@@ -119,8 +133,8 @@ class TestSpec(BaseTest):
         assert not check_result, "Found unresolved `$refs` value in spec.json file"
 
     def test_oauth_flow_parameters(self, actual_connector_spec: ConnectorSpecification):
-        """
-        Check if connector has correct oauth flow parameters according to https://docs.airbyte.io/connector-development/connector-specification-reference
+        """Check if connector has correct oauth flow parameters according to
+        https://docs.airbyte.io/connector-development/connector-specification-reference
         """
         if not actual_connector_spec.authSpecification:
             return
@@ -366,9 +380,9 @@ class TestBasicRead(BaseTest):
         self._validate_empty_streams(records=records, configured_catalog=configured_catalog, allowed_empty_streams=inputs.empty_streams)
         for pks, record in primary_keys_for_records(streams=configured_catalog.streams, records=records):
             for pk_path, pk_value in pks.items():
-                assert pk_value is not None, (
-                    f"Primary key subkeys {repr(pk_path)} have null values or not present in {record.stream} stream records."
-                )
+                assert (
+                    pk_value is not None
+                ), f"Primary key subkeys {repr(pk_path)} have null values or not present in {record.stream} stream records."
 
         # TODO: remove this condition after https://github.com/airbytehq/airbyte/issues/8312 is done
         if inputs.validate_data_points:
