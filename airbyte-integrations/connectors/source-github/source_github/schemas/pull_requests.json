@@ -349,7 +349,7 @@
           "type": ["null", "string"]
         },
         "merge_method": {
-          "type":["null", "string"] 
+          "type": ["null", "string"]
         },
         "commit_message": {
           "type": ["null", "string"]
