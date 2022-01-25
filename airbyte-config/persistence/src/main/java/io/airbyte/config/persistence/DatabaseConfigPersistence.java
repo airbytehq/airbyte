@@ -204,7 +204,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     }
   }
 
-  private <T> ConfigWithMetadata<T> validateAndReturn(final String configId, final List<ConfigWithMetadata<T>> result, final AirbyteConfig airbyteConfig)
+  private <T> ConfigWithMetadata<T> validateAndReturn(final String configId,
+                                                      final List<ConfigWithMetadata<T>> result,
+                                                      final AirbyteConfig airbyteConfig)
       throws ConfigNotFoundException {
     validate(configId, result, airbyteConfig);
     return result.get(0);
