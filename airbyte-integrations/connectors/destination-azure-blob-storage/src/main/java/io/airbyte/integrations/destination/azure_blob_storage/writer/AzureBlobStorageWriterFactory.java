@@ -16,8 +16,7 @@ public interface AzureBlobStorageWriterFactory {
 
   AzureBlobStorageWriter create(AzureBlobStorageDestinationConfig config,
                                 AppendBlobClient appendBlobClient,
-                                ConfiguredAirbyteStream configuredStream,
-                                boolean isNewlyCreatedBlob)
+                                ConfiguredAirbyteStream configuredStream)
       throws Exception;
 
 }
