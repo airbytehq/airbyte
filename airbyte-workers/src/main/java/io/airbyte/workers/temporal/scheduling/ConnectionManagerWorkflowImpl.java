@@ -77,14 +77,18 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
           // Scheduling
           final ScheduleRetrieverInput scheduleRetrieverInput = new ScheduleRetrieverInput(
               connectionUpdaterInput.getConnectionId());
+
+          workflowState.setResetConnection(connectionUpdaterInput.isResetConnection());
+
           final ScheduleRetrieverOutput scheduleRetrieverOutput = configFetchActivity.getTimeToWait(scheduleRetrieverInput);
-          Workflow.await(scheduleRetrieverOutput.getTimeToWait(), () -> skipScheduling() || connectionUpdaterInput.isFromFailure());
+          Workflow.await(scheduleRetrieverOutput.getTimeToWait(),
+              () -> skipScheduling() || connectionUpdaterInput.isFromFailure());
 
           if (!workflowState.isUpdated() && !workflowState.isDeleted()) {
             // Job and attempt creation
             maybeJobId = Optional.ofNullable(connectionUpdaterInput.getJobId()).or(() -> {
               final JobCreationOutput jobCreationOutput = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(
-                  connectionUpdaterInput.getConnectionId(), connectionUpdaterInput.isResetConnection()));
+                  connectionUpdaterInput.getConnectionId(), workflowState.isResetConnection()));
               connectionUpdaterInput.setJobId(jobCreationOutput.getJobId());
               return Optional.ofNullable(jobCreationOutput.getJobId());
             });
@@ -100,7 +104,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
             final SyncInput getSyncInputActivitySyncInput = new SyncInput(
                 maybeAttemptId.get(),
                 maybeJobId.get(),
-                connectionUpdaterInput.isResetConnection());
+                workflowState.isResetConnection());
 
             jobCreationAndStatusUpdateActivity.reportJobStart(new ReportJobStartInput(
                 maybeJobId.get()));
@@ -129,6 +133,10 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
               StandardSyncSummary standardSyncSummary = standardSyncOutput.get().getStandardSyncSummary();
 
+              if (workflowState.isResetConnection()) {
+                workflowState.setResetConnection(false);
+              }
+
               if (standardSyncSummary != null && standardSyncSummary.getStatus() == ReplicationStatus.FAILED) {
                 workflowState.setFailed(true);
               }
@@ -146,7 +154,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         // The naming is very misleading, it is not a failure but the expected behavior...
       }
 
-      if (connectionUpdaterInput.isResetConnection()) {
+      if (workflowState.isResetConnection()) {
         connectionUpdaterInput.setResetConnection(true);
         connectionUpdaterInput.setJobId(null);
         connectionUpdaterInput.setAttemptNumber(1);
@@ -255,10 +263,10 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   @Override
   public void resetConnection() {
-    if (!workflowState.isRunning()) {
+    workflowState.setResetConnection(true);
+    if (workflowState.isRunning()) {
       cancelJob();
     }
-    workflowState.setResetConnection(true);
   }
 
   @Override
