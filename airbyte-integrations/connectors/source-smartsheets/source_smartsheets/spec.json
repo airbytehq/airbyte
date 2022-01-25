@@ -5,7 +5,7 @@
     "title": "Smartsheets Source Spec",
     "type": "object",
     "required": ["access_token", "spreadsheet_id"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "access_token": {
         "title": "Access Token",
@@ -18,6 +18,14 @@
         "description": "The spreadsheet ID. Find in the spreadsheet menu: File > Properties",
         "type": "string"
       }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": [],
+      "oauthFlowInitParameters": [],
+      "oauthFlowOutputParameters": [["access_token"]]
     }
   }
 }
