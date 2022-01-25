@@ -234,12 +234,6 @@ public class TemporalClient {
     connectionManagerWorkflow.connectionUpdated();
   }
 
-  public void stopSync(final UUID connectionId) {
-    final ConnectionManagerWorkflow connectionManagerWorkflow = getConnectionUpdateWorkflow(connectionId);
-
-    connectionManagerWorkflow.stopRunning();
-  }
-
   @Value
   public class ManualSyncSubmissionResult {
 
