@@ -13,7 +13,6 @@ FROM airbyte/integration-base-java:dev
 WORKDIR /airbyte
 
 ENV APPLICATION destination-bigquery-denormalized
-ENV SENTRY_DSN "https://2a3a1622a2104b8f8d36db4915c956f8@o1114644.ingest.sentry.io/6145965"
 
 COPY --from=build /airbyte /airbyte
 
