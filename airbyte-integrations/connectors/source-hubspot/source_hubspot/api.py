@@ -781,10 +781,10 @@ class DealPipelineStream(Stream):
 class TicketPipelineStream(Stream):
     """Ticket pipelines, API v1
     This endpoint requires the tickets scope.
-    Docs: https://legacydocs.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type
+    Docs: https://developers.hubspot.com/docs/api/crm/pipelines
     """
 
-    url = "/crm-pipelines/v1/pipelines/tickets"
+    url = "/crm/v3/pipelines/tickets"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
 
