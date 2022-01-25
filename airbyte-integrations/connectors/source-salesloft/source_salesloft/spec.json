@@ -21,7 +21,7 @@
       "refresh_token": {
         "type": "string",
         "title": "Refresh Token",
-        "description": "The token for obtaining new a access token.",
+        "description": "The token for obtaining a new access token.",
         "airbyte_secret": true
       },
       "start_date": {
