@@ -37,7 +37,7 @@ VALID_JSON_SCHEMA_TYPES = {
 KNOWN_CONVERTIBLE_SCHEMA_TYPES = {
     "bool": ("boolean", None),
     "enumeration": ("string", None),
-    "date": ("string", "date-time"),
+    "date": ("string", "date"),
     "date-time": ("string", "date-time"),
     "datetime": ("string", "date-time"),
     "json": ("string", None),
@@ -781,10 +781,10 @@ class DealPipelineStream(Stream):
 class TicketPipelineStream(Stream):
     """Ticket pipelines, API v1
     This endpoint requires the tickets scope.
-    Docs: https://legacydocs.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type
+    Docs: https://developers.hubspot.com/docs/api/crm/pipelines
     """
 
-    url = "/crm-pipelines/v1/pipelines/tickets"
+    url = "/crm/v3/pipelines/tickets"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
 

@@ -7,10 +7,10 @@ import useRouter from "hooks/useRouter";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import useDestination from "hooks/services/useDestinationHook";
 import { FormPageContent } from "components/ConnectorBlocks";
-import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import HeadTitle from "components/HeadTitle";
 import useWorkspace from "hooks/services/useWorkspace";
+import { JobInfo } from "../../../../core/domain/job/Job";
 
 const CreateDestinationPage: React.FC = () => {
   const { push } = useRouter();
