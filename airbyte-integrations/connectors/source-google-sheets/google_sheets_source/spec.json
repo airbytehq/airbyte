@@ -38,13 +38,13 @@
               "client_secret": {
                 "title": "Client Secret",
                 "type": "string",
-                "description": "The Client Secret of your Google Sheets developer application",
+                "description": "The Client Secret of your Google Sheets developer application.",
                 "airbyte_secret": true
               },
               "refresh_token": {
                 "title": "Refresh Token",
                 "type": "string",
-                "description": "The token for obtaining new access token ",
+                "description": "The token for obtaining new access token.",
                 "airbyte_secret": true
               }
             }
