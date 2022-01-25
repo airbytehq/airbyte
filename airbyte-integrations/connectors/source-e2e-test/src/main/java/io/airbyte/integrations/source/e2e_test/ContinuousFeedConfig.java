@@ -123,12 +123,12 @@ public class ContinuousFeedConfig {
 
   /**
    * Patch the schema so that 1) it allows no additional properties, and 2) all fields are required.
-   * This is necessary because 1) the mock Json object generation library may add extra properties with
-   * pure random names which look ugly and garbled. 2) We cannot precise customize the library on
-   * how many non-required fields to include even with the nonRequiredPropertyChance setting in the config.
-   * To avoid emitting lots of empty objects, all fields are marked as required.
-   * TODO (liren): update the library so we don't need to patch the schema here.
-   * Issue: https://github.com/airbytehq/airbyte/issues/9772
+   * This is necessary because 1) the mock Json object generation library may add extra properties
+   * with pure random names which look ugly and garbled. 2) We cannot precise customize the library on
+   * how many non-required fields to include even with the nonRequiredPropertyChance setting in the
+   * config. To avoid emitting lots of empty objects, all fields are marked as required. TODO (liren):
+   * update the library so we don't need to patch the schema here. Issue:
+   * https://github.com/airbytehq/airbyte/issues/9772
    */
   private static void processSchema(final JsonNode schema) {
     if (schema.has("type") && schema.get("type").asText().equals("object")) {
