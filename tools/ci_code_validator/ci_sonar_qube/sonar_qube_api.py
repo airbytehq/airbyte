@@ -171,6 +171,9 @@ class SonarQubeApi:
         project_data = self.prepare_project_settings(project_name)
 
         md_file = MdUtils(file_name=report_file)
+        md_file.new_line("<details><summary> <strong> SonarQube Report </strong></summary>")
+        md_file.new_line("<p>")
+        md_file.new_line("")
         md_file.new_line(f'### SonarQube report for {project_data["name"]}')
 
         project_name = project_data["project"]
@@ -311,6 +314,9 @@ class SonarQubeApi:
                 coverage_files.append(("", ""))
             table_items = ["File", "Coverage"] * 2 + list(itertools.chain.from_iterable(coverage_files))
             md_file.new_table(columns=4, rows=int(len(coverage_files) / 2 + 1), text=table_items, text_align='left')
+        md_file.new_line("")
+        md_file.new_line("</p>")
+        md_file.new_line("</details>")
         md_file.create_md_file()
         self.logger.info(f"The {report_file} was generated")
         return True

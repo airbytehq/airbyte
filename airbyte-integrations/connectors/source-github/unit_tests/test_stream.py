@@ -16,7 +16,7 @@ DEFAULT_BACKOFF_DELAYS = [5, 10, 20, 40, 80]
 @responses.activate
 @patch("time.sleep")
 def test_bad_gateway_retry(time_mock):
-    args = {"authenticator": None, "repositories": ["test_repo"], "start_date": "start_date"}
+    args = {"authenticator": None, "repositories": ["test_repo"], "start_date": "start_date", "page_size_for_large_streams": 30}
     stream = PullRequestCommentReactions(**args)
     stream_slice = {"repository": "test_repo", "id": "id"}
 
