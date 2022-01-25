@@ -73,7 +73,7 @@
       },
       "wait_timeout": {
         "title": "Response Waiting Time",
-        "description": "Maximum wait time of Safesforce responses in minutes. This option is used for the BULK mode only.The default wait time of the Parent Batch in the Bulk Mode to wait for all the batches to finish processing is 20 minutes.",
+        "description": "Maximum wait time of Safesforce responses in minutes. This option is used for the BULK mode only. The default wait time of the Parent Batch in the Bulk Mode to wait for all the batches to finish processing is 20 minutes.",
         "type": "integer",
         "minimum": 5,
         "maximum": 60,
