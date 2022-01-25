@@ -89,6 +89,8 @@ class IncrementalBigcommerceStream(BigcommerceStream, ABC):
         # If there is a next page token then we should only send pagination-related parameters.
         if stream_state:
             params[self.filter_field] = stream_state.get(self.cursor_field)
+        else:
+            params[self.filter_field] = self.start_date
         return params
 
     def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
