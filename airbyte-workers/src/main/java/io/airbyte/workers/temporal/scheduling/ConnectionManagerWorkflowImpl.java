@@ -264,23 +264,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   @Override
-  public void stopRunning() {
-    if (!workflowState.isRunning()) {
-      log.info("Can't stop a non-running sync");
-      return;
-    } else {
-      log.info("________________________ stopping");
-    }
-    workflowState.setFailed(true);
-    long jobId = maybeJobId.get();
-
-    WorkflowClient.newInstance(WorkflowServiceStubs.newInstance())
-        .newUntypedWorkflowStub("sync_" + jobId)
-        .terminate("Whatever");
-    // syncWorkflowCancellationScope.cancel();
-  }
-
-  @Override
   public WorkflowState getState() {
     return workflowState;
   }
