@@ -77,7 +77,7 @@ public interface JobCreationAndStatusUpdateActivity {
   class JobSuccessInput {
 
     private long jobId;
-    private int attemptNumber;
+    private int attemptId;
     private StandardSyncOutput standardSyncOutput;
 
   }
@@ -110,7 +110,8 @@ public interface JobCreationAndStatusUpdateActivity {
   class AttemptFailureInput {
 
     private long jobId;
-    private int attemptNumber;
+    private int attemptId;
+    private StandardSyncOutput standardSyncOutput;
 
   }
 

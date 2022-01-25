@@ -15,6 +15,9 @@ sourceControl {
     gitRepository("https://github.com/airbytehq/json-avro-converter.git") {
         producesModule("tech.allegro.schema.json2avro:converter")
     }
+    gitRepository("https://github.com/airbytehq/jsongenerator.git") {
+        producesModule("net.jimblackler:jsongenerator")
+    }
 }
 
 rootProject.name = 'airbyte'

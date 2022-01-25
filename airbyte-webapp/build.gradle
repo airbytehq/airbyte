@@ -29,6 +29,16 @@ task test(type: NpmTask) {
     inputs.file 'package-lock.json'
 }
 
+task licenseCheck(type: NpmTask) {
+    dependsOn npmInstall
+
+    args = ['run', 'license-check']
+    inputs.file 'package.json'
+    inputs.file 'package-lock.json'
+}
+
+// Make sure to always run a license check after we installed dependencies
+npmInstall.finalizedBy licenseCheck
 assemble.dependsOn npm_run_build
 build.finalizedBy test
 
