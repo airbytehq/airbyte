@@ -46,17 +46,17 @@ public class WorkspacesHandler {
   private final Slugify slugify;
 
   public WorkspacesHandler(final ConfigRepository configRepository,
-      final ConnectionsHandler connectionsHandler,
-      final DestinationHandler destinationHandler,
-      final SourceHandler sourceHandler) {
+                           final ConnectionsHandler connectionsHandler,
+                           final DestinationHandler destinationHandler,
+                           final SourceHandler sourceHandler) {
     this(configRepository, connectionsHandler, destinationHandler, sourceHandler, UUID::randomUUID);
   }
 
   public WorkspacesHandler(final ConfigRepository configRepository,
-      final ConnectionsHandler connectionsHandler,
-      final DestinationHandler destinationHandler,
-      final SourceHandler sourceHandler,
-      final Supplier<UUID> uuidSupplier) {
+                           final ConnectionsHandler connectionsHandler,
+                           final DestinationHandler destinationHandler,
+                           final SourceHandler sourceHandler,
+                           final Supplier<UUID> uuidSupplier) {
     this.configRepository = configRepository;
     this.connectionsHandler = connectionsHandler;
     this.destinationHandler = destinationHandler;
