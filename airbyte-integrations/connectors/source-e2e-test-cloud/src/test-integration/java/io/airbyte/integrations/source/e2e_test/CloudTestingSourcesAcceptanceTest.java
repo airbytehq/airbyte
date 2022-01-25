@@ -120,7 +120,7 @@ public class CloudTestingSourcesAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void assertRecordMessages(final List<AirbyteRecordMessage> recordMessages) {
+  protected void assertFullRefreshRecordMessages(final List<AirbyteRecordMessage> recordMessages) {
     int index = 0;
     // the first N messages are from stream 1
     while (index < MAX_MESSAGES) {

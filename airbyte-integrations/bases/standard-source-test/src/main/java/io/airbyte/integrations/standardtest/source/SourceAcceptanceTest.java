@@ -165,7 +165,7 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
     // We don't need to validate message format as long as we use the worker, which we will not want to
     // do long term.
     assertFalse(recordMessages.isEmpty(), "Expected a full refresh sync to produce records");
-    assertRecordMessages(recordMessages);
+    assertFullRefreshRecordMessages(recordMessages);
 
     final List<String> regexTests = getRegexTests();
     final List<String> stringMessages = allMessages.stream().map(Jsons::serialize).collect(Collectors.toList());
@@ -176,7 +176,10 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
     });
   }
 
-  protected void assertRecordMessages(final List<AirbyteRecordMessage> recordMessages) {
+  /**
+   * Override this method to perform more specific assertion on the record messages.
+   */
+  protected void assertFullRefreshRecordMessages(final List<AirbyteRecordMessage> recordMessages) {
     // do nothing by default
   }
 
