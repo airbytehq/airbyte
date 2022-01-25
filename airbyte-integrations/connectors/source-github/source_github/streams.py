@@ -52,10 +52,15 @@ class GithubStream(HttpStream, ABC):
     def should_retry(self, response: requests.Response) -> bool:
         # We don't call `super()` here because we have custom error handling and GitHub API sometimes returns strange
         # errors. So in `read_records()` we have custom error handling which don't require to call `super()` here.
-        return response.headers.get("X-RateLimit-Remaining") == "0" or response.status_code in (
+        retry_flag = response.headers.get("X-RateLimit-Remaining") == "0" or response.status_code in (
             requests.codes.SERVER_ERROR,
             requests.codes.BAD_GATEWAY,
         )
+        if retry_flag:
+            self.logger.info(
+                f"Rate limit handling for the response with {response.status_code} status code with message: {response.json()}"
+            )
+        return retry_flag
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
         # This method is called if we run into the rate limit. GitHub limits requests to 5000 per hour and provides
@@ -765,9 +770,6 @@ class ReactionStream(GithubStream, ABC):
             for parent_record in self._parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
                 yield {self.parent_key: parent_record[self.parent_key], "repository": stream_slice["repository"]}
 
-    def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        return {"Accept": "application/vnd.github.squirrel-girl-preview+json"}
-
 
 class CommitCommentReactions(ReactionStream):
     """
@@ -858,11 +860,13 @@ class RepositoryVulnerabilityAlert(GithubStream):
         stream_slice: Mapping[str, any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
+        repository = stream_slice["repository"].split("/")[1]
+        organization = stream_slice["repository"].split("/")[0]
         body = (
             '{ repository(name: "'
-            + stream_slice["repository"].split("/")[1]
+            + repository
             + '", owner: "'
-            + stream_slice["repository"].split("/")[0]
+            + organization
             + '") { vulnerabilityAlerts(first: 100) { nodes { createdAt dismissedAt securityVulnerability {package { name } advisory { description }}}}}}'
         )
         payload = {"query": body}

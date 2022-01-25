@@ -161,12 +161,6 @@ class Stories(AsanaStream):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         yield from self.read_slices_from_records(stream_class=Tasks, slice_field="task_gid")
 
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None,**kwargs) -> Iterable[Mapping]:
-        response_json = response.json()
-        records = response_json.get("data", []) # Asana puts records in a container array "data"
-        for record in records:
-            record["task_gid"] = stream_slice["task_gid"]
-        yield from records  
 
 class Tags(WorkspaceRequestParamsRelatedStream):
     def path(self, **kwargs) -> str:
