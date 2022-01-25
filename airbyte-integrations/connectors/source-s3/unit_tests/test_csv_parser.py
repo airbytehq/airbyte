@@ -14,7 +14,7 @@ import pytest
 from smart_open import open as smart_open
 from source_s3.source_files_abstract.formats.csv_parser import CsvParser
 
-from .abstract_test_parser import AbstractTestParser, create_by_local_file, memory_limit
+from .abstract_test_parser import AbstractTestParser, memory_limit
 from .conftest import TMP_FOLDER
 
 SAMPLE_DIRECTORY = Path(__file__).resolve().parent.joinpath("sample_files/")
@@ -85,14 +85,14 @@ def generate_big_file(filepath: str, size_in_gigabytes: float, columns_number: i
     with open(filepath, "ab") as f:
         while True:
             file_size = os.stat(filepath).st_size / (1024 ** 3)
-            if file_size > size_in_gigabytes:  #:
+            if file_size > size_in_gigabytes:
                 break
-            with open(temp_files[0], "rb") as tf:
+            with open(temp_files[0], "rb") as tf:  # type: ignore[assignment]
                 with open(temp_files[1], "wb") as tf2:
                     buf = tf.read(50 * 1024 ** 2)  # by 50Mb
                     if buf:
-                        f.write(buf)
-                        tf2.write(buf)
+                        f.write(buf)  # type: ignore[arg-type]
+                        tf2.write(buf)  # type: ignore[arg-type]
             temp_files.append(temp_files.pop(0))
     # remove temp files
     for temp_file in temp_files:
@@ -360,7 +360,7 @@ class TestCsvParser(AbstractTestParser):
 
     @memory_limit(20)
     @pytest.mark.order(1)
-    def test_big_file(self):
+    def test_big_file(self) -> None:
         """tests a big csv file (>= 1.5G records)"""
         filepath = os.path.join(TMP_FOLDER, "big_csv_file." + self.filetype)
         schema, file_size = generate_big_file(filepath, 0.1, 500)
@@ -376,7 +376,7 @@ class TestCsvParser(AbstractTestParser):
             next(expected_file)
             read_count = 0
             with smart_open(filepath, self._get_readmode({"AbstractFileParser": parser})) as f:
-                for record in parser.stream_records(f, create_by_local_file(filepath)):
+                for record in parser.stream_records(f):
                     record_line = ",".join("" if v is None else str(v) for v in record.values())
                     expected_line = next(expected_file).strip("\n")
                     assert record_line == expected_line

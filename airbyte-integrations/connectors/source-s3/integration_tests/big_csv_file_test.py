@@ -5,7 +5,7 @@
 
 import os
 from pathlib import Path
-
+from typing import Any, Dict
 import pytest
 from airbyte_cdk import AirbyteLogger
 from source_s3.source import SourceS3
@@ -21,7 +21,7 @@ class TestIntegrationCsvFiles:
     logger = AirbyteLogger()
 
     @memory_limit(150)  # max used memory should be less than 150Mb
-    def read_source(self, credentials, catalog):
+    def read_source(self, credentials: Dict[str, Any], catalog: Dict[str, Any]) -> int:
         read_count = 0
         for msg in SourceS3().read(logger=self.logger, config=credentials, catalog=catalog):
             if msg.record:
@@ -29,7 +29,7 @@ class TestIntegrationCsvFiles:
         return read_count
 
     @pytest.mark.order(1)
-    def test_big_file(self, minio_credentials):
+    def test_big_file(self, minio_credentials: Dict[str, Any]) -> None:
         """tests a big csv file (>= 1.0G records)"""
         # generates a big CSV files separately
         big_file_folder = os.path.join(TMP_FOLDER, "minio_data", "test-bucket", "big_files")

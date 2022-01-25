@@ -17,24 +17,24 @@ class FileInfo:
     last_modified: datetime
 
     @property
-    def size_in_megabytes(self):
+    def size_in_megabytes(self) -> float:
         return self.size / 1024 ** 2
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "Key: %s, LastModified: %s, Size: %.4fMb" % (self.key, self.last_modified.isoformat(), self.size_in_megabytes)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()
 
-    def __eq__(self, other):
-        if isinstance(other, str):
-            return self.key == other
-        return self.key == other.key
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, FileInfo):
+            return self.key == other.key
+        return self.key == other
 
-    def __lt__(self, other):
-        if isinstance(other, str):
-            return self.key < other
-        return self.key < other.key
+    def __lt__(self, other: object) -> bool:
+        if isinstance(other, FileInfo):
+            return self.key < other.key
+        return self.key < str(other)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return self.key.__hash__()

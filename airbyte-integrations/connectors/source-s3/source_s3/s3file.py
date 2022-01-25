@@ -4,7 +4,7 @@
 
 
 from contextlib import contextmanager
-from typing import BinaryIO, Iterator, TextIO, Union
+from typing import BinaryIO, Iterator, TextIO, Union, Any, Mapping
 
 import smart_open
 from boto3 import session as boto3session
@@ -17,11 +17,11 @@ from .source_files_abstract.storagefile import StorageFile
 
 
 class S3File(StorageFile):
-    def __init__(self, url: str, provider: dict):
-        super().__init__(url, provider)
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(*args, **kwargs)
         self._setup_boto_session()
 
-    def _setup_boto_session(self):
+    def _setup_boto_session(self) -> None:
         """
         Making a new Session at file level rather than stream level as boto3 sessions are NOT thread-safe.
         Currently grabbing last_modified across multiple files asynchronously and may implement more multi-threading in future.
@@ -38,7 +38,7 @@ class S3File(StorageFile):
             self._boto_s3_resource = make_s3_resource(self._provider, config=Config(signature_version=UNSIGNED), session=self._boto_session)
 
     @staticmethod
-    def use_aws_account(provider: dict) -> bool:
+    def use_aws_account(provider: Mapping[str, str]) -> bool:
         aws_access_key_id = provider.get("aws_access_key_id")
         aws_secret_access_key = provider.get("aws_secret_access_key")
         return True if (aws_access_key_id is not None and aws_secret_access_key is not None) else False

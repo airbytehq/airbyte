@@ -3,7 +3,7 @@
 #
 
 
-from typing import Iterator
+from typing import Iterator, Callable
 
 from boto3 import session as boto3session
 from botocore import UNSIGNED
@@ -11,7 +11,8 @@ from botocore.config import Config
 from source_s3.s3_utils import make_s3_client
 
 from .s3file import S3File
-from .source_files_abstract.stream import FileInfo, IncrementalFileStream
+from .source_files_abstract.stream import IncrementalFileStream
+from .source_files_abstract.file_info import FileInfo
 
 
 class IncrementalFileStreamS3(IncrementalFileStream):
@@ -19,7 +20,7 @@ class IncrementalFileStreamS3(IncrementalFileStream):
     def storagefile_class(self) -> type:
         return S3File
 
-    def _list_bucket(self, accept_key=lambda k: True) -> Iterator[FileInfo]:
+    def _list_bucket(self, accept_key: Callable = lambda k: True) -> Iterator[FileInfo]:
         """
         Wrapper for boto3's list_objects_v2 so we can handle pagination, filter by lambda func and operate with or without credentials
 
@@ -43,7 +44,7 @@ class IncrementalFileStreamS3(IncrementalFileStream):
             # list_objects_v2 doesn't like a None value for ContinuationToken
             # so we don't set it if we don't have one.
             if ctoken:
-                kwargs = dict(Bucket=provider["bucket"], Prefix=provider.get("path_prefix", ""), ContinuationToken=ctoken)
+                kwargs = dict(Bucket=provider["bucket"], Prefix=provider.get("path_prefix", ""), ContinuationToken=ctoken)  # type: ignore[unreachable]
             else:
                 kwargs = dict(Bucket=provider["bucket"], Prefix=provider.get("path_prefix", ""))
             response = client.list_objects_v2(**kwargs)

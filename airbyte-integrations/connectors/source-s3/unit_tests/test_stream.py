@@ -3,7 +3,7 @@
 #
 
 from unittest.mock import patch
-
+from typing import List, Mapping, Dict, Any
 import pytest
 from airbyte_cdk import AirbyteLogger
 from source_s3.source_files_abstract.stream import FileStream
@@ -40,9 +40,9 @@ class TestFileStream:
         ],
     )
     @memory_limit(512)
-    def test_parse_user_input_schema(self, schema_string, return_schema):
+    def test_parse_user_input_schema(self, schema_string: str, return_schema: str) -> None:
         if return_schema is not None:
-            assert FileStream._parse_user_input_schema(schema_string) == return_schema
+            assert str(FileStream._parse_user_input_schema(schema_string)) == return_schema
         else:
             with pytest.raises(Exception) as e_info:
                 FileStream._parse_user_input_schema(schema_string)
@@ -96,8 +96,10 @@ class TestFileStream:
     @patch(
         "source_s3.source_files_abstract.stream.FileStream.__abstractmethods__", set()
     )  # patching abstractmethods to empty set so we can instantiate ABC to test
-    def test_match_target_schema(self, target_columns, record, expected_return_record):
-        fs = FileStream(dataset="dummy", provider={}, format={}, path_pattern=[])
+    def test_match_target_schema(
+        self, target_columns: List[str], record: Dict[str, Any], expected_return_record: Mapping[str, Any]
+    ) -> None:
+        fs = FileStream(dataset="dummy", provider={}, format={}, path_pattern="")
         if expected_return_record is not None:
             assert fs._match_target_schema(record, target_columns) == expected_return_record
         else:
@@ -130,8 +132,10 @@ class TestFileStream:
         "source_s3.source_files_abstract.stream.FileStream.__abstractmethods__", set()
     )  # patching abstractmethods to empty set so we can instantiate ABC to test
     @memory_limit(512)
-    def test_add_extra_fields_from_map(self, extra_map, record, expected_return_record):
-        fs = FileStream(dataset="dummy", provider={}, format={}, path_pattern=[])
+    def test_add_extra_fields_from_map(
+        self, extra_map: Mapping[str, Any], record: Dict[str, Any], expected_return_record: Mapping[str, Any]
+    ) -> None:
+        fs = FileStream(dataset="dummy", provider={}, format={}, path_pattern="")
         if expected_return_record is not None:
             assert fs._add_extra_fields_from_map(record, extra_map) == expected_return_record
         else:
@@ -139,7 +143,7 @@ class TestFileStream:
                 fs._add_extra_fields_from_map(record, extra_map)
                 LOGGER.debug(str(e_info))
 
-    @pytest.mark.parametrize(  #
+    @pytest.mark.parametrize(
         "patterns, filepaths, expected_filepaths",
         [
             (  # 'everything' case
@@ -314,7 +318,7 @@ class TestFileStream:
         "source_s3.source_files_abstract.stream.FileStream.__abstractmethods__", set()
     )  # patching abstractmethods to empty set so we can instantiate ABC to test
     @memory_limit(512)
-    def test_pattern_matched_filepath_iterator(self, patterns, filepaths, expected_filepaths):
+    def test_pattern_matched_filepath_iterator(self, patterns: str, filepaths: List[str], expected_filepaths: List[str]) -> None:
         fs = FileStream(dataset="dummy", provider={}, format={}, path_pattern=patterns)
         file_infos = [create_by_local_file(filepath) for filepath in filepaths]
-        assert set([p for p in fs.pattern_matched_filepath_iterator(file_infos)]) == set(expected_filepaths)
+        assert set([p.key for p in fs.pattern_matched_filepath_iterator(file_infos)]) == set(expected_filepaths)

@@ -38,7 +38,7 @@ class StorageFile(ABC):
         return self.file_info.size
 
     @property
-    def url(self) -> int:
+    def url(self) -> str:
         """
         Returns key/name files
         This function is needed for backward compatibility

@@ -28,7 +28,7 @@ def compress(archive_name: str, filename: str) -> str:
             with gzip.open(compress_filename, "wb") as f_out:
                 shutil.copyfileobj(f_in, f_out)
         elif archive_name == "bz2":
-            with bz2.open(compress_filename, "wb") as f_out:
+            with bz2.open(compress_filename, "wb") as f_out:  # type: ignore[assignment]
                 shutil.copyfileobj(f_in, f_out)
     return compress_filename
 
@@ -39,7 +39,7 @@ class TestParquetParser(AbstractTestParser):
 
     @classmethod
     def generate_parquet_file(
-        cls, name: str, columns: Mapping[str, str], num_rows: int, custom_rows: Mapping[int, Mapping[str, Any]] = None
+        cls, name: str, columns: Mapping[str, str], num_rows: int, custom_rows: Mapping[int, List[str]] = None
     ) -> str:
         """Generates  a random data and save it to a tmp file"""
         filename = os.path.join(TMP_FOLDER, name + "." + cls.filetype)
@@ -66,7 +66,7 @@ class TestParquetParser(AbstractTestParser):
         return filename
 
     @classmethod
-    def cases(cls) -> List[Mapping[str, Any]]:
+    def cases(cls) -> Mapping[str, Any]:
         schema = {
             "id": "integer",
             "name": "string",

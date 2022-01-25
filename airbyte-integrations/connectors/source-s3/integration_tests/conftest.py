@@ -3,28 +3,26 @@
 #
 
 import json
-# import os.path
-# import shutil
 import tempfile
 import time
 from pathlib import Path
-from typing import Mapping
+from typing import Mapping, Any, Iterable, List
 from zipfile import ZipFile
 
 import docker
 import pytest
-import requests
+import requests  # type: ignore[import]
 from airbyte_cdk import AirbyteLogger
 from docker.errors import APIError
 from netifaces import AF_INET, ifaddresses, interfaces
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError  # type: ignore[import]
 
 logger = AirbyteLogger()
 TMP_FOLDER = tempfile.mkdtemp()
 
 
 def get_local_ip() -> str:
-    all_interface_ips = []
+    all_interface_ips: List[str] = []
     for iface_name in interfaces():
         all_interface_ips += [i["addr"] for i in ifaddresses(iface_name).setdefault(AF_INET, [{"addr": None}]) if i["addr"]]
     logger.info(f"detected interface IPs: {all_interface_ips}")
@@ -36,17 +34,19 @@ def get_local_ip() -> str:
 
 
 @pytest.fixture(scope="session")
-def minio_credentials() -> Mapping:
+def minio_credentials() -> Mapping[str, Any]:
     config_template = Path(__file__).parent / "config_minio.template.json"
     assert config_template.is_file() is not None, f"not found {config_template}"
     config_file = Path(__file__).parent / "config_minio.json"
     config_file.write_text(config_template.read_text().replace("<local_ip>", get_local_ip()))
+    credentials = {}
     with open(str(config_file)) as f:
-        return json.load(f)
+        credentials = json.load(f)
+    return credentials
 
 
 @pytest.fixture(scope="session", autouse=True)
-def minio_setup(minio_credentials):
+def minio_setup(minio_credentials: Mapping[str, Any]) -> Iterable[None]:
     with ZipFile("./integration_tests/minio_data.zip") as archive:
         archive.extractall(TMP_FOLDER)
     client = docker.from_env()
@@ -85,9 +85,4 @@ def minio_setup(minio_credentials):
             break
         logger.info("Run a minio/minio container...")
     yield
-
-    # if os.path.exists(TMP_FOLDER):
-    #     shutil.rmtree(TMP_FOLDER)
-
-    # logger.info("minio was stopped")
-    # container.stop()
+    # this minio container was not finished because it is needed for all integration adn acceptance tests

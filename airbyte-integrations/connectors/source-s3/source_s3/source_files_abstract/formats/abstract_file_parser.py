@@ -8,7 +8,7 @@ from typing import Any, BinaryIO, Iterator, Mapping, TextIO, Union
 import pyarrow as pa
 from airbyte_cdk.logger import AirbyteLogger
 
-from ..file_info import FileInfo
+from source_s3.source_files_abstract.file_info import FileInfo
 
 
 class AbstractFileParser(ABC):
@@ -27,7 +27,7 @@ class AbstractFileParser(ABC):
 
     @property
     @abstractmethod
-    def is_binary(self):
+    def is_binary(self) -> bool:
         """
         Override this per format so that file-like objects passed in are currently opened as binary or not
         """
@@ -79,11 +79,11 @@ class AbstractFileParser(ABC):
         if not reverse:
             for json_type, pyarrow_types in map.items():
                 if str_typ.lower() == json_type:
-                    return getattr(
-                        pa, pyarrow_types[0]
-                    ).__call__()  # better way might be necessary when we decide to handle more type complexity
+                    return str(
+                        getattr(pa, pyarrow_types[0]).__call__()
+                    )  # better way might be necessary when we decide to handle more type complexity
             logger.debug(f"JSON type '{str_typ}' is not mapped, falling back to default conversion to large_string")
-            return pa.large_string()
+            return str(pa.large_string())
         else:
             for json_type, pyarrow_types in map.items():
                 if any(str_typ.startswith(pa_type) for pa_type in pyarrow_types):

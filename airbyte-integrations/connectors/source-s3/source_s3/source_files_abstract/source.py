@@ -6,7 +6,6 @@
 from abc import ABC, abstractmethod
 from traceback import format_exc
 from typing import Any, List, Mapping, Optional, Tuple
-
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
@@ -82,7 +81,7 @@ class SourceFilesAbstract(AbstractSource, ABC):
         """
         return [self.stream_class(**config)]
 
-    def spec(self, *args, **kwargs) -> ConnectorSpecification:
+    def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         """
         Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
         required to run this integration.
@@ -99,5 +98,5 @@ class SourceFilesAbstract(AbstractSource, ABC):
             changelogUrl=self.documentation_url,
             supportsIncremental=incremental,
             supported_destination_sync_modes=supported_dest_sync_modes,
-            connectionSpecification=self.spec_class.schema(),
+            connectionSpecification=self.spec_class.schema(),  # type: ignore[attr-defined]
         )

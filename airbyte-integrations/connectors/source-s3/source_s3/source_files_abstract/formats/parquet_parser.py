@@ -7,7 +7,6 @@ from typing import Any, BinaryIO, Iterator, List, Mapping, TextIO, Tuple, Union
 import pyarrow.parquet as pq
 from pyarrow.parquet import ParquetFile
 
-from ..file_info import FileInfo
 from .abstract_file_parser import AbstractFileParser
 from .parquet_spec import ParquetFormat
 
@@ -34,7 +33,7 @@ class ParquetParser(AbstractFileParser):
 
     is_binary = True
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
 
         # adds default values if necessary attributes are skipped.
@@ -46,12 +45,12 @@ class ParquetParser(AbstractFileParser):
     def _select_options(self, *names: List[str]) -> dict:
         return {name: self._format[name] for name in names}
 
-    def _init_reader(self, file: BinaryIO) -> ParquetFile:
+    def _init_reader(self, file: Union[TextIO, BinaryIO]) -> ParquetFile:
         """Generates a new parquet reader
         Doc: https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html
 
         """
-        options = self._select_options("buffer_size")
+        options = self._select_options("buffer_size")  # type: ignore[arg-type]
         # Source is a file path and enabling memory_map can improve performance in some environments.
         options["memory_map"] = True
         return pq.ParquetFile(file, **options)
@@ -100,7 +99,7 @@ class ParquetParser(AbstractFileParser):
             raise OSError("empty Parquet file")
         return schema_dict
 
-    def stream_records(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> Iterator[Mapping[str, Any]]:
+    def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html
         PyArrow reads streaming batches from a Parquet file
@@ -115,7 +114,7 @@ class ParquetParser(AbstractFileParser):
             # pyarrow can parse empty parquet files but a connector can't generate dynamic schema
             raise OSError("empty Parquet file")
 
-        args = self._select_options("columns", "batch_size")
+        args = self._select_options("columns", "batch_size")  # type: ignore[arg-type]
         self.logger.debug(f"Found the {reader.num_row_groups} Parquet groups")
 
         # load batches per page

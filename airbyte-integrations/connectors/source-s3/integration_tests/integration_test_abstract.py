@@ -6,7 +6,7 @@
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Iterator, List, Mapping
+from typing import Iterator, List, Mapping, Any
 from uuid import uuid4
 
 import pytest
@@ -29,7 +29,7 @@ class AbstractTestIncrementalFileStream(ABC):
         return "airbytetest-"
 
     @pytest.fixture(scope="session")
-    def format(self) -> str:
+    def format(self) -> Mapping[str, Any]:
         return {"filetype": "csv"}
 
     @pytest.fixture(scope="session")
@@ -71,7 +71,7 @@ class AbstractTestIncrementalFileStream(ABC):
         """
 
     @abstractmethod
-    def teardown_infra(self, cloud_bucket_name: str, credentials: Mapping):
+    def teardown_infra(self, cloud_bucket_name: str, credentials: Mapping) -> None:
         """
         Provider-specific logic to tidy up any cloud resources.
         See S3 for example.
@@ -82,20 +82,20 @@ class AbstractTestIncrementalFileStream(ABC):
 
     def _stream_records_test_logic(
         self,
-        cloud_bucket_name,
-        format,
-        airbyte_system_columns,
-        sync_mode,
-        files,
-        path_pattern,
-        private,
-        num_columns,
-        num_records,
-        expected_schema,
-        user_schema,
-        fails,
-        state=None,
-    ):
+        cloud_bucket_name: str,
+        format: Mapping[str, str],
+        airbyte_system_columns: Mapping[str, str],
+        sync_mode: Any,
+        files: List[str],
+        path_pattern: str,
+        private: bool,
+        num_columns: Any,
+        num_records: Any,
+        expected_schema: Mapping[str, Any],
+        user_schema: Mapping[str, Any],
+        fails: Any,
+        state: Any = None,
+    ) -> Any:
         uploaded_files = [fpath for fpath in self.cloud_files(cloud_bucket_name, self.credentials, files, private)]
         LOGGER.info(f"file(s) uploaded: {uploaded_files}")
 
@@ -123,7 +123,7 @@ class AbstractTestIncrementalFileStream(ABC):
                 if stream_slice is not None:
                     # we need to do this in order to work out which extra columns (if any) we expect in this stream_slice
                     expected_columns = []
-                    for file_dict in stream_slice:
+                    for file_dict in stream_slice["files"]:
                         # TODO: if we ever test other filetypes in these tests this will need fixing
                         file_reader = CsvParser(format)
                         with file_dict["storage_file"].open(file_reader.is_binary) as f:
@@ -477,19 +477,19 @@ class AbstractTestIncrementalFileStream(ABC):
     )
     def test_stream_records(
         self,
-        cloud_bucket_prefix,
-        format,
-        airbyte_system_columns,
-        files,
-        path_pattern,
-        private,
-        num_columns,
-        num_records,
-        expected_schema,
-        user_schema,
-        incremental,
-        fails,
-    ):
+        cloud_bucket_prefix: str,
+        format: Mapping[str, Any],
+        airbyte_system_columns: Mapping[str, str],
+        files: List[str],
+        path_pattern: str,
+        private: bool,
+        num_columns: List[int],
+        num_records: List[int],
+        expected_schema: Mapping[str, Any],
+        user_schema: Mapping[str, Any],
+        incremental: bool,
+        fails: List[bool],
+    ) -> None:
         try:
             if not incremental:  # we expect matching behaviour here in either sync_mode
                 for sync_mode in [

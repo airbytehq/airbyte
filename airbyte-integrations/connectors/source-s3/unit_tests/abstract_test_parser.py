@@ -11,7 +11,6 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from functools import lru_cache, wraps
 from typing import Any, Callable, List, Mapping
-
 import pytest
 from airbyte_cdk import AirbyteLogger
 from smart_open import open as smart_open
@@ -23,32 +22,29 @@ def memory_limit(max_memory_in_megabytes: int, print_limit: int = 20) -> Callabl
 
     def decorator(func: Callable) -> Callable:
         @wraps(func)
-        def wrapper(*args, **kwargs) -> Any:
+        def wrapper(*args: List[Any], **kwargs: Any) -> Any:
             tracemalloc.start()
             result = func(*args, **kwargs)
-            snapshot = tracemalloc.take_snapshot()
-            snapshot = snapshot.filter_traces(
-                (
-                    tracemalloc.Filter(False, "<frozen importlib._bootstrap>"),
-                    tracemalloc.Filter(False, "<frozen importlib._bootstrap_external>"),
-                    tracemalloc.Filter(False, "<unknown>"),
-                )
-            )
-            log_messages = ["\n"]
-            top_stats = snapshot.statistics("lineno")
-            for index, stat in enumerate(top_stats[:print_limit], 1):
-                frame = stat.traceback[0]
-                filename = os.sep.join(frame.filename.split(os.sep)[-2:])
-                log_messages.append("#%s: %s:%s: %.1f KiB" % (index, filename, frame.lineno, stat.size / 1024))
-                line = linecache.getline(frame.filename, frame.lineno).strip()
-                if line:
-                    log_messages.append(f"    {line}")
-            total = sum(stat.size for stat in top_stats) / 1024 ** 2
-            log_messages.append("Total allocated size: %.4f Mb" % (total,))
-            log_messages = "\n".join(log_messages)
-            assert (
-                total < max_memory_in_megabytes
-            ), f"Overuse of memory, used: {total}Mb, limit: {max_memory_in_megabytes}Mb!!{log_messages}"
+
+            # get memory usage immediately after function call, we interested in "first_size" value
+            first_size, first_peak = tracemalloc.get_traced_memory()
+
+            # only if we exceeded the quota, build log_messages with traces
+            first_size_in_megabytes = first_size / 1024 ** 2
+            if first_size_in_megabytes > max_memory_in_megabytes:
+                log_messages: List[str] = []
+                # get snapshot immediately just in case we will use it
+                top_stats = tracemalloc.take_snapshot().statistics("lineno")
+                for index, stat in enumerate(top_stats[:print_limit], 1):
+                    frame = stat.traceback[0]
+                    filename = os.sep.join(frame.filename.split(os.sep)[-2:])
+                    log_messages.append("#%s: %s:%s: %.1f KiB" % (index, filename, frame.lineno, stat.size / 1024))
+                    line = linecache.getline(frame.filename, frame.lineno).strip()
+                    if line:
+                        log_messages.append(f"    {line}")
+                traceback_log = "\n".join(log_messages)
+                assert False, f"Overuse of memory, used: {first_size_in_megabytes}Mb, limit: {max_memory_in_megabytes}Mb!!\n{traceback_log}"
+
             return result
 
         return wrapper
@@ -67,7 +63,7 @@ class AbstractTestParser(ABC):
     """Prefix this class with Abstract so the tests don't run here but only in the children"""
 
     logger = AirbyteLogger()
-    record_types = []
+    record_types: Mapping[str, Any] = {}
 
     @classmethod
     def _generate_row(cls, types: List[str]) -> List[Any]:
@@ -112,12 +108,12 @@ class AbstractTestParser(ABC):
 
     @classmethod
     @lru_cache(maxsize=None)
-    def cached_cases(cls):
+    def cached_cases(cls) -> Mapping[str, Any]:
         return cls.cases()
 
     @classmethod
     @abstractmethod
-    def cases(cls) -> List[Mapping[str, Any]]:
+    def cases(cls) -> Mapping[str, Any]:
         """return a map of test_file dicts in structure:
         {
            "small_file": {"AbstractFileParser": CsvParser(format, master_schema), "filepath": "...", "num_records": 5, "inferred_schema": {...}, line_checks:{}, fails: []},
@@ -126,11 +122,11 @@ class AbstractTestParser(ABC):
         note: line_checks index is 1-based to align with row numbers
         """
 
-    def _get_readmode(self, test_file):
-        return "rb" if test_file["AbstractFileParser"].is_binary else "r"
+    def _get_readmode(self, file_info: Mapping[str, Any]) -> str:
+        return "rb" if file_info["AbstractFileParser"].is_binary else "r"
 
     @memory_limit(1024)
-    def test_suite_inferred_schema(self, file_info: Mapping[str, Any]):
+    def test_suite_inferred_schema(self, file_info: Mapping[str, Any]) -> None:
         with smart_open(file_info["filepath"], self._get_readmode(file_info)) as f:
             if "test_get_inferred_schema" in file_info["fails"]:
                 with pytest.raises(Exception) as e_info:
@@ -140,17 +136,16 @@ class AbstractTestParser(ABC):
                 assert file_info["AbstractFileParser"].get_inferred_schema(f) == file_info["inferred_schema"]
 
     @memory_limit(1024)
-    def test_stream_suite_records(self, file_info: Mapping[str, Any]):
+    def test_stream_suite_records(self, file_info: Mapping[str, Any]) -> None:
         filepath = file_info["filepath"]
         self.logger.info(f"read the file: {filepath}, size: {os.stat(filepath).st_size / (1024 ** 2)}Mb")
         with smart_open(filepath, self._get_readmode(file_info)) as f:
-            file_metadata = create_by_local_file(filepath)
             if "test_stream_records" in file_info["fails"]:
                 with pytest.raises(Exception) as e_info:
-                    [print(r) for r in file_info["AbstractFileParser"].stream_records(f, file_metadata)]
+                    [print(r) for r in file_info["AbstractFileParser"].stream_records(f)]
                     self.logger.debug(str(e_info))
             else:
-                records = [r for r in file_info["AbstractFileParser"].stream_records(f, file_metadata)]
+                records = [r for r in file_info["AbstractFileParser"].stream_records(f)]
 
                 assert len(records) == file_info["num_records"]
                 for index, expected_record in file_info["line_checks"].items():

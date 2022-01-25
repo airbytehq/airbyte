@@ -9,13 +9,13 @@ from copy import deepcopy
 from datetime import datetime
 from functools import lru_cache
 from traceback import format_exc
-from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
-
+from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union, Dict
+from .storagefile import StorageFile
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
-
+from .formats.abstract_file_parser import AbstractFileParser
 from .file_info import FileInfo
 from .formats.csv_parser import CsvParser
 from .formats.parquet_parser import ParquetParser
@@ -31,7 +31,7 @@ class ConfigurationError(Exception):
 
 class FileStream(Stream, ABC):
     @property
-    def fileformatparser_map(self):
+    def fileformatparser_map(self) -> Mapping[str, type]:
         """Mapping where every key is equal  'filetype' and values are  corresponding  parser classes."""
         return {
             "csv": CsvParser,
@@ -57,14 +57,14 @@ class FileStream(Stream, ABC):
         self._path_pattern = path_pattern
         self._provider = provider
         self._format = format
-        self._schema = {}
+        self._schema: Dict[str, Any] = {}
         if schema:
             self._schema = self._parse_user_input_schema(schema)
-        self.master_schema = None
+        self.master_schema: Dict[str, Any] = None
         LOGGER.info(f"initialised stream with format: {format}")
 
     @staticmethod
-    def _parse_user_input_schema(schema: str) -> Mapping[str, str]:
+    def _parse_user_input_schema(schema: str) -> Dict[str, Any]:
         """
         If the user provided a schema, we run this method to convert to a python dict and verify it
         This verifies:
@@ -78,7 +78,7 @@ class FileStream(Stream, ABC):
         :return: the input schema (json string) as a python dict
         """
         try:
-            py_schema = json.loads(schema)
+            py_schema: Dict[str, Any] = json.loads(schema)
         except json.decoder.JSONDecodeError as err:
             error_msg = f"Failed to parse schema {repr(err)}\n{schema}\n{format_exc()}"
             raise ConfigurationError(error_msg) from err
@@ -154,6 +154,7 @@ class FileStream(Stream, ABC):
         return sorted(self.pattern_matched_filepath_iterator(self.filepath_iterator()), key=lambda file_info: file_info.last_modified)
 
     def _get_schema_map(self) -> Mapping[str, Any]:
+        return_schema: Dict[str, Any] = None
         if self._schema != {}:
             return_schema = deepcopy(self._schema)
         else:  # we have no provided schema or schema state from a previous incremental run
@@ -170,7 +171,7 @@ class FileStream(Stream, ABC):
         """
         # note: making every non-airbyte column nullable for compatibility
         # TODO: ensure this behaviour still makes sense as we add new file formats
-        properties = {
+        properties: Mapping[str, Any] = {
             column: {"type": ["null", typ]} if column not in self.airbyte_columns else {"type": typ}
             for column, typ in self._get_schema_map().items()
         }
@@ -178,7 +179,7 @@ class FileStream(Stream, ABC):
         properties[self.ab_last_mod_col]["format"] = "date-time"
         return {"type": "object", "properties": properties}
 
-    def _get_master_schema(self, min_datetime: datetime = None) -> Mapping[str, Any]:
+    def _get_master_schema(self, min_datetime: datetime = None) -> Dict[str, Any]:
         """
         In order to auto-infer a schema across many files and/or allow for additional properties (columns),
             we need to determine the superset of schemas across all relevant files.
@@ -246,7 +247,7 @@ class FileStream(Stream, ABC):
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
+    ) -> Iterable[Optional[Dict[str, Any]]]:
         """
         This builds full-refresh stream_slices regardless of sync_mode param.
         For full refresh, 1 file == 1 stream_slice.
@@ -259,9 +260,9 @@ class FileStream(Stream, ABC):
         # we could do this concurrently both full and incremental by running batches in parallel
         # and then incrementing the cursor per each complete batch
         for file_info in self.get_time_ordered_file_infos():
-            yield [{"storage_file": self.storagefile_class(file_info, self._provider)}]
+            yield {"files": [{"storage_file": self.storagefile_class(file_info, self._provider)}]}
 
-    def _match_target_schema(self, record: Mapping[str, Any], target_columns: List) -> Mapping[str, Any]:
+    def _match_target_schema(self, record: Dict[str, Any], target_columns: List) -> Dict[str, Any]:
         """
         This method handles missing or additional fields in each record, according to the provided target_columns.
         All missing fields are added, with a value of None (null)
@@ -288,7 +289,7 @@ class FileStream(Stream, ABC):
 
         return record
 
-    def _add_extra_fields_from_map(self, record: Mapping[str, Any], extra_map: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _add_extra_fields_from_map(self, record: Dict[str, Any], extra_map: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Simple method to take a mapping of columns:values and add them to the provided record
 
@@ -302,7 +303,7 @@ class FileStream(Stream, ABC):
 
     def _read_from_slice(
         self,
-        file_reader,
+        file_reader: AbstractFileParser,
         stream_slice: Mapping[str, Any],
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
@@ -311,11 +312,11 @@ class FileStream(Stream, ABC):
         Records are mutated on the fly using _match_target_schema() and _add_extra_fields_from_map() to achieve desired final schema.
         Since this is called per stream_slice, this method works for both full_refresh and incremental.
         """
-        for file_item in stream_slice:
-            storage_file: FileInfo = file_item["storage_file"]
+        for file_item in stream_slice["files"]:
+            storage_file: StorageFile = file_item["storage_file"]
             with storage_file.open(file_reader.is_binary) as f:
                 # TODO: make this more efficient than mutating every record one-by-one as they stream
-                for record in file_reader.stream_records(f, storage_file.file_info):
+                for record in file_reader.stream_records(f):
                     schema_matched_record = self._match_target_schema(record, list(self._get_schema_map().keys()))
                     complete_record = self._add_extra_fields_from_map(
                         schema_matched_record,
@@ -370,7 +371,7 @@ class IncrementalFileStream(FileStream, ABC):
         :param latest_record: The latest record extracted from the stream
         :return: An updated state object
         """
-        state_dict = {}
+        state_dict: Dict[str, Any] = {}
         current_parsed_datetime = self._get_datetime_from_stream_state(current_stream_state)
         latest_record_datetime = datetime.strptime(
             latest_record.get(self.cursor_field, "1970-01-01T00:00:00+0000"), self.datetime_format_string
@@ -382,7 +383,7 @@ class IncrementalFileStream(FileStream, ABC):
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
+    ) -> Iterable[Optional[Dict[str, Any]]]:
         """
         Builds either full_refresh or incremental stream_slices based on sync_mode.
         An incremental stream_slice is a group of all files with the exact same last_modified timestamp.
@@ -402,8 +403,8 @@ class IncrementalFileStream(FileStream, ABC):
                 self._schema = stream_state["schema"]
 
             # logic here is to bundle all files with exact same last modified timestamp together in each slice
-            prev_file_last_mod = None  # init variable to hold previous iterations last modified
-            grouped_files_by_time = []
+            prev_file_last_mod: datetime = None  # init variable to hold previous iterations last modified
+            grouped_files_by_time: List[Dict[str, Any]] = []
             for file_info in self.get_time_ordered_file_infos():
                 # skip this file if last_mod is earlier than our cursor value from state
                 if (
@@ -415,7 +416,7 @@ class IncrementalFileStream(FileStream, ABC):
 
                 # check if this file belongs in the next slice, if so yield the current slice before this file
                 if (prev_file_last_mod is not None) and (file_info.last_modified != prev_file_last_mod):
-                    yield grouped_files_by_time
+                    yield {"files": grouped_files_by_time}
                     grouped_files_by_time.clear()
 
                 # now we either have an empty stream_slice or a stream_slice that this file shares a last modified with, so append it
@@ -425,7 +426,7 @@ class IncrementalFileStream(FileStream, ABC):
 
             # now yield the final stream_slice. This is required because our loop only yields the slice previous to its current iteration.
             if len(grouped_files_by_time) > 0:
-                yield grouped_files_by_time
+                yield {"files": grouped_files_by_time}
             else:
                 # in case we have no files
                 yield None

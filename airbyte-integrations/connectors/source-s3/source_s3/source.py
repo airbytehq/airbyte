@@ -4,7 +4,6 @@
 
 
 from typing import Any, Mapping, Optional
-
 from pydantic import BaseModel, Field
 
 from .source_files_abstract.source import SourceFilesAbstract
@@ -49,7 +48,7 @@ class SourceS3(SourceFilesAbstract):
     documentation_url = "https://docs.airbyte.io/integrations/sources/s3"
 
     def read_config(self, config_path: str) -> Mapping[str, Any]:
-        config = super().read_config(config_path)
+        config: Mapping[str, Any] = super().read_config(config_path)
         if config.get("format", {}).get("delimiter") == r"\t":
             config["format"]["delimiter"] = "\t"
         return config

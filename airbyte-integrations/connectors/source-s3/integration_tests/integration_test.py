@@ -35,7 +35,7 @@ class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
     def provider(self, bucket_name: str) -> Mapping:
         return {"storage": "S3", "bucket": bucket_name}
 
-    def _s3_connect(self, credentials: Mapping):
+    def _s3_connect(self, credentials: Mapping) -> None:
         region = "eu-west-3"
         self.s3_client = boto3.client(
             "s3",
@@ -85,7 +85,7 @@ class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
             self.s3_client.upload_file(str(filepath), bucket_name, upload_path, ExtraArgs=extra_args)
             yield f"{bucket_name}/{upload_path}"
 
-    def teardown_infra(self, cloud_bucket_name: str, credentials: Mapping):
+    def teardown_infra(self, cloud_bucket_name: str, credentials: Mapping) -> None:
         self._s3_connect(credentials)
         bucket = self.s3_resource.Bucket(cloud_bucket_name)
         bucket.objects.all().delete()
