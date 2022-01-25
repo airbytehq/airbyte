@@ -10,12 +10,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig;
 import io.airbyte.integrations.destination.gcs.writer.BaseGcsWriter;
-import io.airbyte.integrations.destination.gcs.writer.CommonWriter;
-import io.airbyte.integrations.destination.gcs.writer.GscWriter;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.AvroRecordFactory;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
-import io.airbyte.integrations.destination.s3.writer.S3Writer;
+import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.IOException;
@@ -35,7 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
-public class GcsParquetWriter extends BaseGcsWriter implements S3Writer, GscWriter, CommonWriter {
+public class GcsParquetWriter extends BaseGcsWriter implements DestinationFileWriter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GcsParquetWriter.class);
   private static final ObjectMapper MAPPER = new ObjectMapper();
