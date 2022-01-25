@@ -40,5 +40,8 @@
   },
   "transactions": {
     "updated_at": "2022-07-19T22:21:37Z"
+  },
+  "unique_coupons": {
+    "updated_at": "2022-07-19T22:21:37Z"
   }
 }
