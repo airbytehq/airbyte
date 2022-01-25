@@ -32,8 +32,10 @@ import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.airbyte.workers.temporal.scheduling.state.listener.NoopStateListener;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.temporal.api.enums.v1.ParentClosePolicy;
+import io.temporal.client.WorkflowClient;
 import io.temporal.failure.CanceledFailure;
 import io.temporal.failure.ChildWorkflowFailure;
+import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.workflow.CancellationScope;
 import io.temporal.workflow.ChildWorkflowOptions;
 import io.temporal.workflow.Workflow;
@@ -261,13 +263,21 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     workflowState.setResetConnection(true);
   }
 
-  @Override public void stopRunning() {
+  @Override
+  public void stopRunning() {
     if (!workflowState.isRunning()) {
       log.info("Can't stop a non-running sync");
       return;
+    } else {
+      log.info("________________________ stopping");
     }
     workflowState.setFailed(true);
-    syncWorkflowCancellationScope.cancel();
+    long jobId = maybeJobId.get();
+
+    WorkflowClient.newInstance(WorkflowServiceStubs.newInstance())
+        .newUntypedWorkflowStub("sync_" + jobId)
+        .terminate("Whatever");
+    // syncWorkflowCancellationScope.cancel();
   }
 
   @Override

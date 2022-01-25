@@ -52,7 +52,9 @@ import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
+import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.util.Map;
@@ -252,8 +254,13 @@ public class ServerApp implements ServerRunnable {
    * @throws IOException
    */
   private static void cleanupZombies(final JobPersistence jobPersistence, final TemporalClient temporalClient) throws IOException {
+    final Configs configs = new EnvConfigs();
+    WorkflowClient wfClient =
+        WorkflowClient.newInstance(WorkflowServiceStubs.newInstance(
+            WorkflowServiceStubsOptions.newBuilder().setTarget(configs.getTemporalHost()).build()));
     for (final Job zombieJob : jobPersistence.listJobsWithStatus(JobStatus.RUNNING)) {
-      temporalClient.stopSync(UUID.fromString(zombieJob.getScope()));
+      wfClient.newUntypedWorkflowStub("sync_" + zombieJob.getId())
+          .terminate("Zombie");
     }
   }
 
