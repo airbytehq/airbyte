@@ -1,18 +1,20 @@
+import { JobInfo } from "core/domain/job/Job";
+
 import { CommonRequestError } from "./CommonRequestError";
 
 export class LogsRequestError extends CommonRequestError {
   __type = "common.errorWithLogs";
-  jobInfo: any;
+  jobInfo: JobInfo;
 
-  constructor(jobInfo: any, response: Response, msg?: string) {
+  constructor(jobInfo: JobInfo, response: Response, msg?: string) {
     super(response, msg);
     this.jobInfo = jobInfo;
     this._status = 400;
   }
 
-  static extractJobInfo(error: any): any {
+  static extractJobInfo(error: unknown): JobInfo | null {
     if (!error) {
-      return false;
+      return null;
     }
     return isLogsRequestError(error) ? error.jobInfo : null;
   }

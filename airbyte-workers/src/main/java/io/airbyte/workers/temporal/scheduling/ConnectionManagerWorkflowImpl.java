@@ -84,7 +84,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
             // Job and attempt creation
             maybeJobId = Optional.ofNullable(connectionUpdaterInput.getJobId()).or(() -> {
               final JobCreationOutput jobCreationOutput = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(
-                  connectionUpdaterInput.getConnectionId(), workflowState.isResetConnection()));
+                  connectionUpdaterInput.getConnectionId(), connectionUpdaterInput.isResetConnection()));
               connectionUpdaterInput.setJobId(jobCreationOutput.getJobId());
               return Optional.ofNullable(jobCreationOutput.getJobId());
             });
@@ -100,7 +100,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
             final SyncInput getSyncInputActivitySyncInput = new SyncInput(
                 maybeAttemptId.get(),
                 maybeJobId.get(),
-                workflowState.isResetConnection());
+                connectionUpdaterInput.isResetConnection());
 
             jobCreationAndStatusUpdateActivity.reportJobStart(new ReportJobStartInput(
                 maybeJobId.get()));
@@ -146,7 +146,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         // The naming is very misleading, it is not a failure but the expected behavior...
       }
 
-      if (workflowState.isResetConnection()) {
+      if (connectionUpdaterInput.isResetConnection()) {
         connectionUpdaterInput.setResetConnection(true);
         connectionUpdaterInput.setJobId(null);
         connectionUpdaterInput.setAttemptNumber(1);
@@ -167,6 +167,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       } else if (workflowState.isCancelled()) {
         jobCreationAndStatusUpdateActivity.jobCancelled(new JobCancelledInput(
             maybeJobId.get()));
+        resetNewConnectionInput(connectionUpdaterInput);
       } else if (workflowState.isFailed()) {
         reportFailure(connectionUpdaterInput);
       } else {
@@ -185,18 +186,17 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private void reportSuccess(final ConnectionUpdaterInput connectionUpdaterInput) {
     jobCreationAndStatusUpdateActivity.jobSuccess(new JobSuccessInput(
         maybeJobId.get(),
-        connectionUpdaterInput.getAttemptNumber(),
+        maybeAttemptId.get(),
         standardSyncOutput.orElse(null)));
 
-    connectionUpdaterInput.setJobId(null);
-    connectionUpdaterInput.setAttemptNumber(1);
-    connectionUpdaterInput.setFromFailure(false);
+    resetNewConnectionInput(connectionUpdaterInput);
   }
 
   private void reportFailure(final ConnectionUpdaterInput connectionUpdaterInput) {
     jobCreationAndStatusUpdateActivity.attemptFailure(new AttemptFailureInput(
         connectionUpdaterInput.getJobId(),
-        connectionUpdaterInput.getAttemptNumber()));
+        connectionUpdaterInput.getAttemptId(),
+        standardSyncOutput.orElse(null)));
 
     final int maxAttempt = configFetchActivity.getMaxAttempt().getMaxAttempt();
     final int attemptNumber = connectionUpdaterInput.getAttemptNumber();
@@ -212,10 +212,14 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
       Workflow.await(Duration.ofMinutes(1), () -> skipScheduling());
 
-      connectionUpdaterInput.setJobId(null);
-      connectionUpdaterInput.setAttemptNumber(1);
-      connectionUpdaterInput.setFromFailure(false);
+      resetNewConnectionInput(connectionUpdaterInput);
     }
+  }
+
+  private void resetNewConnectionInput(ConnectionUpdaterInput connectionUpdaterInput) {
+    connectionUpdaterInput.setJobId(null);
+    connectionUpdaterInput.setAttemptNumber(1);
+    connectionUpdaterInput.setFromFailure(false);
   }
 
   @Override

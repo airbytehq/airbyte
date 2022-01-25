@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/redshift",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/redshift",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Redshift Source Spec",
@@ -8,11 +8,13 @@
     "additionalProperties": false,
     "properties": {
       "host": {
-        "description": "Host Endpoint of the Redshift Cluster (must include the cluster-id, region and end with .redshift.amazonaws.com)",
+        "title": "Host",
+        "description": "Host Endpoint of the Redshift Cluster (must include the cluster-id, region and end with .redshift.amazonaws.com).",
         "type": "string",
         "order": 1
       },
       "port": {
+        "title": "Port",
         "description": "Port of the database.",
         "type": "integer",
         "minimum": 0,
@@ -22,6 +24,7 @@
         "order": 2
       },
       "database": {
+        "title": "Database",
         "description": "Name of the database.",
         "type": "string",
         "examples": ["master"],
@@ -40,11 +43,13 @@
         "order": 4
       },
       "username": {
+        "title": "Username",
         "description": "Username to use to access the database.",
         "type": "string",
         "order": 5
       },
       "password": {
+        "title": "Password",
         "description": "Password associated with the username.",
         "type": "string",
         "airbyte_secret": true,

@@ -1665,6 +1665,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/jobs/get_debug_info:
+    post:
+      tags:
+        - jobs
+      summary: Gets all information needed to debug this job
+      operationId: getJobDebugInfo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobDebugInfoRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/health:
     get:
       tags:
@@ -3068,6 +3091,31 @@ components:
           format: int64
         status:
           $ref: "#/components/schemas/JobStatus"
+    JobDebugRead:
+      type: object
+      required:
+        - id
+        - configType
+        - configId
+        - status
+        - airbyteVersion
+        - sourceDefinition
+        - destinationDefinition
+      properties:
+        id:
+          $ref: "#/components/schemas/JobId"
+        configType:
+          $ref: "#/components/schemas/JobConfigType"
+        configId:
+          type: string
+        status:
+          $ref: "#/components/schemas/JobStatus"
+        airbyteVersion:
+          type: string
+        sourceDefinition:
+          $ref: "#/components/schemas/SourceDefinitionRead"
+        destinationDefinition:
+          $ref: "#/components/schemas/DestinationDefinitionRead"
     JobWithAttemptsRead:
       type: object
       properties:
@@ -3168,6 +3216,18 @@ components:
       properties:
         job:
           $ref: "#/components/schemas/JobRead"
+        attempts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttemptInfoRead"
+    JobDebugInfoRead:
+      type: object
+      required:
+        - job
+        - attempts
+      properties:
+        job:
+          $ref: "#/components/schemas/JobDebugRead"
         attempts:
           type: array
           items:
