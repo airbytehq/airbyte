@@ -18,11 +18,12 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -91,8 +92,9 @@ public class ContinuousFeedConfig {
           throw new JsonValidationException("Input stream schemas are invalid: %s" + streamSchemasText);
         }
 
-        final List<AirbyteStream> streams = new LinkedList<>();
-        for (final Map.Entry<String, JsonNode> entry : MoreIterators.toList(streamSchemas.get().fields())) {
+        final List<Entry<String, JsonNode>> streamEntries = MoreIterators.toList(streamSchemas.get().fields());
+        final List<AirbyteStream> streams = new ArrayList<>(streamEntries.size());
+        for (final Map.Entry<String, JsonNode> entry : streamEntries) {
           final String streamName = entry.getKey();
           final JsonNode streamSchema = Jsons.clone(entry.getValue());
           processSchema(streamSchema);
@@ -121,9 +123,12 @@ public class ContinuousFeedConfig {
 
   /**
    * Patch the schema so that 1) it allows no additional properties, and 2) all fields are required.
-   * This is necessary because the mock Json object generation library may add extra properties, or
-   * omit non-required fields. TODO (liren): patch the library so we don't need to patch the schema
-   * here.
+   * This is necessary because 1) the mock Json object generation library may add extra properties
+   * with pure random names which look ugly and garbled. 2) We cannot precise customize the library on
+   * how many non-required fields to include even with the nonRequiredPropertyChance setting in the
+   * config. To avoid emitting lots of empty objects, all fields are marked as required. TODO (liren):
+   * update the library so we don't need to patch the schema here. Issue:
+   * https://github.com/airbytehq/airbyte/issues/9772
    */
   private static void processSchema(final JsonNode schema) {
     if (schema.has("type") && schema.get("type").asText().equals("object")) {
