@@ -13,6 +13,5 @@ jobs:
       - uses: srggrs/assign-one-project-github-action@1.2.0
         if: contains(github.event.issue.labels.*.name, 'area/platform')
         with:
-          with:
-            project: "https://github.com/orgs/airbytehq/projects/6"
-            column_name: "Todo"
+          project: "https://github.com/orgs/airbytehq/projects/6"
+          column_name: "Todo"
