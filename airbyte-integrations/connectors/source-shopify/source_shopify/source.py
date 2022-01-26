@@ -249,24 +249,11 @@ class CustomCollections(IncrementalShopifyStream):
         return f"{self.data_field}.json"
 
 
-class Collects(IncrementalShopifyStream):
-    """
-    Collects stream does not support Incremental Refresh based on datetime fields, only `since_id` is supported:
-    https://shopify.dev/docs/admin-api/rest/reference/products/collect
+class IncrementalByIDShopifyStream(IncrementalShopifyStream):
 
-    The Collect stream is the link between Products and Collections, if the Collection is created for Products,
-    the `collect` record is created, it's reasonable to Full Refresh all collects. As for Incremental refresh -
-    we would use the since_id specificaly for this stream.
-
-    """
-
-    data_field = "collects"
     cursor_field = "id"
     order_field = "id"
     filter_field = "since_id"
-
-    def path(self, **kwargs) -> str:
-        return f"{self.data_field}.json"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
@@ -279,6 +266,35 @@ class Collects(IncrementalShopifyStream):
         if not next_page_token and not stream_state:
             params[self.filter_field] = 0
         return params
+
+
+class Collects(IncrementalByIDShopifyStream):
+    """
+    Collects stream does not support Incremental Refresh based on datetime fields, only `since_id` is supported:
+    https://shopify.dev/docs/admin-api/rest/reference/products/collect
+
+    The Collect stream is the link between Products and Collections, if the Collection is created for Products,
+    the `collect` record is created, it's reasonable to Full Refresh all collects. As for Incremental refresh -
+    we would use the since_id specificaly for this stream.
+    """
+
+    data_field = "collects"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+
+class BalanceTransactions(IncrementalByIDShopifyStream):
+
+    """
+    PaymentsTransactions stream does not support Incremental Refresh based on datetime fields, only `since_id` is supported:
+    https://shopify.dev/api/admin-rest/2021-07/resources/transactions
+    """
+
+    data_field = "transactions"
+
+    def path(self, **kwargs) -> str:
+        return f"shopify_payments/balance/{self.data_field}.json"
 
 
 class OrderRefunds(ChildSubstream):
@@ -474,6 +490,7 @@ class SourceShopify(AbstractSource):
             OrderRefunds(config),
             OrderRisks(config),
             Transactions(config),
+            BalanceTransactions(config),
             Pages(config),
             PriceRules(config),
             DiscountCodes(config),
