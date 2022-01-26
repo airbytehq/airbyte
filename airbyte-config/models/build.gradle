@@ -5,8 +5,6 @@ plugins {
 }
 
 dependencies {
-    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-commons')
