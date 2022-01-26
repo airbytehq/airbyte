@@ -50,6 +50,6 @@ jobs:
           search_string: ${{ github.event.inputs.connector }}
       - name: get GCP_GSM_CREDENTIALS
         run: |
-          python3 get_gsm.py
+          python3 ./get_gsm.py
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
