@@ -12,6 +12,12 @@ on:
       comment-id:
         description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
+      cpulimit:
+        description: "Container CPU limit"
+        required: false
+      memorylimit:
+        description: "Memory CPU limit"
+        required: false
 
 jobs:
   start-test-runner:
@@ -33,6 +39,7 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+          # 80 gb disk
           ec2-image-id: ami-0d648081937c75a73
   performance-test:
     timeout-minutes: 240
@@ -61,16 +68,31 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: ${{ github.event.inputs.repo }}
-      # Beside PyEnv, this does not set any runtimes up because it uses an AMI image that has everything pre-installed. See https://github.com/airbytehq/airbyte/issues/4559/
-      - name: Install Pyenv
-        run: python3 -m pip install virtualenv==16.7.9 --user
-      - name: Write Integration Test Credentials
-        run: ./tools/bin/ci_credentials.sh ${{ github.event.inputs.connector }}
+      - name: Install Java
+        uses: actions/setup-java@v1
+        with:
+          java-version: '17'
+      - name: Install Pyenv and Tox
+        # Beside PyEnv, this does not set any runtimes up because it uses an AMI image that has everything pre-installed. See https://github.com/airbytehq/airbyte/issues/4559/
+        run: |
+          python3 -m pip install --quiet virtualenv==16.7.9 --user
+          python3 -m virtualenv venv
+          source venv/bin/activate
+          pip install --quiet tox==3.24.4
+      - name: Test and install CI scripts
+        # all CI python packages have the prefix "ci_"
+        run: |
+          source venv/bin/activate
+          tox -r -c ./tools/tox_ci.ini
+          pip install --quiet -e ./tools/ci_*
+      - name: Write Integration Test Credentials for ${{ github.event.inputs.connector }}
+        run: |
+          source venv/bin/activate
+          ci_credentials ${{ github.event.inputs.connector }}
         env:
-          GITHUB_PROVIDED_SECRETS_JSON: ${{ toJson(secrets) }}
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       - run: |
-          ./tools/bin/ci_performance_test.sh ${{ github.event.inputs.connector }}
+          ./tools/bin/ci_performance_test.sh ${{ github.event.inputs.connector }} ${{ github.event.inputs.cpulimit }} ${{ github.event.inputs.memorylimit }}
         name: test_performance ${{ github.event.inputs.connector }}
         id: test_performance
         env:

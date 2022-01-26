@@ -3,12 +3,10 @@ import React from "react";
 import { ImplementationTable } from "components/EntityTable";
 import { getEntityTableData } from "components/EntityTable/utils";
 import { EntityTableDataItem } from "components/EntityTable/types";
-
-import { Routes } from "pages/routes";
 import useRouter from "hooks/useRouter";
-import { Source } from "core/resources/Source";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import { useSourceDefinitionList } from "hooks/services/useSourceDefinition";
+import { Source } from "core/domain/connector";
 
 type IProps = {
   sources: Source[];
@@ -27,8 +25,7 @@ const SourcesTable: React.FC<IProps> = ({ sources }) => {
     "source"
   );
 
-  const clickRow = (source: EntityTableDataItem) =>
-    push(`${Routes.Source}/${source.entityId}`);
+  const clickRow = (source: EntityTableDataItem) => push(`${source.entityId}`);
 
   return (
     <ImplementationTable data={data} onClickRow={clickRow} entity="source" />

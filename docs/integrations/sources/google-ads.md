@@ -24,6 +24,9 @@ This source is capable of syncing the following tables and their data:
 * [ad\_groups](https://developers.google.com/google-ads/api/fields/v8/ad_group)
 * [campaigns](https://developers.google.com/google-ads/api/fields/v8/campaign)
 * [click\_view](https://developers.google.com/google-ads/api/reference/rpc/v8/ClickView)
+* [keyword](https://developers.google.com/google-ads/api/fields/v8/keyword_view)
+* [geographic](https://developers.google.com/google-ads/api/fields/v8/geographic_view)
+
 
 #### Report Tables
 
@@ -34,6 +37,10 @@ This source is capable of syncing the following tables and their data:
 * [shopping\_performance\_report](https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance)
 
 **Note**: Due to constraints from the Google Ads API, the `click_view` stream retrieves data one day at a time and can only retrieve data newer than 90 days ago
+
+**Note**: Due to constraints from the Google Ads API, [metrics](https://developers.google.com/google-ads/api/fields/v8/metrics) cannot be requested for a manager account. Therefore, report streams are only available when pulling data from a non-manager account. 
+
+**Note**: For incremental streams data is synced up to the previous day using your Google Ads account time zone. The reason is that Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad#segments.date) without time. Also, some report cannot load data in real time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
 
 ## Getting Started \(Airbyte-Cloud\)
 
@@ -95,6 +102,11 @@ This source is constrained by whatever API limits are set for the Google Ads tha
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| `0.1.21` | 2021-12-28 | [9149](https://github.com/airbytehq/airbyte/pull/9149) | Update title and description |
+| `0.1.20` | 2021-12-22 | [9071](https://github.com/airbytehq/airbyte/pull/9071) | Fix: Keyword schema enum |
+| `0.1.19` | 2021-12-14 | [8431](https://github.com/airbytehq/airbyte/pull/8431) | Add new streams: Geographic and Keyword |
+| `0.1.18` | 2021-12-09 | [8225](https://github.com/airbytehq/airbyte/pull/8225) | Include time_zone to sync. Remove streams for manager account. |
+| `0.1.16` | 2021-11-22 | [8178](https://github.com/airbytehq/airbyte/pull/8178) | clarify setup fields |
 | `0.1.15` | 2021-10-07 | [6684](https://github.com/airbytehq/airbyte/pull/6684) | Add new stream `click_view` |
 | `0.1.14` | 2021-10-01 | [6565](https://github.com/airbytehq/airbyte/pull/6565) | Fix OAuth Spec File |
 | `0.1.13` | 2021-09-27 | [6458](https://github.com/airbytehq/airbyte/pull/6458) | Update OAuth Spec File |

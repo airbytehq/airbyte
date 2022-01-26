@@ -1,13 +1,13 @@
 import React, { Suspense } from "react";
 import styled from "styled-components";
-import { Redirect, Route, Switch } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 
 import { LoadingPage } from "components";
 import useRouter from "hooks/useRouter";
 import FormContent from "./components/FormContent";
 import News from "./components/News";
 
-import { Routes } from "packages/cloud/routes";
+import { CloudRoutes } from "packages/cloud/cloudRoutes";
 
 import { LoginPage } from "./LoginPage";
 import { SignupPage } from "./SignupPage";
@@ -38,39 +38,38 @@ const NewsPart = styled(Part)`
 `;
 
 const Auth: React.FC = () => {
-  const { pathname } = useRouter();
+  const { pathname, location } = useRouter();
 
   return (
-    <Switch>
-      <Route>
-        <Content>
-          <Part>
-            <FormContent toLogin={pathname === Routes.Signup}>
-              <Suspense fallback={<LoadingPage />}>
-                <Switch>
-                  <Route path={Routes.Login}>
-                    <LoginPage />
-                  </Route>
-                  <Route path={Routes.Signup}>
-                    <SignupPage />
-                  </Route>
-                  <Route path={Routes.ResetPassword}>
-                    <ResetPasswordPage />
-                  </Route>
-                  <Route path={Routes.FirebaseAction}>
-                    <ResetPasswordAction />
-                  </Route>
-                  <Redirect to={Routes.Login} />
-                </Switch>
-              </Suspense>
-            </FormContent>
-          </Part>
-          <NewsPart>
-            <News />
-          </NewsPart>
-        </Content>
-      </Route>
-    </Switch>
+    <Content>
+      <Part>
+        <FormContent toLogin={pathname === `${CloudRoutes.Signup}`}>
+          <Suspense fallback={<LoadingPage />}>
+            <Routes>
+              <Route path={CloudRoutes.Login} element={<LoginPage />} />
+              <Route path={CloudRoutes.Signup} element={<SignupPage />} />
+              <Route
+                path={CloudRoutes.ResetPassword}
+                element={<ResetPasswordPage />}
+              />
+              <Route
+                path={CloudRoutes.FirebaseAction}
+                element={<ResetPasswordAction />}
+              />
+              <Route
+                path="*"
+                element={
+                  <Navigate to={CloudRoutes.Login} state={{ from: location }} />
+                }
+              />
+            </Routes>
+          </Suspense>
+        </FormContent>
+      </Part>
+      <NewsPart>
+        <News />
+      </NewsPart>
+    </Content>
   );
 };
 

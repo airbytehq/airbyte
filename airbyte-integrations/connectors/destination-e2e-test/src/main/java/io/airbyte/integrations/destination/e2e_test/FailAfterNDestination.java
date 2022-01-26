@@ -1,6 +1,8 @@
-package io.airbyte.integrations.destination.e2e_test;
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
 
-import static java.lang.Thread.sleep;
+package io.airbyte.integrations.destination.e2e_test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.BaseConnector;
@@ -26,8 +28,8 @@ public class FailAfterNDestination extends BaseConnector implements Destination 
 
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog,
-      final Consumer<AirbyteMessage> outputRecordCollector) {
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
     return new FailAfterNConsumer(config.get("num_messages").asLong(), outputRecordCollector);
   }
 
@@ -41,23 +43,22 @@ public class FailAfterNDestination extends BaseConnector implements Destination 
       this.numMessagesAfterWhichToFail = numMessagesAfterWhichToFail;
       this.outputRecordCollector = outputRecordCollector;
       this.numMessagesSoFar = 0;
+      LOGGER.info("Will fail after {} messages", numMessagesAfterWhichToFail);
     }
 
     @Override
     public void start() {}
 
     @Override
-    public void accept(final AirbyteMessage message) throws Exception {
-      LOGGER.info("received record: {}", message);
+    public void accept(final AirbyteMessage message) {
       numMessagesSoFar += 1;
-      LOGGER.info("received {} messages so far", numMessagesSoFar);
 
       if (numMessagesSoFar > numMessagesAfterWhichToFail) {
         throw new IllegalStateException("Forcing a fail after processing " + numMessagesAfterWhichToFail + " messages.");
       }
 
       if (message.getType() == Type.STATE) {
-        LOGGER.info("emitting state: {}", message);
+        LOGGER.info("Emitting state: {}", message);
         outputRecordCollector.accept(message);
       }
     }
@@ -66,4 +67,5 @@ public class FailAfterNDestination extends BaseConnector implements Destination 
     public void close() {}
 
   }
+
 }

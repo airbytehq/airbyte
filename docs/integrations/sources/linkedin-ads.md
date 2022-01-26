@@ -47,7 +47,7 @@ This Source is capable of syncing the following data as streams:
 
 ### Performance considerations
 
-There are official Rate Limits for LinkedIn Ads API Usage, [more information here](https://docs.microsoft.com/en-us/linkedin/shared/api-guide/concepts/rate-limits?context=linkedin/marketing/context). Rate limited requests will receive a 429 response. In rare cases, LinkedIn may also return a 429 response as part of infrastructure protection. API service will return to normal automatically. In such cases you will receive the next error message:
+There are official Rate Limits for LinkedIn Ads API Usage, [more information here](https://docs.microsoft.com/en-us/linkedin/shared/api-guide/concepts/rate-limits?context=linkedin/marketing/context). Rate limited requests will receive a 429 response. Rate limits specify the maximum number of API calls that can be made in a 24 hour period. These limits reset at midnight UTC every day. In rare cases, LinkedIn may also return a 429 response as part of infrastructure protection. API service will return to normal automatically. In such cases you will receive the next error message:
 
 ```text
 "Caught retryable error '<some_error> or null' after <some_number> tries. Waiting <some_number> seconds then retrying..."
@@ -59,7 +59,7 @@ This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Erro
 "Max try rate limit exceded..."
 ```
 
-After 5 unsuccessful attempts - the connector will stop the sync operation. In such cases check your Rate Limits [on this page](https://www.linkedin.com/developers/apps) &gt; Choose you app &gt; Analytics
+After 5 unsuccessful attempts - the connector will stop the sync operation. In such cases check your Rate Limits [on this page](https://www.linkedin.com/developers/apps) &gt; Choose you app &gt; Analytics. 
 
 ## Getting started
 The API user account should be assigned the following permissions for the API endpoints:
@@ -132,6 +132,8 @@ The source LinkedIn supports the oAuth2 protocol. Everyone can use it directly v
 
 | Version | Date       | Pull Request                                           | Subject                                                                                                           |
 | :------ | :--------- | :----------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
+| 0.1.5   | 2021-12-21 | [8984](https://github.com/airbytehq/airbyte/pull/8984) | Update connector fields title/description                                                                         |
+| 0.1.4   | 2021-12-02 | [8382](https://github.com/airbytehq/airbyte/pull/8382) | Modify log message in rate-limit cases                                                                            |
 | 0.1.3   | 2021-11-11 | [7839](https://github.com/airbytehq/airbyte/pull/7839) | Added oauth support                                                                                               |
 | 0.1.2   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies                                                                                   |
 | 0.1.1   | 2021-10-02 | [6610](https://github.com/airbytehq/airbyte/pull/6610) | Fix for  `Campaigns/targetingCriteria` transformation, coerced  `Creatives/variables/values` to string by default |

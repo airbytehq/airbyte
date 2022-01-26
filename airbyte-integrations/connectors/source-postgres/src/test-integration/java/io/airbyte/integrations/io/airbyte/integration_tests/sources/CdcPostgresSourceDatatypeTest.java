@@ -13,12 +13,14 @@ import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTes
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import java.util.List;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
 public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
+  private static final String SCHEMA_NAME = "test";
   private static final String SLOT_NAME_BASE = "debezium_slot";
   private static final String PUBLICATION = "publication";
   private PostgreSQLContainer<?> container;
@@ -47,6 +49,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
         .put("database", container.getDatabaseName())
+        .put("schemas", List.of(SCHEMA_NAME))
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("replication_method", replicationMethod)
@@ -83,7 +86,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
 
   @Override
   protected String getNameSpace() {
-    return "test";
+    return SCHEMA_NAME;
   }
 
   @Override
@@ -321,8 +324,8 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("numeric")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("'99999'", "'NAN'", null)
-            .addExpectedValues("99999", "NAN", null)
+            .addInsertValues("'99999'", "'NAN'", "10000000000000000000000000000000000000", null)
+            .addExpectedValues("99999", "NAN", "10000000000000000000000000000000000000", null)
             .build());
 
     addDataTypeTestData(
@@ -430,7 +433,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("text")
             .fullSourceDataType("text[]")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaPrimitive.ARRAY)
             .addInsertValues("'{10000, 10000, 10000, 10000}'", "null")
             .addExpectedValues("[\"10000\",\"10000\",\"10000\",\"10000\"]", null)
             .build());
@@ -507,6 +510,23 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
                 "'((0,0),(999999999999999999999999,0))'", "null")
             .addExpectedValues("((3.0,7.0),(15.0,18.0))", "((0.0,0.0),(0.0,0.0))", "((0.0,0.0),(1.0E24,0.0))", null)
             .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("real")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'123'", "'1234567890.1234567'", "null")
+            .addExpectedValues("123.0", "1.23456794E9", null)
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("tsvector")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("to_tsvector('The quick brown fox jumped over the lazy dog.')")
+            .addExpectedValues("'brown':3 'dog':9 'fox':4 'jumped':5 'lazy':8 'over':6 'quick':2 'the':1,7")
+            .build());
+
   }
 
 }

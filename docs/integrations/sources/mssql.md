@@ -293,26 +293,30 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 ## Changelog
 
 | Version | Date | Pull Request | Subject |  |
-| :--- | :--- | :--- | :--- | :--- |
-| 0.3.9 | 2021-11-09 | [7386](https://github.com/airbytehq/airbyte/pull/7386) | Improve support for binary and varbinary data types  |  |
-| 0.3.8 | 2021-10-26 | [7386](https://github.com/airbytehq/airbyte/pull/7386) | Fixed data type (smalldatetime, smallmoney) conversion from mssql source |  |
-| 0.3.7 | 2021-09-30 | [6585](https://github.com/airbytehq/airbyte/pull/6585) | Improved SSH Tunnel key generation steps |  |
-| 0.3.6 | 2021-09-17 | [6318](https://github.com/airbytehq/airbyte/pull/6318) | Added option to connect to DB via SSH |  |
-| 0.3.4 | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |  |
-| 0.3.3 | 2021-07-05 | [4689](https://github.com/airbytehq/airbyte/pull/4689) | Add CDC support |  |
-| 0.3.2 | 2021-06-09 | [3179](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE\_ENTRYPOINT for Kubernetes support |  |
-| 0.3.1 | 2021-06-08 | [3893](https://github.com/airbytehq/airbyte/pull/3893) | Enable SSL connection |  |
-| 0.3.0 | 2021-04-21 | [2990](https://github.com/airbytehq/airbyte/pull/2990) | Support namespaces |  |
-| 0.2.3 | 2021-03-28 | [2600](https://github.com/airbytehq/airbyte/pull/2600) | Add NCHAR and NVCHAR support to DB and cursor type casting |  |
-| 0.2.2 | 2021-03-26 | [2460](https://github.com/airbytehq/airbyte/pull/2460) | Destination supports destination sync mode |  |
-| 0.2.1 | 2021-03-18 | [2488](https://github.com/airbytehq/airbyte/pull/2488) | Sources support primary keys |  |
-| 0.2.0 | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238) | Protocol allows future/unknown properties |  |
-| 0.1.11 | 2021-02-02 | [1887](https://github.com/airbytehq/airbyte/pull/1887) | Migrate AbstractJdbcSource to use iterators | \] |
-| 0.1.10 | 2021-01-25 | [1746](https://github.com/airbytehq/airbyte/pull/1746) | Fix NPE in State Decorator |  |
-| 0.1.9 | 2021-01-19 | [1724](https://github.com/airbytehq/airbyte/pull/1724) | Fix JdbcSource handling of tables with same names in different schemas |  |
-| 0.1.9 | 2021-01-14 | [1655](https://github.com/airbytehq/airbyte/pull/1655) | Fix JdbcSource OOM |  |
-| 0.1.8 | 2021-01-13 | [1588](https://github.com/airbytehq/airbyte/pull/1588) | Handle invalid numeric values in JDBC source |  |
-| 0.1.6 | 2020-12-09 | [1172](https://github.com/airbytehq/airbyte/pull/1172) | Support incremental sync |  |
-| 0.1.5 | 2020-11-30 | [1038](https://github.com/airbytehq/airbyte/pull/1038) | Change JDBC sources to discover more than standard schemas |  |
-| 0.1.4 | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file |  |
+|:--------| :--- | :--- | :--- | :-- |
+| 0.3.13  | 2022-01-07 | [9094](https://github.com/airbytehq/airbyte/pull/9094) | Added support for missed data types |
+| 0.3.12  | 2021-12-30 | [9206](https://github.com/airbytehq/airbyte/pull/9206) | Update connector fields title/description |
+| 0.3.11  | 2021-12-24 | [8958](https://github.com/airbytehq/airbyte/pull/8958) | Add support for JdbcType.ARRAY |
+| 0.3.10  | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key               |  |
+| 0.3.9   | 2021-11-09 | [7386](https://github.com/airbytehq/airbyte/pull/7386) | Improve support for binary and varbinary data types  |  |
+| 0.3.8   | 2021-10-26 | [7386](https://github.com/airbytehq/airbyte/pull/7386) | Fixed data type (smalldatetime, smallmoney) conversion from mssql source |  |
+| 0.3.7   | 2021-09-30 | [6585](https://github.com/airbytehq/airbyte/pull/6585) | Improved SSH Tunnel key generation steps |  |
+| 0.3.6   | 2021-09-17 | [6318](https://github.com/airbytehq/airbyte/pull/6318) | Added option to connect to DB via SSH |  |
+| 0.3.4   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |  |
+| 0.3.3   | 2021-07-05 | [4689](https://github.com/airbytehq/airbyte/pull/4689) | Add CDC support |  |
+| 0.3.2   | 2021-06-09 | [3179](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE\_ENTRYPOINT for Kubernetes support |  |
+| 0.3.1   | 2021-06-08 | [3893](https://github.com/airbytehq/airbyte/pull/3893) | Enable SSL connection |  |
+| 0.3.0   | 2021-04-21 | [2990](https://github.com/airbytehq/airbyte/pull/2990) | Support namespaces |  |
+| 0.2.3   | 2021-03-28 | [2600](https://github.com/airbytehq/airbyte/pull/2600) | Add NCHAR and NVCHAR support to DB and cursor type casting |  |
+| 0.2.2   | 2021-03-26 | [2460](https://github.com/airbytehq/airbyte/pull/2460) | Destination supports destination sync mode |  |
+| 0.2.1   | 2021-03-18 | [2488](https://github.com/airbytehq/airbyte/pull/2488) | Sources support primary keys |  |
+| 0.2.0   | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238) | Protocol allows future/unknown properties |  |
+| 0.1.11  | 2021-02-02 | [1887](https://github.com/airbytehq/airbyte/pull/1887) | Migrate AbstractJdbcSource to use iterators | \] |
+| 0.1.10  | 2021-01-25 | [1746](https://github.com/airbytehq/airbyte/pull/1746) | Fix NPE in State Decorator |  |
+| 0.1.9   | 2021-01-19 | [1724](https://github.com/airbytehq/airbyte/pull/1724) | Fix JdbcSource handling of tables with same names in different schemas |  |
+| 0.1.9   | 2021-01-14 | [1655](https://github.com/airbytehq/airbyte/pull/1655) | Fix JdbcSource OOM |  |
+| 0.1.8   | 2021-01-13 | [1588](https://github.com/airbytehq/airbyte/pull/1588) | Handle invalid numeric values in JDBC source |  |
+| 0.1.6   | 2020-12-09 | [1172](https://github.com/airbytehq/airbyte/pull/1172) | Support incremental sync |  |
+| 0.1.5   | 2020-11-30 | [1038](https://github.com/airbytehq/airbyte/pull/1038) | Change JDBC sources to discover more than standard schemas |  |
+| 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file |  |
 

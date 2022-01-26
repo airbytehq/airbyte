@@ -44,7 +44,7 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 
 ### Setup guide
 
-Please read [How to generate your API token](https://support.rechargepayments.com/hc/en-us/articles/360008829993-ReCharge-API-).
+Please read [How to generate your API token](https://support.rechargepayments.com/hc/en-us/articles/360008829993-ReCharge-API).
 
 ## Changelog
 

@@ -22,6 +22,7 @@ dependencies {
     runtimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
     implementation 'org.junit.platform:junit-platform-launcher:1.7.0'
     implementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
+    implementation 'org.junit.jupiter:junit-jupiter-params:5.8.1'
 }
 
 def getFullPath(String className) {

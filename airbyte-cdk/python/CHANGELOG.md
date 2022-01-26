@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.1.47
+Fix typing errors.
+
+## 0.1.45
+Integrate Sentry for performance and errors tracking.
+
+## 0.1.44
+Log http response status code and its content.
+
+## 0.1.43
+Fix logging of unhandled exceptions: print stacktrace. 
+
+## 0.1.42
+Add base pydantic model for connector config and schemas.
+
+## 0.1.41
+Fix build error
+
+## 0.1.40
+Filter airbyte_secrets values at logger and other logging refactorings.  
+
+## 0.1.39
+Add `__init__.py` to mark the directory `airbyte_cdk/utils` as a package.
+
+## 0.1.38
+Improve URL-creation in CDK. Changed to using `urllib.parse.urljoin()`.
+
+## 0.1.37
+Fix `emitted_at` from `seconds * 1000` to correct milliseconds.
+
 ## 0.1.36
 Fix broken logger in streams: add logger inheritance for streams from `airbyte`.
 

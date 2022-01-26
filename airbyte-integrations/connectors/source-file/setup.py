@@ -14,7 +14,7 @@ MAIN_REQUIREMENTS = [
     "paramiko==2.7.2",
     "s3fs==0.4.2",
     "smart-open[all]==4.1.2",
-    "lxml==4.6.3",
+    "lxml==4.6.5",
     "html5lib==1.1",
     "beautifulsoup4==4.9.3",
     "pyarrow==3.0.0",

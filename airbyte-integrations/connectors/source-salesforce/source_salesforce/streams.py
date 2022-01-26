@@ -21,9 +21,7 @@ from .rate_limiting import default_backoff_handler
 
 
 class SalesforceStream(HttpStream, ABC):
-
     page_size = 2000
-
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, sf_api: Salesforce, pk: str, stream_name: str, schema: dict = None, **kwargs):
@@ -45,13 +43,17 @@ class SalesforceStream(HttpStream, ABC):
     def url_base(self) -> str:
         return self.sf_api.instance_url
 
-    def path(self, **kwargs) -> str:
+    def path(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> str:
+        if next_page_token:
+            """
+            If `next_page_token` is set, subsequent requests use `nextRecordsUrl`.
+            """
+            return next_page_token
         return f"/services/data/{self.sf_api.version}/queryAll"
 
     def next_page_token(self, response: requests.Response) -> str:
         response_data = response.json()
-        if len(response_data["records"]) == self.page_size and self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            return f"WHERE {self.primary_key} >= '{response_data['records'][-1][self.primary_key]}' "
+        return response_data.get("nextRecordsUrl")
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -59,23 +61,17 @@ class SalesforceStream(HttpStream, ABC):
         """
         Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
         """
+        if next_page_token:
+            """
+            If `next_page_token` is set, subsequent requests use `nextRecordsUrl`, and do not include any parameters.
+            """
+            return {}
 
         selected_properties = self.get_json_schema().get("properties", {})
-
-        # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
-        if self.sf_api.api_type == "BULK":
-            selected_properties = {
-                key: value
-                for key, value in selected_properties.items()
-                if value.get("format") != "base64" and "object" not in value["type"]
-            }
-
         query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
-        if next_page_token:
-            query += next_page_token
 
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            query += f"ORDER BY {self.primary_key} ASC LIMIT {self.page_size}"
+            query += f"ORDER BY {self.primary_key} ASC"
 
         return {"q": query}
 
@@ -91,15 +87,24 @@ class SalesforceStream(HttpStream, ABC):
         try:
             yield from super().read_records(**kwargs)
         except exceptions.HTTPError as error:
+            """
+            There are several types of Salesforce sobjects that require additional processing:
+              1. Sobjects for which the user, after setting up the data using Airbyte, restricted access,
+                 and we will receive 403 HTTP errors.
+              2. There are streams that do not allow you to make a sample using Salesforce `query` or `queryAll`.
+                 And since we use a dynamic method of generating streams for Salesforce connector - at the stage of discover,
+                 we cannot filter out these streams, so we catch them at the stage of reading data.
+            """
             error_data = error.response.json()[0]
-            if error.response.status_code == codes.FORBIDDEN and not error_data.get("errorCode", "") == "REQUEST_LIMIT_EXCEEDED":
-                self.logger.error(f"Cannot receive data for stream '{self.name}', error message: '{error_data.get('message')}'")
-            else:
-                raise error
+            if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
+                error_code = error_data.get("errorCode", "")
+                if error_code != "REQUEST_LIMIT_EXCEEDED" or error_code == "INVALID_TYPE_FOR_OPERATION":
+                    self.logger.error(f"Cannot receive data for stream '{self.name}', error message: '{error_data.get('message')}'")
+                    return
+            raise error
 
 
 class BulkSalesforceStream(SalesforceStream):
-
     page_size = 30000
     DEFAULT_WAIT_TIMEOUT_MINS = 10
     MAX_CHECK_INTERVAL_SECONDS = 2.0
@@ -143,17 +148,34 @@ class BulkSalesforceStream(SalesforceStream):
             return job_id
         except exceptions.HTTPError as error:
             if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
+                # A part of streams can't be used by BULK API. Every API version can have a custom list of
+                # these sobjects. Another part of them can be generated dynamically. That's why we can't track
+                # them preliminarily and there is only one way is to except error with necessary messages about
+                # their limitations. Now we know about 3 different reasons of similar errors:
+                # 1) some SaleForce sobjects(streams) is not supported by the BULK API simply (as is).
+                # 2) Access to a sobject(stream) is not available
+                # 3) sobject is not queryable. It means this sobject can't be called directly.
+                #    We can call it as part of response from another sobject only.  E.g.:
+                #        initial query: "Select Id, Subject from ActivityHistory" -> error
+                #        updated query: "Select Name, (Select Subject,ActivityType from ActivityHistories) from Contact"
+                #    The second variant forces customisation for every case (ActivityHistory, ActivityHistories etc).
+                #    And the main problem is these subqueries doesn't support CSV response format.
                 error_data = error.response.json()[0]
-                if error_data.get("message", "") == "Selecting compound data not supported in Bulk Query":
-                    self.logger.error(
-                        f"Cannot receive data for stream '{self.name}' using BULK API, error message: '{error_data.get('message')}'"
-                    )
-                elif error.response.status_code == codes.FORBIDDEN and not error_data.get("errorCode", "") == "REQUEST_LIMIT_EXCEEDED":
-                    self.logger.error(f"Cannot receive data for stream '{self.name}', error message: '{error_data.get('message')}'")
+                error_code = error_data.get("errorCode")
+                error_message = error_data.get("message", "")
+                if error_message == "Selecting compound data not supported in Bulk Query" or (
+                    error_code == "INVALIDENTITY" and "is not supported by the Bulk API" in error_message
+                ):
+                    self.logger.error(f"Cannot receive data for stream '{self.name}' using BULK API, error message: '{error_message}'")
+                elif error.response.status_code == codes.FORBIDDEN and error_code != "REQUEST_LIMIT_EXCEEDED":
+                    self.logger.error(f"Cannot receive data for stream '{self.name}', error message: '{error_message}'")
+                elif error.response.status_code == codes.BAD_REQUEST and error_message.endswith("does not support query"):
+                    self.logger.error(f"The stream '{self.name}' is not queryable, error message: '{error_message}'")
                 else:
                     raise error
             else:
                 raise error
+        return None
 
     def wait_for_job(self, url: str) -> str:
         # using "seconds" argument because self._wait_timeout can be changed by tests
@@ -184,7 +206,7 @@ class BulkSalesforceStream(SalesforceStream):
         self.logger.warning(f"Not wait the {self.name} data for {self._wait_timeout} minutes, data: {job_info}!!")
         return job_status
 
-    def execute_job(self, query: Mapping[str, Any], url: str) -> str:
+    def execute_job(self, query: str, url: str) -> str:
         job_status = "Failed"
         for i in range(0, self.MAX_RETRY_NUMBER):
             job_id = self.create_stream_job(query=query, url=url)
@@ -194,7 +216,7 @@ class BulkSalesforceStream(SalesforceStream):
             job_status = self.wait_for_job(url=job_full_url)
             if job_status not in ["UploadComplete", "InProgress"]:
                 break
-            self.logger.error(f"Waiting error. Try to run this job again {i+1}/{self.MAX_RETRY_NUMBER}...")
+            self.logger.error(f"Waiting error. Try to run this job again {i + 1}/{self.MAX_RETRY_NUMBER}...")
             self.abort_job(url=job_full_url)
             job_status = "Aborted"
 
@@ -203,9 +225,18 @@ class BulkSalesforceStream(SalesforceStream):
             raise Exception(f"Job for {self.name} stream using BULK API was failed.")
         return job_full_url
 
+    def filter_null_bytes(self, s: str):
+        """
+        https://github.com/airbytehq/airbyte/issues/8300
+        """
+        res = s.replace("\x00", "")
+        if len(res) < len(s):
+            self.logger.warning("Filter 'null' bytes from string, size reduced %d -> %d chars", len(s), len(res))
+        return res
+
     def download_data(self, url: str) -> Tuple[int, dict]:
         job_data = self._send_http_request("GET", f"{url}/results")
-        decoded_content = job_data.content.decode("utf-8")
+        decoded_content = self.filter_null_bytes(job_data.content.decode("utf-8"))
         csv_data = csv.reader(decoded_content.splitlines(), delimiter=",")
         for i, row in enumerate(csv_data):
             if i == 0:
@@ -224,6 +255,23 @@ class BulkSalesforceStream(SalesforceStream):
     def next_page_token(self, last_record: dict) -> str:
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             return f"WHERE {self.primary_key} >= '{last_record[self.primary_key]}' "
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        """
+        Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
+        """
+
+        selected_properties = self.get_json_schema().get("properties", {})
+        query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
+        if next_page_token:
+            query += next_page_token
+
+        if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
+            query += f"ORDER BY {self.primary_key} ASC LIMIT {self.page_size}"
+
+        return {"q": query}
 
     def read_records(
         self,
@@ -257,39 +305,39 @@ class BulkSalesforceStream(SalesforceStream):
                 break
 
 
-
 class IncrementalSalesforceStream(SalesforceStream, ABC):
     state_checkpoint_interval = 500
 
-    def __init__(self, replication_key: str, start_date: str, **kwargs):
+    def __init__(self, replication_key: str, start_date: Optional[str], **kwargs):
         super().__init__(**kwargs)
         self.replication_key = replication_key
-        self.start_date = start_date
+        self.start_date = self.format_start_date(start_date)
 
-    def next_page_token(self, response: requests.Response) -> str:
-        response_data = response.json()
-        if len(response_data["records"]) == self.page_size and self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            return response_data["records"][-1][self.cursor_field]
+    @staticmethod
+    def format_start_date(start_date: Optional[str]) -> Optional[str]:
+        """Transform the format `2021-07-25` into the format `2021-07-25T00:00:00Z`"""
+        if start_date:
+            return pendulum.parse(start_date).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
+        if next_page_token:
+            """
+            If `next_page_token` is set, subsequent requests use `nextRecordsUrl`, and do not include any parameters.
+            """
+            return {}
+
         selected_properties = self.get_json_schema().get("properties", {})
 
-        # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
-        if self.sf_api.api_type == "BULK":
-            selected_properties = {
-                key: value
-                for key, value in selected_properties.items()
-                if value.get("format") != "base64" and "object" not in value["type"]
-            }
-
         stream_date = stream_state.get(self.cursor_field)
-        start_date = next_page_token or stream_date or self.start_date
+        start_date = stream_date or self.start_date
 
-        query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} WHERE {self.cursor_field} >= {start_date} "
+        query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
+        if start_date:
+            query += f"WHERE {self.cursor_field} >= {start_date} "
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            query += f"ORDER BY {self.cursor_field} ASC LIMIT {self.page_size}"
+            query += f"ORDER BY {self.cursor_field} ASC"
         return {"q": query}
 
     @property
@@ -311,3 +359,18 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalSalesforc
     def next_page_token(self, last_record: dict) -> str:
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
             return last_record[self.cursor_field]
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        selected_properties = self.get_json_schema().get("properties", {})
+
+        stream_date = stream_state.get(self.cursor_field)
+        start_date = next_page_token or stream_date or self.start_date
+
+        query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
+        if start_date:
+            query += f"WHERE {self.cursor_field} >= {start_date} "
+        if self.name not in UNSUPPORTED_FILTERING_STREAMS:
+            query += f"ORDER BY {self.cursor_field} ASC LIMIT {self.page_size}"
+        return {"q": query}

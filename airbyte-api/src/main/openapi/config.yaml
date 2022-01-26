@@ -182,6 +182,23 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/workspaces/tag_feedback_status_as_done:
+    post:
+      tags:
+        - workspace
+      summary: Update workspace feedback state
+      operationId: updateWorkspaceFeedback
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceGiveFeedback"
+        required: true
+      responses:
+        "204":
+          description: The feedback state has been properly updated
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
   /v1/notifications/try:
     post:
       tags:
@@ -293,6 +310,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SourceDefinitionRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/source_definitions/delete:
+    post:
+      tags:
+        - source_definition
+      summary: Delete a source definition
+      operationId: deleteSourceDefinition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceDefinitionIdRequestBody"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -609,6 +645,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DestinationDefinitionRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destination_definitions/delete:
+    post:
+      tags:
+        - destination_definition
+      summary: Delete a destination definition
+      operationId: deleteDestinationDefinition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationDefinitionIdRequestBody"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -1919,6 +1974,13 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Notification"
+    WorkspaceGiveFeedback:
+      type: object
+      required:
+        - workspaceId
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
     # SLUG
     SlugRequestBody:
       type: object
@@ -2598,7 +2660,9 @@ components:
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
-          $ref: "#/components/schemas/ConnectionSchedule"
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/ConnectionSchedule"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
@@ -3050,6 +3114,37 @@ components:
         recordsSynced:
           type: integer
           format: int64
+        totalStats:
+          $ref: "#/components/schemas/AttemptStats"
+        streamStats:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttemptStreamStats"
+    AttemptStats:
+      type: object
+      properties:
+        recordsEmitted:
+          type: integer
+          format: int64
+        bytesEmitted:
+          type: integer
+          format: int64
+        stateMessagesEmitted:
+          type: integer
+          format: int64
+        recordsCommitted:
+          type: integer
+          format: int64
+    AttemptStreamStats:
+      type: object
+      required:
+        - streamName
+        - stats
+      properties:
+        streamName:
+          type: string
+        stats:
+          $ref: "#/components/schemas/AttemptStats"
     AttemptStatus:
       type: string
       enum:
@@ -3134,9 +3229,9 @@ components:
     HealthCheckRead:
       type: object
       required:
-        - db
+        - available
       properties:
-        db:
+        available:
           type: boolean
     # General
     CheckConnectionRead:

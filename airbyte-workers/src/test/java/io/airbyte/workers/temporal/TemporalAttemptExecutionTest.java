@@ -17,7 +17,7 @@ import io.airbyte.config.Configs;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.Worker;
-import io.temporal.internal.common.CheckedExceptionWrapper;
+import io.temporal.serviceclient.CheckedExceptionWrapper;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

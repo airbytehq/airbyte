@@ -3,5 +3,6 @@
   "name": "Kafka",
   "dockerRepository": "airbyte/destination-kafka",
   "dockerImageTag": "0.1.2",
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/kafka"
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/kafka",
+  "icon": "kafka.svg"
 }

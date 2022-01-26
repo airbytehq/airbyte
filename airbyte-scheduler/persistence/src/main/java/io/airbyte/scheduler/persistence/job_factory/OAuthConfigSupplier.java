@@ -34,6 +34,7 @@ public class OAuthConfigSupplier {
   private static final Logger LOGGER = LoggerFactory.getLogger(OAuthConfigSupplier.class);
 
   public static final String PATH_IN_CONNECTOR_CONFIG = "path_in_connector_config";
+  private static final String PROPERTIES = "properties";
   final private ConfigRepository configRepository;
   private final TrackingClient trackingClient;
 
@@ -99,9 +100,16 @@ public class OAuthConfigSupplier {
     }
     // TODO: if we write a migration to flatten persisted configs in db, we don't need to flatten
     // here see https://github.com/airbytehq/airbyte/issues/7624
-    final JsonNode flatOAuthParameters = MoreOAuthParameters.flattenOAuthConfig(oAuthParameters);
-    final JsonNode outputSpec = spec.getAdvancedAuth().getOauthConfigSpecification().getCompleteOauthServerOutputSpecification();
     boolean result = false;
+    final JsonNode flatOAuthParameters = MoreOAuthParameters.flattenOAuthConfig(oAuthParameters);
+    final JsonNode outputSpecTop = spec.getAdvancedAuth().getOauthConfigSpecification().getCompleteOauthServerOutputSpecification();
+    final JsonNode outputSpec;
+    if (outputSpecTop.has(PROPERTIES)) {
+      outputSpec = outputSpecTop.get(PROPERTIES);
+    } else {
+      LOGGER.error(String.format("In %s's advanced_auth spec, completeOAuthServerOutputSpecification does not declare properties.", connectorName));
+      return false;
+    }
     for (final String key : Jsons.keys(outputSpec)) {
       final JsonNode node = outputSpec.get(key);
       if (node.getNodeType() == OBJECT) {

@@ -9,8 +9,6 @@ import {
 
 import { SyncSchema } from "core/domain/catalog";
 import { CommonRequestError } from "core/request/CommonRequestError";
-import { Source } from "./Source";
-import { Destination } from "./Destination";
 
 import BaseResource from "./BaseResource";
 import {
@@ -19,6 +17,7 @@ import {
   ScheduleProperties,
   Operation,
 } from "core/domain/connection";
+import { Destination, Source } from "core/domain/connector";
 
 export type { Connection, ScheduleProperties };
 

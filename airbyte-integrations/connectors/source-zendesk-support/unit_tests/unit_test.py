@@ -38,7 +38,7 @@ def config():
     [
         # Retry-After > 0
         ("Retry-After", "123", 123),
-        # Retry-Afte < 0
+        # Retry-After < 0
         ("Retry-After", "-123", None),
         # X-Rate-Limit > 0
         ("X-Rate-Limit", "100", 1.2),
@@ -64,7 +64,7 @@ def test_backoff_cases(prepare_stream_args, header_name, header_value, expected)
 
 
 @pytest.mark.parametrize(
-    "status_code,expected_comment_count,expected_expection",
+    "status_code,expected_comment_count,expected_exception",
     [
         # success
         (200, 1, None),
@@ -74,7 +74,7 @@ def test_backoff_cases(prepare_stream_args, header_name, header_value, expected)
         (403, 0, HTTPError),
     ],
 )
-def test_comments_not_found_ticket(prepare_stream_args, status_code, expected_comment_count, expected_expection):
+def test_comments_not_found_ticket(prepare_stream_args, status_code, expected_comment_count, expected_exception):
     """Checks the case when some ticket is removed while sync of comments"""
     fake_id = 12345
     stream = TicketComments(**prepare_stream_args)
@@ -100,8 +100,8 @@ def test_comments_not_found_ticket(prepare_stream_args, status_code, expected_co
                 "id": fake_id,
             },
         )
-        if expected_expection:
-            with pytest.raises(expected_expection):
+        if expected_exception:
+            with pytest.raises(expected_exception):
                 next(comments)
         else:
             assert len(list(comments)) == expected_comment_count

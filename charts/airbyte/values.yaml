@@ -31,7 +31,6 @@ serviceAccount:
 ## If changing the image tags below, you should probably also update this.
 version: ""
 
-
 ## @section Webapp Parameters
 
 webapp:
@@ -44,7 +43,7 @@ webapp:
   image:
     repository: airbyte/webapp
     pullPolicy: IfNotPresent
-    tag: 0.32.2-alpha
+    tag: 0.35.6-alpha
 
   ## @param webapp.podAnnotations [object] Add extra annotations to the webapp pod(s)
   ##
@@ -90,7 +89,6 @@ webapp:
   ## ref: http://kubernetes.io/docs/user-guide/ingress/
   ## @param webapp.ingress.enabled Set to true to enable ingress record generation
   ## @param webapp.ingress.className Specifies ingressClassName for clusters >= 1.18+
-  ## @param webapp.ingress.hosts Ingress Hosts configuration
   ## @param webapp.ingress.annotations [object] Ingress annotations done as key:value pairs
   ## @param webapp.ingress.hosts The list of hostnames to be covered with this ingress record.
   ## @param webapp.ingress.tls [array] Custom ingress TLS configuration
@@ -98,13 +96,14 @@ webapp:
     enabled: false
     className: ""
     annotations: {}
-      # kubernetes.io/ingress.class: nginx
-      # kubernetes.io/tls-acme: "true"
-    hosts:
-    - host: chart-example.local
-      paths:
-      - path: /
-        pathType: ImplementationSpecific
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+    hosts: []
+    # - host: chart-example.local
+    #   paths:
+    #   - path: /
+    #     pathType: ImplementationSpecific
+
     tls: []
     # - secretName: chart-example-tls
     #   hosts:
@@ -141,7 +140,7 @@ scheduler:
   image:
     repository: airbyte/scheduler
     pullPolicy: IfNotPresent
-    tag: 0.32.2-alpha
+    tag: 0.35.6-alpha
 
   ## @param scheduler.podAnnotations [object] Add extra annotations to the scheduler pod
   ##
@@ -189,7 +188,6 @@ scheduler:
   ##   value: "key=sample-value"
   extraEnv: []
 
-
 ## @section Pod Sweeper parameters
 
 podSweeper:
@@ -235,7 +233,6 @@ podSweeper:
   ##
   tolerations: []
 
-
 ## @section Server parameters
 
 server:
@@ -248,7 +245,7 @@ server:
   image:
     repository: airbyte/server
     pullPolicy: IfNotPresent
-    tag: 0.32.2-alpha
+    tag: 0.35.6-alpha
 
   ## @param server.podAnnotations [object] Add extra annotations to the server pod
   ##
@@ -360,7 +357,7 @@ worker:
   image:
     repository: airbyte/worker
     pullPolicy: IfNotPresent
-    tag: 0.32.2-alpha
+    tag: 0.35.6-alpha
 
   ## @param worker.podAnnotations [object] Add extra annotations to the worker pod(s)
   ##
@@ -436,9 +433,20 @@ worker:
   ## Example:
   ##
   ## extraEnv:
-  ## - name: WORKER_POD_TOLERATIONS
+  ## - name: JOB_KUBE_TOLERATIONS
   ##   value: "key=airbyte-server,operator=Equals,value=true,effect=NoSchedule"
   extraEnv: []
+
+## @section Bootloader Parameters
+
+bootloader:
+  ## @param bootloader.image.repository The repository to use for the airbyte bootloader image.
+  ## @param bootloader.image.pullPolicy the pull policy to use for the airbyte bootloader image
+  ## @param bootloader.image.tag The airbyte bootloader image tag. Defaults to the chart's AppVersion
+  image:
+    repository: airbyte/bootloader
+    pullPolicy: IfNotPresent
+    tag: 0.35.6-alpha
 
 ## @section Temporal parameters
 ## TODO: Move to consuming temporal from a dedicated helm chart
@@ -479,7 +487,6 @@ temporal:
   ##   value: "key=sample-value"
   extraEnv: []
 
-
 ## @section Airbyte Database parameters
 
 ## PostgreSQL chart configuration
@@ -498,8 +505,9 @@ postgresql:
   ## This secret is used in case of postgresql.enabled=true and we would like to specify password for newly created postgresql instance
   ##
   existingSecret: ""
-
-
+  commonAnnotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: -1
 ## External PostgreSQL configuration
 ## All of these values are only used when postgresql.enabled is set to false
 ## @param externalDatabase.host Database host
@@ -519,24 +527,47 @@ externalDatabase:
   database: db-airbyte
   port: 5432
 
-## @section Minio parameters
-
-## Minio chart configuration
-## ref: https://github.com/bitnami/charts/blob/master/bitnami/minio/values.yaml
-## @param minio.enabled Switch to enable or disable the Minio helm chart
-## @param minio.accessKey.password Minio Access Key
-## @param minio.secretKey.password Minio Secret Key
-minio:
-  enabled: true
+## @section Logs parameters
+logs:
+  ## @param logs.accessKey.password Logs Access Key
+  ## @param logs.secretKey.password Logs Secret Key
   accessKey:
     password: minio
   secretKey:
     password: minio123
 
-## External Minio configuration
-## All of these values are only used when minio.enabled is set to false
-## @param externalMinio.host Minio Host
-## @param externalMinio.port Minio Port
-externalMinio:
-  host: localhost
-  port: 9000
+  ## @param logs.minio.enabled Switch to enable or disable the Minio helm chart
+  minio:
+    enabled: true
+
+  ## @param logs.externalMinio.enabled Switch to enable or disable an external Minio instance
+  ## @param logs.externalMinio.host External Minio Host
+  ## @param logs.externalMinio.port External Minio Port
+  externalMinio:
+    enabled: false
+    host: localhost
+    port: 9000
+
+  ## @param logs.s3.enabled Switch to enable or disable custom S3 Log location
+  ## @param logs.s3.bucket Bucket name where logs should be stored
+  ## @param logs.s3.bucketRegion Region of the bucket (must be empty if using minio)
+  s3:
+    enabled: false
+    bucket: airbyte-dev-logs
+    bucketRegion: ""
+
+  ## Google Cloud Storage (GCS) Log Location Configuration
+  ## @param logs.gcs.bucket GCS bucket name
+  ## @param logs.gcs.credentials The path the GCS creds are written to
+  gcs:
+    bucket: ""
+    credentials: ""
+
+## @section Minio chart overwrites
+## @param minio.accessKey.password Minio Access Key
+## @param minio.secretKey.password Minio Secret Key
+minio:
+  accessKey:
+    password: minio
+  secretKey:
+    password: minio123

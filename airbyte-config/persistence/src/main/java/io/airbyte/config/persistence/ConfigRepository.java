@@ -5,8 +5,6 @@
 package io.airbyte.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.api.client.util.Preconditions;
-import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.lang.MoreBooleans;
@@ -57,7 +55,6 @@ public class ConfigRepository {
   private final SecretsHydrator secretsHydrator;
   private final Optional<SecretPersistence> longLivedSecretPersistence;
   private final Optional<SecretPersistence> ephemeralSecretPersistence;
-  private Function<String, ConnectorSpecification> specFetcherFn;
 
   public ConfigRepository(final ConfigPersistence persistence,
                           final SecretsHydrator secretsHydrator,
@@ -112,9 +109,21 @@ public class ConfigRepository {
     persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
   }
 
+  public void setFeedback(final UUID workflowId) throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardWorkspace workspace = this.getStandardWorkspace(workflowId, false);
+
+    workspace.setFeedbackDone(true);
+
+    persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
+  }
+
   public StandardSourceDefinition getStandardSourceDefinition(final UUID sourceDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionId.toString(), StandardSourceDefinition.class);
+
+    return persistence.getConfig(
+        ConfigSchema.STANDARD_SOURCE_DEFINITION,
+        sourceDefinitionId.toString(),
+        StandardSourceDefinition.class);
   }
 
   public StandardSourceDefinition getSourceDefinitionFromSource(final UUID sourceId) {
@@ -145,8 +154,16 @@ public class ConfigRepository {
     }
   }
 
-  public List<StandardSourceDefinition> listStandardSourceDefinitions() throws JsonValidationException, IOException {
-    return persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
+  public List<StandardSourceDefinition> listStandardSourceDefinitions(final boolean includeTombstone) throws JsonValidationException, IOException {
+    final List<StandardSourceDefinition> sourceDefinitions = new ArrayList<>();
+    for (final StandardSourceDefinition sourceDefinition : persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION,
+        StandardSourceDefinition.class)) {
+      if (!MoreBooleans.isTruthy(sourceDefinition.getTombstone()) || includeTombstone) {
+        sourceDefinitions.add(sourceDefinition);
+      }
+    }
+
+    return sourceDefinitions;
   }
 
   public void writeStandardSourceDefinition(final StandardSourceDefinition sourceDefinition) throws JsonValidationException, IOException {
@@ -196,8 +213,18 @@ public class ConfigRepository {
     }
   }
 
-  public List<StandardDestinationDefinition> listStandardDestinationDefinitions() throws JsonValidationException, IOException {
-    return persistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class);
+  public List<StandardDestinationDefinition> listStandardDestinationDefinitions(final boolean includeTombstone)
+      throws JsonValidationException, IOException {
+    final List<StandardDestinationDefinition> destinationDefinitions = new ArrayList<>();
+
+    for (final StandardDestinationDefinition destinationDefinition : persistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION,
+        StandardDestinationDefinition.class)) {
+      if (!MoreBooleans.isTruthy(destinationDefinition.getTombstone()) || includeTombstone) {
+        destinationDefinitions.add(destinationDefinition);
+      }
+    }
+
+    return destinationDefinitions;
   }
 
   public void writeStandardDestinationDefinition(final StandardDestinationDefinition destinationDefinition)
@@ -213,6 +240,14 @@ public class ConfigRepository {
       persistence.deleteConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destDefId.toString());
     } catch (final ConfigNotFoundException e) {
       LOGGER.info("Attempted to delete destination definition with id: {}, but it does not exist", destDefId);
+    }
+  }
+
+  public void deleteStandardSyncDefinition(final UUID syncDefId) throws IOException {
+    try {
+      persistence.deleteConfig(ConfigSchema.STANDARD_SYNC, syncDefId.toString());
+    } catch (final ConfigNotFoundException e) {
+      LOGGER.info("Attempted to delete destination definition with id: {}, but it does not exist", syncDefId);
     }
   }
 
@@ -539,7 +574,6 @@ public class ConfigRepository {
 
   public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
     if (longLivedSecretPersistence.isPresent()) {
-      Preconditions.checkNotNull(specFetcherFn);
       final var augmentedMap = new HashMap<>(configs);
 
       // get all source defs so that we can use their specs when storing secrets.
@@ -550,11 +584,7 @@ public class ConfigRepository {
       augmentedMap.put(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefs.stream());
       final Map<UUID, ConnectorSpecification> sourceDefIdToSpec = sourceDefs
           .stream()
-          .collect(Collectors.toMap(StandardSourceDefinition::getSourceDefinitionId, sourceDefinition -> {
-            final String imageName = DockerUtils
-                .getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
-            return specFetcherFn.apply(imageName);
-          }));
+          .collect(Collectors.toMap(StandardSourceDefinition::getSourceDefinitionId, StandardSourceDefinition::getSpec));
 
       // get all destination defs so that we can use their specs when storing secrets.
       @SuppressWarnings("unchecked")
@@ -563,11 +593,7 @@ public class ConfigRepository {
       augmentedMap.put(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefs.stream());
       final Map<UUID, ConnectorSpecification> destinationDefIdToSpec = destinationDefs
           .stream()
-          .collect(Collectors.toMap(StandardDestinationDefinition::getDestinationDefinitionId, destinationDefinition -> {
-            final String imageName = DockerUtils
-                .getTaggedImageName(destinationDefinition.getDockerRepository(), destinationDefinition.getDockerImageTag());
-            return specFetcherFn.apply(imageName);
-          }));
+          .collect(Collectors.toMap(StandardDestinationDefinition::getDestinationDefinitionId, StandardDestinationDefinition::getSpec));
 
       if (augmentedMap.containsKey(ConfigSchema.SOURCE_CONNECTION)) {
         final Stream<?> augmentedValue = augmentedMap.get(ConfigSchema.SOURCE_CONNECTION)
@@ -630,10 +656,6 @@ public class ConfigRepository {
 
   public void loadData(final ConfigPersistence seedPersistence) throws IOException {
     persistence.loadData(seedPersistence);
-  }
-
-  public void setSpecFetcher(final Function<String, ConnectorSpecification> specFetcherFn) {
-    this.specFetcherFn = specFetcherFn;
   }
 
 }

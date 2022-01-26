@@ -13,18 +13,12 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This destination silently receives records.
  */
 public class SilentDestination extends BaseConnector implements Destination {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(LoggingDestination.class);
-  private static final AtomicInteger counter = new AtomicInteger();
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
@@ -52,13 +46,7 @@ public class SilentDestination extends BaseConnector implements Destination {
     @Override
     public void accept(final AirbyteMessage message) {
       if (message.getType() == Type.STATE) {
-        LOGGER.info("emitting state: {}", message);
         outputRecordCollector.accept(message);
-      }
-
-      final var curr = counter.incrementAndGet();
-      if (curr % 1000 == 0) {
-        LOGGER.info("Record count: {}", curr);
       }
     }
 

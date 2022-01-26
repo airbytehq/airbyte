@@ -11,6 +11,7 @@ import static java.util.stream.Collectors.toList;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import com.mysql.cj.MysqlType;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -29,7 +30,6 @@ import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
-import java.sql.JDBCType;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MySqlSource extends AbstractJdbcSource implements Source {
+public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSource.class);
 
@@ -97,58 +97,10 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
     final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(super.getCheckOperations(config));
     if (isCdc(config)) {
-      checkOperations.add(database -> {
-        final List<String> log = database.resultSetQuery(connection -> {
-          final String sql = "show variables where Variable_name = 'log_bin'";
-
-          return connection.createStatement().executeQuery(sql);
-        }, resultSet -> resultSet.getString("Value")).collect(toList());
-
-        if (log.size() != 1) {
-          throw new RuntimeException("Could not query the variable log_bin");
-        }
-
-        final String logBin = log.get(0);
-        if (!logBin.equalsIgnoreCase("ON")) {
-          throw new RuntimeException("The variable log_bin should be set to ON, but it is : " + logBin);
-        }
-      });
-
-      checkOperations.add(database -> {
-        final List<String> format = database.resultSetQuery(connection -> {
-          final String sql = "show variables where Variable_name = 'binlog_format'";
-
-          return connection.createStatement().executeQuery(sql);
-        }, resultSet -> resultSet.getString("Value")).collect(toList());
-
-        if (format.size() != 1) {
-          throw new RuntimeException("Could not query the variable binlog_format");
-        }
-
-        final String binlogFormat = format.get(0);
-        if (!binlogFormat.equalsIgnoreCase("ROW")) {
-          throw new RuntimeException("The variable binlog_format should be set to ROW, but it is : " + binlogFormat);
-        }
-      });
+      checkOperations.addAll(List.of(getCheckOperation("log_bin", "ON"),
+          getCheckOperation("binlog_format", "ROW"),
+          getCheckOperation("binlog_row_image", "FULL")));
     }
-
-    checkOperations.add(database -> {
-      final List<String> image = database.resultSetQuery(connection -> {
-        final String sql = "show variables where Variable_name = 'binlog_row_image'";
-
-        return connection.createStatement().executeQuery(sql);
-      }, resultSet -> resultSet.getString("Value")).collect(toList());
-
-      if (image.size() != 1) {
-        throw new RuntimeException("Could not query the variable binlog_row_image");
-      }
-
-      final String binlogRowImage = image.get(0);
-      if (!binlogRowImage.equalsIgnoreCase("FULL")) {
-        throw new RuntimeException("The variable binlog_row_image should be set to FULL, but it is : " + binlogRowImage);
-      }
-    });
-
     return checkOperations;
   }
 
@@ -179,6 +131,11 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
     // see MySqlJdbcStreamingQueryConfiguration for more context on why useCursorFetch=true is needed.
     jdbcUrl.append("?useCursorFetch=true");
     jdbcUrl.append("&zeroDateTimeBehavior=convertToNull");
+    // ensure the return tinyint(1) is boolean
+    jdbcUrl.append("&tinyInt1isBit=true");
+    // ensure the return year value is a Date; see the rationale
+    // in the setJsonField method in MySqlSourceOperations.java
+    jdbcUrl.append("&yearIsDateType=true");
     if (config.get("jdbc_url_params") != null && !config.get("jdbc_url_params").asText().isEmpty()) {
       jdbcUrl.append("&").append(config.get("jdbc_url_params").asText());
     }
@@ -214,7 +171,7 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
                                                                              final ConfiguredAirbyteCatalog catalog,
-                                                                             final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                                                             final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
@@ -251,6 +208,25 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   public enum ReplicationMethod {
     STANDARD,
     CDC
+  }
+
+  private CheckedConsumer<JdbcDatabase, Exception> getCheckOperation(String name, String value) {
+    return database -> {
+      final List<String> result = database.resultSetQuery(connection -> {
+        final String sql = String.format("show variables where Variable_name = '%s'", name);
+
+        return connection.createStatement().executeQuery(sql);
+      }, resultSet -> resultSet.getString("Value")).collect(toList());
+
+      if (result.size() != 1) {
+        throw new RuntimeException(String.format("Could not query the variable %s", name));
+      }
+
+      final String resultValue = result.get(0);
+      if (!resultValue.equalsIgnoreCase(value)) {
+        throw new RuntimeException(String.format("The variable %s should be set to %s, but it is : %s", name, value, resultValue));
+      }
+    };
   }
 
 }

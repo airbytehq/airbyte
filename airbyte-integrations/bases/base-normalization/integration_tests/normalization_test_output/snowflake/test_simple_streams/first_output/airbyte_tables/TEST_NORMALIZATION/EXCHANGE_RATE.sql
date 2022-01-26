@@ -1,11 +1,12 @@
 
 
-      create or replace transient table "AIRBYTE_DATABASE".TEST_NORMALIZATION."EXCHANGE_RATE"  as
+      create or replace  table "AIRBYTE_DATABASE".TEST_NORMALIZATION."EXCHANGE_RATE"  as
       (select * from(
             
 with __dbt__cte__EXCHANGE_RATE_AB1 as (
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
+-- depends_on: "AIRBYTE_DATABASE".TEST_NORMALIZATION._AIRBYTE_RAW_EXCHANGE_RATE
 select
     to_varchar(get_path(parse_json(_airbyte_data), '"id"')) as ID,
     to_varchar(get_path(parse_json(_airbyte_data), '"currency"')) as CURRENCY,
@@ -25,6 +26,7 @@ where 1 = 1
 ),  __dbt__cte__EXCHANGE_RATE_AB2 as (
 
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+-- depends_on: __dbt__cte__EXCHANGE_RATE_AB1
 select
     cast(ID as 
     bigint
@@ -68,6 +70,7 @@ where 1 = 1
 ),  __dbt__cte__EXCHANGE_RATE_AB3 as (
 
 -- SQL model to build a hash column based on the values of this record
+-- depends_on: __dbt__cte__EXCHANGE_RATE_AB2
 select
     md5(cast(coalesce(cast(ID as 
     varchar
@@ -95,6 +98,7 @@ from __dbt__cte__EXCHANGE_RATE_AB2 tmp
 -- EXCHANGE_RATE
 where 1 = 1
 )-- Final base SQL model
+-- depends_on: __dbt__cte__EXCHANGE_RATE_AB3
 select
     ID,
     CURRENCY,
