@@ -98,7 +98,7 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
     return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
   }
 
- @Override
+  @Override
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
     return database.query(connection -> {
       final PreparedStatement ps = connection.prepareStatement(
