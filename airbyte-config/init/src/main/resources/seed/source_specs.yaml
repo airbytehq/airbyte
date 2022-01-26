@@ -2292,7 +2292,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-v4:0.1.15"
+- dockerImage: "airbyte/source-google-analytics-v4:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-analytics-v4"
     connectionSpecification:
@@ -2319,6 +2319,20 @@
             \ will not be replicated."
           examples:
           - "2020-06-01"
+        window_in_days:
+          type: "integer"
+          title: "Window in days"
+          description: "The amount of days for each data-chunk beginning from start_date.\
+            \ Bigger the value - faster the fetch. (Min=1, as for a Day; Max=364,\
+            \ as for a Year)."
+          examples:
+          - 30
+          - 60
+          - 90
+          - 120
+          - 200
+          - 364
+          default: 1
         custom_reports:
           order: 3
           type: "string"
@@ -2330,6 +2344,7 @@
           order: 0
           type: "object"
           title: "Credentials"
+          description: "Credentials for the service"
           oneOf:
           - title: "Authenticate via Google (Oauth)"
             type: "object"
