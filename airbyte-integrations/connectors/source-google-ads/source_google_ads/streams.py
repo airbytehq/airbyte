@@ -69,7 +69,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
     days_of_data_storage = None
     cursor_field = "segments.date"
     primary_key = None
-    range_days = 15  # date range is set to 15 days, because for conversion_window_days default value is 14. Range less than 15 days will break the integration tests.
+    _range_days = 15  # date range is set to 15 days, because for conversion_window_days default value is 14. Range less than 15 days will break the integration tests.
 
     def __init__(self, start_date: str, conversion_window_days: int, time_zone: [pendulum.timezone, str], end_date: str = None, **kwargs):
         self.conversion_window_days = conversion_window_days
@@ -135,6 +135,14 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         )
         return query
 
+    @property
+    def range_days(self):
+        return self._range_days
+
+    @range_days.setter
+    def range_days(self, value):
+        self._range_days = int(value) if value > 0 else 1
+
 
 class Accounts(GoogleAdsStream):
     """
@@ -197,6 +205,7 @@ class DisplayTopicsPerformanceReport(IncrementalGoogleAdsStream):
 
 
 class ShoppingPerformanceReport(IncrementalGoogleAdsStream):
+    _range_days = 1
     """
     ShoppingPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v8/shopping_performance_view
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance
@@ -228,4 +237,4 @@ class ClickView(IncrementalGoogleAdsStream):
     """
 
     days_of_data_storage = 90
-    range_days = 1
+    _range_days = 1
