@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.databricks;
 
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE;
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE_TIME;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.field;
 
@@ -25,14 +27,21 @@ import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
+import io.airbyte.integrations.standardtest.destination.DateTimeUtils;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,6 +156,42 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
         DatabricksDestination.getDatabricksConnectionString(databricksConfig),
         DatabricksConstants.DATABRICKS_DRIVER_CLASS,
         SQLDialect.DEFAULT);
+  }
+
+
+  @Override
+  public boolean requiresDateTimeConversionForSync() {
+    return true;
+  }
+
+  @Override
+  public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
+    var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(),
+        Spliterator.ORDERED), false).toList();
+    data.removeAll();
+    fields.forEach(field -> {
+      var key = field.getKey();
+      if (dateTimeFieldNames.containsKey(key)) {
+        switch (dateTimeFieldNames.get(key)) {
+          case DATE_TIME -> data.put(key.toLowerCase(), DateTimeUtils.convertToDatabricksFormat(field.getValue().asText()));
+          case DATE -> data.put(key.toLowerCase(), String.format("***\"member0\":%s,\"member1\":null***", DateTimeUtils.convertToDateFormat(field.getValue().asText())));
+        }
+      } else {
+        data.set(key.toLowerCase(), field.getValue());
+      }
+    });
+  }
+
+  @Override
+  protected void assertSameValue(String key,
+      JsonNode expectedValue,
+      JsonNode actualValue) {
+    var format = dateTimeFieldNames.getOrDefault(key, StringUtils.EMPTY);
+    if (DATE_TIME.equals(format) || DATE.equals(format)) {
+      Assertions.assertEquals(expectedValue.asText(), expectedValue.asText());
+    } else {
+      super.assertSameValue(key, expectedValue, actualValue);
+    }
   }
 
 }

@@ -4,6 +4,10 @@
 
 package io.airbyte.integrations.destination.mssql;
 
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE;
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE_TIME;
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.MILLISECONDS_PATTERN;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -16,12 +20,19 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.standardtest.destination.DateTimeUtils;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Assertions;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.containers.Network;
@@ -186,4 +197,38 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
     bastion.stopAndCloseContainers(db);
   }
 
+  @Override
+  public boolean requiresDateTimeConversionForNormalizedSync() {
+    return true;
+  }
+
+  @Override
+  public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
+    var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(),
+        Spliterator.ORDERED), false).toList();
+    data.removeAll();
+    fields.forEach(field -> {
+      var key = field.getKey();
+      if (dateTimeFieldNames.containsKey(key)) {
+        switch (dateTimeFieldNames.get(key)) {
+          case DATE_TIME -> data.put(key.toLowerCase(), DateTimeUtils.convertToMSSQLFormat(field.getValue().asText()));
+          case DATE -> data.put(key.toLowerCase(), DateTimeUtils.convertToDateFormat(field.getValue().asText()));
+        }
+      } else {
+        data.set(key.toLowerCase(), field.getValue());
+      }
+    });
+  }
+
+  @Override
+  protected void assertSameValue(String key,
+      JsonNode expectedValue,
+      JsonNode actualValue) {
+    if (DATE_TIME.equals(dateTimeFieldNames.getOrDefault(key, StringUtils.EMPTY))) {
+      Assertions.assertEquals(MILLISECONDS_PATTERN.matcher(expectedValue.asText()).replaceAll(StringUtils.EMPTY),
+          MILLISECONDS_PATTERN.matcher(actualValue.asText()).replaceAll(StringUtils.EMPTY));
+    } else {
+      super.assertSameValue(key, expectedValue, actualValue);
+    }
+  }
 }

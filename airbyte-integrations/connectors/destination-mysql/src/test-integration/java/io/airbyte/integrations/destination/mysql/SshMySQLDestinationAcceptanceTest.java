@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.mysql;
 
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,11 +18,16 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.standardtest.destination.DateTimeUtils;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.RandomStringUtils;
 
 /**
@@ -160,7 +166,27 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
         });
   }
 
-  protected void assertSameValue(final JsonNode expectedValue, final JsonNode actualValue) {
+  @Override
+  public boolean requiresDateTimeConversionForNormalizedSync() {
+    return true;
+  }
+
+  @Override
+  public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
+    var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(),
+        Spliterator.ORDERED), false).toList();
+    data.removeAll();
+    fields.forEach(field -> {
+      var key = field.getKey();
+      if (DATE.equals(dateTimeFieldNames.get(key))) {
+        data.put(key.toLowerCase(), DateTimeUtils.convertToDateFormat(field.getValue().asText()));
+      } else {
+        data.set(key.toLowerCase(), field.getValue());
+      }
+    });
+  }
+
+  protected void assertSameValue(final String key, final JsonNode expectedValue, final JsonNode actualValue) {
     if (expectedValue.isBoolean()) {
       // Boolean in MySQL are stored as TINYINT (0 or 1) so we force them to boolean values here
       assertEquals(expectedValue.asBoolean(), actualValue.asBoolean());

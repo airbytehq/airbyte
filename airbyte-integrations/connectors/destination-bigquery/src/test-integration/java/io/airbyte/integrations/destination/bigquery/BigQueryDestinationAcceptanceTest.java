@@ -6,6 +6,9 @@ package io.airbyte.integrations.destination.bigquery;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE;
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE_TIME;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
@@ -29,6 +32,7 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.integrations.standardtest.destination.DateTimeUtils;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -39,10 +43,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -288,6 +296,41 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
       return queryJob.waitFor();
     } catch (final Exception e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public boolean requiresDateTimeConversionForNormalizedSync() {
+    return true;
+  }
+
+  @Override
+  public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
+    var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(),
+        Spliterator.ORDERED), false).toList();
+    data.removeAll();
+    fields.forEach(field -> {
+      var key = field.getKey();
+      if (dateTimeFieldNames.containsKey(key)) {
+        switch (dateTimeFieldNames.get(key)) {
+          case DATE_TIME -> data.put(key.toLowerCase(), DateTimeUtils.getEpochMicros(field.getValue().asText()));
+          case DATE -> data.put(key.toLowerCase(), DateTimeUtils.convertToGeneralDateFormat(field.getValue().asText()));
+        }
+      } else {
+        data.set(key.toLowerCase(), field.getValue());
+      }
+    });
+
+  }
+
+  @Override
+  protected void assertSameValue(String key,
+      JsonNode expectedValue,
+      JsonNode actualValue) {
+    if (DATE_TIME.equals(dateTimeFieldNames.getOrDefault(key, StringUtils.EMPTY))) {
+      Assertions.assertEquals(expectedValue.asLong() / 1000000, actualValue.asLong());
+    } else {
+      super.assertSameValue(key, expectedValue, actualValue);
     }
   }
 

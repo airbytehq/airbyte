@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE;
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE_TIME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -20,6 +22,7 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.standardtest.destination.DataArgumentsProvider;
+import io.airbyte.integrations.standardtest.destination.DateTimeUtils;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -31,8 +34,13 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -162,6 +170,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
 
     database = SnowflakeDatabase.getDatabase(config);
     database.execute(createSchemaQuery);
+    TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
   }
 
   @Override
@@ -201,4 +210,26 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     runSyncAndVerifyStateOutput(config, largeNumberRecords, configuredCatalog, false);
   }
 
+  @Override
+  public boolean requiresDateTimeConversionForNormalizedSync() {
+    return true;
+  }
+
+  @Override
+  public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
+    var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(),
+        Spliterator.ORDERED), false).toList();
+    data.removeAll();
+    fields.forEach(field -> {
+      var key = field.getKey();
+      if (dateTimeFieldNames.containsKey(key)) {
+        switch (dateTimeFieldNames.get(key)) {
+          case DATE_TIME -> data.put(key.toLowerCase(), DateTimeUtils.convertToSnowflakeFormat(field.getValue().asText()));
+          case DATE -> data.put(key.toLowerCase(), DateTimeUtils.convertToDateFormatWithZeroTime(field.getValue().asText()));
+        }
+      } else {
+        data.set(key.toLowerCase(), field.getValue());
+      }
+    });
+  }
 }

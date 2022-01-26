@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.destination.postgres;
 
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE;
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE_TIME;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.functional.CheckedFunction;
@@ -15,10 +18,16 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.standardtest.destination.DateTimeUtils;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.testcontainers.containers.PostgreSQLContainer;
 
@@ -117,6 +126,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
+    TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
     final JsonNode config = getConfig();
     return SshTunnel.sshWrap(
         config,
@@ -170,5 +180,29 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
 
     bastion.stopAndCloseContainers(db);
   }
+
+  @Override
+  public boolean requiresDateTimeConversionForNormalizedSync() {
+    return true;
+  }
+
+  @Override
+  public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
+    var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(),
+        Spliterator.ORDERED), false).toList();
+    data.removeAll();
+    fields.forEach(field -> {
+      var key = field.getKey();
+      if (dateTimeFieldNames.containsKey(key)) {
+        switch (dateTimeFieldNames.get(key)) {
+          case DATE_TIME -> data.put(key.toLowerCase(), DateTimeUtils.convertToPostgresFormat(field.getValue().asText()));
+          case DATE -> data.put(key.toLowerCase(), DateTimeUtils.convertToDateFormat(field.getValue().asText()));
+        }
+      } else {
+        data.set(key.toLowerCase(), field.getValue());
+      }
+    });
+  }
+
 
 }
