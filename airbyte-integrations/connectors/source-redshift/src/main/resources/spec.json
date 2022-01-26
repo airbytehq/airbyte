@@ -32,14 +32,14 @@
       },
       "schemas": {
         "title": "Schemas",
-        "description": "The list of schemas to sync from. Specify one or more explicitly or keep empty to process all schemas.Case sensitive.",
+        "description": "The list of schemas to sync from. Specify one or more explicitly or keep empty to process all schemas. Schema names are case sensitive.",
         "type": "array",
         "items": {
           "type": "string"
         },
         "minItems": 0,
         "uniqueItems": true,
-        "examples": "public",
+        "examples": ["public"],
         "order": 4
       },
       "username": {
