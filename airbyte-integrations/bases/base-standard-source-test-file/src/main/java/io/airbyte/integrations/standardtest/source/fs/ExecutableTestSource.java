@@ -95,11 +95,6 @@ public class ExecutableTestSource extends SourceAcceptanceTest {
   }
 
   @Override
-  protected List<String> getRegexTests() throws Exception {
-    return new ArrayList<>();
-  }
-
-  @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     // no-op, for now
   }
