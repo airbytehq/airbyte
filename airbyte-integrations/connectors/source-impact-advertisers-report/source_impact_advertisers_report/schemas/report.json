@@ -1,0 +1,151 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "Platform": {
+      "type": ["null", "string"]
+    },
+    "media_id": {
+      "type": ["null", "string"]
+    },
+    "Media": {
+      "type": ["null", "string"]
+    },
+    "Country": {
+      "type": ["null", "string"]
+    },
+    "State": {
+      "type": ["null", "string"]
+    },
+    "partner_val1": {
+      "type": ["null", "string"]
+    },
+    "partner_val2": {
+      "type": ["null", "string"]
+    },
+    "partner_val3": {
+      "type": ["null", "string"]
+    },
+    "join_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Mediatype": {
+      "type": ["null", "string"]
+    },
+    "Relationship": {
+      "type": ["null", "string"]
+    },
+    "Company_URL": {
+      "type": ["null", "string"]
+    },
+    "RawImpressions": {
+      "type": ["null", "number"]
+    },
+    "Impressions": {
+      "type": ["null", "number"]
+    },
+    "TotalClicks": {
+      "type": ["null", "number"]
+    },
+    "Clicks": {
+      "type": ["null", "number"]
+    },
+    "Actions": {
+      "type": ["null", "number"]
+    },
+    "Revenue": {
+      "type": ["null", "number"]
+    },
+    "ReversedActions": {
+      "type": ["null", "number"]
+    },
+    "ActionsConfirmed": {
+      "type": ["null", "number"]
+    },
+    "ActionsOpen": {
+      "type": ["null", "number"]
+    },
+    "Grossactions": {
+      "type": ["null", "number"]
+    },
+    "ReversedRevenue": {
+      "type": ["null", "number"]
+    },
+    "Grossrevenue": {
+      "type": ["null", "number"]
+    },
+    "ActionCost": {
+      "type": ["null", "number"]
+    },
+    "ReversedActionCost": {
+      "type": ["null", "number"]
+    },
+    "Grossactioncost": {
+      "type": ["null", "number"]
+    },
+    "Margin": {
+      "type": ["null", "number"]
+    },
+    "GoodsCost": {
+      "type": ["null", "number"]
+    },
+    "TotalBusinessCost": {
+      "type": ["null", "number"]
+    },
+    "CPA": {
+      "type": ["null", "number"]
+    },
+    "CTR": {
+      "type": ["null", "number"]
+    },
+    "CR": {
+      "type": ["null", "number"]
+    },
+    "ROAS": {
+      "type": ["null", "number"]
+    },
+    "ROI": {
+      "type": ["null", "number"]
+    },
+    "RR": {
+      "type": ["null", "number"]
+    },
+    "Discount": {
+      "type": ["null", "number"]
+    },
+    "Discount_Rate": {
+      "type": ["null", "number"]
+    },
+    "Calls": {
+      "type": ["null", "number"]
+    },
+    "CPCCost": {
+      "type": ["null", "number"]
+    },
+    "ClientCost": {
+      "type": ["null", "number"]
+    },
+    "ImportedCost": {
+      "type": ["null", "number"]
+    },
+    "OtherCost": {
+      "type": ["null", "number"]
+    },
+    "TotalCost": {
+      "type": ["null", "number"]
+    },
+    "Quantity": {
+      "type": ["null", "number"]
+    },
+    "zzzcpc_quantity": {
+      "type": ["null", "number"]
+    },
+    "AOV": {
+      "type": ["null", "number"]
+    },
+    "CPC": {
+      "type": ["null", "number"]
+    }
+  }
+}
