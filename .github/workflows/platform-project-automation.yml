@@ -12,7 +12,6 @@ env:
   FIELD_STATUS: Status
   STATUS_TODO: Todo
   FIELD_DATE_ADDED: Date Added
-  FIELD_VALUES_TO_SET: '[{\"name\": \"Status\",\"type\": \"single_select\",\"value\": \"${{ env.STATUS_TODO }}\"},{\"name\": \"${{ env.FIELD_DATE_ADDED }}\",\"type\": \"date\",\"value\": \"${{ env.CURRENT_DATE }}\"}]'
 
 jobs:
   add-area-platform-issues-to-platform-project:
@@ -30,4 +29,4 @@ jobs:
           project_id: ${{ env.PROJECT_ID }}
           resource_node_id: ${{ github.event.issue.node_id }}
           operation_mode: custom_field
-          custom_field_values: ${{ env.FIELD_VALUES_TO_SET }}
+          custom_field_values: '[{\"name\": \"Status\",\"type\": \"single_select\",\"value\": \"${{ env.STATUS_TODO }}\"},{\"name\": \"${{ env.FIELD_DATE_ADDED }}\",\"type\": \"date\",\"value\": \"${{ env.CURRENT_DATE }}\"}]'
