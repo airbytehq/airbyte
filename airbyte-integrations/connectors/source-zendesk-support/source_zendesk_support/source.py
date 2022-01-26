@@ -10,27 +10,20 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
-from .streams import (
+from .streams_new import (  # GroupMemberships,; SourceZendeskException,; TicketAudits,; TicketFields,; TicketForms,; TicketMetricEvents,; UserSettingsStream,
     Brands,
     CustomRoles,
-    GroupMemberships,
     Groups,
     Macros,
     Organizations,
     SatisfactionRatings,
     Schedules,
     SlaPolicies,
-    SourceZendeskException,
     Tags,
-    TicketAudits,
     TicketComments,
-    TicketFields,
-    TicketForms,
-    TicketMetricEvents,
     TicketMetrics,
     Tickets,
     Users,
-    UserSettingsStream,
 )
 
 
