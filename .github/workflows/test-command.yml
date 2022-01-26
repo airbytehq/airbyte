@@ -48,6 +48,10 @@ jobs:
           regex_pattern: "^((connectors|bases)/)?[a-zA-Z0-9-_]+$"
           regex_flags: "i" # required to be set for this plugin
           search_string: ${{ github.event.inputs.connector }}
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.event.inputs.repo }}
       - name: ls
         run: |
           pwd && ls -la
