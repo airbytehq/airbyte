@@ -29,7 +29,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * This acceptance test is mostly the same as {@code ContinuousFeedSourceAcceptanceTest}. The only
- * difference is the image name.
+ * difference is the image name. TODO: find a way to share classes from integrationTest.
  */
 public class CloudTestingSourcesAcceptanceTest extends SourceAcceptanceTest {
 
@@ -120,7 +120,7 @@ public class CloudTestingSourcesAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void assertRecordMessages(final List<AirbyteRecordMessage> recordMessages) {
+  protected void assertFullRefreshRecordMessages(final List<AirbyteRecordMessage> recordMessages) {
     int index = 0;
     // the first N messages are from stream 1
     while (index < MAX_MESSAGES) {
