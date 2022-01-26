@@ -13,6 +13,8 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from requests.exceptions import HTTPError
 
+DEFAULT_PAGE_SIZE = 100
+
 
 class GithubStream(HttpStream, ABC):
     url_base = "https://api.github.com/"
@@ -20,14 +22,17 @@ class GithubStream(HttpStream, ABC):
     primary_key = "id"
     use_cache = True
 
-    # GitHub pagination could be from 1 to 100.
-    page_size = 100
+    # Detect streams with high API load
+    large_stream = False
 
     stream_base_params = {}
 
-    def __init__(self, repositories: List[str], **kwargs):
+    def __init__(self, repositories: List[str], page_size_for_large_streams: int, **kwargs):
         super().__init__(**kwargs)
         self.repositories = repositories
+
+        # GitHub pagination could be from 1 to 100.
+        self.page_size = page_size_for_large_streams if self.large_stream else DEFAULT_PAGE_SIZE
 
         MAX_RETRIES = 3
         adapter = requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES)
@@ -52,10 +57,15 @@ class GithubStream(HttpStream, ABC):
     def should_retry(self, response: requests.Response) -> bool:
         # We don't call `super()` here because we have custom error handling and GitHub API sometimes returns strange
         # errors. So in `read_records()` we have custom error handling which don't require to call `super()` here.
-        return response.headers.get("X-RateLimit-Remaining") == "0" or response.status_code in (
+        retry_flag = response.headers.get("X-RateLimit-Remaining") == "0" or response.status_code in (
             requests.codes.SERVER_ERROR,
             requests.codes.BAD_GATEWAY,
         )
+        if retry_flag:
+            self.logger.info(
+                f"Rate limit handling for stream `{self.name}` for the response with {response.status_code} status code with message: {response.text}"
+            )
+        return retry_flag
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
         # This method is called if we run into the rate limit. GitHub limits requests to 5000 per hour and provides
@@ -290,6 +300,9 @@ class Organizations(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/orgs#get-an-organization
     """
 
+    # GitHub pagination could be from 1 to 100.
+    page_size = 100
+
     def __init__(self, organizations: List[str], **kwargs):
         super(GithubStream, self).__init__(**kwargs)
         self.organizations = organizations
@@ -389,7 +402,7 @@ class PullRequests(SemiIncrementalGithubStream):
     API docs: https://docs.github.com/en/rest/reference/pulls#list-pull-requests
     """
 
-    page_size = 50
+    large_stream = True
     first_read_override_key = "first_read_override"
 
     def __init__(self, **kwargs):
@@ -519,7 +532,7 @@ class Comments(IncrementalGithubStream):
     API docs: https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository
     """
 
-    page_size = 30  # `comments` is a large stream so it's better to set smaller page size.
+    large_stream = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/issues/comments"
@@ -632,7 +645,7 @@ class Issues(IncrementalGithubStream):
     API docs: https://docs.github.com/en/rest/reference/issues#list-repository-issues
     """
 
-    page_size = 50  # `issues` is a large stream so it's better to set smaller page size.
+    large_stream = True
 
     stream_base_params = {
         "state": "all",
@@ -646,7 +659,7 @@ class ReviewComments(IncrementalGithubStream):
     API docs: https://docs.github.com/en/rest/reference/pulls#list-review-comments-in-a-repository
     """
 
-    page_size = 30  # `review-comments` is a large stream so it's better to set smaller page size.
+    large_stream = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/pulls/comments"
@@ -764,9 +777,6 @@ class ReactionStream(GithubStream, ABC):
         for stream_slice in super().stream_slices(**kwargs):
             for parent_record in self._parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
                 yield {self.parent_key: parent_record[self.parent_key], "repository": stream_slice["repository"]}
-
-    def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        return {"Accept": "application/vnd.github.squirrel-girl-preview+json"}
 
 
 class CommitCommentReactions(ReactionStream):

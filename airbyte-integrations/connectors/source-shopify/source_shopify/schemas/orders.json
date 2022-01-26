@@ -304,6 +304,9 @@
     "source_url": {
       "type": ["null", "string"]
     },
+    "shop_url": {
+      "type": ["null", "string"]
+    },
     "subtotal_price": {
       "type": ["null", "number"]
     },

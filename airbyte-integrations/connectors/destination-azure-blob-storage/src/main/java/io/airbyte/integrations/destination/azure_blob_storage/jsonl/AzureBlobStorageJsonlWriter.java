@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.azure_blob_storage.jsonl;
 
 import com.azure.storage.blob.specialized.AppendBlobClient;
-import com.azure.storage.blob.specialized.BlobOutputStream;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -38,8 +37,7 @@ public class AzureBlobStorageJsonlWriter extends BaseAzureBlobStorageWriter impl
 
   public AzureBlobStorageJsonlWriter(final AzureBlobStorageDestinationConfig config,
                                      final AppendBlobClient appendBlobClient,
-                                     final ConfiguredAirbyteStream configuredStream,
-                                     final boolean isNewlyCreatedBlob) {
+                                     final ConfiguredAirbyteStream configuredStream) {
     super(config, appendBlobClient, configuredStream);
     // at this moment we already receive appendBlobClient initialized
     this.blobOutputStream = new BufferedOutputStream(appendBlobClient.getBlobOutputStream(), config.getOutputStreamBufferSize());

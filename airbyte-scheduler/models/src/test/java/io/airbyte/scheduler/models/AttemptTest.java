@@ -19,7 +19,7 @@ class AttemptTest {
   }
 
   private static Attempt attemptWithStatus(final AttemptStatus attemptStatus) {
-    return new Attempt(1L, 1L, null, null, attemptStatus, 0L, 0L, null);
+    return new Attempt(1L, 1L, null, null, attemptStatus, null, 0L, 0L, null);
   }
 
 }
