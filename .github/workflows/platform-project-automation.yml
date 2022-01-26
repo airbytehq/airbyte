@@ -31,4 +31,4 @@ jobs:
           project_id: ${{ env.PROJECT_ID }}
           resource_node_id: ${{ github.event.issue.node_id }}
           operation_mode: custom_field
-          custom_field_values: '[{\"name\": \"Status\",\"type\": \"single_select\",\"value\": \"${{ env.STATUS_TODO }}\"},{\"name\": \"${{ steps.set_date.outputs.CURRENT_DATE }}\",\"type\": \"date\",\"value\": \"${{ env.CURRENT_DATE }}\"}]'
+          custom_field_values: '[{\"name\": \"Status\",\"type\": \"single_select\",\"value\": \"${{ env.STATUS_TODO }}\"},{\"name\": \"${{ env.FIELD_DATE_ADDED }}\",\"type\": \"date\",\"value\": \"${{ steps.set_date.outputs.CURRENT_DATE }}\"}]'
