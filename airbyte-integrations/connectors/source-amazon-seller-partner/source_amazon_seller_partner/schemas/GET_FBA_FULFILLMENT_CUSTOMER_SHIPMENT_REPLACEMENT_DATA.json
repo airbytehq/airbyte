@@ -8,7 +8,7 @@
       "title": "Date",
       "description": "DD-MON-YYYY. Date of free replacement shipment",
       "type": ["null", "string"],
-      "format": "date"
+      "format": "date-time"
     },
     "sku": {
       "title": "Merchant SKU",
