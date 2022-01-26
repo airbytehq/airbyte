@@ -2,7 +2,7 @@
   "sourceDefinitionId": "af6d50ee-dddf-4126-a8ee-7faee990774f",
   "name": "PostHog",
   "dockerRepository": "airbyte/source-posthog",
-  "dockerImageTag": "0.1.4",
+  "dockerImageTag": "0.1.6",
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/posthog",
   "icon": "posthog.svg"
 }
