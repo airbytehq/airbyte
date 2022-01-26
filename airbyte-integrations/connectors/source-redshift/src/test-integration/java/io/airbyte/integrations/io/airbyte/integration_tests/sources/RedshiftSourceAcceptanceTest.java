@@ -60,8 +60,7 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
     createTestData(database, schemaName);
 
     // create a schema with data that will not be used for testing, but would be used to check schema
-    // filtering.
-    // This one should not be visible in results
+    // filtering. This one should not be visible in results
     createTestData(database, schemaName + "shouldIgnore");
   }
 
