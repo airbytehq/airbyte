@@ -185,6 +185,9 @@ class SourceGoogleAds(AbstractSource):
                     if e.failure._pb.errors[0].error_code.request_error == 8:
                         # EXPIRED_PAGE_TOKEN = 8
                         # page token has expired, reduce range days twice
+                        if stream_instance.range_days == 1:
+                            """If range days is 1, no need in retry, because it's the minimum date range"""
+                            raise e
                         stream_instance.range_days = stream_instance.range_days // 2
                         logger.info(f"Page token has expired. Date range was reduced to {stream_instance.range_days}")
                         exception = e
