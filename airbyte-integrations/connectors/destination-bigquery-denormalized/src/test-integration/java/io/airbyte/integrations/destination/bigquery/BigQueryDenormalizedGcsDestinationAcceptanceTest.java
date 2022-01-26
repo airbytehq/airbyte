@@ -4,12 +4,22 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE;
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE_TIME;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Map;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.StreamSupport;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Assertions;
 
 public class BigQueryDenormalizedGcsDestinationAcceptanceTest extends BigQueryDenormalizedDestinationAcceptanceTest {
 
@@ -48,6 +58,41 @@ public class BigQueryDenormalizedGcsDestinationAcceptanceTest extends BigQueryDe
         .put(BigQueryConsts.CONFIG_DATASET_LOCATION, datasetLocation)
         .put(BigQueryConsts.LOADING_METHOD, loadingMethod)
         .build());
+  }
+
+
+  @Override
+  public boolean requiresDateTimeConversionForSync() {
+    return true;
+  }
+
+  @Override
+  public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
+    var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(),
+        Spliterator.ORDERED), false).toList();
+    data.removeAll();
+    fields.forEach(field -> {
+      var key = field.getKey();
+      if (dateTimeFieldNames.containsKey(key)) {
+        switch (dateTimeFieldNames.get(key)) {
+          case DATE_TIME -> data.put(key.toLowerCase(), DateTimeUtils.getEpochMicros(field.getValue().asText()));
+          case DATE -> data.put(key.toLowerCase(), DateTimeUtils.convertToDateFormat(field.getValue().asText()));
+        }
+      } else {
+        data.set(key.toLowerCase(), field.getValue());
+      }
+    });
+  }
+
+  @Override
+  protected void assertSameValue(String key,
+      JsonNode expectedValue,
+      JsonNode actualValue) {
+    if (DATE_TIME.equals(dateTimeFieldNames.getOrDefault(key, StringUtils.EMPTY))) {
+      Assertions.assertEquals(expectedValue.asLong() / 1000000, actualValue.asLong());
+    } else {
+      super.assertSameValue(key, expectedValue, actualValue);
+    }
   }
 
 }
