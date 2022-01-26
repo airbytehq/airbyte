@@ -304,7 +304,7 @@ class Tickets(SourceZendeskSupportStream):
 
     # The API compares the start_time with the ticket's generated_timestamp value, not its updated_at value.
     # The generated_timestamp value is updated for all entity updates, including system updates.
-    # If a system update occurs after a event, the unchanged updated_at time will become earlier
+    # If a system update occurs after an event, the unchanged updated_at time will become earlier
     # relative to the updated generated_timestamp time.
     use_cache = True
 
