@@ -20,11 +20,11 @@ SUB_BUILD=OCTAVIA_CLI ./gradlew build #from the root of the repo
 ```
 2. Run the CLI from docker:
 ```bash
-docker run octavia-cli:dev 
+docker run airbyte/octavia-cli:dev 
 ````
 3. Create an `octavia` alias in your `.bashrc` or `.zshrc`: 
 ````bash
-echo 'alias octavia="docker run octavia-cli:dev"'  >> ~/.zshrc
+echo 'alias octavia="docker run airbyte/octavia-cli:dev"'  >> ~/.zshrc
 source ~/.zshrc
 octavia
 ````
@@ -38,7 +38,9 @@ We welcome community contributions!
 
 | Date       | Milestone                           |
 |------------|-------------------------------------|
-| 2022-01-06 | Generate an API Python client from our Open API spec |
+| 2022-01-19 | Implement `octavia list workspace sources`, `octavia list workspace destinations`, `octavia list workspace connections`|
+| 2022-01-17 | Implement `octavia list connectors source` and `octavia list connectors destinations`|
+| 2022-01-17 | Generate an API Python client from our Open API spec |
 | 2021-12-22 | Bootstrapping the project's code base |
 
 # Developing locally
@@ -48,7 +50,7 @@ We welcome community contributions!
 4. Install dev dependencies: `pip install -e .\[dev\]`
 5. Install `pre-commit` hooks: `pre-commit install`
 6. Run the test suite: `pytest --cov=octavia_cli unit_tests`
-7. Iterate; please check the [Contributing](#contributing) for instructions on contributing.
+7. Iterate: please check the [Contributing](#contributing) for instructions on contributing.
 
 # Contributing
 1. Please sign up to [Airbyte's Slack workspace](https://slack.airbyte.io/) and join the `#octavia-cli`. We'll sync up community efforts in this channel.

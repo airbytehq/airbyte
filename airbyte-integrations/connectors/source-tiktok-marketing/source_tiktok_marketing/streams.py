@@ -9,17 +9,20 @@ from datetime import datetime
 from decimal import Decimal
 from enum import Enum
 from functools import total_ordering
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, TypeVar, Union
+from typing import (Any, Dict, Iterable, List, Mapping, MutableMapping,
+                    Optional, Tuple, TypeVar, Union)
 
 import pendulum
-import pydantic
 import requests
+
+import pydantic
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.sources.utils.transform import (TransformConfig,
+                                                 TypeTransformer)
 
 # TikTok Initial release date is September 2016
 DEFAULT_START_DATE = "2016-09-01"
@@ -198,11 +201,7 @@ class ListAdvertiserIdsStream(TiktokStream):
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
 
-        return {
-            "access_token": self._access_token,
-            "secret": self._secret,
-            "app_id": self._app_id,
-        }
+        return {"access_token": self._access_token, "secret": self._secret, "app_id": self._app_id}
 
     def path(self, *args, **kwargs) -> str:
         return "oauth2/advertiser/get/"
@@ -455,10 +454,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
             ReportLevel.ADGROUP: "adgroup_id",
             ReportLevel.AD: "ad_id",
         }
-        spec_time_dimensions = {
-            ReportGranularity.DAY: "stat_time_day",
-            ReportGranularity.HOUR: "stat_time_hour",
-        }
+        spec_time_dimensions = {ReportGranularity.DAY: "stat_time_day", ReportGranularity.HOUR: "stat_time_hour"}
         if self.report_level and self.report_level in spec_id_dimensions:
             result.append(spec_id_dimensions[self.report_level])
 
