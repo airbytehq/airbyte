@@ -20,7 +20,7 @@ jobs:
     steps:
       - name: Set current date env var
         id: set_date
-        run: echo ::set-output name=CURRENT_DATE::$(date +'%D')
+        run: echo ::set-output name=CURRENT_DATE::$(date +'%Y-%m-%dT%H:%M:%S%z')
       
       - name: Add issue to project if labelled with area/platform
         uses: leonsteinhaeuser/project-beta-automations@v1.1.0
