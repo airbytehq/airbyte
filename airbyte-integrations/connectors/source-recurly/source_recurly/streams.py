@@ -235,6 +235,10 @@ class Coupons(BaseStream):
     pass
 
 
+class CreditPayments(BaseStream):
+    pass
+
+
 class ExportDates(BaseStream):
     cursor_field = []  # Disable `incremental` sync for `export_dates` Recurly API call
 

@@ -17,6 +17,9 @@
   "coupons": {
     "updated_at": "2022-07-19T22:21:37Z"
   },
+  "credit_payments": {
+    "updated_at": "2022-07-19T22:21:37Z"
+  },
   "invoices": {
     "updated_at": "2022-07-19T22:21:37Z"
   },
