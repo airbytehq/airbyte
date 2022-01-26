@@ -11,13 +11,7 @@ import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, Type
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import ConnectionTestConfig
-from source_acceptance_test.utils import (
-    ConnectorRunner,
-    JsonSchemaHelper,
-    SecretDict,
-    full_refresh_only_catalog,
-    make_hashable,
-)
+from source_acceptance_test.utils import ConnectorRunner, JsonSchemaHelper, SecretDict, full_refresh_only_catalog, make_hashable
 from source_acceptance_test.utils.json_schema_helper import CatalogField
 
 

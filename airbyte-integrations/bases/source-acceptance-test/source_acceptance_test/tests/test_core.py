@@ -13,30 +13,14 @@ from typing import Any, Dict, List, Mapping, MutableMapping, Set
 import dpath.util
 import jsonschema
 import pytest
-from airbyte_cdk.models import (
-    AirbyteRecordMessage,
-    ConfiguredAirbyteCatalog,
-    ConnectorSpecification,
-    Status,
-    Type,
-)
+from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Status, Type
 from docker.errors import ContainerError
 from jsonschema._utils import flatten
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
-from source_acceptance_test.utils import (
-    ConnectorRunner,
-    SecretDict,
-    filter_output,
-    make_hashable,
-    verify_records_schema,
-)
+from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, make_hashable, verify_records_schema
 from source_acceptance_test.utils.common import find_key_inside_schema
-from source_acceptance_test.utils.json_schema_helper import (
-    JsonSchemaHelper,
-    get_expected_schema_structure,
-    get_object_structure,
-)
+from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
 
 
 @pytest.fixture(name="connector_spec_dict")
