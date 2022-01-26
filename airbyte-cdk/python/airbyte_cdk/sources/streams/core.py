@@ -23,14 +23,14 @@ def package_name_from_class(cls: object) -> str:
 class IncrementalMixin(ABC):
     """Mixing to make stream incremental.
 
-        class IncrementalStream(Stream, IncrementalMixin):
-            @property
-            def state(self):
-                return self._state
+    class IncrementalStream(Stream, IncrementalMixin):
+        @property
+        def state(self):
+            return self._state
 
-            @state.setter
-            def state(self, value):
-                self._state[self.cursor_field] = value[self.cursor_field]
+        @state.setter
+        def state(self, value):
+            self._state[self.cursor_field] = value[self.cursor_field]
     """
 
     @property
@@ -171,7 +171,7 @@ class Stream(ABC):
         return None
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        """ This method is going to be deprecated in favor of IncrementalMixin, see IncrementalMixin docs for more info.
+        """This method is going to be deprecated in favor of IncrementalMixin, see IncrementalMixin docs for more info.
         Override to extract state from the latest record. Needed to implement incremental sync.
 
         Inspects the latest record extracted from the data source and the current state object and return an updated state object.
