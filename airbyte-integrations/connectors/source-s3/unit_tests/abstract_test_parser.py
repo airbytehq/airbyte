@@ -28,13 +28,14 @@ def memory_limit(max_memory_in_megabytes: int, print_limit: int = 20) -> Callabl
 
             # get memory usage immediately after function call, we interested in "first_size" value
             first_size, first_peak = tracemalloc.get_traced_memory()
+            # get snapshot immediately just in case we will use it
+            snapshot = tracemalloc.take_snapshot()
 
             # only if we exceeded the quota, build log_messages with traces
             first_size_in_megabytes = first_size / 1024 ** 2
             if first_size_in_megabytes > max_memory_in_megabytes:
                 log_messages: List[str] = []
-                # get snapshot immediately just in case we will use it
-                top_stats = tracemalloc.take_snapshot().statistics("lineno")
+                top_stats = snapshot.statistics("lineno")
                 for index, stat in enumerate(top_stats[:print_limit], 1):
                     frame = stat.traceback[0]
                     filename = os.sep.join(frame.filename.split(os.sep)[-2:])
