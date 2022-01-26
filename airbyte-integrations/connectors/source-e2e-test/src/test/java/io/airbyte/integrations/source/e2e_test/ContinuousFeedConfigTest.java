@@ -16,7 +16,6 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.validation.json.JsonValidationException;
 import java.util.Optional;
-import java.util.Random;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -32,17 +31,16 @@ class ContinuousFeedConfigTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(ContinuousFeedConfigTest.class);
 
   private static final ObjectMapper MAPPER = MoreMappers.initMapper();
-  private static final Random RANDOM = new Random();
 
   @Test
   public void testParseSeed() {
-    final long seed = RANDOM.nextLong();
+    final long seed = 1029L;
     assertEquals(seed, ContinuousFeedConfig.parseSeed(Jsons.deserialize(String.format("{ \"seed\": %d }", seed))));
   }
 
   @Test
   public void testParseMaxMessages() {
-    final long maxMessages = RANDOM.nextLong();
+    final long maxMessages = 68373L;
     assertEquals(maxMessages, ContinuousFeedConfig.parseMaxMessages(Jsons.deserialize(String.format("{ \"max_messages\": %d }", maxMessages))));
   }
 
@@ -62,12 +60,10 @@ class ContinuousFeedConfigTest {
           Jsons.deserialize(MoreResources.readResource("parse_mock_catalog_test_cases.json"));
       return MoreIterators.toList(testCases.elements()).stream().map(testCase -> {
         final JsonNode sourceConfig = MAPPER.createObjectNode().set("mock_catalog", testCase.get("mockCatalog"));
-        final boolean invalidSchema = testCase.has("invalidSchema") && testCase.get("invalidSchema").asBoolean();
-        final AirbyteCatalog expectedCatalog = invalidSchema ? null : Jsons.object(testCase.get("expectedCatalog"), AirbyteCatalog.class);
+        final AirbyteCatalog expectedCatalog = Jsons.object(testCase.get("expectedCatalog"), AirbyteCatalog.class);
         return Arguments.of(
             testCase.get("testCase").asText(),
             sourceConfig,
-            invalidSchema,
             expectedCatalog);
       });
     }
@@ -78,10 +74,9 @@ class ContinuousFeedConfigTest {
   @ArgumentsSource(ContinuousFeedConfigTestCaseProvider.class)
   public void testParseMockCatalog(final String testCaseName,
                                    final JsonNode mockConfig,
-                                   final boolean invalidSchema,
                                    final AirbyteCatalog expectedCatalog)
       throws Exception {
-    if (invalidSchema) {
+    if (expectedCatalog == null) {
       assertThrows(JsonValidationException.class, () -> ContinuousFeedConfig.parseMockCatalog(mockConfig));
     } else {
       final AirbyteCatalog actualCatalog = ContinuousFeedConfig.parseMockCatalog(mockConfig);

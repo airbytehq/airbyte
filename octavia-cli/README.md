@@ -38,6 +38,7 @@ We welcome community contributions!
 
 | Date       | Milestone                           |
 |------------|-------------------------------------|
+| 2022-01-19 | Implement `octavia list workspace sources`, `octavia list workspace destinations`, `octavia list workspace connections`|
 | 2022-01-17 | Implement `octavia list connectors source` and `octavia list connectors destinations`|
 | 2022-01-17 | Generate an API Python client from our Open API spec |
 | 2021-12-22 | Bootstrapping the project's code base |
