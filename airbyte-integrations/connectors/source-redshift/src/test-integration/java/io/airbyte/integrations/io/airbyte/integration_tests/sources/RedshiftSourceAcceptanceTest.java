@@ -56,6 +56,17 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
 
     config = config.set("schemas", Jsons.jsonNode(List.of(schemaName)));
 
+    // create a test data
+    createTestData(database, schemaName);
+
+    // create a schema with data that will not be used for testing, but would be used to check schema
+    // filtering.
+    // This one should not be visible in results
+    createTestData(database, schemaName + "shouldIgnore");
+  }
+
+  private void createTestData(final JdbcDatabase database, final String schemaName)
+      throws SQLException {
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
     database.execute(connection -> {
       connection.createStatement().execute(createSchemaQuery);
@@ -64,12 +75,15 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
     streamName = "customer";
     final String fqTableName = JdbcUtils.getFullyQualifiedTableName(schemaName, streamName);
     final String createTestTable =
-        String.format("CREATE TABLE IF NOT EXISTS %s (c_custkey INTEGER, c_name VARCHAR(16), c_nation VARCHAR(16));\n", fqTableName);
+        String.format(
+            "CREATE TABLE IF NOT EXISTS %s (c_custkey INTEGER, c_name VARCHAR(16), c_nation VARCHAR(16));\n",
+            fqTableName);
     database.execute(connection -> {
       connection.createStatement().execute(createTestTable);
     });
 
-    final String insertTestData = String.format("insert into %s values (1, 'Chris', 'France');\n", fqTableName);
+    final String insertTestData = String.format("insert into %s values (1, 'Chris', 'France');\n",
+        fqTableName);
     database.execute(connection -> {
       connection.createStatement().execute(insertTestData);
     });
