@@ -25,6 +25,7 @@ from source_hubspot.api import (
     OwnerStream,
     PropertyHistoryStream,
     SubscriptionChangeStream,
+    TicketPipelineStream,
     WorkflowStream,
 )
 
@@ -51,7 +52,7 @@ class Client(BaseClient):
             "deals": DealStream(associations=["contacts"], **common_params),
             "email_events": EmailEventStream(**common_params),
             "engagements": EngagementStream(**common_params),
-            "form_submissions": FormSubmissionStream(entity="form_submissions", **common_params),
+            "feedback_submissions": CRMObjectIncrementalStream(entity="feedback_submissions", associations=["contacts"], **common_params),
             "forms": FormStream(**common_params),
             "form_submissions": FormSubmissionStream(**common_params),
             "line_items": CRMObjectIncrementalStream(entity="line_item", **common_params),
@@ -61,6 +62,7 @@ class Client(BaseClient):
             "property_history": PropertyHistoryStream(**common_params),
             "subscription_changes": SubscriptionChangeStream(**common_params),
             "tickets": CRMObjectIncrementalStream(entity="ticket", **common_params),
+            "ticket_pipelines": TicketPipelineStream(**common_params),
             "workflows": WorkflowStream(**common_params),
         }
 

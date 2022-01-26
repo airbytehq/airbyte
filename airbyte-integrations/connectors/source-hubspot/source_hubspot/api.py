@@ -37,7 +37,7 @@ VALID_JSON_SCHEMA_TYPES = {
 KNOWN_CONVERTIBLE_SCHEMA_TYPES = {
     "bool": ("boolean", None),
     "enumeration": ("string", None),
-    "date": ("string", "date-time"),
+    "date": ("string", "date"),
     "date-time": ("string", "date-time"),
     "datetime": ("string", "date-time"),
     "json": ("string", None),
@@ -781,10 +781,10 @@ class DealPipelineStream(Stream):
 class TicketPipelineStream(Stream):
     """Ticket pipelines, API v1
     This endpoint requires the tickets scope.
-    Docs: https://legacydocs.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type
+    Docs: https://developers.hubspot.com/docs/api/crm/pipelines
     """
 
-    url = "/crm-pipelines/v1/pipelines/tickets"
+    url = "/crm/v3/pipelines/tickets"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
 
@@ -918,12 +918,14 @@ class OwnerStream(Stream):
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
 
+
 class PropertyHistoryStream(IncrementalStream):
     """Contacts Endpoint, API v1
     Is used to get all Contacts and the history of their respective
     Properties. Whenever a property is changed it is added here.
     Docs: https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts
     """
+
     more_key = "has-more"
     url = "/contacts/v1/lists/recently_updated/contacts/recent"
     updated_at_field = "timestamp"
@@ -934,7 +936,7 @@ class PropertyHistoryStream(IncrementalStream):
     limit = 100
 
     def list(self, fields) -> Iterable:
-        properties = self._api.get(f"/properties/v2/contact/properties")
+        properties = self._api.get("/properties/v2/contact/properties")
         properties_list = [single_property["name"] for single_property in properties]
         params = {"propertyMode": "value_and_history", "property": properties_list}
         yield from self.read(partial(self._api.get, url=self.url), params)

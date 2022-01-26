@@ -139,7 +139,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     return result.get(0).getConfig();
   }
 
-  private SourceConnection getSourceConnection(String configId) throws IOException, ConfigNotFoundException {
+  private SourceConnection getSourceConnection(final String configId) throws IOException, ConfigNotFoundException {
     final List<ConfigWithMetadata<SourceConnection>> result = listSourceConnectionWithMetadata(Optional.of(UUID.fromString(configId)));
     validate(configId, result, ConfigSchema.SOURCE_CONNECTION);
     return result.get(0).getConfig();
@@ -188,7 +188,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .fetch());
 
     final List<UUID> ids = new ArrayList<>();
-    for (Record record : result) {
+    for (final Record record : result) {
       ids.add(record.get(CONNECTION_OPERATION.OPERATION_ID));
     }
 
@@ -204,11 +204,48 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     }
   }
 
+  private <T> ConfigWithMetadata<T> validateAndReturn(final String configId,
+                                                      final List<ConfigWithMetadata<T>> result,
+                                                      final AirbyteConfig airbyteConfig)
+      throws ConfigNotFoundException {
+    validate(configId, result, airbyteConfig);
+    return result.get(0);
+  }
+
   @Override
   public <T> List<T> listConfigs(final AirbyteConfig configType, final Class<T> clazz) throws JsonValidationException, IOException {
     final List<T> config = new ArrayList<>();
     listConfigsWithMetadata(configType, clazz).forEach(c -> config.add(c.getConfig()));
     return config;
+  }
+
+  @Override
+  public <T> ConfigWithMetadata<T> getConfigWithMetadata(final AirbyteConfig configType, final String configId, final Class<T> clazz)
+      throws ConfigNotFoundException, JsonValidationException, IOException {
+    final Optional<UUID> configIdOpt = Optional.of(UUID.fromString(configId));
+    if (configType == ConfigSchema.STANDARD_WORKSPACE) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listStandardWorkspaceWithMetadata(configIdOpt), configType);
+    } else if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listStandardSourceDefinitionWithMetadata(configIdOpt), configType);
+    } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listStandardDestinationDefinitionWithMetadata(configIdOpt), configType);
+    } else if (configType == ConfigSchema.SOURCE_CONNECTION) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listSourceConnectionWithMetadata(configIdOpt), configType);
+    } else if (configType == ConfigSchema.DESTINATION_CONNECTION) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listDestinationConnectionWithMetadata(configIdOpt), configType);
+    } else if (configType == ConfigSchema.SOURCE_OAUTH_PARAM) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listSourceOauthParamWithMetadata(configIdOpt), configType);
+    } else if (configType == ConfigSchema.DESTINATION_OAUTH_PARAM) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listDestinationOauthParamWithMetadata(configIdOpt), configType);
+    } else if (configType == ConfigSchema.STANDARD_SYNC_OPERATION) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listStandardSyncOperationWithMetadata(configIdOpt), configType);
+    } else if (configType == ConfigSchema.STANDARD_SYNC) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listStandardSyncWithMetadata(configIdOpt), configType);
+    } else if (configType == ConfigSchema.STANDARD_SYNC_STATE) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listStandardSyncStateWithMetadata(configIdOpt), configType);
+    } else {
+      throw new IllegalArgumentException("Unknown Config Type " + configType);
+    }
   }
 
   @Override
@@ -258,7 +295,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     for (final Record record : result) {
       final List<Notification> notificationList = new ArrayList<>();
       final List fetchedNotifications = Jsons.deserialize(record.get(WORKSPACE.NOTIFICATIONS).data(), List.class);
-      for (Object notification : fetchedNotifications) {
+      for (final Object notification : fetchedNotifications) {
         notificationList.add(Jsons.convertValue(notification, Notification.class));
       }
       final StandardWorkspace workspace = buildStandardWorkspace(record, notificationList);
