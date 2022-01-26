@@ -40,7 +40,7 @@ class GoogleAnalyticsV4TypesList(HttpStream):
     # Column id completely match for v3 and v4.
     url_base = "https://www.googleapis.com/analytics/v3/metadata/ga/columns"
 
-    def path(self, **kwargs: MutableMapping) -> str:
+    def path(self, **kwargs: Any) -> str:
         return ""
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
