@@ -9,7 +9,8 @@
       "type": ["null", "string"]
     },
     "date_shipped": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "cart_id": {
       "type": ["null", "string"]
