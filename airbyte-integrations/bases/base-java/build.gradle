@@ -8,8 +8,6 @@ dependencies {
     implementation project(':airbyte-commons-cli')
     implementation project(':airbyte-json-validation')
     implementation 'io.sentry:sentry-log4j2:5.6.0'
-// https://mvnrepository.com/artifact/org.junit.vintage/junit-vintage-engine
-    testImplementation 'org.junit.vintage:junit-vintage-engine:5.8.2'
 
     implementation 'commons-cli:commons-cli:1.4'
     implementation 'org.apache.sshd:sshd-mina:2.7.0'
