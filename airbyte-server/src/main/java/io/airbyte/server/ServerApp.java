@@ -32,8 +32,6 @@ import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
 import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
-import io.airbyte.scheduler.models.Job;
-import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobNotifier;
@@ -52,9 +50,7 @@ import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
-import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
-import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.util.Map;
@@ -201,16 +197,6 @@ public class ServerApp implements ServerRunnable {
         configs.getAirbyteVersionOrWarning(),
         featureFlags);
 
-    if (featureFlags.usesNewScheduler()) {
-      final JobNotifier jobNotifier = new JobNotifier(
-          configs.getWebappUrl(),
-          configRepository,
-          new WorkspaceHelper(configRepository, jobPersistence),
-          TrackingClientSingleton.get());
-      cleanupZombies(jobPersistence, temporalClient);
-      migrateExistingConnection(configRepository, temporalWorkerRunFactory);
-    }
-
     LOGGER.info("Starting server...");
 
     return apiFactory.create(
@@ -243,25 +229,6 @@ public class ServerApp implements ServerRunnable {
             .map(standardSync -> standardSync.getConnectionId()).collect(Collectors.toSet());
     temporalWorkerRunFactory.migrateSyncIfNeeded(connectionIds);
     LOGGER.info("Done migrating to the new scheduler...");
-  }
-
-  /**
-   * Copy paste from {@link io.airbyte.scheduler.app.SchedulerApp} which will be removed in a near
-   * future
-   *
-   * @param jobPersistence
-   * @param jobNotifier
-   * @throws IOException
-   */
-  private static void cleanupZombies(final JobPersistence jobPersistence, final TemporalClient temporalClient) throws IOException {
-    final Configs configs = new EnvConfigs();
-    WorkflowClient wfClient =
-        WorkflowClient.newInstance(WorkflowServiceStubs.newInstance(
-            WorkflowServiceStubsOptions.newBuilder().setTarget(configs.getTemporalHost()).build()));
-    for (final Job zombieJob : jobPersistence.listJobsWithStatus(JobStatus.RUNNING)) {
-      wfClient.newUntypedWorkflowStub("sync_" + zombieJob.getId())
-          .terminate("Zombie");
-    }
   }
 
   public static void main(final String[] args) throws Exception {
