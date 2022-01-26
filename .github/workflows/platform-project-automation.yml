@@ -19,7 +19,9 @@ jobs:
     name: Add area/platform issue to Platform Project
     steps:
       - name: Set current date env var
-        run: echo "CURRENT_DATE=$(date +'%D')"
+        id: set_date
+        run: echo ::set-output name=CURRENT_DATE::$(date +'%D')
+      
       - name: Add issue to project if labelled with area/platform
         uses: leonsteinhaeuser/project-beta-automations@v1.1.0
         if: contains(github.event.issue.labels.*.name, 'area/platform')
@@ -29,4 +31,4 @@ jobs:
           project_id: ${{ env.PROJECT_ID }}
           resource_node_id: ${{ github.event.issue.node_id }}
           operation_mode: custom_field
-          custom_field_values: '[{\"name\": \"Status\",\"type\": \"single_select\",\"value\": \"${{ env.STATUS_TODO }}\"},{\"name\": \"${{ env.FIELD_DATE_ADDED }}\",\"type\": \"date\",\"value\": \"${{ env.CURRENT_DATE }}\"}]'
+          custom_field_values: '[{\"name\": \"Status\",\"type\": \"single_select\",\"value\": \"${{ env.STATUS_TODO }}\"},{\"name\": \"${{ steps.set_date.outputs.CURRENT_DATE }}\",\"type\": \"date\",\"value\": \"${{ env.CURRENT_DATE }}\"}]'
