@@ -10,11 +10,7 @@ from source_facebook_marketing import SourceFacebookMarketing
 
 @pytest.fixture(name="config")
 def config_fixture():
-    config = {
-        "account_id": 123,
-        "access_token": "TOKEN",
-        "start_date": "2019-10-10T00:00:00"
-    }
+    config = {"account_id": 123, "access_token": "TOKEN", "start_date": "2019-10-10T00:00:00"}
 
     return config
 
@@ -29,6 +25,7 @@ def api_fixture(mocker):
 @pytest.fixture(name="logger_mock")
 def logger_mock_fixture(mocker):
     return mocker.patch("source_facebook_marketing.source.logger")
+
 
 class TestSourceFacebookMarketing:
     def test_check_connection_ok(self, api, config, logger_mock):

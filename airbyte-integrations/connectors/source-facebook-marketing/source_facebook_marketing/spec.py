@@ -15,9 +15,10 @@ from pydantic import BaseModel, Field
 logger = logging.getLogger("airbyte")
 
 
-ValidFields = Enum('ValidEnums', AdsInsights.Field.__dict__)
-ValidBreakdowns = Enum('ValidBreakdowns', AdsInsights.Breakdowns.__dict__)
-ValidActionBreakdowns = Enum('ValidActionBreakdowns', AdsInsights.ActionBreakdowns.__dict__)
+ValidFields = Enum("ValidEnums", AdsInsights.Field.__dict__)
+ValidBreakdowns = Enum("ValidBreakdowns", AdsInsights.Breakdowns.__dict__)
+ValidActionBreakdowns = Enum("ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)
+
 
 class InsightConfig(BaseModel):
     """Config for custom insights"""
@@ -25,7 +26,9 @@ class InsightConfig(BaseModel):
     name: str = Field(description="The name value of insight")
     fields: Optional[List[ValidFields]] = Field(description="A list of chosen fields for fields parameter", default=[])
     breakdowns: Optional[List[ValidBreakdowns]] = Field(description="A list of chosen breakdowns for breakdowns", default=[])
-    action_breakdowns: Optional[List[ValidActionBreakdowns]] = Field(description="A list of chosen action_breakdowns for action_breakdowns", default=[])
+    action_breakdowns: Optional[List[ValidActionBreakdowns]] = Field(
+        description="A list of chosen action_breakdowns for action_breakdowns", default=[]
+    )
 
 
 class ConnectorConfig(BaseConfig):
@@ -69,7 +72,7 @@ class ConnectorConfig(BaseConfig):
         title="Access Token",
         order=3,
         description=(
-            'The value of the access token generated. '
+            "The value of the access token generated. "
             'See the <a href="https://docs.airbyte.io/integrations/sources/facebook-marketing">docs</a> for more information'
         ),
         airbyte_secret=True,

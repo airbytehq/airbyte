@@ -17,8 +17,8 @@ from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentA
 def adreport_fixture(mocker, api):
     ao = AdReportRun(fbid=123, api=api)
     ao["report_run_id"] = 123
-    mocker.patch.object(AdReportRun, 'api_get', return_value=ao)
-    mocker.patch.object(AdReportRun, 'get_result', return_value={})
+    mocker.patch.object(AdReportRun, "api_get", return_value=ao)
+    mocker.patch.object(AdReportRun, "get_result", return_value={})
     return ao
 
 
@@ -55,7 +55,6 @@ def grouped_jobs_fixture(mocker):
 @pytest.fixture(name="parent_job")
 def parent_job_fixture(api, grouped_jobs):
     return ParentAsyncJob(api=api, jobs=grouped_jobs)
-
 
 
 @pytest.fixture(name="started_job")
@@ -157,8 +156,16 @@ class TestInsightAsyncJob:
     def test_update_job_with_batch(self, started_job, adreport, mocker):
         response = mocker.Mock()
 
-        response.json.return_value = {'id': '1128003977936306', 'account_id': '212551616838260', 'time_ref': 1642989751, 'time_completed': 1642989754,
-         'async_status': 'Job Completed', 'async_percent_completion': 100, 'date_start': '2021-02-24', 'date_stop': '2021-02-24'}
+        response.json.return_value = {
+            "id": "1128003977936306",
+            "account_id": "212551616838260",
+            "time_ref": 1642989751,
+            "time_completed": 1642989754,
+            "async_status": "Job Completed",
+            "async_percent_completion": 100,
+            "date_start": "2021-02-24",
+            "date_stop": "2021-02-24",
+        }
         response.body.return_value = "Some error"
         batch_mock = mocker.Mock(spec=FacebookAdsApiBatch)
 
@@ -247,6 +254,7 @@ class TestInsightAsyncJob:
         args, kwargs = parent_job_mock.call_args
         assert args == (api,)
         assert len(kwargs["jobs"]) == 3, "number of jobs should match number of campaigns"
+
 
 class TestParentAsyncJob:
     def test_start(self, parent_job, grouped_jobs):
