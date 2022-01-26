@@ -23,8 +23,8 @@
             ]
           }
         ],
-        "samplesReadCounts": [ "499630","499630"],
-        "samplingSpaceSizes": ["15328013","15328013"],
+        "samplesReadCounts": ["499630", "499630"],
+        "samplingSpaceSizes": ["15328013", "15328013"],
         "totals": [
           {
             "values": ["158"]
