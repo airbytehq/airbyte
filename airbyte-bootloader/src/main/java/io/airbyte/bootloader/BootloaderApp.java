@@ -5,6 +5,8 @@
 package io.airbyte.bootloader;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
@@ -19,9 +21,14 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
+import io.airbyte.scheduler.models.Job;
+import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
+import io.temporal.client.WorkflowClient;
+import io.temporal.serviceclient.WorkflowServiceStubs;
+import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -47,10 +54,12 @@ public class BootloaderApp {
 
   private final Configs configs;
   private Runnable postLoadExecution;
+  private FeatureFlags featureFlags;
 
   @VisibleForTesting
-  public BootloaderApp(Configs configs) {
+  public BootloaderApp(Configs configs, FeatureFlags featureFlags) {
     this.configs = configs;
+    this.featureFlags = featureFlags;
   }
 
   /**
@@ -61,9 +70,10 @@ public class BootloaderApp {
    * @param configs
    * @param postLoadExecution
    */
-  public BootloaderApp(Configs configs, Runnable postLoadExecution) {
+  public BootloaderApp(Configs configs, Runnable postLoadExecution, FeatureFlags featureFlags) {
     this.configs = configs;
     this.postLoadExecution = postLoadExecution;
+    this.featureFlags = featureFlags;
   }
 
   public BootloaderApp() {
@@ -80,6 +90,7 @@ public class BootloaderApp {
         e.printStackTrace();
       }
     };
+    featureFlags = new EnvVariableFeatureFlags();
   }
 
   public void load() throws Exception {
@@ -112,6 +123,12 @@ public class BootloaderApp {
 
       jobPersistence.setVersion(currAirbyteVersion.serialize());
       LOGGER.info("Set version to {}", currAirbyteVersion);
+
+      if (featureFlags.usesNewScheduler()) {
+        LOGGER.info("Start cleaning zombie jobs");
+        cleanupZombies(jobPersistence);
+        LOGGER.info("Cleaning zombie jobs done");
+      }
     }
 
     if (postLoadExecution != null) {
@@ -204,6 +221,18 @@ public class BootloaderApp {
       jobDbMigrator.migrate();
     } else {
       LOGGER.info("Auto database migration is skipped");
+    }
+  }
+
+  private static void cleanupZombies(final JobPersistence jobPersistence) throws IOException {
+    final Configs configs = new EnvConfigs();
+    WorkflowClient wfClient =
+        WorkflowClient.newInstance(WorkflowServiceStubs.newInstance(
+            WorkflowServiceStubsOptions.newBuilder().setTarget(configs.getTemporalHost()).build()));
+    for (final Job zombieJob : jobPersistence.listJobsWithStatus(JobStatus.RUNNING)) {
+      LOGGER.info("Kill zombie job {} for connection {}", zombieJob.getId(), zombieJob.getScope());
+      wfClient.newUntypedWorkflowStub("sync_" + zombieJob.getId())
+          .terminate("Zombie");
     }
   }
 

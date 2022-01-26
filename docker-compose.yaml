@@ -31,7 +31,9 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - DATABASE_USER=${DATABASE_USER}
       - LOG_LEVEL=${LOG_LEVEL}
+      - NEW_SCHEDULER=${NEW_SCHEDULER}
       - RUN_DATABASE_MIGRATION_ON_STARTUP=${RUN_DATABASE_MIGRATION_ON_STARTUP}
+      - TEMPORAL_HOST=${TEMPORAL_HOST}
   db:
     image: airbyte/db:${VERSION}
     logging: *default-logging
