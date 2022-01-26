@@ -16,6 +16,7 @@ This source is capable of syncing the following streams:
 - [Order Report (by order date and by last update)](https://sellercentral.amazon.com/gp/help/help.html?itemID=201648780)
 - [All Listings](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#inventory-reports)
 - [FBA Inventory Reports](https://sellercentral.amazon.com/gp/help/200740930)
+- [FBA Replacements Report](https://sellercentral.amazon.com/help/hub/reference/200453300)
 - [Amazon-Fulfilled Shipments Report](https://sellercentral.amazon.com/gp/help/help.html?itemID=200453120)
 - [Open Listings Report](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#inventory-reports)
 - [Removal Order Detail Report (overview)](https://sellercentral.amazon.com/gp/help/help.html?itemID=200989110)
