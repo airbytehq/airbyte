@@ -144,7 +144,7 @@ class SourceGoogleAds(AbstractSource):
         stream_state = connector_state.get(stream_name, {})
         if stream_state:
             logger.info(f"Setting state of {stream_name} stream to {stream_state}")
-
+        exception = None
         for _ in range(4):
             """
             Initial _range_days = 15
@@ -187,5 +187,11 @@ class SourceGoogleAds(AbstractSource):
                         # page token has expired, reduce range days twice
                         stream_instance.range_days = stream_instance.range_days // 2
                         logger.info(f"Page token has expired. Date range was reduced to {stream_instance.range_days}")
+                        exception = e
                         break
                     raise e
+            else:
+                return
+        else:
+            if exception:
+                raise exception
