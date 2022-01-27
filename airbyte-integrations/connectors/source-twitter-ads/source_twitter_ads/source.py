@@ -15,6 +15,7 @@ import requests
 from requests_oauthlib import OAuth1
 import urllib
 import json
+import datetime
 
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
@@ -201,10 +202,11 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
         TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
         should return "customers". Required.
         """
-        # FixMe: request returns a bad request error if (end_time - start_time)> 7 this could lead to problems
+        
         auth = self.auth
-        start_time = self.start_time
-        end_time = self.end_time
+        # we can only query for a timeframe of 7days at time here
+        start_time = str((datetime.date.today() - datetime.timedelta(days=7)).strftime("%Y-%m-%d"))
+        end_time = str(datetime.date.today().strftime("%Y-%m-%d"))
         granularity = self.granularity
         metric_groups = self.metric_groups
         account_id = self.account_id
@@ -221,8 +223,6 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
         # we might need to limit the number of campaign ids to 20 per call...
         campaign_ids = campaign_ids[:20]
 
-        
-        #FixMe: campaign_ids and metric_groups are not being passed correctly to request header commas are being replaced by %
         
         campaign_ids = ','.join(campaign_ids)
         metric_groups = ','.join(metric_groups)
