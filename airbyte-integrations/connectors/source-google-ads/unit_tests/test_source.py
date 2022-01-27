@@ -375,13 +375,17 @@ class MockGoogleAdsService:
     def search(self, search_request):
         self.count += 1
         if self.count == 1:
+            # For the first attempt (with date range = 15 days) return Error Response
             return MockErrorResponse()
         else:
-            return [{'id': 1}]
+            # the second attempt should succeed, (date range = 7 days)
+            # this payload is dummy, in this case test stream records will be printed with None values in all fields.
+            return [{'id': 1}, {'id': 2}]
 
 
 class MockGoogleAdsServiceVersion2:
     def search(self, search_request):
+        # For all attempts, return Error Response
         return MockErrorResponse()
 
 
@@ -452,6 +456,7 @@ def test_stream(test_config):
 
 @pytest.fixture
 def mock_ads_client(mocker):
+    """Mock google ads library method, so it returns mocked Client"""
     mocker.patch("source_google_ads.google_ads.GoogleAdsClient.load_from_dict", return_value=MockGoogleAdsClient(test_config))
 
 
@@ -466,26 +471,23 @@ def test_page_token_expired_retry_with_less_date_range_should_succeed(mock_ads_c
     source = SourceGoogleAds()
     source.streams = Mock()
     source.streams.return_value = [test_stream]
-
     logger = AirbyteLogger()
 
     assert test_stream.range_days == 15
     result = list(source.read(logger=logger, config=test_config, catalog=configured_catalog))
     assert test_stream.range_days == 7
     records = [item for item in result if item.type == Type.RECORD]
-    assert len(records) == 1
+    assert len(records) == 2
 
 
 def test_page_token_expired_should_fail(mock_ads_client_v2, configured_catalog, test_config, test_stream):
-    """if Page token expired when date range is 1 days, it should fail."""
+    """if Page token expired when date range is 1 day, it should fail."""
     source = SourceGoogleAds()
     source.streams = Mock()
     source.streams.return_value = [test_stream]
-
     logger = AirbyteLogger()
 
     assert test_stream.range_days == 15
     with pytest.raises(GoogleAdsException):
         list(source.read(logger=logger, config=test_config, catalog=configured_catalog))
-
     assert test_stream.range_days == 1
