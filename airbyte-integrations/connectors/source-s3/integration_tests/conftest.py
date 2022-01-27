@@ -3,6 +3,7 @@
 #
 
 import json
+import os
 import tempfile
 import time
 from pathlib import Path
@@ -18,8 +19,9 @@ from netifaces import AF_INET, ifaddresses, interfaces
 from requests.exceptions import ConnectionError  # type: ignore[import]
 
 logger = AirbyteLogger()
-TMP_FOLDER = tempfile.mkdtemp()
-
+TMP_FOLDER = "/tmp/test_minio_source_s3"
+if not os.path.exists(TMP_FOLDER):
+    os.makedirs(TMP_FOLDER)
 
 def get_local_ip() -> str:
     all_interface_ips: List[str] = []
@@ -47,6 +49,7 @@ def minio_credentials() -> Mapping[str, Any]:
 
 @pytest.fixture(scope="session", autouse=True)
 def minio_setup(minio_credentials: Mapping[str, Any]) -> Iterable[None]:
+
     with ZipFile("./integration_tests/minio_data.zip") as archive:
         archive.extractall(TMP_FOLDER)
     client = docker.from_env()

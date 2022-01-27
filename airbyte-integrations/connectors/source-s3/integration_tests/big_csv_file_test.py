@@ -4,6 +4,7 @@
 
 
 import os
+import shutil
 from pathlib import Path
 from typing import Any, Dict
 import pytest
@@ -33,6 +34,7 @@ class TestIntegrationCsvFiles:
         """tests a big csv file (>= 1.0G records)"""
         # generates a big CSV files separately
         big_file_folder = os.path.join(TMP_FOLDER, "minio_data", "test-bucket", "big_files")
+        shutil.rmtree(big_file_folder, ignore_errors=True)
         os.makedirs(big_file_folder)
         filepath = os.path.join(big_file_folder, "file.csv")
 
