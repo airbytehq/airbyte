@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.44
+Fix incorrect name of primary_keys attribute: [#9768](https://github.com/airbytehq/airbyte/pull/9768)
+
 ## 0.1.43
 FullRefresh test can compare records using PKs: [#9768](https://github.com/airbytehq/airbyte/pull/9768)
 
