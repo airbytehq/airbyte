@@ -8,6 +8,7 @@ import pendulum
 from pendulum.tz.timezone import Timezone
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.streams import IncrementalGoogleAdsStream, chunk_date_range
+from .common import MockGoogleAdsClient, MockGoogleAdsService
 
 SAMPLE_SCHEMA = {
     "properties": {
@@ -18,12 +19,6 @@ SAMPLE_SCHEMA = {
 }
 
 
-# Mocking Classes
-class MockGoogleAdsService:
-    def search(self, search_request):
-        return search_request
-
-
 class MockedDateSegment:
     def __init__(self, date: str):
         self._mock_date = date
@@ -32,28 +27,6 @@ class MockedDateSegment:
         if attr == "date":
             return date.fromisoformat(self._mock_date)
         return MockedDateSegment(self._mock_date)
-
-
-class MockSearchRequest:
-    customer_id = "12345"
-    query = None
-    page_size = 100
-    page_token = None
-
-
-class MockGoogleAdsClient:
-    def __init__(self, config):
-        self.config = config
-
-    def get_type(self, type):
-        return MockSearchRequest()
-
-    def get_service(self, service):
-        return MockGoogleAdsService()
-
-    @staticmethod
-    def load_from_dict(config):
-        return MockGoogleAdsClient(config)
 
 
 SAMPLE_CONFIG = {

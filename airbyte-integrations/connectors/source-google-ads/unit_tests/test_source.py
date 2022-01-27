@@ -17,6 +17,7 @@ from source_google_ads.custom_query_stream import CustomQuery
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.source import SourceGoogleAds
 from source_google_ads.streams import AdGroupAdReport, ClickView, chunk_date_range
+from .common import MockGoogleAdsClient as MockGoogleAdsClientBase
 
 
 # Test chunck date range without end date
@@ -388,29 +389,12 @@ class MockGoogleAdsServiceWhichFails:
         return MockErrorResponse()
 
 
-class MockSearchRequest:
-    customer_id = "12345"
-    query = None
-    page_size = 100
-    page_token = None
-
-
-class MockGoogleAdsClient:
-    def __init__(self, config):
-        self.config = config
-
-    def get_type(self, type):
-        return MockSearchRequest()
-
+class MockGoogleAdsClient(MockGoogleAdsClientBase):
     def get_service(self, service):
         return MockGoogleAdsService()
 
-    @staticmethod
-    def load_from_dict(config):
-        return MockGoogleAdsClient(config)
 
-
-class MockGoogleAdsClientWhichFails(MockGoogleAdsClient):
+class MockGoogleAdsClientWhichFails(MockGoogleAdsClientBase):
     def get_service(self, service):
         return MockGoogleAdsServiceWhichFails()
 
