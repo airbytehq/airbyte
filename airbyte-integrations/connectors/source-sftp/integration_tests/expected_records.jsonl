@@ -1,0 +1,4 @@
+{"stream": "sftp", "data": {"header1": "text", "header2": 1, "header3": 0.2, "header4": true, "_ab_file_path": "./files/test.csv", "_ab_file_last_modified": "2022-01-26T10:58:34+00:00"}, "emitted_at": 1626172757000}
+{"stream": "sftp", "data": {"header1": "text", "header2": 3, "header3": 0.0, "header4": false, "_ab_file_path": "./files/test.csv", "_ab_file_last_modified": "2022-01-26T10:58:34+00:00"}, "emitted_at": 1626172757000}
+{"stream": "sftp", "data": {"header1": "text", "header2": 5, "header3": 2.2, "header4": true, "_ab_file_path": "./files/test new.csv", "_ab_file_last_modified": "2022-01-28T04:40:45+00:00"}, "emitted_at": 1626172757000}
+{"stream": "sftp", "data": {"header1": "text", "header2": 6, "header3": 10.0, "header4": false, "_ab_file_path": "./files/test new.csv", "_ab_file_last_modified": "2022-01-28T04:40:45+00:00"}, "emitted_at": 1626172757000}

@@ -1,0 +1,67 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Sftp Spec",
+    "type": "object",
+    "required": ["dataset_name", "user", "password", "host", "start_date"],
+    "additionalProperties": false,
+    "properties": {
+      "dataset_name": {
+        "type": "string",
+        "title": "Dataset Name",
+        "description": "The Name of the final table to replicate this file into (should include letters, numbers dash and underscores only)."
+      },
+      "reader_config": {
+        "type": "string",
+        "title": "Reader Options",
+        "description": "This should be a string in JSON format. It depends on the chosen file format to provide additional options and tune its behavior.",
+        "examples": ["{}", "{'sep': ' '}"]
+      },
+      "pattern": {
+        "type": "string",
+        "title": "pattern",
+        "description": "The name pattern to filter files.",
+        "example": "^.*csv$",
+        "default": "^.*csv$"
+      },
+      "user": {
+        "type": "string",
+        "title": "User",
+        "description": "SFTP user name"
+      },
+      "password": {
+        "type": "string",
+        "title": "Password",
+        "airbyte_secret": true,
+        "description": "SFTP password"
+      },
+      "host": {
+        "type": "string",
+        "title": "Host",
+        "description": "SFTP host"
+      },
+      "port": {
+        "type": "string",
+        "title": "Port",
+        "default": "22",
+        "description": "SFTP port"
+      },
+      "start_date": {
+        "type": "string",
+        "title": "Start date",
+        "description": "The date from which you'd like to replicate files, in the format YYYY-MM-DDT00:00:00",
+        "examples": ["2021-05-14T00:00:00"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$"
+      },
+      "prefix": {
+        "type": "string",
+        "title": "prefix",
+        "default": "",
+        "description": "SFTP file prefix"
+      }
+    }
+  },
+  "supported_destination_sync_modes": ["append", "overwrite", "append_dedup"],
+  "supportsIncremental": true
+}
