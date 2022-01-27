@@ -86,11 +86,6 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
     return Jsons.jsonNode(new HashMap<>());
   }
 
-  @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
-  }
-
   // for each test we create a new schema in the database. run the test in there and then remove it.
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {

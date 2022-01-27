@@ -292,8 +292,9 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |  |
-|:--------| :--- | :--- | :--- | :-- |
+| Version | Date | Pull Request | Subject |
+|:------- | :--------- | :----------------------------------------------------- | :------------------------------------- |
+| 0.3.14  | 2022-01-24 | [9554](https://github.com/airbytehq/airbyte/pull/9554) | Allow handling of java sql date in CDC |
 | 0.3.13  | 2022-01-07 | [9094](https://github.com/airbytehq/airbyte/pull/9094) | Added support for missed data types |
 | 0.3.12  | 2021-12-30 | [9206](https://github.com/airbytehq/airbyte/pull/9206) | Update connector fields title/description |
 | 0.3.11  | 2021-12-24 | [8958](https://github.com/airbytehq/airbyte/pull/8958) | Add support for JdbcType.ARRAY |

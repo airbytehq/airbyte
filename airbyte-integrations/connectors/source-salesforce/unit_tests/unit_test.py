@@ -2,6 +2,8 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import csv
+import io
 from unittest.mock import Mock
 
 import pytest
@@ -377,3 +379,26 @@ def test_pagination_rest(stream_config, stream_api):
 
         records = [record for record in stream.read_records(sync_mode=SyncMode.full_refresh)]
         assert len(records) == 4
+
+
+def test_csv_reader_dialect_unix():
+    stream: BulkSalesforceStream = BulkSalesforceStream(stream_name=None, wait_timeout=None, sf_api=None, pk=None)
+    url = "https://fake-account.salesforce.com/services/data/v52.0/jobs/query/7504W00000bkgnpQAA"
+
+    data = [
+        {"Id": "1", "Name": '"first_name" "last_name"'},
+        {"Id": "2", "Name": "'" + 'first_name"\n' + "'" + 'last_name\n"'},
+        {"Id": "3", "Name": "first_name last_name"},
+    ]
+
+    with io.StringIO("", newline="") as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=["Id", "Name"], dialect="unix")
+        writer.writeheader()
+        for line in data:
+            writer.writerow(line)
+        text = csvfile.getvalue()
+
+    with requests_mock.Mocker() as m:
+        m.register_uri("GET", url + "/results", text=text)
+        result = [dict(i[1]) for i in stream.download_data(url)]
+        assert result == data
