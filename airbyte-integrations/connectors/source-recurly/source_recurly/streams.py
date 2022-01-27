@@ -8,7 +8,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from recurly import Client
-from recurly.errors import MissingFeatureError, NotFoundError
+from recurly.errors import MissingFeatureError, NotFoundError, ValidationError
 
 DEFAULT_PRIMARY_KEY = "id"
 DEFAULT_CURSOR = "updated_at"
@@ -181,7 +181,7 @@ class BaseAccountResourceStream(BaseStream):
         account_params = self.account_params
         params = self.default_params
 
-        self.begin_time = (stream_state and stream_state[self.cursor_field]) or self.begin_time
+        self.begin_time = (stream_state and stream_state.get(self.cursor_field)) or self.begin_time
 
         if self.begin_time:
             account_params.update({BEGIN_TIME_PARAM: self.begin_time})
@@ -338,11 +338,13 @@ class UniqueCoupons(BaseStream):
         if self.begin_time:
             params.update({BEGIN_TIME_PARAM: self.begin_time})
 
-        # Call the Recurly client methods
+        # List all coupons
         coupons = self._client.list_coupons(params=params).items()
 
         for coupon in coupons:
             try:
-                yield self._item_to_dict(self._client.list_unique_coupon_codes(params=params, coupon_id=coupon.id))
-            except NotFoundError:
+                items = self._client.list_unique_coupon_codes(params=params, coupon_id=coupon.id).items()
+                for item in items:
+                    yield self._item_to_dict(item)
+            except (NotFoundError, ValidationError):
                 pass

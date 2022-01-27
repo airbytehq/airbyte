@@ -6,7 +6,7 @@
     "updated_at": "2022-07-19T22:21:37Z"
   },
   "account_notes": {
-    "updated_at": "2022-07-19T22:21:37Z"
+    "created_at": "2022-07-19T22:21:37Z"
   },
   "add_ons": {
     "updated_at": "2022-07-19T22:21:37Z"
@@ -38,7 +38,7 @@
   "subscriptions": {
     "updated_at": "2022-07-19T22:21:37Z"
   },
-  "subscriptions_changes": {
+  "subscription_changes": {
     "updated_at": "2022-07-19T22:21:37Z"
   },
   "transactions": {
