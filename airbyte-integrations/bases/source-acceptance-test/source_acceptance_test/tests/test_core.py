@@ -30,7 +30,7 @@ def connector_spec_dict_fixture(actual_connector_spec):
 
 @pytest.fixture(name="actual_connector_spec")
 def actual_connector_spec_fixture(request: BaseTest, docker_runner):
-    if not request.spec_cache:
+    if not request.instance.spec_cache:
         output = docker_runner.call_spec()
         spec_messages = filter_output(output, Type.SPEC)
         assert len(spec_messages) == 1, "Spec message should be emitted exactly once"
@@ -203,7 +203,7 @@ class TestDiscovery(BaseTest):
     def test_primary_keys_exist_in_schema(self, discovered_catalog: Mapping[str, Any]):
         """Check that all primary keys are present in catalog."""
         for stream_name, stream in discovered_catalog.items():
-            for pk in stream.primary_key:
+            for pk in stream.source_defined_primary_key or []:
                 schema = stream.json_schema
                 pk_path = "/properties/".join(pk)
                 pk_field_location = dpath.util.search(schema["properties"], pk_path)
