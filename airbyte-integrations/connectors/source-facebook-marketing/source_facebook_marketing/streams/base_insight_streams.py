@@ -88,12 +88,6 @@ class AdsInsights(FBMarketingIncrementalStream):
         """Build complex PK based on slices and breakdowns"""
         return ["date_start", "ad_id"] + self.breakdowns
 
-    def _get_campaign_ids(self, params) -> List[str]:
-        campaign_params = copy.deepcopy(params)
-        campaign_params.update(fields=["campaign_id"], level="campaign")
-        result = self._api.account.get_insights(params=campaign_params)
-        return list(set(row["campaign_id"] for row in result))
-
     def read_records(
         self,
         sync_mode: SyncMode,
