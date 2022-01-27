@@ -3,15 +3,14 @@
 #
 
 
-from typing import Any, List, Mapping, Tuple, Union, Iterator, MutableMapping
+from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple, Union
 
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import ConfiguredAirbyteStream, SyncMode, AirbyteMessage
-from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from google.ads.googleads.errors import GoogleAdsException
-
 from pendulum import timezone
 from pendulum.tz.timezone import Timezone
 
@@ -148,8 +147,8 @@ class SourceGoogleAds(AbstractSource):
         for _ in range(4):
             """
             Initial _range_days = 15
-            If `page token has expired` reduce date range twice each time, 
-            so it tries to use the following date ranges: 15, 7, 3, 1
+            If `page token has expired` reduce date range twice each time,
+            so it tries to use the following date ranges: 15, 7, 3, 1 (days)
             """
             slices = stream_instance.stream_slices(
                 cursor_field=configured_stream.cursor_field, sync_mode=SyncMode.incremental, stream_state=stream_state
@@ -189,8 +188,8 @@ class SourceGoogleAds(AbstractSource):
                             raise e
                         stream_instance.range_days = stream_instance.range_days // 2
                         logger.info(f"Page token has expired. Date range was reduced to {stream_instance.range_days}")
-                        break
+                        break  # break from the slices loop, then retry reading with reduced date range
                     raise e
             else:
-                """If exits the internal loop normally return the control"""
+                """If exits the slices loop normally return the control"""
                 return

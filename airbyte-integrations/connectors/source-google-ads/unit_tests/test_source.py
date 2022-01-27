@@ -2,22 +2,21 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import pendulum
-import pytest
 import json
 from unittest.mock import Mock
 
+import pendulum
+import pytest
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import Type
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, Type
 from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v6.errors.types.errors import GoogleAdsFailure, GoogleAdsError, ErrorCode
+from google.ads.googleads.v6.errors.types.errors import ErrorCode, GoogleAdsError, GoogleAdsFailure
 from google.ads.googleads.v6.errors.types.request_error import RequestErrorEnum
 from grpc import RpcError
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from source_google_ads.custom_query_stream import CustomQuery
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.source import SourceGoogleAds
-from source_google_ads.streams import AdGroupAdReport, chunk_date_range, ClickView
+from source_google_ads.streams import AdGroupAdReport, ClickView, chunk_date_range
 
 
 # Test chunck date range without end date
@@ -364,7 +363,7 @@ class MockErrorResponse:
                 errors=[GoogleAdsError(error_code=ErrorCode(request_error=RequestErrorEnum.RequestError.EXPIRED_PAGE_TOKEN))]
             ),
             call=RpcError(),
-            request_id='test'
+            request_id="test",
         )
         raise e
 
@@ -380,10 +379,10 @@ class MockGoogleAdsService:
         else:
             # the second attempt should succeed, (date range = 7 days)
             # this payload is dummy, in this case test stream records will be printed with None values in all fields.
-            return [{'id': 1}, {'id': 2}]
+            return [{"id": 1}, {"id": 2}]
 
 
-class MockGoogleAdsServiceVersion2:
+class MockGoogleAdsServiceWhichFails:
     def search(self, search_request):
         # For all attempts, return Error Response
         return MockErrorResponse()
@@ -411,9 +410,9 @@ class MockGoogleAdsClient:
         return MockGoogleAdsClient(config)
 
 
-class MockGoogleAdsClientVersion2(MockGoogleAdsClient):
+class MockGoogleAdsClientWhichFails(MockGoogleAdsClient):
     def get_service(self, service):
-        return MockGoogleAdsServiceVersion2()
+        return MockGoogleAdsServiceWhichFails()
 
 
 @pytest.fixture(scope="module")
@@ -430,11 +429,11 @@ def test_config():
             "developer_token": "test_token",
             "client_id": "test_client_id",
             "client_secret": "test_client_secret",
-            "refresh_token": "test_refresh_token"
+            "refresh_token": "test_refresh_token",
         },
         "customer_id": "123",
         "start_date": "2021-01-01",
-        "conversion_window_days": 14
+        "conversion_window_days": 14,
     }
     return config
 
@@ -461,8 +460,8 @@ def mock_ads_client(mocker):
 
 
 @pytest.fixture
-def mock_ads_client_v2(mocker):
-    mocker.patch("source_google_ads.google_ads.GoogleAdsClient.load_from_dict", return_value=MockGoogleAdsClientVersion2(test_config))
+def mock_ads_client_which_fails(mocker):
+    mocker.patch("source_google_ads.google_ads.GoogleAdsClient.load_from_dict", return_value=MockGoogleAdsClientWhichFails(test_config))
 
 
 def test_page_token_expired_retry_with_less_date_range_should_succeed(mock_ads_client, configured_catalog, test_config, test_stream):
@@ -480,7 +479,7 @@ def test_page_token_expired_retry_with_less_date_range_should_succeed(mock_ads_c
     assert len(records) == 2
 
 
-def test_page_token_expired_should_fail(mock_ads_client_v2, configured_catalog, test_config, test_stream):
+def test_page_token_expired_should_fail(mock_ads_client_which_fails, configured_catalog, test_config, test_stream):
     """if Page token expired when date range is 1 day, it should fail."""
     source = SourceGoogleAds()
     source.streams = Mock()
