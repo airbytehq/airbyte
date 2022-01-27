@@ -42,7 +42,7 @@ class TestFileStream:
     @memory_limit(512)
     def test_parse_user_input_schema(self, schema_string: str, return_schema: str) -> None:
         if return_schema is not None:
-            assert str(FileStream._parse_user_input_schema(schema_string)) == return_schema
+            assert str(FileStream._parse_user_input_schema(schema_string)) == str(return_schema)
         else:
             with pytest.raises(Exception) as e_info:
                 FileStream._parse_user_input_schema(schema_string)
