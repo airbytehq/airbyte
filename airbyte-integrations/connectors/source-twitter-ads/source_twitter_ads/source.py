@@ -87,14 +87,11 @@ class TwitterAdsStream(HttpStream, ABC):
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
                 If there are no more pages in the result, return None.
         """
-        try:
-            next_page_token = response.json()['next_cursor']
-        except:
-            pass
 
         if self.__class__.__name__ == "AdsAnalyticsMetrics":
             return None
         else:
+            next_page_token = response.json()['next_cursor']
             next_page_token
     
 
@@ -104,7 +101,7 @@ class TwitterAdsStream(HttpStream, ABC):
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
-        
+
         if self.__class__.__name__ == "AdsAnalyticsMetrics":
             return None
         else:
