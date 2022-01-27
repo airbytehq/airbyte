@@ -125,9 +125,4 @@ public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
     return Jsons.jsonNode(new HashMap<>());
   }
 
-  @Override
-  protected List<String> getRegexTests() throws Exception {
-    return Collections.emptyList();
-  }
-
 }
