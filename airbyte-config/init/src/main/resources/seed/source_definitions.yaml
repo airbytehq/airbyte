@@ -151,6 +151,13 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/commercetools
   icon: commercetools.svg
   sourceType: api
+- name: Confluence
+  sourceDefinitionId: cf40a7f8-71f8-45ce-a7fa-fca053e4028c
+  dockerRepository: airbyte/source-confluence
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/confluence
+  icon: confluence.svg
+  sourceType: api
 - name: Delighted
   sourceDefinitionId: cc88c43f-6f53-4e8a-8c4d-b284baaf9635
   dockerRepository: airbyte/source-delighted

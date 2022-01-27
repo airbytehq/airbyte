@@ -63,6 +63,13 @@
   dockerImageTag: 0.1.20
   documentationUrl: https://docs.airbyte.io/integrations/destinations/gcs
   icon: googlecloudstorage.svg
+- name: Google Firestore
+  sourceDefinitionId: 27dc7500-6d1b-40b1-8b07-e2f2aea3c9f4
+  dockerRepository: airbyte/destination-firestore
+  dockerImageTag: 0.1.1
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/firestore
+  icon: firestore.svg
+  sourceType: api
 - name: Google PubSub
   destinationDefinitionId: 356668e2-7e34-47f3-a3b0-67a8a481b692
   dockerRepository: airbyte/destination-pubsub
