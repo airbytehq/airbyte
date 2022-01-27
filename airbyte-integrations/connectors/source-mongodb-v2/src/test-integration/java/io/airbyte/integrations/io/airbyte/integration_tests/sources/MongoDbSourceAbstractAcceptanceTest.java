@@ -72,9 +72,4 @@ public abstract class MongoDbSourceAbstractAcceptanceTest extends SourceAcceptan
     return Jsons.jsonNode(new HashMap<>());
   }
 
-  @Override
-  protected List<String> getRegexTests() throws Exception {
-    return Collections.emptyList();
-  }
-
 }
