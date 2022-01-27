@@ -7,7 +7,6 @@ import useSource from "hooks/services/useSourceHook";
 import SourceDefinitionSpecificationResource from "core/resources/SourceDefinitionSpecification";
 import DeleteBlock from "components/DeleteBlock";
 import { Connection } from "core/resources/Connection";
-import { JobInfo } from "core/resources/Scheduler";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
@@ -30,10 +29,9 @@ const SourceSettings: React.FC<IProps> = ({
   connectionsWithSource,
 }) => {
   const [saved, setSaved] = useState(false);
-  const [errorStatusRequest, setErrorStatusRequest] = useState<{
-    statusMessage: string | React.ReactNode;
-    response: JobInfo;
-  } | null>(null);
+  const [errorStatusRequest, setErrorStatusRequest] = useState<Error | null>(
+    null
+  );
 
   const { updateSource, deleteSource, checkSourceConnection } = useSource();
 
@@ -61,9 +59,7 @@ const SourceSettings: React.FC<IProps> = ({
 
       setSaved(true);
     } catch (e) {
-      const errorStatusMessage = createFormErrorMessage(e);
-
-      setErrorStatusRequest({ ...e, statusMessage: errorStatusMessage });
+      setErrorStatusRequest(e);
     }
   };
 
@@ -86,9 +82,8 @@ const SourceSettings: React.FC<IProps> = ({
     }
   };
 
-  const onDelete = async () => {
-    await deleteSource({ connectionsWithSource, source: currentSource });
-  };
+  const onDelete = () =>
+    deleteSource({ connectionsWithSource, source: currentSource });
 
   return (
     <Content>
@@ -100,7 +95,9 @@ const SourceSettings: React.FC<IProps> = ({
         formType="source"
         availableServices={[sourceDefinition]}
         successMessage={saved && <FormattedMessage id="form.changesSaved" />}
-        errorMessage={errorStatusRequest?.statusMessage}
+        errorMessage={
+          errorStatusRequest && createFormErrorMessage(errorStatusRequest)
+        }
         formValues={{
           ...currentSource,
           serviceType: currentSource.sourceDefinitionId,

@@ -200,6 +200,7 @@ font-style: italic;
 <li>Adding new HTTP endpoints.</li>
 </ul>
 </li>
+<li>All <code>web_backend</code> APIs are not considered public APIs and are not guaranteeing backwards compatibility.</li>
 </ul>
 </div>
     <div class="app-desc">More information: <a href="https://openapi-generator.tech">https://openapi-generator.tech</a></div>
@@ -275,6 +276,7 @@ font-style: italic;
   <h4><a href="#Jobs">Jobs</a></h4>
   <ul>
   <li><a href="#cancelJob"><code><span class="http-method">post</span> /v1/jobs/cancel</code></a></li>
+  <li><a href="#getJobDebugInfo"><code><span class="http-method">post</span> /v1/jobs/get_debug_info</code></a></li>
   <li><a href="#getJobInfo"><code><span class="http-method">post</span> /v1/jobs/get</code></a></li>
   <li><a href="#listJobsFor"><code><span class="http-method">post</span> /v1/jobs/list</code></a></li>
   </ul>
@@ -3019,6 +3021,155 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#JobInfoRead">JobInfoRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="getJobDebugInfo"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/jobs/get_debug_info</code></pre></div>
+    <div class="method-summary">Gets all information needed to debug this job (<span class="nickname">getJobDebugInfo</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">JobIdRequestBody <a href="#JobIdRequestBody">JobIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#JobDebugInfoRead">JobDebugInfoRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "job" : {
+    "configId" : "configId",
+    "sourceDefinition" : {
+      "documentationUrl" : "https://openapi-generator.tech",
+      "dockerImageTag" : "dockerImageTag",
+      "dockerRepository" : "dockerRepository",
+      "name" : "name",
+      "icon" : "icon",
+      "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    },
+    "airbyteVersion" : "airbyteVersion",
+    "id" : 0,
+    "destinationDefinition" : {
+      "documentationUrl" : "https://openapi-generator.tech",
+      "dockerImageTag" : "dockerImageTag",
+      "dockerRepository" : "dockerRepository",
+      "name" : "name",
+      "icon" : "icon",
+      "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    }
+  },
+  "attempts" : [ {
+    "attempt" : {
+      "totalStats" : {
+        "stateMessagesEmitted" : 7,
+        "recordsCommitted" : 1,
+        "bytesEmitted" : 4,
+        "recordsEmitted" : 2
+      },
+      "createdAt" : 5,
+      "bytesSynced" : 9,
+      "endedAt" : 7,
+      "streamStats" : [ {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      }, {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      } ],
+      "id" : 5,
+      "recordsSynced" : 3,
+      "updatedAt" : 2
+    },
+    "logs" : {
+      "logLines" : [ "logLines", "logLines" ]
+    }
+  }, {
+    "attempt" : {
+      "totalStats" : {
+        "stateMessagesEmitted" : 7,
+        "recordsCommitted" : 1,
+        "bytesEmitted" : 4,
+        "recordsEmitted" : 2
+      },
+      "createdAt" : 5,
+      "bytesSynced" : 9,
+      "endedAt" : 7,
+      "streamStats" : [ {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      }, {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      } ],
+      "id" : 5,
+      "recordsSynced" : 3,
+      "updatedAt" : 2
+    },
+    "logs" : {
+      "logLines" : [ "logLines", "logLines" ]
+    }
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#JobDebugInfoRead">JobDebugInfoRead</a>
     <h4 class="field-label">404</h4>
     Object with given id was not found.
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
@@ -7353,6 +7504,8 @@ font-style: italic;
     <li><a href="#InvalidInputExceptionInfo"><code>InvalidInputExceptionInfo</code> - </a></li>
     <li><a href="#InvalidInputProperty"><code>InvalidInputProperty</code> - </a></li>
     <li><a href="#JobConfigType"><code>JobConfigType</code> - </a></li>
+    <li><a href="#JobDebugInfoRead"><code>JobDebugInfoRead</code> - </a></li>
+    <li><a href="#JobDebugRead"><code>JobDebugRead</code> - </a></li>
     <li><a href="#JobIdRequestBody"><code>JobIdRequestBody</code> - </a></li>
     <li><a href="#JobInfoRead"><code>JobInfoRead</code> - </a></li>
     <li><a href="#JobListRequestBody"><code>JobListRequestBody</code> - </a></li>
@@ -7915,6 +8068,27 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
           </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="JobDebugInfoRead"><code>JobDebugInfoRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">job </div><div class="param-desc"><span class="param-type"><a href="#JobDebugRead">JobDebugRead</a></span>  </div>
+<div class="param">attempts </div><div class="param-desc"><span class="param-type"><a href="#AttemptInfoRead">array[AttemptInfoRead]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="JobDebugRead"><code>JobDebugRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">id </div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">configType </div><div class="param-desc"><span class="param-type"><a href="#JobConfigType">JobConfigType</a></span>  </div>
+<div class="param">configId </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#JobStatus">JobStatus</a></span>  </div>
+<div class="param">airbyteVersion </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">sourceDefinition </div><div class="param-desc"><span class="param-type"><a href="#SourceDefinitionRead">SourceDefinitionRead</a></span>  </div>
+<div class="param">destinationDefinition </div><div class="param-desc"><span class="param-type"><a href="#DestinationDefinitionRead">DestinationDefinitionRead</a></span>  </div>
+    </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="JobIdRequestBody"><code>JobIdRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>

@@ -82,11 +82,6 @@ public abstract class AbstractSshMySqlSourceAcceptanceTest extends SourceAccepta
   }
 
   @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
-  }
-
-  @Override
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }
