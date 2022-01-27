@@ -10,7 +10,6 @@ import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.ConnectionCreate;
-import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.ConnectionSchedule;
@@ -161,6 +160,7 @@ public class ConnectionsHandler {
 
     if (featureFlags.usesNewScheduler()) {
       try {
+        LOGGER.info("Starting a connection using the new scheduler");
         temporalWorkerRunFactory.createNewSchedulerWorkflow(connectionId);
       } catch (final Exception e) {
         LOGGER.error("Start of the temporal connection manager workflow failed", e);
@@ -260,9 +260,9 @@ public class ConnectionsHandler {
     return new ConnectionReadList().connections(connectionReads);
   }
 
-  public ConnectionRead getConnection(final ConnectionIdRequestBody connectionIdRequestBody)
+  public ConnectionRead getConnection(final UUID connectionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return connectionHelper.buildConnectionRead(connectionIdRequestBody.getConnectionId());
+    return connectionHelper.buildConnectionRead(connectionId);
   }
 
   public ConnectionReadList searchConnections(final ConnectionSearch connectionSearch)
@@ -315,12 +315,12 @@ public class ConnectionsHandler {
     return (destinationReadFromSearch == null || destinationReadFromSearch.equals(destinationRead));
   }
 
-  public void deleteConnection(final ConnectionIdRequestBody connectionIdRequestBody)
+  public void deleteConnection(final UUID connectionId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     if (featureFlags.usesNewScheduler()) {
-      temporalWorkerRunFactory.deleteConnection(connectionIdRequestBody.getConnectionId());
+      temporalWorkerRunFactory.deleteConnection(connectionId);
     } else {
-      final ConnectionRead connectionRead = getConnection(connectionIdRequestBody);
+      final ConnectionRead connectionRead = getConnection(connectionId);
       deleteConnection(connectionRead);
     }
   }

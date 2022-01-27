@@ -4,49 +4,42 @@
 
 package io.airbyte.container_orchestrator;
 
-import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.logging.LoggingHelper;
+import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
-import io.airbyte.config.ReplicationOutput;
-import io.airbyte.config.StandardSyncInput;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
+import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.DefaultReplicationWorker;
-import io.airbyte.workers.ReplicationWorker;
 import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workers.process.AirbyteIntegrationLauncher;
+import io.airbyte.workers.process.AsyncKubePodStatus;
+import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
 import io.airbyte.workers.process.DockerProcessFactory;
-import io.airbyte.workers.process.IntegrationLauncher;
+import io.airbyte.workers.process.KubePodInfo;
+import io.airbyte.workers.process.KubePodProcess;
 import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.process.WorkerHeartbeatServer;
-import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
-import io.airbyte.workers.protocols.airbyte.AirbyteSource;
-import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
-import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
-import io.airbyte.workers.protocols.airbyte.EmptyAirbyteSource;
-import io.airbyte.workers.protocols.airbyte.NamespacingMapper;
+import io.airbyte.workers.storage.StateClients;
+import io.airbyte.workers.temporal.sync.DbtLauncherWorker;
+import io.airbyte.workers.temporal.sync.NormalizationLauncherWorker;
+import io.airbyte.workers.temporal.sync.OrchestratorConstants;
 import io.airbyte.workers.temporal.sync.ReplicationLauncherWorker;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Entrypoint for the application responsible for launching containers and handling all message
- * passing. Currently, this is only implemented for replication but in the future it will be
- * available for normalization and dbt. Also, the current version relies on a heartbeat from a
- * Temporal worker. This will also be removed in the future so this can run fully async.
+ * passing for replication, normalization, and dbt. Also, the current version relies on a heartbeat
+ * from a Temporal worker. This will also be removed in the future so this can run fully async.
  *
  * This application retrieves most of its configuration from copied files from the calling Temporal
  * worker.
@@ -54,106 +47,132 @@ import org.slf4j.LoggerFactory;
  * This app uses default logging which is directly captured by the calling Temporal worker. In the
  * future this will need to independently interact with cloud storage.
  */
+@Slf4j
 public class ContainerOrchestratorApp {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ContainerOrchestratorApp.class);
+  private final String application;
+  private final Map<String, String> envMap;
+  private final JobRunConfig jobRunConfig;
+  private final KubePodInfo kubePodInfo;
+  private final Configs configs;
 
-  private static void replicationRunner(final Configs configs) throws IOException, WorkerException {
-
-    LOGGER.info("Starting replication runner app...");
-
-    final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
-    final ProcessFactory processFactory = getProcessBuilderFactory(configs, workerConfigs);
-
-    LOGGER.info("Attempting to retrieve config files...");
-
-    final JobRunConfig jobRunConfig =
-        Jsons.deserialize(Files.readString(Path.of(ReplicationLauncherWorker.INIT_FILE_JOB_RUN_CONFIG)), JobRunConfig.class);
-
-    final IntegrationLauncherConfig sourceLauncherConfig =
-        Jsons.deserialize(Files.readString(Path.of(ReplicationLauncherWorker.INIT_FILE_SOURCE_LAUNCHER_CONFIG)), IntegrationLauncherConfig.class);
-
-    final IntegrationLauncherConfig destinationLauncherConfig =
-        Jsons.deserialize(Files.readString(Path.of(ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG)),
-            IntegrationLauncherConfig.class);
-
-    final StandardSyncInput syncInput =
-        Jsons.deserialize(Files.readString(Path.of(ReplicationLauncherWorker.INIT_FILE_SYNC_INPUT)), StandardSyncInput.class);
-
-    LOGGER.info("Setting up source launcher...");
-    final IntegrationLauncher sourceLauncher = new AirbyteIntegrationLauncher(
-        sourceLauncherConfig.getJobId(),
-        Math.toIntExact(sourceLauncherConfig.getAttemptId()),
-        sourceLauncherConfig.getDockerImage(),
-        processFactory,
-        syncInput.getResourceRequirements());
-
-    LOGGER.info("Setting up destination launcher...");
-    final IntegrationLauncher destinationLauncher = new AirbyteIntegrationLauncher(
-        destinationLauncherConfig.getJobId(),
-        Math.toIntExact(destinationLauncherConfig.getAttemptId()),
-        destinationLauncherConfig.getDockerImage(),
-        processFactory,
-        syncInput.getResourceRequirements());
-
-    LOGGER.info("Setting up source...");
-    // reset jobs use an empty source to induce resetting all data in destination.
-    final AirbyteSource airbyteSource =
-        sourceLauncherConfig.getDockerImage().equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB) ? new EmptyAirbyteSource()
-            : new DefaultAirbyteSource(workerConfigs, sourceLauncher);
-
-    LOGGER.info("Setting up replication worker...");
-    final ReplicationWorker replicationWorker = new DefaultReplicationWorker(
-        jobRunConfig.getJobId(),
-        Math.toIntExact(jobRunConfig.getAttemptId()),
-        airbyteSource,
-        new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
-        new DefaultAirbyteDestination(workerConfigs, destinationLauncher),
-        new AirbyteMessageTracker(),
-        new AirbyteMessageTracker());
-
-    LOGGER.info("Running replication worker...");
-    final Path jobRoot = WorkerUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
-    final ReplicationOutput replicationOutput = replicationWorker.run(syncInput, jobRoot);
-
-    LOGGER.info("Sending output...");
-    // this uses stdout directly because it shouldn't have the logging related prefix
-    // the replication output is read from the container that launched the runner
-    System.out.println(Jsons.serialize(replicationOutput));
-
-    LOGGER.info("Replication runner complete!");
+  public ContainerOrchestratorApp(
+                                  final String application,
+                                  final Map<String, String> envMap,
+                                  final JobRunConfig jobRunConfig,
+                                  final KubePodInfo kubePodInfo) {
+    this.application = application;
+    this.envMap = envMap;
+    this.jobRunConfig = jobRunConfig;
+    this.kubePodInfo = kubePodInfo;
+    this.configs = new EnvConfigs(envMap);
   }
 
-  public static void main(final String[] args) throws Exception {
-    WorkerHeartbeatServer heartbeatServer = null;
-
-    try {
-      // read files that contain all necessary configuration
-      final String application = Files.readString(Path.of(ReplicationLauncherWorker.INIT_FILE_APPLICATION));
-      final Map<String, String> envMap =
-          (Map<String, String>) Jsons.deserialize(Files.readString(Path.of(ReplicationLauncherWorker.INIT_FILE_ENV_MAP)), Map.class);
-
-      final Configs configs = new EnvConfigs(envMap::get);
-
-      heartbeatServer = new WorkerHeartbeatServer(WorkerApp.KUBE_HEARTBEAT_PORT);
-      heartbeatServer.startBackground();
-
-      if (application.equals(ReplicationLauncherWorker.REPLICATION)) {
-        replicationRunner(configs);
-      } else {
-        LOGGER.error("Runner failed", new IllegalStateException("Unexpected value: " + application));
-        System.exit(1);
-      }
-    } finally {
-      if (heartbeatServer != null) {
-        LOGGER.info("Shutting down heartbeat server...");
-        heartbeatServer.stop();
+  private void configureLogging() {
+    for (String envVar : OrchestratorConstants.ENV_VARS_TO_TRANSFER) {
+      if (envMap.containsKey(envVar)) {
+        System.setProperty(envVar, envMap.get(envVar));
       }
     }
 
-    // required to kill kube client
-    LOGGER.info("Runner closing...");
-    System.exit(0);
+    final var logClient = LogClientSingleton.getInstance();
+    logClient.setJobMdc(
+        configs.getWorkerEnvironment(),
+        configs.getLogConfigs(),
+        WorkerUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId()));
+  }
+
+  /**
+   * Handles state updates (including writing failures) and running the job orchestrator. As much of
+   * the initialization as possible should go in here so it's logged properly and the state storage is
+   * updated appropriately.
+   */
+  private void runInternal(final DefaultAsyncStateManager asyncStateManager) {
+    try {
+      asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.INITIALIZING);
+
+      final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
+      final ProcessFactory processFactory = getProcessBuilderFactory(configs, workerConfigs);
+      final JobOrchestrator<?> jobOrchestrator = getJobOrchestrator(configs, workerConfigs, processFactory, application);
+
+      if (jobOrchestrator == null) {
+        throw new IllegalStateException("Could not find job orchestrator for application: " + application);
+      }
+
+      final var heartbeatServer = new WorkerHeartbeatServer(WorkerApp.KUBE_HEARTBEAT_PORT);
+      heartbeatServer.startBackground();
+
+      asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.RUNNING);
+
+      final Optional<String> output = jobOrchestrator.runJob();
+
+      asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.SUCCEEDED, output.orElse(""));
+
+      // required to kill clients with thread pools
+      System.exit(0);
+    } catch (Throwable t) {
+      asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.FAILED);
+      System.exit(1);
+    }
+  }
+
+  /**
+   * Configures logging/mdc scope, and creates all objects necessary to handle state updates.
+   * Everything else is delegated to {@link ContainerOrchestratorApp#runInternal}.
+   */
+  public void run() {
+    configureLogging();
+
+    // set mdc scope for the remaining execution
+    try (final var mdcScope = new MdcScope.Builder()
+        .setLogPrefix(application)
+        .setPrefixColor(LoggingHelper.Color.CYAN_BACKGROUND)
+        .build()) {
+
+      // IMPORTANT: Changing the storage location will orphan already existing kube pods when the new
+      // version is deployed!
+      final var documentStoreClient = StateClients.create(configs.getStateStorageCloudConfigs(), WorkerApp.STATE_STORAGE_PREFIX);
+      final var asyncStateManager = new DefaultAsyncStateManager(documentStoreClient);
+
+      runInternal(asyncStateManager);
+    }
+  }
+
+  public static void main(final String[] args) {
+    try {
+      // wait for config files to be copied
+      final var successFile = Path.of(KubePodProcess.CONFIG_DIR, KubePodProcess.SUCCESS_FILE_NAME);
+
+      while (!successFile.toFile().exists()) {
+        log.info("Waiting for config file transfers to complete...");
+        Thread.sleep(1000);
+      }
+
+      final var applicationName = JobOrchestrator.readApplicationName();
+      final var envMap = JobOrchestrator.readEnvMap();
+      final var jobRunConfig = JobOrchestrator.readJobRunConfig();
+      final var kubePodInfo = JobOrchestrator.readKubePodInfo();
+
+      final var app = new ContainerOrchestratorApp(applicationName, envMap, jobRunConfig, kubePodInfo);
+      app.run();
+    } catch (Throwable t) {
+      log.info("Orchestrator failed...", t);
+      System.exit(1);
+    }
+  }
+
+  private static JobOrchestrator<?> getJobOrchestrator(final Configs configs,
+                                                       final WorkerConfigs workerConfigs,
+                                                       final ProcessFactory processFactory,
+                                                       final String application) {
+
+    return switch (application) {
+      case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(configs, workerConfigs, processFactory);
+      case NormalizationLauncherWorker.NORMALIZATION -> new NormalizationJobOrchestrator(configs, workerConfigs, processFactory);
+      case DbtLauncherWorker.DBT -> new DbtJobOrchestrator(configs, workerConfigs, processFactory);
+      case AsyncOrchestratorPodProcess.NO_OP -> new NoOpOrchestrator();
+      default -> null;
+    };
   }
 
   /**
@@ -164,11 +183,11 @@ public class ContainerOrchestratorApp {
       final KubernetesClient fabricClient = new DefaultKubernetesClient();
       final String localIp = InetAddress.getLocalHost().getHostAddress();
       final String kubeHeartbeatUrl = localIp + ":" + WorkerApp.KUBE_HEARTBEAT_PORT;
-      LOGGER.info("Using Kubernetes namespace: {}", configs.getJobKubeNamespace());
+      log.info("Using Kubernetes namespace: {}", configs.getJobKubeNamespace());
 
       // this needs to have two ports for the source and two ports for the destination (all four must be
       // exposed)
-      KubePortManagerSingleton.init(ReplicationLauncherWorker.PORTS);
+      KubePortManagerSingleton.init(OrchestratorConstants.PORTS);
 
       return new KubeProcessFactory(workerConfigs, configs.getJobKubeNamespace(), fabricClient, kubeHeartbeatUrl, false);
     } else {
@@ -177,8 +196,7 @@ public class ContainerOrchestratorApp {
           configs.getWorkspaceRoot(),
           configs.getWorkspaceDockerMount(),
           configs.getLocalDockerMount(),
-          configs.getDockerNetwork(),
-          false);
+          configs.getDockerNetwork());
     }
   }
 
