@@ -81,11 +81,6 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
 
   public static void main(final String[] args) throws Exception {
     initSentry();
-    try {
-      throw new Exception("This is hello from Sentry");
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage());
-    }
     final Destination destination = new SnowflakeDestination();
     ITransaction transaction = Sentry.startTransaction("IntegrationRunner()", "run");
     try {

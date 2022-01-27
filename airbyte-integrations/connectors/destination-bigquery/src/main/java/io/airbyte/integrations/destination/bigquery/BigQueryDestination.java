@@ -213,6 +213,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   public static void main(final String[] args) throws Exception {
+    initSentry();
     ITransaction transaction = Sentry.startTransaction("IntegrationRunner()", "run");
     final Destination destination = new BigQueryDestination();
     try {
