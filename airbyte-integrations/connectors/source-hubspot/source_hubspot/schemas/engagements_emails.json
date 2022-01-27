@@ -277,6 +277,12 @@
       "items": {
         "type": ["null", "string"]
       }
+    },
+    "companies": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     }
   }
 }
