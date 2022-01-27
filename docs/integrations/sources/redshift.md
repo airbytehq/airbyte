@@ -54,7 +54,7 @@ All Redshift connections are encrypted using SSL
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.3.8   | 2022-01-26 | [9744](https://github.com/airbytehq/airbyte/pull/9721) | Implement getPrivilegesTableForCurrentUser |
+List only the tables on which the user has SELECT permissions.
 | 0.3.7   | 2022-01-26 | [9721](https://github.com/airbytehq/airbyte/pull/9721) | Added schema selection |
 | 0.3.6   | 2022-01-20 | [8617](https://github.com/airbytehq/airbyte/pull/8617) | Update connector fields title/description |
 | 0.3.5   | 2021-12-24 | [8958](https://github.com/airbytehq/airbyte/pull/8958) | Add support for JdbcType.ARRAY |
