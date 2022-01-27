@@ -1,106 +1,53 @@
 {
   "type": "object",
   "properties": {
-    "segment": {
-      "type": [
-        "null",
-        "string"
-      ]
+    "servable": {
+      "type": "boolean"
     },
-    "metrics": {
-      "type": "object",
-      "properties": {
-        "impressions": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "tweets_send": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "qualified_impressions": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "follows": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "app_clicks": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "retweets": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "unfollows": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "likes": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "engagements": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "clicks": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "card_engagements": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "poll_card_vote": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "replies": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "url_clicks": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "carousel_swipes": {
-          "type": [
-            "null",
-            "string"
-          ]
-        }
-      }
+    "purchase_order_number": {
+      "type": "number"
+    },
+    "effective_status": {
+      "type": "string"
+    },
+    "daily_budget_amount_local_micro": {
+      "type": "number"
+    },
+    "end_time": {
+      "type": "string"
+    },
+    "funding_instrument_id": {
+      "type": "string"
+    },
+    "duration_in_days": {
+      "type": "number"
+    },
+    "standard_delivery": {
+      "type": "boolean"
+    },
+    "total_budget_amount_local_micro": {
+      "type": "number"
+    },
+    "id": {
+      "type": "string"
+    },
+    "entity_status": {
+      "type": "string"
+    },
+    "frequency_cap": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "deleted": {
+      "type": "boolean"
     }
   }
 }

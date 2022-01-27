@@ -106,8 +106,18 @@ class TwitterAdsStream(HttpStream, ABC):
         :return an iterable containing each record in the response
         """
         # fix me parse response
-
-        return [response.json()]
+        """
+        with open('response.json', 'w', encoding='utf-8') as f:
+            json.dump(response.json(), f, ensure_ascii=False, indent=4)
+        
+        with open('response_data.json', 'w', encoding='utf-8') as f:
+            json.dump(response.json()['data'], f, ensure_ascii=False, indent=4)
+        exit()
+        """
+        response_json = response.json()
+        result = response_json.get("data")
+        
+        return result
 
 
 class Campaigns(TwitterAdsStream):

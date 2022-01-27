@@ -1,106 +1,107 @@
 {
   "type": "object",
   "properties": {
-    "segment": {
-      "type": [
-        "null",
-        "string"
-      ]
+    "billed_charge_local_micro": {
+      "type": "number"
     },
-    "metrics": {
-      "type": "object",
-      "properties": {
-        "impressions": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "tweets_send": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "qualified_impressions": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "follows": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "app_clicks": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "retweets": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "unfollows": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "likes": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "engagements": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "clicks": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "card_engagements": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "poll_card_vote": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "replies": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "url_clicks": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "carousel_swipes": {
-          "type": [
-            "null",
-            "string"
-          ]
-        }
-      }
+    "billed_engagements": {
+      "type": "number"
+    },
+    "card_engagements": {
+      "type": "number"
+    },
+    "clicks": {
+      "type": "number"
+    },
+    "country": {
+      "type": "string"
+    },
+    "end_time": {
+      "type": "string"
+    },
+    "engagements": {
+      "type": "number"
+    },
+    "entity": {
+      "type": "string"
+    },
+    "follows": {
+      "type": "number"
+    },
+    "granularity": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "impression": {
+      "type": "number"
+    },
+    "likes": {
+      "type": "number"
+    },
+    "media_engagements": {
+      "type": "number"
+    },
+    "media_views": {
+      "type": "number"
+    },
+    "placement": {
+      "type": "string"
+    },
+    "platform": {
+      "type": "string"
+    },
+    "qualified_impressions": {
+      "type": "number"
+    },
+    "replies": {
+      "type": "number"
+    },
+    "retweets": {
+      "type": "number"
+    },
+    "segement_name": {
+      "type": "string"
+    },
+    "segment_value": {
+      "type": "number"
+    },
+    "segment_type": {
+      "type": "number"
+    },
+    "start_time": {
+      "type": "string"
+    },
+    "url_clicks": {
+      "type": "number"
+    },
+    "video_3s100pct_views": {
+      "type": "number"
+    },
+    "video_cta_clicks": {
+      "type": "number"
+    },
+    "video_total_views": {
+      "type": "number"
+    },
+    "video_views_100": {
+      "type": "number"
+    },
+    "video_mrc_views": {
+      "type": "number"
+    },
+    "video_total_views": {
+      "type": "number"
+    },
+    "video_views_100": {
+      "type": "number"
+    },
+    "video_views_50": {
+      "type": "number"
+    },
+    "video_views_75": {
+      "type": "number"
     }
   }
 }
