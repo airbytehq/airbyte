@@ -87,9 +87,16 @@ class TwitterAdsStream(HttpStream, ABC):
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
                 If there are no more pages in the result, return None.
         """
+        try:
+            next_page_token = response.json()['next_cursor']
+        except:
+            pass
 
-        # twitter ads analytics streams don't offer pagination => we return None.
-        return None
+        if self.__class__.__name__ == "AdsAnalyticsMetrics":
+            return None
+        else:
+            next_page_token
+    
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
@@ -97,7 +104,11 @@ class TwitterAdsStream(HttpStream, ABC):
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
-        return None
+        
+        if self.__class__.__name__ == "AdsAnalyticsMetrics":
+            return None
+        else:
+            return {"cursor": next_page_token}
      
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -105,18 +116,9 @@ class TwitterAdsStream(HttpStream, ABC):
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-        # fix me parse response
-        """
-        with open('response.json', 'w', encoding='utf-8') as f:
-            json.dump(response.json(), f, ensure_ascii=False, indent=4)
-        
-        with open('response_data.json', 'w', encoding='utf-8') as f:
-            json.dump(response.json()['data'], f, ensure_ascii=False, indent=4)
-        exit()
-        """
+
         response_json = response.json()
         result = response_json.get("data")
-        
         return result
 
 
