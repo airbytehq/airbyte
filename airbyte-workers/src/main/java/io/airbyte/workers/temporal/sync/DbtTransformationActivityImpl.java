@@ -24,6 +24,7 @@ import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
+import io.airbyte.workers.temporal.TemporalUtils;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -73,31 +74,32 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
                   final IntegrationLauncherConfig destinationLauncherConfig,
                   final ResourceRequirements resourceRequirements,
                   final OperatorDbtInput input) {
+    return TemporalUtils.withBackgroundHeartbeat(() -> {
+      final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
+      final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
 
-    final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
-    final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
+      final Supplier<OperatorDbtInput> inputSupplier = () -> {
+        validator.ensureAsRuntime(ConfigSchema.OPERATOR_DBT_INPUT, Jsons.jsonNode(fullInput));
+        return fullInput;
+      };
 
-    final Supplier<OperatorDbtInput> inputSupplier = () -> {
-      validator.ensureAsRuntime(ConfigSchema.OPERATOR_DBT_INPUT, Jsons.jsonNode(fullInput));
-      return fullInput;
-    };
+      final CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> workerFactory;
 
-    final CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> workerFactory;
+      if (containerOrchestratorConfig.isPresent()) {
+        workerFactory = getContainerLauncherWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig);
+      } else {
+        workerFactory = getLegacyWorkerFactory(destinationLauncherConfig, jobRunConfig, resourceRequirements);
+      }
 
-    if (containerOrchestratorConfig.isPresent()) {
-      workerFactory = getContainerLauncherWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig);
-    } else {
-      workerFactory = getLegacyWorkerFactory(destinationLauncherConfig, jobRunConfig, resourceRequirements);
-    }
+      final TemporalAttemptExecution<OperatorDbtInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(
+          workspaceRoot, workerEnvironment, logConfigs,
+          jobRunConfig,
+          workerFactory,
+          inputSupplier,
+          new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
 
-    final TemporalAttemptExecution<OperatorDbtInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(
-        workspaceRoot, workerEnvironment, logConfigs,
-        jobRunConfig,
-        workerFactory,
-        inputSupplier,
-        new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
-
-    return temporalAttemptExecution.get();
+      return temporalAttemptExecution.get();
+    });
   }
 
   private CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> getLegacyWorkerFactory(final IntegrationLauncherConfig destinationLauncherConfig,
