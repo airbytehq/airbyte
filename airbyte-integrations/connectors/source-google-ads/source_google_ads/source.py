@@ -144,7 +144,7 @@ class SourceGoogleAds(AbstractSource):
         stream_state = connector_state.get(stream_name, {})
         if stream_state:
             logger.info(f"Setting state of {stream_name} stream to {stream_state}")
-        exception = None
+
         for _ in range(4):
             """
             Initial _range_days = 15
@@ -183,18 +183,14 @@ class SourceGoogleAds(AbstractSource):
                         return
                 except GoogleAdsException as e:
                     if e.failure._pb.errors[0].error_code.request_error == 8:
-                        # EXPIRED_PAGE_TOKEN = 8
-                        # page token has expired, reduce range days twice
+                        # page token has expired, reduce range days twice (EXPIRED_PAGE_TOKEN = 8)
                         if stream_instance.range_days == 1:
-                            """If range days is 1, no need in retry, because it's the minimum date range"""
+                            # If range days is 1, no need in retry, because it's the minimum date range
                             raise e
                         stream_instance.range_days = stream_instance.range_days // 2
                         logger.info(f"Page token has expired. Date range was reduced to {stream_instance.range_days}")
-                        exception = e
                         break
                     raise e
             else:
+                """If exits the internal loop normally return the control"""
                 return
-        else:
-            if exception:
-                raise exception
