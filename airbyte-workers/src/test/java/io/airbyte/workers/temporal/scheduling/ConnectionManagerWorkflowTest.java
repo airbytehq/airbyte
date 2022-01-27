@@ -399,6 +399,7 @@ public class ConnectionManagerWorkflowTest {
       WorkflowClient.start(workflow::run, input);
       testEnv.sleep(Duration.ofMinutes(2L));
       workflow.submitManualSync();
+      testEnv.shutdown();
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
@@ -406,7 +407,7 @@ public class ConnectionManagerWorkflowTest {
           .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.SKIPPED_SCHEDULING && changedStateEvent.isValue())
           .isEmpty();
 
-      testEnv.shutdown();
+
     }
 
     @Test
@@ -431,6 +432,7 @@ public class ConnectionManagerWorkflowTest {
       testEnv.sleep(Duration.ofSeconds(30L));
       workflow.cancelJob();
       testEnv.sleep(Duration.ofMinutes(1L));
+      testEnv.shutdown();
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
@@ -439,8 +441,6 @@ public class ConnectionManagerWorkflowTest {
           .hasSizeGreaterThanOrEqualTo(1);
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity).jobCancelled(Mockito.any());
-
-      testEnv.shutdown();
     }
 
     @Test
@@ -464,6 +464,7 @@ public class ConnectionManagerWorkflowTest {
       testEnv.sleep(Duration.ofSeconds(30L));
       workflow.resetConnection();
       testEnv.sleep(Duration.ofSeconds(90L));
+      testEnv.shutdown();
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
@@ -473,7 +474,6 @@ public class ConnectionManagerWorkflowTest {
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity).jobSuccess(Mockito.any());
 
-      testEnv.shutdown();
     }
 
     @Test
@@ -498,6 +498,7 @@ public class ConnectionManagerWorkflowTest {
       testEnv.sleep(Duration.ofSeconds(30L));
       workflow.resetConnection();
       testEnv.sleep(Duration.ofSeconds(30L));
+      testEnv.shutdown();
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
@@ -507,7 +508,6 @@ public class ConnectionManagerWorkflowTest {
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity).jobCancelled(Mockito.any());
 
-      testEnv.shutdown();
     }
 
   }
