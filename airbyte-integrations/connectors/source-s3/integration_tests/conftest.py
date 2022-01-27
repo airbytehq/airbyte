@@ -4,7 +4,6 @@
 
 import json
 import os
-import tempfile
 import time
 from pathlib import Path
 from typing import Mapping, Any, Iterable, List
@@ -22,6 +21,7 @@ logger = AirbyteLogger()
 TMP_FOLDER = "/tmp/test_minio_source_s3"
 if not os.path.exists(TMP_FOLDER):
     os.makedirs(TMP_FOLDER)
+
 
 def get_local_ip() -> str:
     all_interface_ips: List[str] = []
