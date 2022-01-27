@@ -488,7 +488,7 @@ public class ConnectionManagerWorkflowTest {
       workflow.submitManualSync();
       testEnv.sleep(Duration.ofSeconds(30L));
       workflow.resetConnection();
-      testEnv.sleep(Duration.ofSeconds(2L));
+      testEnv.sleep(Duration.ofSeconds(30L));
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
