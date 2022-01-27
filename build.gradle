@@ -248,9 +248,9 @@ subprojects {
         implementation 'org.slf4j:log4j-over-slf4j:1.7.30' // log4j1.2 bridge
 
         // Dependencies for logging to cloud storage, as well as the various clients used to do so.
-        implementation 'com.therealvan:appender-log4j2:3.1.2-SNAPSHOT'
+        implementation 'com.therealvan:appender-log4j2:3.3.0'
         implementation 'com.amazonaws:aws-java-sdk-s3:1.12.6'
-        implementation 'com.google.cloud:google-cloud-storage:1.115.0'
+        implementation 'com.google.cloud:google-cloud-storage:2.2.2'
 
         implementation 'software.amazon.awssdk:s3:2.16.84'
 
