@@ -3,11 +3,13 @@
 #
 
 from abc import ABC
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, List
 
 import pendulum
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.models import SyncMode
 from google.ads.googleads.v8.services.services.google_ads_service.pagers import SearchPager
+from google.ads.googleads.errors import GoogleAdsException
 
 from .google_ads import GoogleAds
 
@@ -83,7 +85,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         start_date = stream_state.get(self.cursor_field) or self._start_date
         end_date = self._end_date
 
-        return chunk_date_range(
+        intervals = chunk_date_range(
             start_date=start_date,
             end_date=end_date,
             conversion_window=self.conversion_window_days,
@@ -91,8 +93,41 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
             days_of_data_storage=self.days_of_data_storage,
             range_days=self.range_days,
         )
+        slices = []
+        for interval in intervals:
+            start, end = self.get_date_params(interval.get(self.cursor_field), self.cursor_field)
+            slices.append({
+                "start_date": start,
+                "end_date": end,
+            })
+        return slices
 
-    def get_date_params(self, stream_slice: Mapping[str, Any], cursor_field: str, end_date: pendulum.datetime = None):
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Mapping[str, Any]]:  # TODO
+        state = stream_state or {}
+        while True:
+            try:
+                response = self.google_ads_client.send_request(self.get_query(stream_slice))
+                # yield from self.parse_response(response)
+                for record in self.parse_response(response):
+                    state = self.get_updated_state(stream_state, record)
+                    yield record
+            except GoogleAdsException as e:
+                if e.failure._pb.errors[0].error_code.request_error == 8:
+                    # page token has expired (EXPIRED_PAGE_TOKEN = 8)
+                    # stream_slice[cursor_field] = state.get(self.cursor_field)  # substract 1 day
+                    stream_slice["start_date"] = state.get(self.cursor_field)
+                else:
+                    raise e
+            else:
+                return
+
+    def get_date_params(self, start_date: str, cursor_field: str, end_date: pendulum.datetime = None):
         """
         Returns `start_date` and `end_date` for the given stream_slice.
         If (end_date - start_date) is a big date range (>= 1 month), it can take more than 2 hours to process all the records from the given slice.
@@ -101,11 +136,17 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         """
 
         end_date = end_date or pendulum.yesterday(tz=self.time_zone)
-        start_date = pendulum.parse(stream_slice.get(cursor_field))
+        # start_date = pendulum.parse(stream_slice.get(cursor_field))
+        start_date = pendulum.parse(start_date)
+
         if start_date > pendulum.now():
             return start_date.to_date_string(), start_date.add(days=1).to_date_string()
 
-        end_date = min(end_date, pendulum.parse(stream_slice.get(cursor_field)).add(days=self.range_days))
+        # end_date = min(end_date, pendulum.parse(stream_slice.get(cursor_field)).add(days=self.range_days))
+        end_date = min(
+            end_date,
+            start_date.add(days=self.range_days)
+        )
 
         # Fix issue #4806, start date should always be lower than end date.
         if start_date.add(days=1).date() >= end_date.date():
@@ -129,9 +170,13 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         return current_stream_state
 
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
-        start_date, end_date = self.get_date_params(stream_slice, self.cursor_field)
+        # start_date, end_date = self.get_date_params(stream_slice, self.cursor_field)
         query = GoogleAds.convert_schema_into_query(
-            schema=self.get_json_schema(), report_name=self.name, from_date=start_date, to_date=end_date, cursor_field=self.cursor_field
+            schema=self.get_json_schema(),
+            report_name=self.name,
+            from_date=stream_slice.get("start_date"),
+            to_date=stream_slice.get("end_date"),
+            cursor_field=self.cursor_field
         )
         return query
 
@@ -205,7 +250,7 @@ class DisplayTopicsPerformanceReport(IncrementalGoogleAdsStream):
 
 
 class ShoppingPerformanceReport(IncrementalGoogleAdsStream):
-    _range_days = 1
+    # _range_days = 1
     """
     ShoppingPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v8/shopping_performance_view
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance
