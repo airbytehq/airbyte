@@ -42,7 +42,11 @@ class SourceIterable(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
             list_gen = Lists(api_key=config["api_key"]).read_records(sync_mode=SyncMode.full_refresh)
-            next(list_gen)
+            # use for loop to check for one record and also gracefully handle empty iterator
+            # https://stackoverflow.com/questions/14413969/why-does-next-raise-a-stopiteration-but-for-do-a-normal-return
+            for l in list_gen:
+                print("Successfully connected to Iterable API to fetch one static list")
+                break
             return True, None
         except Exception as e:
             return False, f"Unable to connect to Iterable API with the provided credentials - {e}"
