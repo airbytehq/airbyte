@@ -41,6 +41,7 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
   protected ObjectNode config;
   protected JdbcDatabase database;
   protected String schemaName;
+  protected String schemaToIgnore;
   protected String streamName;
 
   protected static ObjectNode getStaticConfig() {
@@ -51,18 +52,12 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     config = getStaticConfig();
 
-    database = Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:redshift://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        RedshiftSource.DRIVER_CLASS);
+    database = createDatabase(config);
 
     schemaName = Strings.addRandomSuffix("integration_test", "_", 5).toLowerCase();
+    schemaToIgnore = schemaName + "shouldIgnore";
 
-    // add the schema to test that only specified schemas will be retrieved
+    // limit the connection to one schema only
     config = config.set("schemas", Jsons.jsonNode(List.of(schemaName)));
 
     // create a test data
@@ -70,7 +65,18 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
 
     // create a schema with data that will not be used for testing, but would be used to check schema
     // filtering. This one should not be visible in results
-    createTestData(database, schemaName + "shouldIgnore");
+    createTestData(database, schemaToIgnore);
+  }
+
+  protected static JdbcDatabase createDatabase(final JsonNode config) {
+    return Databases.createJdbcDatabase(
+        config.get("username").asText(),
+        config.get("password").asText(),
+        String.format("jdbc:redshift://%s:%s/%s",
+            config.get("host").asText(),
+            config.get("port").asText(),
+            config.get("database").asText()),
+        RedshiftSource.DRIVER_CLASS);
   }
 
   protected void createTestData(final JdbcDatabase database, final String schemaName)
@@ -99,8 +105,10 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws SQLException {
-    final String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s CASCADE", schemaName);
-    database.execute(connection -> connection.createStatement().execute(dropSchemaQuery));
+    database.execute(connection -> connection.createStatement()
+        .execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE", schemaName)));
+    database.execute(connection -> connection.createStatement()
+        .execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE", schemaToIgnore)));
   }
 
   @Override
