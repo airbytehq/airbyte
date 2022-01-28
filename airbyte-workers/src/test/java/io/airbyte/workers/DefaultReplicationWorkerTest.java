@@ -160,7 +160,7 @@ class DefaultReplicationWorkerTest {
     assertTrue(logs.contains("Destination output thread started."));
   }
 
-  @Test
+  //@Test
 //  void testLogMaskRegex() throws IOException {
 //    final Path jobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
 //    MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, jobRoot.toString());
