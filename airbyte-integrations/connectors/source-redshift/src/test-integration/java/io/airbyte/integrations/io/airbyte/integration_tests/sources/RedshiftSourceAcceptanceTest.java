@@ -32,6 +32,11 @@ import java.util.List;
 
 public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
 
+  protected static final List<Field> FIELDS = List.of(
+      Field.of("c_custkey", JsonSchemaPrimitive.NUMBER),
+      Field.of("c_name", JsonSchemaPrimitive.STRING),
+      Field.of("c_nation", JsonSchemaPrimitive.STRING));
+
   // This test case expects an active redshift cluster that is useable from outside of vpc
   protected ObjectNode config;
   protected JdbcDatabase database;
@@ -57,6 +62,7 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
 
     schemaName = Strings.addRandomSuffix("integration_test", "_", 5).toLowerCase();
 
+    // add the schema to test that only specified schemas will be retrieved
     config = config.set("schemas", Jsons.jsonNode(List.of(schemaName)));
 
     // create a test data
@@ -67,7 +73,7 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
     createTestData(database, schemaName + "shouldIgnore");
   }
 
-  private void createTestData(final JdbcDatabase database, final String schemaName)
+  protected void createTestData(final JdbcDatabase database, final String schemaName)
       throws SQLException {
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
     database.execute(connection -> {
@@ -114,12 +120,7 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    return CatalogHelpers.createConfiguredAirbyteCatalog(
-        streamName,
-        schemaName,
-        Field.of("c_custkey", JsonSchemaPrimitive.NUMBER),
-        Field.of("c_name", JsonSchemaPrimitive.STRING),
-        Field.of("c_nation", JsonSchemaPrimitive.STRING));
+    return CatalogHelpers.createConfiguredAirbyteCatalog(streamName, schemaName, FIELDS);
   }
 
   @Override
@@ -130,9 +131,13 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected void verifyCatalog(final AirbyteCatalog catalog) {
     final List<AirbyteStream> streams = catalog.getStreams();
+    // only one stream is expected; the schema that should be ignored
+    // must not be included in the retrieved catalog
     assertEquals(1, streams.size());
-    // the schema that should be ignored is not included in the retrieved catalog
-    assertEquals(schemaName, streams.get(0).getNamespace());
+    final AirbyteStream actualStream = streams.get(0);
+    assertEquals(schemaName, actualStream.getNamespace());
+    assertEquals(streamName, actualStream.getName());
+    assertEquals(CatalogHelpers.fieldsToJsonSchema(FIELDS), actualStream.getJsonSchema());
   }
 
 }
