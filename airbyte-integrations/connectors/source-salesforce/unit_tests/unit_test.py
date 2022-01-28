@@ -3,6 +3,8 @@
 #
 
 import json
+import csv
+import io
 from unittest.mock import Mock
 
 import pytest
@@ -317,18 +319,18 @@ def test_discover_with_streams_criteria_param(streams_criteria, predicted_filter
     sf_object.describe = Mock(
         return_value={
             "sobjects": [
-                {"name": "Account"},
-                {"name": "AIApplications"},
-                {"name": "Leads"},
-                {"name": "LeadHistory"},
-                {"name": "Orders"},
-                {"name": "OrderHistory"},
-                {"name": "CustomStream"},
-                {"name": "CustomStreamHistory"},
+                {"name": "Account", "queryable": True},
+                {"name": "AIApplications", "queryable": True},
+                {"name": "Leads", "queryable": True},
+                {"name": "LeadHistory", "queryable": True},
+                {"name": "Orders", "queryable": True},
+                {"name": "OrderHistory", "queryable": True},
+                {"name": "CustomStream", "queryable": True},
+                {"name": "CustomStreamHistory", "queryable": True},
             ]
         }
     )
-    filtered_streams = sf_object.get_validated_streams(config=updated_config)
+    filtered_streams, _ = sf_object.get_validated_streams(config=updated_config)
     assert sorted(filtered_streams) == sorted(predicted_filtered_streams)
 
 
@@ -477,6 +479,23 @@ def test_rate_limit_rest(stream_config, stream_api, configured_catalog, state):
         assert state_record.state.data["Account"]["LastModifiedDate"] == "2021-11-17"
 
 
+def test_discover_only_queryable(stream_config):
+    sf_object = Salesforce(**stream_config)
+    sf_object.login = Mock()
+    sf_object.access_token = Mock()
+    sf_object.instance_url = "https://fase-account.salesforce.com"
+    sf_object.describe = Mock(
+        return_value={
+            "sobjects": [
+                {"name": "Account", "queryable": True},
+                {"name": "Leads", "queryable": False},
+            ]
+        }
+    )
+    filtered_streams, _ = sf_object.get_validated_streams(config=stream_config)
+    assert filtered_streams == ["Account"]
+
+
 def test_pagination_rest(stream_config, stream_api):
     stream_name = "ActiveFeatureLicenseMetric"
     state = {stream_name: {"SystemModstamp": "2122-08-22T05:08:29.000Z"}}
@@ -520,3 +539,26 @@ def test_pagination_rest(stream_config, stream_api):
 
         records = [record for record in stream.read_records(sync_mode=SyncMode.full_refresh)]
         assert len(records) == 4
+
+
+def test_csv_reader_dialect_unix():
+    stream: BulkSalesforceStream = BulkSalesforceStream(stream_name=None, wait_timeout=None, sf_api=None, pk=None)
+    url = "https://fake-account.salesforce.com/services/data/v52.0/jobs/query/7504W00000bkgnpQAA"
+
+    data = [
+        {"Id": "1", "Name": '"first_name" "last_name"'},
+        {"Id": "2", "Name": "'" + 'first_name"\n' + "'" + 'last_name\n"'},
+        {"Id": "3", "Name": "first_name last_name"},
+    ]
+
+    with io.StringIO("", newline="") as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=["Id", "Name"], dialect="unix")
+        writer.writeheader()
+        for line in data:
+            writer.writerow(line)
+        text = csvfile.getvalue()
+
+    with requests_mock.Mocker() as m:
+        m.register_uri("GET", url + "/results", text=text)
+        result = [dict(i[1]) for i in stream.download_data(url)]
+        assert result == data

@@ -13,6 +13,8 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from requests.exceptions import HTTPError
 
+DEFAULT_PAGE_SIZE = 100
+
 
 class GithubStream(HttpStream, ABC):
     url_base = "https://api.github.com/"
@@ -20,14 +22,17 @@ class GithubStream(HttpStream, ABC):
     primary_key = "id"
     use_cache = True
 
-    # GitHub pagination could be from 1 to 100.
-    page_size = 100
+    # Detect streams with high API load
+    large_stream = False
 
     stream_base_params = {}
 
-    def __init__(self, repositories: List[str], **kwargs):
+    def __init__(self, repositories: List[str], page_size_for_large_streams: int, **kwargs):
         super().__init__(**kwargs)
         self.repositories = repositories
+
+        # GitHub pagination could be from 1 to 100.
+        self.page_size = page_size_for_large_streams if self.large_stream else DEFAULT_PAGE_SIZE
 
         MAX_RETRIES = 3
         adapter = requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES)
@@ -295,6 +300,9 @@ class Organizations(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/orgs#get-an-organization
     """
 
+    # GitHub pagination could be from 1 to 100.
+    page_size = 100
+
     def __init__(self, organizations: List[str], **kwargs):
         super(GithubStream, self).__init__(**kwargs)
         self.organizations = organizations
@@ -394,7 +402,7 @@ class PullRequests(SemiIncrementalGithubStream):
     API docs: https://docs.github.com/en/rest/reference/pulls#list-pull-requests
     """
 
-    page_size = 50
+    large_stream = True
     first_read_override_key = "first_read_override"
 
     def __init__(self, **kwargs):
@@ -524,7 +532,7 @@ class Comments(IncrementalGithubStream):
     API docs: https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository
     """
 
-    page_size = 30  # `comments` is a large stream so it's better to set smaller page size.
+    large_stream = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/issues/comments"
@@ -637,7 +645,7 @@ class Issues(IncrementalGithubStream):
     API docs: https://docs.github.com/en/rest/reference/issues#list-repository-issues
     """
 
-    page_size = 50  # `issues` is a large stream so it's better to set smaller page size.
+    large_stream = True
 
     stream_base_params = {
         "state": "all",
@@ -651,7 +659,7 @@ class ReviewComments(IncrementalGithubStream):
     API docs: https://docs.github.com/en/rest/reference/pulls#list-review-comments-in-a-repository
     """
 
-    page_size = 30  # `review-comments` is a large stream so it's better to set smaller page size.
+    large_stream = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/pulls/comments"

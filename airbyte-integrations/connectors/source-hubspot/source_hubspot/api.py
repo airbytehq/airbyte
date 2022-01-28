@@ -9,7 +9,7 @@ import urllib.parse
 from abc import ABC, abstractmethod
 from functools import lru_cache, partial
 from http import HTTPStatus
-from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import backoff
 import pendulum as pendulum
@@ -37,7 +37,7 @@ VALID_JSON_SCHEMA_TYPES = {
 KNOWN_CONVERTIBLE_SCHEMA_TYPES = {
     "bool": ("boolean", None),
     "enumeration": ("string", None),
-    "date": ("string", "date-time"),
+    "date": ("string", "date"),
     "date-time": ("string", "date-time"),
     "datetime": ("string", "date-time"),
     "json": ("string", None),
@@ -781,10 +781,10 @@ class DealPipelineStream(Stream):
 class TicketPipelineStream(Stream):
     """Ticket pipelines, API v1
     This endpoint requires the tickets scope.
-    Docs: https://legacydocs.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type
+    Docs: https://developers.hubspot.com/docs/api/crm/pipelines
     """
 
-    url = "/crm-pipelines/v1/pipelines/tickets"
+    url = "/crm/v3/pipelines/tickets"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
 
@@ -917,6 +917,50 @@ class OwnerStream(Stream):
     url = "/crm/v3/owners"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+
+
+class PropertyHistoryStream(IncrementalStream):
+    """Contacts Endpoint, API v1
+    Is used to get all Contacts and the history of their respective
+    Properties. Whenever a property is changed it is added here.
+    Docs: https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts
+    """
+
+    more_key = "has-more"
+    url = "/contacts/v1/lists/recently_updated/contacts/recent"
+    updated_at_field = "timestamp"
+    created_at_field = "timestamp"
+    data_field = "contacts"
+    page_field = "vid-offset"
+    page_filter = "vidOffset"
+    limit = 100
+
+    def list(self, fields) -> Iterable:
+        properties = self._api.get("/properties/v2/contact/properties")
+        properties_list = [single_property["name"] for single_property in properties]
+        params = {"propertyMode": "value_and_history", "property": properties_list}
+        yield from self.read(partial(self._api.get, url=self.url), params)
+
+    def _transform(self, records: Iterable) -> Iterable:
+        for record in records:
+            properties = record.get("properties")
+            vid = record.get("vid")
+            value_dict: Dict
+            for key, value_dict in properties.items():
+                versions = value_dict.get("versions")
+                if key == "lastmodifieddate":
+                    # Skipping the lastmodifieddate since it only returns the value
+                    # when one field of a contact was changed no matter which
+                    # field was changed. It therefore creates overhead, since for
+                    # every changed property there will be the date it was changed in itself
+                    # and a change in the lastmodifieddate field.
+                    continue
+                if versions:
+                    for version in versions:
+                        version["timestamp"] = self._field_to_datetime(version["timestamp"]).to_datetime_string()
+                        version["property"] = key
+                        version["vid"] = vid
+                        yield version
 
 
 class SubscriptionChangeStream(IncrementalStream):
