@@ -58,6 +58,7 @@ public class EnvConfigs implements Configs {
   public static final String JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY = "JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY";
   public static final String JOB_KUBE_TOLERATIONS = "JOB_KUBE_TOLERATIONS";
   public static final String JOB_KUBE_NODE_SELECTORS = "JOB_KUBE_NODE_SELECTORS";
+  public static final String JOB_KUBE_ANNOTATIONS = "JOB_KUBE_ANNOTATIONS";
   public static final String JOB_KUBE_SOCAT_IMAGE = "JOB_KUBE_SOCAT_IMAGE";
   public static final String JOB_KUBE_BUSYBOX_IMAGE = "JOB_KUBE_BUSYBOX_IMAGE";
   public static final String JOB_KUBE_CURL_IMAGE = "JOB_KUBE_CURL_IMAGE";
@@ -431,8 +432,38 @@ public class EnvConfigs implements Configs {
    */
   @Override
   public Map<String, String> getJobKubeNodeSelectors() {
+    return splitKVPairs(getEnvOrDefault(JOB_KUBE_NODE_SELECTORS, ""));
+  }
+
+  /**
+   * Returns a map of annotations from its own environment variable. The value of the env is a string
+   * that represents one or more annotations. Each kv-pair is separated by a `,`
+   * <p>
+   * For example:- The following represents two annotations
+   * <p>
+   * airbyte=server,type=preemptive
+   *
+   * @return map containing kv pairs of annotations
+   */
+  @Override
+  public Map<String, String> getJobKubeAnnotations() {
+    return splitKVPairs(getEnvOrDefault(JOB_KUBE_ANNOTATIONS, ""));
+  }
+
+  /**
+   * Splits key value pairs from the input string into a Map<String, String>.
+   * Each kv-pair is separated by a ','. The key and the value is separated by '='.
+   * <p>
+   * For example:
+   * </p>
+   * key1=value1,key2=value2
+   *
+   * @param input string
+   * @return map containing kv pairs
+   */
+  public Map<String, String> splitKVPairs(String input) {
     return Splitter.on(",")
-        .splitToStream(getEnvOrDefault(JOB_KUBE_NODE_SELECTORS, ""))
+        .splitToStream(input)
         .filter(s -> !Strings.isNullOrEmpty(s) && s.contains("="))
         .map(s -> s.split("="))
         .collect(Collectors.toMap(s -> s[0], s -> s[1]));

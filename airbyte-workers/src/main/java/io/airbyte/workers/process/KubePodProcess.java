@@ -98,8 +98,11 @@ public class KubePodProcess extends Process {
   public static final Duration DEFAULT_STATUS_CHECK_INTERVAL = Duration.ofSeconds(30);
   private static final String DEFAULT_MEMORY_REQUEST = "25Mi";
   private static final String DEFAULT_MEMORY_LIMIT = "50Mi";
+  private static final String DEFAULT_CPU_REQUEST = "0.1";
+  private static final String DEFAULT_CPU_LIMIT = "0.2";
   private static final ResourceRequirements DEFAULT_SIDECAR_RESOURCES = new ResourceRequirements()
-      .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_REQUEST);
+      .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_REQUEST)
+      .withCpuLimit(DEFAULT_CPU_LIMIT).withCpuRequest(DEFAULT_CPU_REQUEST);
 
   private static final String PIPES_DIR = "/pipes";
   private static final String STDIN_PIPE_FILE = PIPES_DIR + "/stdin";
@@ -162,6 +165,7 @@ public class KubePodProcess extends Process {
         .withImage(busyboxImage)
         .withWorkingDir(CONFIG_DIR)
         .withCommand("sh", "-c", initEntrypointStr)
+        .withResources(getResourceRequirementsBuilder(DEFAULT_SIDECAR_RESOURCES).build())
         .withVolumeMounts(mainVolumeMounts)
         .build();
   }
@@ -336,6 +340,7 @@ public class KubePodProcess extends Process {
                         final List<TolerationPOJO> tolerations,
                         final Map<String, String> nodeSelectors,
                         final Map<String, String> labels,
+                        final Map<String, String> annotations,
                         final String socatImage,
                         final String busyboxImage,
                         final String curlImage,
@@ -451,6 +456,7 @@ public class KubePodProcess extends Process {
         .withNewMetadata()
         .withName(podName)
         .withLabels(labels)
+        .withAnnotations(annotations)
         .endMetadata()
         .withNewSpec();
 
@@ -468,9 +474,8 @@ public class KubePodProcess extends Process {
         .endSpec()
         .build();
 
-    LOGGER.info("Creating pod...");
+    LOGGER.info("Creating pod {}...", pod.getMetadata().getName());
     this.podDefinition = fabricClient.pods().inNamespace(namespace).createOrReplace(pod);
-
     waitForInitPodToRun(fabricClient, podDefinition);
 
     LOGGER.info("Copying files...");

@@ -16,6 +16,7 @@ public class WorkerConfigs {
   private final ResourceRequirements resourceRequirements;
   private final List<TolerationPOJO> workerKubeTolerations;
   private final Map<String, String> workerKubeNodeSelectors;
+  private final Map<String, String> workerKubeAnnotations;
   private final String jobImagePullSecret;
   private final String jobImagePullPolicy;
   private final String jobSocatImage;
@@ -32,6 +33,7 @@ public class WorkerConfigs {
         .withMemoryLimit(configs.getJobMainContainerMemoryLimit());
     this.workerKubeTolerations = configs.getJobKubeTolerations();
     this.workerKubeNodeSelectors = configs.getJobKubeNodeSelectors();
+    this.workerKubeAnnotations = configs.getJobKubeAnnotations();
     this.jobImagePullSecret = configs.getJobKubeMainContainerImagePullSecret();
     this.jobImagePullPolicy = configs.getJobKubeMainContainerImagePullPolicy();
     this.jobSocatImage = configs.getJobKubeSocatImage();
@@ -54,6 +56,10 @@ public class WorkerConfigs {
 
   public Map<String, String> getworkerKubeNodeSelectors() {
     return workerKubeNodeSelectors;
+  }
+
+  public Map<String, String> getWorkerKubeAnnotations() {
+    return workerKubeAnnotations;
   }
 
   public String getJobImagePullSecret() {

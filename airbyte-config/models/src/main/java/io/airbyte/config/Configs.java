@@ -248,6 +248,11 @@ public interface Configs {
   Map<String, String> getJobKubeNodeSelectors();
 
   /**
+   * Define one or more Job pod annotations. Each kv-pair is separated by a `,`.
+   */
+  Map<String, String> getJobKubeAnnotations();
+
+  /**
    * Define the Job pod connector image pull policy.
    */
   String getJobKubeMainContainerImagePullPolicy();
