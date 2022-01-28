@@ -6,18 +6,25 @@ package io.airbyte.integrations.source.db2;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.Db2JdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.Connection;
 import java.sql.JDBCType;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,6 +83,29 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
     return Set.of(
         "NULLID", "SYSCAT", "SQLJ", "SYSFUN", "SYSIBM", "SYSIBMADM", "SYSIBMINTERNAL", "SYSIBMTS",
         "SYSPROC", "SYSPUBLIC", "SYSSTAT", "SYSTOOLS");
+  }
+
+  @Override
+  public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
+    return database
+        .query(getPrivileges(database), sourceOperations::rowToJson)
+        .map(this::getPrivilegeDto)
+        .collect(Collectors.toSet());
+  }
+
+  private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivileges(JdbcDatabase database) {
+    return connection -> {
+      final PreparedStatement ps = connection.prepareStatement(
+          "SELECT DISTINCT OBJECTNAME, OBJECTSCHEMA FROM SYSIBMADM.PRIVILEGES WHERE OBJECTTYPE = 'TABLE' AND PRIVILEGE = 'SELECT' AND AUTHID = SESSION_USER");
+      return ps;
+    };
+  }
+
+  private JdbcPrivilegeDto getPrivilegeDto(JsonNode jsonNode) {
+    return JdbcPrivilegeDto.builder()
+        .schemaName(jsonNode.get("OBJECTSCHEMA").asText().trim())
+        .tableName(jsonNode.get("OBJECTNAME").asText())
+        .build();
   }
 
   /* Helpers */
