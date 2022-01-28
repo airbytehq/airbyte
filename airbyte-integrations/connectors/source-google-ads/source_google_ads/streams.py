@@ -14,6 +14,12 @@ from google.ads.googleads.errors import GoogleAdsException
 from .google_ads import GoogleAds
 
 
+def parse_dates(stream_slice):
+    start_date = pendulum.parse(stream_slice['start_date'])
+    end_date = pendulum.parse(stream_slice['end_date'])
+    return start_date, end_date
+
+
 def get_date_params(start_date: str, time_zone=None, range_days: int = None, end_date: pendulum.datetime = None):
     """
     Returns `start_date` and `end_date` for the given stream_slice.
@@ -148,12 +154,13 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
             except GoogleAdsException as e:
                 if e.failure._pb.errors[0].error_code.request_error == 8:
                     # page token has expired (EXPIRED_PAGE_TOKEN = 8)
-                    start_date = pendulum.parse(stream_slice['start_date'])
-                    end_date = pendulum.parse(stream_slice['end_date'])
+                    start_date, end_date = parse_dates(stream_slice)
                     if (end_date - start_date).days == 1:
                         # If range days is 1, no need in retry, because it's the minimum date range
                         raise e
                     elif state.get(self.cursor_field) == stream_slice["start_date"]:
+                        # It couldn't read all the records within one day, it will enter an infinite loop,
+                        # so raise the error
                         raise e
                     # Retry reading records from where it crushed
                     stream_slice["start_date"] = state.get(self.cursor_field, stream_slice["start_date"])
