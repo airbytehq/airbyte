@@ -51,6 +51,7 @@ class CatalogField:
 
 class JsonSchemaHelper:
     """Helper class to simplify schema validation and read of records according to their schema."""
+
     def __init__(self, schema):
         self._schema = schema
 
