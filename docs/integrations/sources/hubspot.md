@@ -37,15 +37,15 @@ This source is capable of syncing the following tables and their data:
 * [Workflows](https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows)
 
 ### A note on the `engagements` stream
-Objects in the `engagements` stream can have one of the following types: `note`, `email`, `task`, `meeting`, `call`. 
+Objects in the `engagements` stream can have one of the following types: `note`, `email`, `task`, `meeting`, `call`.
 
-Depending on the type of engagement, different properties will be set for that object in the `engagements_metadata` table in the destination. 
+Depending on the type of engagement, different properties will be set for that object in the `engagements_metadata` table in the destination.
 
 * A `call` engagement will have a corresponding `engagements_metadata` object with non-null values in the `toNumber`, `fromNumber`, `status`, `externalId`, `durationMilliseconds`, `externalAccountId`, `recordingUrl`, `body`, and `disposition` columns.
-* An `email` engagement will have a corresponding `engagements_metadata` object with with non-null values in the `subject`, `html`, and `text` columns. In addition, there will be records in four related tables, `engagements_metadata_from`, `engagements_metadata_to`, `engagements_metadata_cc`, `engagements_metadata_bcc`. 
-* A `meeting` engagement will have a corresponding `engagements_metadata` object with non-null values in the `body`, `startTime`, `endTime`, and `title` columns. 
-* A `note` engagement will have a corresponding `engagements_metadata` object with non-null values in the `body` column. 
-* A `task` engagement will have a corresponding `engagements_metadata` object with non-null values in the `body`, `status`, and `forObjectType` columns. 
+* An `email` engagement will have a corresponding `engagements_metadata` object with with non-null values in the `subject`, `html`, and `text` columns. In addition, there will be records in four related tables, `engagements_metadata_from`, `engagements_metadata_to`, `engagements_metadata_cc`, `engagements_metadata_bcc`.
+* A `meeting` engagement will have a corresponding `engagements_metadata` object with non-null values in the `body`, `startTime`, `endTime`, and `title` columns.
+* A `note` engagement will have a corresponding `engagements_metadata` object with non-null values in the `body` column.
+* A `task` engagement will have a corresponding `engagements_metadata` object with non-null values in the `body`, `status`, and `forObjectType` columns.
 
 
 **Note**: HubSpot API currently only supports `quotes` endpoint using API Key, using Oauth it is impossible to access this stream (as reported by [community.hubspot.com](https://community.hubspot.com/t5/APIs-Integrations/Help-with-using-Feedback-CRM-API-and-Quotes-CRM-API/m-p/449104/highlight/true#M44411)).
@@ -98,9 +98,11 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 | `email_events` | `content` |
 | `engagements` | `contacts` |
 | `forms` | `forms` |
+| `form_submissions`| `forms` |
 | `line_items` | `e-commerce` |
 | `owners` | `contacts` |
 | `products` | `e-commerce` |
+| `property_history` | `contacts` |
 | `quotes` | no scope required |
 | `subscription_changes` | `content` |
 | `tickets` | `tickets` |
@@ -110,6 +112,12 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 
 | Version | Date       | Pull Request | Subject                                                                                                                                        |
 |:--------|:-----------| :--- |:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.36  | 2022-01-22 | [7784](https://github.com/airbytehq/airbyte/pull/7784) | Add Property History Stream |
+| 0.1.35  | 2021-12-24 | [9081](https://github.com/airbytehq/airbyte/pull/9081) | Add Feedback Submissions stream and update Ticket Pipelines stream |
+| 0.1.34  | 2022-01-20 | [9641](https://github.com/airbytehq/airbyte/pull/9641) | Add more fields for `email_events` stream |
+| 0.1.33  | 2022-01-14 | [8887](https://github.com/airbytehq/airbyte/pull/8887) | More efficient support for incremental updates on Companies, Contact, Deals and Engagement streams |
+| 0.1.32  | 2022-01-13 | [8011](https://github.com/airbytehq/airbyte/pull/8011) | Add new stream form_submissions                                                                                   |
+| 0.1.31  | 2022-01-11 | [9385](https://github.com/airbytehq/airbyte/pull/9385) | Remove auto-generated `properties` from `Engagements` stream                                                                                   |
 | 0.1.30  | 2021-01-10 | [9129](https://github.com/airbytehq/airbyte/pull/9129) | Created Contacts list memberships streams                                                                                                      |
 | 0.1.29  | 2021-12-17 | [8699](https://github.com/airbytehq/airbyte/pull/8699) | Add incremental sync support for `companies`, `contact_lists`, `contacts`, `deals`, `line_items`, `products`, `quotes`, `tickets` streams      |
 | 0.1.28  | 2021-12-15 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Update fields and descriptions                                                                                                                 |
@@ -134,4 +142,3 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 | 0.1.9   | 2021-08-11 | [5334](https://github.com/airbytehq/airbyte/pull/5334) | Fix empty strings inside float datatype                                                                                                        |
 | 0.1.8   | 2021-08-06 | [5250](https://github.com/airbytehq/airbyte/pull/5250) | Fix issue with printing exceptions                                                                                                             |
 | 0.1.7   | 2021-07-27 | [4913](https://github.com/airbytehq/airbyte/pull/4913) | Update fields schema                                                                                                                           |
-

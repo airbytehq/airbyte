@@ -25,7 +25,7 @@ public class ProductionWriterFactory implements S3WriterFactory {
   protected static final Logger LOGGER = LoggerFactory.getLogger(ProductionWriterFactory.class);
 
   @Override
-  public S3Writer create(final S3DestinationConfig config,
+  public DestinationFileWriter create(final S3DestinationConfig config,
                          final AmazonS3 s3Client,
                          final ConfiguredAirbyteStream configuredStream,
                          final Timestamp uploadTimestamp)

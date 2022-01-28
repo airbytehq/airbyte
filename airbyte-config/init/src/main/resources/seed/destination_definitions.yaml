@@ -1,7 +1,7 @@
 - name: Azure Blob Storage
   destinationDefinitionId: b4c5d105-31fd-4817-96b6-cb923bfc04cb
   dockerRepository: airbyte/destination-azure-blob-storage
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/destinations/azureblobstorage
   icon: azureblobstorage.svg
 - name: Amazon SQS
@@ -13,13 +13,13 @@
 - name: BigQuery
   destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   dockerRepository: airbyte/destination-bigquery
-  dockerImageTag: 0.6.2
+  dockerImageTag: 0.6.5
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
   icon: bigquery.svg
 - name: BigQuery (denormalized typed struct)
   destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-bigquery-denormalized
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.5
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
   icon: bigquery.svg
 - name: Cassandra
@@ -60,13 +60,13 @@
 - name: Google Cloud Storage (GCS)
   destinationDefinitionId: ca8f6566-e555-4b40-943a-545bf123117a
   dockerRepository: airbyte/destination-gcs
-  dockerImageTag: 0.1.19
+  dockerImageTag: 0.1.20
   documentationUrl: https://docs.airbyte.io/integrations/destinations/gcs
   icon: googlecloudstorage.svg
 - name: Google PubSub
   destinationDefinitionId: 356668e2-7e34-47f3-a3b0-67a8a481b692
   dockerRepository: airbyte/destination-pubsub
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/destinations/pubsub
   icon: googlepubsub.svg
 - name: Kafka
@@ -126,7 +126,7 @@
 - name: Oracle
   destinationDefinitionId: 3986776d-2319-4de9-8af8-db14c0996e72
   dockerRepository: airbyte/destination-oracle
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.io/integrations/destinations/oracle
   icon: oracle.svg
 - name: Postgres
@@ -167,7 +167,7 @@
 - name: S3
   destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   dockerRepository: airbyte/destination-s3
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.5
   documentationUrl: https://docs.airbyte.io/integrations/destinations/s3
   icon: s3.svg
 - name: SFTP-JSON
@@ -179,7 +179,7 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.4.2
+  dockerImageTag: 0.4.5
   documentationUrl: https://docs.airbyte.io/integrations/destinations/snowflake
   icon: snowflake.svg
 - name: MariaDB ColumnStore

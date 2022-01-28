@@ -5,11 +5,13 @@
 package io.airbyte.analytics;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.messages.IdentifyMessage;
 import com.segment.analytics.messages.TrackMessage;
@@ -17,6 +19,7 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -109,7 +112,7 @@ class SegmentTrackingClientTest {
     final TrackMessage actual = mockBuilder.getValue().build();
     assertEquals("jump", actual.event());
     assertEquals(IDENTITY.getCustomerId().toString(), actual.userId());
-    assertEquals(metadata, actual.properties());
+    assertEquals(metadata, filterTrackedAtProperty(Objects.requireNonNull(actual.properties())));
   }
 
   @Test
@@ -127,7 +130,18 @@ class SegmentTrackingClientTest {
     final TrackMessage actual = mockBuilder.getValue().build();
     assertEquals("jump", actual.event());
     assertEquals(IDENTITY.getCustomerId().toString(), actual.userId());
-    assertEquals(metadata, actual.properties());
+    assertEquals(metadata, filterTrackedAtProperty(Objects.requireNonNull(actual.properties())));
+  }
+
+  private static ImmutableMap<String, Object> filterTrackedAtProperty(final Map<String, ?> properties) {
+    assertTrue(properties.containsKey("tracked_at"));
+    final Builder<String, Object> builder = ImmutableMap.builder();
+    properties.forEach((key, value) -> {
+      if (!key.equals("tracked_at")) {
+        builder.put(key, value);
+      }
+    });
+    return builder.build();
   }
 
 }

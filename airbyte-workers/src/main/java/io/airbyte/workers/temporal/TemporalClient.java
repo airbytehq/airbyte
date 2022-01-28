@@ -39,6 +39,7 @@ import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -47,6 +48,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.StopWatch;
 
 @Slf4j
 public class TemporalClient {
@@ -152,12 +154,61 @@ public class TemporalClient {
   }
 
   public void migrateSyncIfNeeded(final Set<UUID> connectionIds) {
+    final StopWatch globalMigrationWatch = new StopWatch();
+    globalMigrationWatch.start();
+    refreshRunningWorkflow();
+
     connectionIds.forEach((connectionId) -> {
-      if (!isWorkflowRunning(getConnectionManagerName(connectionId))) {
+      final StopWatch singleSyncMigrationWatch = new StopWatch();
+      singleSyncMigrationWatch.start();
+      if (!isInRunningWorkflowCache(getConnectionManagerName(connectionId))) {
         log.info("Migrating: " + connectionId);
-        submitConnectionUpdaterAsync(connectionId);
+        try {
+          submitConnectionUpdaterAsync(connectionId);
+        } catch (final Exception e) {
+          log.error("New workflow submission failed, retrying", e);
+          refreshRunningWorkflow();
+          submitConnectionUpdaterAsync(connectionId);
+        }
       }
+      singleSyncMigrationWatch.stop();
+      log.info("Sync migration took: " + singleSyncMigrationWatch.formatTime());
     });
+    globalMigrationWatch.stop();
+
+    log.info("The migration to the new scheduler took: " + globalMigrationWatch.formatTime());
+  }
+
+  private final Set<String> workflowNames = new HashSet<>();
+
+  boolean isInRunningWorkflowCache(final String workflowName) {
+    return workflowNames.contains(workflowName);
+  }
+
+  @VisibleForTesting
+  void refreshRunningWorkflow() {
+    workflowNames.clear();
+    ByteString token;
+    ListOpenWorkflowExecutionsRequest openWorkflowExecutionsRequest =
+        ListOpenWorkflowExecutionsRequest.newBuilder()
+            .setNamespace(client.getOptions().getNamespace())
+            .build();
+    do {
+      final ListOpenWorkflowExecutionsResponse listOpenWorkflowExecutionsRequest =
+          service.blockingStub().listOpenWorkflowExecutions(openWorkflowExecutionsRequest);
+      final Set<String> workflowExecutionInfos = listOpenWorkflowExecutionsRequest.getExecutionsList().stream()
+          .map((workflowExecutionInfo -> workflowExecutionInfo.getExecution().getWorkflowId()))
+          .collect(Collectors.toSet());
+      workflowNames.addAll(workflowExecutionInfos);
+      token = listOpenWorkflowExecutionsRequest.getNextPageToken();
+
+      openWorkflowExecutionsRequest =
+          ListOpenWorkflowExecutionsRequest.newBuilder()
+              .setNamespace(client.getOptions().getNamespace())
+              .setNextPageToken(token)
+              .build();
+
+    } while (token != null && token.size() > 0);
   }
 
   public void submitConnectionUpdaterAsync(final UUID connectionId) {
@@ -165,12 +216,10 @@ public class TemporalClient {
     final ConnectionManagerWorkflow connectionManagerWorkflow = getWorkflowOptionsWithWorkflowId(ConnectionManagerWorkflow.class,
         TemporalJobType.CONNECTION_UPDATER, getConnectionManagerName(connectionId));
     final BatchRequest signalRequest = client.newSignalWithStartRequest();
-    final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, null, null, false, 1, null);
+    final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, null, null, false, 1, null, false);
     signalRequest.add(connectionManagerWorkflow::run, input);
 
     WorkflowClient.start(connectionManagerWorkflow::run, input);
-
-    log.info("Scheduler temporal wf started");
   }
 
   public void deleteConnection(final UUID connectionId) {
@@ -249,6 +298,7 @@ public class TemporalClient {
     final boolean isWorflowRunning = isWorkflowRunning(getConnectionManagerName(connectionId));
 
     if (!isWorflowRunning) {
+      log.error("Can't cancel a non running workflow");
       return new ManualSyncSubmissionResult(
           Optional.of("No scheduler workflow is running for: " + connectionId),
           Optional.empty());
@@ -269,7 +319,45 @@ public class TemporalClient {
       }
     } while (connectionManagerWorkflow.getState().isRunning());
 
-    log.info("end of manual schedule");
+    log.info("end of manual cancellation");
+
+    final long jobId = connectionManagerWorkflow.getJobInformation().getJobId();
+
+    return new ManualSyncSubmissionResult(
+        Optional.empty(),
+        Optional.of(jobId));
+  }
+
+  public ManualSyncSubmissionResult resetConnection(final UUID connectionId) {
+    log.info("reset sync request");
+
+    final boolean isWorflowRunning = isWorkflowRunning(getConnectionManagerName(connectionId));
+
+    if (!isWorflowRunning) {
+      log.error("Can't reset a non running workflow");
+      return new ManualSyncSubmissionResult(
+          Optional.of("No scheduler workflow is running for: " + connectionId),
+          Optional.empty());
+    }
+
+    final ConnectionManagerWorkflow connectionManagerWorkflow =
+        getExistingWorkflow(ConnectionManagerWorkflow.class, getConnectionManagerName(connectionId));
+
+    final long oldJobId = connectionManagerWorkflow.getJobInformation().getJobId();
+
+    connectionManagerWorkflow.resetConnection();
+
+    do {
+      try {
+        Thread.sleep(DELAY_BETWEEN_QUERY_MS);
+      } catch (final InterruptedException e) {
+        return new ManualSyncSubmissionResult(
+            Optional.of("Didn't manage to reset a sync for: " + connectionId),
+            Optional.empty());
+      }
+    } while (connectionManagerWorkflow.getJobInformation().getJobId() == oldJobId);
+
+    log.info("end of reset");
 
     final long jobId = connectionManagerWorkflow.getJobInformation().getJobId();
 
@@ -354,7 +442,7 @@ public class TemporalClient {
   }
 
   @VisibleForTesting
-  static String getConnectionManagerName(final UUID connectionId) {
+  public static String getConnectionManagerName(final UUID connectionId) {
     return "connection_manager_" + connectionId;
   }
 
