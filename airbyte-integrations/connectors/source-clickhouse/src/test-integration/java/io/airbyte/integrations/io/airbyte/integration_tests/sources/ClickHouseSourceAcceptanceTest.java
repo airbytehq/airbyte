@@ -80,11 +80,6 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
-  }
-
-  @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     db = new ClickHouseContainer("yandex/clickhouse-server:21.8.8.29-alpine");
     db.start();

@@ -5,6 +5,7 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -29,13 +30,13 @@ import java.util.List;
 public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
 
   // This test case expects an active redshift cluster that is useable from outside of vpc
-  protected JsonNode config;
+  protected ObjectNode config;
   protected JdbcDatabase database;
   protected String schemaName;
   protected String streamName;
 
-  protected static JsonNode getStaticConfig() {
-    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
+  protected static ObjectNode getStaticConfig() {
+    return (ObjectNode) Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
 
   @Override
@@ -52,6 +53,19 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
         RedshiftSource.DRIVER_CLASS);
 
     schemaName = Strings.addRandomSuffix("integration_test", "_", 5).toLowerCase();
+
+    config = config.set("schemas", Jsons.jsonNode(List.of(schemaName)));
+
+    // create a test data
+    createTestData(database, schemaName);
+
+    // create a schema with data that will not be used for testing, but would be used to check schema
+    // filtering. This one should not be visible in results
+    createTestData(database, schemaName + "shouldIgnore");
+  }
+
+  private void createTestData(final JdbcDatabase database, final String schemaName)
+      throws SQLException {
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
     database.execute(connection -> {
       connection.createStatement().execute(createSchemaQuery);
@@ -60,12 +74,15 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
     streamName = "customer";
     final String fqTableName = JdbcUtils.getFullyQualifiedTableName(schemaName, streamName);
     final String createTestTable =
-        String.format("CREATE TABLE IF NOT EXISTS %s (c_custkey INTEGER, c_name VARCHAR(16), c_nation VARCHAR(16));\n", fqTableName);
+        String.format(
+            "CREATE TABLE IF NOT EXISTS %s (c_custkey INTEGER, c_name VARCHAR(16), c_nation VARCHAR(16));\n",
+            fqTableName);
     database.execute(connection -> {
       connection.createStatement().execute(createTestTable);
     });
 
-    final String insertTestData = String.format("insert into %s values (1, 'Chris', 'France');\n", fqTableName);
+    final String insertTestData = String.format("insert into %s values (1, 'Chris', 'France');\n",
+        fqTableName);
     database.execute(connection -> {
       connection.createStatement().execute(insertTestData);
     });
@@ -100,11 +117,6 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
         Field.of("c_custkey", JsonSchemaPrimitive.NUMBER),
         Field.of("c_name", JsonSchemaPrimitive.STRING),
         Field.of("c_nation", JsonSchemaPrimitive.STRING));
-  }
-
-  @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
   }
 
   @Override

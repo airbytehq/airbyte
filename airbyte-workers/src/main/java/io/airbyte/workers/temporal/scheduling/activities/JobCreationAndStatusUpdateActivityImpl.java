@@ -83,7 +83,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
         return new JobCreationOutput(jobId);
       }
-    } catch (JsonValidationException | ConfigNotFoundException | IOException e) {
+    } catch (final JsonValidationException | ConfigNotFoundException | IOException e) {
       throw new RetryableException(e);
     }
   }
@@ -112,7 +112,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
         final JobOutput jobOutput = new JobOutput().withSync(input.getStandardSyncOutput());
         jobPersistence.writeOutput(input.getJobId(), input.getAttemptId(), jobOutput);
       } else {
-        log.warn("The job {} doesn't have an input for the attempt {}", input.getJobId(), input.getAttemptId());
+        log.warn("The job {} doesn't have any output for the attempt {}", input.getJobId(), input.getAttemptId());
       }
       jobPersistence.succeedAttempt(input.getJobId(), input.getAttemptId());
       final Job job = jobPersistence.getJob(input.getJobId());
@@ -139,7 +139,15 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   public void attemptFailure(final AttemptFailureInput input) {
     try {
       jobPersistence.failAttempt(input.getJobId(), input.getAttemptId());
-      final Job job = jobPersistence.getJob(input.getJobId());
+      jobPersistence.writeAttemptFailureSummary(input.getJobId(), input.getAttemptId(), input.getAttemptFailureSummary());
+
+      if (input.getStandardSyncOutput() != null) {
+        final JobOutput jobOutput = new JobOutput().withSync(input.getStandardSyncOutput());
+        jobPersistence.writeOutput(input.getJobId(), input.getAttemptId(), jobOutput);
+      } else {
+        log.warn("The job {} doesn't have any output for the attempt {}", input.getJobId(), input.getAttemptId());
+      }
+
     } catch (final IOException e) {
       throw new RetryableException(e);
     }
@@ -149,6 +157,9 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   public void jobCancelled(final JobCancelledInput input) {
     try {
       jobPersistence.cancelJob(input.getJobId());
+      if (input.getAttemptFailureSummary() != null) {
+        jobPersistence.writeAttemptFailureSummary(input.getJobId(), input.getAttemptId(), input.getAttemptFailureSummary());
+      }
       final Job job = jobPersistence.getJob(input.getJobId());
       trackCompletion(job, JobStatus.FAILED);
       jobNotifier.failJob("Job was cancelled", job);

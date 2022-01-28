@@ -10,16 +10,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
-import io.airbyte.api.model.AttemptInfoRead;
-import io.airbyte.api.model.AttemptRead;
-import io.airbyte.api.model.AttemptStats;
-import io.airbyte.api.model.AttemptStreamStats;
-import io.airbyte.api.model.JobConfigType;
-import io.airbyte.api.model.JobInfoRead;
-import io.airbyte.api.model.JobRead;
-import io.airbyte.api.model.JobWithAttemptsRead;
-import io.airbyte.api.model.LogRead;
+import io.airbyte.api.model.*;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
@@ -37,6 +30,7 @@ import io.airbyte.scheduler.models.JobStatus;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -114,6 +108,22 @@ class JobConverterTest {
                   .endedAt(CREATED_AT))
               .logs(new LogRead().logLines(new ArrayList<>()))));
 
+  private static final String version = "0.33.4";
+  private static final AirbyteVersion airbyteVersion = new AirbyteVersion(version);
+  private static final SourceDefinitionRead sourceDefinitionRead = new SourceDefinitionRead().sourceDefinitionId(UUID.randomUUID());
+  private static final DestinationDefinitionRead destinationDefinitionRead =
+      new DestinationDefinitionRead().destinationDefinitionId(UUID.randomUUID());
+
+  private static final JobDebugRead JOB_DEBUG_INFO =
+      new JobDebugRead()
+          .id(JOB_ID)
+          .configId(JOB_CONFIG_ID)
+          .status(io.airbyte.api.model.JobStatus.RUNNING)
+          .configType(JobConfigType.CHECK_CONNECTION_SOURCE)
+          .airbyteVersion(airbyteVersion.serialize())
+          .sourceDefinition(sourceDefinitionRead)
+          .destinationDefinition(destinationDefinitionRead);
+
   private static final JobWithAttemptsRead JOB_WITH_ATTEMPTS_READ = new JobWithAttemptsRead()
       .job(JOB_INFO.getJob())
       .attempts(JOB_INFO.getAttempts().stream().map(AttemptInfoRead::getAttempt).collect(Collectors.toList()));
@@ -144,6 +154,11 @@ class JobConverterTest {
   @Test
   public void testGetJobInfoRead() {
     assertEquals(JOB_INFO, jobConverter.getJobInfoRead(job));
+  }
+
+  @Test
+  public void testGetDebugJobInfoRead() {
+    assertEquals(JOB_DEBUG_INFO, jobConverter.getDebugJobInfoRead(JOB_INFO, sourceDefinitionRead, destinationDefinitionRead, airbyteVersion));
   }
 
   @Test

@@ -214,9 +214,10 @@ The final query should show a `STORAGE_GCP_SERVICE_ACCOUNT` property with an ema
 
 Finally, you need to add read/write permissions to your bucket with that email.
 
-
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :-----       | :------ |
+| 0.4.5   | 2021-12-29 | [#9184](https://github.com/airbytehq/airbyte/pull/9184) | Update connector fields title/description |
+| 0.4.4   | 2022-01-24 | [#9743](https://github.com/airbytehq/airbyte/pull/9743) | Fixed bug with dashes in schema name |
 | 0.4.3   | 2022-01-20 | [#9531](https://github.com/airbytehq/airbyte/pull/9531) | Start using new S3StreamCopier and expose the purgeStagingData option |
 | 0.4.2   | 2022-01-10 | [#9141](https://github.com/airbytehq/airbyte/pull/9141) | Fixed duplicate rows on retries |
 | 0.4.1   | 2021-01-06 | [#9311](https://github.com/airbytehq/airbyte/pull/9311) | Update сreating schema during check |

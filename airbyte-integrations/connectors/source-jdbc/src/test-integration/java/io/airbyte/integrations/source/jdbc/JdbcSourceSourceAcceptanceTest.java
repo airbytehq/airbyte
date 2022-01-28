@@ -97,9 +97,4 @@ public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
     return Jsons.jsonNode(new HashMap<>());
   }
 
-  @Override
-  protected List<String> getRegexTests() throws Exception {
-    return new ArrayList<>();
-  }
-
 }

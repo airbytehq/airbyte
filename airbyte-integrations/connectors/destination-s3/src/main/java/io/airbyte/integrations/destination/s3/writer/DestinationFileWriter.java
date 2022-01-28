@@ -2,11 +2,11 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.gcs.writer;
+package io.airbyte.integrations.destination.s3.writer;
 
 import io.airbyte.integrations.destination.s3.S3Format;
 
-public interface GscWriter extends CommonWriter {
+public interface DestinationFileWriter extends DestinationWriter {
 
   String getFileLocation();
 

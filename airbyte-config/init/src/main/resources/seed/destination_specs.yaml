@@ -3786,7 +3786,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.3"
+- dockerImage: "airbyte/destination-snowflake:0.4.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:
@@ -3804,8 +3804,8 @@
       additionalProperties: true
       properties:
         host:
-          description: "Host domain of the snowflake instance (must include the account,\
-            \ region, cloud environment, and end with snowflakecomputing.com)."
+          description: "The host domain of the snowflake instance (must include the\
+            \ account, region, cloud environment, and end with snowflakecomputing.com)."
           examples:
           - "accountname.us-east-2.aws.snowflakecomputing.com"
           type: "string"
@@ -3833,10 +3833,10 @@
           title: "Database"
           order: 3
         schema:
-          description: "The default Snowflake schema tables are written to if the\
-            \ source does not specify a namespace. Schema name would be transformed\
-            \ to allowed by Snowflake if it not follow Snowflake Naming Conventions\
-            \ https://docs.airbyte.io/integrations/destinations/snowflake#notes-about-snowflake-naming-conventions "
+          description: "The default schema is used as the target schema for all statements\
+            \ issued from the connection that do not explicitly specify a schema name..\
+            \ Schema name would be transformed to allowed by Snowflake if it not follow\
+            \ Snowflake Naming Conventions https://docs.airbyte.io/integrations/destinations/snowflake#notes-about-snowflake-naming-conventions "
           examples:
           - "AIRBYTE_SCHEMA"
           type: "string"
@@ -3850,7 +3850,7 @@
           title: "Username"
           order: 5
         password:
-          description: "Password associated with the username."
+          description: "The password associated with the username."
           type: "string"
           airbyte_secret: true
           title: "Password"
@@ -3858,7 +3858,7 @@
         loading_method:
           type: "object"
           title: "Loading Method"
-          description: "Loading method used to send data to Snowflake."
+          description: "The loading method used to send data to Snowflake."
           order: 7
           oneOf:
           - title: "[Recommended] Internal Staging"
@@ -3917,8 +3917,8 @@
                 title: "S3 Bucket Region"
                 type: "string"
                 default: ""
-                description: "The region of the S3 staging bucket to use if utilising\
-                  \ a copy strategy."
+                description: "The region of the S3 staging bucket which is used when\
+                  \ utilising a copy strategy."
                 enum:
                 - ""
                 - "us-east-1"
