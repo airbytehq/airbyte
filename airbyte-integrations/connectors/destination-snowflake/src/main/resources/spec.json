@@ -77,7 +77,7 @@
       "loading_method": {
         "type": "object",
         "title": "Loading Method",
-        "description": "The loading method used to send data to Snowflake.",
+        "description": "Loading method used to send data to Snowflake.",
         "order": 8,
         "oneOf": [
           {
