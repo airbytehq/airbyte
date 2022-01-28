@@ -19,7 +19,7 @@ from jsonschema._utils import flatten
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, make_hashable, verify_records_schema
-from source_acceptance_test.utils.common import find_key_inside_schema
+from source_acceptance_test.utils.common import find_key_inside_schema, find_keyword_schema
 from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
 
 
@@ -199,6 +199,17 @@ class TestDiscovery(BaseTest):
                 schemas_errors.append({stream_name: check_result})
 
         assert not schemas_errors, f"Found unresolved `$refs` values for selected streams: {tuple(schemas_errors)}."
+
+    @pytest.mark.parametrize("keyword", ["allOf", "not"])
+    def test_defined_keyword_exist_in_schema(self, keyword, discovered_catalog):
+        """Checking for the presence of not allowed keywords within each json schema"""
+        schemas_errors = []
+        for stream_name, stream in discovered_catalog.items():
+            check_result = find_keyword_schema(stream.json_schema, key=keyword)
+            if check_result:
+                schemas_errors.append(stream_name)
+
+        assert not schemas_errors, f"Found not allowed `{keyword}` keyword for selected streams: {schemas_errors}."
 
     def test_primary_keys_exist_in_schema(self, discovered_catalog: Mapping[str, Any]):
         """Check that all primary keys are present in catalog."""
