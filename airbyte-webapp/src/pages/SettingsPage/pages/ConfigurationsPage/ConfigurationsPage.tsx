@@ -65,9 +65,8 @@ const ConfigurationsPage: React.FC = () => {
               throw new Error("No file");
             }
             try {
-              const deploymentService = getService<DeploymentService>(
-                "DeploymentService"
-              );
+              const deploymentService =
+                getService<DeploymentService>("DeploymentService");
               await deploymentService.importDeployment(file);
 
               window.location.reload();
@@ -85,9 +84,8 @@ const ConfigurationsPage: React.FC = () => {
   );
 
   const [{ loading: loadingExport }, onExport] = useAsyncFn(async () => {
-    const deploymentService = getService<DeploymentService>(
-      "DeploymentService"
-    );
+    const deploymentService =
+      getService<DeploymentService>("DeploymentService");
 
     const file = await deploymentService.exportDeployment();
     window.location.assign(file);

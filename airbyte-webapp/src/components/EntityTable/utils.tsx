@@ -26,12 +26,12 @@ export function getEntityTableData<
   const connectType = type === "source" ? "destination" : "source";
 
   const mappedEntities = entities.map((entityItem) => {
-    const entitySoDId = (entityItem[
+    const entitySoDId = entityItem[
       `${type}Id` as keyof SoD
-    ] as unknown) as string;
-    const entitySoDName = (entityItem[
+    ] as unknown as string;
+    const entitySoDName = entityItem[
       `${type}Name` as keyof SoD
-    ] as unknown) as string;
+    ] as unknown as string;
     const entityConnections = connections.filter(
       (connectionItem) =>
         connectionItem[`${type}Id` as "sourceId" | "destinationId"] ===

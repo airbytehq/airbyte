@@ -13,19 +13,13 @@ import {
 import { ServiceFormValues } from "../../../types";
 import { useServiceForm } from "../../../serviceFormContext";
 
-function useFormikOauthAdapter(
-  connector: ConnectorDefinitionSpecification
-): {
+function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
   loading: boolean;
   done?: boolean;
   run: () => Promise<void>;
 } {
-  const {
-    values,
-    setValues,
-    errors,
-    setFieldTouched,
-  } = useFormikContext<ServiceFormValues>();
+  const { values, setValues, errors, setFieldTouched } =
+    useFormikContext<ServiceFormValues>();
 
   const { getValues } = useServiceForm();
 

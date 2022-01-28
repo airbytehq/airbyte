@@ -42,9 +42,11 @@ export function useListCloudWorkspaces(): CloudWorkspace[] {
   const service = useGetWorkspaceService();
   const user = useCurrentUser();
 
-  return (useQuery<CloudWorkspace[]>(workspaceKeys.lists(), () =>
-    service.listByUser(user.userId)
-  ) as QueryObserverSuccessResult<CloudWorkspace[]>).data;
+  return (
+    useQuery<CloudWorkspace[]>(workspaceKeys.lists(), () =>
+      service.listByUser(user.userId)
+    ) as QueryObserverSuccessResult<CloudWorkspace[]>
+  ).data;
 }
 
 export function useCreateWorkspace() {
@@ -129,9 +131,11 @@ export function useRemoveWorkspace() {
 export function useGetCloudWorkspace(workspaceId: string): CloudWorkspace {
   const service = useGetWorkspaceService();
 
-  return (useQuery<CloudWorkspace>([workspaceKeys.detail(workspaceId)], () =>
-    service.get(workspaceId)
-  ) as QueryObserverSuccessResult<CloudWorkspace>).data;
+  return (
+    useQuery<CloudWorkspace>([workspaceKeys.detail(workspaceId)], () =>
+      service.get(workspaceId)
+    ) as QueryObserverSuccessResult<CloudWorkspace>
+  ).data;
 }
 
 export function useGetUsage(

@@ -5,7 +5,8 @@ import { Notification, Workspace } from "core/domain/workspace/Workspace";
 
 export default class WorkspaceResource
   extends BaseResource
-  implements Workspace {
+  implements Workspace
+{
   readonly workspaceId: string = "";
   readonly customerId: string = "";
   readonly email: string = "";

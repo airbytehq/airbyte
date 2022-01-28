@@ -34,10 +34,8 @@ const DestinationStep: React.FC<IProps> = ({
   afterSelectConnector,
 }) => {
   const [destinationDefinitionId, setDestinationDefinitionId] = useState("");
-  const {
-    destinationDefinitionSpecification,
-    isLoading,
-  } = useDestinationDefinitionSpecificationLoad(destinationDefinitionId);
+  const { destinationDefinitionSpecification, isLoading } =
+    useDestinationDefinitionSpecificationLoad(destinationDefinitionId);
 
   const analyticsService = useAnalyticsService();
 

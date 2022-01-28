@@ -26,29 +26,33 @@ function useGetJobService(): JobsService {
 
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
-  return useInitService(() => new JobsService(apiUrl, requestAuthMiddleware), [
-    apiUrl,
-    requestAuthMiddleware,
-  ]);
+  return useInitService(
+    () => new JobsService(apiUrl, requestAuthMiddleware),
+    [apiUrl, requestAuthMiddleware]
+  );
 }
 
 export const useListJobs = (listParams: ListParams): JobListItem[] => {
   const service = useGetJobService();
-  return (useQuery(
-    jobsKeys.list(listParams.configId),
-    () => service.list(listParams),
-    {
-      refetchInterval: 2500, // every 2,5 seconds,
-    }
-  ) as QueryObserverSuccessResult<{ jobs: JobListItem[] }>).data.jobs;
+  return (
+    useQuery(
+      jobsKeys.list(listParams.configId),
+      () => service.list(listParams),
+      {
+        refetchInterval: 2500, // every 2,5 seconds,
+      }
+    ) as QueryObserverSuccessResult<{ jobs: JobListItem[] }>
+  ).data.jobs;
 };
 
 export const useGetJob = (id: string | number): JobDetails => {
   const service = useGetJobService();
 
-  return (useQuery(jobsKeys.detail(id), () => service.get(id), {
-    refetchInterval: 2500, // every 2,5 seconds,
-  }) as QueryObserverSuccessResult<JobDetails>).data;
+  return (
+    useQuery(jobsKeys.detail(id), () => service.get(id), {
+      refetchInterval: 2500, // every 2,5 seconds,
+    }) as QueryObserverSuccessResult<JobDetails>
+  ).data;
 };
 
 export const useCancelJob = (): UseMutateAsyncFunction<

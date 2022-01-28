@@ -52,10 +52,10 @@ function ArrayOfObjectsEditor<T extends { name: string } = { name: string }>(
     mainTitle,
     addButtonText,
   } = props;
-  const onAddItem = React.useCallback(() => onStartEdit(items.length), [
-    onStartEdit,
-    items,
-  ]);
+  const onAddItem = React.useCallback(
+    () => onStartEdit(items.length),
+    [onStartEdit, items]
+  );
 
   const isEditMode =
     editableItemIndex !== null && editableItemIndex !== undefined;

@@ -23,7 +23,8 @@ export type { Connection, ScheduleProperties };
 
 export default class ConnectionResource
   extends BaseResource
-  implements Connection {
+  implements Connection
+{
   readonly connectionId: string = "";
   readonly name: string = "";
   readonly prefix: string = "";

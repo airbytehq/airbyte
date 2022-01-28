@@ -86,10 +86,10 @@ const StatusView: React.FC<IProps> = ({
     });
   };
 
-  const onReset = useCallback(() => resetConnection(connection.connectionId), [
-    resetConnection,
-    connection.connectionId,
-  ]);
+  const onReset = useCallback(
+    () => resetConnection(connection.connectionId),
+    [resetConnection, connection.connectionId]
+  );
 
   return (
     <Content>

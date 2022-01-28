@@ -8,7 +8,8 @@ import { DestinationDefinition } from "../domain/connector";
 
 export default class DestinationDefinitionResource
   extends BaseResource
-  implements DestinationDefinition {
+  implements DestinationDefinition
+{
   readonly destinationDefinitionId: string = "";
   readonly name: string = "";
   readonly dockerRepository: string = "";
@@ -44,20 +45,21 @@ export default class DestinationDefinitionResource
           params
         );
 
-        const result: DestinationDefinition[] = definition.destinationDefinitions.map(
-          (destination: DestinationDefinition) => {
-            const withLatest = latestDefinition.destinationDefinitions.find(
-              (latestDestination: DestinationDefinition) =>
-                latestDestination.destinationDefinitionId ===
-                destination.destinationDefinitionId
-            );
+        const result: DestinationDefinition[] =
+          definition.destinationDefinitions.map(
+            (destination: DestinationDefinition) => {
+              const withLatest = latestDefinition.destinationDefinitions.find(
+                (latestDestination: DestinationDefinition) =>
+                  latestDestination.destinationDefinitionId ===
+                  destination.destinationDefinitionId
+              );
 
-            return {
-              ...destination,
-              latestDockerImageTag: withLatest?.dockerImageTag,
-            };
-          }
-        );
+              return {
+                ...destination,
+                latestDockerImageTag: withLatest?.dockerImageTag,
+              };
+            }
+          );
 
         return { destinationDefinitions: result };
       },

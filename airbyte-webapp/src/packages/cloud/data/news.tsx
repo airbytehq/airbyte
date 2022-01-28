@@ -5,8 +5,7 @@ import tfirLogo from "./tfir-logo.svg";
 
 export const news = [
   {
-    text:
-      "“Airbyte announces $26M Series A for open-source data connector platform”",
+    text: "“Airbyte announces $26M Series A for open-source data connector platform”",
     icon: tcLogo,
     date: dayjs("05/26/2021"),
   },

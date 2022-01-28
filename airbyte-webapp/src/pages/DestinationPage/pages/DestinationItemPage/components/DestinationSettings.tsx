@@ -36,9 +36,10 @@ const DestinationsSettings: React.FC<IProps> = ({
     null
   );
 
-  const destinationSpecification = useDestinationDefinitionSpecificationLoadAsync(
-    currentDestination.destinationDefinitionId
-  );
+  const destinationSpecification =
+    useDestinationDefinitionSpecificationLoadAsync(
+      currentDestination.destinationDefinitionId
+    );
 
   const destinationDefinition = useResource(
     DestinationDefinitionResource.detailShape(),
@@ -47,11 +48,8 @@ const DestinationsSettings: React.FC<IProps> = ({
     }
   );
 
-  const {
-    updateDestination,
-    deleteDestination,
-    checkDestinationConnection,
-  } = useDestination();
+  const { updateDestination, deleteDestination, checkDestinationConnection } =
+    useDestination();
 
   const onSubmitForm = async (values: {
     name: string;

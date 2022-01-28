@@ -10,10 +10,10 @@ class ConnectionService extends AirbyteRequestService {
     connectionId: string,
     withRefreshedCatalog?: boolean
   ): Promise<Connection> {
-    const rs = ((await this.fetch(`${this.url}/get`, {
+    const rs = (await this.fetch(`${this.url}/get`, {
       connectionId,
       withRefreshedCatalog,
-    })) as any) as Connection;
+    })) as any as Connection;
 
     return rs;
   }

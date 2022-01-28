@@ -64,12 +64,8 @@ const CreateConnectionContent: React.FC<IProps> = ({
     }
   );
 
-  const {
-    schema,
-    isLoading,
-    schemaErrorStatus,
-    onDiscoverSchema,
-  } = useDiscoverSchema(source?.sourceId);
+  const { schema, isLoading, schemaErrorStatus, onDiscoverSchema } =
+    useDiscoverSchema(source?.sourceId);
 
   const connection = useMemo(
     () => ({

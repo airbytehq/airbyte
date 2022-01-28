@@ -122,20 +122,15 @@ const Table: React.FC<IProps> = ({
     }
     return [pl, plConfig];
   }, [sortBy]);
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-  } = useTable(
-    {
-      ...config,
-      columns,
-      data,
-    },
-    ...plugins
-  );
+  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
+    useTable(
+      {
+        ...config,
+        columns,
+        data,
+      },
+      ...plugins
+    );
 
   return (
     <TableView {...getTableProps()}>

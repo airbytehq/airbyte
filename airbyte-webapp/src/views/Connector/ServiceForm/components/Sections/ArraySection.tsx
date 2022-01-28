@@ -19,11 +19,8 @@ export const ArraySection: React.FC<{
   formField: FormObjectArrayItem;
   path: string;
 }> = ({ formField, path }) => {
-  const {
-    addUnfinishedFlow,
-    removeUnfinishedFlow,
-    unfinishedFlows,
-  } = useServiceForm();
+  const { addUnfinishedFlow, removeUnfinishedFlow, unfinishedFlows } =
+    useServiceForm();
   const [field, , form] = useField(path);
 
   const items = field.value ?? [];

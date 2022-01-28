@@ -8,7 +8,8 @@ import BaseResource from "./BaseResource";
 
 export default class DestinationDefinitionSpecificationResource
   extends BaseResource
-  implements DestinationDefinitionSpecification {
+  implements DestinationDefinitionSpecification
+{
   readonly destinationDefinitionId: string = "";
   readonly documentationUrl: string = "";
   readonly connectionSpecification: ConnectionSpecification = {

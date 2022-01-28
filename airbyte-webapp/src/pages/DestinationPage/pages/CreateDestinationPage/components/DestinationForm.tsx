@@ -22,6 +22,17 @@ type IProps = {
   afterSelectConnector?: () => void;
 };
 
+const hasDestinationDefinitionId = (
+  state: unknown
+): state is { destinationDefinitionId: string } => {
+  return (
+    typeof state === "object" &&
+    state !== null &&
+    typeof (state as { destinationDefinitionId?: string })
+      .destinationDefinitionId === "string"
+  );
+};
+
 const DestinationForm: React.FC<IProps> = ({
   onSubmit,
   destinationDefinitions,
@@ -33,7 +44,9 @@ const DestinationForm: React.FC<IProps> = ({
   const analyticsService = useAnalyticsService();
 
   const [destinationDefinitionId, setDestinationDefinitionId] = useState(
-    location.state?.destinationDefinitionId || ""
+    hasDestinationDefinitionId(location.state)
+      ? location.state.destinationDefinitionId
+      : ""
   );
   const {
     destinationDefinitionSpecification,

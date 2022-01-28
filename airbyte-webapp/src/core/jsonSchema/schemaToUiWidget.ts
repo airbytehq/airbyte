@@ -78,10 +78,9 @@ export const jsonSchemaToUiWidget = (
   }
 
   if (jsonSchema.type === "object") {
-    const properties = Object.entries(
-      jsonSchema.properties || []
-    ).map(([k, schema]) =>
-      jsonSchemaToUiWidget(schema, k, path ? `${path}.${k}` : k, jsonSchema)
+    const properties = Object.entries(jsonSchema.properties || []).map(
+      ([k, schema]) =>
+        jsonSchemaToUiWidget(schema, k, path ? `${path}.${k}` : k, jsonSchema)
     );
 
     return {

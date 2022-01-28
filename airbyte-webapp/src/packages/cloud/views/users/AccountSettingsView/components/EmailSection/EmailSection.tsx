@@ -38,12 +38,8 @@ const EmailSection: React.FC = () => {
   const emailService = useEmail();
 
   const { workspace } = useWorkspace();
-  const {
-    errorMessage,
-    successMessage,
-    loading,
-    updateData,
-  } = useWorkspaceEditor();
+  const { errorMessage, successMessage, loading, updateData } =
+    useWorkspaceEditor();
 
   const onChange = async (data: {
     news: boolean;

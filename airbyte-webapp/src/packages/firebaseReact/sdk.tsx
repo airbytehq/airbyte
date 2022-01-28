@@ -56,9 +56,10 @@ function useInitSdk<Sdk extends FirebaseSdks>(
     );
   }
 
-  const initializeSdk = React.useMemo(() => sdkInitializer(firebaseApp), [
-    firebaseApp,
-  ]);
+  const initializeSdk = React.useMemo(
+    () => sdkInitializer(firebaseApp),
+    [firebaseApp]
+  );
 
   return useAsync(() => initializeSdk);
 }

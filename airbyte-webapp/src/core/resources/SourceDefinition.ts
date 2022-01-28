@@ -7,7 +7,8 @@ import { SourceDefinition } from "core/domain/connector";
 
 export default class SourceDefinitionResource
   extends BaseResource
-  implements SourceDefinition {
+  implements SourceDefinition
+{
   readonly sourceDefinitionId: string = "";
   readonly name: string = "";
   readonly dockerRepository: string = "";

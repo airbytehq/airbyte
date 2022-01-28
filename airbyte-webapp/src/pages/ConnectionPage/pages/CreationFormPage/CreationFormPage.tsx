@@ -42,6 +42,25 @@ export enum EntityStepsTypes {
   CONNECTION = "connection",
 }
 
+const hasSourceId = (state: unknown): state is { sourceId: string } => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (
+    typeof state === "object" &&
+    state !== null &&
+    typeof (state as { sourceId?: string }).sourceId === "string"
+  );
+};
+
+const hasDestinationId = (
+  state: unknown
+): state is { destinationId: string } => {
+  return (
+    typeof state === "object" &&
+    state !== null &&
+    typeof (state as { destinationId?: string }).destinationId === "string"
+  );
+};
+
 function usePreloadData(): {
   sourceDefinition?: SourceDefinition;
   destination?: Destination;
@@ -52,7 +71,7 @@ function usePreloadData(): {
 
   const source = useResource(
     SourceResource.detailShape(),
-    location.state?.sourceId
+    hasSourceId(location.state)
       ? {
           sourceId: location.state.sourceId,
         }
@@ -70,7 +89,7 @@ function usePreloadData(): {
 
   const destination = useResource(
     DestinationResource.detailShape(),
-    location.state?.destinationId
+    hasDestinationId(location.state)
       ? {
           destinationId: location.state.destinationId,
         }
@@ -102,23 +121,19 @@ const CreationFormPage: React.FC<IProps> = ({}) => {
       : "source";
 
   const hasConnectors =
-    location.state?.sourceId && location.state?.destinationId;
+    hasSourceId(location.state) && hasDestinationId(location.state);
   const [currentStep, setCurrentStep] = useState(
     hasConnectors ? StepsTypes.CREATE_CONNECTION : StepsTypes.CREATE_ENTITY
   );
 
   const [currentEntityStep, setCurrentEntityStep] = useState(
-    location.state?.sourceId
+    hasSourceId(location.state)
       ? EntityStepsTypes.DESTINATION
       : EntityStepsTypes.SOURCE
   );
 
-  const {
-    destinationDefinition,
-    sourceDefinition,
-    source,
-    destination,
-  } = usePreloadData();
+  const { destinationDefinition, sourceDefinition, source, destination } =
+    usePreloadData();
 
   const onSelectExistingSource = (id: string) => {
     push("", {

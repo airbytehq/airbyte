@@ -19,9 +19,10 @@ export function useConfig<T extends Config>(): T {
     throw new Error("useConfig must be used within a ConfigProvider");
   }
 
-  return useMemo(() => (configService.config as unknown) as T, [
-    configService.config,
-  ]);
+  return useMemo(
+    () => configService.config as unknown as T,
+    [configService.config]
+  );
 }
 
 const ConfigServiceInner: React.FC<{

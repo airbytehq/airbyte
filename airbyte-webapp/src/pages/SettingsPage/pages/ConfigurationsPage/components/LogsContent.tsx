@@ -22,6 +22,10 @@ const LogsContent: React.FC = () => {
   const downloadLogs = async (logType: string) => {
     const { file } = await fetchLogs({ logType });
 
+    if (!file) {
+      return;
+    }
+
     const element = document.createElement("a");
     element.href = URL.createObjectURL(file);
     element.download = `${logType}-logs.txt`;
@@ -30,19 +34,15 @@ const LogsContent: React.FC = () => {
     document.body.removeChild(element);
   };
 
-  const [
-    { loading: serverLogsLoading },
-    downloadServerLogs,
-  ] = useAsyncFn(async () => {
-    await downloadLogs("server");
-  }, [downloadLogs]);
+  const [{ loading: serverLogsLoading }, downloadServerLogs] =
+    useAsyncFn(async () => {
+      await downloadLogs("server");
+    }, [downloadLogs]);
 
-  const [
-    { loading: schedulerLogsLoading },
-    downloadSchedulerLogs,
-  ] = useAsyncFn(async () => {
-    await downloadLogs("scheduler");
-  }, [downloadLogs]);
+  const [{ loading: schedulerLogsLoading }, downloadSchedulerLogs] =
+    useAsyncFn(async () => {
+      await downloadLogs("scheduler");
+    }, [downloadLogs]);
 
   return (
     <Content>

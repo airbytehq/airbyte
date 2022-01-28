@@ -5,7 +5,8 @@ import { SourceDefinitionSpecification } from "core/domain/connector/types";
 
 export default class SourceDefinitionSpecificationResource
   extends BaseResource
-  implements SourceDefinitionSpecification {
+  implements SourceDefinitionSpecification
+{
   readonly sourceDefinitionId: string = "";
   readonly documentationUrl: string = "";
   readonly connectionSpecification: ConnectionSpecification = {

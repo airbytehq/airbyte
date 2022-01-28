@@ -27,43 +27,31 @@ export const initialState: AuthServiceState = {
 export const authStateReducer = createReducer<AuthServiceState, Actions>(
   initialState
 )
-  .handleAction(
-    actions.authInited,
-    (state): AuthServiceState => {
-      return {
-        ...state,
-        inited: true,
-      };
-    }
-  )
-  .handleAction(
-    actions.loggedIn,
-    (state, action): AuthServiceState => {
-      return {
-        ...state,
-        currentUser: action.payload.user,
-        emailVerified: action.payload.emailVerified,
-        inited: true,
-        loading: false,
-      };
-    }
-  )
-  .handleAction(
-    actions.emailVerified,
-    (state, action): AuthServiceState => {
-      return {
-        ...state,
-        emailVerified: action.payload,
-      };
-    }
-  )
-  .handleAction(
-    actions.loggedOut,
-    (state): AuthServiceState => {
-      return {
-        ...state,
-        currentUser: null,
-        emailVerified: false,
-      };
-    }
-  );
+  .handleAction(actions.authInited, (state): AuthServiceState => {
+    return {
+      ...state,
+      inited: true,
+    };
+  })
+  .handleAction(actions.loggedIn, (state, action): AuthServiceState => {
+    return {
+      ...state,
+      currentUser: action.payload.user,
+      emailVerified: action.payload.emailVerified,
+      inited: true,
+      loading: false,
+    };
+  })
+  .handleAction(actions.emailVerified, (state, action): AuthServiceState => {
+    return {
+      ...state,
+      emailVerified: action.payload,
+    };
+  })
+  .handleAction(actions.loggedOut, (state): AuthServiceState => {
+    return {
+      ...state,
+      currentUser: null,
+      emailVerified: false,
+    };
+  });

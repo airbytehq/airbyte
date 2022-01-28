@@ -70,9 +70,10 @@ function useConnectionService(): ConnectionService {
     "DefaultRequestMiddlewares"
   );
 
-  return useMemo(() => new ConnectionService(config.apiUrl, middlewares), [
-    config,
-  ]);
+  return useMemo(
+    () => new ConnectionService(config.apiUrl, middlewares),
+    [config]
+  );
 }
 
 export const useConnectionLoad = (
