@@ -9,6 +9,18 @@
         "string"
       ]
     },
+    "customerName": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "amount": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
     "customerEmail": {
       "type": [
         "null",
@@ -135,15 +147,10 @@
       ]
     },
     "createdBy": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": [
-            "null",
-            "string"
-          ]
-        }
-      }
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "travelers": {
       "type": "array",
