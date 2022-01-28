@@ -18,6 +18,7 @@ info:
     * All backwards incompatible changes will happen in major version bumps. We will not make backwards incompatible changes in minor version bumps. Examples of non-breaking changes (includes but not limited to...):
       * Adding fields to request or response bodies.
       * Adding new HTTP endpoints.
+    * All `web_backend` APIs are not considered public APIs and are not guaranteeing backwards compatibility.
 
   version: "1.0.0"
   title: Airbyte Configuration API
@@ -53,7 +54,9 @@ tags:
   - name: db_migration
     description: Database migration related resources.
   - name: web_backend
-    description: Connection between sources and destinations.
+    description: |
+      Endpoints for the Airbyte web application. Those APIs should not be called outside the web application implementation and are not
+      guaranteeing any backwards compatibility.
   - name: health
     description: Healthchecks
   - name: deployment

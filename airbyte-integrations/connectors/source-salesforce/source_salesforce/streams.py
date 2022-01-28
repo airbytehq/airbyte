@@ -3,6 +3,7 @@
 #
 
 import csv
+import io
 import math
 import time
 from abc import ABC
@@ -244,12 +245,10 @@ class BulkSalesforceStream(SalesforceStream):
     def download_data(self, url: str) -> Tuple[int, dict]:
         job_data = self._send_http_request("GET", f"{url}/results")
         decoded_content = self.filter_null_bytes(job_data.content.decode("utf-8"))
-        csv_data = csv.reader(decoded_content.splitlines(), delimiter=",")
-        for i, row in enumerate(csv_data):
-            if i == 0:
-                head = row
-            else:
-                yield i, dict(zip(head, row))
+        fp = io.StringIO(decoded_content, newline="")
+        csv_data = csv.DictReader(fp, dialect="unix")
+        for n, row in enumerate(csv_data, 1):
+            yield n, row
 
     def abort_job(self, url: str):
         data = {"state": "Aborted"}

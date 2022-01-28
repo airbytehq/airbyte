@@ -106,14 +106,6 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
   protected abstract JsonNode getState() throws Exception;
 
   /**
-   * List of regular expressions that should match the output of the test sync.
-   *
-   * @return the regular expressions to test
-   * @throws Exception - thrown when attempting ot access the regexes fails
-   */
-  protected abstract List<String> getRegexTests() throws Exception;
-
-  /**
    * Verify that a spec operation issued to the connector returns a valid spec.
    */
   @Test
@@ -160,23 +152,15 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
   public void testFullRefreshRead() throws Exception {
     final ConfiguredAirbyteCatalog catalog = withFullRefreshSyncModes(getConfiguredCatalog());
     final List<AirbyteMessage> allMessages = runRead(catalog);
-    final List<AirbyteRecordMessage> recordMessages = filterRecords(allMessages);
-    // the worker validates the message formats, so we just validate the message content
-    // We don't need to validate message format as long as we use the worker, which we will not want to
-    // do long term.
-    assertFalse(recordMessages.isEmpty(), "Expected a full refresh sync to produce records");
-    assertRecordMessages(recordMessages);
 
-    final List<String> regexTests = getRegexTests();
-    final List<String> stringMessages = allMessages.stream().map(Jsons::serialize).collect(Collectors.toList());
-    LOGGER.info("Running " + regexTests.size() + " regex tests...");
-    regexTests.forEach(regex -> {
-      LOGGER.info("Looking for [" + regex + "]");
-      assertTrue(stringMessages.stream().anyMatch(line -> line.matches(regex)), "Failed to find regex: " + regex);
-    });
+    assertFalse(filterRecords(allMessages).isEmpty(), "Expected a full refresh sync to produce records");
+    assertFullRefreshMessages(allMessages);
   }
 
-  protected void assertRecordMessages(final List<AirbyteRecordMessage> recordMessages) {
+  /**
+   * Override this method to perform more specific assertion on the messages.
+   */
+  protected void assertFullRefreshMessages(final List<AirbyteMessage> allMessages) throws Exception {
     // do nothing by default
   }
 
@@ -287,7 +271,7 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
     checkEntrypointEnvVariable();
   }
 
-  private List<AirbyteRecordMessage> filterRecords(final Collection<AirbyteMessage> messages) {
+  protected static List<AirbyteRecordMessage> filterRecords(final Collection<AirbyteMessage> messages) {
     return messages.stream()
         .filter(m -> m.getType() == Type.RECORD)
         .map(AirbyteMessage::getRecord)

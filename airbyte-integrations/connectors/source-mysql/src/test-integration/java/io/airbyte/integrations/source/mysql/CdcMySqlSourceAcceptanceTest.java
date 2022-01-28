@@ -84,11 +84,6 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
-  }
-
-  @Override
   protected void setupEnvironment(final TestDestinationEnv environment) {
     container = new MySQLContainer<>("mysql:8.0");
     container.start();

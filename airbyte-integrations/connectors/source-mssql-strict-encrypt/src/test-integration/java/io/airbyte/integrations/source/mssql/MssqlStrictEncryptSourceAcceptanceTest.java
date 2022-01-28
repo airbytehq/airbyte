@@ -114,9 +114,4 @@ public class MssqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
     return Jsons.jsonNode(new HashMap<>());
   }
 
-  @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
-  }
-
 }

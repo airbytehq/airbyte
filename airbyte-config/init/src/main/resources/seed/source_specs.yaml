@@ -665,7 +665,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-bigcommerce:0.1.3"
+- dockerImage: "airbyte/source-bigcommerce:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bigcommerce"
     connectionSpecification:
@@ -2160,7 +2160,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.2.14"
+- dockerImage: "airbyte/source-github:0.2.15"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/github"
     connectionSpecification:
@@ -2308,7 +2308,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.1.22"
+- dockerImage: "airbyte/source-google-ads:0.1.23"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -2383,6 +2383,15 @@
           examples:
           - "2017-01-25"
           order: 2
+        end_date:
+          type: "string"
+          title: "End Date"
+          description: "UTC date and time in the format 2017-01-25. Any data after\
+            \ this date will not be replicated."
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          examples:
+          - "2017-01-30"
+          order: 6
         custom_queries:
           type: "array"
           title: "Custom GAQL Queries (Optional)"
@@ -2440,7 +2449,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-v4:0.1.15"
+- dockerImage: "airbyte/source-google-analytics-v4:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-analytics-v4"
     connectionSpecification:
@@ -2467,6 +2476,20 @@
             \ will not be replicated."
           examples:
           - "2020-06-01"
+        window_in_days:
+          type: "integer"
+          title: "Window in days"
+          description: "The amount of days for each data-chunk beginning from start_date.\
+            \ Bigger the value - faster the fetch. (Min=1, as for a Day; Max=364,\
+            \ as for a Year)."
+          examples:
+          - 30
+          - 60
+          - 90
+          - 120
+          - 200
+          - 364
+          default: 1
         custom_reports:
           order: 3
           type: "string"
@@ -2478,6 +2501,7 @@
           order: 0
           type: "object"
           title: "Credentials"
+          description: "Credentials for the service"
           oneOf:
           - title: "Authenticate via Google (Oauth)"
             type: "object"
@@ -3058,7 +3082,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.1.35"
+- dockerImage: "airbyte/source-hubspot:0.1.37"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -4208,7 +4232,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.3.13"
+- dockerImage: "airbyte/source-mssql:0.3.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -5886,7 +5910,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:0.4.2"
+- dockerImage: "airbyte/source-postgres:0.4.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/postgres"
     connectionSpecification:
@@ -6306,7 +6330,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-redshift:0.3.6"
+- dockerImage: "airbyte/source-redshift:0.3.7"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/redshift"
     connectionSpecification:
@@ -6326,6 +6350,7 @@
           description: "Host Endpoint of the Redshift Cluster (must include the cluster-id,\
             \ region and end with .redshift.amazonaws.com)."
           type: "string"
+          order: 1
         port:
           title: "Port"
           description: "Port of the database."
@@ -6335,21 +6360,37 @@
           default: 5439
           examples:
           - "5439"
+          order: 2
         database:
           title: "Database"
           description: "Name of the database."
           type: "string"
           examples:
           - "master"
+          order: 3
+        schemas:
+          title: "Schemas"
+          description: "The list of schemas to sync from. Specify one or more explicitly\
+            \ or keep empty to process all schemas. Schema names are case sensitive."
+          type: "array"
+          items:
+            type: "string"
+          minItems: 0
+          uniqueItems: true
+          examples:
+          - "public"
+          order: 4
         username:
           title: "Username"
           description: "Username to use to access the database."
           type: "string"
+          order: 5
         password:
           title: "Password"
           description: "Password associated with the username."
           type: "string"
           airbyte_secret: true
+          order: 6
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -6722,7 +6763,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:0.1.19"
+- dockerImage: "airbyte/source-salesforce:0.1.21"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -7110,7 +7151,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-slack:0.1.13"
+- dockerImage: "airbyte/source-slack:0.1.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/slack"
     connectionSpecification:
