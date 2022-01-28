@@ -260,6 +260,10 @@ class Invoices(BaseStream):
     pass
 
 
+class LineItems(BaseStream):
+    pass
+
+
 class MeasuredUnits(BaseStream):
     client_method_name = "list_measured_unit"
 

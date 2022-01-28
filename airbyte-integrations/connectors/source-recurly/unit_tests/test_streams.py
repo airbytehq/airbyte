@@ -20,6 +20,7 @@ from source_recurly.streams import (
     CreditPayments,
     ExportDates,
     Invoices,
+    LineItems,
     MeasuredUnits,
     Plans,
     ShippingAddresses,
@@ -143,6 +144,11 @@ class TestStreams(unittest.TestCase):
         stream = Invoices(client=self.client_mock)
 
         assert stream.client_method_name == "list_invoices"
+
+    def test_line_items_methods_client_method_name(self):
+        stream = LineItems(client=self.client_mock)
+
+        assert stream.client_method_name == "list_line_items"
 
     def test_measured_unit_client_method_name(self):
         stream = MeasuredUnits(client=self.client_mock)

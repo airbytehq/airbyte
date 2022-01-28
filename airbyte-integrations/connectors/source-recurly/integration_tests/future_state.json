@@ -23,6 +23,9 @@
   "invoices": {
     "updated_at": "2022-07-19T22:21:37Z"
   },
+  "line_items": {
+    "updated_at": "2022-07-19T22:21:37Z"
+  },
   "measured_units": {
     "updated_at": "2022-07-19T22:21:37Z"
   },
