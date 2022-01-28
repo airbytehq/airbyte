@@ -319,6 +319,8 @@ class ReportsAmazonSPStream(Stream, ABC):
             seconds_waited = (pendulum.now("utc") - start_time).seconds
             is_processed = report_payload.get("processingStatus") not in ["IN_QUEUE", "IN_PROGRESS"]
             is_done = report_payload.get("processingStatus") == "DONE"
+            is_cancelled = report_payload.get("processingStatus") == "CANCELLED"
+            is_fatal = report_payload.get("processingStatus") == "FATAL"
             time.sleep(self.sleep_seconds)
 
         if is_done:
@@ -332,8 +334,12 @@ class ReportsAmazonSPStream(Stream, ABC):
             )
             response = self._send_request(request)
             yield from self.parse_response(response)
+        elif is_fatal:
+            raise Exception(f"The report for stream '{self.name}' was aborted due to a fatal error")
+        elif is_cancelled:
+            logger.warn(f"The report for stream '{self.name}' was cancelled or there is no data to return")
         else:
-            logger.warn(f"There are no report document related in stream `{self.name}`. Report body {report_payload}")
+            raise Exception(f"Unknown response for stream `{self.name}`. Response body {report_payload}")
 
 
 class MerchantListingsReports(ReportsAmazonSPStream):
@@ -382,6 +388,14 @@ class FbaShipmentsReports(ReportsAmazonSPStream):
     """
 
     name = "GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA"
+
+
+class FbaReplacementsReports(ReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/help/hub/reference/200453300
+    """
+
+    name = "GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA"
 
 
 class VendorInventoryHealthReports(ReportsAmazonSPStream):

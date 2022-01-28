@@ -38,6 +38,8 @@ tests:
 #      configured_catalog_path: "integration_tests/configured_catalog_brand_analytics_repeat_purchase.json.json"
 #    - config_path: "secrets/config.json"
 #      configured_catalog_path: "integration_tests/configured_catalog_brand_analytics_search_terms.json"
+#    - config_path: "secrets/config.json"
+#      configured_catalog_path: "integration_tests/configured_catalog_fba_fulfillment_customer_shipment_replacement_data.json"
 # TODO: uncomment when Orders (or any other incremental) stream is filled with data
 #  incremental:
 #   - config_path: "secrets/config.json"
