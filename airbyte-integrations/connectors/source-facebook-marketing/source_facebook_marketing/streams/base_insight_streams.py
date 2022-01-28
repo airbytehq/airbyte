@@ -2,7 +2,6 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import copy
 import logging
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
