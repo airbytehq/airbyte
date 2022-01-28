@@ -159,9 +159,9 @@ def test_discovery(schema, cursors, should_fail):
     }
     if should_fail:
         with pytest.raises(AssertionError):
-            t.test_defined_cursors_exist_in_schema(None, discovered_catalog)
+            t.test_defined_cursors_exist_in_schema(discovered_catalog)
     else:
-        t.test_defined_cursors_exist_in_schema(None, discovered_catalog)
+        t.test_defined_cursors_exist_in_schema(discovered_catalog)
 
 
 @pytest.mark.parametrize(
@@ -190,9 +190,9 @@ def test_ref_in_discovery_schemas(schema, should_fail):
     discovered_catalog = {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema})}
     if should_fail:
         with pytest.raises(AssertionError):
-            t.test_defined_refs_exist_in_schema(None, discovered_catalog)
+            t.test_defined_refs_exist_in_schema(discovered_catalog)
     else:
-        t.test_defined_refs_exist_in_schema(None, discovered_catalog)
+        t.test_defined_refs_exist_in_schema(discovered_catalog)
 
 
 @pytest.mark.parametrize(
