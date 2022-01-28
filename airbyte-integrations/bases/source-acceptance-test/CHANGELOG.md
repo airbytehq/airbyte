@@ -4,7 +4,7 @@
 Fix `test_oneof_usage` test: [#9861](https://github.com/airbytehq/airbyte/pull/9861)
 
 ## 0.1.45
-_placeholder_
+Check for not allowed keywords `allOf`, `not` in connectors schema: [#9851](https://github.com/airbytehq/airbyte/pull/9851)
 
 ## 0.1.44
 Fix incorrect name of `primary_keys` attribute: [#9768](https://github.com/airbytehq/airbyte/pull/9768)
