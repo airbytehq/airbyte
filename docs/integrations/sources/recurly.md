@@ -22,6 +22,7 @@ Several output streams are available from this source:
 * [Automated Exports](https://docs.recurly.com/docs/export-overview)
 * [Invoices](https://docs.recurly.com/docs/invoices)
 * [Measured Units](https://developers.recurly.com/api/v2021-02-25/index.html#tag/measured_unit)
+* [Line Items](https://docs.recurly.com/docs/invoices#line-items)
 * [Plans](https://docs.recurly.com/docs/plans)
 * [Shipping Addresses](https://docs.recurly.com/docs/shipping-addresses)
 * [Shipping Methods](https://docs.recurly.com/docs/shipping#shipping-methods)
