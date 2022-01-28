@@ -77,15 +77,23 @@ def minio_setup(minio_credentials: Mapping[str, Any]) -> Iterable[None]:
             raise
 
     check_url = f"http://{local_ip}:9000/minio/health/live"
-    while True:
+    checked = False
+    for _ in range(120):  # wait 1 min
+        time.sleep(0.5)
+        logger.info(f"try to connect to {check_url}")
         try:
             data = requests.get(check_url)
         except ConnectionError as err:
             logger.warn(f"minio error: {err}")
-            time.sleep(0.5)
             continue
         if data.status_code == 200:
+            checked = True
+            logger.info("Run a minio/minio container...")
             break
-        logger.info("Run a minio/minio container...")
+        else:
+            logger.info(f"minio error: {data.response.text}")
+    if not checked:
+        assert False, "couldn't connect to minio!!!"
+
     yield
     # this minio container was not finished because it is needed for all integration adn acceptance tests
