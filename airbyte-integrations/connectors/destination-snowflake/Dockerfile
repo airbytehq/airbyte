@@ -18,5 +18,7 @@ COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
 RUN tar xf ${APPLICATION}.tar --strip-components=1
 
+ENV SENTRY_DSN="https://2a3a1622a2104b8f8d36db4915c956f8@o1114644.ingest.sentry.io/6145965"
+
 LABEL io.airbyte.version=0.4.2
 LABEL io.airbyte.name=airbyte/destination-snowflake
