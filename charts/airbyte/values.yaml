@@ -507,7 +507,7 @@ postgresql:
   existingSecret: ""
   commonAnnotations:
     helm.sh/hook: pre-install,pre-upgrade
-    helm.sh/hook-weight: -1
+    helm.sh/hook-weight: "-1"
 ## External PostgreSQL configuration
 ## All of these values are only used when postgresql.enabled is set to false
 ## @param externalDatabase.host Database host
