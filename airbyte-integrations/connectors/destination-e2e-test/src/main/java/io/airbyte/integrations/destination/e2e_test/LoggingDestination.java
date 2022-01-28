@@ -8,10 +8,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.destination.e2e_test.logging.LoggingConsumer;
+import io.airbyte.integrations.destination.e2e_test.logging.TestingLoggerFactory;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
@@ -33,33 +34,7 @@ public class LoggingDestination extends BaseConnector implements Destination {
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    return new RecordConsumer(outputRecordCollector);
-  }
-
-  public static class RecordConsumer implements AirbyteMessageConsumer {
-
-    private final Consumer<AirbyteMessage> outputRecordCollector;
-
-    public RecordConsumer(final Consumer<AirbyteMessage> outputRecordCollector) {
-      this.outputRecordCollector = outputRecordCollector;
-    }
-
-    @Override
-    public void start() {}
-
-    @Override
-    public void accept(final AirbyteMessage message) {
-      LOGGER.info("record: {}", message);
-
-      if (message.getType() == Type.STATE) {
-        LOGGER.info("emitting state: {}", message);
-        outputRecordCollector.accept(message);
-      }
-    }
-
-    @Override
-    public void close() {}
-
+    return new LoggingConsumer(new TestingLoggerFactory(config), catalog, outputRecordCollector);
   }
 
 }

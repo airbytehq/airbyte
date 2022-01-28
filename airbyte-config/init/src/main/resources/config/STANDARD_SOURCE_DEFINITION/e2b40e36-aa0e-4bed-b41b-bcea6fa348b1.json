@@ -2,7 +2,7 @@
   "sourceDefinitionId": "e2b40e36-aa0e-4bed-b41b-bcea6fa348b1",
   "name": "Exchange Rates Api",
   "dockerRepository": "airbyte/source-exchange-rates",
-  "dockerImageTag": "0.2.3",
+  "dockerImageTag": "0.2.5",
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/exchangeratesapi",
   "icon": "exchangeratesapi.svg"
 }

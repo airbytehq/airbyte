@@ -54,7 +54,7 @@ class Oauth2Authenticator(HttpAuthenticator):
         return pendulum.now() > self._token_expiry_date
 
     def get_refresh_request_body(self) -> Mapping[str, Any]:
-        """ Override to define additional parameters """
+        """Override to define additional parameters"""
         payload: MutableMapping[str, Any] = {
             "grant_type": "refresh_token",
             "client_id": self.client_id,

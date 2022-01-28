@@ -1,5 +1,5 @@
 {
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
     "last_order_name": {
       "type": ["null", "string"]
@@ -11,6 +11,9 @@
       "type": ["null", "string"]
     },
     "multipass_identifier": {
+      "type": ["null", "string"]
+    },
+    "shop_url":{
       "type": ["null", "string"]
     },
     "default_address": {

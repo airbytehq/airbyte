@@ -8,10 +8,12 @@ import static java.util.stream.Collectors.toSet;
 
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.temporal.activity.Activity;
 import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.namespace.v1.NamespaceInfo;
 import io.temporal.api.workflowservice.v1.DescribeNamespaceResponse;
 import io.temporal.api.workflowservice.v1.ListNamespacesRequest;
+import io.temporal.client.ActivityCompletionException;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.client.WorkflowStub;
@@ -20,9 +22,14 @@ import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.workflow.Functions;
 import java.io.Serializable;
+import java.time.Duration;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +37,9 @@ import org.slf4j.LoggerFactory;
 public class TemporalUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TemporalUtils.class);
+
+  public static final Duration SEND_HEARTBEAT_INTERVAL = Duration.ofSeconds(10);
+  public static final Duration HEARTBEAT_TIMEOUT = Duration.ofSeconds(30);
 
   public static WorkflowServiceStubs createTemporalService(final String temporalHost) {
     final WorkflowServiceStubsOptions options = WorkflowServiceStubsOptions.newBuilder()
@@ -40,11 +50,6 @@ public class TemporalUtils {
     final WorkflowServiceStubs temporalService = WorkflowServiceStubs.newInstance(options);
     waitForTemporalServerAndLog(temporalService);
     return temporalService;
-  }
-
-  public static WorkflowClient createTemporalClient(final String temporalHost) {
-    final WorkflowServiceStubs temporalService = createTemporalService(temporalHost);
-    return WorkflowClient.newInstance(temporalService);
   }
 
   public static final RetryOptions NO_RETRY = RetryOptions.newBuilder().setMaximumAttempts(1).build();
@@ -58,9 +63,17 @@ public class TemporalUtils {
 
   }
 
+  public static WorkflowOptions getWorkflowOptionsWithWorkflowId(final TemporalJobType jobType, final String workflowId) {
+
+    return WorkflowOptions.newBuilder()
+        .setWorkflowId(workflowId)
+        .setRetryOptions(NO_RETRY)
+        .setTaskQueue(jobType.name())
+        .build();
+  }
+
   public static WorkflowOptions getWorkflowOptions(final TemporalJobType jobType) {
     return WorkflowOptions.newBuilder()
-        .setRetryOptions(NO_RETRY)
         .setTaskQueue(jobType.name())
         // todo (cgardens) we do not leverage Temporal retries.
         .setRetryOptions(RetryOptions.newBuilder().setMaximumAttempts(1).build())
@@ -139,6 +152,30 @@ public class TemporalUtils {
         .map(DescribeNamespaceResponse::getNamespaceInfo)
         .map(NamespaceInfo::getName)
         .collect(toSet());
+  }
+
+  /**
+   * Runs the code within the supplier while heartbeating in the backgroud. Also makes sure to shut
+   * down the heartbeat server after the fact.
+   */
+  public static <T> T withBackgroundHeartbeat(Callable<T> callable) {
+    final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+
+    try {
+      scheduledExecutor.scheduleAtFixedRate(() -> {
+        Activity.getExecutionContext().heartbeat(null);
+      }, 0, SEND_HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);
+
+      return callable.call();
+    } catch (final ActivityCompletionException e) {
+      LOGGER.warn("Job either timed out or was cancelled.");
+      throw new RuntimeException(e);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    } finally {
+      LOGGER.info("Stopping temporal heartbeating...");
+      scheduledExecutor.shutdown();
+    }
   }
 
 }

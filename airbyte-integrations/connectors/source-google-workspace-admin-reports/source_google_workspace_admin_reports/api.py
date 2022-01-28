@@ -13,7 +13,7 @@ from typing import Any, Callable, Dict, Iterator, Mapping, Optional, Sequence
 import backoff
 import pendulum
 import pytz
-from base_python.entrypoint import logger
+from airbyte_cdk.entrypoint import logger
 from google.oauth2 import service_account
 from googleapiclient.discovery import Resource, build
 from googleapiclient.errors import HttpError as GoogleApiHttpError
@@ -108,13 +108,13 @@ class IncrementalStreamAPI(StreamAPI, ABC):
     def state(self) -> Optional[Mapping[str, Any]]:
         """Current state, if wasn't set return None"""
         if self._state:
-            return {self.state_pk: str(self._state)}
+            return {self.state_pk: self._state.isoformat()}
         return None
 
     @state.setter
     def state(self, value):
         self._state = pendulum.parse(value[self.state_pk])
-        self._start_time = self._state.isoformat()
+        self._start_time = self._state.to_iso8601_string()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -128,6 +128,7 @@ class IncrementalStreamAPI(StreamAPI, ABC):
             "Report API return records from newest to oldest"
             if not cursor:
                 cursor = pendulum.parse(record[self.state_pk])
+            record[self.state_pk] = pendulum.parse(record[self.state_pk]).isoformat()
             yield record
 
         if cursor:

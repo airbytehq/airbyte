@@ -82,11 +82,6 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected List<String> getRegexTests() throws Exception {
-    return Collections.emptyList();
-  }
-
-  @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     db = new Db2Container("ibmcom/db2:11.5.5.0").acceptLicense();
     db.start();
@@ -97,6 +92,9 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
         .put("db", db.getDatabaseName())
         .put("username", db.getUsername())
         .put("password", db.getPassword())
+        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+            .put("encryption_method", "unencrypted")
+            .build()))
         .build());
 
     database = Databases.createJdbcDatabase(

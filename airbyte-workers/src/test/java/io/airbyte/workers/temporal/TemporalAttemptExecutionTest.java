@@ -17,7 +17,7 @@ import io.airbyte.config.Configs;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.Worker;
-import io.temporal.internal.common.CheckedExceptionWrapper;
+import io.temporal.serviceclient.CheckedExceptionWrapper;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -73,12 +73,15 @@ class TemporalAttemptExecutionTest {
 
     attemptExecution = new TemporalAttemptExecution<>(
         workspaceRoot,
+        configs.getWorkerEnvironment(), configs.getLogConfigs(),
         JOB_RUN_CONFIG, execution,
         () -> "",
         mdcSetter,
         mock(CancellationHandler.class),
-        () -> "workflow_id",
-        configs);
+        SOURCE_USERNAME,
+        SOURCE_PASSWORD,
+        container.getJdbcUrl(),
+        () -> "workflow_id", configs.getAirbyteVersionOrWarning());
   }
 
   @AfterAll

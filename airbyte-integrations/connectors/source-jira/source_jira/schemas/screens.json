@@ -118,10 +118,9 @@
               }
             }
           }
-        },
-        "additionalProperties": true
+        }
       }
     }
   },
-  "readOnly": true
+  "additionalProperties": true
 }

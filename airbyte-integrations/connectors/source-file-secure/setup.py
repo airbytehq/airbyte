@@ -6,8 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-protocol",
-    "base-python",
+    "airbyte-cdk~=0.1",
     "gcsfs==0.7.1",
     "genson==1.2.2",
     "google-cloud-storage==1.35.0",
@@ -15,7 +14,7 @@ MAIN_REQUIREMENTS = [
     "paramiko==2.7.2",
     "s3fs==0.4.2",
     "smart-open[all]==4.1.2",
-    "lxml==4.6.3",
+    "lxml==4.6.5",
     "html5lib==1.1",
     "beautifulsoup4==4.9.3",
     "pyarrow==3.0.0",
@@ -31,7 +30,7 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_file",
+    name="source_file_secure",
     description="Source implementation for File",
     author="Airbyte",
     author_email="contact@airbyte.io",

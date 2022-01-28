@@ -6,6 +6,7 @@ package io.airbyte.db.jdbc;
 
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
+import io.airbyte.db.JdbcCompatibleSourceOperations;
 import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -32,11 +33,11 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
     this(new DataSourceConnectionSupplier(dataSource), JdbcUtils.getDefaultSourceOperations());
   }
 
-  public DefaultJdbcDatabase(final DataSource dataSource, final JdbcSourceOperations sourceOperations) {
+  public DefaultJdbcDatabase(final DataSource dataSource, final JdbcCompatibleSourceOperations<?> sourceOperations) {
     this(new DataSourceConnectionSupplier(dataSource), sourceOperations);
   }
 
-  public DefaultJdbcDatabase(final CloseableConnectionSupplier connectionSupplier, final JdbcSourceOperations sourceOperations) {
+  public DefaultJdbcDatabase(final CloseableConnectionSupplier connectionSupplier, final JdbcCompatibleSourceOperations<?> sourceOperations) {
     super(sourceOperations);
     this.connectionSupplier = connectionSupplier;
   }
@@ -58,7 +59,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
                                             final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     try (final Connection connection = connectionSupplier.getConnection()) {
-      return sourceOperations.toStream(query.apply(connection), recordTransform).collect(Collectors.toList());
+      return toStream(query.apply(connection), recordTransform).collect(Collectors.toList());
     }
   }
 
@@ -67,7 +68,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
                                       final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     final Connection connection = connectionSupplier.getConnection();
-    return sourceOperations.toStream(query.apply(connection), recordTransform)
+    return toStream(query.apply(connection), recordTransform)
         .onClose(() -> {
           try {
             connection.close();
@@ -104,7 +105,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
                              final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     final Connection connection = connectionSupplier.getConnection();
-    return sourceOperations.toStream(statementCreator.apply(connection).executeQuery(), recordTransform)
+    return toStream(statementCreator.apply(connection).executeQuery(), recordTransform)
         .onClose(() -> {
           try {
             LOGGER.info("closing connection");

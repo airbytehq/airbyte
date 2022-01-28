@@ -10,21 +10,26 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
+import com.google.common.collect.UnmodifiableIterator;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.text.Names;
 import io.airbyte.commons.text.Sqls;
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
+import io.airbyte.scheduler.models.AttemptWithJobInfo;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import java.io.IOException;
@@ -53,8 +58,6 @@ import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.InsertValuesStepN;
 import org.jooq.JSONB;
-import org.jooq.JSONFormat;
-import org.jooq.JSONFormat.RecordFormat;
 import org.jooq.Named;
 import org.jooq.Record;
 import org.jooq.Result;
@@ -76,7 +79,6 @@ public class DefaultJobPersistence implements JobPersistence {
       .of("pg_toast", "information_schema", "pg_catalog", "import_backup", "pg_internal",
           "catalog_history");
 
-  private static final JSONFormat DB_JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
   protected static final String DEFAULT_SCHEMA = "public";
   private static final String BACKUP_SCHEMA = "import_backup";
   public static final String DEPLOYMENT_ID_KEY = "deployment_id";
@@ -98,6 +100,7 @@ public class DefaultJobPersistence implements JobPersistence {
           + "attempts.log_path AS log_path,\n"
           + "attempts.output AS attempt_output,\n"
           + "attempts.status AS attempt_status,\n"
+          + "attempts.failure_summary AS attempt_failure_summary,\n"
           + "attempts.created_at AS attempt_created_at,\n"
           + "attempts.updated_at AS attempt_updated_at,\n"
           + "attempts.ended_at AS attempt_ended_at\n"
@@ -322,6 +325,18 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
+  public void writeAttemptFailureSummary(final long jobId, final int attemptNumber, final AttemptFailureSummary failureSummary) throws IOException {
+    final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
+
+    jobDatabase.transaction(
+        ctx -> ctx.update(ATTEMPTS)
+            .set(ATTEMPTS.FAILURE_SUMMARY, JSONB.valueOf(Jsons.serialize(failureSummary)))
+            .set(ATTEMPTS.UPDATED_AT, now)
+            .where(ATTEMPTS.JOB_ID.eq(jobId), ATTEMPTS.ATTEMPT_NUMBER.eq(attemptNumber))
+            .execute());
+  }
+
+  @Override
   public Job getJob(final long jobId) throws IOException {
     return jobDatabase.query(ctx -> getJob(ctx, jobId));
   }
@@ -411,35 +426,63 @@ public class DefaultJobPersistence implements JobPersistence {
             timeConvertedIntoLocalDateTime)));
   }
 
+  @Override
+  public List<AttemptWithJobInfo> listAttemptsWithJobInfo(final ConfigType configType, final Instant attemptEndedAtTimestamp) throws IOException {
+    final LocalDateTime timeConvertedIntoLocalDateTime = LocalDateTime.ofInstant(attemptEndedAtTimestamp, ZoneOffset.UTC);
+    return jobDatabase.query(ctx -> getAttemptsWithJobsFromResult(ctx.fetch(
+        BASE_JOB_SELECT_AND_JOIN + "WHERE " + "CAST(config_type AS VARCHAR) =  ? AND " + " attempts.ended_at > ? ORDER BY attempts.ended_at ASC",
+        Sqls.toSqlName(configType),
+        timeConvertedIntoLocalDateTime)));
+  }
+
+  // Retrieves only Job information from the record, without any attempt info
+  private static Job getJobFromRecord(final Record record) {
+    return new Job(record.get("job_id", Long.class),
+        Enums.toEnum(record.get("config_type", String.class), ConfigType.class).orElseThrow(),
+        record.get("scope", String.class),
+        Jsons.deserialize(record.get("config", String.class), JobConfig.class),
+        new ArrayList<Attempt>(),
+        JobStatus.valueOf(record.get("job_status", String.class).toUpperCase()),
+        Optional.ofNullable(record.get("job_started_at")).map(value -> getEpoch(record, "started_at")).orElse(null),
+        getEpoch(record, "job_created_at"),
+        getEpoch(record, "job_updated_at"));
+  }
+
+  private static Attempt getAttemptFromRecord(final Record record) {
+    return new Attempt(
+        record.get("attempt_number", Long.class),
+        record.get("job_id", Long.class),
+        Path.of(record.get("log_path", String.class)),
+        record.get("attempt_output", String.class) == null ? null : Jsons.deserialize(record.get("attempt_output", String.class), JobOutput.class),
+        Enums.toEnum(record.get("attempt_status", String.class), AttemptStatus.class).orElseThrow(),
+        record.get("attempt_failure_summary", String.class) == null ? null
+            : Jsons.deserialize(record.get("attempt_failure_summary", String.class), AttemptFailureSummary.class),
+        getEpoch(record, "attempt_created_at"),
+        getEpoch(record, "attempt_updated_at"),
+        Optional.ofNullable(record.get("attempt_ended_at"))
+            .map(value -> getEpoch(record, "attempt_ended_at"))
+            .orElse(null));
+  }
+
+  private static List<AttemptWithJobInfo> getAttemptsWithJobsFromResult(final Result<Record> result) {
+    return result
+        .stream()
+        .filter(record -> record.getValue("attempt_number") != null)
+        .map(record -> new AttemptWithJobInfo(getAttemptFromRecord(record), getJobFromRecord(record)))
+        .collect(Collectors.toList());
+  }
+
   private static List<Job> getJobsFromResult(final Result<Record> result) {
     // keeps results strictly in order so the sql query controls the sort
     final List<Job> jobs = new ArrayList<Job>();
     Job currentJob = null;
     for (final Record entry : result) {
       if (currentJob == null || currentJob.getId() != entry.get("job_id", Long.class)) {
-        currentJob = new Job(entry.get("job_id", Long.class),
-            Enums.toEnum(entry.get("config_type", String.class), ConfigType.class).orElseThrow(),
-            entry.get("scope", String.class),
-            Jsons.deserialize(entry.get("config", String.class), JobConfig.class),
-            new ArrayList<Attempt>(),
-            JobStatus.valueOf(entry.get("job_status", String.class).toUpperCase()),
-            Optional.ofNullable(entry.get("job_started_at")).map(value -> getEpoch(entry, "started_at")).orElse(null),
-            getEpoch(entry, "job_created_at"),
-            getEpoch(entry, "job_updated_at"));
+        currentJob = getJobFromRecord(entry);
         jobs.add(currentJob);
       }
       if (entry.getValue("attempt_number") != null) {
-        currentJob.getAttempts().add(new Attempt(
-            entry.get("attempt_number", Long.class),
-            entry.get("job_id", Long.class),
-            Path.of(entry.get("log_path", String.class)),
-            entry.get("attempt_output", String.class) == null ? null : Jsons.deserialize(entry.get("attempt_output", String.class), JobOutput.class),
-            Enums.toEnum(entry.get("attempt_status", String.class), AttemptStatus.class).orElseThrow(),
-            getEpoch(entry, "attempt_created_at"),
-            getEpoch(entry, "attempt_updated_at"),
-            Optional.ofNullable(entry.get("attempt_ended_at"))
-                .map(value -> getEpoch(entry, "attempt_ended_at"))
-                .orElse(null)));
+        currentJob.getAttempts().add(getAttemptFromRecord(entry));
       }
     }
 
@@ -618,7 +661,7 @@ public class DefaultJobPersistence implements JobPersistence {
             .filter(f -> f.getDataType().getTypeName().equals("jsonb"))
             .map(Field::getName)
             .collect(Collectors.toSet());
-        final JsonNode row = Jsons.deserialize(record.formatJSON(DB_JSON_FORMAT));
+        final JsonNode row = Jsons.deserialize(record.formatJSON(JdbcUtils.getDefaultJSONFormat()));
         // for json fields, deserialize them so they are treated as objects instead of strings. this is to
         // get around that formatJson doesn't handle deserializing them for us.
         jsonFieldNames.forEach(jsonFieldName -> ((ObjectNode) row).replace(jsonFieldName, Jsons.deserialize(row.get(jsonFieldName).asText())));
@@ -640,6 +683,10 @@ public class DefaultJobPersistence implements JobPersistence {
     if (!data.isEmpty()) {
       createSchema(BACKUP_SCHEMA);
       jobDatabase.transaction(ctx -> {
+        // obtain locks on all tables first, to prevent deadlocks
+        for (final JobsDatabaseSchema tableType : data.keySet()) {
+          ctx.execute(String.format("LOCK TABLE %s IN ACCESS EXCLUSIVE MODE", tableType.name()));
+        }
         for (final JobsDatabaseSchema tableType : data.keySet()) {
           if (!incrementalImport) {
             truncateTable(ctx, targetSchema, tableType.name(), BACKUP_SCHEMA);
@@ -673,6 +720,7 @@ public class DefaultJobPersistence implements JobPersistence {
    * TODO: we need version specific importers to copy data to the database. Issue: #5682.
    */
   private static void importTable(final DSLContext ctx, final String schema, final JobsDatabaseSchema tableType, final Stream<JsonNode> jsonStream) {
+    LOGGER.info("Importing table {} from archive into database.", tableType.name());
     final Table<Record> tableSql = getTable(schema, tableType.name());
     final JsonNode jsonSchema = tableType.getTableDefinition();
     if (jsonSchema != null) {
@@ -688,15 +736,20 @@ public class DefaultJobPersistence implements JobPersistence {
         }
         return values;
       });
-      // Then Insert rows into table
-      final InsertValuesStepN<Record> insertStep = ctx
-          .insertInto(tableSql)
-          .columns(columns);
-      data.forEach(insertStep::values);
-      if (insertStep.getBindValues().size() > 0) {
-        // LOGGER.debug(insertStep.toString());
-        ctx.batch(insertStep).execute();
-      }
+      // Then insert rows into table in batches, to avoid crashing due to inserting too much data at once
+      final UnmodifiableIterator<List<List<?>>> partitions = Iterators.partition(data.iterator(), 100);
+      partitions.forEachRemaining(values -> {
+        final InsertValuesStepN<Record> insertStep = ctx
+            .insertInto(tableSql)
+            .columns(columns);
+
+        values.forEach(insertStep::values);
+
+        if (insertStep.getBindValues().size() > 0) {
+          // LOGGER.debug(insertStep.toString());
+          ctx.batch(insertStep).execute();
+        }
+      });
       final Optional<Field<?>> idColumn = columns.stream().filter(f -> f.getName().equals("id")).findFirst();
       if (idColumn.isPresent())
         resetIdentityColumn(ctx, schema, tableType);

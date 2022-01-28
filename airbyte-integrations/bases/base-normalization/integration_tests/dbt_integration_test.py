@@ -7,13 +7,13 @@ import json
 import os
 import random
 import re
-import shutil
 import socket
 import string
 import subprocess
 import sys
 import threading
 import time
+from copy import copy
 from typing import Any, Dict, List
 
 from normalization.destination_type import DestinationType
@@ -23,6 +23,7 @@ NORMALIZATION_TEST_TARGET = "NORMALIZATION_TEST_TARGET"
 NORMALIZATION_TEST_MSSQL_DB_PORT = "NORMALIZATION_TEST_MSSQL_DB_PORT"
 NORMALIZATION_TEST_MYSQL_DB_PORT = "NORMALIZATION_TEST_MYSQL_DB_PORT"
 NORMALIZATION_TEST_POSTGRES_DB_PORT = "NORMALIZATION_TEST_POSTGRES_DB_PORT"
+NORMALIZATION_TEST_CLICKHOUSE_DB_PORT = "NORMALIZATION_TEST_CLICKHOUSE_DB_PORT"
 
 
 class DbtIntegrationTest(object):
@@ -49,6 +50,8 @@ class DbtIntegrationTest(object):
             self.setup_mysql_db()
         if DestinationType.MSSQL.value in destinations_to_test:
             self.setup_mssql_db()
+        if DestinationType.CLICKHOUSE.value in destinations_to_test:
+            self.setup_clickhouse_db()
 
     def setup_postgres_db(self):
         start_db = True
@@ -187,27 +190,94 @@ class DbtIntegrationTest(object):
             # wait for service is available
             print(f"....Waiting for MS SQL Server to start...{wait_sec} sec")
             time.sleep(wait_sec)
+            # Run additional commands to prepare the table
+            command_create_db = [
+                "docker",
+                "exec",
+                f"{self.container_prefix}_mssql",
+                "/opt/mssql-tools/bin/sqlcmd",
+                "-S",
+                config["host"],
+                "-U",
+                config["username"],
+                "-P",
+                config["password"],
+                "-Q",
+                f"CREATE DATABASE [{config['database']}]",
+            ]
+            # create test db
+            print("Executing: ", " ".join(command_create_db))
+            subprocess.call(command_create_db)
+        if not os.path.exists("../secrets"):
+            os.makedirs("../secrets")
+        with open("../secrets/mssql.json", "w") as fh:
+            fh.write(json.dumps(config))
+
+    def setup_clickhouse_db(self):
+        """
+        ClickHouse official JDBC driver use HTTP port 8123, while Python ClickHouse
+        driver uses native port 9000, so we need to open both ports for destination
+        connector and dbt container respectively.
+
+        Ref: https://altinity.com/blog/2019/3/15/clickhouse-networking-part-1
+        """
+        start_db = True
+        if os.getenv(NORMALIZATION_TEST_CLICKHOUSE_DB_PORT):
+            port = int(os.getenv(NORMALIZATION_TEST_CLICKHOUSE_DB_PORT))
+            start_db = False
+        else:
+            port = self.find_free_port()
+        config = {
+            "host": "localhost",
+            "port": port,
+            "database": self.target_schema,
+            "username": "default",
+            "password": "",
+            "ssl": False,
+        }
+        if start_db:
+            self.db_names.append("clickhouse")
+            print("Starting localhost clickhouse container for tests")
+            commands = [
+                "docker",
+                "run",
+                "--rm",
+                "--name",
+                f"{self.container_prefix}_clickhouse",
+                "--ulimit",
+                "nofile=262144:262144",
+                "-p",
+                "9000:9000",  # Python clickhouse driver use native port
+                "-p",
+                f"{config['port']}:8123",  # clickhouse JDBC driver use HTTP port
+                "-d",
+                # so far, only the latest version ClickHouse server image turned on
+                # window functions
+                "clickhouse/clickhouse-server:latest",
+            ]
+            print("Executing: ", " ".join(commands))
+            subprocess.call(commands)
+            print("....Waiting for ClickHouse DB to start...15 sec")
+            time.sleep(15)
         # Run additional commands to prepare the table
         command_create_db = [
             "docker",
-            "exec",
-            f"{self.container_prefix}_mssql",
-            "/opt/mssql-tools/bin/sqlcmd",
-            "-S",
-            config["host"],
-            "-U",
-            config["username"],
-            "-P",
-            config["password"],
-            "-Q",
-            f"CREATE DATABASE [{config['database']}]",
+            "run",
+            "--rm",
+            "--link",
+            f"{self.container_prefix}_clickhouse:clickhouse-server",
+            "clickhouse/clickhouse-client:21.8.10.19",
+            "--host",
+            "clickhouse-server",
+            "--query",
+            f"CREATE DATABASE IF NOT EXISTS {config['database']}",
         ]
         # create test db
         print("Executing: ", " ".join(command_create_db))
         subprocess.call(command_create_db)
         if not os.path.exists("../secrets"):
             os.makedirs("../secrets")
-        with open("../secrets/mssql.json", "w") as fh:
+        with open("../secrets/clickhouse.json", "w") as fh:
             fh.write(json.dumps(config))
 
     @staticmethod
@@ -258,7 +328,14 @@ class DbtIntegrationTest(object):
             profiles_config["database"] = self.target_schema
         else:
             profiles_config["schema"] = self.target_schema
-        profiles_yaml = config_generator.transform(destination_type, profiles_config)
+        if destination_type.value == DestinationType.CLICKHOUSE.value:
+            # Python ClickHouse driver uses native port 9000, which is different
+            # from official ClickHouse JDBC driver
+            clickhouse_config = copy(profiles_config)
+            clickhouse_config["port"] = 9000
+            profiles_yaml = config_generator.transform(destination_type, clickhouse_config)
+        else:
+            profiles_yaml = config_generator.transform(destination_type, profiles_config)
         config_generator.write_yaml_config(test_root_dir, profiles_yaml, "profiles.yml")
         return profiles_config
 
@@ -295,10 +372,14 @@ class DbtIntegrationTest(object):
             return "airbyte/normalization-mysql:dev"
         elif DestinationType.ORACLE.value == destination_type.value:
             return "airbyte/normalization-oracle:dev"
+        elif DestinationType.CLICKHOUSE.value == destination_type.value:
+            return "airbyte/normalization-clickhouse:dev"
+        elif DestinationType.SNOWFLAKE.value == destination_type.value:
+            return "airbyte/normalization-snowflake:dev"
         else:
             return "airbyte/normalization:dev"
 
-    def dbt_run(self, destination_type: DestinationType, test_root_dir: str):
+    def dbt_check(self, destination_type: DestinationType, test_root_dir: str):
         """
         Run the dbt CLI to perform transformations on the test raw data in the destination
         """
@@ -306,13 +387,17 @@ class DbtIntegrationTest(object):
         # Perform sanity check on dbt project settings
         assert self.run_check_dbt_command(normalization_image, "debug", test_root_dir)
         assert self.run_check_dbt_command(normalization_image, "deps", test_root_dir)
-        final_sql_files = os.path.join(test_root_dir, "final")
-        shutil.rmtree(final_sql_files, ignore_errors=True)
+
+    def dbt_run(self, destination_type: DestinationType, test_root_dir: str, force_full_refresh: bool = False):
+        """
+        Run the dbt CLI to perform transformations on the test raw data in the destination
+        """
+        normalization_image: str = self.get_normalization_image(destination_type)
         # Compile dbt models files into destination sql dialect, then run the transformation queries
-        assert self.run_check_dbt_command(normalization_image, "run", test_root_dir)
+        assert self.run_check_dbt_command(normalization_image, "run", test_root_dir, force_full_refresh)
 
     @staticmethod
-    def run_check_dbt_command(normalization_image: str, command: str, cwd: str) -> bool:
+    def run_check_dbt_command(normalization_image: str, command: str, cwd: str, force_full_refresh: bool = False) -> bool:
         """
         Run dbt subprocess while checking and counting for "ERROR", "FAIL" or "WARNING" printed in its outputs
         """
@@ -327,7 +412,7 @@ class DbtIntegrationTest(object):
             "-v",
             f"{cwd}/build:/build",
             "-v",
-            f"{cwd}/final:/build/run/airbyte_utils/models/generated",
+            f"{cwd}/logs:/logs",
             "-v",
             "/tmp:/tmp",
             "--network",
@@ -340,6 +425,9 @@ class DbtIntegrationTest(object):
             "--profiles-dir=/workspace",
             "--project-dir=/workspace",
         ]
+        if force_full_refresh:
+            commands.append("--full-refresh")
+            command = f"{command} --full-refresh"
         print("Executing: ", " ".join(commands))
         print(f"Equivalent to: dbt {command} --profiles-dir={cwd} --project-dir={cwd}")
         with open(os.path.join(cwd, "dbt_output.log"), "ab") as f:
@@ -359,6 +447,8 @@ class DbtIntegrationTest(object):
                         "Configuration paths exist in your dbt_project.yml",  # When no cte / view are generated
                         "Error loading config file: .dockercfg: $HOME is not defined",  # ignore warning
                         "depends on a node named 'disabled_test' which was not found",  # Tests throwing warning because it is disabled
+                        "The requested image's platform (linux/amd64) does not match the detected host platform "
+                        + "(linux/arm64/v8) and no specific platform was requested",  # temporary patch until we publish images for arm64
                     ]:
                         if except_clause in str_line:
                             is_exception = True
@@ -424,6 +514,6 @@ class DbtIntegrationTest(object):
         """
         if os.getenv(NORMALIZATION_TEST_TARGET):
             target_str = os.getenv(NORMALIZATION_TEST_TARGET)
-            return [d.value for d in {DestinationType.from_string(s) for s in target_str.split(",")}]
+            return [d.value for d in {DestinationType.from_string(s.strip()) for s in target_str.split(",")}]
         else:
             return [d.value for d in DestinationType]

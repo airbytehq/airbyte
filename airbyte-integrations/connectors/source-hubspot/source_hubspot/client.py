@@ -5,28 +5,33 @@
 
 from typing import Any, Callable, Iterator, Mapping, Optional, Tuple
 
-from airbyte_protocol import AirbyteStream
-from base_python import BaseClient
+from airbyte_cdk.models import AirbyteStream
+from airbyte_cdk.sources.deprecated.client import BaseClient
 from requests import HTTPError
 from source_hubspot.api import (
     API,
     CampaignStream,
     ContactListStream,
-    CRMObjectStream,
+    ContactsListMembershipsStream,
+    CRMObjectIncrementalStream,
+    CRMSearchStream,
     DealPipelineStream,
     DealStream,
     EmailEventStream,
     EngagementStream,
     FormStream,
+    FormSubmissionStream,
     MarketingEmailStream,
     OwnerStream,
+    PropertyHistoryStream,
     SubscriptionChangeStream,
+    TicketPipelineStream,
     WorkflowStream,
 )
 
 
 class Client(BaseClient):
-    """Hubspot client, provides methods to discover and read streams"""
+    """HubSpot client, provides methods to discover and read streams"""
 
     def __init__(self, start_date, credentials, **kwargs):
         self._start_date = start_date
@@ -35,31 +40,40 @@ class Client(BaseClient):
         common_params = dict(api=self._api, start_date=self._start_date)
         self._apis = {
             "campaigns": CampaignStream(**common_params),
-            "companies": CRMObjectStream(entity="company", associations=["contacts"], **common_params),
+            "companies": CRMSearchStream(
+                entity="company", last_modified_field="hs_lastmodifieddate", associations=["contacts"], **common_params
+            ),
             "contact_lists": ContactListStream(**common_params),
-            "contacts": CRMObjectStream(entity="contact", **common_params),
+            "contacts": CRMSearchStream(
+                entity="contact", last_modified_field="lastmodifieddate", associations=["contacts"], **common_params
+            ),
+            "contacts_list_memberships": ContactsListMembershipsStream(**common_params),
             "deal_pipelines": DealPipelineStream(**common_params),
             "deals": DealStream(associations=["contacts"], **common_params),
             "email_events": EmailEventStream(**common_params),
             "engagements": EngagementStream(**common_params),
+            "feedback_submissions": CRMObjectIncrementalStream(entity="feedback_submissions", associations=["contacts"], **common_params),
             "forms": FormStream(**common_params),
-            "line_items": CRMObjectStream(entity="line_item", **common_params),
+            "form_submissions": FormSubmissionStream(**common_params),
+            "line_items": CRMObjectIncrementalStream(entity="line_item", **common_params),
             "marketing_emails": MarketingEmailStream(**common_params),
             "owners": OwnerStream(**common_params),
-            "products": CRMObjectStream(entity="product", **common_params),
+            "products": CRMObjectIncrementalStream(entity="product", **common_params),
+            "property_history": PropertyHistoryStream(**common_params),
             "subscription_changes": SubscriptionChangeStream(**common_params),
-            "tickets": CRMObjectStream(entity="ticket", **common_params),
+            "tickets": CRMObjectIncrementalStream(entity="ticket", **common_params),
+            "ticket_pipelines": TicketPipelineStream(**common_params),
             "workflows": WorkflowStream(**common_params),
         }
 
         credentials_title = credentials.get("credentials_title")
         if credentials_title == "API Key Credentials":
-            self._apis["quotes"] = CRMObjectStream(entity="quote", **common_params)
+            self._apis["quotes"] = CRMObjectIncrementalStream(entity="quote", **common_params)
 
         super().__init__(**kwargs)
 
     def _enumerate_methods(self) -> Mapping[str, Callable]:
-        return {name: api.list for name, api in self._apis.items()}
+        return {name: api.list_records for name, api in self._apis.items()}
 
     @property
     def streams(self) -> Iterator[AirbyteStream]:

@@ -24,11 +24,6 @@ public class TestDatabaseProviders {
   private final Optional<PostgreSQLContainer<?>> container;
   private boolean runMigration = true;
 
-  public TestDatabaseProviders(final Configs configs) {
-    this.configs = Optional.of(configs);
-    this.container = Optional.empty();
-  }
-
   public TestDatabaseProviders(final PostgreSQLContainer<?> container) {
     this.configs = Optional.empty();
     this.container = Optional.of(container);

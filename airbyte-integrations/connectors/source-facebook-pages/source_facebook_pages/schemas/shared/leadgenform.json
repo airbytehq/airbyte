@@ -1,0 +1,66 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "allow_organic_lead": {
+      "type": ["boolean", "null"]
+    },
+    "block_display_for_non_targeted_viewer": {
+      "type": ["boolean", "null"]
+    },
+    "context_card": {
+      "type": ["string", "null"]
+    },
+    "created_time": {
+      "type": ["string", "null"],
+      "format": "datetime"
+    },
+    "expired_leads_count": {
+      "type": ["integer", "null"]
+    },
+    "follow_up_action_text": {
+      "type": ["string", "null"]
+    },
+    "follow_up_action_url": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "is_optimized_for_quality": {
+      "type": ["boolean", "null"]
+    },
+    "leads_count": {
+      "type": ["integer", "null"]
+    },
+    "legal_content": {
+      "type": ["string", "null"]
+    },
+    "locale": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "organic_leads_count": {
+      "type": ["integer", "null"]
+    },
+    "page_id": {
+      "type": ["string", "null"]
+    },
+    "privacy_policy_url": {
+      "type": ["string", "null"]
+    },
+    "question_page_custom_headline": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": ["string", "null"]
+    },
+    "thank_you_page": {
+      "type": ["string", "null"]
+    },
+    "tracking_parameters": {
+      "type": ["string", "null"]
+    }
+  }
+}

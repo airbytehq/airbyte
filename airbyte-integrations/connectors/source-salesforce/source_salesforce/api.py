@@ -5,10 +5,13 @@
 from typing import Any, List, Mapping, Optional, Tuple
 
 import requests
+from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from requests.exceptions import HTTPError
 
 from .exceptions import TypeSalesforceException
 from .rate_limiting import default_backoff_handler
+from .utils import filter_streams
 
 STRING_TYPES = [
     "byte",
@@ -168,6 +171,7 @@ UNSUPPORTED_FILTERING_STREAMS = [
 
 
 class Salesforce:
+    logger = AirbyteLogger()
     version = "v52.0"
 
     def __init__(
@@ -178,9 +182,8 @@ class Salesforce:
         client_secret: str = None,
         is_sandbox: bool = None,
         start_date: str = None,
-        api_type: str = None,
+        **kwargs,
     ):
-        self.api_type = api_type.upper() if api_type else None
         self.refresh_token = refresh_token
         self.token = token
         self.client_id = client_id
@@ -195,11 +198,7 @@ class Salesforce:
         return {"Authorization": "Bearer {}".format(self.access_token)}
 
     def get_streams_black_list(self) -> List[str]:
-        black_list = QUERY_RESTRICTED_SALESFORCE_OBJECTS + QUERY_INCOMPATIBLE_SALESFORCE_OBJECTS
-        if self.api_type == "REST":
-            return black_list
-        else:
-            return black_list + UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS
+        return QUERY_RESTRICTED_SALESFORCE_OBJECTS + QUERY_INCOMPATIBLE_SALESFORCE_OBJECTS
 
     def filter_streams(self, stream_name: str) -> bool:
         # REST and BULK API do not support all entities that end with `ChangeEvent`.
@@ -207,31 +206,44 @@ class Salesforce:
             return False
         return True
 
-    def get_validated_streams(self, catalog: ConfiguredAirbyteCatalog = None):
+    def get_validated_streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None):
         salesforce_objects = self.describe()["sobjects"]
-        validated_streams = []
-        if catalog:
-            streams_for_read = [configured_stream.stream.name for configured_stream in catalog.streams]
-
+        stream_objects = []
         for stream_object in salesforce_objects:
-            stream_name = stream_object["name"]
-            if catalog and stream_name not in streams_for_read:
-                continue
-            if self.filter_streams(stream_name):
-                validated_streams.append(stream_name)
+            if stream_object["queryable"]:
+                stream_objects.append(stream_object)
+            else:
+                self.logger.warn(f"Stream {stream_object['name']} is not queryable and will be ignored.")
 
-        return validated_streams
+        stream_names = [stream_object["name"] for stream_object in stream_objects]
+        if catalog:
+            return [configured_stream.stream.name for configured_stream in catalog.streams], stream_objects
+
+        if config.get("streams_criteria"):
+            filtered_stream_list = []
+            for stream_criteria in config["streams_criteria"]:
+                filtered_stream_list += filter_streams(
+                    streams_list=stream_names, search_word=stream_criteria["value"], search_criteria=stream_criteria["criteria"]
+                )
+            stream_names = list(set(filtered_stream_list))
+
+        validated_streams = [stream_name for stream_name in stream_names if self.filter_streams(stream_name)]
+        validated_stream_objects = [stream_object for stream_object in stream_objects if stream_object["name"] in validated_streams]
+        return validated_streams, validated_stream_objects
 
     @default_backoff_handler(max_tries=5, factor=15)
     def _make_request(
         self, http_method: str, url: str, headers: dict = None, body: dict = None, stream: bool = False, params: dict = None
     ) -> requests.models.Response:
-        if http_method == "GET":
-            resp = self.session.get(url, headers=headers, stream=stream, params=params)
-        elif http_method == "POST":
-            resp = self.session.post(url, headers=headers, data=body)
-        resp.raise_for_status()
-
+        try:
+            if http_method == "GET":
+                resp = self.session.get(url, headers=headers, stream=stream, params=params)
+            elif http_method == "POST":
+                resp = self.session.post(url, headers=headers, data=body)
+            resp.raise_for_status()
+        except HTTPError as err:
+            self.logger.warn(f"http error body: {err.response.text}")
+            raise
         return resp
 
     def login(self):
@@ -249,19 +261,21 @@ class Salesforce:
         self.access_token = auth["access_token"]
         self.instance_url = auth["instance_url"]
 
-    def describe(self, sobject: str = None) -> Mapping[str, Any]:
+    def describe(self, sobject: str = None, stream_objects: List = None) -> Mapping[str, Any]:
         """Describes all objects or a specific object"""
         headers = self._get_standard_headers()
+
         endpoint = "sobjects" if not sobject else f"sobjects/{sobject}/describe"
 
         url = f"{self.instance_url}/services/data/{self.version}/{endpoint}"
         resp = self._make_request("GET", url, headers=headers)
-
+        if resp.status_code == 404:
+            self.logger.error(f"Filtered stream objects: {stream_objects}")
         return resp.json()
 
-    def generate_schema(self, stream_name: str) -> Mapping[str, Any]:
+    def generate_schema(self, stream_name: str = None, stream_objects: List = None) -> Mapping[str, Any]:
+        response = self.describe(stream_name, stream_objects)
         schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True, "properties": {}}
-        response = self.describe(stream_name)
         for field in response["fields"]:
             schema["properties"][field["name"]] = self.field_to_property_schema(field)
         return schema
@@ -315,7 +329,11 @@ class Salesforce:
         elif sf_type == "boolean":
             property_schema["type"] = ["boolean", "null"]
         elif sf_type in LOOSE_TYPES:
-            property_schema["type"] = ["array", "boolean", "integer", "number", "object", "string", "null"]
+            """
+            LOOSE_TYPES can return data of completely different types (more than 99% of them are `strings`),
+            and in order to avoid conflicts in schemas and destinations, we cast this data to the `string` type.
+            """
+            property_schema["type"] = ["string", "null"]
         elif sf_type == "location":
             property_schema = {
                 "type": ["object", "null"],

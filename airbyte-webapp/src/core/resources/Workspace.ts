@@ -1,28 +1,7 @@
 import { MutateShape, ReadShape, Resource, SchemaDetail } from "rest-hooks";
+
 import BaseResource from "./BaseResource";
-
-export interface Notification {
-  notificationType: string;
-  sendOnSuccess: boolean;
-  sendOnFailure: boolean;
-  slackConfiguration: {
-    webhook: string;
-  };
-}
-
-export interface Workspace {
-  workspaceId: string;
-  customerId: string;
-  name: string;
-  email: string;
-  slug: string;
-  initialSetupComplete: boolean;
-  anonymousDataCollection: boolean;
-  news: boolean;
-  securityUpdates: boolean;
-  displaySetupWizard: boolean;
-  notifications: Notification[];
-}
+import { Notification, Workspace } from "core/domain/workspace/Workspace";
 
 export default class WorkspaceResource
   extends BaseResource

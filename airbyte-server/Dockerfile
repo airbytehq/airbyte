@@ -1,4 +1,4 @@
-ARG JDK_VERSION=14.0.2
+ARG JDK_VERSION=17.0.1
 FROM openjdk:${JDK_VERSION}-slim AS server
 
 EXPOSE 8000
@@ -7,9 +7,7 @@ ENV APPLICATION airbyte-server
 
 WORKDIR /app
 
-COPY build/distributions/${APPLICATION}-0*.tar ${APPLICATION}.tar
-
-RUN tar xf ${APPLICATION}.tar --strip-components=1
+ADD bin/${APPLICATION}-0.35.12-alpha.tar /app
 
 # wait for upstream dependencies to become available before starting server
-ENTRYPOINT ["/bin/bash", "-c", "bin/${APPLICATION}"]
+ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-0.35.12-alpha/bin/${APPLICATION}"]

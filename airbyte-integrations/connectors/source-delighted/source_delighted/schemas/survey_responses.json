@@ -1,0 +1,116 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "person": {
+      "type": "string"
+    },
+    "survey_type": {
+      "type": "string"
+    },
+    "score": {
+      "type": "integer"
+    },
+    "comment": {
+      "type": ["null", "string"]
+    },
+    "permalink": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "integer"
+    },
+    "updated_at": {
+      "type": ["null", "integer"]
+    },
+    "person_properties": {
+      "type": ["object", "null"],
+      "properties": {
+        "Delighted Source": {
+          "type": ["null", "string"]
+        },
+        "Delighted Device Type": {
+          "type": ["null", "string"]
+        },
+        "Delighted Operating System": {
+          "type": ["null", "string"]
+        },
+        "Delighted Browser": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {}
+    },
+    "tags": {
+      "type": "array",
+      "items": {}
+    },
+    "additional_answers": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "value": {
+            "type": "object",
+            "properties": {
+              "free_response": {
+                "type": ["null", "string"]
+              },
+              "scale": {
+                "type": ["null", "integer"]
+              },
+              "select_one": {
+                "type": ["object", "null"],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                }
+              },
+              "select_many": {
+                "type": ["array", "null"],
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "text": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "question": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

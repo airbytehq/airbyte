@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.9
+Maximum pagination limit `maximum_page = 500` is removed.
+
+## 0.2.8
+Include `requester` and `stats` fields in `tickets` stream
+
 ## 0.2.7
 Add start_date parameter to specification from which to start pulling data.
 

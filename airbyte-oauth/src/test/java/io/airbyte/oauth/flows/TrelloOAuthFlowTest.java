@@ -19,6 +19,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.oauth.MoreOAuthParameters;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
@@ -73,19 +74,26 @@ public class TrelloOAuthFlowTest {
   }
 
   @Test
-  public void testGetSourceConcentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
-    final String concentUrl =
-        trelloOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
-    assertEquals(concentUrl, "https://trello.com/1/OAuthAuthorizeToken?oauth_token=test_token");
+  public void testGetSourceConsentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
+    final String consentUrl =
+        trelloOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null);
+    assertEquals("https://trello.com/1/OAuthAuthorizeToken?oauth_token=test_token", consentUrl);
   }
 
   @Test
   public void testCompleteSourceAuth() throws IOException, InterruptedException, ConfigNotFoundException {
-    final Map<String, String> expectedParams = Map.of("key", "test_client_id", "token", "test_token");
+    final Map<String, String> expectedParams = Map.of(
+        "key", "test_client_id",
+        "token", "test_token",
+        "client_id", MoreOAuthParameters.SECRET_MASK,
+        "client_secret", MoreOAuthParameters.SECRET_MASK);
     final Map<String, Object> queryParams = Map.of("oauth_token", "token", "oauth_verifier", "verifier");
-    final Map<String, Object> returnedParams =
+    final Map<String, Object> actualParams =
         trelloOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
-    assertEquals(returnedParams, expectedParams);
+    assertEquals(actualParams, expectedParams);
+    assertEquals(expectedParams.size(), actualParams.size(),
+        String.format("Expected %s values but got %s", expectedParams.size(), actualParams));
+    expectedParams.forEach((key, value) -> assertEquals(value, actualParams.get(key)));
   }
 
 }
