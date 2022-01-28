@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -139,9 +140,16 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
    */
   @Test
   public void testDiscover() throws Exception {
-    // the worker validates that it is a valid catalog, so we do not need to validate again (as long as
-    // we use the worker, which we will not want to do long term).
-    assertNotNull(runDiscover(), "Expected discover to produce a catalog");
+    final AirbyteCatalog discoverOutput = runDiscover();
+    assertNotNull(discoverOutput, "Expected discover to produce a catalog");
+    verifyCatalog(discoverOutput);
+  }
+
+  /**
+   * Override this method to check the actual catalog.
+   */
+  protected void verifyCatalog(final AirbyteCatalog catalog) throws Exception {
+    // do nothing by default
   }
 
   /**
