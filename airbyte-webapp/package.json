@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.35.11-alpha",
+  "version": "0.35.12-alpha",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
