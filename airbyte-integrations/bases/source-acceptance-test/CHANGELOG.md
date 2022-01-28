@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.46
+## 0.1.45
 Check for not allowed keywords `allOf`, `not` in connectors schema: [#9851](https://github.com/airbytehq/airbyte/pull/9851)
 
 ## 0.1.44
