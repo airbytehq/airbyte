@@ -113,6 +113,7 @@ You should now have all the requirements needed to configure Snowflake as a dest
 * **Schema**
 * **Username**
 * **Password**
+* **JDBC URL Params** (Optional)
 
 ## Notes about Snowflake Naming Conventions
 
@@ -216,6 +217,7 @@ Finally, you need to add read/write permissions to your bucket with that email.
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :-----       | :------ |
+| 0.4.6   | 2022-01-28 | [#9623](https://github.com/airbytehq/airbyte/pull/9623) | Add jdbc_url_params support for optional JDBC parameters |
 | 0.4.5   | 2021-12-29 | [#9184](https://github.com/airbytehq/airbyte/pull/9184) | Update connector fields title/description |
 | 0.4.4   | 2022-01-24 | [#9743](https://github.com/airbytehq/airbyte/pull/9743) | Fixed bug with dashes in schema name |
 | 0.4.3   | 2022-01-20 | [#9531](https://github.com/airbytehq/airbyte/pull/9531) | Start using new S3StreamCopier and expose the purgeStagingData option |
@@ -236,4 +238,3 @@ Finally, you need to add read/write permissions to your bucket with that email.
 | 0.3.12  | 2021-07-30 | [#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json                                                                        |
 | 0.3.11  | 2021-07-21 | [#3555](https://github.com/airbytehq/airbyte/pull/3555) | Partial Success in BufferedStreamConsumer                                                                           |
 | 0.3.10  | 2021-07-12 | [#4713](https://github.com/airbytehq/airbyte/pull/4713)| Tag traffic with `airbyte` label to enable optimization opportunities from Snowflake                                |
-
