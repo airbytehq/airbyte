@@ -139,11 +139,6 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
   }
 
   @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
-  }
-
-  @Override
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }

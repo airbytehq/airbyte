@@ -36,8 +36,14 @@ At the time of this writing, [Mailchimp does not impose rate limits](https://mai
 
 ### Requirements
 
+For Apikey authorithation:
 * Mailchimp account 
 * Mailchimp API key
+
+For OAuth authorization:
+* Mailchimp registered app
+* Mailchimp client_id
+* Mailchimp client_secret
 
 ### Setup guide
 
@@ -46,10 +52,15 @@ To start syncing Mailchimp data with Airbyte, you'll need two things:
 1. Your Mailchimp username. Often this is just the email address or username you use to sign into Mailchimp. 
 2. A Mailchimp API Key. Follow the [Mailchimp documentation for generating an API key](https://mailchimp.com/help/about-api-keys/).
 
+OR
+1. Register an app in [Mailchimp](https://us2.admin.mailchimp.com/account/oauth2/).
+2. Specify client_id and client_secret.
+
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.11 | 2021-12-24| [7159](https://github.com/airbytehq/airbyte/pull/7159) | Add oauth2.0 support |
 | 0.2.10 | 2021-12-21 | [9000](https://github.com/airbytehq/airbyte/pull/9000) | Update connector fields title/description |
 | 0.2.9  | 2021-12-13 | [7975](https://github.com/airbytehq/airbyte/pull/7975) | Updated JSON schemas |
 | 0.2.8  | 2021-08-17 | [5481](https://github.com/airbytehq/airbyte/pull/5481) | Remove date-time type from some fields |

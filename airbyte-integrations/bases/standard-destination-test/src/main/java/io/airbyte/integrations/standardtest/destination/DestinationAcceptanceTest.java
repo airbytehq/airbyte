@@ -310,7 +310,7 @@ public abstract class DestinationAcceptanceTest {
 
     setup(testEnv);
 
-    processFactory = new DockerProcessFactory(workerConfigs, workspaceRoot, workspaceRoot.toString(), localRoot.toString(), "host", false);
+    processFactory = new DockerProcessFactory(workerConfigs, workspaceRoot, workspaceRoot.toString(), localRoot.toString(), "host");
   }
 
   @AfterEach
@@ -930,7 +930,7 @@ public abstract class DestinationAcceptanceTest {
             .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
   }
 
-  private StandardCheckConnectionOutput runCheck(final JsonNode config) throws WorkerException {
+  protected StandardCheckConnectionOutput runCheck(final JsonNode config) throws WorkerException {
     return new DefaultCheckConnectionWorker(
         workerConfigs, new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
             .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);

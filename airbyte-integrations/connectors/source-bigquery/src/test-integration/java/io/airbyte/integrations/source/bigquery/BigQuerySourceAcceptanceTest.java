@@ -96,11 +96,6 @@ public class BigQuerySourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
-  }
-
-  @Override
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }

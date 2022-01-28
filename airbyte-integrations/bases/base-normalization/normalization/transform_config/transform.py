@@ -133,8 +133,8 @@ class TransformConfig:
             "project": config["project_id"],
             "dataset": config["dataset_id"],
             "priority": config.get("transformation_priority", "interactive"),
-            "threads": 32,
-            "retries": 1,
+            "threads": 8,
+            "retries": 3,
         }
         if "credentials_json" in config:
             dbt_config["method"] = "service-account-json"
@@ -161,7 +161,7 @@ class TransformConfig:
             "port": config["port"],
             "dbname": config["database"],
             "schema": config["schema"],
-            "threads": 32,
+            "threads": 8,
         }
 
         # if unset, we assume true.
@@ -182,7 +182,7 @@ class TransformConfig:
             "port": config["port"],
             "dbname": config["database"],
             "schema": config["schema"],
-            "threads": 32,
+            "threads": 4,
         }
         return dbt_config
 
@@ -202,9 +202,13 @@ class TransformConfig:
             "database": config["database"].upper(),
             "warehouse": config["warehouse"].upper(),
             "schema": config["schema"].upper(),
-            "threads": 32,
+            "threads": 5,
             "client_session_keep_alive": False,
             "query_tag": "normalization",
+            "retry_all": True,
+            "retry_on_database_errors": True,
+            "connect_retries": 3,
+            "connect_timeout": 15,
         }
         return dbt_config
 
@@ -259,7 +263,7 @@ class TransformConfig:
             "database": config["database"],
             "user": config["username"],
             "password": config["password"],
-            "threads": 32,
+            "threads": 8,
             # "authentication": "sql",
             # "trusted_connection": True,
         }
