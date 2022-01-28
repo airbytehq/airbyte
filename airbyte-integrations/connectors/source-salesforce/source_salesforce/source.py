@@ -37,7 +37,12 @@ class SourceSalesforce(AbstractSource):
 
     @classmethod
     def generate_streams(
-        cls, config: Mapping[str, Any], stream_names: List[str], sf_object: Salesforce, state: Mapping[str, Any] = None, stream_objects: List = None
+        cls,
+        config: Mapping[str, Any],
+        stream_names: List[str],
+        sf_object: Salesforce,
+        state: Mapping[str, Any] = None,
+        stream_objects: List = None,
     ) -> List[Stream]:
         """ "Generates a list of stream by their names. It can be used for different tests too"""
         authenticator = TokenAuthenticator(sf_object.access_token)
