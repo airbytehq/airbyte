@@ -2,7 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Callable, Dict, Any
+from typing import Any, Callable, Dict
 
 import pytest
 from airbyte_cdk.models import ConnectorSpecification
@@ -147,13 +147,14 @@ def parametrize_test_case(*test_cases: Dict[str, Any]) -> Callable:
         all_keys = all_keys.union(set(test_case.keys()))
     all_keys.discard("test_id")
 
-    test_ids =  []
+    test_ids = []
     values = []
     for test_case in test_cases:
         test_ids.append(test_case.pop("test_id", None))
         values.append(tuple(test_case.get(k) for k in all_keys))
 
     return pytest.mark.parametrize(",".join(all_keys), values, ids=test_ids)
+
 
 @parametrize_test_case(
     {
@@ -167,30 +168,17 @@ def parametrize_test_case(*test_cases: Dict[str, Any]) -> Callable:
                         {
                             "type": "object",
                             "properties": {
-                                "option_title": {
-                                    "type": "string",
-                                    "title": "Title",
-                                    "const": "first option"
-                                },
-                                "something": {
-                                    "type": "string"
-                                }
-                            }
+                                "option_title": {"type": "string", "title": "Title", "const": "first option"},
+                                "something": {"type": "string"},
+                            },
                         },
                         {
                             "type": "object",
                             "properties": {
-                                "option_title": {
-                                    "type": "string",
-                                    "title": "Title",
-                                    "const": "second option"
-                                },
-                                "some_field": {
-                                    "type": "boolean"
-                                }
-                            }
+                                "option_title": {"type": "string", "title": "Title", "const": "second option"},
+                                "some_field": {"type": "boolean"},
+                            },
                         },
-
                     ],
                 },
                 "client_secret": {"type": "string"},
@@ -222,30 +210,17 @@ def parametrize_test_case(*test_cases: Dict[str, Any]) -> Callable:
                         {
                             "type": "object",
                             "properties": {
-                                "wrong_title": {
-                                    "type": "string",
-                                    "title": "Title",
-                                    "const": "first option"
-                                },
-                                "something": {
-                                    "type": "string"
-                                }
-                            }
+                                "wrong_title": {"type": "string", "title": "Title", "const": "first option"},
+                                "something": {"type": "string"},
+                            },
                         },
                         {
                             "type": "object",
                             "properties": {
-                                "option_title": {
-                                    "type": "string",
-                                    "title": "Title",
-                                    "const": "second option"
-                                },
-                                "some_field": {
-                                    "type": "boolean"
-                                }
-                            }
+                                "option_title": {"type": "string", "title": "Title", "const": "second option"},
+                                "some_field": {"type": "boolean"},
+                            },
                         },
-
                     ],
                 },
                 "client_secret": {"type": "string"},
@@ -268,17 +243,10 @@ def parametrize_test_case(*test_cases: Dict[str, Any]) -> Callable:
                         {
                             "type": "object",
                             "properties": {
-                                "option_title": {
-                                    "type": "string",
-                                    "title": "Title",
-                                    "const": "second option"
-                                },
-                                "some_field": {
-                                    "type": "boolean"
-                                }
-                            }
+                                "option_title": {"type": "string", "title": "Title", "const": "second option"},
+                                "some_field": {"type": "boolean"},
+                            },
                         },
-
                     ],
                 },
                 "client_secret": {"type": "string"},

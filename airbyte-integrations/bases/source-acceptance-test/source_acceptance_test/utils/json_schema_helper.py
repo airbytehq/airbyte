@@ -121,7 +121,6 @@ class JsonSchemaHelper:
             node = node[segment]
         return node
 
-
     def find_nodes(self, keys: List[str]) -> List[List[str]]:
         """Get all nodes of schema that has specifies properties
 

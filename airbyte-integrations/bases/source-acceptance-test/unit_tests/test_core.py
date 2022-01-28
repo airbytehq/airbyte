@@ -5,14 +5,7 @@
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.models import (
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    AirbyteStream,
-    ConfiguredAirbyteCatalog,
-    ConfiguredAirbyteStream,
-    Type,
-)
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, Type
 from source_acceptance_test.config import BasicReadTestConfig
 from source_acceptance_test.tests.test_core import TestBasicRead as _TestBasicRead
 from source_acceptance_test.tests.test_core import TestDiscovery as _TestDiscovery
