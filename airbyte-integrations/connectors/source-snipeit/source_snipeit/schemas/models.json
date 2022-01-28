@@ -1,0 +1,64 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+        "id": {"type": "integer"},
+        "name": {"type": "string"},
+        "manufacturer": {"type": "object"},
+        "image": {},
+        "model_number": {"type": "string"},
+        "depreciation": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer"},
+                "name": {"type": "string"}
+            }
+        },
+        "assets_count": {"type": "integer"},
+        "category": {"type": "object"},
+        "fieldset": {"type": "object"},
+        "eol": {"type": "string"},
+        "requestable": {"type": "boolean"},
+        "notes": {"type": "string"},
+        "created_at": {
+            "type": "object",
+            "properties": {
+                "datetime": {
+                    "type": "string",
+                    "example": "2017-11-22 10:37:07"
+                },
+                "formatted": {
+                    "type": "string",
+                    "example": "Wed Nov 22, 2017 10:37AM"
+                }
+            }
+        },
+        "updated_at": {
+            "type": "object",
+            "properties": {
+                "datetime": {
+                    "type": "string",
+                    "example": "2017-11-22 10:37:07"
+                },
+                "formatted": {
+                    "type": "string",
+                    "example": "Wed Nov 22, 2017 10:37AM"
+                }
+            }
+        },
+        "deleted_at": {
+            "type": "object",
+            "properties": {
+                "datetime": {
+                    "type": "string",
+                    "example": "2017-11-22 10:37:07"
+                },
+                "formatted": {
+                    "type": "string",
+                    "example": "Wed Nov 22, 2017 10:37AM"
+                }
+            }
+        },
+        "available_actions": {"type": "object"}
+    }
+}

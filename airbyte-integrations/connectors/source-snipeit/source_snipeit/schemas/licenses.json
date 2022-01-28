@@ -1,0 +1,149 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "example": 1,
+            "default": 0
+        },
+        "name": {
+            "type": "string",
+            "example": "Photoshop"
+        },
+        "company": {},
+        "manufacturer": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 9,
+                    "default": 0
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Adobe"
+                }
+            }
+        },
+        "product_key": {
+            "type": "string",
+            "example": "0d5254fb-b9f9-342c-a210-5feba9ea08b0"
+        },
+        "order_number": {
+            "type": "string",
+            "example": "27709963"
+        },
+        "purchase_order": {
+            "type": "string",
+            "example": ""
+        },
+        "purchase_date": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string",
+                    "example": "2017-07-04"
+                },
+                "formatted": {
+                    "type": "string",
+                    "example": "2017-07-04"
+                }
+            }
+        },
+        "purchase_cost": {
+            "type": "string",
+            "example": "299.99"
+        },
+        "notes": {
+            "type": "string",
+            "example": "Created by DB seeder"
+        },
+        "expiration_date": {},
+        "seats": {
+            "type": "integer",
+            "example": 10,
+            "default": 0
+        },
+        "free_seats_count": {
+            "type": "integer",
+            "example": 10,
+            "default": 0
+        },
+        "license_name": {
+            "type": "string",
+            "example": "Prof. Alba Sawayn"
+        },
+        "license_email": {
+            "type": "string",
+            "example": "merlin50@example.org"
+        },
+        "maintained": {
+            "type": "boolean",
+            "example": false,
+            "default": true
+        },
+        "supplier": {},
+        "created_at": {
+            "type": "object",
+            "properties": {
+                "datetime": {
+                    "type": "string",
+                    "example": "2017-11-11 18:18:03"
+                },
+                "formatted": {
+                    "type": "string",
+                    "example": "2017-11-11 06:18 PM"
+                }
+            }
+        },
+        "updated_at": {
+            "type": "object",
+            "properties": {
+                "datetime": {
+                    "type": "string",
+                    "example": "2017-11-11 18:18:03"
+                },
+                "formatted": {
+                    "type": "string",
+                    "example": "2017-11-11 06:18 PM"
+                }
+            }
+        },
+        "user_can_checkout": {
+            "type": "boolean",
+            "example": true,
+            "default": true
+        },
+        "available_actions": {
+            "type": "object",
+            "properties": {
+                "checkout": {
+                    "type": "boolean",
+                    "example": true,
+                    "default": true
+                },
+                "checkin": {
+                    "type": "boolean",
+                    "example": true,
+                    "default": true
+                },
+                "clone": {
+                    "type": "boolean",
+                    "example": true,
+                    "default": true
+                },
+                "update": {
+                    "type": "boolean",
+                    "example": true,
+                    "default": true
+                },
+                "delete": {
+                    "type": "boolean",
+                    "example": true,
+                    "default": true
+                }
+            }
+        }
+    }
+}

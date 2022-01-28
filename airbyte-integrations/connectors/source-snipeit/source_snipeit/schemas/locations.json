@@ -1,0 +1,49 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "name": "hardware",
+    "type": "object",
+    "properties": {
+        "id": {"type": "integer"},
+        "name": {"type": "string"},
+        "image": {"type": "string"},
+        "address": {"type": "string"},
+        "address2": {"type": "string"},
+        "city": {"type": "string"},
+        "state": {"type": "string"},
+        "country": {"type": "string"},
+        "zip": {"type": "string"},
+        "assigned_assets_count": {"type": "integer"},
+        "assets_count": {"type": "integer"},
+        "users_count": {"type": "integer"},
+        "currency": {"type": "string"},
+        "ldap_ou": {"type": "string"},
+        "created_at": {
+            "type": "object",
+            "properties": {
+                "datetime": {"type": "string"},
+                "formatted": {"type": "string"}
+            }
+        },
+        "updated_at": {
+            "type": "object",
+            "properties": {
+                "datetime": {"type": "string"},
+                "formatted": {"type": "string"}
+            }
+        },
+        "parent": {"type": "object"},
+        "manager": {"type": "string"},
+        "children": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "integer"},
+                    "name": {"type": "string"}
+                }
+            }
+        },
+        "available_actions": {"type": "object"}
+
+    }
+}

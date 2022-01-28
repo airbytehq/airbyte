@@ -1,0 +1,129 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+        "id": {"type": "integer"},
+        "avatar": {"type": "string"},
+        "name": {"type": "string"},
+        "first_name": {"type": "string"},
+        "last_name": {"type": "string"},
+        "username": {"type": "string"},
+        "locale": {"type": "string"},
+        "employee_num": {"type": "string"},
+        "manager": {},
+        "jobtitle": {"type": "string"},
+        "phone": {},
+        "website": {},
+        "address": {},
+        "city": {},
+        "state": {},
+        "country": {},
+        "zip": {},
+        "email": {"type": "string"},
+        "department": {},
+        "location": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 3,
+                    "default": 0
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Nikitaborough"
+                }
+
+            }
+        },
+        "notes": {"type": "string"},
+        "permissions": {"type": "object"},
+        "activated": {"type": "boolean"},
+        "ldap_import": {"type": "boolean"},
+        "two_factor_activated": {"type": "boolean"},
+        "two_factor_enrolled": {"type": "boolean"},
+        "assets_count": {"type": "integer"},
+        "licenses_count": {"type": "integer"},
+        "accessories_count": {"type": "integer"},
+        "consumables_count": {"type": "integer"},
+        "company": {"type": "object"},
+        "created_at": {
+            "type": "object",
+            "properties": {
+                "datetime": {
+                    "type": "string",
+                    "example": "2018-10-09 19:09:21"
+                },
+                "formatted": {
+                    "type": "string",
+                    "example": "2018-10-09 07:09 PM"
+                }
+            }
+        },
+        "updated_at": {
+            "type": "object",
+            "properties": {
+                "datetime": {
+                    "type": "string",
+                    "example": "2018-10-09 19:09:21"
+                },
+                "formatted": {
+                    "type": "string",
+                    "example": "2018-10-09 07:09 PM"
+                }
+            }
+        },
+        "last_login": {
+            "type": "object",
+            "properties": {
+                "datetime": {
+                    "type": "string",
+                    "example": "2018-10-09 19:09:21"
+                },
+                "formatted": {
+                    "type": "string",
+                    "example": "2018-10-09 07:09 PM"
+                }
+            }
+        },
+        "deleted_at": {
+            "type": "object",
+            "properties": {
+                "datetime": {
+                    "type": "string",
+                    "example": "2018-10-09 19:09:21"
+                },
+                "formatted": {
+                    "type": "string",
+                    "example": "2018-10-09 07:09 PM"
+                }
+            }
+        },
+        "available_actions": {
+            "type": "object",
+            "properties": {
+                "checkout": {
+                    "type": "boolean",
+                    "example": true,
+                    "default": true
+                },
+                "checkin": {
+                    "type": "boolean",
+                    "example": true,
+                    "default": true
+                },
+                "update": {
+                    "type": "boolean",
+                    "example": true,
+                    "default": true
+                },
+                "delete": {
+                    "type": "boolean",
+                    "example": true,
+                    "default": true
+                }
+            }
+        },
+        "groups": {"total": "object"}
+    }
+}

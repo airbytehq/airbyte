@@ -1,0 +1,283 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "name": "hardware",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "example": 1,
+            "default": 0
+        },
+        "name": {
+            "type": "string",
+            "example": ""
+        },
+        "asset_tag": {
+            "type": "string",
+            "example": "389658657"
+        },
+        "serial": {
+            "type": "string",
+            "example": "b9b47837-13d9-33d3-a7d3-815a8503be44"
+        },
+        "model": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1,
+                    "default": 0
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Macbook Pro 13&quot;"
+                }
+            }
+        },
+        "model_number": {
+            "type": "string",
+            "example": "4929525240061"
+        },
+        "status_label": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1,
+                    "default": 0
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Deployed"
+                },
+                "status_meta": {
+                    "type": "string",
+                    "example": "deployed"
+                }
+            }
+        },
+        "category": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1,
+                    "default": 0
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Laptops"
+                }
+            }
+        },
+        "manufacturer": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1,
+                    "default": 0
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Apple"
+                }
+            }
+        },
+        "supplier": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1,
+                    "default": 0
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Harvey-Hettinger"
+                }
+            }
+        },
+        "notes": {
+            "type": "string",
+            "example": "Created by DB seeder"
+        },
+        "order_number": {
+            "type": "string",
+            "example": "4243135"
+        },
+        "company": {},
+        "location": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 3,
+                    "default": 0
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Tonystad"
+                }
+            }
+        },
+        "rtd_location": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1,
+                    "default": 0
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Lake Catharineburgh"
+                }
+            }
+        },
+        "image": {},
+        "assigned_to": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1,
+                    "default": 0
+                },
+                "username": {
+                    "type": "string",
+                    "example": "admin"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Admin User"
+                },
+                "first_name": {
+                    "type": "string",
+                    "example": "Admin"
+                },
+                "last_name": {
+                    "type": "string",
+                    "example": "User"
+                },
+                "employee_number": {
+                    "type": "string",
+                    "example": "19135"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "user"
+                }
+            }
+        },
+        "warranty": {},
+        "warranty_expires": {},
+        "created_at": {
+            "type": "object",
+            "properties": {
+                "datetime": {
+                    "type": "string",
+                    "example": "2017-10-18 21:00:08"
+                },
+                "formatted": {
+                    "type": "string",
+                    "example": "Wed Oct 18, 2017 9:00PM"
+                }
+            }
+        },
+        "updated_at": {
+            "type": "object",
+            "properties": {
+                "datetime": {
+                    "type": "string",
+                    "example": "2017-10-19 07:57:37"
+                },
+                "formatted": {
+                    "type": "string",
+                    "example": "Thu Oct 19, 2017 7:57AM"
+                }
+            }
+        },
+        "purchase_date": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string",
+                    "example": "2016-12-03"
+                },
+                "formatted": {
+                    "type": "string",
+                    "example": "Sat Dec 03, 2016"
+                }
+            }
+        },
+        "last_checkout": {
+            "type": "object",
+            "properties": {
+                "datetime": {
+                    "type": "string",
+                    "example": "2017-10-05 08:30:20"
+                },
+                "formatted": {
+                    "type": "string",
+                    "example": "Thu Oct 05, 2017 8:30AM"
+                }
+            }
+        },
+        "expected_checkin": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string",
+                    "example": "2017-11-03"
+                },
+                "formatted": {
+                    "type": "string",
+                    "example": "Fri Nov 03, 2017"
+                }
+            }
+        },
+        "purchase_cost": {
+            "type": "string",
+            "example": "1114.86"
+        },
+        "user_can_checkout": {
+            "type": "boolean",
+            "example": false,
+            "default": true
+        },
+        "custom_fields": {
+            "type": "array"
+        },
+        "available_actions": {
+            "type": "object",
+            "properties": {
+                "checkout": {
+                    "type": "boolean",
+                    "example": true,
+                    "default": true
+                },
+                "checkin": {
+                    "type": "boolean",
+                    "example": true,
+                    "default": true
+                },
+                "clone": {
+                    "type": "boolean",
+                    "example": true,
+                    "default": true
+                },
+                "update": {
+                    "type": "boolean",
+                    "example": true,
+                    "default": true
+                },
+                "delete": {
+                    "type": "boolean",
+                    "example": true,
+                    "default": true
+                }
+            }
+        }
+    }
+}
