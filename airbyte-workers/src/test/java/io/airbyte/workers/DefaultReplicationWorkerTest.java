@@ -160,19 +160,19 @@ class DefaultReplicationWorkerTest {
     assertTrue(logs.contains("Destination output thread started."));
   }
 
-  //@Test
-//  void testLogMaskRegex() throws IOException {
-//    final Path jobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
-//    MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, jobRoot.toString());
-//
-//    LOGGER.info(
-//        "500 Server Error: Internal Server Error for url: https://api.hubapi.com/crm/v3/objects/contact?limit=100&archived=false&hapikey=secret-key_1&after=5315621");
-//
-//    final Path logPath = jobRoot.resolve("logs.log");
-//    final String logs = IOs.readFile(logPath);
-//    assertTrue(logs.contains("apikey"));
-//    assertFalse(logs.contains("secret-key_1"));
-//  }
+  @Test
+  void testLogMaskRegex() throws IOException {
+    final Path jobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
+    MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, jobRoot.toString());
+
+    LOGGER.info(
+        "500 Server Error: Internal Server Error for url: https://api.hubapi.com/crm/v3/objects/contact?limit=100&archived=false&hapikey=secret-key_1&after=5315621");
+
+    final Path logPath = jobRoot.resolve("logs.log");
+    final String logs = IOs.readFile(logPath);
+    assertTrue(logs.contains("apikey"));
+    assertFalse(logs.contains("secret-key_1"));
+  }
 
   @SuppressWarnings({"BusyWait"})
   @Test
