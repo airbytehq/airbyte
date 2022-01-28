@@ -476,6 +476,7 @@ public class KubePodProcess extends Process {
 
     LOGGER.info("Creating pod {}...", pod.getMetadata().getName());
     this.podDefinition = fabricClient.pods().inNamespace(namespace).createOrReplace(pod);
+
     waitForInitPodToRun(fabricClient, podDefinition);
 
     LOGGER.info("Copying files...");
