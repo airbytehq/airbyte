@@ -4,6 +4,7 @@ set -e
 set -x
 
 . tools/lib/lib.sh
+. tools/lib/databricks.sh
 
 USAGE="
 Usage: $(basename "$0") <cmd>
@@ -12,6 +13,7 @@ Available commands:
   scaffold
   build  <integration_root_path> [<run_tests>]
   publish  <integration_root_path> [<run_tests>] [--publish_spec_to_cache] [--publish_spec_to_cache_with_key_file <path to keyfile>]
+  publish_external  <image_name> <image_version>
 "
 
 _check_tag_exists() {
@@ -37,6 +39,11 @@ cmd_build() {
   [ -d "$path" ] || error "Path must be the root path of the integration"
 
   local run_tests=$1; shift || run_tests=true
+
+  if [[ "airbyte-integrations/connectors/destination-databricks" == "${path}" ]]; then
+    _get_databricks_jdbc_driver
+  fi
+
   echo "Building $path"
   ./gradlew --no-daemon "$(_to_gradle_path "$path" clean)"
   ./gradlew --no-daemon "$(_to_gradle_path "$path" build)"
@@ -80,20 +87,22 @@ cmd_publish() {
      publish_spec_to_cache=false
   fi
 
-  # before we start working sanity check that this version has not been published yet, so that we do not spend a lot of
-  # time building, running tests to realize this version is a duplicate.
-  _error_if_tag_exists "$versioned_image"
-
-  cmd_build "$path" "$run_tests"
-
+  # setting local variables for docker image versioning
   local image_name; image_name=$(_get_docker_image_name "$path"/Dockerfile)
   local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile)
   local versioned_image=$image_name:$image_version
   local latest_image=$image_name:latest
 
   echo "image_name $image_name"
-  echo "$versioned_image $versioned_image"
+  echo "versioned_image $versioned_image"
   echo "latest_image $latest_image"
+
+  # before we start working sanity check that this version has not been published yet, so that we do not spend a lot of
+  # time building, running tests to realize this version is a duplicate.
+  _error_if_tag_exists "$versioned_image"
+
+  # building the connector
+  cmd_build "$path" "$run_tests"
 
   # in case curing the build / tests someone this version has been published.
   _error_if_tag_exists "$versioned_image"
@@ -140,6 +149,30 @@ cmd_publish() {
   else
     echo "Publishing without writing to spec cache."
   fi
+}
+
+cmd_publish_external() {
+  local image_name=$1; shift || error "Missing target (image name) $USAGE"
+  # Get version from the command
+  local image_version=$1; shift || error "Missing target (image version) $USAGE"
+
+  echo "image $image_name:$image_version"
+
+  echo "Publishing and writing to spec cache."
+  # publish spec to cache. do so, by running get spec locally and then pushing it to gcs.
+  local tmp_spec_file; tmp_spec_file=$(mktemp)
+  docker run --rm "$image_name:$image_version" spec | \
+    # 1. filter out any lines that are not valid json.
+    jq -R "fromjson? | ." | \
+    # 2. grab any json that has a spec in it.
+    # 3. if there are more than one, take the first one.
+    # 4. if there are none, throw an error.
+    jq -s "map(select(.spec != null)) | map(.spec) | first | if . != null then . else error(\"no spec found\") end" \
+    > "$tmp_spec_file"
+
+  echo "Using environment gcloud"
+
+  gsutil cp "$tmp_spec_file" gs://io-airbyte-cloud-spec-cache/specs/"$image_name"/"$image_version"/spec.json
 }
 
 main() {

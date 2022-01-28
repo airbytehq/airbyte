@@ -4,19 +4,18 @@
 
 
 import copy
+import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
 from functools import lru_cache
 from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStateMessage,
-    AirbyteStream,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     Status,
@@ -38,8 +37,9 @@ class AbstractSource(Source, ABC):
     """
 
     @abstractmethod
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
+        :param logger: source logger
         :param config: The user-provided configuration as specified by the source's spec.
           This usually contains information required to check connection e.g. tokens, secrets and keys etc.
         :return: A tuple of (boolean, error). If boolean is true, then the connection check is successful
@@ -57,19 +57,19 @@ class AbstractSource(Source, ABC):
         """
 
     # Stream name to instance map for applying output object transformation
-    _stream_to_instance_map: Dict[str, AirbyteStream] = {}
+    _stream_to_instance_map: Dict[str, Stream] = {}
 
     @property
     def name(self) -> str:
         """Source name"""
         return self.__class__.__name__
 
-    def discover(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteCatalog:
+    def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
         """Implements the Discover operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
         streams = [stream.as_airbyte_stream() for stream in self.streams(config=config)]
         return AirbyteCatalog(streams=streams)
 
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """Implements the Check Connection operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
         try:
             check_succeeded, error = self.check_connection(logger, config)
@@ -81,7 +81,7 @@ class AbstractSource(Source, ABC):
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def read(
-        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
+        self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
     ) -> Iterator[AirbyteMessage]:
         """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
         connector_state = copy.deepcopy(state or {})
@@ -118,7 +118,7 @@ class AbstractSource(Source, ABC):
 
     def _read_stream(
         self,
-        logger: AirbyteLogger,
+        logger: logging.Logger,
         stream_instance: Stream,
         configured_stream: ConfiguredAirbyteStream,
         connector_state: MutableMapping[str, Any],
@@ -160,7 +160,7 @@ class AbstractSource(Source, ABC):
 
     def _read_incremental(
         self,
-        logger: AirbyteLogger,
+        logger: logging.Logger,
         stream_instance: Stream,
         configured_stream: ConfiguredAirbyteStream,
         connector_state: MutableMapping[str, Any],
@@ -222,7 +222,7 @@ class AbstractSource(Source, ABC):
         return AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data=connector_state))
 
     @lru_cache(maxsize=None)
-    def _get_stream_transformer_and_schema(self, stream_name: str) -> Tuple[TypeTransformer, dict]:
+    def _get_stream_transformer_and_schema(self, stream_name: str) -> Tuple[TypeTransformer, Mapping[str, Any]]:
         """
         Lookup stream's transform object and jsonschema based on stream name.
         This function would be called a lot so using caching to save on costly
@@ -230,7 +230,7 @@ class AbstractSource(Source, ABC):
         :param stream_name name of stream from catalog.
         :return tuple with stream transformer object and discover json schema.
         """
-        stream_instance = self._stream_to_instance_map.get(stream_name)
+        stream_instance = self._stream_to_instance_map[stream_name]
         return stream_instance.transformer, stream_instance.get_json_schema()
 
     def _as_airbyte_record(self, stream_name: str, data: Mapping[str, Any]):
@@ -240,6 +240,6 @@ class AbstractSource(Source, ABC):
         # need it to normalize values against json schema. By default no action
         # taken unless configured. See
         # docs/connector-development/cdk-python/schemas.md for details.
-        transformer.transform(data, schema)
+        transformer.transform(data, schema)  # type: ignore
         message = AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=now_millis)
         return AirbyteMessage(type=MessageType.RECORD, record=message)

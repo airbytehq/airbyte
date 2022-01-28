@@ -14,6 +14,8 @@
 
             This is useful if you want to override the environment variables at runtime (or if you don't have
             access to the necessary information at the point where you are setting environment variables).
+
+            Please update configuring-airbyte.md if the names of any of the below variables change.
         -->
 
         <!-- Always log INFO by default. -->
@@ -126,7 +128,7 @@
                                     s3AwsKey="${s3-aws-key}" s3AwsSecret="${s3-aws-secret}"
                                     s3ServiceEndpoint="${s3-minio-endpoint}" s3PathStyleAccess="${s3-path-style-access}"
                                     gcpStorageBucket="${gcs-log-bucket}" gcpStorageBlobNamePrefix="job-logging${ctx:cloud_job_log_path}">
-                        <PatternLayout pattern="${default-pattern}"/>
+                        <PatternLayout pattern="${simple-pattern}"/>
                     </Log4j2Appender>
                 </Route>
             </Routes>

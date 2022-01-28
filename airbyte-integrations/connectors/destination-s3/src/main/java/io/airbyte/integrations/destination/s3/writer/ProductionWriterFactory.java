@@ -25,7 +25,7 @@ public class ProductionWriterFactory implements S3WriterFactory {
   protected static final Logger LOGGER = LoggerFactory.getLogger(ProductionWriterFactory.class);
 
   @Override
-  public S3Writer create(final S3DestinationConfig config,
+  public DestinationFileWriter create(final S3DestinationConfig config,
                          final AmazonS3 s3Client,
                          final ConfiguredAirbyteStream configuredStream,
                          final Timestamp uploadTimestamp)
@@ -37,7 +37,7 @@ public class ProductionWriterFactory implements S3WriterFactory {
       LOGGER.info("Json schema for stream {}: {}", stream.getName(), stream.getJsonSchema());
 
       final JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
-      final Schema avroSchema = schemaConverter.getAvroSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace(), true, true);
+      final Schema avroSchema = schemaConverter.getAvroSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace());
 
       LOGGER.info("Avro schema for stream {}: {}", stream.getName(), avroSchema.toString(false));
 

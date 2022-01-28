@@ -32,10 +32,11 @@ public class SyncWorkflowImpl implements SyncWorkflow {
           .build())
       .build();
 
-  private final ReplicationActivity replicationActivity = Workflow.newActivityStub(ReplicationActivity.class, ActivityConfiguration.OPTIONS);
-  private final NormalizationActivity normalizationActivity = Workflow.newActivityStub(NormalizationActivity.class, ActivityConfiguration.OPTIONS);
+  private final ReplicationActivity replicationActivity = Workflow.newActivityStub(ReplicationActivity.class, ActivityConfiguration.LONG_RUN_OPTIONS);
+  private final NormalizationActivity normalizationActivity =
+      Workflow.newActivityStub(NormalizationActivity.class, ActivityConfiguration.LONG_RUN_OPTIONS);
   private final DbtTransformationActivity dbtTransformationActivity =
-      Workflow.newActivityStub(DbtTransformationActivity.class, ActivityConfiguration.OPTIONS);
+      Workflow.newActivityStub(DbtTransformationActivity.class, ActivityConfiguration.LONG_RUN_OPTIONS);
   private final PersistStateActivity persistActivity = Workflow.newActivityStub(PersistStateActivity.class, persistOptions);
 
   @Override

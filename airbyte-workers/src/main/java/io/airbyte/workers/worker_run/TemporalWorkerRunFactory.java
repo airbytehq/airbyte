@@ -26,6 +26,7 @@ import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.TemporalResponse;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Set;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
@@ -58,8 +59,16 @@ public class TemporalWorkerRunFactory {
     return temporalClient.startNewCancelation(connectionId);
   }
 
+  public ManualSyncSubmissionResult resetConnection(final UUID connectionId) {
+    return temporalClient.resetConnection(connectionId);
+  }
+
   public void deleteConnection(final UUID connectionId) {
     temporalClient.deleteConnection(connectionId);
+  }
+
+  public void migrateSyncIfNeeded(final Set<UUID> connectionIds) {
+    temporalClient.migrateSyncIfNeeded(connectionIds);
   }
 
   public CheckedSupplier<OutputAndStatus<JobOutput>, Exception> createSupplier(final Job job, final int attemptId) {
@@ -67,12 +76,6 @@ public class TemporalWorkerRunFactory {
     final UUID connectionId = UUID.fromString(job.getScope());
     return switch (job.getConfigType()) {
       case SYNC -> () -> {
-
-        if (featureFlags.usesNewScheduler()) {
-          temporalClient.submitConnectionUpdaterAsync(connectionId);
-
-          return toOutputAndStatusConnector();
-        }
         final TemporalResponse<StandardSyncOutput> output = temporalClient.submitSync(job.getId(),
             attemptId, job.getConfig().getSync(), connectionId);
         return toOutputAndStatus(output);
@@ -91,7 +94,6 @@ public class TemporalWorkerRunFactory {
             .withOperationSequence(resetConnection.getOperationSequence())
             .withResourceRequirements(resetConnection.getResourceRequirements());
 
-        // TODO: Signal method?
         final TemporalResponse<StandardSyncOutput> output = temporalClient.submitSync(job.getId(), attemptId, config, connectionId);
         return toOutputAndStatus(output);
       };

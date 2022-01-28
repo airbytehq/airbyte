@@ -97,11 +97,6 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     return Jsons.jsonNode(new HashMap<>());
   }
 
-  @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
-  }
-
   private static Database getDatabase(final JsonNode config) {
     return Databases.createDatabase(
         config.get("username").asText(),
