@@ -825,8 +825,7 @@ class Workflows(GithubStream):
         return f"repos/{stream_slice['repository']}/actions/workflows"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        response = response.json()
-        response["repository"] = stream_slice["repository"]
+        response = response.json().get("workflows")
         yield response
 
 
@@ -882,5 +881,4 @@ class RepositoryVulnerabilityAlert(GithubStream):
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         response = response.json().get("data")
-        response["repository"] = stream_slice["repository"]
         yield response
