@@ -14,6 +14,7 @@ import io.airbyte.workers.process.AsyncKubePodStatus;
 import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
 import io.airbyte.workers.process.KubePodInfo;
 import io.airbyte.workers.process.KubeProcessFactory;
+import io.airbyte.workers.temporal.TemporalUtils;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
@@ -65,71 +66,73 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
 
   @Override
   public OUTPUT run(INPUT input, Path jobRoot) throws WorkerException {
-    try {
-      final Map<String, String> envMap = System.getenv().entrySet().stream()
-          .filter(entry -> OrchestratorConstants.ENV_VARS_TO_TRANSFER.contains(entry.getKey()))
-          .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    return TemporalUtils.withBackgroundHeartbeat(() -> {
+      try {
+        final Map<String, String> envMap = System.getenv().entrySet().stream()
+            .filter(entry -> OrchestratorConstants.ENV_VARS_TO_TRANSFER.contains(entry.getKey()))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-      final Map<String, String> fileMap = new HashMap<>(additionalFileMap);
-      fileMap.putAll(Map.of(
-          OrchestratorConstants.INIT_FILE_APPLICATION, application,
-          OrchestratorConstants.INIT_FILE_JOB_RUN_CONFIG, Jsons.serialize(jobRunConfig),
-          OrchestratorConstants.INIT_FILE_INPUT, Jsons.serialize(input),
-          OrchestratorConstants.INIT_FILE_ENV_MAP, Jsons.serialize(envMap)));
+        final Map<String, String> fileMap = new HashMap<>(additionalFileMap);
+        fileMap.putAll(Map.of(
+            OrchestratorConstants.INIT_FILE_APPLICATION, application,
+            OrchestratorConstants.INIT_FILE_JOB_RUN_CONFIG, Jsons.serialize(jobRunConfig),
+            OrchestratorConstants.INIT_FILE_INPUT, Jsons.serialize(input),
+            OrchestratorConstants.INIT_FILE_ENV_MAP, Jsons.serialize(envMap)));
 
-      final Map<Integer, Integer> portMap = Map.of(
-          WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT,
-          OrchestratorConstants.PORT1, OrchestratorConstants.PORT1,
-          OrchestratorConstants.PORT2, OrchestratorConstants.PORT2,
-          OrchestratorConstants.PORT3, OrchestratorConstants.PORT3,
-          OrchestratorConstants.PORT4, OrchestratorConstants.PORT4);
+        final Map<Integer, Integer> portMap = Map.of(
+            WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT,
+            OrchestratorConstants.PORT1, OrchestratorConstants.PORT1,
+            OrchestratorConstants.PORT2, OrchestratorConstants.PORT2,
+            OrchestratorConstants.PORT3, OrchestratorConstants.PORT3,
+            OrchestratorConstants.PORT4, OrchestratorConstants.PORT4);
 
-      final var allLabels = KubeProcessFactory.getLabels(
-          jobRunConfig.getJobId(),
-          Math.toIntExact(jobRunConfig.getAttemptId()),
-          Collections.emptyMap());
+        final var allLabels = KubeProcessFactory.getLabels(
+            jobRunConfig.getJobId(),
+            Math.toIntExact(jobRunConfig.getAttemptId()),
+            Collections.emptyMap());
 
-      final var podNameAndJobPrefix = podNamePrefix + "-j-" + jobRunConfig.getJobId() + "-a-";
-      killLowerAttemptIdsIfPresent(podNameAndJobPrefix, jobRunConfig.getAttemptId());
+        final var podNameAndJobPrefix = podNamePrefix + "-j-" + jobRunConfig.getJobId() + "-a-";
+        killLowerAttemptIdsIfPresent(podNameAndJobPrefix, jobRunConfig.getAttemptId());
 
-      final var podName = podNameAndJobPrefix + jobRunConfig.getAttemptId();
-      final var kubePodInfo = new KubePodInfo(containerOrchestratorConfig.namespace(), podName);
+        final var podName = podNameAndJobPrefix + jobRunConfig.getAttemptId();
+        final var kubePodInfo = new KubePodInfo(containerOrchestratorConfig.namespace(), podName);
 
-      process = new AsyncOrchestratorPodProcess(
-          kubePodInfo,
-          containerOrchestratorConfig.documentStoreClient(),
-          containerOrchestratorConfig.kubernetesClient());
+        process = new AsyncOrchestratorPodProcess(
+            kubePodInfo,
+            containerOrchestratorConfig.documentStoreClient(),
+            containerOrchestratorConfig.kubernetesClient());
 
-      if (process.getDocStoreStatus().equals(AsyncKubePodStatus.NOT_STARTED)) {
-        process.create(
-            airbyteVersion,
-            allLabels,
-            resourceRequirements,
-            fileMap,
-            portMap);
+        if (process.getDocStoreStatus().equals(AsyncKubePodStatus.NOT_STARTED)) {
+          process.create(
+              airbyteVersion,
+              allLabels,
+              resourceRequirements,
+              fileMap,
+              portMap);
+        }
+
+        // this waitFor can resume if the activity is re-run
+        process.waitFor();
+
+        if (process.exitValue() != 0) {
+          throw new WorkerException("Non-zero exit code!");
+        }
+
+        final var output = process.getOutput();
+
+        if (output.isPresent()) {
+          return Jsons.deserialize(output.get(), outputClass);
+        } else {
+          throw new WorkerException("Running the " + application + " launcher resulted in no readable output!");
+        }
+      } catch (Exception e) {
+        if (cancelled.get()) {
+          throw new WorkerException("Launcher " + application + " was cancelled.", e);
+        } else {
+          throw new WorkerException("Running the launcher " + application + " failed", e);
+        }
       }
-
-      // this waitFor can resume if the activity is re-run
-      process.waitFor();
-
-      if (process.exitValue() != 0) {
-        throw new WorkerException("Non-zero exit code!");
-      }
-
-      final var output = process.getOutput();
-
-      if (output.isPresent()) {
-        return Jsons.deserialize(output.get(), outputClass);
-      } else {
-        throw new WorkerException("Running the " + application + " launcher resulted in no readable output!");
-      }
-    } catch (Exception e) {
-      if (cancelled.get()) {
-        throw new WorkerException("Launcher " + application + " was cancelled.", e);
-      } else {
-        throw new WorkerException("Running the launcher " + application + " failed", e);
-      }
-    }
+    });
   }
 
   /**

@@ -60,11 +60,11 @@ public class ContinuousFeedSource extends BaseConnector implements Source {
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final AtomicLong emittedMessages = new AtomicLong(0);
       final Optional<Long> messageIntervalMs = feedConfig.getMessageIntervalMs();
-      final ThreadLocal<Random> random = ThreadLocal.withInitial(() -> new Random(feedConfig.getSeed()));
 
       final SchemaStore schemaStore = new SchemaStore(true);
       final Schema schema = schemaStore.loadSchemaJson(Jsons.serialize(stream.getStream().getJsonSchema()));
-      final Generator generator = new Generator(ContinuousFeedConstants.MOCK_JSON_CONFIG, schemaStore, random.get());
+      final Random random = new Random(feedConfig.getSeed());
+      final Generator generator = new Generator(ContinuousFeedConstants.MOCK_JSON_CONFIG, schemaStore, random);
 
       final Iterator<AirbyteMessage> streamIterator = new AbstractIterator<>() {
 

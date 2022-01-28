@@ -159,9 +159,9 @@ def test_discovery(schema, cursors, should_fail):
     }
     if should_fail:
         with pytest.raises(AssertionError):
-            t.test_defined_cursors_exist_in_schema(None, discovered_catalog)
+            t.test_defined_cursors_exist_in_schema(discovered_catalog)
     else:
-        t.test_defined_cursors_exist_in_schema(None, discovered_catalog)
+        t.test_defined_cursors_exist_in_schema(discovered_catalog)
 
 
 @pytest.mark.parametrize(
@@ -190,9 +190,49 @@ def test_ref_in_discovery_schemas(schema, should_fail):
     discovered_catalog = {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema})}
     if should_fail:
         with pytest.raises(AssertionError):
-            t.test_defined_refs_exist_in_schema(None, discovered_catalog)
+            t.test_defined_refs_exist_in_schema(discovered_catalog)
     else:
-        t.test_defined_refs_exist_in_schema(None, discovered_catalog)
+        t.test_defined_refs_exist_in_schema(discovered_catalog)
+
+
+@pytest.mark.parametrize(
+    "schema, keyword, should_fail",
+    [
+        ({}, "allOf", False),
+        ({"allOf": [{"type": "string"}, {"maxLength": 1}]}, "allOf", True),
+        ({"type": "object", "properties": {"allOf": {"type": "string"}}}, "allOf", False),
+        ({"type": "object", "properties": {"name": {"allOf": [{"type": "string"}, {"maxLength": 1}]}}}, "allOf", True),
+        (
+            {"type": "object", "properties": {"name": {"type": "array", "items": {"allOf": [{"type": "string"}, {"maxLength": 4}]}}}},
+            "allOf",
+            True,
+        ),
+        (
+            {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "array",
+                        "items": {"anyOf": [{"type": "number"}, {"allOf": [{"type": "string"}, {"maxLength": 4}, {"minLength": 2}]}]},
+                    }
+                },
+            },
+            "allOf",
+            True,
+        ),
+        ({"not": {"type": "string"}}, "not", True),
+        ({"type": "object", "properties": {"not": {"type": "string"}}}, "not", False),
+        ({"type": "object", "properties": {"name": {"not": {"type": "string"}}}}, "not", True),
+    ],
+)
+def test_keyword_in_discovery_schemas(schema, keyword, should_fail):
+    t = _TestDiscovery()
+    discovered_catalog = {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema})}
+    if should_fail:
+        with pytest.raises(AssertionError):
+            t.test_defined_keyword_exist_in_schema(keyword, discovered_catalog)
+    else:
+        t.test_defined_keyword_exist_in_schema(keyword, discovered_catalog)
 
 
 @pytest.mark.parametrize(

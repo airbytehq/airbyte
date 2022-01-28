@@ -87,6 +87,21 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   }
 
   @Test
+  public void testGetConfigWithMetadata() throws Exception {
+    final Instant now = Instant.now().minus(Duration.ofSeconds(1));
+    writeDestination(configPersistence, DESTINATION_S3);
+    final ConfigWithMetadata<StandardDestinationDefinition> configWithMetadata = configPersistence.getConfigWithMetadata(
+        STANDARD_DESTINATION_DEFINITION,
+        DESTINATION_S3.getDestinationDefinitionId().toString(),
+        StandardDestinationDefinition.class);
+    assertEquals("STANDARD_DESTINATION_DEFINITION", configWithMetadata.getConfigType());
+    assertTrue(configWithMetadata.getCreatedAt().isAfter(now));
+    assertTrue(configWithMetadata.getUpdatedAt().isAfter(now));
+    assertEquals(DESTINATION_S3.getDestinationDefinitionId().toString(), configWithMetadata.getConfigId());
+    assertEquals(DESTINATION_S3, configWithMetadata.getConfig());
+  }
+
+  @Test
   public void testListConfigWithMetadata() throws Exception {
     final Instant now = Instant.now().minus(Duration.ofSeconds(1));
     writeDestination(configPersistence, DESTINATION_S3);

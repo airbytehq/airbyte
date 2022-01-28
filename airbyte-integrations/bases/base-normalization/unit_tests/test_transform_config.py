@@ -149,8 +149,8 @@ class TestTransformConfig:
             "priority": "interactive",
             "keyfile_json": {"type": "service_account-json"},
             "location": "EU",
-            "retries": 1,
-            "threads": 32,
+            "retries": 3,
+            "threads": 8,
         }
 
         actual_keyfile = actual_output["keyfile_json"]
@@ -169,8 +169,8 @@ class TestTransformConfig:
             "project": "my_project_id",
             "dataset": "my_dataset_id",
             "priority": "interactive",
-            "retries": 1,
-            "threads": 32,
+            "retries": 3,
+            "threads": 8,
         }
 
         assert expected_output == actual_output
@@ -194,7 +194,7 @@ class TestTransformConfig:
             "pass": "password123",
             "port": 5432,
             "schema": "public",
-            "threads": 32,
+            "threads": 8,
             "user": "a user",
         }
 
@@ -227,7 +227,7 @@ class TestTransformConfig:
             "pass": "password123",
             "port": port,
             "schema": "public",
-            "threads": 32,
+            "threads": 8,
             "user": "a user",
         }
 
@@ -254,7 +254,11 @@ class TestTransformConfig:
             "query_tag": "normalization",
             "role": "AIRBYTE_ROLE",
             "schema": "AIRBYTE_SCHEMA",
-            "threads": 32,
+            "threads": 5,
+            "retry_all": True,
+            "retry_on_database_errors": True,
+            "connect_retries": 3,
+            "connect_timeout": 15,
             "type": "snowflake",
             "user": "AIRBYTE_USER",
             "warehouse": "AIRBYTE_WAREHOUSE",
@@ -334,7 +338,7 @@ class TestTransformConfig:
             "pass": "password123",
             "port": 5432,
             "schema": "public",
-            "threads": 32,
+            "threads": 8,
             "user": "a user",
         }
         actual = TransformConfig().transform(DestinationType.POSTGRES, input)
