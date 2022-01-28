@@ -34,7 +34,6 @@ def get_prop(col_type: str) -> Dict[str, any]:
 
 
 def get_json_schema(sheet: Dict) -> Dict:
-    print(f'columns: {sheet["columns"]}')
     column_info = {i["title"]: get_prop(i["type"]) for i in sheet["columns"]}
     json_schema = {
         "$schema": "http://json-schema.org/draft-07/schema#",
