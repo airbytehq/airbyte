@@ -14,6 +14,33 @@ from google.ads.googleads.errors import GoogleAdsException
 from .google_ads import GoogleAds
 
 
+def get_date_params(start_date: str, time_zone=None, range_days: int = None, end_date: pendulum.datetime = None):
+    """
+    Returns `start_date` and `end_date` for the given stream_slice.
+    If (end_date - start_date) is a big date range (>= 1 month), it can take more than 2 hours to process all the records from the given slice.
+    After 2 hours next page tokens will be expired, finally resulting in page token expired error
+    Currently this method returns `start_date` and `end_date` with 15 days difference.
+    """
+
+    end_date = end_date or pendulum.yesterday(tz=time_zone)
+    # start_date = pendulum.parse(stream_slice.get(cursor_field))
+    start_date = pendulum.parse(start_date)
+
+    if start_date > pendulum.now():
+        return start_date.to_date_string(), start_date.add(days=1).to_date_string()
+
+    # end_date = min(end_date, pendulum.parse(stream_slice.get(cursor_field)).add(days=self.range_days))
+    end_date = min(
+        end_date,
+        start_date.add(days=range_days)
+    )
+
+    # Fix issue #4806, start date should always be lower than end date.
+    if start_date.add(days=1).date() >= end_date.date():
+        return start_date.add(days=1).to_date_string(), start_date.add(days=2).to_date_string()
+    return start_date.add(days=1).to_date_string(), end_date.to_date_string()
+
+
 def chunk_date_range(
     start_date: str,
     conversion_window: int,
@@ -21,6 +48,7 @@ def chunk_date_range(
     end_date: str = None,
     days_of_data_storage: int = None,
     range_days: int = None,
+    time_zone=None
 ) -> Iterable[Mapping[str, any]]:
     """
     Passing optional parameter end_date for testing
@@ -47,7 +75,14 @@ def chunk_date_range(
         intervals.append({field: start_date.to_date_string()})
         start_date = start_date.add(days=range_days)
 
-    return intervals
+    slices = []
+    for interval in intervals:
+        start, end = get_date_params(interval[field], time_zone=time_zone, range_days=range_days)
+        slices.append({
+            "start_date": start,
+            "end_date": end,
+        })
+    return slices
 
 
 class GoogleAdsStream(Stream, ABC):
@@ -85,22 +120,15 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         start_date = stream_state.get(self.cursor_field) or self._start_date
         end_date = self._end_date
 
-        intervals = chunk_date_range(
+        return chunk_date_range(
             start_date=start_date,
             end_date=end_date,
             conversion_window=self.conversion_window_days,
             field=self.cursor_field,
             days_of_data_storage=self.days_of_data_storage,
             range_days=self.range_days,
+            time_zone=self.time_zone
         )
-        slices = []
-        for interval in intervals:
-            start, end = self.get_date_params(interval.get(self.cursor_field), self.cursor_field)
-            slices.append({
-                "start_date": start,
-                "end_date": end,
-            })
-        return slices
 
     def read_records(
         self,
@@ -115,43 +143,24 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
                 response = self.google_ads_client.send_request(self.get_query(stream_slice))
                 # yield from self.parse_response(response)
                 for record in self.parse_response(response):
-                    state = self.get_updated_state(stream_state, record)
+                    state = self.get_updated_state(state, record)
                     yield record
             except GoogleAdsException as e:
                 if e.failure._pb.errors[0].error_code.request_error == 8:
                     # page token has expired (EXPIRED_PAGE_TOKEN = 8)
-                    # stream_slice[cursor_field] = state.get(self.cursor_field)  # substract 1 day
-                    stream_slice["start_date"] = state.get(self.cursor_field)
+                    start_date = pendulum.parse(stream_slice['start_date'])
+                    end_date = pendulum.parse(stream_slice['end_date'])
+                    if (end_date - start_date).days == 1:
+                        # If range days is 1, no need in retry, because it's the minimum date range
+                        raise e
+                    # Retry reading records from where it crushed
+                    stream_slice["start_date"] = state.get(self.cursor_field, stream_slice["start_date"])
                 else:
+                    # raise caught error for other error statuses
                     raise e
             else:
+                # return the control if no exception is raised
                 return
-
-    def get_date_params(self, start_date: str, cursor_field: str, end_date: pendulum.datetime = None):
-        """
-        Returns `start_date` and `end_date` for the given stream_slice.
-        If (end_date - start_date) is a big date range (>= 1 month), it can take more than 2 hours to process all the records from the given slice.
-        After 2 hours next page tokens will be expired, finally resulting in page token expired error
-        Currently this method returns `start_date` and `end_date` with 15 days difference.
-        """
-
-        end_date = end_date or pendulum.yesterday(tz=self.time_zone)
-        # start_date = pendulum.parse(stream_slice.get(cursor_field))
-        start_date = pendulum.parse(start_date)
-
-        if start_date > pendulum.now():
-            return start_date.to_date_string(), start_date.add(days=1).to_date_string()
-
-        # end_date = min(end_date, pendulum.parse(stream_slice.get(cursor_field)).add(days=self.range_days))
-        end_date = min(
-            end_date,
-            start_date.add(days=self.range_days)
-        )
-
-        # Fix issue #4806, start date should always be lower than end date.
-        if start_date.add(days=1).date() >= end_date.date():
-            return start_date.add(days=1).to_date_string(), start_date.add(days=2).to_date_string()
-        return start_date.add(days=1).to_date_string(), end_date.to_date_string()
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
@@ -250,7 +259,7 @@ class DisplayTopicsPerformanceReport(IncrementalGoogleAdsStream):
 
 
 class ShoppingPerformanceReport(IncrementalGoogleAdsStream):
-    # _range_days = 1
+    _range_days = 1
     """
     ShoppingPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v8/shopping_performance_view
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance
