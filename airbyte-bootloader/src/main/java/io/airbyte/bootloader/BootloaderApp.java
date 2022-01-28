@@ -123,12 +123,6 @@ public class BootloaderApp {
 
       jobPersistence.setVersion(currAirbyteVersion.serialize());
       LOGGER.info("Set version to {}", currAirbyteVersion);
-
-      if (featureFlags.usesNewScheduler()) {
-        LOGGER.info("Start cleaning zombie jobs");
-        cleanupZombies(jobPersistence);
-        LOGGER.info("Cleaning zombie jobs done");
-      }
     }
 
     if (postLoadExecution != null) {
