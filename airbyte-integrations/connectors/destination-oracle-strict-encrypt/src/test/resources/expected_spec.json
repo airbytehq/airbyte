@@ -48,7 +48,7 @@
       },
       "schema": {
         "title": "Default Schema",
-        "description": "The default schema ius used as the target schema for all statements issued from the connection that do not explicitly specify a schema name. The usual value for this field is \"airbyte\".  In Oracle, schemas and users are the same thing, so the \"user\" parameter is used as the login credentials and this is used for the default Airbyte message schema.",
+        "description": "The default schema is used as the target schema for all statements issued from the connection that do not explicitly specify a schema name. The usual value for this field is \"airbyte\".  In Oracle, schemas and users are the same thing, so the \"user\" parameter is used as the login credentials and this is used for the default Airbyte message schema.",
         "type": "string",
         "examples": ["airbyte"],
         "default": "airbyte",
