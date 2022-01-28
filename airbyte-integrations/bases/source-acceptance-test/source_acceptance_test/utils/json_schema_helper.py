@@ -108,6 +108,20 @@ class JsonSchemaHelper:
         """
         return CatalogField(schema=self.get_property(path), path=path)
 
+    def get_node(self, path: List[str]) -> Any:
+        """Return part of schema by specified path
+
+        :param path: list of fields in the order of navigation
+        """
+
+        node = self._schema
+        for segment in path:
+            if "$ref" in node:
+                node = self.get_ref(node["$ref"])
+            node = node[segment]
+        return node
+
+
     def find_nodes(self, keys: List[str]) -> List[List[str]]:
         """Get all nodes of schema that has specifies properties
 

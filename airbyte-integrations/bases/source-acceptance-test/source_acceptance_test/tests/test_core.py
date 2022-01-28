@@ -79,12 +79,12 @@ class TestSpec(BaseTest):
         variant_paths = schema_helper.find_nodes(keys=["oneOf", "anyOf"])
 
         for variant_path in variant_paths:
-            top_level_obj = schema_helper.get_property(variant_path[:-1])
+            top_level_obj = schema_helper.get_node(variant_path[:-1])
             assert (
                 top_level_obj.get("type") == "object"
             ), f"The top-level definition in a `oneOf` block should have type: object. misconfigured object: {top_level_obj}. {docs_msg}"
 
-            variants = schema_helper.get_property(variant_path)
+            variants = schema_helper.get_node(variant_path)
             for variant in variants:
                 assert "properties" in variant, f"Each item in the oneOf array should be a property with type object. {docs_msg}"
 
