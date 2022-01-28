@@ -153,6 +153,8 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
                     if (end_date - start_date).days == 1:
                         # If range days is 1, no need in retry, because it's the minimum date range
                         raise e
+                    elif state.get(self.cursor_field) == stream_slice["start_date"]:
+                        raise e
                     # Retry reading records from where it crushed
                     stream_slice["start_date"] = state.get(self.cursor_field, stream_slice["start_date"])
                 else:
