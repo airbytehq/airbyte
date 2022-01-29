@@ -323,6 +323,8 @@ public class WorkerApp {
 
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
 
+    TemporalUtils.configureTemporalNamespace(temporalService);
+
     final Database configDatabase = new ConfigsDatabaseInstance(
         configs.getConfigDatabaseUser(),
         configs.getConfigDatabasePassword(),
