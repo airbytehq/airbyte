@@ -100,6 +100,10 @@ public class EnvConfigs implements Configs {
   public static final String STATE_STORAGE_GCS_BUCKET_NAME = "STATE_STORAGE_GCS_BUCKET_NAME";
   public static final String STATE_STORAGE_GCS_APPLICATION_CREDENTIALS = "STATE_STORAGE_GCS_APPLICATION_CREDENTIALS";
 
+  public static final String ACTIVITY_MAX_TIMEOUT_SECOND = "ACTIVITY_MAX_TIMEOUT_SECOND";
+  public static final String ACTIVITY_MAX_ATTEMPT = "ACTIVITY_MAX_ATTEMPT";
+  public static final String ACTIVITY_DELAY_IN_SECOND_BETWEEN_ATTEMPTS = "ACTIVITY_DELAY_IN_SECOND_BETWEEN_ATTEMPTS";
+
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
   public static final String DEFAULT_JOB_KUBE_NAMESPACE = "default";
@@ -565,6 +569,19 @@ public class EnvConfigs implements Configs {
   @Override
   public boolean getContainerOrchestratorEnabled() {
     return getEnvOrDefault(CONTAINER_ORCHESTRATOR_ENABLED, false, Boolean::valueOf);
+  }
+
+  @Override
+  public int getMaxActivityTimeoutSecond() {
+    return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_TIMEOUT_SECOND, "30"));
+  }
+
+  @Override public int getDelayBetweenActivityAttemps() {
+    return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_TIMEOUT_SECOND, "30"));
+  }
+
+  @Override public int getActivityNumberOfAttempt() {
+    return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_ATTEMPT, "3"));
   }
 
   // Helpers

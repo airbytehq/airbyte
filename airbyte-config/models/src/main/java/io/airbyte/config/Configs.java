@@ -8,6 +8,7 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -331,6 +332,21 @@ public interface Configs {
    * Define if Airbyte should use Scheduler V2. Internal-use only.
    */
   boolean getContainerOrchestratorEnabled();
+
+  /**
+   * Get the longest duration of non long running activity
+   */
+  int getMaxActivityTimeoutSecond();
+
+  /**
+   * Get the duration in second between 2 activity attempts
+   */
+  int getDelayBetweenActivityAttemps();
+
+  /**
+   * Get number of attempts of the non long running activities
+   */
+  int getActivityNumberOfAttempt();
 
   enum TrackingStrategy {
     SEGMENT,
