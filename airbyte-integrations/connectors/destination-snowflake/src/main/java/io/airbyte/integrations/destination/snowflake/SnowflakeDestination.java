@@ -22,7 +22,8 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
 
   public static void initSentry() {
     Sentry.init(options -> {
-      // allow setting properties from env variables see https://docs.sentry.io/platforms/java/configuration/
+      // allow setting properties from env variables see
+      // https://docs.sentry.io/platforms/java/configuration/
       options.setEnableExternalConfiguration(true);
       // To set a uniform sample rate
       options.setTracesSampleRate(1.0);

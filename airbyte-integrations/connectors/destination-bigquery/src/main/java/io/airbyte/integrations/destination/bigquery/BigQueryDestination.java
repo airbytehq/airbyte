@@ -58,7 +58,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   public static void initSentry() {
     Sentry.init(options -> {
-      // allow setting properties from env variables see https://docs.sentry.io/platforms/java/configuration/
+      // allow setting properties from env variables see
+      // https://docs.sentry.io/platforms/java/configuration/
       options.setEnableExternalConfiguration(true);
       // To set a uniform sample rate
       options.setTracesSampleRate(1.0);
@@ -139,29 +140,32 @@ public class BigQueryDestination extends BaseConnector implements Destination {
    * 1. Create a temporary table for each stream
    * </p>
    * <p>
-   * 2. Write records to each stream directly (the bigquery client handles managing when to push the records over the network)
+   * 2. Write records to each stream directly (the bigquery client handles managing when to push the
+   * records over the network)
    * </p>
    * <p>
-   * 4. Once all records have been written close the writers, so that any remaining records are flushed.
+   * 4. Once all records have been written close the writers, so that any remaining records are
+   * flushed.
    * </p>
    * <p>
    * 5. Copy the temp tables to the final table name (overwriting if necessary).
    * </p>
    *
-   * @param config  - integration-specific configuration object as json. e.g. { "username": "airbyte", "password": "super secure" }
+   * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
+   *        "password": "super secure" }
    * @param catalog - schema of the incoming messages.
    * @return consumer that writes singer messages to the database.
    */
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog,
-      final Consumer<AirbyteMessage> outputRecordCollector)
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException {
     return getRecordConsumer(getUploaderMap(config, catalog), outputRecordCollector);
   }
 
   protected Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> getUploaderMap(final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog)
+                                                                                            final ConfiguredAirbyteCatalog catalog)
       throws IOException {
     final BigQuery bigquery = getBigQuery(config);
 
@@ -188,8 +192,9 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   /**
-   * BigQuery might have different structure of the Temporary table. If this method returns TRUE, temporary table will have only three common Airbyte
-   * attributes. In case of FALSE, temporary table structure will be in line with Airbyte message JsonSchema.
+   * BigQuery might have different structure of the Temporary table. If this method returns TRUE,
+   * temporary table will have only three common Airbyte attributes. In case of FALSE, temporary table
+   * structure will be in line with Airbyte message JsonSchema.
    *
    * @return use default AirbyteSchema or build using JsonSchema
    */
@@ -208,7 +213,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   protected AirbyteMessageConsumer getRecordConsumer(final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs,
-      final Consumer<AirbyteMessage> outputRecordCollector) {
+                                                     final Consumer<AirbyteMessage> outputRecordCollector) {
     return new BigQueryRecordConsumer(writeConfigs, outputRecordCollector);
   }
 
