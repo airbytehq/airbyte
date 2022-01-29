@@ -13,7 +13,7 @@ FROM airbyte/integration-base-java:dev
 WORKDIR /airbyte
 
 ENV APPLICATION destination-bigquery
-ENV APPLICATION_VERSION 0.6.5
+ENV APPLICATION_VERSION 0.6.6
 ENV ENABLE_SENTRY true
 
 COPY --from=build /airbyte /airbyte
