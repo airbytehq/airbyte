@@ -28,9 +28,7 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
       // To set a uniform sample rate
       options.setTracesSampleRate(1.0);
     });
-    Sentry.configureScope(scope -> {
-      scope.setTag("connector", "destination-snowflake");
-    });
+    Sentry.configureScope(scope -> scope.setTag("connector", "destination-snowflake"));
   }
 
   enum DestinationType {
@@ -54,7 +52,7 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
     }
   }
 
-  public static boolean isInternalStaging(JsonNode config) {
+  public static boolean isInternalStaging(final JsonNode config) {
     return config.has("loading_method") && config.get("loading_method").isObject()
         && config.get("loading_method").get("method").asText().equals("Internal Staging");
   }
@@ -80,19 +78,19 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
         DestinationType.INTERNAL_STAGING, internalStagingDestination);
   }
 
-  public static void main(final String[] args) throws Exception {
+  public static void main(final String[] args) {
     initSentry();
     final Destination destination = new SnowflakeDestination();
-    ITransaction transaction = Sentry.startTransaction("IntegrationRunner()", "run");
+    final ITransaction transaction = Sentry.startTransaction("IntegrationRunner()", "run");
     try {
-      LOGGER.info("starting destination: {}", SnowflakeDestination.class);
+      LOGGER.info("Starting destination: {} (Sentry event ID {})", SnowflakeDestination.class, transaction.getEventId());
       new IntegrationRunner(destination).run(args);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       transaction.setThrowable(e);
       transaction.setStatus(SpanStatus.INTERNAL_ERROR);
     } finally {
       transaction.finish();
-      LOGGER.info("completed destination: {}", SnowflakeDestination.class);
+      LOGGER.info("Completed destination: {}", SnowflakeDestination.class);
     }
   }
 
