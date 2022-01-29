@@ -99,22 +99,25 @@
 
 {% macro default__unnest_cte(from_table, stream_name, column_col) -%}{%- endmacro %}
 
-{%- macro redshift__array_length(column) -%}
-    {%- if redshift_super_type() -%}
-        get_array_length({{ column }})
-    {%- else -%}
-        json_array_length({{ column }}, true)
-    {%- endif -%}
-{%- endmacro -%}
-
-{# -- based on https://blog.getdbt.com/how-to-unnest-arrays-in-redshift/ #}
 {% macro redshift__unnest_cte(from_table, stream_name, column_col) -%}
+
+    {# -- based on https://docs.aws.amazon.com/redshift/latest/dg/query-super.html #}
+    {% if redshift_super_type() -%}
+        with joined as (
+            select
+                table_alias._airbyte_{{ stream_name }}_hashid as _airbyte_hashid,
+                _airbyte_nested_data
+            from {{ from_table }} as table_alias, table_alias.{{ column_col }} as _airbyte_nested_data
+        )
+    {%- else -%}
+
+    {# -- based on https://blog.getdbt.com/how-to-unnest-arrays-in-redshift/ #}
     {%- if not execute -%}
         {{ return('') }}
     {% endif %}
     {%- call statement('max_json_array_length', fetch_result=True) -%}
         with max_value as (
-            select max({{ redshift__array_length(column_col) }}) as max_number_of_items
+            select max(json_array_length({{ column_col }}, true)) as max_number_of_items
             from {{ from_table }}
         )
         select
@@ -130,17 +133,14 @@ with numbers as (
 joined as (
     select
         _airbyte_{{ stream_name }}_hashid as _airbyte_hashid,
-        {% if redshift_super_type() -%}
-            {{ column_col }}[numbers.generated_number::int - 1] as _airbyte_nested_data
-        {%- else -%}
-            json_extract_array_element_text({{ column_col }}, numbers.generated_number::int - 1, true) as _airbyte_nested_data
-        {%- endif %}
+        json_extract_array_element_text({{ column_col }}, numbers.generated_number::int - 1, true) as _airbyte_nested_data
     from {{ from_table }}
     cross join numbers
     -- only generate the number of records in the cross join that corresponds
     -- to the number of items in {{ from_table }}.{{ column_col }}
-    where numbers.generated_number <= {{ redshift__array_length(column_col) }}
+    where numbers.generated_number <= json_array_length({{ column_col }}, true)
 )
+    {%- endif %}
 {%- endmacro %}
 
 {% macro mysql__unnest_cte(from_table, stream_name, column_col) -%}
