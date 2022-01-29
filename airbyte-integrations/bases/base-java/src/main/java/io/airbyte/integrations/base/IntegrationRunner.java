@@ -15,6 +15,9 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
+import io.sentry.ITransaction;
+import io.sentry.Sentry;
+import io.sentry.SpanStatus;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Scanner;
@@ -73,10 +76,33 @@ public class IntegrationRunner {
   }
 
   public void run(final String[] args) throws Exception {
-    LOGGER.info("Running integration: {}", integration.getClass().getName());
+    initSentry();
 
     final IntegrationConfig parsed = cliParser.parse(args);
+    final ITransaction transaction = Sentry.startTransaction(
+        integration.getClass().getSimpleName(),
+        parsed.getCommand().toString(),
+        true);
+    try {
+      runInternal(transaction, parsed);
+      transaction.finish(SpanStatus.OK);
+    } catch (final Exception e) {
+      LOGGER.error("Connector failure", e);
+      transaction.setThrowable(e);
+      transaction.finish(SpanStatus.INTERNAL_ERROR);
+      throw e;
+    } finally {
+      /*
+       * This finally block may not run, probably because the container
+       * can be terminated by the worker. So the transaction should always
+       * be finished in the try and catch blocks.
+       */
+      transaction.finish();
+    }
+  }
 
+  public void runInternal(final ITransaction transaction, final IntegrationConfig parsed) throws Exception {
+    LOGGER.info("Running integration: {}", integration.getClass().getName());
     LOGGER.info("Command: {}", parsed.getCommand());
     LOGGER.info("Integration config: {}", parsed);
 
@@ -167,6 +193,21 @@ public class IntegrationRunner {
   private static <T> T parseConfig(final Path path, final Class<T> klass) {
     final JsonNode jsonNode = parseConfig(path);
     return Jsons.object(jsonNode, klass);
+  }
+
+  private static void initSentry() {
+    final String connector = System.getenv("APPLICATION");
+    final String version = System.getenv("APPLICATION_VERSION");
+    final boolean enableSentry = Boolean.parseBoolean(System.getenv("ENABLE_SENTRY"));
+
+    // https://docs.sentry.io/platforms/java/configuration/
+    Sentry.init(options -> {
+      options.setEnableExternalConfiguration(true);
+      options.setTracesSampleRate(enableSentry ? 1.0 : 0.0);
+      options.setRelease(String.format("airbyte-%s:%s", connector, version));
+      options.setTag("connector", connector);
+      options.setTag("connector_version", version);
+    });
   }
 
 }

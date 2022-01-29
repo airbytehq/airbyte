@@ -9,9 +9,6 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
-import io.sentry.ITransaction;
-import io.sentry.Sentry;
-import io.sentry.SpanStatus;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,17 +16,6 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestination.DestinationType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDestination.class);
-
-  public static void initSentry() {
-    Sentry.init(options -> {
-      // allow setting properties from env variables see
-      // https://docs.sentry.io/platforms/java/configuration/
-      options.setEnableExternalConfiguration(true);
-      // To set a uniform sample rate
-      options.setTracesSampleRate(1.0);
-    });
-    Sentry.configureScope(scope -> scope.setTag("connector", "destination-snowflake"));
-  }
 
   enum DestinationType {
     INSERT,
@@ -78,20 +64,9 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
         DestinationType.INTERNAL_STAGING, internalStagingDestination);
   }
 
-  public static void main(final String[] args) {
-    initSentry();
+  public static void main(final String[] args) throws Exception {
     final Destination destination = new SnowflakeDestination();
-    final ITransaction transaction = Sentry.startTransaction("IntegrationRunner()", "run");
-    try {
-      LOGGER.info("Starting destination: {} (Sentry event ID {})", SnowflakeDestination.class, transaction.getEventId());
-      new IntegrationRunner(destination).run(args);
-    } catch (final Exception e) {
-      transaction.setThrowable(e);
-      transaction.setStatus(SpanStatus.INTERNAL_ERROR);
-    } finally {
-      transaction.finish();
-      LOGGER.info("Completed destination: {}", SnowflakeDestination.class);
-    }
+    new IntegrationRunner(destination).run(args);
   }
 
 }
