@@ -10,6 +10,8 @@ public enum JsonSchemaPrimitive {
 
   STRING_BINARY(ImmutableMap.of("type", "string", "contentEncoding", "base64")),
   STRING(ImmutableMap.of("type", "string")),
+  TIMESTAMP(ImmutableMap.of("type", "string", "format", "date-time")),
+  DATE(ImmutableMap.of("type", "string", "format", "date")),
   NUMBER(ImmutableMap.of("type", "number")),
   OBJECT(ImmutableMap.of("type", "object")),
   ARRAY(ImmutableMap.of("type", "array")),

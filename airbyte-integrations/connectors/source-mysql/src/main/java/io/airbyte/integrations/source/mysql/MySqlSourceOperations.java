@@ -175,6 +175,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
       // getFieldType}
       TINYINT, TINYINT_UNSIGNED, SMALLINT, SMALLINT_UNSIGNED, INT, INT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED, BIGINT, BIGINT_UNSIGNED, FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED -> JsonSchemaPrimitive.NUMBER;
       case BOOLEAN -> JsonSchemaPrimitive.BOOLEAN;
+      case TIMESTAMP -> JsonSchemaPrimitive.TIMESTAMP;
       case NULL -> JsonSchemaPrimitive.NULL;
       // BIT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in {@link getFieldType}
       case BIT, TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB, BINARY, VARBINARY, GEOMETRY -> JsonSchemaPrimitive.STRING_BINARY;
