@@ -58,7 +58,7 @@ This mode is also excluded from the Cloud variant of this connector.
 
 ## Changelog
 
-The OSS and Cloud variants have the same version number. The Cloud variant was initially released with version `1.0.0`.
+The OSS and Cloud variants have the same version number. The Cloud variant was initially released at version `1.0.0`.
 
 | Version | Date | Pull request | Notes |
 | --- | --- | --- | --- |
