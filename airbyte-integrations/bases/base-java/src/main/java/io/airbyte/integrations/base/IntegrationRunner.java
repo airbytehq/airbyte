@@ -87,7 +87,6 @@ public class IntegrationRunner {
       runInternal(transaction, parsed);
       transaction.finish(SpanStatus.OK);
     } catch (final Exception e) {
-      LOGGER.error("Connector failure", e);
       transaction.setThrowable(e);
       transaction.finish(SpanStatus.INTERNAL_ERROR);
       throw e;
