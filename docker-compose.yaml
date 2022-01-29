@@ -120,7 +120,6 @@ services:
       - WORKER_ENVIRONMENT=${WORKER_ENVIRONMENT}
       - WORKSPACE_DOCKER_MOUNT=${WORKSPACE_DOCKER_MOUNT}
       - WORKSPACE_ROOT=${WORKSPACE_ROOT}
-      - JOB_DEFAULT_ENV_SENTRY_DSN=${JOB_DEFAULT_ENV_SENTRY_DSN}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - workspace:${WORKSPACE_ROOT}
