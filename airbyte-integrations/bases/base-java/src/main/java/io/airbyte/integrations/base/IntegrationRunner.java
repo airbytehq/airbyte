@@ -19,6 +19,7 @@ import io.sentry.ITransaction;
 import io.sentry.Sentry;
 import io.sentry.SpanStatus;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
@@ -92,9 +93,8 @@ public class IntegrationRunner {
       throw e;
     } finally {
       /*
-       * This finally block may not run, probably because the container
-       * can be terminated by the worker. So the transaction should always
-       * be finished in the try and catch blocks.
+       * This finally block may not run, probably because the container can be terminated by the worker.
+       * So the transaction should always be finished in the try and catch blocks.
        */
       transaction.finish();
     }
@@ -195,12 +195,14 @@ public class IntegrationRunner {
   }
 
   private static void initSentry() {
-    final String connector = System.getenv("APPLICATION");
-    final String version = System.getenv("APPLICATION_VERSION");
-    final boolean enableSentry = Boolean.parseBoolean(System.getenv("ENABLE_SENTRY"));
+    final Map<String, String> env = System.getenv();
+    final String connector = env.getOrDefault("APPLICATION", "unknown");
+    final String version = env.getOrDefault("APPLICATION_VERSION", "unknown");
+    final boolean enableSentry = Boolean.parseBoolean(env.getOrDefault("ENABLE_SENTRY", "false"));
 
     // https://docs.sentry.io/platforms/java/configuration/
     Sentry.init(options -> {
+      options.setDsn(env.getOrDefault("SENTRY_DSN", ""));
       options.setEnableExternalConfiguration(true);
       options.setTracesSampleRate(enableSentry ? 1.0 : 0.0);
       options.setRelease(String.format("airbyte-%s:%s", connector, version));

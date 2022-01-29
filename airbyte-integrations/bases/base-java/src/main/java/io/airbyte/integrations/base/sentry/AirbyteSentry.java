@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.base.sentry;
 
 import io.sentry.ISpan;
@@ -9,7 +13,9 @@ public class AirbyteSentry {
 
   @FunctionalInterface
   public interface ThrowingRunnable {
+
     void call() throws Exception;
+
   }
 
   public static void runWithSpan(final String operation, final ThrowingRunnable command) throws Exception {
