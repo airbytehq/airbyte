@@ -205,7 +205,7 @@ public class IntegrationRunner {
       options.setDsn(env.getOrDefault("SENTRY_DSN", ""));
       options.setEnableExternalConfiguration(true);
       options.setTracesSampleRate(enableSentry ? 1.0 : 0.0);
-      options.setRelease(String.format("airbyte-%s:%s", connector, version));
+      options.setRelease(String.format("%s@%s", connector, version));
       options.setTag("connector", connector);
       options.setTag("connector_version", version);
     });
