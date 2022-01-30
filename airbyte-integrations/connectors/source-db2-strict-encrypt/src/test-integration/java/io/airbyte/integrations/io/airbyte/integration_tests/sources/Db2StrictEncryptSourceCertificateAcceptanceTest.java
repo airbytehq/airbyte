@@ -25,9 +25,7 @@ import io.airbyte.protocol.models.SyncMode;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.testcontainers.containers.Db2Container;
 
