@@ -1,5 +1,5 @@
-FROM python:3.7-slim
-RUN pip install datamodel-code-generator==0.10.1
+FROM python:3.10-slim
+RUN pip install black==21.12b0 datamodel-code-generator==0.10.1
 ENTRYPOINT ["datamodel-codegen"]
 
 LABEL io.airbyte.version=dev
