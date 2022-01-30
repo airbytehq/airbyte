@@ -18,5 +18,5 @@ ENV ENABLE_SENTRY true
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=${APPLICATION_VERSION}
+LABEL io.airbyte.version=1.0.1
 LABEL io.airbyte.name=airbyte/source-e2e-test-cloud
