@@ -10,8 +10,8 @@ import java.io.IOException;
 import java.util.UUID;
 
 /**
- * {@link DestinationWriter} is responsible for writing Airbyte stream data to an S3 location in a specific
- * format.
+ * {@link DestinationWriter} is responsible for writing Airbyte stream data to an S3 location in a
+ * specific format.
  */
 public interface DestinationWriter {
 
