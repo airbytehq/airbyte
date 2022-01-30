@@ -21,5 +21,5 @@ RUN tar xf ${APPLICATION}.tar --strip-components=1
 ENV APPLICATION_VERSION 0.4.7
 ENV ENABLE_SENTRY true
 
-LABEL io.airbyte.version=${APPLICATION_VERSION}
+LABEL io.airbyte.version=0.4.7
 LABEL io.airbyte.name=airbyte/destination-snowflake
