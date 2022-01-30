@@ -140,4 +140,5 @@ public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWrit
   public void write(JsonNode formattedData) throws IOException {
     parquetWriter.write(avroRecordFactory.getAvroRecord(formattedData));
   }
+
 }

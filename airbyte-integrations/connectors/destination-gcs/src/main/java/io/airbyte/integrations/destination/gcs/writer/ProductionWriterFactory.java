@@ -27,9 +27,9 @@ public class ProductionWriterFactory implements GcsWriterFactory {
 
   @Override
   public DestinationFileWriter create(final GcsDestinationConfig config,
-                         final AmazonS3 s3Client,
-                         final ConfiguredAirbyteStream configuredStream,
-                         final Timestamp uploadTimestamp)
+                                      final AmazonS3 s3Client,
+                                      final ConfiguredAirbyteStream configuredStream,
+                                      final Timestamp uploadTimestamp)
       throws Exception {
     final S3Format format = config.getFormatConfig().getFormat();
 
