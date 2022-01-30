@@ -217,7 +217,6 @@ Finally, you need to add read/write permissions to your bucket with that email.
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :-----       | :------ |
-| 0.4.7 (unpublished) | 2022-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745) | Integrate with Sentry. |
 | 0.4.6   | 2022-01-28 | [#9623](https://github.com/airbytehq/airbyte/pull/9623) | Add jdbc_url_params support for optional JDBC parameters |
 | 0.4.5   | 2021-12-29 | [#9184](https://github.com/airbytehq/airbyte/pull/9184) | Update connector fields title/description |
 | 0.4.4   | 2022-01-24 | [#9743](https://github.com/airbytehq/airbyte/pull/9743) | Fixed bug with dashes in schema name |
