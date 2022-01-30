@@ -641,6 +641,8 @@ where 1 = 1
             col = f"boolean_to_string({column_name})"
         elif is_array(definition["type"]):
             col = f"array_to_string({column_name})"
+        elif is_object(definition["type"]):
+            col = f"object_to_string({column_name})"
         else:
             col = column_name
 
