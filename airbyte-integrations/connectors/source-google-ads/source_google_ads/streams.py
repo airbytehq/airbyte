@@ -258,7 +258,6 @@ class DisplayTopicsPerformanceReport(IncrementalGoogleAdsStream):
 
 
 class ShoppingPerformanceReport(IncrementalGoogleAdsStream):
-    range_days = 1
     """
     ShoppingPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v8/shopping_performance_view
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance
