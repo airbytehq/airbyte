@@ -7,25 +7,47 @@ package io.airbyte.integrations.base.sentry;
 import io.sentry.ISpan;
 import io.sentry.Sentry;
 import io.sentry.SpanStatus;
-import java.util.concurrent.Callable;
+import java.util.Collections;
+import java.util.Map;
 
 public class AirbyteSentry {
 
-  @FunctionalInterface
-  public interface ThrowingRunnable {
+  private static final String DEFAULT_ROOT_TRANSACTION = "ROOT";
 
-    void call() throws Exception;
+  @FunctionalInterface
+  public interface ThrowingRunnable<E extends Exception> {
+
+    void call() throws E;
 
   }
 
-  public static void runWithSpan(final String operation, final ThrowingRunnable command) throws Exception {
-    final ISpan span = Sentry.getSpan();
-    final ISpan childSpan;
-    if (span == null) {
-      childSpan = Sentry.startTransaction("ROOT", operation);
-    } else {
-      childSpan = span.startChild(operation);
-    }
+  @FunctionalInterface
+  public interface ThrowingCallable<T, E extends Exception> {
+
+    T call() throws E;
+
+  }
+
+  /**
+   * Run an operation and profile it with Sentry. The operation will run in a span under the current
+   * Sentry transaction. If no transaction exists, a default one will be created.
+   */
+  public static <E extends Exception> void executeWithTracing(final String name, final ThrowingRunnable<E> command) throws E {
+    executeWithTracing(name, command, Collections.emptyMap());
+  }
+
+  /**
+   * Run an operation and profile it with Sentry. The operation will run in a span under the current
+   * Sentry transaction. If no transaction exists, a default one will be created.
+   *
+   * @param metadata Extra data about this operation. For example: { "stream": "table1",
+   *        "recordCount": 1000 }.
+   */
+  public static <E extends Exception> void executeWithTracing(final String name,
+                                                              final ThrowingRunnable<E> command,
+                                                              final Map<String, Object> metadata)
+      throws E {
+    final ISpan childSpan = createChildSpan(Sentry.getSpan(), name, metadata);
     try {
       command.call();
       childSpan.finish(SpanStatus.OK);
@@ -38,14 +60,26 @@ public class AirbyteSentry {
     }
   }
 
-  public static <T> T runWithSpan(final String operation, final Callable<T> command) throws Exception {
-    final ISpan span = Sentry.getSpan();
-    final ISpan childSpan;
-    if (span == null) {
-      childSpan = Sentry.startTransaction("ROOT", operation);
-    } else {
-      childSpan = span.startChild(operation);
-    }
+  /**
+   * Run an operation and profile it with Sentry. The operation will run in a span under the current
+   * Sentry transaction. If no transaction exists, a default one will be created.
+   */
+  public static <T, E extends Exception> T queryWithTracing(final String name, final ThrowingCallable<T, E> command) throws E {
+    return queryWithTracing(name, command, Collections.emptyMap());
+  }
+
+  /**
+   * Run an operation and profile it with Sentry. The operation will run in a span under the current
+   * Sentry transaction. If no transaction exists, a default one will be created.
+   *
+   * @param metadata Extra data about this operation. For example: { "stream": "table1",
+   *        "recordCount": 1000 }.
+   */
+  public static <T, E extends Exception> T queryWithTracing(final String name,
+                                                            final ThrowingCallable<T, E> command,
+                                                            final Map<String, Object> metadata)
+      throws E {
+    final ISpan childSpan = createChildSpan(Sentry.getSpan(), name, metadata);
     try {
       final T result = command.call();
       childSpan.finish(SpanStatus.OK);
@@ -57,6 +91,19 @@ public class AirbyteSentry {
     } finally {
       childSpan.finish();
     }
+  }
+
+  private static ISpan createChildSpan(final ISpan currentSpan, final String operationName, final Map<String, Object> metadata) {
+    final ISpan childSpan;
+    if (currentSpan == null) {
+      childSpan = Sentry.startTransaction(DEFAULT_ROOT_TRANSACTION, operationName);
+    } else {
+      childSpan = currentSpan.startChild(operationName);
+    }
+    if (metadata != null && !metadata.isEmpty()) {
+      metadata.forEach(childSpan::setData);
+    }
+    return childSpan;
   }
 
 }
