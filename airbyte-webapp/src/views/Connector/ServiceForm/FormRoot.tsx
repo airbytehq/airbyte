@@ -43,8 +43,12 @@ const FormRoot: React.FC<{
   hasSuccess,
   additionBottomControls,
 }) => {
-  const { resetForm, dirty, isSubmitting, isValid } =
-    useFormikContext<ServiceFormValues>();
+  const {
+    resetForm,
+    dirty,
+    isSubmitting,
+    isValid,
+  } = useFormikContext<ServiceFormValues>();
 
   const {
     resetUiFormProgress,

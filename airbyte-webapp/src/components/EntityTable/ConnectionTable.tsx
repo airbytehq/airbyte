@@ -76,10 +76,10 @@ const ConnectionTable: React.FC<IProps> = ({
     [sortBy, sortOrder]
   );
 
-  const sortingData = React.useMemo(
-    () => data.sort(sortData),
-    [sortData, data]
-  );
+  const sortingData = React.useMemo(() => data.sort(sortData), [
+    sortData,
+    data,
+  ]);
 
   const columns = React.useMemo(
     () => [

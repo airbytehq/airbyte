@@ -99,20 +99,20 @@ export const buildYupFormForJsonSchema = (
     case "object":
       let objectSchema = yup.object();
 
-      const keyEntries = Object.entries(jsonSchema.properties || {}).map(
-        ([propertyKey, condition]) => [
-          propertyKey,
-          typeof condition !== "boolean"
-            ? buildYupFormForJsonSchema(
-                condition,
-                uiConfig,
-                jsonSchema,
-                propertyKey,
-                propertyPath ? `${propertyPath}.${propertyKey}` : propertyKey
-              )
-            : yup.mixed(),
-        ]
-      );
+      const keyEntries = Object.entries(
+        jsonSchema.properties || {}
+      ).map(([propertyKey, condition]) => [
+        propertyKey,
+        typeof condition !== "boolean"
+          ? buildYupFormForJsonSchema(
+              condition,
+              uiConfig,
+              jsonSchema,
+              propertyKey,
+              propertyPath ? `${propertyPath}.${propertyKey}` : propertyKey
+            )
+          : yup.mixed(),
+      ]);
 
       if (keyEntries.length) {
         objectSchema = objectSchema.shape(Object.fromEntries(keyEntries));

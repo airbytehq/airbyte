@@ -131,8 +131,12 @@ const CreationFormPage: React.FC<IProps> = ({}) => {
       : EntityStepsTypes.SOURCE
   );
 
-  const { destinationDefinition, sourceDefinition, source, destination } =
-    usePreloadData();
+  const {
+    destinationDefinition,
+    sourceDefinition,
+    source,
+    destination,
+  } = usePreloadData();
 
   const onSelectExistingSource = (id: string) => {
     push("", {

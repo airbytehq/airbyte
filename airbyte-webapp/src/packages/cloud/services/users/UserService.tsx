@@ -8,8 +8,8 @@ export function useGetUserService(): UserService {
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
   const { cloudApiUrl } = useConfig();
 
-  return useMemo(
-    () => new UserService(cloudApiUrl, requestAuthMiddleware),
-    [cloudApiUrl, requestAuthMiddleware]
-  );
+  return useMemo(() => new UserService(cloudApiUrl, requestAuthMiddleware), [
+    cloudApiUrl,
+    requestAuthMiddleware,
+  ]);
 }

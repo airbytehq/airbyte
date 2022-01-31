@@ -50,8 +50,11 @@ const SourceForm: React.FC<IProps> = ({
       : ""
   );
 
-  const { sourceDefinitionSpecification, sourceDefinitionError, isLoading } =
-    useSourceDefinitionSpecificationLoad(sourceDefinitionId);
+  const {
+    sourceDefinitionSpecification,
+    sourceDefinitionError,
+    isLoading,
+  } = useSourceDefinitionSpecificationLoad(sourceDefinitionId);
 
   const onDropDownSelect = (sourceDefinitionId: string) => {
     setSourceDefinitionId(sourceDefinitionId);

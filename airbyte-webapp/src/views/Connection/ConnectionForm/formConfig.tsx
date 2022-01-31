@@ -279,12 +279,10 @@ const useInitialValues = (
     }
 
     if (destDefinition.supportsNormalization) {
-      let initialNormalization = (
-        operations.find(
-          (op) =>
-            op.operatorConfiguration.operatorType === OperatorType.Normalization
-        ) as Normalization
-      )?.operatorConfiguration?.normalization?.option;
+      let initialNormalization = (operations.find(
+        (op) =>
+          op.operatorConfiguration.operatorType === OperatorType.Normalization
+      ) as Normalization)?.operatorConfiguration?.normalization?.option;
 
       // If no normalization was selected for already present normalization -> Raw is select
       if (!initialNormalization && isEditMode) {

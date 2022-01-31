@@ -75,8 +75,9 @@ const SettingsView: React.FC<IProps> = ({
   sourceDefinition,
 }) => {
   const [isModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] =
-    useState(false);
+  const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(
+    false
+  );
   const [saved, setSaved] = useState(false);
   const [currentValues, setCurrentValues] = useState<ValuesProps>({
     namespaceDefinition: ConnectionNamespaceDefinition.Source,
@@ -86,14 +87,19 @@ const SettingsView: React.FC<IProps> = ({
     syncCatalog: { streams: [] },
   });
 
-  const { updateConnection, deleteConnection, resetConnection } =
-    useConnection();
+  const {
+    updateConnection,
+    deleteConnection,
+    resetConnection,
+  } = useConnection();
 
   const onDelete = () => deleteConnection({ connectionId });
   const onReset = () => resetConnection(connectionId);
 
-  const { connection: initialConnection, refreshConnectionCatalog } =
-    useConnectionLoad(connectionId);
+  const {
+    connection: initialConnection,
+    refreshConnectionCatalog,
+  } = useConnectionLoad(connectionId);
 
   const [
     { value: connectionWithRefreshCatalog, loading: isRefreshingCatalog },

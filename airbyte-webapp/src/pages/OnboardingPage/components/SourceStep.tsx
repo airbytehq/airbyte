@@ -35,8 +35,10 @@ const SourceStep: React.FC<IProps> = ({
   const [sourceDefinitionId, setSourceDefinitionId] = useState("");
   const analyticsService = useAnalyticsService();
 
-  const { sourceDefinitionSpecification, isLoading } =
-    useSourceDefinitionSpecificationLoad(sourceDefinitionId);
+  const {
+    sourceDefinitionSpecification,
+    isLoading,
+  } = useSourceDefinitionSpecificationLoad(sourceDefinitionId);
 
   const onServiceSelect = (sourceId: string) => {
     const sourceDefinition = availableServices.find(

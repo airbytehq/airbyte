@@ -53,8 +53,11 @@ const FormSection: React.FC<{
     return flattenedBlocks;
   }, [blocks]);
 
-  const { selectedConnector, isAuthFlowSelected, authFieldsToHide } =
-    useServiceForm();
+  const {
+    selectedConnector,
+    isAuthFlowSelected,
+    authFieldsToHide,
+  } = useServiceForm();
 
   return (
     <>

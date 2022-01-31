@@ -22,8 +22,9 @@ export const ServicesProvider: React.FC<{ inject?: ServiceContainer }> = ({
   children,
   inject,
 }) => {
-  const [registeredServices, { remove, set }] =
-    useMap<ServiceContainer>(inject);
+  const [registeredServices, { remove, set }] = useMap<ServiceContainer>(
+    inject
+  );
 
   const ctxValue = useMemo<ServicesProviderApi>(
     () => ({
@@ -90,10 +91,10 @@ export const useServicesProvider = (): ServicesProviderApi => {
 export function useGetService<T>(serviceToken: string): T {
   const { registeredServices } = useServicesProvider();
 
-  return useMemo(
-    () => registeredServices[serviceToken],
-    [registeredServices, serviceToken]
-  );
+  return useMemo(() => registeredServices[serviceToken], [
+    registeredServices,
+    serviceToken,
+  ]);
 }
 
 // This is workaround for rest-hooks

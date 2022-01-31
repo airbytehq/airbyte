@@ -14,8 +14,7 @@ export interface Scheduler {
 
 export default class SchedulerResource
   extends BaseResource
-  implements Scheduler
-{
+  implements Scheduler {
   readonly status: string = "";
   readonly message: string = "";
   readonly jobInfo: JobInfo | undefined = undefined;

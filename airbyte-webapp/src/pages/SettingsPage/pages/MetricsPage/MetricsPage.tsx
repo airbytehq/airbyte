@@ -10,8 +10,12 @@ import { Content, SettingsCard } from "../SettingsComponents";
 const MetricsPage: React.FC = () => {
   const { workspace } = useWorkspace();
 
-  const { errorMessage, successMessage, loading, updateData } =
-    useWorkspaceEditor();
+  const {
+    errorMessage,
+    successMessage,
+    loading,
+    updateData,
+  } = useWorkspaceEditor();
 
   const onChange = async (data: { anonymousDataCollection: boolean }) => {
     await updateData({ ...workspace, ...data });

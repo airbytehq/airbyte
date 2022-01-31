@@ -10,16 +10,19 @@ import {
 import useTypesafeReducer from "hooks/useTypesafeReducer";
 import { actions, initialState, notificationServiceReducer } from "./reducer";
 
-const notificationServiceContext =
-  React.createContext<NotificationServiceApi | null>(null);
+const notificationServiceContext = React.createContext<NotificationServiceApi | null>(
+  null
+);
 
 function NotificationService({ children }: { children: React.ReactNode }) {
-  const [state, { addNotification, clearAll, deleteNotificationById }] =
-    useTypesafeReducer<NotificationServiceState, typeof actions>(
-      notificationServiceReducer,
-      initialState,
-      actions
-    );
+  const [
+    state,
+    { addNotification, clearAll, deleteNotificationById },
+  ] = useTypesafeReducer<NotificationServiceState, typeof actions>(
+    notificationServiceReducer,
+    initialState,
+    actions
+  );
 
   const notificationService: NotificationServiceApi = useMemo(
     () => ({

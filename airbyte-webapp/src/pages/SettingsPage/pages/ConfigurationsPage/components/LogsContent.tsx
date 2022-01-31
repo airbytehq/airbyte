@@ -34,15 +34,19 @@ const LogsContent: React.FC = () => {
     document.body.removeChild(element);
   };
 
-  const [{ loading: serverLogsLoading }, downloadServerLogs] =
-    useAsyncFn(async () => {
-      await downloadLogs("server");
-    }, [downloadLogs]);
+  const [
+    { loading: serverLogsLoading },
+    downloadServerLogs,
+  ] = useAsyncFn(async () => {
+    await downloadLogs("server");
+  }, [downloadLogs]);
 
-  const [{ loading: schedulerLogsLoading }, downloadSchedulerLogs] =
-    useAsyncFn(async () => {
-      await downloadLogs("scheduler");
-    }, [downloadLogs]);
+  const [
+    { loading: schedulerLogsLoading },
+    downloadSchedulerLogs,
+  ] = useAsyncFn(async () => {
+    await downloadLogs("scheduler");
+  }, [downloadLogs]);
 
   return (
     <Content>

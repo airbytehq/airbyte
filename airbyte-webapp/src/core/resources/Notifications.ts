@@ -8,8 +8,7 @@ export interface Notifications {
 
 export default class NotificationsResource
   extends BaseResource
-  implements Notifications
-{
+  implements Notifications {
   readonly status: string = "";
   readonly message: string = "";
 

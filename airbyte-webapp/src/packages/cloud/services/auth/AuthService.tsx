@@ -65,12 +65,14 @@ type AuthContextApi = {
 export const AuthContext = React.createContext<AuthContextApi | null>(null);
 
 export const AuthenticationProvider: React.FC = ({ children }) => {
-  const [state, { loggedIn, emailVerified, authInited, loggedOut }] =
-    useTypesafeReducer<AuthServiceState, typeof actions>(
-      authStateReducer,
-      initialState,
-      actions
-    );
+  const [
+    state,
+    { loggedIn, emailVerified, authInited, loggedOut },
+  ] = useTypesafeReducer<AuthServiceState, typeof actions>(
+    authStateReducer,
+    initialState,
+    actions
+  );
   const auth = useAuth();
   const userService = useGetUserService();
   const authService = useMemo(() => new GoogleAuthService(() => auth), [auth]);

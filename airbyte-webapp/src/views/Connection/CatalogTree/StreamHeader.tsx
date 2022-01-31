@@ -75,8 +75,12 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
   hasFields,
   onExpand,
 }) => {
-  const { primaryKey, syncMode, cursorField, destinationSyncMode } =
-    stream.config;
+  const {
+    primaryKey,
+    syncMode,
+    cursorField,
+    destinationSyncMode,
+  } = stream.config;
   const syncSchema = useMemo(
     () => ({
       syncMode,

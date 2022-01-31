@@ -139,10 +139,10 @@ const useConstructValidationSchema = (
   jsonSchema: JSONSchema7,
   uiWidgetsInfo: WidgetConfigMap
 ): AnySchema =>
-  useMemo(
-    () => buildYupFormForJsonSchema(jsonSchema, uiWidgetsInfo),
-    [uiWidgetsInfo, jsonSchema]
-  );
+  useMemo(() => buildYupFormForJsonSchema(jsonSchema, uiWidgetsInfo), [
+    uiWidgetsInfo,
+    jsonSchema,
+  ]);
 
 const usePatchFormik = (): void => {
   const {

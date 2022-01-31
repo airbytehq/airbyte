@@ -14,8 +14,10 @@ function useApiHealthPoll(): void {
   const { formatMessage } = useIntl();
   const { healthCheckInterval } = useConfig();
   const healthService = useGetService<HealthService>("HealthService");
-  const { registerNotification, unregisterNotificationById } =
-    useNotificationService();
+  const {
+    registerNotification,
+    unregisterNotificationById,
+  } = useNotificationService();
 
   useEffect(() => {
     const errorNotification = {
