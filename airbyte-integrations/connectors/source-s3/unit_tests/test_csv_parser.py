@@ -71,7 +71,7 @@ def generate_big_file(filepath: str, size_in_gigabytes: float, columns_number: i
         schema = None
     else:
         schema = {f"column {i}": random.choice(["integer", "string", "boolean", "number"]) for i in range(columns_number)}
-        generate_csv_file(filepath, schema, 434, ",")
+        generate_csv_file(filepath, schema, 101, ",")
 
     skip_headers = False
     with open(filepath, "r") as f:
@@ -363,7 +363,7 @@ class TestCsvParser(AbstractTestParser):
     def test_big_file(self) -> None:
         """tests a big csv file (>= 1.5G records)"""
         filepath = os.path.join(TMP_FOLDER, "big_csv_file." + self.filetype)
-        schema, file_size = generate_big_file(filepath, 0.1, 500)
+        schema, file_size = generate_big_file(filepath, 0.1, 123)
         expected_count = sum(1 for _ in open(filepath)) - 1
         self.logger.info(f"generated file {filepath} with size {file_size}Gb, lines: {expected_count}")
         for _ in range(3):

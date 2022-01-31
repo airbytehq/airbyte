@@ -39,8 +39,8 @@ class TestIntegrationCsvFiles:
         filepath = os.path.join(big_file_folder, "file.csv")
 
         # please change this value if you need to test another file size
-        future_file_size = 0.5  # in gigabytes
-        _, file_size = generate_big_file(filepath, future_file_size, 500)
+        future_file_size = 0.1  # in gigabytes
+        _, file_size = generate_big_file(filepath, future_file_size, 678)
         expected_count = sum(1 for _ in open(filepath)) - 1
         self.logger.info(f"generated file {filepath} with size {file_size}Gb, lines: {expected_count}")
 
