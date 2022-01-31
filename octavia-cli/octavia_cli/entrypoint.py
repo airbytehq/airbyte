@@ -9,8 +9,9 @@ import click
 from airbyte_api_client.api import workspace_api
 
 from .list import commands as list_commands
+from .create import commands as create_commands
 
-AVAILABLE_COMMANDS: List[click.Command] = [list_commands._list]
+AVAILABLE_COMMANDS: List[click.Command] = [list_commands._list, create_commands.create]
 
 
 @click.group()
