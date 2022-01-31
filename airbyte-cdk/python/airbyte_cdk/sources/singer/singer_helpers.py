@@ -47,7 +47,7 @@ def configured_for_incremental(configured_stream: ConfiguredAirbyteStream):
     return configured_stream.sync_mode and configured_stream.sync_mode == SyncMode.incremental
 
 
-def get_stream_level_metadata(metadatas: List[Dict[str, any]]) -> Optional[Dict[str, any]]:
+def get_stream_level_metadata(metadatas: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
     for metadata in metadatas:
         if not is_field_metadata(metadata) and "metadata" in metadata:
             return metadata.get("metadata")
@@ -67,7 +67,7 @@ class SyncModeInfo:
     default_cursor_field: Optional[List[str]] = None
 
 
-def set_sync_modes_from_metadata(airbyte_stream: AirbyteStream, metadatas: List[Dict[str, any]]):
+def set_sync_modes_from_metadata(airbyte_stream: AirbyteStream, metadatas: List[Dict[str, Any]]):
     stream_metadata = get_stream_level_metadata(metadatas)
     if stream_metadata:
         # A stream is incremental if it declares replication keys or if forced-replication-method is set to incremental
@@ -106,7 +106,7 @@ class SingerHelper:
 
     @staticmethod
     def singer_catalog_to_airbyte_catalog(
-        singer_catalog: Dict[str, any], sync_mode_overrides: Dict[str, SyncModeInfo], primary_key_overrides: Dict[str, List[str]]
+        singer_catalog: Dict[str, Any], sync_mode_overrides: Dict[str, SyncModeInfo], primary_key_overrides: Dict[str, List[str]]
     ) -> AirbyteCatalog:
         """
         :param singer_catalog:

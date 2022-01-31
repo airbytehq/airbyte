@@ -6,7 +6,7 @@
 import json
 import os
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, Type
+from typing import Any, Dict, Iterable, List, Mapping, Type
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
@@ -18,14 +18,14 @@ from .singer_helpers import Catalogs, SingerHelper, SyncModeInfo
 
 @dataclass
 class ConfigContainer:
-    config: json
+    config: Mapping[str, Any]
     config_path: str
 
 
 class SingerSource(Source):
 
     # can be overridden to change an input config
-    def configure(self, raw_config: json, temp_dir: str) -> json:
+    def configure(self, raw_config: Mapping[str, Any], temp_dir: str) -> ConfigContainer:
         """
         Persist raw_config in temporary directory to run the Source job
         This can be overridden if extra temporary files need to be persisted in the temp dir
@@ -36,7 +36,7 @@ class SingerSource(Source):
         return ConfigContainer(config, config_path)
 
     # Can be overridden to change an input config
-    def transform_config(self, config: json) -> json:
+    def transform_config(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Singer source may need to adapt the Config object for the singer tap specifics
         """
@@ -56,7 +56,7 @@ class SingerSource(Source):
         """
         return state_path
 
-    def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
+    def check_config(self, logger: AirbyteLogger, config_path: str, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
         Some Singer source may perform check using config_path or config to
         tests if the input configuration can be used to successfully connect to the integration
@@ -149,7 +149,7 @@ class SingerSource(Source):
 class BaseSingerSource(SingerSource):
     force_full_refresh = False
 
-    def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
+    def check_config(self, logger: AirbyteLogger, config_path: str, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         try:
             self.try_connect(logger, config)
         except self.api_error as err:
@@ -175,7 +175,7 @@ class BaseSingerSource(SingerSource):
             return CatalogHelper.coerce_catalog_as_full_refresh(catalog)
         return catalog
 
-    def try_connect(self, logger: AirbyteLogger, config: json):
+    def try_connect(self, logger: AirbyteLogger, config: Mapping[str, Any]):
         """Test provided credentials, raises self.api_error if something goes wrong"""
         raise NotImplementedError
 
