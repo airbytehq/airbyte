@@ -1,18 +1,20 @@
-from attr import attr
-from .definition_specification import DefinitionSpecification
-
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+import importlib.util
+import inspect
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from attr import attr
 from datamodel_code_generator import InputFileType, generate
-import importlib.util
-import inspect
+from octavia_cli.create import schema_utils
 from pydantic_factories import ModelFactory
 
-from octavia_cli.create import schema_utils
+from .definition_specification import DefinitionSpecification
+
 
 class Field:
-
     def __init__(self, name, type, is_required, description, examples) -> None:
         self.name = name
         self.type = type
@@ -20,34 +22,29 @@ class Field:
         self.description = description
         self.examples = examples
 
-class Renderer:
 
+class Renderer:
     def __init__(self, definition_specification: DefinitionSpecification) -> None:
         self.definition_specification = definition_specification
         self.pydantic_model = self._get_pydantic_model()
-        self.schema_properties = self.pydantic_model.schema(by_alias=True).get(
-            "properties", {}
-        )
-        self.schema_references = self.pydantic_model.schema(by_alias=True).get(
-            "definitions", {}
-        )
-        self.required_properties = self.pydantic_model.schema(by_alias=True).get(
-            "required", []
-        )
+        self.schema_properties = self.pydantic_model.schema(by_alias=True).get("properties", {})
+        self.schema_references = self.pydantic_model.schema(by_alias=True).get("definitions", {})
+        self.required_properties = self.pydantic_model.schema(by_alias=True).get("required", [])
+
     @staticmethod
     def patch_generated_model(model_path):
-            with open(model_path, "r") as fp:
-                lines = fp.readlines()
-            with open(model_path, "w") as fp:
-                for line in lines:
-                    if line.strip("\n") != "from __future__ import annotations":
-                        fp.write(line)
-    
+        with open(model_path, "r") as fp:
+            lines = fp.readlines()
+        with open(model_path, "w") as fp:
+            for line in lines:
+                if line.strip("\n") != "from __future__ import annotations":
+                    fp.write(line)
+
     def _get_pydantic_model(self):
-        #TODO make sure its deleted
+        # TODO make sure its deleted
         with TemporaryDirectory() as temporary_directory_name:
             temporary_directory = Path(temporary_directory_name)
-            output = Path(temporary_directory / f'{self.definition_specification.id}.py')
+            output = Path(temporary_directory / f"{self.definition_specification.id}.py")
             generate(
                 self.definition_specification.json_schema,
                 input_file_type=InputFileType.JsonSchema,

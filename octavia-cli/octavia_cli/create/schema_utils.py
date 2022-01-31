@@ -1,11 +1,15 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 """Utilities to help with JSON Schema.
 
 lazydocs: ignore
 """
 
-from typing import Dict, List, Any
-from dataclasses import dataclass
 import abc
+from dataclasses import dataclass
+from typing import Any, Dict, List
+
 
 def resolve_reference(reference: str, references: Dict) -> Dict:
     return references[reference.split("/")[-1]]
@@ -27,8 +31,8 @@ def get_union_references(property: Dict, references: Dict) -> List[Dict]:
         resolved_references.append(resolve_reference(reference["$ref"], references))
     return resolved_references
 
-class Field(abc.ABC):
 
+class Field(abc.ABC):
     @property
     @abc.abstractmethod
     def type_name(
@@ -51,8 +55,9 @@ class Field(abc.ABC):
             "required": self.required,
             "examples": self.examples,
             "description": self.description,
-            "default": self.default
+            "default": self.default,
         }
+
 
 class SingleString(Field):
     type_name = "string"
@@ -61,12 +66,14 @@ class SingleString(Field):
     def identity(property, references):
         return property.get("type") == "string"
 
+
 class Boolean(Field):
     type_name = "boolean"
 
     @staticmethod
     def identity(property, references):
         return property.get("type") == "boolean"
+
 
 class Integer(Field):
     type_name = "integer"
@@ -82,6 +89,7 @@ class Number(Field):
     @staticmethod
     def identity(property, references):
         return property.get("type") == "number"
+
 
 class MultiEnum(Field):
     type_name = "array"
@@ -108,17 +116,16 @@ class MultiEnum(Field):
             return True
         except Exception:
             return False
-    
-class SingleEnum(Field):
 
+
+class SingleEnum(Field):
     @property
     def type_name(self):
         return "enum"
-    
+
     @property
     def enum_values(self):
         return get_single_reference_item(self.property, self.references)["enum"]
-
 
     @staticmethod
     def identity(property, references):
@@ -130,6 +137,7 @@ class SingleEnum(Field):
         except Exception:
             return False
 
+
 class SingleDict(Field):
     type_name = "object"
 
@@ -139,6 +147,7 @@ class SingleDict(Field):
             return False
         return "additionalProperties" in property
 
+
 class SingleReference(Field):
     type_name = "object"
 
@@ -147,6 +156,7 @@ class SingleReference(Field):
         if property.get("type") is not None:
             return False
         return bool(property.get("$ref"))
+
 
 class SingleObject(Field):
     type_name = "object"
@@ -160,6 +170,7 @@ class SingleObject(Field):
             return "properties" in object_reference
         except Exception:
             return False
+
 
 class Union_(Field):
     type_name = "anyOf"
@@ -178,6 +189,7 @@ class Union_(Field):
 
         return True
 
+
 class List_(Field):
     type_name = "array"
 
@@ -193,6 +205,7 @@ class List_(Field):
             return property["items"]["type"] in ["string", "number", "integer"]
         except Exception:
             return False
+
 
 class ObjectList(Field):
     type_name = "array"
@@ -210,7 +223,21 @@ class ObjectList(Field):
             return False
 
 
-FIELDS_TYPES = [SingleString, Boolean, Integer, Number, MultiEnum, SingleEnum, SingleDict, SingleReference, SingleObject, Union_, List_, ObjectList]
+FIELDS_TYPES = [
+    SingleString,
+    Boolean,
+    Integer,
+    Number,
+    MultiEnum,
+    SingleEnum,
+    SingleDict,
+    SingleReference,
+    SingleObject,
+    Union_,
+    List_,
+    ObjectList,
+]
+
 
 def field_factory(name, property, references, required_properties):
     for field_type in FIELDS_TYPES:
