@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper.checkBinlog;
 import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,6 +22,7 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper;
 import io.airbyte.integrations.source.relationaldb.StateManager;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
@@ -31,15 +33,12 @@ import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +51,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   public static final String MYSQL_DB_HISTORY = "mysql_db_history";
   public static final String CDC_LOG_FILE = "_ab_cdc_log_file";
   public static final String CDC_LOG_POS = "_ab_cdc_log_pos";
-  public static final String CDC_OFFSET = "mysql_cdc_offset";
   public static final List<String> SSL_PARAMETERS = List.of(
       "useSSL=true",
       "requireSSL=true",
@@ -102,9 +100,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
     final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(super.getCheckOperations(config));
     if (isCdc(config)) {
-      checkOperations.addAll(List.of(getCheckOperation("log_bin", "ON"),
-          getCheckOperation("binlog_format", "ROW"),
-          getCheckOperation("binlog_row_image", "FULL")));
+      checkOperations.addAll(CdcConfigurationHelper.getCheckOperations());
     }
     return checkOperations;
   }
@@ -185,11 +181,9 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
           new AirbyteDebeziumHandler(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), MySqlCdcProperties.getDebeziumProperties(),
               catalog, true);
 
-      CdcState cdcState = stateManager.getCdcStateManager().getCdcState();
-      MySqlCdcSavedInfoFetcher fetcher = new MySqlCdcSavedInfoFetcher(cdcState);
-      if (cdcState != null) {
-        checkBinlog(cdcState.getState(), database);
-      }
+      Optional<CdcState> cdcState = Optional.ofNullable(stateManager.getCdcStateManager().getCdcState());
+      MySqlCdcSavedInfoFetcher fetcher = new MySqlCdcSavedInfoFetcher(cdcState.orElse(null));
+      cdcState.ifPresent(cdc -> checkBinlog(cdc.getState(), database));
       return handler.getIncrementalIterators(fetcher, new MySqlCdcStateHandler(stateManager), new MySqlCdcConnectorMetadataInjector(), emittedAt);
     } else {
       LOGGER.info("using CDC: {}", false);
@@ -217,63 +211,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   public enum ReplicationMethod {
     STANDARD,
     CDC
-  }
-
-  private CheckedConsumer<JdbcDatabase, Exception> getCheckOperation(String name, String value) {
-    return database -> {
-      final List<String> result = database.resultSetQuery(connection -> {
-        final String sql = String.format("show variables where Variable_name = '%s'", name);
-
-        return connection.createStatement().executeQuery(sql);
-      }, resultSet -> resultSet.getString("Value")).collect(toList());
-
-      if (result.size() != 1) {
-        throw new RuntimeException(String.format("Could not query the variable %s", name));
-      }
-
-      final String resultValue = result.get(0);
-      if (!resultValue.equalsIgnoreCase(value)) {
-        throw new RuntimeException(String.format("The variable %s should be set to %s, but it is : %s", name, value, resultValue));
-      }
-    };
-  }
-
-  private void checkBinlog(JsonNode offset, JdbcDatabase database) {
-    String binlog = getBinlog(offset);
-    if (binlog != null && !binlog.isEmpty()) {
-      if (isBinlogAvailable(binlog, database)) {
-        LOGGER.info(String.format("Binlog %s is available", binlog));
-      } else {
-        String error =
-            String.format("Binlog %s is not available. This is a critical error, it means that requested binlog is not present on mysql server. " +
-                "To fix data synchronization you need to reset your data. " +
-                "Please check binlog retention policy configurations.", binlog);
-        LOGGER.error(error);
-        throw new RuntimeException(String.format("Binlog %s is not available.", binlog));
-      }
-    }
-  }
-
-  private boolean isBinlogAvailable(String binlog, JdbcDatabase database) {
-    try {
-      List<String> binlogs = database.resultSetQuery(connection -> connection.createStatement().executeQuery("SHOW BINARY LOGS"),
-          resultSet -> resultSet.getString("Log_name")).collect(Collectors.toList());
-
-      return !binlog.isEmpty() && binlogs.stream().anyMatch(e -> e.equals(binlog));
-    } catch (SQLException e) {
-      LOGGER.error("Can not get binlog list. Error: ", e);
-      throw new RuntimeException(e);
-    }
-  }
-
-  private String getBinlog(JsonNode offset) {
-    JsonNode node = offset.get(CDC_OFFSET);
-    Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
-    while (fields.hasNext()) {
-      Map.Entry<String, JsonNode> jsonField = fields.next();
-      return Jsons.deserialize(jsonField.getValue().asText()).path("file").asText();
-    }
-    return null;
   }
 
 }
