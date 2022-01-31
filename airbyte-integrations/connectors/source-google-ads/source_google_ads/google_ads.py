@@ -167,7 +167,7 @@ class GoogleAds:
         return field_value
 
     @staticmethod
-    def parse_single_result(schema: Mapping[str, Any], result: GoogleAdsRow):  # TODO mock it
+    def parse_single_result(schema: Mapping[str, Any], result: GoogleAdsRow):
         props = schema.get("properties")
         fields = GoogleAds.get_fields_from_schema(schema)
         single_record = {field: GoogleAds.get_field_value(result, field, props.get(field)) for field in fields}
