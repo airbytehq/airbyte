@@ -21,7 +21,6 @@ import com.mysql.cj.result.Field;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.SourceOperations;
 import io.airbyte.db.jdbc.AbstractJdbcCompatibleSourceOperations;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;

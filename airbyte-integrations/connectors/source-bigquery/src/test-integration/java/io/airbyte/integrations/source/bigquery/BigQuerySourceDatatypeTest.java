@@ -19,7 +19,6 @@ import io.airbyte.db.bigquery.TempBigQueryJoolDatabaseImpl;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.nio.file.Files;
 import java.nio.file.Path;
 

@@ -26,11 +26,7 @@ import io.airbyte.config.State;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.*;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
@@ -64,7 +60,7 @@ class DefaultAirbyteSourceTest {
   private static final ConfiguredAirbyteCatalog CATALOG = CatalogHelpers.createConfiguredAirbyteCatalog(
       "hudi:latest",
       NAMESPACE,
-      Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
+      Field.of(FIELD_NAME, JsonSchemaType.STRING));
 
   private static final WorkerSourceConfig SOURCE_CONFIG = new WorkerSourceConfig()
       .withState(new State().withState(STATE))

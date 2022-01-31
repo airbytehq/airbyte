@@ -17,7 +17,6 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.math.BigDecimal;
 import java.sql.JDBCType;
 import java.sql.ResultSet;

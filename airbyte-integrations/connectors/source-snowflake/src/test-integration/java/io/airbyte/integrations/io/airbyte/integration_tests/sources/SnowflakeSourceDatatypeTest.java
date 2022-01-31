@@ -13,7 +13,6 @@ import io.airbyte.integrations.source.snowflake.SnowflakeSource;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.nio.file.Path;
 
 import io.airbyte.protocol.models.JsonSchemaType;

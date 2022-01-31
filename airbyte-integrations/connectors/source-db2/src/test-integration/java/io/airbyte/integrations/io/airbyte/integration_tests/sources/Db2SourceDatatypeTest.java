@@ -13,7 +13,6 @@ import io.airbyte.integrations.source.db2.Db2Source;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.Db2Container;

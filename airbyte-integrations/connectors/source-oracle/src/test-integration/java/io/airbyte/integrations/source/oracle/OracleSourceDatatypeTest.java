@@ -12,7 +12,6 @@ import io.airbyte.db.Databases;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
