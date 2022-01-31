@@ -3,21 +3,16 @@
 #
 
 import logging
-from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple, Type
+from typing import Any, List, Mapping, Tuple, Type
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
-    AirbyteMessage,
     AuthSpecification,
-    ConfiguredAirbyteStream,
     ConnectorSpecification,
     DestinationSyncMode,
     OAuth2Specification,
-    SyncMode,
 )
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from source_facebook_marketing.api import API
 from source_facebook_marketing.spec import ConnectorConfig
 from source_facebook_marketing.streams import (

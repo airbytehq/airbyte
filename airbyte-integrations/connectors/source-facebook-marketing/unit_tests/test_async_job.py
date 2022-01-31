@@ -10,7 +10,12 @@ import pytest
 from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.api import FacebookAdsApiBatch
 from source_facebook_marketing.api import MyFacebookAdsApi
-from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob, Status, chunks
+from source_facebook_marketing.streams.async_job import (
+    InsightAsyncJob,
+    ParentAsyncJob,
+    Status,
+    chunks,
+)
 
 
 @pytest.fixture(name="adreport")

@@ -3,7 +3,16 @@
 #
 
 import logging
-from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
+from typing import (
+    Any,
+    Iterable,
+    Iterator,
+    List,
+    Mapping,
+    MutableMapping,
+    Optional,
+    Union,
+)
 
 import airbyte_cdk.sources.utils.casing as casing
 import pendulum
@@ -168,7 +177,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             yield InsightAsyncJob(self._api.api, edge_object=self._api.account, params=total_params, key=ts_start)
 
     def stream_slices(
-            self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         """Slice by date periods and schedule async job for each period, run at most MAX_ASYNC_JOBS jobs at the same time.

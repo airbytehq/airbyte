@@ -8,8 +8,8 @@ import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
 from pendulum import duration
-from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.streams import AdsInsights
+from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 
 
 @pytest.fixture(name="api")
@@ -43,7 +43,7 @@ def async_manager_mock_fixture(mocker):
 
 @pytest.fixture(name="async_job_mock")
 def async_job_mock_fixture(mocker):
-    mock =  mocker.patch("source_facebook_marketing.streams.base_insight_streams.InsightAsyncJob")
+    mock = mocker.patch("source_facebook_marketing.streams.base_insight_streams.InsightAsyncJob")
     mock.side_effect = lambda api, **kwargs: {"api": api, **kwargs}
 
 
@@ -72,9 +72,9 @@ class TestBaseInsightsStream:
         assert stream.primary_key == ["date_start", "ad_id", "test1", "test2"]
 
     def test_read_records_all(self, mocker, api):
-        """ 1. yield all from mock
-            2. if read slice 2, 3 state not changed
-                if read slice 2, 3, 1 state changed to 3
+        """1. yield all from mock
+        2. if read slice 2, 3 state not changed
+            if read slice 2, 3, 1 state changed to 3
         """
         job = mocker.Mock(spec=InsightAsyncJob)
         job.get_result.return_value = [mocker.Mock(), mocker.Mock(), mocker.Mock()]
@@ -85,17 +85,19 @@ class TestBaseInsightsStream:
             end_date=datetime(2011, 1, 1),
         )
 
-        records = list(stream.read_records(
-            sync_mode=SyncMode.incremental,
-            stream_slice={"insight_job": job},
-        ))
+        records = list(
+            stream.read_records(
+                sync_mode=SyncMode.incremental,
+                stream_slice={"insight_job": job},
+            )
+        )
 
         assert len(records) == 3
 
     def test_read_records_random_order(self, mocker, api):
-        """ 1. yield all from mock
-            2. if read slice 2, 3 state not changed
-                if read slice 2, 3, 1 state changed to 3
+        """1. yield all from mock
+        2. if read slice 2, 3 state not changed
+            if read slice 2, 3, 1 state changed to 3
         """
         job = mocker.Mock(spec=AsyncJob)
         job.get_result.return_value = [mocker.Mock(), mocker.Mock(), mocker.Mock()]
@@ -106,7 +108,12 @@ class TestBaseInsightsStream:
             end_date=datetime(2011, 1, 1),
         )
 
-        records = list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice={"insight_job": job},))
+        records = list(
+            stream.read_records(
+                sync_mode=SyncMode.incremental,
+                stream_slice={"insight_job": job},
+            )
+        )
 
         assert len(records) == 3
 
@@ -189,10 +196,7 @@ class TestBaseInsightsStream:
         cursor_value = start_date + duration(days=5)
         state = {
             AdsInsights.cursor_field: cursor_value.date().isoformat(),
-            "slices": [
-                (cursor_value + duration(days=1)).date().isoformat(),
-                (cursor_value + duration(days=3)).date().isoformat()
-            ]
+            "slices": [(cursor_value + duration(days=1)).date().isoformat(), (cursor_value + duration(days=3)).date().isoformat()],
         }
         stream = AdsInsights(api=api, start_date=start_date, end_date=end_date)
         async_manager_mock.completed_jobs.return_value = [1, 2, 3]
@@ -218,10 +222,7 @@ class TestBaseInsightsStream:
 
     def test_get_json_schema_custom(self, api):
         stream = AdsInsights(
-            api=api,
-            start_date=datetime(2010, 1, 1),
-            end_date=datetime(2011, 1, 1),
-            breakdowns=["device_platform", "country"]
+            api=api, start_date=datetime(2010, 1, 1), end_date=datetime(2011, 1, 1), breakdowns=["device_platform", "country"]
         )
 
         schema = stream.get_json_schema()
