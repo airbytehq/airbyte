@@ -106,4 +106,5 @@ public class S3AvroWriter extends BaseS3Writer implements DestinationFileWriter 
     final GenericData.Record record = avroRecordFactory.getAvroRecord(formattedData);
     dataFileWriter.append(record);
   }
+
 }

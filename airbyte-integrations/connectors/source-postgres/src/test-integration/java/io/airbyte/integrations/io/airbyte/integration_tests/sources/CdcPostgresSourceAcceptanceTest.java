@@ -21,7 +21,6 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import org.jooq.SQLDialect;
@@ -151,11 +150,6 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
                 Field.of("id", JsonSchemaPrimitive.NUMBER),
                 Field.of("name", JsonSchemaPrimitive.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
-  }
-
-  @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
   }
 
   @Override
