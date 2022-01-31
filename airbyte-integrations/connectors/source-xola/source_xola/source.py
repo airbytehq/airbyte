@@ -113,7 +113,7 @@ class Orders(XolaStream):
             # event
             resp["event"] = data["event"]["id"]
             # price
-            resp["price"] = data["price"]
+            resp["amount"] = data["amount"]
             modified_response.append(resp)
         return modified_response
 

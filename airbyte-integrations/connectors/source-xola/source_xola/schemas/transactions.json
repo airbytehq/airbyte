@@ -1,6 +1,8 @@
 {
+        "$schema": "http://json-schema.org/draft-06/schema#",
         "title": "Items",
         "type": ["null", "object"],
+        "additionalProperties": false,
         "properties": {
             "id": {
                 "type": ["null", "string"]
@@ -36,6 +38,5 @@
                 "type": ["null", "string"]
             }
         }
-
    }
 

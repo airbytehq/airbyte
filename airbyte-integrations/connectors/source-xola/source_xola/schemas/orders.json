@@ -1,7 +1,9 @@
 
 {
+      "$schema": "http://json-schema.org/draft-06/schema#",
       "title":"Items",
       "type":"object",
+      "additionalProperties": false,
       "properties":{
          "tags":{
             "type":["null","array"],
@@ -16,9 +18,8 @@
                }
             }
          },
-         
-         "price": {
-            "type":["null","integer"]
+         "amount": {
+            "type": ["null", "number"]
          },
          "customerName":{
             "title":"CustomerName",
