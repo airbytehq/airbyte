@@ -66,7 +66,6 @@ public class TemporalUtils {
       .setInitialInterval(Duration.ofSeconds(configs.getDelayBetweenActivityAttemps()))
       .build();
 
-
   public static final String DEFAULT_NAMESPACE = "default";
 
   private static final Duration WORKFLOW_EXECUTION_TTL = Duration.ofDays(7);

@@ -10,7 +10,6 @@ import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.activity.ActivityCancellationType;
 import io.temporal.activity.ActivityOptions;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 
 /**
  * Shared temporal workflow configuration in order to ensure that
@@ -35,7 +34,9 @@ public class ActivityConfiguration {
       .build();
 
   public static final ActivityOptions SHORT_ACTIVITY_OPTIONS = ActivityOptions.newBuilder()
+      .setScheduleToCloseTimeout(DB_INTERACTION_TIMEOUT)
       .setStartToCloseTimeout(DB_INTERACTION_TIMEOUT)
+      .setScheduleToStartTimeout(DB_INTERACTION_TIMEOUT)
       .setCancellationType(ActivityCancellationType.WAIT_CANCELLATION_COMPLETED)
       .setRetryOptions(TemporalUtils.RETRY)
       .setHeartbeatTimeout(TemporalUtils.HEARTBEAT_TIMEOUT)

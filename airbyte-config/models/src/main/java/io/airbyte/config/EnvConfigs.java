@@ -576,11 +576,13 @@ public class EnvConfigs implements Configs {
     return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_TIMEOUT_SECOND, "30"));
   }
 
-  @Override public int getDelayBetweenActivityAttemps() {
+  @Override
+  public int getDelayBetweenActivityAttemps() {
     return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_TIMEOUT_SECOND, "30"));
   }
 
-  @Override public int getActivityNumberOfAttempt() {
+  @Override
+  public int getActivityNumberOfAttempt() {
     return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_ATTEMPT, "3"));
   }
 
