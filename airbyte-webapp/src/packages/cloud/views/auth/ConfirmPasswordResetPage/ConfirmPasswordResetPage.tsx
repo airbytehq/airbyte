@@ -44,7 +44,7 @@ const ResetPasswordConfirmPage: React.FC = () => {
               isError: false,
             });
             push(CloudRoutes.Login);
-          } catch (err: any) {
+          } catch (err) {
             // Error code reference:
             // https://firebase.google.com/docs/reference/js/v8/firebase.auth.Auth#confirmpasswordreset
             switch (err.code) {

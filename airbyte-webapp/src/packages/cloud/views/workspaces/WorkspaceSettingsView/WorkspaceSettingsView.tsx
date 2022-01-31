@@ -63,7 +63,7 @@ export const WorkspaceSettingsView: React.FC = () => {
             updateWorkspace.mutateAsync({
               workspaceId: workspace.workspaceId,
               name: payload.name,
-            }).then
+            })
           }
         >
           {({ dirty, isSubmitting, resetForm, isValid }) => (

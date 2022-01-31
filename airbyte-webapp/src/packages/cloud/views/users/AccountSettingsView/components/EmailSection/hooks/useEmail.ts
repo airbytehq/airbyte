@@ -40,7 +40,7 @@ const useEmail: UseEmailHook = () => {
         })
       );
       setFieldValue("password", "");
-    } catch (err: any) {
+    } catch (err) {
       switch (err.code) {
         case AuthErrorCodes.INVALID_PASSWORD:
           setErrorMessage(
