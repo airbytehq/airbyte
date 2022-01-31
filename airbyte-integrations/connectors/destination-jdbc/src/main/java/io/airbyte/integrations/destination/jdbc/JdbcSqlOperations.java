@@ -104,7 +104,7 @@ public abstract class JdbcSqlOperations implements SqlOperations {
     appendedQueries.append("COMMIT;");
     AirbyteSentry.executeWithTracing("ExecuteTransactions",
         () -> database.execute(appendedQueries.toString()),
-        Map.of("queryCount", queries.size()));
+        Map.of("queries", queries));
   }
 
   @Override

@@ -33,7 +33,7 @@ public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMe
   @Override
   public void start() throws Exception {
     try {
-      AirbyteSentry.executeWithTracing("ConsumerStart", this::startTracked,
+      AirbyteSentry.executeWithTracing("StartConsumer", this::startTracked,
           Map.of("consumerImpl", FailureTrackingAirbyteMessageConsumer.class.getSimpleName()));
     } catch (final Exception e) {
       hasFailed = true;
@@ -62,7 +62,7 @@ public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMe
     } else {
       LOGGER.info("Airbyte message consumer: succeeded.");
     }
-    AirbyteSentry.executeWithTracing("ConsumerEnd", () -> close(hasFailed),
+    AirbyteSentry.executeWithTracing("CloseConsumer", () -> close(hasFailed),
         Map.of("consumerImpl", FailureTrackingAirbyteMessageConsumer.class.getSimpleName()));
   }
 

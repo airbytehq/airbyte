@@ -48,7 +48,7 @@ public interface AirbyteMessageConsumer extends CheckedConsumer<AirbyteMessage, 
 
       @Override
       public void start() throws Exception {
-        AirbyteSentry.executeWithTracing("ConsumerStart", consumer::start,
+        AirbyteSentry.executeWithTracing("StartConsumer", consumer::start,
             Map.of("consumerImpl", "appendOnClose"));
       }
 
@@ -59,7 +59,7 @@ public interface AirbyteMessageConsumer extends CheckedConsumer<AirbyteMessage, 
 
       @Override
       public void close() throws Exception {
-        AirbyteSentry.executeWithTracing("ConsumerClose", () -> {
+        AirbyteSentry.executeWithTracing("CloseConsumer", () -> {
           consumer.close();
           voidCallable.call();
         }, Map.of("consumerImpl", "appendOnClose"));

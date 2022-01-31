@@ -115,14 +115,8 @@ public class IntegrationRunner {
           validateConfig(integration.spec().getConnectionSpecification(), config, "CHECK");
         } catch (final Exception e) {
           // if validation fails don't throw an exception, return a failed connection check message
-          outputRecordCollector
-              .accept(
-                  new AirbyteMessage()
-                      .withType(Type.CONNECTION_STATUS)
-                      .withConnectionStatus(
-                          new AirbyteConnectionStatus()
-                              .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                              .withMessage(e.getMessage())));
+          outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
+              new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(e.getMessage())));
         }
 
         outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(integration.check(config)));
