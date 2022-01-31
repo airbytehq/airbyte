@@ -29,13 +29,9 @@ def get_date_params(start_date: str, time_zone=None, range_days: int = None, end
     """
 
     end_date = end_date or pendulum.yesterday(tz=time_zone)
-    # start_date = pendulum.parse(stream_slice.get(cursor_field))
     start_date = pendulum.parse(start_date)
-
     if start_date > pendulum.now():
         return start_date.to_date_string(), start_date.add(days=1).to_date_string()
-
-    # end_date = min(end_date, pendulum.parse(stream_slice.get(cursor_field)).add(days=self.range_days))
     end_date = min(
         end_date,
         start_date.add(days=range_days)
@@ -112,7 +108,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
     days_of_data_storage = None
     cursor_field = "segments.date"
     primary_key = None
-    _range_days = 15  # date range is set to 15 days, because for conversion_window_days default value is 14. Range less than 15 days will break the integration tests.
+    range_days = 15  # date range is set to 15 days, because for conversion_window_days default value is 14. Range less than 15 days will break the integration tests.
 
     def __init__(self, start_date: str, conversion_window_days: int, time_zone: [pendulum.timezone, str], end_date: str = None, **kwargs):
         self.conversion_window_days = conversion_window_days
@@ -142,7 +138,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         cursor_field: List[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Mapping[str, Any]]:  # TODO
+    ) -> Iterable[Mapping[str, Any]]:
         state = stream_state or {}
         while True:
             try:
@@ -187,7 +183,6 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         return current_stream_state
 
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
-        # start_date, end_date = self.get_date_params(stream_slice, self.cursor_field)
         query = GoogleAds.convert_schema_into_query(
             schema=self.get_json_schema(),
             report_name=self.name,
@@ -196,14 +191,6 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
             cursor_field=self.cursor_field
         )
         return query
-
-    @property
-    def range_days(self):
-        return self._range_days
-
-    @range_days.setter
-    def range_days(self, value):
-        self._range_days = int(value) if value > 0 else 1
 
 
 class Accounts(GoogleAdsStream):
@@ -267,7 +254,7 @@ class DisplayTopicsPerformanceReport(IncrementalGoogleAdsStream):
 
 
 class ShoppingPerformanceReport(IncrementalGoogleAdsStream):
-    _range_days = 1
+    range_days = 1
     """
     ShoppingPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v8/shopping_performance_view
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance
@@ -299,4 +286,4 @@ class ClickView(IncrementalGoogleAdsStream):
     """
 
     days_of_data_storage = 90
-    _range_days = 1
+    range_days = 1

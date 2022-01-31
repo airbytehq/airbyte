@@ -3,13 +3,11 @@
 #
 
 
-from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple, Union
+from typing import Any, List, Mapping, Tuple, Union
 
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from google.ads.googleads.errors import GoogleAdsException
 from pendulum import timezone
 from pendulum.tz.timezone import Timezone
@@ -130,66 +128,3 @@ class SourceGoogleAds(AbstractSource):
                 ]
             )
         return streams
-
-    # def _read_incremental(
-    #     self,
-    #     logger: AirbyteLogger,
-    #     stream_instance: Stream,
-    #     configured_stream: ConfiguredAirbyteStream,
-    #     connector_state: MutableMapping[str, Any],
-    #     internal_config: InternalConfig,
-    # ) -> Iterator[AirbyteMessage]:
-    #     stream_name = configured_stream.stream.name
-    #     stream_state = connector_state.get(stream_name, {})
-    #     if stream_state:
-    #         logger.info(f"Setting state of {stream_name} stream to {stream_state}")
-    #
-    #     for _ in range(4):
-    #         """
-    #         Initial _range_days = 15
-    #         If `page token has expired` reduce date range twice each time,
-    #         so it tries to use the following date ranges: 15, 7, 3, 1 (days)
-    #         """
-    #         slices = stream_instance.stream_slices(
-    #             cursor_field=configured_stream.cursor_field, sync_mode=SyncMode.incremental, stream_state=stream_state
-    #         )
-    #         total_records_counter = 0
-    #         for slice in slices:
-    #             records = stream_instance.read_records(
-    #                 sync_mode=SyncMode.incremental,
-    #                 stream_slice=slice,
-    #                 stream_state=stream_state,
-    #                 cursor_field=configured_stream.cursor_field or None,
-    #             )
-    #             try:
-    #                 for record_counter, record_data in enumerate(records, start=1):
-    #                     yield self._as_airbyte_record(stream_name, record_data)
-    #                     stream_state = stream_instance.get_updated_state(stream_state, record_data)
-    #                     checkpoint_interval = stream_instance.state_checkpoint_interval
-    #                     if checkpoint_interval and record_counter % checkpoint_interval == 0:
-    #                         yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
-    #
-    #                     total_records_counter += 1
-    #                     # This functionality should ideally live outside of this method
-    #                     # but since state is managed inside this method, we keep track
-    #                     # of it here.
-    #                     if self._limit_reached(internal_config, total_records_counter):
-    #                         # Break from slice loop to save state and exit from _read_incremental function.
-    #                         break
-    #
-    #                 yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
-    #                 if self._limit_reached(internal_config, total_records_counter):
-    #                     return
-    #             except GoogleAdsException as e:
-    #                 if e.failure._pb.errors[0].error_code.request_error == 8:
-    #                     # page token has expired, reduce range days twice (EXPIRED_PAGE_TOKEN = 8)
-    #                     if stream_instance.range_days == 1:
-    #                         # If range days is 1, no need in retry, because it's the minimum date range
-    #                         raise e
-    #                     stream_instance.range_days = stream_instance.range_days // 2
-    #                     logger.info(f"Page token has expired. Date range was reduced to {stream_instance.range_days}")
-    #                     break  # break from the slices loop, then retry reading with reduced date range
-    #                 raise e
-    #         else:
-    #             """If exits the slices loop normally return the control"""
-    #             return
