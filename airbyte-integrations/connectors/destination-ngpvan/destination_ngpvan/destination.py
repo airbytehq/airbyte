@@ -2,22 +2,45 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-
 from typing import Mapping, Any, Iterable
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, ConfiguredAirbyteCatalog, AirbyteMessage, Status
-
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
+from destination_ngpvan.client import NGPVANClient
+from destination_ngpvan.writer import NGPVANWriter
 
 class DestinationNgpvan(Destination):
+
     def write(
-            self,
-            config: Mapping[str, Any],
-            configured_catalog: ConfiguredAirbyteCatalog,
-            input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
 
+        writer = NGPVANWriter(NGPVANClient(**config))
+
+        for message in input_messages:
+            # Adds data rows from RECORD messages in the AirbyteMessage to the writer object
+            if message.type == Type.RECORD:
+                record = message.record
+                data_row = record.data
+                writer.add_data_row(data_row)
+                yield message
+            else:
+                # ignore other message types for now
+                continue
+
+        #write to a csv
+        writer.write_to_local_csv()
+        #data = writer.data_output
+        #keys = data[0].keys()
+        #output_file = open("output.csv", "w")
+        #dict_writer = csv.DictWriter(output_file, keys)
+        #dict_writer.writeheader()
+        #dict_writer.writerows(data)
+        #output_file.close()
+
+        #print("hi")
+        #print(writer.kv_pair_list)
         """
         TODO
         Reads the input stream of messages, config, and catalog to write data to the destination.
@@ -33,8 +56,6 @@ class DestinationNgpvan(Destination):
         :param input_messages: The stream of input messages received from the source
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
-
-        pass
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """

@@ -1,0 +1,379 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "http://example.com/example.json",
+    "type": "object",
+    "title": "The root schema",
+    "description": "The root schema comprises the entire JSON document.",
+    "default": {},
+    "examples": [
+        {
+            "instructions": null,
+            "virtual_action_url": null,
+            "visibility": "PUBLIC",
+            "created_by_volunteer_host": false,
+            "location": null,
+            "browser_url": "https://www.mobilize.us/mobilize/event/1/",
+            "high_priority": null,
+            "event_campaign": null,
+            "sponsor": {
+                "org_type": "CAMPAIGN",
+                "name": "Mobilize",
+                "is_independent": false,
+                "is_coordinated": false,
+                "event_feed_url": "https://www.mobilize.us/",
+                "state": "",
+                "candidate_name": "",
+                "id": 1,
+                "slug": "mobilize",
+                "created_date": 1511902789,
+                "race_type": null,
+                "modified_date": 1630072719,
+                "is_primary_campaign": false,
+                "district": ""
+            },
+            "event_type": "MEETING",
+            "tags": [],
+            "contact": null,
+            "is_virtual": true,
+            "timeslots": [
+                {
+                    "instructions": null,
+                    "is_full": false,
+                    "end_date": 1513432800,
+                    "id": 1,
+                    "start_date": 1513425600
+                }
+            ],
+            "accessibility_status": null,
+            "timezone": "America/New_York",
+            "approval_status": "APPROVED",
+            "description": "Sharpen your canvass skills with our professional organizers",
+            "title": "MobilizeAmerica Canvass Training",
+            "featured_image_url": "https://mobilizeamerica.imgix.net/static/event_images/2017/11/28/49be791b96ed6e157f4b83a83e07d5c5_photo.jpg",
+            "id": 1,
+            "accessibility_notes": null,
+            "created_date": 1511904228,
+            "modified_date": 1601664981,
+            "address_visibility": "PUBLIC",
+            "summary": "Sharpen your canvass skills with our professional organizers"
+        }
+    ],
+    "required": [
+        "instructions",
+        "virtual_action_url",
+        "visibility",
+        "created_by_volunteer_host",
+        "location",
+        "browser_url",
+        "high_priority",
+        "event_campaign",
+        "sponsor",
+        "event_type",
+        "tags",
+        "contact",
+        "is_virtual",
+        "timeslots",
+        "accessibility_status",
+        "timezone",
+        "approval_status",
+        "description",
+        "title",
+        "featured_image_url",
+        "id",
+        "accessibility_notes",
+        "created_date",
+        "modified_date",
+        "address_visibility",
+        "summary"
+    ],
+    "properties": {
+        "instructions": {
+            "$id": "#/properties/instructions",
+            "type": "null",
+            "title": "The instructions schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": null,
+            "examples": [
+                null
+            ]
+        },
+        "virtual_action_url": {
+            "$id": "#/properties/virtual_action_url",
+            "type": "null",
+            "title": "The virtual_action_url schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": null,
+            "examples": [
+                null
+            ]
+        },
+        "visibility": {
+            "$id": "#/properties/visibility",
+            "type": "string",
+            "title": "The visibility schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "PUBLIC"
+            ]
+        },
+        "created_by_volunteer_host": {
+            "$id": "#/properties/created_by_volunteer_host",
+            "type": "boolean",
+            "title": "The created_by_volunteer_host schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": false,
+            "examples": [
+                false
+            ]
+        },
+        "location": {
+            "$id": "#/properties/location",
+            "type": "null",
+            "title": "The location schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": null,
+            "examples": [
+                null
+            ]
+        },
+        "browser_url": {
+            "$id": "#/properties/browser_url",
+            "type": "string",
+            "title": "The browser_url schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "https://www.mobilize.us/mobilize/event/1/"
+            ]
+        },
+        "high_priority": {
+            "$id": "#/properties/high_priority",
+            "type": "null",
+            "title": "The high_priority schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": null,
+            "examples": [
+                null
+            ]
+        },
+        "event_campaign": {
+            "$id": "#/properties/event_campaign",
+            "type": "null",
+            "title": "The event_campaign schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": null,
+            "examples": [
+                null
+            ]
+        },
+        "sponsor": {
+            "$id": "#/properties/sponsor",
+            "type": "object",
+            "title": "The sponsor schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": {},
+            "examples": [
+                {
+                    "org_type": "CAMPAIGN",
+                    "name": "Mobilize",
+                    "is_independent": false,
+                    "is_coordinated": false,
+                    "event_feed_url": "https://www.mobilize.us/",
+                    "state": "",
+                    "candidate_name": "",
+                    "id": 1,
+                    "slug": "mobilize",
+                    "created_date": 1511902789,
+                    "race_type": null,
+                    "modified_date": 1630072719,
+                    "is_primary_campaign": false,
+                    "district": ""
+                }
+            ]
+        },
+        "event_type": {
+            "$id": "#/properties/event_type",
+            "type": "string",
+            "title": "The event_type schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "MEETING"
+            ]
+        },
+        "tags": {
+            "$id": "#/properties/tags",
+            "type": "array",
+            "title": "The tags schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": [],
+            "examples": [
+                []
+            ],
+            "additionalItems": true,
+            "items": {
+                "$id": "#/properties/tags/items"
+            }
+        },
+        "contact": {
+            "$id": "#/properties/contact",
+            "type": "null",
+            "title": "The contact schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": null,
+            "examples": [
+                null
+            ]
+        },
+        "is_virtual": {
+            "$id": "#/properties/is_virtual",
+            "type": "boolean",
+            "title": "The is_virtual schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": false,
+            "examples": [
+                true
+            ]
+        },
+        "timeslots": {
+            "$id": "#/properties/timeslots",
+            "type": "array",
+            "title": "The timeslots schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": [],
+            "examples": [
+                [
+                    {
+                        "instructions": null,
+                        "is_full": false,
+                        "end_date": 1513432800,
+                        "id": 1,
+                        "start_date": 1513425600
+                    }
+                ]
+            ]
+        },
+        "accessibility_status": {
+            "$id": "#/properties/accessibility_status",
+            "type": "null",
+            "title": "The accessibility_status schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": null,
+            "examples": [
+                null
+            ]
+        },
+        "timezone": {
+            "$id": "#/properties/timezone",
+            "type": "string",
+            "title": "The timezone schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "America/New_York"
+            ]
+        },
+        "approval_status": {
+            "$id": "#/properties/approval_status",
+            "type": "string",
+            "title": "The approval_status schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "APPROVED"
+            ]
+        },
+        "description": {
+            "$id": "#/properties/description",
+            "type": "string",
+            "title": "The description schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "Sharpen your canvass skills with our professional organizers"
+            ]
+        },
+        "title": {
+            "$id": "#/properties/title",
+            "type": "string",
+            "title": "The title schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "MobilizeAmerica Canvass Training"
+            ]
+        },
+        "featured_image_url": {
+            "$id": "#/properties/featured_image_url",
+            "type": "string",
+            "title": "The featured_image_url schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "https://mobilizeamerica.imgix.net/static/event_images/2017/11/28/49be791b96ed6e157f4b83a83e07d5c5_photo.jpg"
+            ]
+        },
+        "id": {
+            "$id": "#/properties/id",
+            "type": "integer",
+            "title": "The id schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+            "examples": [
+                1
+            ]
+        },
+        "accessibility_notes": {
+            "$id": "#/properties/accessibility_notes",
+            "type": "null",
+            "title": "The accessibility_notes schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": null,
+            "examples": [
+                null
+            ]
+        },
+        "created_date": {
+            "$id": "#/properties/created_date",
+            "type": "integer",
+            "title": "The created_date schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+            "examples": [
+                1511904228
+            ]
+        },
+        "modified_date": {
+            "$id": "#/properties/modified_date",
+            "type": "integer",
+            "title": "The modified_date schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+            "examples": [
+                1601664981
+            ]
+        },
+        "address_visibility": {
+            "$id": "#/properties/address_visibility",
+            "type": "string",
+            "title": "The address_visibility schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "PUBLIC"
+            ]
+        },
+        "summary": {
+            "$id": "#/properties/summary",
+            "type": "string",
+            "title": "The summary schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "Sharpen your canvass skills with our professional organizers"
+            ]
+        }
+    },
+    "additionalProperties": true
+}

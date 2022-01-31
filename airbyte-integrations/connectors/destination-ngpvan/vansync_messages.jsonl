@@ -1,0 +1,2 @@
+{"type": "RECORD", "record": {"stream": "vansync", "data": {"vanid": "", "first_name": "Babu", "last_name": "Frick", "address": "2803 E 22nd St.", "city": "Austin", "state": "TX", "zip": "78722", "email": "emily.cogsdill+wow@gmail.com"}, "emitted_at": 1643403855888}}
+{"type": "RECORD", "record": {"stream": "vansync", "data": {"vanid": "", "first_name": "Nyupba", "last_name": "Frick", "address": "2803 E 22nd St.", "city": "Austin", "state": "TX", "zip": "78722", "email": "emily.cogsdill+wow@gmail.com"}, "emitted_at": 1643403855899}}

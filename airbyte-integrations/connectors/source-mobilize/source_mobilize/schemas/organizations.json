@@ -1,0 +1,185 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "http://example.com/example.json",
+    "type": "object",
+    "title": "The root schema",
+    "description": "The root schema comprises the entire JSON document.",
+    "default": {},
+    "examples": [
+        {
+            "event_feed_url": "https://www.mobilize.us/",
+            "state": "",
+            "is_primary_campaign": false,
+            "id": 1,
+            "is_independent": false,
+            "is_coordinated": false,
+            "district": "",
+            "name": "Mobilize",
+            "org_type": "CAMPAIGN",
+            "race_type": null,
+            "slug": "mobilize",
+            "modified_date": 1630072719,
+            "candidate_name": "",
+            "created_date": 1511902789
+        }
+    ],
+    "required": [
+        "event_feed_url",
+        "state",
+        "is_primary_campaign",
+        "id",
+        "is_independent",
+        "is_coordinated",
+        "district",
+        "name",
+        "org_type",
+        "race_type",
+        "slug",
+        "modified_date",
+        "candidate_name",
+        "created_date"
+    ],
+    "properties": {
+        "event_feed_url": {
+            "$id": "#/properties/event_feed_url",
+            "type": "string",
+            "title": "The event_feed_url schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "https://www.mobilize.us/"
+            ]
+        },
+        "state": {
+            "$id": "#/properties/state",
+            "type": "string",
+            "title": "The state schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                ""
+            ]
+        },
+        "is_primary_campaign": {
+            "$id": "#/properties/is_primary_campaign",
+            "type": "boolean",
+            "title": "The is_primary_campaign schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": false,
+            "examples": [
+                false
+            ]
+        },
+        "id": {
+            "$id": "#/properties/id",
+            "type": "integer",
+            "title": "The id schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+            "examples": [
+                1
+            ]
+        },
+        "is_independent": {
+            "$id": "#/properties/is_independent",
+            "type": "boolean",
+            "title": "The is_independent schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": false,
+            "examples": [
+                false
+            ]
+        },
+        "is_coordinated": {
+            "$id": "#/properties/is_coordinated",
+            "type": "boolean",
+            "title": "The is_coordinated schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": false,
+            "examples": [
+                false
+            ]
+        },
+        "district": {
+            "$id": "#/properties/district",
+            "type": "string",
+            "title": "The district schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                ""
+            ]
+        },
+        "name": {
+            "$id": "#/properties/name",
+            "type": "string",
+            "title": "The name schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "Mobilize"
+            ]
+        },
+        "org_type": {
+            "$id": "#/properties/org_type",
+            "type": "string",
+            "title": "The org_type schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "CAMPAIGN"
+            ]
+        },
+        "race_type": {
+            "$id": "#/properties/race_type",
+            "type": "null",
+            "title": "The race_type schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": null,
+            "examples": [
+                null
+            ]
+        },
+        "slug": {
+            "$id": "#/properties/slug",
+            "type": "string",
+            "title": "The slug schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "mobilize"
+            ]
+        },
+        "modified_date": {
+            "$id": "#/properties/modified_date",
+            "type": "integer",
+            "title": "The modified_date schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+            "examples": [
+                1630072719
+            ]
+        },
+        "candidate_name": {
+            "$id": "#/properties/candidate_name",
+            "type": "string",
+            "title": "The candidate_name schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                ""
+            ]
+        },
+        "created_date": {
+            "$id": "#/properties/created_date",
+            "type": "integer",
+            "title": "The created_date schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+            "examples": [
+                1511902789
+            ]
+        }
+    },
+    "additionalProperties": true
+}
