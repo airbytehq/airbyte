@@ -5,6 +5,7 @@
 import logging
 import logging.config
 import sys
+from threading import Lock
 import traceback
 from typing import List, Tuple
 
@@ -101,12 +102,14 @@ def log_by_prefix(msg: str, default_level: str) -> Tuple[int, str]:
 
     return log_level, rendered_message
 
+AIRBYTE_LOGGER_LOCK = Lock()
 
 class AirbyteLogger:
     def log(self, level, message):
         log_record = AirbyteLogMessage(level=level, message=message)
         log_message = AirbyteMessage(type="LOG", log=log_record)
-        print(log_message.json(exclude_unset=True))
+        with AIRBYTE_LOGGER_LOCK:
+            print(log_message.json(exclude_unset=True))
 
     def fatal(self, message):
         self.log("FATAL", message)
