@@ -1508,6 +1508,36 @@
     - "overwrite"
     - "append"
     $schema: "http://json-schema.org/draft-07/schema#"
+- dockerImage: "airbyte/destination-firestore:0.1.1"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/firestore"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Destination Google Firestore"
+      type: "object"
+      required:
+      - "project_id"
+      additionalProperties: false
+      properties:
+        project_id:
+          type: "string"
+          description: "The GCP project ID for the project containing the target BigQuery\
+            \ dataset."
+          title: "Project ID"
+        credentials_json:
+          type: "string"
+          description: "The contents of the JSON service account key. Check out the\
+            \ <a href=\"https://docs.airbyte.io/integrations/destinations/firestore\"\
+            >docs</a> if you need help generating this key. Default credentials will\
+            \ be used if this field is left empty."
+          title: "Credentials JSON"
+          airbyte_secret: true
+    supportsIncremental: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes:
+    - "append"
+    - "overwrite"
 - dockerImage: "airbyte/destination-pubsub:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/pubsub"

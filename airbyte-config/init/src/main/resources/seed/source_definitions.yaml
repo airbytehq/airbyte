@@ -154,7 +154,7 @@
 - name: Confluence
   sourceDefinitionId: cf40a7f8-71f8-45ce-a7fa-fca053e4028c
   dockerRepository: airbyte/source-confluence
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/confluence
   icon: confluence.svg
   sourceType: api
