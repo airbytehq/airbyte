@@ -1,11 +1,11 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/salesforce",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/salesforce",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Salesforce Source Spec",
     "type": "object",
-    "required": ["client_id", "client_secret", "refresh_token", "api_type"],
-    "additionalProperties": false,
+    "required": ["client_id", "client_secret", "refresh_token"],
+    "additionalProperties": true,
     "properties": {
       "auth_type": {
         "type": "string",
@@ -13,12 +13,12 @@
       },
       "client_id": {
         "title": "Client ID",
-        "description": "The Consumer Key that can be found when viewing your app in Salesforce",
+        "description": "The Client ID of your Salesforce developer application.",
         "type": "string"
       },
       "client_secret": {
         "title": "Client Secret",
-        "description": "The Consumer Secret that can be found when viewing your app in Salesforce",
+        "description": "The Client Secret of your Salesforce developer application.",
         "type": "string",
         "airbyte_secret": true
       },
@@ -29,7 +29,7 @@
         "airbyte_secret": true
       },
       "start_date": {
-        "title": "Replication Start Date",
+        "title": "Start Date",
         "description": "Date in the format 2017-01-25. Any data before this date will not be replicated. This field uses the \"updated\" field if available, otherwise the \"created\" fields if they are available for a stream. If not set, then by default all your data is replicated.",
         "type": "string",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z|[0-9]{4}-[0-9]{2}-[0-9]{2}$",
@@ -37,16 +37,9 @@
       },
       "is_sandbox": {
         "title": "Sandbox",
-        "description": "Whether or not the the app is in a Salesforce sandbox. If you do not know what this, assume it is false. We provide more info on this field in the <a href=\"https://docs.airbyte.io/integrations/destinations/salesforce#is_sandbox\">docs</a>.",
+        "description": "Whether the app is in a Salesforce sandbox or not. If you do not know what this is, assume it as false. We provide more info on this field in the <a href=\"https://docs.airbyte.com/integrations/sources/salesforce#is_sandbox\">docs</a>.",
         "type": "boolean",
         "default": false
-      },
-      "api_type": {
-        "title": "API Type",
-        "description": "Unless you know that you are transferring a very small amount of data, prefer using the BULK API. This will help avoid using up all of your API call quota with Salesforce. Valid values are BULK or REST.",
-        "type": "string",
-        "enum": ["BULK", "REST"],
-        "default": "BULK"
       },
       "streams_criteria": {
         "type": "array",
@@ -80,7 +73,7 @@
       },
       "wait_timeout": {
         "title": "Response Waiting Time",
-        "description": "Maximum wait time of Safesforce responses in minutes. This option is used for the BULK mode only",
+        "description": "Maximum wait time of Salesforce responses in minutes. This option is used for the BULK mode only. The default wait time of the Parent Batch in the Bulk Mode to wait for all the batches to finish processing is 20 minutes.",
         "type": "integer",
         "minimum": 5,
         "maximum": 60,
