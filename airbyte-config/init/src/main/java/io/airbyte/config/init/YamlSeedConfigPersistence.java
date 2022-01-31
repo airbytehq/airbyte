@@ -120,6 +120,12 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
   }
 
   @Override
+  public <T> ConfigWithMetadata<T> getConfigWithMetadata(final AirbyteConfig configType, final String configId, final Class<T> clazz)
+      throws ConfigNotFoundException, JsonValidationException, IOException {
+    throw new UnsupportedOperationException("Yaml Seed Config doesn't support metadata");
+  }
+
+  @Override
   public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(final AirbyteConfig configType, final Class<T> clazz)
       throws JsonValidationException, IOException {
     throw new UnsupportedOperationException("Yaml Seed Config doesn't support metadata");

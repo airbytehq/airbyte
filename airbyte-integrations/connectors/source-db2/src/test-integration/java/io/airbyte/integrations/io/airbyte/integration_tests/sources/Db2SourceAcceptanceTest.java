@@ -22,9 +22,7 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import org.testcontainers.containers.Db2Container;
 
 public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
@@ -79,11 +77,6 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected JsonNode getState() throws Exception {
     return Jsons.jsonNode(new HashMap<>());
-  }
-
-  @Override
-  protected List<String> getRegexTests() throws Exception {
-    return Collections.emptyList();
   }
 
   @Override
