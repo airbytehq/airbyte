@@ -99,8 +99,8 @@ jobs:
           curl -sL https://sentry.io/get-cli/ | bash
           source tools/lib/lib.sh
           DOCKERFILE=airbyte-integrations/${{ github.event.inputs.connector }}/Dockerfile
-          echo "IMAGE_TYPE=$(echo ${{ github.event.inputs.connector }} | cut -d"/" -f1 )" >> $GITHUB_ENV
-          echo "IMAGE_NAME=$(_get_docker_image_name ${DOCKERFILE})" >> $GITHUB_ENV
+          echo "IMAGE_TYPE=$(echo ${{ github.event.inputs.connector }} | cut -d"/" -f2)" >> $GITHUB_ENV
+          echo "IMAGE_NAME=$(_get_docker_image_name ${DOCKERFILE} | cut -d"/" -f1)" >> $GITHUB_ENV
           echo "IMAGE_VERSION=$(_get_docker_image_version ${DOCKERFILE})" >> $GITHUB_ENV
       - name: Create Sentry Release
         if: env.IMAGE_TYPE == 'connectors'
