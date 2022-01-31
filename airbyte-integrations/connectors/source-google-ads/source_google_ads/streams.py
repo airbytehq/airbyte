@@ -70,21 +70,16 @@ def chunk_date_range(
     # applying conversion window
     start_date = start_date.subtract(days=conversion_window)
 
-    # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
     while start_date < end_date:
-        intervals.append({field: start_date.to_date_string()})
-        start_date = start_date.add(days=range_days)
-
-    slices = []
-    for interval in intervals:
-        start, end = get_date_params(interval[field], time_zone=time_zone, range_days=range_days)
-        slices.append(
+        start, end = get_date_params(start_date.to_date_string(), time_zone=time_zone, range_days=range_days)
+        intervals.append(
             {
                 "start_date": start,
                 "end_date": end,
             }
         )
-    return slices
+        start_date = start_date.add(days=range_days)
+    return intervals
 
 
 class GoogleAdsStream(Stream, ABC):

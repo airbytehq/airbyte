@@ -3,6 +3,7 @@
 #
 
 from datetime import date
+from freezegun import freeze_time
 
 import pendulum
 from pendulum.tz.timezone import Timezone
@@ -109,6 +110,7 @@ def test_get_date_params():
     assert mock_start_date == start_date and mock_end_date == end_date
 
 
+@freeze_time("2022-01-30 03:21:34", tz_offset=0)
 def test_get_date_params_with_time_zone():
     time_zone_chatham = Timezone("Pacific/Chatham")  # UTC+12:45
     mock_start_date_chatham = pendulum.today(tz=time_zone_chatham).subtract(days=1).to_date_string()
