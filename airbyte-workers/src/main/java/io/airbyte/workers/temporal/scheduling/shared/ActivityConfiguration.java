@@ -32,7 +32,7 @@ public class ActivityConfiguration {
       .setScheduleToStartTimeout(Duration.ofDays(MAX_SYNC_TIMEOUT_DAYS))
       .setCancellationType(ActivityCancellationType.WAIT_CANCELLATION_COMPLETED)
       .setRetryOptions(TemporalUtils.NO_RETRY)
-      .setHeartbeatTimeout(Duration.ofSeconds(30))
+      .setHeartbeatTimeout(TemporalUtils.HEARTBEAT_TIMEOUT)
       .build();
 
 }

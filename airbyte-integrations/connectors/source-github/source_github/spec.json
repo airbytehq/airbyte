@@ -54,7 +54,11 @@
       },
       "repository": {
         "type": "string",
-        "examples": ["airbytehq/airbyte airbytehq/another-repo", "airbytehq/*", "airbytehq/airbyte"],
+        "examples": [
+          "airbytehq/airbyte airbytehq/another-repo",
+          "airbytehq/*",
+          "airbytehq/airbyte"
+        ],
         "title": "GitHub Repositories",
         "description": "Space-delimited list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get all repositories from organization and `airbytehq/airbyte airbytehq/another-repo` for multiple repositories."
       },

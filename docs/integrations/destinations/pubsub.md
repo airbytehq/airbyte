@@ -89,6 +89,7 @@ Once you've configured PubSub as a destination, delete the Service Account Key f
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.2 | December 29, 2021 | [\#9183](https://github.com/airbytehq/airbyte/pull/9183) | Update connector fields title/description |
 | 0.1.1 | August 13, 2021 | [\#4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |
 | 0.1.0 | June 24, 2021 | [\#4339](https://github.com/airbytehq/airbyte/pull/4339) | Initial release |
 
