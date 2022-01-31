@@ -15,7 +15,7 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       empty_streams: ["account_coupon_redemptions", "account_notes", "add_ons", "billing_infos", "credit_payments",
-                      "line_items", "shipping_methods", "unique_coupons"]
+                      "line_items", "shipping_methods"]
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
