@@ -34,7 +34,7 @@
       "stream_name": "my_stream",
       "stream_schema": "[123, 456]"
     },
-    "invalidSchema": true
+    "expectedCatalog": null
   },
   {
     "testCase": "single stream with invalid schema",
@@ -43,7 +43,7 @@
       "stream_name": "my_stream",
       "stream_schema": "{ \"type\": \"object\", \"properties\": { \"field1\": { \"type\": \"invalid_type\" }, \"field2\": { \"type\": \"number\" } } }"
     },
-    "invalidSchema": true
+    "expectedCatalog": null
   },
   {
     "testCase": "multi stream",
@@ -91,7 +91,7 @@
       "type": "MULTI_STREAM",
       "stream_schemas": "{ \"type\": \"object\", \"properties\": { \"field1\": { \"type\": \"string\" }, \"field2\": { \"type\": \"number\" } } }"
     },
-    "invalidSchema": true
+    "expectedCatalog": null
   },
   {
     "testCase": "multi stream with invalid schema",
@@ -99,6 +99,6 @@
       "type": "MULTI_STREAM",
       "stream_schemas": "{ \"stream1\": { \"type\": \"object\", \"properties\": { \"field1\": { \"type\": \"string\" }, \"field2\": [\"invalid field spec\"] } }, \"stream2\": { \"type\": \"object\", \"properties\": { \"column1\": { \"type\": \"string\" } } } }"
     },
-    "invalidSchema": true
+    "expectedCatalog": null
   }
 ]

@@ -350,6 +350,8 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- | :--- |
+| 0.35.13-alpha | 0.1.65 | 2021-01-28 | [\#9846](https://github.com/airbytehq/airbyte/pull/9846) | Tweak dbt multi-thread parameter down |
+| 0.35.12-alpha | 0.1.64 | 2021-01-28 | [\#9793](https://github.com/airbytehq/airbyte/pull/9793) | Support PEM format for ssh-tunnel keys |
 | 0.35.4-alpha | 0.1.63 | 2021-01-07 | [\#9301](https://github.com/airbytehq/airbyte/pull/9301) | Fix Snowflake prefix tables starting with numbers |
 |  | 0.1.62 | 2021-01-07 | [\#9340](https://github.com/airbytehq/airbyte/pull/9340) | Use TCP-port support for clickhouse |
 |  | 0.1.62 | 2021-01-07 | [\#9063](https://github.com/airbytehq/airbyte/pull/9063) | Change Snowflake-specific materialization settings |

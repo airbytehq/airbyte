@@ -90,8 +90,13 @@ class SourceGoogleAds(AbstractSource):
         google_api = GoogleAds(credentials=self.get_credentials(config), customer_id=config["customer_id"])
         account_info = self.get_account_info(google_api)
         time_zone = self.get_time_zone(account_info)
+        end_date = config.get("end_date")
         incremental_stream_config = dict(
-            api=google_api, conversion_window_days=config["conversion_window_days"], start_date=config["start_date"], time_zone=time_zone
+            api=google_api,
+            conversion_window_days=config["conversion_window_days"],
+            start_date=config["start_date"],
+            time_zone=time_zone,
+            end_date=end_date,
         )
 
         streams = [

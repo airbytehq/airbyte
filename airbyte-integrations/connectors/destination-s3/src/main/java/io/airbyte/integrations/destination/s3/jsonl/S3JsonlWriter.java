@@ -21,7 +21,6 @@ import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -104,4 +103,5 @@ public class S3JsonlWriter extends BaseS3Writer implements DestinationFileWriter
   public void write(JsonNode formattedData) throws IOException {
     printWriter.println(Jsons.serialize(formattedData));
   }
+
 }
