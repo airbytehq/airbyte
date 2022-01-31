@@ -14,9 +14,7 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 
 public class LegacyInfiniteFeedSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -58,11 +56,6 @@ public class LegacyInfiniteFeedSourceAcceptanceTest extends SourceAcceptanceTest
   @Override
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
-  }
-
-  @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
   }
 
 }

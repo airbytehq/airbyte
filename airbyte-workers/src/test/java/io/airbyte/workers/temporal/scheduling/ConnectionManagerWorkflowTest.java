@@ -48,13 +48,13 @@ import org.mockito.Mockito;
 
 public class ConnectionManagerWorkflowTest {
 
-  private static final ConfigFetchActivity mConfigFetchActivity =
+  private final ConfigFetchActivity mConfigFetchActivity =
       Mockito.mock(ConfigFetchActivity.class, Mockito.withSettings().withoutAnnotations());
-  private static final ConnectionDeletionActivity mConnectionDeletionActivity =
+  private final ConnectionDeletionActivity mConnectionDeletionActivity =
       Mockito.mock(ConnectionDeletionActivity.class, Mockito.withSettings().withoutAnnotations());
-  private static final GenerateInputActivityImpl mGenerateInputActivityImpl =
+  private final GenerateInputActivityImpl mGenerateInputActivityImpl =
       Mockito.mock(GenerateInputActivityImpl.class, Mockito.withSettings().withoutAnnotations());
-  private static final JobCreationAndStatusUpdateActivity mJobCreationAndStatusUpdateActivity =
+  private final JobCreationAndStatusUpdateActivity mJobCreationAndStatusUpdateActivity =
       Mockito.mock(JobCreationAndStatusUpdateActivity.class, Mockito.withSettings().withoutAnnotations());
 
   private TestWorkflowEnvironment testEnv;
@@ -436,6 +436,73 @@ public class ConnectionManagerWorkflowTest {
 
       Assertions.assertThat(events)
           .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.CANCELLED && changedStateEvent.isValue())
+          .hasSizeGreaterThanOrEqualTo(1);
+
+      Mockito.verify(mJobCreationAndStatusUpdateActivity).jobCancelled(Mockito.any());
+
+      testEnv.shutdown();
+    }
+
+    @Test
+    @DisplayName("Test that resetting a-non running workflow starts a reset")
+    public void resetStart() {
+
+      final UUID testId = UUID.randomUUID();
+      final TestStateListener testStateListener = new TestStateListener();
+      final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
+
+      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
+          UUID.randomUUID(),
+          1L,
+          1,
+          false,
+          1,
+          workflowState,
+          false);
+
+      WorkflowClient.start(workflow::run, input);
+      testEnv.sleep(Duration.ofSeconds(30L));
+      workflow.resetConnection();
+      testEnv.sleep(Duration.ofSeconds(90L));
+
+      final Queue<ChangedStateEvent> events = testStateListener.events(testId);
+
+      Assertions.assertThat(events)
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.RESET && changedStateEvent.isValue())
+          .hasSizeGreaterThanOrEqualTo(1);
+
+      Mockito.verify(mJobCreationAndStatusUpdateActivity).jobSuccess(Mockito.any());
+
+      testEnv.shutdown();
+    }
+
+    @Test
+    @DisplayName("Test that resetting a running workflow starts cancel the running workflow")
+    public void resetCancelRunningWorkflow() {
+
+      final UUID testId = UUID.randomUUID();
+      final TestStateListener testStateListener = new TestStateListener();
+      final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
+
+      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
+          UUID.randomUUID(),
+          1L,
+          1,
+          false,
+          1,
+          workflowState,
+          false);
+
+      WorkflowClient.start(workflow::run, input);
+      workflow.submitManualSync();
+      testEnv.sleep(Duration.ofSeconds(30L));
+      workflow.resetConnection();
+      testEnv.sleep(Duration.ofSeconds(30L));
+
+      final Queue<ChangedStateEvent> events = testStateListener.events(testId);
+
+      Assertions.assertThat(events)
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.RESET && changedStateEvent.isValue())
           .hasSizeGreaterThanOrEqualTo(1);
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity).jobCancelled(Mockito.any());
