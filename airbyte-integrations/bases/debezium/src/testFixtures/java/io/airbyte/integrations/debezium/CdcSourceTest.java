@@ -22,7 +22,6 @@ import io.airbyte.db.Database;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.protocol.models.*;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
