@@ -120,7 +120,11 @@ public class SnowflakeInternalStagingConsumerFactory {
             schema, stream, tmpTable, stage);
 
         AirbyteSentry.executeWithTracing("PrepareStreamStage",
-            () -> prepareStream(database, snowflakeSqlOperations, schema, tmpTable, stage),
+            () -> {
+              snowflakeSqlOperations.createSchemaIfNotExists(database, schema);
+              snowflakeSqlOperations.createTableIfNotExists(database, schema, tmpTable);
+              snowflakeSqlOperations.createStageIfNotExists(database, stage);
+            },
             Map.of("schema", schema, "stream", stream, "tmpTable", tmpTable, "stage", stage));
 
         LOGGER.info("Preparing stage in destination completed for schema {} stream {}", schema, stream);
@@ -128,19 +132,6 @@ public class SnowflakeInternalStagingConsumerFactory {
 
       LOGGER.info("Preparing tables in destination completed.");
     };
-  }
-
-  private static void prepareStream(final JdbcDatabase database,
-                                    final SnowflakeStagingSqlOperations snowflakeSqlOperations,
-                                    final String schema,
-                                    final String tmpTable,
-                                    final String stage) throws Exception {
-    AirbyteSentry.executeWithTracing("CreateSchemaIfNotExists",
-        () -> snowflakeSqlOperations.createSchemaIfNotExists(database, schema));
-    AirbyteSentry.executeWithTracing("CreateTmpTableIfNotExists",
-        () -> snowflakeSqlOperations.createTableIfNotExists(database, schema, tmpTable));
-    AirbyteSentry.executeWithTracing("CreateStageIfNotExists",
-        () -> snowflakeSqlOperations.createStageIfNotExists(database, stage));
   }
 
   private static AirbyteStreamNameNamespacePair toNameNamespacePair(final WriteConfig config) {
@@ -191,9 +182,7 @@ public class SnowflakeInternalStagingConsumerFactory {
               streamName, schemaName, srcTableName, dstTableName, path);
 
           try {
-            AirbyteSentry.executeWithTracing("CopyIntoTmpTableFromStage",
-                () -> sqlOperations.copyIntoTmpTableFromStage(database, path, srcTableName, schemaName),
-                Map.of("schema", schemaName, "stream", streamName, "tmpTable", srcTableName, "finalTable", dstTableName));
+            sqlOperations.copyIntoTmpTableFromStage(database, path, srcTableName, schemaName);
           } catch (final Exception e) {
             sqlOperations.cleanUpStage(database, path);
             LOGGER.info("Cleaning stage path {}", path);
