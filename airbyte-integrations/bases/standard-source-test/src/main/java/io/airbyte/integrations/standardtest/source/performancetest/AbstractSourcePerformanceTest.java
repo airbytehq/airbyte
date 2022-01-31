@@ -9,14 +9,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.DestinationSyncMode;
-import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -142,11 +136,11 @@ public abstract class AbstractSourcePerformanceTest extends AbstractSourceBasePe
       // CREATE TABLE test.test_1_int(id INTEGER PRIMARY KEY, test_column int)
       List<Field> fields = new ArrayList<>();
 
-      fields.add(Field.of(getIdColumnName(), JsonSchemaPrimitive.NUMBER));
+      fields.add(Field.of(getIdColumnName(), JsonSchemaType.NUMBER));
       for (int currentColumnNumber = 0;
           currentColumnNumber < numberOfColumns;
           currentColumnNumber++) {
-        fields.add(Field.of(getTestColumnName() + currentColumnNumber, JsonSchemaPrimitive.STRING));
+        fields.add(Field.of(getTestColumnName() + currentColumnNumber, JsonSchemaType.STRING));
       }
 
       AirbyteStream airbyteStream = CatalogHelpers

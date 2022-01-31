@@ -11,16 +11,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.*;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.DestinationSyncMode;
-import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
-import io.airbyte.protocol.models.SyncMode;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -192,7 +185,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
                 .withStream(CatalogHelpers.createAirbyteStream(
                     String.format("%s", test.getNameWithTestPrefix()),
                     String.format("%s", getNameSpace()),
-                    Field.of(getIdColumnName(), JsonSchemaPrimitive.NUMBER),
+                    Field.of(getIdColumnName(), JsonSchemaType.NUMBER),
                     Field.of(getTestColumnName(), test.getAirbyteType()))
                     .withSourceDefinedCursor(true)
                     .withSourceDefinedPrimaryKey(List.of(List.of(getIdColumnName())))
