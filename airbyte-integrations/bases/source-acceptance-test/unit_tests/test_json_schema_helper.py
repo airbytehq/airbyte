@@ -148,7 +148,7 @@ def test_json_schema_helper_pydantic_generated():
         f: Union[A, B]
 
     js_helper = JsonSchemaHelper(Root.schema())
-    variant_paths = js_helper.find_variant_paths()
+    variant_paths = js_helper.find_nodes(keys=["anyOf", "oneOf"])
     assert len(variant_paths) == 2
     assert variant_paths == [["properties", "f", "anyOf"], ["definitions", "C", "properties", "e", "anyOf"]]
     # TODO: implement validation for pydantic generated objects as well

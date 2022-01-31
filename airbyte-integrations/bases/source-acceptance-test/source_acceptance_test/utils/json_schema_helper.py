@@ -11,7 +11,9 @@ from jsonref import JsonRef
 
 
 class CatalogField:
-    """Field class to represent cursor/pk fields"""
+    """Field class to represent cursor/pk fields.
+    It eases the read of values from records according to schema definition.
+    """
 
     def __init__(self, schema: Mapping[str, Any], path: List[str]):
         self.schema = schema
@@ -48,16 +50,46 @@ class CatalogField:
 
 
 class JsonSchemaHelper:
+    """Helper class to simplify schema validation and read of records according to their schema."""
+
     def __init__(self, schema):
         self._schema = schema
 
-    def get_ref(self, path: str):
+    def get_ref(self, path: str) -> Any:
+        """Resolve reference
+
+        :param path: reference (#/definitions/SomeClass, etc)
+        :return: part of schema that is definition of the reference
+        :raises KeyError: in case path can't be followed
+        """
         node = self._schema
         for segment in path.split("/")[1:]:
             node = node[segment]
         return node
 
     def get_property(self, path: List[str]) -> Mapping[str, Any]:
+        """Get any part of schema according to provided path, resolves $refs if necessary
+
+        schema = {
+                "properties": {
+                    "field1": {
+                        "properties": {
+                            "nested_field": {
+                                <inner_object>
+                            }
+                        }
+                    },
+                    "field2": ...
+                }
+            }
+
+        helper = JsonSchemaHelper(schema)
+        helper.get_property(["field1", "nested_field"]) == <inner_object>
+
+        :param path: list of fields in the order of navigation
+        :return: discovered part of schema
+        :raises KeyError: in case path can't be followed
+        """
         node = self._schema
         for segment in path:
             if "$ref" in node:
@@ -66,17 +98,40 @@ class JsonSchemaHelper:
         return node
 
     def field(self, path: List[str]) -> CatalogField:
+        """Get schema property and wrap it into CatalogField.
+
+        CatalogField is a helper to ease the read of values from records according to schema definition.
+
+        :param path: list of fields in the order of navigation
+        :return: discovered part of schema wrapped in CatalogField
+        :raises KeyError: in case path can't be followed
+        """
         return CatalogField(schema=self.get_property(path), path=path)
 
-    def find_variant_paths(self) -> List[List[str]]:
+    def get_node(self, path: List[str]) -> Any:
+        """Return part of schema by specified path
+
+        :param path: list of fields in the order of navigation
         """
-        return list of json object paths for oneOf or anyOf attributes
+
+        node = self._schema
+        for segment in path:
+            if "$ref" in node:
+                node = self.get_ref(node["$ref"])
+            node = node[segment]
+        return node
+
+    def find_nodes(self, keys: List[str]) -> List[List[str]]:
+        """Get all nodes of schema that has specifies properties
+
+        :param keys:
+        :return: list of json object paths
         """
         variant_paths = []
 
         def traverse_schema(_schema, path=None):
             path = path or []
-            if path and path[-1] in ["oneOf", "anyOf"]:
+            if path and path[-1] in keys:
                 variant_paths.append(path)
             for item in _schema:
                 next_obj = _schema[item] if isinstance(_schema, dict) else item
