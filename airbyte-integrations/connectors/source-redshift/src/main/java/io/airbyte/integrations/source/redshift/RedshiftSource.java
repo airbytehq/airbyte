@@ -102,7 +102,7 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
     return database.query(connection -> {
       final PreparedStatement ps = connection.prepareStatement(
-          "SELECT DISTINCT table_catalog, table_schema, table_name, privilege_type\n"
+          "SELECT DISTINCT table_schema, table_name \n"
               + "FROM   information_schema.table_privileges\n"
               + "WHERE  grantee = ? AND privilege_type = 'SELECT'");
       ps.setString(1, database.getDatabaseConfig().get("username").asText());
